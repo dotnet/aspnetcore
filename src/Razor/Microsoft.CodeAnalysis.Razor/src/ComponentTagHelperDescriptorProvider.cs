@@ -115,12 +115,19 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 builder.Metadata[ComponentMetadata.Component.GenericTypedKey] = bool.TrueString;
 
+                var cascadeGenericTypeAttributes = type
+                    .GetAttributes()
+                    .Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.CascadeTypeParamAttribute))
+                    .Select(attribute => attribute.ConstructorArguments.FirstOrDefault().Value as string)
+                    .ToList();
+
                 for (var i = 0; i < type.TypeArguments.Length; i++)
                 {
                     var typeParameter = type.TypeArguments[i] as ITypeParameterSymbol;
                     if (typeParameter != null)
                     {
-                        CreateTypeParameterProperty(builder, typeParameter);
+                        var cascade = cascadeGenericTypeAttributes.Contains(typeParameter.Name, StringComparer.Ordinal);
+                        CreateTypeParameterProperty(builder, typeParameter, cascade);
                     }
                 }
             }
@@ -234,7 +241,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private void CreateTypeParameterProperty(TagHelperDescriptorBuilder builder, ITypeSymbol typeParameter)
+        private void CreateTypeParameterProperty(TagHelperDescriptorBuilder builder, ITypeSymbol typeParameter, bool cascade)
         {
             builder.BindAttribute(pb =>
             {
@@ -244,6 +251,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 pb.SetPropertyName(typeParameter.Name);
 
                 pb.Metadata[ComponentMetadata.Component.TypeParameterKey] = bool.TrueString;
+                pb.Metadata[ComponentMetadata.Component.TypeParameterIsCascadingKey] = cascade.ToString();
 
                 pb.Documentation = string.Format(CultureInfo.InvariantCulture, ComponentResources.ComponentTypeParameter_Documentation, typeParameter.Name, builder.Name);
             });
@@ -509,6 +517,12 @@ namespace Microsoft.CodeAnalysis.Razor
                     return null;
                 }
 
+                symbols.CascadeTypeParamAttribute = compilation.GetTypeByMetadataName(ComponentsApi.CascadeTypeParamAttribute.MetadataName);
+                if (symbols.CascadeTypeParamAttribute == null)
+                {
+                    // No definition for [CascadeTypeParam]. For back-compat, just don't activate this feature.
+                }
+
                 return symbols;
             }
 
@@ -529,6 +543,8 @@ namespace Microsoft.CodeAnalysis.Razor
             public INamedTypeSymbol EventCallback { get; private set; }
 
             public INamedTypeSymbol EventCallbackOfT { get; private set; }
+
+            public INamedTypeSymbol CascadeTypeParamAttribute { get; private set; }
         }
 
         private class ComponentTypeVisitor : SymbolVisitor

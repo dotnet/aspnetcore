@@ -520,7 +520,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     // The value should be populated before we use it, because we emit code for creating ancestors
                     // first, and that's where it's populated. However if this goes wrong somehow, we don't want to
                     // throw, so use a fallback
-                    context.CodeWriter.Write(syntheticArg.ValueExpression);
+                    context.CodeWriter.Write(syntheticArg.ValueExpression ?? "default");
                     break;
                 case TypeInferenceCapturedVariable capturedVariable:
                     context.CodeWriter.Write(capturedVariable.VariableName);

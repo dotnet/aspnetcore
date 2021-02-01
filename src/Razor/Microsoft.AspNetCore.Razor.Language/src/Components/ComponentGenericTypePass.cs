@@ -76,6 +76,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // Listing all type parameters that exist
                 var bindings = new Dictionary<string, Binding>();
                 var componentTypeParameters = node.Component.GetTypeParameters().ToList();
+                var supplyCascadingTypeParameters = componentTypeParameters
+                    .Where(p => p.IsCascadingTypeParameterProperty())
+                    .Select(p => p.Name)
+                    .ToList();
                 foreach (var attribute in componentTypeParameters)
                 {
                     bindings.Add(attribute.Name, new Binding() { Attribute = attribute, });
@@ -92,14 +96,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     binding.Content = GetContent(typeArgumentNode);
 
                     // Offer this type argument to descendants too
-                    // TODO: Only offer type args that are explicitly opted-in to cascading
-                    node.ProvidesCascadingGenericTypes ??= new();
-                    node.ProvidesCascadingGenericTypes[typeArgumentNode.TypeParameterName] = new CascadingGenericTypeParameter
+                    if (supplyCascadingTypeParameters.Contains(typeArgumentNode.TypeParameterName))
                     {
-                        GenericTypeNames = new[] { typeArgumentNode.TypeParameterName },
-                        ValueType = typeArgumentNode.TypeParameterName,
-                        ValueExpression = $"default({binding.Content})",
-                    };
+                        node.ProvidesCascadingGenericTypes ??= new();
+                        node.ProvidesCascadingGenericTypes[typeArgumentNode.TypeParameterName] = new CascadingGenericTypeParameter
+                        {
+                            GenericTypeNames = new[] { typeArgumentNode.TypeParameterName },
+                            ValueType = typeArgumentNode.TypeParameterName,
+                            ValueExpression = $"default({binding.Content})",
+                        };
+                    }
                 }
 
                 if (hasTypeArgumentSpecified)
@@ -144,16 +150,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                         foreach (var typeName in typeParameters)
                         {
-                            // Advertise that this particular generic type is available to descendants
-                            // There might be multiple sources for each generic type, so pick the one that has the
-                            // fewest other generic types on it. For example if we could infer from either List<T>
-                            // of Dictionary<T, U>, we prefer List<T>.
-                            // TODO: Only include ones explicitly opted-in to cascading
-                            node.ProvidesCascadingGenericTypes ??= new();
-                            if (!node.ProvidesCascadingGenericTypes.TryGetValue(typeName, out var existingValue)
-                                || existingValue.GenericTypeNames.Count > typeParameters.Count)
+                            if (supplyCascadingTypeParameters.Contains(typeName))
                             {
-                                node.ProvidesCascadingGenericTypes[typeName] = provideCascadingGenericTypes;
+                                // Advertise that this particular generic type is available to descendants
+                                // There might be multiple sources for each generic type, so pick the one that has the
+                                // fewest other generic types on it. For example if we could infer from either List<T>
+                                // of Dictionary<T, U>, we prefer List<T>.
+                                node.ProvidesCascadingGenericTypes ??= new();
+                                if (!node.ProvidesCascadingGenericTypes.TryGetValue(typeName, out var existingValue)
+                                    || existingValue.GenericTypeNames.Count > typeParameters.Count)
+                                {
+                                    node.ProvidesCascadingGenericTypes[typeName] = provideCascadingGenericTypes;
+                                }
                             }
 
                             if (attributeValueIsLambda)
