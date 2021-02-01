@@ -21,9 +21,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             {
-
-                #pragma warning disable 219 // Variable is assigned but its value is never used
-                var typeInferenceArg_0_TKey = 
+                __Blazor.Test.TestComponent.TypeInference.CreateParent_0_CaptureParameters(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                 new System.Collections.Generic.Dictionary<int, string>()
@@ -31,23 +29,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-                ;
-                #pragma warning restore 219
-
-                #pragma warning disable 219 // Variable is assigned but its value is never used
-                var typeInferenceArg_0_TValue = 
-#nullable restore
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                new System.Collections.Generic.Dictionary<int, string>()
-
-#line default
-#line hidden
-#nullable disable
-                ;
-                #pragma warning restore 219
-
-                #pragma warning disable 219 // Variable is assigned but its value is never used
-                var typeInferenceArg_0_TOther = 
+                , out var __typeInferenceArg_0___arg0, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                                    DateTime.MinValue
@@ -55,29 +37,10 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-                ;
-                #pragma warning restore 219
-                __Blazor.Test.TestComponent.TypeInference.CreateParent_0(__builder, -1, -1, 
-#nullable restore
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                new System.Collections.Generic.Dictionary<int, string>()
-
-#line default
-#line hidden
-#nullable disable
-                , -1, 
-#nullable restore
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                                                   DateTime.MinValue
-
-#line default
-#line hidden
-#nullable disable
-                , -1, (__builder2) => {
+                , out var __typeInferenceArg_0___arg1);
+                __Blazor.Test.TestComponent.TypeInference.CreateParent_0(__builder, -1, -1, __typeInferenceArg_0___arg0, -1, __typeInferenceArg_0___arg1, -1, (__builder2) => {
                     {
-
-                        #pragma warning disable 219 // Variable is assigned but its value is never used
-                        var typeInferenceArg_1_TChildOnly = 
+                        __Blazor.Test.TestComponent.TypeInference.CreateChild_1_CaptureParameters(__typeInferenceArg_0___arg1, out var __typeInferenceArg_1___syntheticArg0, __typeInferenceArg_0___arg0, out var __typeInferenceArg_1___syntheticArg1, __typeInferenceArg_0___arg0, out var __typeInferenceArg_1___syntheticArg2, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                              new[] { 'a', 'b', 'c' }
@@ -85,17 +48,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-                        ;
-                        #pragma warning restore 219
-                        __Blazor.Test.TestComponent.TypeInference.CreateChild_1(__builder2, -1, typeInferenceArg_0_TOther, typeInferenceArg_0_TValue, typeInferenceArg_0_TKey, -1, 
-#nullable restore
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                             new[] { 'a', 'b', 'c' }
-
-#line default
-#line hidden
-#nullable disable
-                        );
+                        , out var __typeInferenceArg_1___arg0);
+                        __Blazor.Test.TestComponent.TypeInference.CreateChild_1(__builder2, -1, __typeInferenceArg_1___syntheticArg0, __typeInferenceArg_1___syntheticArg1, __typeInferenceArg_1___syntheticArg2, -1, __typeInferenceArg_1___arg0);
                     }
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -131,11 +85,25 @@ namespace __Blazor.Test.TestComponent
         __builder.AddAttribute(__seq2, "ChildContent", __arg2);
         __builder.CloseComponent();
         }
-        public static void CreateChild_1<TOther, TValue, TKey, TChildOnly>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, TOther syntheticArg0, System.Collections.Generic.Dictionary<TKey, TValue> syntheticArg1, System.Collections.Generic.Dictionary<TKey, TValue> syntheticArg2, int __seq0, global::System.Collections.Generic.ICollection<TChildOnly> __arg0)
+
+        public static void CreateParent_0_CaptureParameters<TKey, TValue, TOther>(global::System.Collections.Generic.Dictionary<TKey, TValue> __arg0, out global::System.Collections.Generic.Dictionary<TKey, TValue> __arg0_out, TOther __arg1, out TOther __arg1_out)
+        {
+            __arg0_out = __arg0;
+            __arg1_out = __arg1;
+        }
+        public static void CreateChild_1<TOther, TValue, TKey, TChildOnly>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, TOther __syntheticArg0, System.Collections.Generic.Dictionary<TKey, TValue> __syntheticArg1, System.Collections.Generic.Dictionary<TKey, TValue> __syntheticArg2, int __seq0, global::System.Collections.Generic.ICollection<TChildOnly> __arg0)
         {
         __builder.OpenComponent<global::Test.Child<TOther, TValue, TKey, TChildOnly>>(seq);
         __builder.AddAttribute(__seq0, "ChildOnlyItems", __arg0);
         __builder.CloseComponent();
+        }
+
+        public static void CreateChild_1_CaptureParameters<TOther, TValue, TKey, TChildOnly>(TOther __syntheticArg0, out TOther __syntheticArg0_out, System.Collections.Generic.Dictionary<TKey, TValue> __syntheticArg1, out System.Collections.Generic.Dictionary<TKey, TValue> __syntheticArg1_out, System.Collections.Generic.Dictionary<TKey, TValue> __syntheticArg2, out System.Collections.Generic.Dictionary<TKey, TValue> __syntheticArg2_out, global::System.Collections.Generic.ICollection<TChildOnly> __arg0, out global::System.Collections.Generic.ICollection<TChildOnly> __arg0_out)
+        {
+            __syntheticArg0_out = __syntheticArg0;
+            __syntheticArg1_out = __syntheticArg1;
+            __syntheticArg2_out = __syntheticArg2;
+            __arg0_out = __arg0;
         }
     }
 }

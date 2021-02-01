@@ -39,7 +39,10 @@ namespace Test
 #nullable disable
             );
             __builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
-                __Blazor.Test.TestComponent.TypeInference.CreateColumn_0(__builder2, -1, default(DateTime));
+                {
+                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_0_CaptureParameters(default(DateTime), out var __typeInferenceArg_1___syntheticArg0);
+                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_0(__builder2, -1, __typeInferenceArg_1___syntheticArg0);
+                }
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(Column<>);
@@ -65,10 +68,15 @@ namespace __Blazor.Test.TestComponent
     #line hidden
     internal static class TypeInference
     {
-        public static void CreateColumn_0<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, TItem syntheticArg0)
+        public static void CreateColumn_0<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, TItem __syntheticArg0)
         {
         __builder.OpenComponent<global::Test.Column<TItem>>(seq);
         __builder.CloseComponent();
+        }
+
+        public static void CreateColumn_0_CaptureParameters<TItem>(TItem __syntheticArg0, out TItem __syntheticArg0_out)
+        {
+            __syntheticArg0_out = __syntheticArg0;
         }
     }
 }

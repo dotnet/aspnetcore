@@ -21,9 +21,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             {
-
-                #pragma warning disable 219 // Variable is assigned but its value is never used
-                var typeInferenceArg_0_TItem = 
+                __Blazor.Test.TestComponent.TypeInference.CreateGrid_0_CaptureParameters(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                Array.Empty<DateTime>()
@@ -31,18 +29,10 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-                ;
-                #pragma warning restore 219
-                __Blazor.Test.TestComponent.TypeInference.CreateGrid_0(__builder, -1, -1, 
-#nullable restore
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-               Array.Empty<DateTime>()
-
-#line default
-#line hidden
-#nullable disable
-                , -1, (__builder2) => {
-                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, -1, typeInferenceArg_0_TItem, -1, 
+                , out var __typeInferenceArg_0___arg0);
+                __Blazor.Test.TestComponent.TypeInference.CreateGrid_0(__builder, -1, -1, __typeInferenceArg_0___arg0, -1, (__builder2) => {
+                    {
+                        __Blazor.Test.TestComponent.TypeInference.CreateColumn_1_CaptureParameters(__typeInferenceArg_0___arg0, out var __typeInferenceArg_1___syntheticArg0, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                x => x.Year
@@ -50,7 +40,9 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-                    );
+                        , out var __typeInferenceArg_1___arg0);
+                        __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, -1, __typeInferenceArg_1___syntheticArg0, -1, __typeInferenceArg_1___arg0);
+                    }
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(Column<,>);
@@ -84,11 +76,22 @@ namespace __Blazor.Test.TestComponent
         __builder.AddAttribute(__seq1, "ChildContent", __arg1);
         __builder.CloseComponent();
         }
-        public static void CreateColumn_1<TItem, TOutput>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, System.Collections.Generic.IEnumerable<TItem> syntheticArg0, int __seq0, global::System.Func<TItem, TOutput> __arg0)
+
+        public static void CreateGrid_0_CaptureParameters<TItem>(global::System.Collections.Generic.IEnumerable<TItem> __arg0, out global::System.Collections.Generic.IEnumerable<TItem> __arg0_out)
+        {
+            __arg0_out = __arg0;
+        }
+        public static void CreateColumn_1<TItem, TOutput>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, System.Collections.Generic.IEnumerable<TItem> __syntheticArg0, int __seq0, global::System.Func<TItem, TOutput> __arg0)
         {
         __builder.OpenComponent<global::Test.Column<TItem, TOutput>>(seq);
         __builder.AddAttribute(__seq0, "SomeLambda", __arg0);
         __builder.CloseComponent();
+        }
+
+        public static void CreateColumn_1_CaptureParameters<TItem, TOutput>(System.Collections.Generic.IEnumerable<TItem> __syntheticArg0, out System.Collections.Generic.IEnumerable<TItem> __syntheticArg0_out, global::System.Func<TItem, TOutput> __arg0, out global::System.Func<TItem, TOutput> __arg0_out)
+        {
+            __syntheticArg0_out = __syntheticArg0;
+            __arg0_out = __arg0;
         }
     }
 }
