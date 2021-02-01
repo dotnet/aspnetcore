@@ -10,6 +10,6 @@ Generated Location: (1294:34,83 [17] )
 
 Source Location: (133:1,29 [23] x:\dir\subdir\Test\TestComponent.cshtml)
 |new[] { 'a', 'b', 'c' }|
-Generated Location: (2044:45,29 [23] )
+Generated Location: (1881:44,29 [23] )
 |new[] { 'a', 'b', 'c' }|
 

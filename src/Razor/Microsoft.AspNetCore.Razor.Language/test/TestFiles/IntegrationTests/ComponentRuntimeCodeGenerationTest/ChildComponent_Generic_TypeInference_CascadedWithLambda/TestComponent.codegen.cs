@@ -24,8 +24,7 @@ namespace Test
 #nullable disable
                 , out var __typeInferenceArg_0___arg0);
                 __Blazor.Test.TestComponent.TypeInference.CreateGrid_0(__builder, 0, 1, __typeInferenceArg_0___arg0, 2, (__builder2) => {
-                    {
-                        __Blazor.Test.TestComponent.TypeInference.CreateColumn_1_CaptureParameters(__typeInferenceArg_0___arg0, out var __typeInferenceArg_1___syntheticArg0, 
+                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, 3, __typeInferenceArg_0___arg0, 4, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                x => x.Year
@@ -33,11 +32,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-                        , out var __typeInferenceArg_1___arg0);
-                        __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, 3, __typeInferenceArg_1___syntheticArg0, 4, __typeInferenceArg_1___arg0);
-                        __typeInferenceArg_1___syntheticArg0 = default;
-                        __typeInferenceArg_1___arg0 = default;
-                    }
+                    );
                 }
                 );
                 __typeInferenceArg_0___arg0 = default;
@@ -68,12 +63,6 @@ namespace __Blazor.Test.TestComponent
         __builder.OpenComponent<global::Test.Column<TItem, TOutput>>(seq);
         __builder.AddAttribute(__seq0, "SomeLambda", __arg0);
         __builder.CloseComponent();
-        }
-
-        public static void CreateColumn_1_CaptureParameters<TItem, TOutput>(System.Collections.Generic.IEnumerable<TItem> __syntheticArg0, out System.Collections.Generic.IEnumerable<TItem> __syntheticArg0_out, global::System.Func<TItem, TOutput> __arg0, out global::System.Func<TItem, TOutput> __arg0_out)
-        {
-            __syntheticArg0_out = __syntheticArg0;
-            __arg0_out = __arg0;
         }
     }
 }

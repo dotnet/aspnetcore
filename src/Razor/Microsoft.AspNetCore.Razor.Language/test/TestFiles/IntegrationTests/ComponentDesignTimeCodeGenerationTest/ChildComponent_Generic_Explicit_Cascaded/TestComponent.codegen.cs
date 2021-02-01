@@ -39,10 +39,7 @@ namespace Test
 #nullable disable
             );
             __builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
-                {
-                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_0_CaptureParameters(default(DateTime), out var __typeInferenceArg_1___syntheticArg0);
-                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_0(__builder2, -1, __typeInferenceArg_1___syntheticArg0);
-                }
+                __Blazor.Test.TestComponent.TypeInference.CreateColumn_0(__builder2, -1, default(DateTime));
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(Column<>);
@@ -72,11 +69,6 @@ namespace __Blazor.Test.TestComponent
         {
         __builder.OpenComponent<global::Test.Column<TItem>>(seq);
         __builder.CloseComponent();
-        }
-
-        public static void CreateColumn_0_CaptureParameters<TItem>(TItem __syntheticArg0, out TItem __syntheticArg0_out)
-        {
-            __syntheticArg0_out = __syntheticArg0;
         }
     }
 }

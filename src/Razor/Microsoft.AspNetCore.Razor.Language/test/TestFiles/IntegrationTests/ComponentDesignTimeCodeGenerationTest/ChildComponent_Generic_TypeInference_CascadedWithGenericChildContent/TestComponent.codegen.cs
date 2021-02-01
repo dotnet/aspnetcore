@@ -31,9 +31,7 @@ namespace Test
 #nullable disable
                 , out var __typeInferenceArg_0___arg0);
                 __Blazor.Test.TestComponent.TypeInference.CreateGrid_0(__builder, -1, -1, __typeInferenceArg_0___arg0, -1, (__builder2) => {
-                    {
-                        __Blazor.Test.TestComponent.TypeInference.CreateColumn_1_CaptureParameters(__typeInferenceArg_0___arg0, out var __typeInferenceArg_1___syntheticArg0);
-                        __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, -1, __typeInferenceArg_1___syntheticArg0, -1, (context) => (__builder3) => {
+                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, -1, __typeInferenceArg_0___arg0, -1, (context) => (__builder3) => {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                             __o = context.Year;
@@ -41,9 +39,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-                        }
-                        );
                     }
+                    );
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(Column<>);
@@ -87,11 +84,6 @@ namespace __Blazor.Test.TestComponent
         __builder.OpenComponent<global::Test.Column<TItem>>(seq);
         __builder.AddAttribute(__seq0, "ChildContent", __arg0);
         __builder.CloseComponent();
-        }
-
-        public static void CreateColumn_1_CaptureParameters<TItem>(System.Collections.Generic.IEnumerable<TItem> __syntheticArg0, out System.Collections.Generic.IEnumerable<TItem> __syntheticArg0_out)
-        {
-            __syntheticArg0_out = __syntheticArg0;
         }
     }
 }

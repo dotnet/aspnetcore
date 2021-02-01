@@ -24,11 +24,7 @@ namespace Test
 #nullable disable
             ));
             __builder.AddAttribute(2, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
-                {
-                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_0_CaptureParameters(default(DateTime), out var __typeInferenceArg_1___syntheticArg0);
-                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_0(__builder2, 3, __typeInferenceArg_1___syntheticArg0);
-                    __typeInferenceArg_1___syntheticArg0 = default;
-                }
+                __Blazor.Test.TestComponent.TypeInference.CreateColumn_0(__builder2, 3, default(DateTime));
             }
             ));
             __builder.CloseComponent();
@@ -45,11 +41,6 @@ namespace __Blazor.Test.TestComponent
         {
         __builder.OpenComponent<global::Test.Column<TItem>>(seq);
         __builder.CloseComponent();
-        }
-
-        public static void CreateColumn_0_CaptureParameters<TItem>(TItem __syntheticArg0, out TItem __syntheticArg0_out)
-        {
-            __syntheticArg0_out = __syntheticArg0;
         }
     }
 }

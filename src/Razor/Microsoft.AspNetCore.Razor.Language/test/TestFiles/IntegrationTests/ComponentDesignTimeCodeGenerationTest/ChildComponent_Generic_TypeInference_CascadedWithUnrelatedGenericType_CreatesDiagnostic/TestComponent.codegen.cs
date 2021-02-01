@@ -31,10 +31,7 @@ namespace Test
 #nullable disable
                 , out var __typeInferenceArg_0___arg0);
                 __Blazor.Test.TestComponent.TypeInference.CreateGrid_0(__builder, -1, -1, __typeInferenceArg_0___arg0, -1, (__builder2) => {
-                    {
-                        __Blazor.Test.TestComponent.TypeInference.CreateColumn_1_CaptureParameters();
-                        __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, -1);
-                    }
+                    __Blazor.Test.TestComponent.TypeInference.CreateColumn_1(__builder2, -1);
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(Column<>);
@@ -77,10 +74,6 @@ namespace __Blazor.Test.TestComponent
         {
         __builder.OpenComponent<global::Test.Column<System.Object>>(seq);
         __builder.CloseComponent();
-        }
-
-        public static void CreateColumn_1_CaptureParameters<TItem>()
-        {
         }
     }
 }

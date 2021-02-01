@@ -5,6 +5,6 @@ Generated Location: (973:26,15 [23] )
 
 Source Location: (63:0,63 [11] x:\dir\subdir\Test\TestComponent.cshtml)
 |x => x.Year|
-Generated Location: (1579:37,63 [11] )
+Generated Location: (1508:36,63 [11] )
 |x => x.Year|
 
