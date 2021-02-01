@@ -118,6 +118,7 @@
     <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.2.21080.7</SystemRuntimeCompilerServicesUnsafeVersion>
     <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. -->
     <SystemSecurityAccessControlVersion>6.0.0-preview.2.21080.7</SystemSecurityAccessControlVersion>
+    <SystemSecurityCryptographyAlgorithmsVersion>6.0.0-preview.2.21080.7</SystemSecurityCryptographyAlgorithmsVersion>
     <SystemSecurityCryptographyCngVersion>6.0.0-preview.2.21080.7</SystemSecurityCryptographyCngVersion>
     <SystemSecurityCryptographyPkcsVersion>6.0.0-preview.2.21080.7</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>6.0.0-preview.2.21080.7</SystemSecurityCryptographyXmlVersion>

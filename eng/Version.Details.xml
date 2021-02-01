@@ -238,6 +238,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e6f093cf0e711d9ba91b133b23a38c9a1911584d</Sha>
     </Dependency>
+    <Dependency Name="System.Security.Cryptography.Algorithms" Version="6.0.0-preview.2.21080.7">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>e6f093cf0e711d9ba91b133b23a38c9a1911584d</Sha>
+    </Dependency>
     <Dependency Name="System.Security.Cryptography.Cng" Version="6.0.0-preview.2.21080.7">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e6f093cf0e711d9ba91b133b23a38c9a1911584d</Sha>

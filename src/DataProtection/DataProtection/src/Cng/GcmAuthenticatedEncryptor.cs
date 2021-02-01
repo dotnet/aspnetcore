@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
@@ -151,7 +152,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                         cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
 
                     // Perform the decryption operation
-
+#if NETSTANDARD2_0 || NET461
                     using (var decryptionSubkeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricDecryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
                     {
                         byte dummy;
@@ -179,11 +180,25 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                             dwFlags: 0);
                         UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
                         CryptoUtil.Assert(cbDecryptedBytesWritten == cbPlaintext, "cbDecryptedBytesWritten == cbPlaintext");
-
-                        // At this point, retVal := { decryptedPayload }
-                        // And we're done!
-                        return retVal;
                     }
+#else
+                    ReadOnlySpan<byte> nonce, key, encrypted, tag;
+                    Span<byte> plaintext;
+                    unsafe
+                    {
+                        nonce = new Span<byte>(pbNonce, (int)NONCE_SIZE_IN_BYTES);
+                        key = new Span<byte>(pbSymmetricDecryptionSubkey, (int)_symmetricAlgorithmSubkeyLengthInBytes);
+                        tag = new Span<byte>(pbAuthTag, (int)TAG_SIZE_IN_BYTES);
+                        plaintext = new Span<byte>(retVal);
+                        encrypted = new Span<byte>(pbEncryptedData, (int)cbPlaintext);
+                    }
+                    using var aes = new AesGcm(key);
+                    aes.Decrypt(nonce, encrypted, tag, plaintext);
+#endif
+
+                    // At this point, retVal := { decryptedPayload }
+                    // And we're done!
+                    return retVal;
                 }
                 finally
                 {
@@ -206,6 +221,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         // 'pbEncryptedData' must point to a buffer the same length as 'pbPlaintextData'.
         private void DoGcmEncrypt(byte* pbKey, uint cbKey, byte* pbNonce, byte* pbPlaintextData, uint cbPlaintextData, byte* pbEncryptedData, byte* pbTag)
         {
+#if NETSTANDARD2_0 || NET461
             BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO authCipherInfo;
             BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO.Init(out authCipherInfo);
             authCipherInfo.pbNonce = pbNonce;
@@ -230,6 +246,19 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                 UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
                 CryptoUtil.Assert(cbResult == cbPlaintextData, "cbResult == cbPlaintextData");
             }
+#else
+            Span<byte> nonce, key, plaintext, encrypted, tag;
+            unsafe
+            {
+                nonce = new Span<byte>(pbNonce, (int)NONCE_SIZE_IN_BYTES);
+                key = new Span<byte>(pbKey, (int)cbKey);
+                tag = new Span<byte>(pbTag, (int)TAG_SIZE_IN_BYTES);
+                plaintext = new Span<byte>(pbPlaintextData, (int)cbPlaintextData);
+                encrypted = new Span<byte>(pbEncryptedData, (int)cbPlaintextData);
+            }
+            using var aes = new AesGcm(key);
+            aes.Encrypt(nonce, plaintext, encrypted, tag);
+#endif
         }
 
         protected override byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer)
