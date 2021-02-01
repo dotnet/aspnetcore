@@ -138,12 +138,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         attributeValueIsLambda ??= _pass.TypeNameFeature.IsLambda(GetContent(attribute));
                         if (attributeValueIsLambda.GetValueOrDefault())
                         {
-                            // For attributes whose values are lambdas:
-                            // [1] We don't know whether or not the value covers the generic type - it depends
-                            //     on the syntactical details of the lambda. For example, "() => 123" can cover
-                            //     a Func<T>, but "() => null" cannot. So we'll accept cascaded generic types
-                            //     from ancestors if they are compatible with the lambda, hence we don't remove
-                            //     it from the list of uncovered generic types, but just flag it.
+                            // For attributes whose values are lambdas, we don't know whether or not the value
+                            // covers the generic type - it depends on the content of the lambda.
+                            // For example, "() => 123" can cover Func<T>, but "() => null" cannot. So we'll
+                            // accept cascaded generic types from ancestors if they are compatible with the lambda,
+                            // hence we don't remove it from the list of uncovered generic types until after
+                            // we try matching against ancestor cascades.
                             if (bindings.TryGetValue(typeName, out var binding))
                             {
                                 binding.CoveredByLambda = true;
@@ -228,12 +228,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     yield break;
                 }
-
-                // TODO: Avoid returning type parameters if the value for the associated expression
-                // is a type-inferred lambda (e.g., (a, b) => { ... }). Such values don't contribute
-                // to determining the generic types, and if those are all we have, we need not to
-                // remove the 'binding' entry because then we wouldn't receive anything cascaded
-                // from ancestors.
 
                 var typeParameters = _pass.TypeNameFeature.ParseTypeParameters(boundAttribute.TypeName);
                 if (typeParameters.Count == 0)
