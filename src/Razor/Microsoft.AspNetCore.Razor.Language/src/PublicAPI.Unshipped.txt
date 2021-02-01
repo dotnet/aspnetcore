@@ -1,8 +1,8 @@
 #nullable enable
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.CascadingGenericTypeParameter() -> void
-~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeName.get -> string
-~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeName.set -> void
+~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeNames.get -> System.Collections.Generic.IReadOnlyCollection<string>
+~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeNames.set -> void
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueExpression.get -> string
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueExpression.set -> void
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueSourceNode.get -> Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentAttributeIntermediateNode

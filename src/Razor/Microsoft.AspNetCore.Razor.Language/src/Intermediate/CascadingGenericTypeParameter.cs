@@ -1,14 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class CascadingGenericTypeParameter
     {
         /// <summary>
-        /// Gets or sets the type parameter name, e.g., TItem
+        /// Gets or sets the type parameter names covered by the value type, e.g., TKey and TItem
         /// </summary>
-        public string GenericTypeName { get; set; }
+        public IReadOnlyCollection<string> GenericTypeNames { get; set; }
 
         /// <summary>
         /// Gets or sets a <see cref="ComponentAttributeIntermediateNode"/> that supplies content for
@@ -18,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public ComponentAttributeIntermediateNode ValueSourceNode { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of <see cref="ValueExpression"/>, e.g., List[TItem].
+        /// Gets or sets the type of <see cref="ValueExpression"/>, e.g., Dictionary[TKey, TItem].
         /// </summary>
         public string ValueType { get; set; }
 

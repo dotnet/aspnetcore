@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     node.ProvidesCascadingGenericTypes ??= new();
                     node.ProvidesCascadingGenericTypes[typeArgumentNode.TypeParameterName] = new CascadingGenericTypeParameter
                     {
-                        GenericTypeName = typeArgumentNode.TypeParameterName,
+                        GenericTypeNames = new[] { typeArgumentNode.TypeParameterName },
                         ValueType = typeArgumentNode.TypeParameterName,
                         ValueExpression = $"default({binding.Content})",
                     };
@@ -131,38 +131,41 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // not set the items. We won't be able to do type inference on this and so it will just be nonsense.
                 foreach (var attribute in node.Attributes)
                 {
-                    bool? attributeValueIsLambda = null;
-
-                    foreach (var typeName in FindGenericTypeNames(attribute.BoundAttribute))
+                    if (TryFindGenericTypeNames(attribute.BoundAttribute, out var typeParameters))
                     {
-                        attributeValueIsLambda ??= _pass.TypeNameFeature.IsLambda(GetContent(attribute));
-                        if (attributeValueIsLambda.GetValueOrDefault())
+                        var attributeValueIsLambda = _pass.TypeNameFeature.IsLambda(GetContent(attribute));
+                        var provideCascadingGenericTypes = new CascadingGenericTypeParameter
                         {
-                            // For attributes whose values are lambdas, we don't know whether or not the value
-                            // covers the generic type - it depends on the content of the lambda.
-                            // For example, "() => 123" can cover Func<T>, but "() => null" cannot. So we'll
-                            // accept cascaded generic types from ancestors if they are compatible with the lambda,
-                            // hence we don't remove it from the list of uncovered generic types until after
-                            // we try matching against ancestor cascades.
-                            if (bindings.TryGetValue(typeName, out var binding))
-                            {
-                                binding.CoveredByLambda = true;
-                            }
-                        }
-                        else
-                        {
-                            bindings.Remove(typeName);
-                        }
-
-                        // Advertise that this particular generic type is available to descendants
-                        // TODO: Only include ones explicitly opted-in to cascading
-                        node.ProvidesCascadingGenericTypes ??= new();
-                        node.ProvidesCascadingGenericTypes[typeName] = new CascadingGenericTypeParameter
-                        {
-                            GenericTypeName = typeName,
+                            GenericTypeNames = typeParameters,
                             ValueType = attribute.BoundAttribute.TypeName,
                             ValueSourceNode = attribute,
                         };
+
+                        foreach (var typeName in typeParameters)
+                        {
+                            // Advertise that this particular generic type is available to descendants
+                            // TODO: Only include ones explicitly opted-in to cascading
+                            node.ProvidesCascadingGenericTypes ??= new();
+                            node.ProvidesCascadingGenericTypes[typeName] = provideCascadingGenericTypes;
+
+                            if (attributeValueIsLambda)
+                            {
+                                // For attributes whose values are lambdas, we don't know whether or not the value
+                                // covers the generic type - it depends on the content of the lambda.
+                                // For example, "() => 123" can cover Func<T>, but "() => null" cannot. So we'll
+                                // accept cascaded generic types from ancestors if they are compatible with the lambda,
+                                // hence we don't remove it from the list of uncovered generic types until after
+                                // we try matching against ancestor cascades.
+                                if (bindings.TryGetValue(typeName, out var binding))
+                                {
+                                    binding.CoveredByLambda = true;
+                                }
+                            }
+                            else
+                            {
+                                bindings.Remove(typeName);
+                            }
+                        }
                     }
                 }
 
@@ -211,37 +214,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 CreateTypeInferenceMethod(documentNode, node, receivesCascadingGenericTypes);
             }
 
-            private IEnumerable<string> FindGenericTypeNames(BoundAttributeDescriptor boundAttribute)
+            private bool TryFindGenericTypeNames(BoundAttributeDescriptor boundAttribute, out IReadOnlyList<string> typeParameters)
             {
                 if (boundAttribute == null)
                 {
                     // Will be null for attributes set on the component that don't match a declared component parameter
-                    yield break;
+                    typeParameters = null;
+                    return false;
+                }
+
+                if (!boundAttribute.IsGenericTypedProperty())
+                {
+                    typeParameters = null;
+                    return false;
                 }
 
                 // Now we need to parse the type name and extract the generic parameters.
-                //
                 // Two cases;
                 // 1. name is a simple identifier like TItem
                 // 2. name contains type parameters like Dictionary<string, TItem>
-                if (!boundAttribute.IsGenericTypedProperty())
-                {
-                    yield break;
-                }
-
-                var typeParameters = _pass.TypeNameFeature.ParseTypeParameters(boundAttribute.TypeName);
+                typeParameters = _pass.TypeNameFeature.ParseTypeParameters(boundAttribute.TypeName);
                 if (typeParameters.Count == 0)
                 {
-                    yield return boundAttribute.TypeName;
+                    typeParameters = new[] { boundAttribute.TypeName };
                 }
-                else
-                {
-                    for (var i = 0; i < typeParameters.Count; i++)
-                    {
-                        var typeParameter = typeParameters[i];
-                        yield return typeParameter.ToString();
-                    }
-                }
+
+                return true;
             }
 
             private string GetContent(ComponentTypeArgumentIntermediateNode node)
