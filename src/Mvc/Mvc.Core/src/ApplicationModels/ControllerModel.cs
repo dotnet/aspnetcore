@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IDictionary<object, object> Properties { get; }
 
         /// <summary>
-        /// The selector models of this controller..
+        /// The selector models of this controller.
         /// </summary>
         public IList<SelectorModel> Selectors { get; }
 
