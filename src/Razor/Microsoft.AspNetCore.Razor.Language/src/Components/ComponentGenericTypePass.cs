@@ -217,11 +217,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     }
                 }
 
+                // There are two remaining sources of possible generic type info which we consider
+                // lower-priority than cascades from ancestors. Since these two sources *may* actually
+                // resolve generic type ambiguities in some cases, we treat them as covering.
+                //
+                // [1] Attributes given as lambda expressions. These are lower priority than ancestor
+                //     cascades because in most cases, lambdas don't provide type info
                 foreach (var entryToRemove in bindings.Where(e => e.Value.CoveredByLambda).ToList())
                 {
                     // Treat this binding as covered, because it's possible that the lambda does provide
                     // enough info for type inference to succeed.
                     bindings.Remove(entryToRemove.Key);
+                }
+
+                // [2] Child content parameters, which are nearly always defined as untyped lambdas
+                //     (at least, that's what the Razor compiler produces), but can technically be
+                //     hardcoded as a RenderFragment<Something> and hence actually give type info.
+                foreach (var attribute in node.ChildContents)
+                {
+                    if (TryFindGenericTypeNames(attribute.BoundAttribute, out var typeParameters))
+                    {
+                        foreach (var typeName in typeParameters)
+                        {
+                            bindings.Remove(typeName);
+                        }
+                    }
                 }
 
                 // If any bindings remain then this means we would never be able to infer the arguments of this
