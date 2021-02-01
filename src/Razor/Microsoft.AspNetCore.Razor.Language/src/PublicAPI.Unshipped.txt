@@ -3,14 +3,7 @@ Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.CascadingGenericTypeParameter() -> void
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeNames.get -> System.Collections.Generic.IReadOnlyCollection<string>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeNames.set -> void
-~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueExpression.get -> string
-~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueExpression.set -> void
-~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueSourceNode.get -> Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentAttributeIntermediateNode
-~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueSourceNode.set -> void
-~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueType.get -> string
-~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.ValueType.set -> void
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesCascadingGenericTypes.get -> System.Collections.Generic.Dictionary<string, Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesCascadingGenericTypes.set -> void
-~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesInferredCascadingGenericTypes.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.get -> System.Collections.Generic.List<Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.set -> void

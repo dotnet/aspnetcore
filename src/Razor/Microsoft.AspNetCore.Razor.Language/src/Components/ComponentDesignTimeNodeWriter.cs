@@ -450,19 +450,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         var variableName = $"__typeInferenceArg_{_scopeStack.Depth}_{parameter.ParameterName}";
                         context.CodeWriter.Write(variableName);
 
-                        // If this captured variable corresponds to a generic type we want to cascade to
-                        // descendants, supply that info to descendants
-                        foreach (var cascadeGeneric in node.ProvidesInferredCascadingGenericTypes)
-                        {
-                            if (cascadeGeneric.ValueSourceNode == parameter.Source)
-                            {
-                                cascadeGeneric.ValueExpression = variableName;
-                            }
-                        }
-
-                        // Since we've now evaluated and captured this expression, use the variable
-                        // instead of the expression from now on
-                        parameter.ReplaceSourceWithCapturedVariable(variableName);
+                        TrackCapturedCascadingGenericParameterVariable(node, parameter, variableName);
                     }
                     context.CodeWriter.WriteLine(");");
                 }

@@ -328,6 +328,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return p;
         }
 
+        protected static void TrackCapturedCascadingGenericParameterVariable(ComponentIntermediateNode node, TypeInferenceMethodParameter parameter, string variableName)
+        {
+            // If this captured variable corresponds to a generic type we want to cascade to
+            // descendants, supply that info to descendants
+            if (node.ProvidesCascadingGenericTypes != null)
+            {
+                foreach (var cascadeGeneric in node.ProvidesCascadingGenericTypes.Values)
+                {
+                    if (cascadeGeneric.ValueSourceNode == parameter.Source)
+                    {
+                        cascadeGeneric.ValueExpression = variableName;
+                    }
+                }
+            }
+
+            // Since we've now evaluated and captured this expression, use the variable
+            // instead of the expression from now on
+            parameter.ReplaceSourceWithCapturedVariable(variableName);
+        }
+
         protected class TypeInferenceMethodParameter
         {
             public string SeqName { get; private set; }
