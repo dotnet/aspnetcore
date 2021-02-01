@@ -75,7 +75,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 //
                 // Listing all type parameters that exist
                 var bindings = new Dictionary<string, Binding>();
-                foreach (var attribute in node.Component.GetTypeParameters())
+                var componentTypeParameters = node.Component.GetTypeParameters().ToList();
+                foreach (var attribute in componentTypeParameters)
                 {
                     bindings.Add(attribute.Name, new Binding() { Attribute = attribute, });
                 }
@@ -144,9 +145,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         foreach (var typeName in typeParameters)
                         {
                             // Advertise that this particular generic type is available to descendants
+                            // There might be multiple sources for each generic type, so pick the one that has the
+                            // fewest other generic types on it. For example if we could infer from either List<T>
+                            // of Dictionary<T, U>, we prefer List<T>.
                             // TODO: Only include ones explicitly opted-in to cascading
                             node.ProvidesCascadingGenericTypes ??= new();
-                            node.ProvidesCascadingGenericTypes[typeName] = provideCascadingGenericTypes;
+                            if (!node.ProvidesCascadingGenericTypes.TryGetValue(typeName, out var existingValue)
+                                || existingValue.GenericTypeNames.Count > typeParameters.Count)
+                            {
+                                node.ProvidesCascadingGenericTypes[typeName] = provideCascadingGenericTypes;
+                            }
 
                             if (attributeValueIsLambda)
                             {
@@ -178,11 +186,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     foreach (var candidateAncestor in Ancestors.OfType<ComponentIntermediateNode>())
                     {
                         if (candidateAncestor.ProvidesCascadingGenericTypes != null
-                            && candidateAncestor.ProvidesCascadingGenericTypes.TryGetValue(uncoveredBindingKey, out var receiveArg))
+                            && candidateAncestor.ProvidesCascadingGenericTypes.TryGetValue(uncoveredBindingKey, out var genericTypeProvider))
                         {
-                            bindings.Remove(uncoveredBindingKey);
-                            receivesCascadingGenericTypes ??= new();
-                            receivesCascadingGenericTypes.Add(receiveArg);
+                            // If the parameter value is an expression that includes multiple generic types, we only want
+                            // to use it if we want *all* those generic types. That is, a parameter of type MyType<T0, T1>
+                            // can supply types to a Child<T0, T1>, but not to a Child<T0>.
+                            // This is purely to avoid blowing up the complexity of the implementation here and could be
+                            // overcome in the future if we want. We'd need to figure out which extra types are unwanted,
+                            // and rewrite them to some unique name, and add that to the generic parameters list of the
+                            // inference methods.
+                            if (genericTypeProvider.GenericTypeNames.All(GenericTypeIsUsed))
+                            {
+                                bindings.Remove(uncoveredBindingKey);
+                                receivesCascadingGenericTypes ??= new();
+                                receivesCascadingGenericTypes.Add(genericTypeProvider);
+                            }
+
+                            bool GenericTypeIsUsed(string typeName) => componentTypeParameters
+                                .Select(t => t.Name)
+                                .Contains(typeName, StringComparer.Ordinal);
                         }
                     }
                 }

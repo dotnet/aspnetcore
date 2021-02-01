@@ -3316,8 +3316,14 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_CascadedWithUnrelatedGenericType()
+        public void ChildComponent_Generic_TypeInference_CascadedWithUnrelatedGenericType_CreatesDiagnostic()
         {
+            // It would succeed if you changed this to Column<TItem, TUnrelated>, or if the Grid took a parameter
+            // whose type included TItem and not TUnrelated. It just doesn't work if the only inference parameters
+            // also include unrelated generic types, because the inference methods we generate don't know what
+            // to do with extra type parameters. It would be nice just to ignore them, but at the very least we
+            // have to rewrite their names to avoid clashes and figure out whether multiple unrelated generic
+            // types with the same name should be rewritten to the same name or unique names.
 
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3344,7 +3350,9 @@ namespace Test
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
         }
 
         [Fact]
