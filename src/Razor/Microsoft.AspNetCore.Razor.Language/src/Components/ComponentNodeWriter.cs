@@ -197,65 +197,67 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             writer.WriteLine("}");
 
-            // If this component cascades any generic parameters, we'll need to be able to capture its type inference
-            // args at the call site. The point of this is to ensure that:
-            //
-            // [1] We only evaluate each expression once
-            // [2] We evaluate them in the correct order matching the developer's source
-            // [3] We can even make variables for lambdas or other expressions that can't just be assigned to implicitly-typed vars.
-            //
-            // We do that by emitting a method like the following. It has exactly the same generic type inference
-            // characteristics as the regular CreateFoo_0 method emitted earlier
-            //
-            //  public static void CreateFoo_0_CaptureParameters<T1, T2>(T1 __arg0, out T1 __arg0_out, global::System.Collections.Generic.List<T2> __arg1, out global::System.Collections.Generic.List<T2> __arg1_out, int __seq2, string __arg2, out string __arg2_out)
-            //  {
-            //      __arg0_out = __arg0;
-            //      __arg1_out = __arg1;
-            //      __arg2_out = __arg2;
-            //  }
-            //
-            // TODO: Only emit this if there's at least one generic type parameter that opts into cascading
-            writer.WriteLine();
-            writer.Write("public static void ");
-            writer.Write(node.MethodName);
-            writer.Write("_CaptureParameters<");
-            writer.Write(string.Join(", ", node.Component.Component.GetTypeParameters().Select(a => a.Name)));
-            writer.Write(">");
-
-            writer.Write("(");
-            var isFirst = true;
-            foreach (var parameter in parameters.Where(p => p.UsedForTypeInference))
+            if (node.Component.Component.SuppliesCascadingGenericParameters())
             {
-                if (isFirst)
+                // If this component cascades any generic parameters, we'll need to be able to capture its type inference
+                // args at the call site. The point of this is to ensure that:
+                //
+                // [1] We only evaluate each expression once
+                // [2] We evaluate them in the correct order matching the developer's source
+                // [3] We can even make variables for lambdas or other expressions that can't just be assigned to implicitly-typed vars.
+                //
+                // We do that by emitting a method like the following. It has exactly the same generic type inference
+                // characteristics as the regular CreateFoo_0 method emitted earlier
+                //
+                //  public static void CreateFoo_0_CaptureParameters<T1, T2>(T1 __arg0, out T1 __arg0_out, global::System.Collections.Generic.List<T2> __arg1, out global::System.Collections.Generic.List<T2> __arg1_out, int __seq2, string __arg2, out string __arg2_out)
+                //  {
+                //      __arg0_out = __arg0;
+                //      __arg1_out = __arg1;
+                //      __arg2_out = __arg2;
+                //  }
+                //
+                writer.WriteLine();
+                writer.Write("public static void ");
+                writer.Write(node.MethodName);
+                writer.Write("_CaptureParameters<");
+                writer.Write(string.Join(", ", node.Component.Component.GetTypeParameters().Select(a => a.Name)));
+                writer.Write(">");
+
+                writer.Write("(");
+                var isFirst = true;
+                foreach (var parameter in parameters.Where(p => p.UsedForTypeInference))
                 {
-                    isFirst = false;
-                }
-                else
-                {
-                    writer.Write(", ");
+                    if (isFirst)
+                    {
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        writer.Write(", ");
+                    }
+
+                    writer.Write(parameter.TypeName);
+                    writer.Write(" ");
+                    writer.Write(parameter.ParameterName);
+                    writer.Write(", out ");
+                    writer.Write(parameter.TypeName);
+                    writer.Write(" ");
+                    writer.Write(parameter.ParameterName);
+                    writer.Write("_out");
                 }
 
-                writer.Write(parameter.TypeName);
-                writer.Write(" ");
-                writer.Write(parameter.ParameterName);
-                writer.Write(", out ");
-                writer.Write(parameter.TypeName);
-                writer.Write(" ");
-                writer.Write(parameter.ParameterName);
-                writer.Write("_out");
+                writer.WriteLine(")");
+                writer.WriteLine("{");
+                foreach (var parameter in parameters.Where(p => p.UsedForTypeInference))
+                {
+                    writer.Write("    ");
+                    writer.Write(parameter.ParameterName);
+                    writer.Write("_out = ");
+                    writer.Write(parameter.ParameterName);
+                    writer.WriteLine(";");
+                }
+                writer.WriteLine("}");
             }
-
-            writer.WriteLine(")");
-            writer.WriteLine("{");
-            foreach (var parameter in parameters.Where(p => p.UsedForTypeInference))
-            {
-                writer.Write("    ");
-                writer.Write(parameter.ParameterName);
-                writer.Write("_out = ");
-                writer.Write(parameter.ParameterName);
-                writer.WriteLine(";");
-            }
-            writer.WriteLine("}");
         }
 
         protected List<TypeInferenceMethodParameter> GetTypeInferenceMethodParameters(ComponentTypeInferenceMethodIntermediateNode node)

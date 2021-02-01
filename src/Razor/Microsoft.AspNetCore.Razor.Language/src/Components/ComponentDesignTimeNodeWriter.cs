@@ -424,45 +424,48 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // into two parts. First we call an inference method that captures all the parameters in local variables,
                 // then we use those to call the real type inference method that emits the component. The reason for this
                 // is so the captured variables can be used by descendants without re-evaluating the expressions.
-                // TODO: Only do this if there's at least one type parameter that opts into cascading.
-                var typeInferenceCaptureScope = context.CodeWriter.BuildScope();
-                context.CodeWriter.Write(node.TypeInferenceNode.FullTypeName);
-                context.CodeWriter.Write(".");
-                context.CodeWriter.Write(node.TypeInferenceNode.MethodName);
-                context.CodeWriter.Write("_CaptureParameters(");
-                var isFirst = true;
-                foreach (var parameter in parameters.Where(p => p.UsedForTypeInference))
+                CodeWriterExtensions.CSharpCodeWritingScope? typeInferenceCaptureScope = null;
+                if (node.Component.SuppliesCascadingGenericParameters())
                 {
-                    if (isFirst)
+                    typeInferenceCaptureScope = context.CodeWriter.BuildScope();
+                    context.CodeWriter.Write(node.TypeInferenceNode.FullTypeName);
+                    context.CodeWriter.Write(".");
+                    context.CodeWriter.Write(node.TypeInferenceNode.MethodName);
+                    context.CodeWriter.Write("_CaptureParameters(");
+                    var isFirst = true;
+                    foreach (var parameter in parameters.Where(p => p.UsedForTypeInference))
                     {
-                        isFirst = false;
-                    }
-                    else
-                    {
-                        context.CodeWriter.Write(", ");
-                    }
-
-                    WriteTypeInferenceMethodParameterInnards(context, parameter);
-                    context.CodeWriter.Write(", out var ");
-
-                    var variableName = $"__typeInferenceArg_{_scopeStack.Depth}_{parameter.ParameterName}";
-                    context.CodeWriter.Write(variableName);
-
-                    // If this captured variable corresponds to a generic type we want to cascade to
-                    // descendants, supply that info to descendants
-                    foreach (var cascadeGeneric in node.ProvidesInferredCascadingGenericTypes)
-                    {
-                        if (cascadeGeneric.ValueSourceNode == parameter.Source)
+                        if (isFirst)
                         {
-                            cascadeGeneric.ValueExpression = variableName;
+                            isFirst = false;
                         }
-                    }
+                        else
+                        {
+                            context.CodeWriter.Write(", ");
+                        }
 
-                    // Since we've now evaluated and captured this expression, use the variable
-                    // instead of the expression from now on
-                    parameter.ReplaceSourceWithCapturedVariable(variableName);
+                        WriteTypeInferenceMethodParameterInnards(context, parameter);
+                        context.CodeWriter.Write(", out var ");
+
+                        var variableName = $"__typeInferenceArg_{_scopeStack.Depth}_{parameter.ParameterName}";
+                        context.CodeWriter.Write(variableName);
+
+                        // If this captured variable corresponds to a generic type we want to cascade to
+                        // descendants, supply that info to descendants
+                        foreach (var cascadeGeneric in node.ProvidesInferredCascadingGenericTypes)
+                        {
+                            if (cascadeGeneric.ValueSourceNode == parameter.Source)
+                            {
+                                cascadeGeneric.ValueExpression = variableName;
+                            }
+                        }
+
+                        // Since we've now evaluated and captured this expression, use the variable
+                        // instead of the expression from now on
+                        parameter.ReplaceSourceWithCapturedVariable(variableName);
+                    }
+                    context.CodeWriter.WriteLine(");");
                 }
-                context.CodeWriter.WriteLine(");");
 
                 // When we're doing type inference, we can't write all of the code inline to initialize
                 // the component on the builder. We generate a method elsewhere, and then pass all of the information
@@ -496,8 +499,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 context.CodeWriter.Write(");");
                 context.CodeWriter.WriteLine();
 
-                // TODO: Only if we did capture some generic type args in local vars
-                typeInferenceCaptureScope.Dispose();
+                if (typeInferenceCaptureScope.HasValue)
+                {
+                    typeInferenceCaptureScope.Value.Dispose();
+                }
             }
 
             // We want to generate something that references the Component type to avoid
