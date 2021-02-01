@@ -327,6 +327,253 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         }
 
         [Fact]
+        public void MoreSpecificRoutesPrecedeMoreGeneralRoutes()
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var builder = new TestRouteTableBuilder()
+                .AddRoute("/{*last}")
+                .AddRoute("/{*last:int}")
+                .AddRoute("/{last}")
+                .AddRoute("/{last:int}")
+                .AddRoute("/literal")
+                .AddRoute("/literal/{*last}")
+                .AddRoute("/literal/{*last:int}")
+                .AddRoute("/literal/{last}")
+                .AddRoute("/literal/{last:int}")
+                .AddRoute("/literal/literal");
+
+            var expectedOrder = new[]
+            {
+                "literal",
+                "literal/literal",
+                "literal/{last:int}",
+                "literal/{last}",
+                "literal/{*last:int}",
+                "literal/{*last}",
+                "{last:int}",
+                "{last}",
+                "{*last:int}",
+                "{*last}",
+            };
+
+            // Act
+            var table = builder.Build();
+
+            // Assert
+            var tableTemplates = table.Routes.Select(p => p.Template.TemplateText).ToArray();
+            Assert.Equal(expectedOrder, tableTemplates);
+        }
+
+        [Theory]
+        [InlineData("literal", null, "literal", "literal/{parameter?}", typeof(TestHandler1))]
+        [InlineData("literal/value", "value", "literal", "literal/{parameter?}", typeof(TestHandler2))]
+        [InlineData("literal", null, "literal/{parameter?}", "literal/{*parameter}", typeof(TestHandler1))]
+        [InlineData("literal/value", "value", "literal/{parameter?}", "literal/{*parameter}", typeof(TestHandler1))]
+        [InlineData("literal/value/other", "value/other", "literal /{parameter?}", "literal/{*parameter}", typeof(TestHandler2))]
+        public void CorrectlyMatchesVariableLengthSegments(string path, string expectedValue, string first, string second, Type handler)
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var table = new TestRouteTableBuilder()
+                .AddRoute(first, typeof(TestHandler1))
+                .AddRoute(second, typeof(TestHandler2))
+                .Build();
+
+            var context = new RouteContext(path);
+
+            // Act
+            table.Route(context);
+
+            // Assert
+            Assert.Equal(handler, context.Handler);
+            var value = expectedValue != null ? Assert.Single(context.Parameters, p => p.Key == "parameter").Value : null;
+            Assert.Equal(expectedValue, value?.ToString());
+        }
+
+        [Theory]
+        [InlineData("/values/{*values:int}", "values/1/2/3/4/5")]
+        [InlineData("/{*values:int}", "1/2/3/4/5")]
+        public void CanMatchCatchAllParametersWithConstraints(string template, string path)
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var table = new TestRouteTableBuilder()
+                .AddRoute(template)
+                .Build();
+
+            var context = new RouteContext(path);
+
+            // Act
+            table.Route(context);
+
+            // Assert
+            Assert.True(context.Parameters.TryGetValue("values", out var values));
+            Assert.Equal("1/2/3/4/5", values);
+        }
+
+
+        [Fact]
+        public void CatchAllEmpty()
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var table = new TestRouteTableBuilder()
+                .AddRoute("{*catchall}")
+                .Build();
+
+            var context = new RouteContext("/");
+
+            // Act
+            table.Route(context);
+
+            // Assert
+            Assert.True(context.Parameters.TryGetValue("catchall", out var values));
+            Assert.Null(values);
+        }
+
+        [Fact]
+        public void OptionalParameterEmpty()
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var table = new TestRouteTableBuilder()
+                .AddRoute("{parameter?}")
+                .Build();
+
+            var context = new RouteContext("/");
+
+            // Act
+            table.Route(context);
+
+            // Assert
+            Assert.True(context.Parameters.TryGetValue("parameter", out var values));
+            Assert.Null(values);
+        }
+
+        [Theory]
+        [InlineData("", 0)]
+        [InlineData("1", 1)]
+        [InlineData("1/2", 2)]
+        [InlineData("1/2/3", 3)]
+        public void MultipleOptionalParameters(string path, int segments)
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var table = new TestRouteTableBuilder()
+                .AddRoute("{param1?}/{param2?}/{param3?}")
+                .Build();
+
+            var context = new RouteContext(path);
+
+            // Act
+            table.Route(context);
+
+            // Assert
+            for (int i = 1; i <= segments; i++)
+            {
+                // Segments present in the path have the corresponding value.
+                Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
+                Assert.Equal(i.ToString(CultureInfo.InvariantCulture), value);
+            }
+            for (int i = segments + 1; i <= 3; i++)
+            {
+                // Segments omitted in the path have the default null value.
+                Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
+                Assert.Null(value);
+            }
+        }
+
+        [Theory]
+        [InlineData("prefix/", 0)]
+        [InlineData("prefix/1", 1)]
+        [InlineData("prefix/1/2", 2)]
+        [InlineData("prefix/1/2/3", 3)]
+        public void MultipleOptionalParametersWithPrefix(string path, int segments)
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var table = new TestRouteTableBuilder()
+                .AddRoute("prefix/{param1?}/{param2?}/{param3?}")
+                .Build();
+
+            var context = new RouteContext(path);
+
+            // Act
+            table.Route(context);
+
+            // Assert
+            for (int i = 1; i <= segments; i++)
+            {
+                // Segments present in the path have the corresponding value.
+                Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
+                Assert.Equal(i.ToString(CultureInfo.InvariantCulture), value);
+            }
+            for (int i = segments + 1; i <= 3; i++)
+            {
+                // Segments omitted in the path have the default null value.
+                Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
+                Assert.Null(value);
+            }
+        }
+
+        [Theory]
+        [InlineData("/{parameter?}/{*catchAll}", "/", null, null)]
+        [InlineData("/{parameter?}/{*catchAll}", "/parameter", "parameter", null)]
+        [InlineData("/{parameter?}/{*catchAll}", "/value/1", "value", "1")]
+        [InlineData("/{parameter?}/{*catchAll}", "/value/1/2/3/4/5", "value", "1/2/3/4/5")]
+        [InlineData("prefix/{parameter?}/{*catchAll}", "/prefix/", null, null)]
+        [InlineData("prefix/{parameter?}/{*catchAll}", "/prefix/parameter", "parameter", null)]
+        [InlineData("prefix/{parameter?}/{*catchAll}", "/prefix/value/1", "value", "1")]
+        [InlineData("prefix/{parameter?}/{*catchAll}", "/prefix/value/1/2/3/4/5", "value", "1/2/3/4/5")]
+        public void OptionalParameterPlusCatchAllRoute(string template, string path, string parameterValue, string catchAllValue)
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var table = new TestRouteTableBuilder()
+                .AddRoute(template)
+                .Build();
+
+            var context = new RouteContext(path);
+
+            // Act
+            table.Route(context);
+
+            // Assert
+            Assert.True(context.Parameters.TryGetValue("parameter", out var parameter));
+            Assert.True(context.Parameters.TryGetValue("catchAll", out var catchAll));
+            Assert.Equal(parameterValue, parameter);
+            Assert.Equal(catchAllValue, catchAll);
+        }
+
+        [Fact]
+        public void CanMatchCatchAllParametersWithConstraints_NotMatchingRoute()
+        {
+            // Arrange
+
+            // Routes are added in reverse precedence order
+            var table = new TestRouteTableBuilder()
+                .AddRoute("/values/{*values:int}")
+                .Build();
+
+            var context = new RouteContext("values/1/2/3/4/5/A");
+
+            // Act
+            table.Route(context);
+
+            // Assert
+            Assert.Null(context.Handler);
+        }
+
+        [Fact]
         public void CanMatchOptionalParameterWithoutConstraints()
         {
             // Arrange
@@ -412,7 +659,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public static IEnumerable<object[]> CanMatchSegmentWithMultipleConstraintsCases() => new object[][]
 {
             new object[] { "/{value:double:int}/", "/15", 15 },
-            new object[] { "/{value:double?:int?}/", "/", null },
+            new object[] { "/{value:double:int?}/", "/", null },
 };
 
         [Theory]
@@ -470,51 +717,110 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         }
 
         [Fact]
-        public void PrefersOptionalParamsOverNonOptionalParams()
+        public void ThrowsForOptionalParametersAndNonOptionalParameters()
         {
-            // Arrange
-            var routeTable = new TestRouteTableBuilder()
+            // Arrange, act & assert
+            Assert.Throws<InvalidOperationException>(() => new TestRouteTableBuilder()
                 .AddRoute("/users/{id}", typeof(TestHandler1))
                 .AddRoute("/users/{id?}", typeof(TestHandler2))
-                .Build();
-            var contextWithParam = new RouteContext("/users/1");
-            var contextWithoutParam = new RouteContext("/users/");
+                .Build());
+        }
+
+        [Theory]
+        [InlineData("{*catchall}/literal")]
+        [InlineData("{*catchall}/{parameter}")]
+        [InlineData("{*catchall}/{parameter?}")]
+        [InlineData("{*catchall}/{*other}")]
+        [InlineData("prefix/{*catchall}/literal")]
+        [InlineData("prefix/{*catchall}/{parameter}")]
+        [InlineData("prefix/{*catchall}/{parameter?}")]
+        [InlineData("prefix/{*catchall}/{*other}")]
+        public void ThrowsWhenCatchAllIsNotTheLastSegment(string template)
+        {
+            // Arrange, act & assert
+            Assert.Throws<InvalidOperationException>(() => new TestRouteTableBuilder()
+                .AddRoute(template)
+                .Build());
+        }
+
+        [Theory]
+        [InlineData("{optional?}/literal")]
+        [InlineData("{optional?}/{parameter}")]
+        [InlineData("{optional?}/{parameter:int}")]
+        [InlineData("prefix/{optional?}/literal")]
+        [InlineData("prefix/{optional?}/{parameter}")]
+        [InlineData("prefix/{optional?}/{parameter:int}")]
+        public void ThrowsForOptionalParametersFollowedByNonOptionalParameters(string template)
+        {
+            // Arrange, act & assert
+            Assert.Throws<InvalidOperationException>(() => new TestRouteTableBuilder()
+                .AddRoute(template)
+                .Build());
+        }
+
+        [Theory]
+        [InlineData("{parameter}", "{parameter?}")]
+        [InlineData("{parameter:int}", "{parameter:bool?}")]
+        public void ThrowsForAmbiguousRoutes(string first, string second)
+        {
+            // Arrange, act & assert
+            var exception = Assert.Throws<InvalidOperationException>(() => new TestRouteTableBuilder()
+                .AddRoute(first, typeof(TestHandler1))
+                .AddRoute(second, typeof(TestHandler2))
+                .Build());
+
+            exception.Message.Contains("The following routes are ambiguous");
+        }
+
+        // It's important the precedence is inverted here to also validate that
+        // the precedence is correct in these cases
+        [Theory]
+        [InlineData("{optional?}", "/")]
+        [InlineData("{optional?}", "literal")]
+        [InlineData("{optional?}", "{optional:int?}")]
+        [InlineData("{*catchAll:int}", "{optional?}")]
+        [InlineData("{*catchAll}", "{optional?}")]
+        [InlineData("literal/{optional?}", "/")]
+        [InlineData("literal/{optional?}", "literal")]
+        [InlineData("literal/{optional?}", "literal/{optional:int?}")]
+        [InlineData("literal/{*catchAll:int}", "literal/{optional?}")]
+        [InlineData("literal/{*catchAll}", "literal/{optional?}")]
+        [InlineData("{param}/{optional?}", "/")]
+        [InlineData("{param}/{optional?}", "{param}")]
+        [InlineData("{param}/{optional?}", "{param}/{optional:int?}")]
+        [InlineData("{param}/{*catchAll:int}", "{param}/{optional?}")]
+        [InlineData("{param}/{*catchAll}", "{param}/{optional?}")]
+        [InlineData("{param1?}/{param2?}/{param3?}/{optional?}", "/")]
+        [InlineData("{param1?}/{param2?}/{param3?}/{optional?}", "{param1?}/{param2?}/{param3?}/{optional:int?}")]
+        [InlineData("{param1?}/{param2?}/{param3?}/{optional?}", "{param1?}/{param2?}/{param3:int?}/{optional?}")]
+        [InlineData("{param1?}/{param2?}/{param3:int?}/{optional?}", "{param1?}/{param2?}")]
+        [InlineData("{param1?}/{param2?}/{param3?}/{*catchAll:int}", "{param1?}/{param2?}/{param3?}/{optional?}")]
+        [InlineData("{param1?}/{param2?}/{param3?}/{*catchAll}", "{param1?}/{param2?}/{param3?}/{optional?}")]
+        public void DoesNotThrowForNonAmbiguousRoutes(string first, string second)
+        {
+            // Arrange
+            var builder = new TestRouteTableBuilder()
+                .AddRoute(first, typeof(TestHandler1))
+                .AddRoute(second, typeof(TestHandler2));
+
+            var expectedOrder = new[] { second, first };
 
             // Act
-            routeTable.Route(contextWithParam);
-            routeTable.Route(contextWithoutParam);
+            var table = builder.Build();
 
             // Assert
-            Assert.NotNull(contextWithParam.Handler);
-            Assert.Equal(typeof(TestHandler1), contextWithParam.Handler);
-
-            Assert.NotNull(contextWithoutParam.Handler);
-            Assert.Equal(typeof(TestHandler2), contextWithoutParam.Handler);
+            var tableTemplates = table.Routes.Select(p => p.Template.TemplateText).ToArray();
+            Assert.Equal(expectedOrder, tableTemplates);
         }
 
         [Fact]
-        public void PrefersOptionalParamsOverNonOptionalParamsReverseOrder()
+        public void ThrowsForLiteralWithQuestionMark()
         {
-            // Arrange
-            var routeTable = new TestRouteTableBuilder()
-                .AddRoute("/users/{id}", typeof(TestHandler1))
-                .AddRoute("/users/{id?}", typeof(TestHandler2))
-                .Build();
-            var contextWithParam = new RouteContext("/users/1");
-            var contextWithoutParam = new RouteContext("/users/");
-
-            // Act
-            routeTable.Route(contextWithParam);
-            routeTable.Route(contextWithoutParam);
-
-            // Assert
-            Assert.NotNull(contextWithParam.Handler);
-            Assert.Equal(typeof(TestHandler1), contextWithParam.Handler);
-
-            Assert.NotNull(contextWithoutParam.Handler);
-            Assert.Equal(typeof(TestHandler2), contextWithoutParam.Handler);
+            // Arrange, act & assert
+            Assert.Throws<InvalidOperationException>(() => new TestRouteTableBuilder()
+                .AddRoute("literal?")
+                .Build());
         }
-
 
         [Fact]
         public void PrefersLiteralTemplateOverParameterizedTemplates()
@@ -661,10 +967,10 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         {
             // Arrange
             var routeTable = new TestRouteTableBuilder()
-                .AddRoute("/", typeof(TestHandler1))
-                .AddRoute("/products/{param1:int}", typeof(TestHandler1))
-                .AddRoute("/products/{param2}/{PaRam1}", typeof(TestHandler1))
                 .AddRoute("/{unrelated}", typeof(TestHandler2))
+                .AddRoute("/products/{param2}/{PaRam1}", typeof(TestHandler1))
+                .AddRoute("/products/{param1:int}", typeof(TestHandler1))
+                .AddRoute("/", typeof(TestHandler1))
                 .Build();
             var context = new RouteContext("/products/456");
 
@@ -677,26 +983,27 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 {
                     Assert.Same(typeof(TestHandler1), route.Handler);
                     Assert.Equal("/", route.Template.TemplateText);
-                    Assert.Equal(new[] { "param1", "param2" }, route.UnusedRouteParameterNames);
-                },
-                route =>
-                {
-                    Assert.Same(typeof(TestHandler2), route.Handler);
-                    Assert.Equal("{unrelated}", route.Template.TemplateText);
-                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames);
+                    Assert.Equal(new[] { "PaRam1", "param2" }, route.UnusedRouteParameterNames.OrderBy(id => id).ToArray());
                 },
                 route =>
                 {
                     Assert.Same(typeof(TestHandler1), route.Handler);
                     Assert.Equal("products/{param1:int}", route.Template.TemplateText);
-                    Assert.Equal(new[] { "param2" }, route.UnusedRouteParameterNames);
+                    Assert.Equal(new[] { "param2" }, route.UnusedRouteParameterNames.OrderBy(id => id).ToArray());
                 },
                 route =>
                 {
                     Assert.Same(typeof(TestHandler1), route.Handler);
                     Assert.Equal("products/{param2}/{PaRam1}", route.Template.TemplateText);
-                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames);
+                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames.OrderBy(id => id).ToArray());
+                },
+                route =>
+                {
+                    Assert.Same(typeof(TestHandler2), route.Handler);
+                    Assert.Equal("{unrelated}", route.Template.TemplateText);
+                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames.OrderBy(id => id).ToArray());
                 });
+
             Assert.Same(typeof(TestHandler1), context.Handler);
             Assert.Equal(new Dictionary<string, object>
             {

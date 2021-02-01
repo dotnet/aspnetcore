@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.SpaServices;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Builder
 
             // Use the options configured in DI (or blank if none was configured). We have to clone it
             // otherwise if you have multiple UseSpa calls, their configurations would interfere with one another.
-            var optionsProvider = app.ApplicationServices.GetService<IOptions<SpaOptions>>();
+            var optionsProvider = app.ApplicationServices.GetService<IOptions<SpaOptions>>()!;
             var options = new SpaOptions(optionsProvider.Value);
 
             var spaBuilder = new DefaultSpaBuilder(app, options);

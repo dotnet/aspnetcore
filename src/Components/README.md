@@ -31,7 +31,7 @@ The following contains a description of each sub-directory in the `Components` d
 
 ### Build
 
-To build this specific project from source, follow the instructions [on building a subset of the code](../../BuildFromSource.md#building-a-subset-of-the-code).
+To build this specific project from source, follow the instructions [on building a subset of the code](../../docs/BuildFromSource.md#building-a-subset-of-the-code).
 
 **Note:** You also need to run the preceding `build` command in the command line before building in VS to ensure that the Web.JS dependency is built.
 
@@ -48,7 +48,7 @@ The E2E tests are located in the top-level `tests` folder in this directory. The
 
 Each app server mounts the same `BasicTestApp` application under each scenario.
 
-To run the tests for this project, [run the tests on the command line](../../BuildFromSource.md#running-tests-on-command-line) in this directory.
+To run the tests for this project, [run the tests on the command line](../../docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
 
 ## More Information
 

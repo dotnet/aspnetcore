@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
         /// <summary>
         /// The FileProvider whos root "/" directory files will be used as configuration data.
         /// </summary>
-        public IFileProvider FileProvider { get; set; }
+        public IFileProvider? FileProvider { get; set; }
 
         /// <summary>
         /// Files that start with this prefix will be excluded.

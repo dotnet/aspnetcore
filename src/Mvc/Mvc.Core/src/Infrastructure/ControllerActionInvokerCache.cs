@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     parameterDefaultValues);
 
                 var controllerFactory = _controllerFactoryProvider.CreateControllerFactory(actionDescriptor);
-                var controllerReleaser = _controllerFactoryProvider.CreateControllerReleaser(actionDescriptor);
+                var controllerReleaser = _controllerFactoryProvider.CreateAsyncControllerReleaser(actionDescriptor);
                 var propertyBinderFactory = ControllerBinderDelegateProvider.CreateBinderDelegate(
                     _parameterBinder,
                     _modelBinderFactory,

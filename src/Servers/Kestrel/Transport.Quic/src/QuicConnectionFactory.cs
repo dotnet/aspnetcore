@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
 {
     internal class QuicConnectionFactory : IMultiplexedConnectionFactory
     {
-        private QuicTransportContext _transportContext;
+        private readonly QuicTransportContext _transportContext;
 
         public QuicConnectionFactory(IOptions<QuicTransportOptions> options, ILoggerFactory loggerFactory)
         {
@@ -33,16 +33,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
             _transportContext = new QuicTransportContext(trace, options.Value);
         }
 
-        public async ValueTask<MultiplexedConnectionContext> ConnectAsync(EndPoint endPoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        public async ValueTask<MultiplexedConnectionContext> ConnectAsync(EndPoint endPoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default)
         {
-            if (!(endPoint is IPEndPoint ipEndPoint))
+            if (endPoint is not IPEndPoint)
             {
                 throw new NotSupportedException($"{endPoint} is not supported");
+            }
+            if (_transportContext.Options.Alpn == null)
+            {
+                throw new InvalidOperationException("QuicTransportOptions.Alpn must be configured with a value.");
             }
 
             var sslOptions = new SslClientAuthenticationOptions();
             sslOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(_transportContext.Options.Alpn) };
-            var connection = new QuicConnection(QuicImplementationProviders.MsQuic, endPoint as IPEndPoint, sslOptions);
+            var connection = new QuicConnection(QuicImplementationProviders.MsQuic, (IPEndPoint)endPoint, sslOptions);
 
             await connection.ConnectAsync(cancellationToken);
             return new QuicConnectionContext(connection, _transportContext);

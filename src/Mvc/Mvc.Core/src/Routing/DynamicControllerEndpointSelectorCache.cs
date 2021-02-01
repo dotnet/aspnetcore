@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Http;
@@ -24,12 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         public DynamicControllerEndpointSelector GetEndpointSelector(Endpoint endpoint)
         {
-            if (endpoint?.Metadata == null)
-            {
-                return null;
-            }
-
-            var dataSourceId = endpoint.Metadata.GetMetadata<ControllerEndpointDataSourceIdMetadata>();
+            var dataSourceId = endpoint.Metadata.GetMetadata<ControllerEndpointDataSourceIdMetadata>()!;
             return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, key => EnsureDataSource(key));
         }
 

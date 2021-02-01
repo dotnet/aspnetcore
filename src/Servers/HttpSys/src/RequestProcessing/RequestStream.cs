@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -189,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
+        public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback? callback, object? state)
         {
             ValidateReadBuffer(buffer, offset, size);
             CheckSizeLimit();
@@ -201,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             // TODO: Verbose log parameters
 
-            RequestStreamAsyncResult asyncResult = null;
+            RequestStreamAsyncResult? asyncResult = null;
 
             uint dataRead = 0;
             if (_dataChunkIndex != -1)
@@ -239,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         asyncResult.PinnedBuffer,
                         (uint)size,
                         out bytesReturned,
-                        asyncResult.NativeOverlapped);
+                        asyncResult.NativeOverlapped!);
             }
             catch (Exception e)
             {
@@ -279,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 throw new ArgumentNullException("asyncResult");
             }
-            RequestStreamAsyncResult castedAsyncResult = asyncResult as RequestStreamAsyncResult;
+            RequestStreamAsyncResult? castedAsyncResult = asyncResult as RequestStreamAsyncResult;
             if (castedAsyncResult == null || castedAsyncResult.RequestStream != this)
             {
                 throw new ArgumentException(Resources.Exception_WrongIAsyncResult, "asyncResult");
@@ -311,7 +312,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             // TODO: Verbose log parameters
 
-            RequestStreamAsyncResult asyncResult = null;
+            RequestStreamAsyncResult? asyncResult = null;
 
             uint dataRead = 0;
             if (_dataChunkIndex != -1)
@@ -360,7 +361,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         asyncResult.PinnedBuffer,
                         (uint)size,
                         out bytesReturned,
-                        asyncResult.NativeOverlapped);
+                        asyncResult.NativeOverlapped!);
             }
             catch (Exception e)
             {
@@ -414,7 +415,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback? callback, object? state)
         {
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
@@ -447,7 +448,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         // Called after each read.
-        internal bool TryCheckSizeLimit(int bytesRead, out Exception exception)
+        internal bool TryCheckSizeLimit(int bytesRead, [NotNullWhen(true)] out Exception? exception)
         {
             _totalRead += bytesRead;
             if (_maxSize.HasValue && _totalRead > _maxSize.Value)

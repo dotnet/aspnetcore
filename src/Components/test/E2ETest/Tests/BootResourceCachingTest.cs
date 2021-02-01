@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // On subsequent loads, we skip the items referenced from blazor.boot.json
             // which includes .dll files and dotnet.wasm
             Navigate("about:blank");
+            Browser.Equal(string.Empty, () => Browser.Title);
             Navigate("/");
             WaitUntilLoaded();
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
@@ -87,6 +88,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // On the next load, we'll fetch only the items we need (not things already cached)
             GetAndClearRequestedPaths();
             Navigate("about:blank");
+            Browser.Equal(string.Empty, () => Browser.Title);
             Navigate("/");
             WaitUntilLoaded();
             var subsequentResourcesRequested = GetAndClearRequestedPaths();

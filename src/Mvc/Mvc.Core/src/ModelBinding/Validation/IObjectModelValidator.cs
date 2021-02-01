@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
     /// <summary>
@@ -19,8 +21,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <param name="model">The model object.</param>
         void Validate(
             ActionContext actionContext,
-            ValidationStateDictionary validationState,
+            ValidationStateDictionary? validationState,
             string prefix,
-            object model);
+            object? model);
     }
 }

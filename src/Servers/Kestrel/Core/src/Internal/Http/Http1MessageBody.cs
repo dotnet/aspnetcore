@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public abstract bool TryReadInternal(out ReadResult readResult);
 
-        public override void Complete(Exception exception)
+        public override void Complete(Exception? exception)
         {
             _readerCompleted = true;
             _context.ReportApplicationError(exception);

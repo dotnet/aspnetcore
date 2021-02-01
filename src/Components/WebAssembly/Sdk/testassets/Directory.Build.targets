@@ -1,7 +1,0 @@
-<Project>
-  <Import Project="$(ArtifactsBinDir)GenerateFiles\Directory.Build.targets" />
-
-  <PropertyGroup>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</RuntimeFrameworkVersion>
-  </PropertyGroup>
-</Project>

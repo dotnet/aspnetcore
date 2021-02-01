@@ -8,8 +8,14 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
+    /// <summary>
+    /// A multipart section read by <see cref="MultipartReader"/>.
+    /// </summary>
     public class MultipartSection
     {
+        /// <summary>
+        /// Gets the value of the <c>Content-Type</c> header.
+        /// </summary>
         public string? ContentType
         {
             get
@@ -22,6 +28,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <summary>
+        /// Gets the value of the <c>Content-Disposition</c> header.
+        /// </summary>
         public string? ContentDisposition
         {
             get
@@ -34,6 +43,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <summary>
+        /// Gets or sets the multipart header collection.
+        /// </summary>
         public Dictionary<string, StringValues>? Headers { get; set; }
 
         /// <summary>

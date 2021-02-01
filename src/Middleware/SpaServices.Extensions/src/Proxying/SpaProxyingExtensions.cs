@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices;
 using Microsoft.AspNetCore.SpaServices.Extensions.Proxy;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
@@ -86,8 +87,8 @@ namespace Microsoft.AspNetCore.Builder
         {
             var applicationLifetime = appBuilder
                 .ApplicationServices
-                .GetService(typeof(IHostApplicationLifetime));
-            return ((IHostApplicationLifetime)applicationLifetime).ApplicationStopping;
+                .GetRequiredService<IHostApplicationLifetime>();
+            return applicationLifetime.ApplicationStopping;
         }
     }
 }

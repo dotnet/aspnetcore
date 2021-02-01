@@ -75,6 +75,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             {
                 StartTimer();
 
+                Logger.LogInformation(Environment.OSVersion.ToString());
+
                 if (string.IsNullOrEmpty(DeploymentParameters.ServerConfigTemplateContent))
                 {
                     DeploymentParameters.ServerConfigTemplateContent = File.ReadAllText("IIS.config");

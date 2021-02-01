@@ -29,7 +29,7 @@ using_wasm=false
 use_latest_dotnet=false
 
 while (($# > 0)); do
-  lowerI="$(echo $1 | awk '{print tolower($0)}')"
+  lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
   case $lowerI in
     --sourcedirectory)
       source_directory=$2
@@ -197,6 +197,12 @@ if [[ "$internal" == true ]]; then
         queue=Ubuntu.1804.Arm64.Perf
     else
         queue=Ubuntu.1804.Amd64.Tiger.Perf
+    fi
+else
+    if [[ "$architecture" = "arm64" ]]; then
+        queue=ubuntu.1804.armarch.open
+    else
+        queue=Ubuntu.1804.Amd64.Open
     fi
 fi
 

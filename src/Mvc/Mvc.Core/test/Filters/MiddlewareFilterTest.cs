@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -372,6 +372,15 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 ReleaseCalled = true;
             }
 
+            public ValueTask ReleaseControllerAsync(ControllerContext context, object controller)
+            {
+                Assert.NotNull(controller);
+                Assert.Same(_controller, controller);
+                ReleaseCalled = true;
+
+                return default;
+            }
+
             public void Verify()
             {
                 if (CreateCalled && !ReleaseCalled)
@@ -441,7 +450,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 return new ControllerActionInvokerCacheEntry(
                     new FilterItem[0],
                     controllerFactory.CreateController,
-                    controllerFactory.ReleaseController,
+                    controllerFactory.ReleaseControllerAsync,
                     null,
                     objectMethodExecutor,
                     ActionMethodExecutor.GetExecutor(objectMethodExecutor));

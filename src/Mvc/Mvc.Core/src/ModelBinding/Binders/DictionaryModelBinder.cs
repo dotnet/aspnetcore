@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     /// <typeparam name="TKey">Type of keys in the dictionary.</typeparam>
     /// <typeparam name="TValue">Type of values in the dictionary.</typeparam>
-    public class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder<KeyValuePair<TKey, TValue>>
+    public class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder<KeyValuePair<TKey, TValue?>> where TKey : notnull
     {
         private readonly IModelBinder _valueBinder;
 
@@ -134,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = bindingContext.Result;
 
             Debug.Assert(result.Model != null);
-            var model = (IDictionary<TKey, TValue>)result.Model;
+            var model = (IDictionary<TKey, TValue?>)result.Model;
             if (model.Count != 0)
             {
                 // ICollection<KeyValuePair<TKey, TValue>> approach was successful.
@@ -143,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             Logger.NoKeyValueFormatForDictionaryModelBinder(bindingContext);
 
-            if (!(bindingContext.ValueProvider is IEnumerableValueProvider enumerableValueProvider))
+            if (bindingContext.ValueProvider is not IEnumerableValueProvider enumerableValueProvider)
             {
                 // No IEnumerableValueProvider available for the fallback approach. For example the user may have
                 // replaced the ValueProvider with something other than a CompositeValueProvider.
@@ -170,8 +172,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             // Update the existing successful but empty ModelBindingResult.
-            var elementMetadata = bindingContext.ModelMetadata.ElementMetadata;
-            var valueMetadata = elementMetadata.Properties[nameof(KeyValuePair<TKey, TValue>.Value)];
+            var elementMetadata = bindingContext.ModelMetadata.ElementMetadata!;
+            var valueMetadata = elementMetadata.Properties[nameof(KeyValuePair<TKey, TValue>.Value)]!;
 
             var keyMappings = new Dictionary<string, TKey>(StringComparer.Ordinal);
             foreach (var kvp in keys)
@@ -217,21 +219,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             bindingContext.ValidationState.Add(model, new ValidationStateEntry()
             {
-                Strategy = new ShortFormDictionaryValidationStrategy<TKey, TValue>(keyMappings, valueMetadata),
+                Strategy = new ShortFormDictionaryValidationStrategy<TKey, TValue?>(keyMappings, valueMetadata),
             });
         }
 
         /// <inheritdoc />
-        protected override object ConvertToCollectionType(
+        protected override object? ConvertToCollectionType(
             Type targetType,
-            IEnumerable<KeyValuePair<TKey, TValue>> collection)
+            IEnumerable<KeyValuePair<TKey, TValue?>> collection)
         {
             if (collection == null)
             {
                 return null;
             }
 
-            if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue>)))
+            if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue?>)))
             {
                 // Collection is a List<KeyValuePair<TKey, TValue>>, never already a Dictionary<TKey, TValue>.
                 return collection.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

@@ -179,7 +179,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [Repeat]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26330")]
         public async Task ReaderThrowsCanceledException()
         {
             var readIsAsyncCompletionSource = CreateTaskCompletionSource();

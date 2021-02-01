@@ -42,8 +42,7 @@ namespace ControllersFromServicesWebSite
                 })
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices()
-                .AddTagHelpersAsServices()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddTagHelpersAsServices();
 
             services.AddTransient<QueryValueService>();
             services.AddTransient<ValueService>();

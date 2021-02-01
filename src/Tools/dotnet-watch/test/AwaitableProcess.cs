@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
     {
         private readonly object _testOutputLock = new object();
 
-        private Process _process;
+        private Process? _process;
         private readonly ProcessSpec _spec;
         private readonly List<string> _lines;
         private BufferBlock<string> _source;
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public Task Exited => _exited.Task;
 
-        public int Id => _process.Id;
+        public int Id => _process?.Id ?? throw new InvalidOperationException("Start() must be called.");
 
         public void Start()
         {
@@ -88,7 +88,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             WriteTestOutput($"Waiting for output line [msg == '{message}']. Will wait for {timeout.TotalSeconds} sec.");
             var cts = new CancellationTokenSource();
             cts.CancelAfter(timeout);
-            return await GetOutputLineAsync($"[msg == '{message}']", m => string.Equals(m, message, StringComparison.Ordinal), cts.Token);
+            return await GetOutputLineAsync($"[msg == '{message}']", m => string.Equals(m, message, StringComparison.Ordinal), cts.Token)
+                ?? throw new InvalidOperationException($"Did not find '{message} in output. {Environment.NewLine}{string.Join(Environment.NewLine, _lines)}");
         }
 
         public async Task<string> GetOutputLineStartsWithAsync(string message, TimeSpan timeout)
@@ -96,10 +97,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             WriteTestOutput($"Waiting for output line [msg.StartsWith('{message}')]. Will wait for {timeout.TotalSeconds} sec.");
             var cts = new CancellationTokenSource();
             cts.CancelAfter(timeout);
-            return await GetOutputLineAsync($"[msg.StartsWith('{message}')]", m => m != null && m.StartsWith(message, StringComparison.Ordinal), cts.Token);
+            return await GetOutputLineAsync($"[msg.StartsWith('{message}')]", m => m != null && m.StartsWith(message, StringComparison.Ordinal), cts.Token)
+                ?? throw new InvalidOperationException($"Did not find '{message} in output. {Environment.NewLine}{string.Join(Environment.NewLine, _lines)}");
         }
 
-        private async Task<string> GetOutputLineAsync(string predicateName, Predicate<string> predicate, CancellationToken cancellationToken)
+        private async Task<string?> GetOutputLineAsync(string predicateName, Predicate<string> predicate, CancellationToken cancellationToken)
         {
             while (!_source.Completion.IsCompleted)
             {
@@ -153,9 +155,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             }
         }
 
-        private void OnExit(object sender, EventArgs args)
+        private void OnExit(object? sender, EventArgs args)
         {
             // Wait to ensure the process has exited and all output consumed
+            Debug.Assert(_process != null);
             _process.WaitForExit();
             _source.Complete();
             _exited.TrySetResult(_process.ExitCode);

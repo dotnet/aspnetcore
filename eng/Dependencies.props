@@ -73,6 +73,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
+    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. -->
+    <LatestPackageReference Include="System.Security.AccessControl" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
@@ -132,8 +134,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Web.Xdt" />
     <LatestPackageReference Include="NETStandard.Library" />
     <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" />
+    <LatestPackageReference Include="System.Net.Experimental.MsQuic" />
     <LatestPackageReference Include="System.Net.Http.WinHttpHandler" />
-    <LatestPackageReference Include="System.Net.WebSockets.WebSocketProtocol" />
     <LatestPackageReference Include="System.ServiceProcess.ServiceController" />
     <LatestPackageReference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
@@ -173,6 +175,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />
     <LatestPackageReference Include="NuGet.Versioning" />
+    <LatestPackageReference Include="Polly" />
+    <LatestPackageReference Include="Polly.Extensions.Http" />
     <LatestPackageReference Include="Selenium.Support" />
     <LatestPackageReference Include="Selenium.WebDriver" />
     <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" />

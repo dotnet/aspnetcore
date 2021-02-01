@@ -159,13 +159,13 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
         private MatchResults CreateTestRuleMatch()
         {
             var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
-            return new MatchResults { BackReferences = new BackReferenceCollection(match.Groups), Success = match.Success };
+            return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));
         }
 
         private MatchResults CreateTestCondMatch()
         {
             var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
-            return new MatchResults { BackReferences = new BackReferenceCollection(match.Groups), Success = match.Success };
+            return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));
         }
 
         [Fact]

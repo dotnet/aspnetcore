@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 {
@@ -19,8 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 
         static RendererRegistry()
         {
-            bool _isWebAssembly = RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
-            if (_isWebAssembly)
+            if (OperatingSystem.IsBrowser())
             {
                 _renderers = new Dictionary<int, WebAssemblyRenderer>();
             }

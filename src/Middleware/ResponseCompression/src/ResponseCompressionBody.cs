@@ -59,6 +59,12 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 await _compressionStream.DisposeAsync();
             }
+
+            // Adds the compression headers for HEAD requests even if the body was not used.
+            if (!_compressionChecked && HttpMethods.IsHead(_context.Request.Method))
+            {
+                InitializeCompressionHeaders();
+            }
         }
 
         HttpsCompressionMode IHttpsCompressionFeature.Mode { get; set; } = HttpsCompressionMode.Default;
@@ -232,46 +238,54 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
         }
 
+        private void InitializeCompressionHeaders()
+        {
+            if (_provider.ShouldCompressResponse(_context))
+            {
+                // If the MIME type indicates that the response could be compressed, caches will need to vary by the Accept-Encoding header
+                var varyValues = _context.Response.Headers.GetCommaSeparatedValues(HeaderNames.Vary);
+                var varyByAcceptEncoding = false;
+
+                for (var i = 0; i < varyValues.Length; i++)
+                {
+                    if (string.Equals(varyValues[i], HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
+                    {
+                        varyByAcceptEncoding = true;
+                        break;
+                    }
+                }
+
+                if (!varyByAcceptEncoding)
+                {
+                    _context.Response.Headers.Append(HeaderNames.Vary, HeaderNames.AcceptEncoding);
+                }
+
+                var compressionProvider = ResolveCompressionProvider();
+                if (compressionProvider != null)
+                {
+                    _context.Response.Headers.Append(HeaderNames.ContentEncoding, compressionProvider.EncodingName);
+                    _context.Response.Headers.Remove(HeaderNames.ContentMD5); // Reset the MD5 because the content changed.
+                    _context.Response.Headers.Remove(HeaderNames.ContentLength);
+                }
+            }
+        }
+
         private void OnWrite()
         {
             if (!_compressionChecked)
             {
                 _compressionChecked = true;
-                if (_provider.ShouldCompressResponse(_context))
+
+                InitializeCompressionHeaders();
+
+                if (_compressionProvider != null)
                 {
-                    // If the MIME type indicates that the response could be compressed, caches will need to vary by the Accept-Encoding header
-                    var varyValues = _context.Response.Headers.GetCommaSeparatedValues(HeaderNames.Vary);
-                    var varyByAcceptEncoding = false;
-
-                    for (var i = 0; i < varyValues.Length; i++)
-                    {
-                        if (string.Equals(varyValues[i], HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
-                        {
-                            varyByAcceptEncoding = true;
-                            break;
-                        }
-                    }
-
-                    if (!varyByAcceptEncoding)
-                    {
-                        _context.Response.Headers.Append(HeaderNames.Vary, HeaderNames.AcceptEncoding);
-                    }
-
-                    var compressionProvider = ResolveCompressionProvider();
-                    if (compressionProvider != null)
-                    {
-                        _context.Response.Headers.Append(HeaderNames.ContentEncoding, compressionProvider.EncodingName);
-                        _context.Response.Headers.Remove(HeaderNames.ContentMD5); // Reset the MD5 because the content changed.
-                        _context.Response.Headers.Remove(HeaderNames.ContentLength);
-
-                        _compressionStream = compressionProvider.CreateStream(_innerStream);
-                    }
+                    _compressionStream = _compressionProvider.CreateStream(_innerStream);
                 }
             }
         }
 
-        [MemberNotNull(nameof(_compressionProvider))]
-        private ICompressionProvider ResolveCompressionProvider()
+        private ICompressionProvider? ResolveCompressionProvider()
         {
             if (!_providerCreated)
             {
@@ -279,7 +293,6 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 _compressionProvider = _provider.GetCompressionProvider(_context);
             }
 
-            Debug.Assert(_compressionProvider != null);
             return _compressionProvider;
         }
 

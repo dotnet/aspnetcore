@@ -26,13 +26,6 @@ namespace RunTests
         {
             try
             {
-                // Rename default.NuGet.config to NuGet.config if there is not a custom one from the project
-                // We use a local NuGet.config file to avoid polluting global machine state and avoid relying on global machine state
-                if (!File.Exists("NuGet.config"))
-                {
-                    File.Copy("default.NuGet.config", "NuGet.config");
-                }
-
                 EnvironmentVariables.Add("PATH", Options.Path);
                 EnvironmentVariables.Add("helix", Options.HelixQueue);
 
@@ -144,7 +137,7 @@ namespace RunTests
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
                     // ';' is the path separator on Windows, and ':' on Unix
-                    Options.Path += RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";
+                    Options.Path += OperatingSystem.IsWindows() ? ";" : ":";
                     Options.Path += $"{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
                     EnvironmentVariables["PATH"] = Options.Path;
                 }

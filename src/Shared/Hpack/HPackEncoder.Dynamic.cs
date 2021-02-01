@@ -199,7 +199,7 @@ namespace System.Net.Http.HPack
 
         private int CalculateDynamicTableIndex(int index)
         {
-            return index == -1 ? -1 : index - Head.Before.Index + 1 + H2StaticTable.Count;
+            return index == -1 ? -1 : index - Head.Before!.Index + 1 + H2StaticTable.Count;
         }
 
         private void AddHeaderEntry(string name, string value, uint headerSize)
@@ -212,7 +212,7 @@ namespace System.Net.Http.HPack
             EncoderHeaderEntry? oldEntry = _headerBuckets[bucketIndex];
             // Attempt to reuse removed entry
             EncoderHeaderEntry? newEntry = PopRemovedEntry() ?? new EncoderHeaderEntry();
-            newEntry.Initialize(hash, name, value, Head.Before.Index - 1, oldEntry);
+            newEntry.Initialize(hash, name, value, Head.Before!.Index - 1, oldEntry);
             _headerBuckets[bucketIndex] = newEntry;
             newEntry.AddBefore(Head);
             _headerTableSize += headerSize;
@@ -249,18 +249,18 @@ namespace System.Net.Http.HPack
                 return null;
             }
             EncoderHeaderEntry? eldest = Head.After;
-            int hash = eldest.Hash;
+            int hash = eldest!.Hash;
             int bucketIndex = CalculateBucketIndex(hash);
             EncoderHeaderEntry? prev = _headerBuckets[bucketIndex];
             EncoderHeaderEntry? e = prev;
             while (e != null)
             {
-                EncoderHeaderEntry next = e.Next;
+                EncoderHeaderEntry? next = e.Next;
                 if (e == eldest)
                 {
                     if (prev == eldest)
                     {
-                        _headerBuckets[bucketIndex] = next;
+                        _headerBuckets[bucketIndex] = next!;
                     }
                     else
                     {

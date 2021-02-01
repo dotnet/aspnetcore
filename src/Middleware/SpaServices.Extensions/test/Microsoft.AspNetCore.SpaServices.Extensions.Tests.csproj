@@ -3,9 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestDependsOnNode>true</TestDependsOnNode>
-	<!-- Depends on npm which is not picked up on helix -->
-    <!-- https://github.com/dotnet/aspnetcore/issues/18672 -->
-	<BuildHelixPayload>false</BuildHelixPayload>
+    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <ItemGroup>

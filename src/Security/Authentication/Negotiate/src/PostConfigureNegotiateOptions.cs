@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     /// </summary>
     public class PostConfigureNegotiateOptions : IPostConfigureOptions<NegotiateOptions>
     {
-        private readonly IServerIntegratedAuth _serverAuth;
+        private readonly IServerIntegratedAuth? _serverAuth;
         private readonly ILogger<NegotiateHandler> _logger;
 
         /// <summary>

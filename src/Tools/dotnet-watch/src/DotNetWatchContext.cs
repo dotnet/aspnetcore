@@ -11,14 +11,16 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public ProcessSpec ProcessSpec { get; set; }
 
-        public IFileSet FileSet { get; set; }
+        public FileSet FileSet { get; set; }
 
         public int Iteration { get; set; }
 
-        public string ChangedFile { get; set; }
+        public FileItem? ChangedFile { get; set; }
 
         public bool RequiresMSBuildRevaluation { get; set; }
 
         public bool SuppressMSBuildIncrementalism { get; set; }
+
+        public BrowserRefreshServer BrowserRefreshServer { get; set; }
     }
 }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -21,16 +20,20 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 {
-    public class Http2Tests
+    public class Http2Tests : LoggedTest
     {
+        private const string VersionForReset = "10.0.19529";
+
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
         public async Task EmptyResponse_200()
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
-                // Default 200
+                var feature = httpContext.Features.Get<IHttpUpgradeFeature>();
+                Assert.False(feature.IsUpgradableRequest);
                 Assert.False(httpContext.Request.CanHaveBody());
+                // Default 200
                 return Task.CompletedTask;
             });
 
@@ -532,7 +535,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Custom Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task AppException_AfterHeaders_ResetInternalError()
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -572,7 +575,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 var feature = httpContext.Features.Get<IHttpResetFeature>();
                 Assert.Null(feature);
                 return httpContext.Response.WriteAsync("Hello World");
-            });
+            }, LoggerFactory);
 
             var handler = new HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -584,7 +587,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "This is last version without Reset support")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "This is last version without Reset support")]
         public async Task Reset_PriorOSVersions_NotSupported()
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -604,7 +607,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29126")]
+        [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task Reset_BeforeResponse_Resets()
         {
             var appResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -623,7 +627,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     appResult.SetException(ex);
                 }
                 return Task.FromResult(0);
-            });
+            }, LoggerFactory);
 
             await new HostBuilder()
                 .UseHttp2Cat(address, async h2Connection =>
@@ -646,7 +650,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task Reset_AfterResponseHeaders_Resets()
         {
             var appResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -693,7 +697,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task Reset_DurringResponseBody_Resets()
         {
             var appResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -743,7 +747,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task Reset_AfterCompleteAsync_NoReset()
         {
             var appResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -795,7 +799,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29126")]
+        [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task Reset_BeforeRequestBody_Resets()
         {
             var appResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -841,7 +846,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29126")]
+        [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task Reset_DurringRequestBody_Resets()
         {
             var appResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -890,7 +896,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
         public async Task Reset_CompleteAsyncDurringRequestBody_Resets()
         {
             var appResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);

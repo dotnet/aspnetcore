@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         private bool _stopped;
 
-        private AsyncIOOperation _nextOperation;
-        private AsyncIOOperation _runningOperation;
+        private AsyncIOOperation? _nextOperation;
+        private AsyncIOOperation? _runningOperation;
 
-        private AsyncReadOperation _cachedAsyncReadOperation;
-        private AsyncWriteOperation _cachedAsyncWriteOperation;
-        private AsyncFlushOperation _cachedAsyncFlushOperation;
+        private AsyncReadOperation? _cachedAsyncReadOperation;
+        private AsyncWriteOperation? _cachedAsyncWriteOperation;
+        private AsyncFlushOperation? _cachedAsyncFlushOperation;
 
         public AsyncIOEngine(IISHttpContext context, NativeSafeHandle handler)
         {

@@ -30,7 +30,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     private WebSocketOnClosedCallback onClose;
     private CompletableSubject startSubject = CompletableSubject.create();
     private CompletableSubject closeSubject = CompletableSubject.create();
-    private final ReentrantLock closeLock = new ReentrantLock();
+    private final ReentrantLock stateLock = new ReentrantLock();
 
     private final Logger logger = LoggerFactory.getLogger(OkHttpWebSocketWrapper.class);
 
@@ -82,7 +82,12 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     private class SignalRWebSocketListener extends WebSocketListener {
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
-            startSubject.onComplete();
+            stateLock.lock();
+            try {
+                startSubject.onComplete();
+            } finally {
+                stateLock.unlock();
+            }
         }
 
         @Override
@@ -97,39 +102,67 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
 
         @Override
         public void onClosing(WebSocket webSocket, int code, String reason) {
-            onClose.invoke(code, reason);
+            boolean isOpen = false;
+            stateLock.lock();
             try {
-                closeLock.lock();
+                isOpen = startSubject.hasComplete();
+            } finally {
+                stateLock.unlock();
+            }
+
+            logger.info("WebSocket closing with status code '{}' and reason '{}'.", code, reason);
+
+            // Only call onClose if connection is open
+            if (isOpen) {
+                onClose.invoke(code, reason);
+            }
+
+            try {
+                stateLock.lock();
                 closeSubject.onComplete();
             }
             finally {
-                closeLock.unlock();
+                stateLock.unlock();
             }
-            checkStartFailure();
+            checkStartFailure(null);
+
+            // Send the close frame response if this was a server initiated close, otherwise noops
+            webSocket.close(1000, "");
         }
 
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-            logger.error("WebSocket closed from an error: {}.", t.getMessage());
+            logger.error("WebSocket closed from an error.", t);
 
+            boolean isOpen = false;
             try {
-                closeLock.lock();
+                stateLock.lock();
                 if (!closeSubject.hasComplete()) {
                     closeSubject.onError(new RuntimeException(t));
                 }
+
+                isOpen = startSubject.hasComplete();
             }
             finally {
-                closeLock.unlock();
+                stateLock.unlock();
             }
-            onClose.invoke(null, t.getMessage());
-            checkStartFailure();
+            // Only call onClose if connection is open
+            if (isOpen) {
+                onClose.invoke(null, t.getMessage());
+            }
+            checkStartFailure(t);
         }
 
-        private void checkStartFailure() {
-            // If the start task hasn't completed yet, then we need to complete it
-            // exceptionally.
-            if (!startSubject.hasComplete()) {
-                startSubject.onError(new RuntimeException("There was an error starting the WebSocket transport."));
+        private void checkStartFailure(Throwable t) {
+            stateLock.lock();
+            try {
+                // If the start task hasn't completed yet, then we need to complete it
+                // exceptionally.
+                if (!startSubject.hasComplete()) {
+                    startSubject.onError(new RuntimeException("There was an error starting the WebSocket transport.", t));
+                }
+            } finally {
+                stateLock.unlock();
             }
         }
     }

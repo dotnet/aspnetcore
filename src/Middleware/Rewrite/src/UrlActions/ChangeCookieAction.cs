@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
     internal class ChangeCookieAction : UrlAction
     {
         private readonly Func<DateTimeOffset> _timeSource;
-        private CookieOptions _cachedOptions;
+        private CookieOptions? _cachedOptions;
 
         public ChangeCookieAction(string name)
             : this(name, () => DateTimeOffset.UtcNow)
@@ -30,14 +30,14 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
         }
 
         public string Name { get; }
-        public string Value { get; set; }
-        public string Domain { get; set; }
+        public string? Value { get; set; }
+        public string? Domain { get; set; }
         public TimeSpan Lifetime { get; set; }
-        public string Path { get; set; }
+        public string? Path { get; set; }
         public bool Secure { get; set; }
         public bool HttpOnly { get; set; }
 
-        public override void ApplyAction(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
+        public override void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
         {
             var options = GetOrCreateOptions();
             context.HttpContext.Response.Cookies.Append(Name, Value ?? string.Empty, options);

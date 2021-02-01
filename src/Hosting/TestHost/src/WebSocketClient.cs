@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
@@ -40,20 +41,12 @@ namespace Microsoft.AspNetCore.TestHost
         /// <summary>
         /// Gets the list of WebSocket subprotocols that are established in the initial handshake.
         /// </summary>
-        public IList<string> SubProtocols
-        {
-            get;
-            private set;
-        }
+        public IList<string> SubProtocols { get; }
 
         /// <summary>
         /// Gets or sets the handler used to configure the outgoing request to the WebSocket endpoint.
         /// </summary>
-        public Action<HttpRequest> ConfigureRequest
-        {
-            get;
-            set;
-        }
+        public Action<HttpRequest>? ConfigureRequest { get; set; }
 
         internal bool AllowSynchronousIO { get; set; }
         internal bool PreserveExecutionContext { get; set; }
@@ -65,7 +58,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to terminate the connection.</param>
         public async Task<WebSocket> ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
-            WebSocketFeature webSocketFeature = null;
+            WebSocketFeature? webSocketFeature = null;
             var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
             contextBuilder.Configure((context, reader) =>
             {
@@ -112,6 +105,8 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 throw new InvalidOperationException("Incomplete handshake, status code: " + httpContext.Response.StatusCode);
             }
+
+            Debug.Assert(webSocketFeature != null);
             if (webSocketFeature.ClientWebSocket == null)
             {
                 throw new InvalidOperationException("Incomplete handshake");
@@ -138,9 +133,9 @@ namespace Microsoft.AspNetCore.TestHost
 
             bool IHttpWebSocketFeature.IsWebSocketRequest => true;
 
-            public WebSocket ClientWebSocket { get; private set; }
+            public WebSocket? ClientWebSocket { get; private set; }
 
-            public WebSocket ServerWebSocket { get; private set; }
+            public WebSocket? ServerWebSocket { get; private set; }
 
             async Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(WebSocketAcceptContext context)
             {

@@ -11,13 +11,13 @@ Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.IISDefaults() -> void
 Microsoft.AspNetCore.Server.IISIntegration.IISHostingStartup
 Microsoft.AspNetCore.Server.IISIntegration.IISHostingStartup.IISHostingStartup() -> void
 Microsoft.AspNetCore.Server.IISIntegration.IISMiddleware
-~Microsoft.AspNetCore.Builder.IISOptions.AuthenticationDisplayName.get -> string
-~Microsoft.AspNetCore.Builder.IISOptions.AuthenticationDisplayName.set -> void
-~Microsoft.AspNetCore.Server.IISIntegration.IISHostingStartup.Configure(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) -> void
-~Microsoft.AspNetCore.Server.IISIntegration.IISMiddleware.IISMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.IISOptions> options, string pairingToken, Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider authentication, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime) -> void
-~Microsoft.AspNetCore.Server.IISIntegration.IISMiddleware.IISMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.IISOptions> options, string pairingToken, bool isWebsocketsSupported, Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider authentication, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime) -> void
-~Microsoft.AspNetCore.Server.IISIntegration.IISMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext httpContext) -> System.Threading.Tasks.Task
-~const Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.AuthenticationScheme = "Windows" -> string
-~const Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.Negotiate = "Negotiate" -> string
-~const Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.Ntlm = "NTLM" -> string
-~static Microsoft.AspNetCore.Hosting.WebHostBuilderIISExtensions.UseIISIntegration(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
+Microsoft.AspNetCore.Builder.IISOptions.AuthenticationDisplayName.get -> string?
+Microsoft.AspNetCore.Builder.IISOptions.AuthenticationDisplayName.set -> void
+Microsoft.AspNetCore.Server.IISIntegration.IISHostingStartup.Configure(Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder) -> void
+~Microsoft.AspNetCore.Server.IISIntegration.IISMiddleware.IISMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.IISOptions!>! options, string! pairingToken, Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider! authentication, Microsoft.Extensions.Hosting.IHostApplicationLifetime! applicationLifetime) -> void
+~Microsoft.AspNetCore.Server.IISIntegration.IISMiddleware.IISMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.IISOptions!>! options, string! pairingToken, bool isWebsocketsSupported, Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider! authentication, Microsoft.Extensions.Hosting.IHostApplicationLifetime! applicationLifetime) -> void
+Microsoft.AspNetCore.Server.IISIntegration.IISMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+const Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.AuthenticationScheme = "Windows" -> string!
+const Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.Negotiate = "Negotiate" -> string!
+const Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.Ntlm = "NTLM" -> string!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderIISExtensions.UseIISIntegration(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

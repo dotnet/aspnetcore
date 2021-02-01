@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27856")]
         [InlineData(true)]
         [InlineData(false)]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/23360", Queues = "Debian.9.Arm64;Debian.9.Arm64.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036;(Debian.9.Arm64)Ubuntu.1804.Armarch@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036;(Fedora.28.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-28-helix-09ca40b-20190508143249")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/23360", Queues = "Debian.9.Arm64;Debian.9.Arm64.Open;(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036;(Debian.9.Arm64)Ubuntu.1804.Armarch@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036;(Fedora.33.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-helix-20210120000908-a9df267")]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
         {
             _app.UsePollingWatcher = usePollingWatcher;
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             public async Task<int> GetCompiledAppDefinedTypes()
             {
-                var definedTypesMessage = await Process.GetOutputLineStartsWithAsync("Defined types = ", TimeSpan.FromSeconds(30));
+                var definedTypesMessage = await Process!.GetOutputLineStartsWithAsync("Defined types = ", TimeSpan.FromSeconds(30));
                 return int.Parse(definedTypesMessage.Split('=').Last(), CultureInfo.InvariantCulture);
             }
         }

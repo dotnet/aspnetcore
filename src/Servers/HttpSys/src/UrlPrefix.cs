@@ -103,18 +103,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <param name="prefix">The string that the <see cref="UrlPrefix"/> will be created from.</param>
         public static UrlPrefix Create(string prefix)
         {
-            string scheme = null;
-            string host = null;
+            string scheme;
+            string host;
             int? port = null;
-            string path = null;
+            string path;
             var whole = prefix ?? string.Empty;
 
-            var schemeDelimiterEnd = whole.IndexOf("://", StringComparison.Ordinal);
+            var schemeDelimiterEnd = whole.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
             if (schemeDelimiterEnd < 0)
             {
                 throw new FormatException("Invalid prefix, missing scheme separator: " + prefix);
             }
-            var hostDelimiterStart = schemeDelimiterEnd + "://".Length;
+            var hostDelimiterStart = schemeDelimiterEnd + Uri.SchemeDelimiter.Length;
 
             var pathDelimiterStart = whole.IndexOf("/", hostDelimiterStart, StringComparison.Ordinal);
             if (pathDelimiterStart < 0)
@@ -186,14 +186,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public string Path { get; }
 
         internal string PathWithoutTrailingSlash { get; }
-        
+
         /// <summary>
         /// Gets a string representation of the prefix
         /// </summary>
         public string FullPrefix { get; }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return string.Equals(FullPrefix, Convert.ToString(obj, CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
         }

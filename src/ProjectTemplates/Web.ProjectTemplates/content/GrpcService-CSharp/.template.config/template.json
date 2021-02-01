@@ -9,8 +9,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating a gRPC ASP.NET Core service.",
   "groupIdentity": "Microsoft.Web.Grpc",
-  "precedence": "7000",
-  "identity": "Microsoft.Grpc.Service.CSharp.5.0",
+  "precedence": "8000",
+  "identity": "Microsoft.Grpc.Service.CSharp.6.0",
   "shortName": "grpc",
   "tags": {
     "language": "C#",

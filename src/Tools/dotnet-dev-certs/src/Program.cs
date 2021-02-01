@@ -278,9 +278,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     // When IDEs run dotnet dev-certs https after calling --check, we will try to access the key and
                     // that will trigger a prompt if necessary.
                     var status = certificateManager.CheckCertificateState(certificate, interactive: false);
-                    if (!status.Result)
+                    if (!status.Success)
                     {
-                        reporter.Warn(status.Message);
+                        reporter.Warn(status.FailureMessage);
                         return InvalidCertificateState;
                     }
                 }
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 foreach (var certificate in certificates)
                 {
                     var status = manager.CheckCertificateState(certificate, interactive: true);
-                    if (!status.Result)
+                    if (!status.Success)
                     {
                         reporter.Warn("One or more certificates might be in an invalid state. We will try to access the certificate key " +
                             "for each certificate and as a result you might be prompted one or more times to enter " +

@@ -12,8 +12,7 @@ namespace BasicWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddMvc();
 
             services.AddSingleton<ContactsRepository>();
         }

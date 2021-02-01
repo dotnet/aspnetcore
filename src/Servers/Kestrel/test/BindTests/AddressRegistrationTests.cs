@@ -686,7 +686,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 Assert.Equal(serverAddresses.First(), endPointAddress);
 
                 Assert.Single(LogMessages, log => log.LogLevel == LogLevel.Warning &&
-                    string.Equals(CoreStrings.FormatOverridingWithKestrelOptions(useUrlsAddress, "UseKestrel()"),
+                    string.Equals(CoreStrings.FormatOverridingWithKestrelOptions(useUrlsAddress),
                     log.Message, StringComparison.Ordinal));
 
                 Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress, validateCertificate: false));

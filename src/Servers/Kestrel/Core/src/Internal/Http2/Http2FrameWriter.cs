@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly string _connectionId;
         private readonly IKestrelTrace _log;
         private readonly ITimeoutControl _timeoutControl;
-        private readonly MinDataRate _minResponseDataRate;
+        private readonly MinDataRate? _minResponseDataRate;
         private readonly TimingPipeFlusher _flusher;
         private readonly HPackEncoder _hpackEncoder;
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Http2Connection http2Connection,
             OutputFlowControl connectionOutputFlowControl,
             ITimeoutControl timeoutControl,
-            MinDataRate minResponseDataRate,
+            MinDataRate? minResponseDataRate,
             string connectionId,
             MemoryPool<byte> memoryPool,
             ServiceContext serviceContext)
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
         {
             lock (_writeLock)
             {
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             while (dataLength > 0)
             {
-                ValueTask<object> availabilityTask;
+                ValueTask<object?> availabilityTask;
                 var writeTask = default(ValueTask<FlushResult>);
 
                 lock (_writeLock)
@@ -423,7 +423,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         break;
                     }
 
+                    // Observe HTTP/2 backpressure
                     var actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityTask);
+
+                    var shouldFlush = false;
 
                     if (actual > 0)
                     {
@@ -439,25 +442,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             dataLength = 0;
                         }
 
-                        // Don't call TimeFlushUnsynchronizedAsync() since we time this write while also accounting for
+                        // Don't call FlushAsync() with the min data rate, since we time this write while also accounting for
                         // flow control induced backpressure below.
-                        writeTask = _flusher.FlushAsync();
+                        shouldFlush = true;
                     }
                     else if (firstWrite)
                     {
                         // If we're facing flow control induced backpressure on the first write for a given stream's response body,
                         // we make sure to flush the response headers immediately.
+                        shouldFlush = true;
+                    }
+
+                    if (shouldFlush)
+                    {
+                        if (_minResponseDataRate != null)
+                        {
+                            // Call BytesWrittenToBuffer before FlushAsync() to make testing easier, otherwise the Flush can cause test code to run before the timeout
+                            // control updates and if the test checks for a timeout it can fail
+                            _timeoutControl.BytesWrittenToBuffer(_minResponseDataRate, _unflushedBytes);
+                        }
+
+                        _unflushedBytes = 0;
+
                         writeTask = _flusher.FlushAsync();
                     }
 
                     firstWrite = false;
-
-                    if (_minResponseDataRate != null)
-                    {
-                        _timeoutControl.BytesWrittenToBuffer(_minResponseDataRate, _unflushedBytes);
-                    }
-
-                    _unflushedBytes = 0;
                 }
 
                 // Avoid timing writes that are already complete. This is likely to happen during the last iteration.
@@ -547,7 +557,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             |                        Value (32)                             |
             +---------------------------------------------------------------+
         */
-        public ValueTask<FlushResult> WriteSettingsAsync(IList<Http2PeerSetting> settings)
+        public ValueTask<FlushResult> WriteSettingsAsync(List<Http2PeerSetting> settings)
         {
             lock (_writeLock)
             {
@@ -569,7 +579,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        internal static void WriteSettings(IList<Http2PeerSetting> settings, Span<byte> destination)
+        internal static void WriteSettings(List<Http2PeerSetting> settings, Span<byte> destination)
         {
             foreach (var setting in settings)
             {

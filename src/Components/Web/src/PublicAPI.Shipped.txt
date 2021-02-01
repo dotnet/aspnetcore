@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 Microsoft.AspNetCore.Components.BindInputElementAttribute
 Microsoft.AspNetCore.Components.BindInputElementAttribute.BindInputElementAttribute(string? type, string? suffix, string? valueAttribute, string? changeAttribute, bool isInvariantCulture, string? format) -> void
 Microsoft.AspNetCore.Components.BindInputElementAttribute.ChangeAttribute.get -> string?
@@ -382,7 +382,8 @@ override Microsoft.AspNetCore.Components.Routing.NavLink.BuildRenderTree(Microso
 override Microsoft.AspNetCore.Components.Routing.NavLink.OnInitialized() -> void
 override Microsoft.AspNetCore.Components.Routing.NavLink.OnParametersSet() -> void
 static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference) -> System.Threading.Tasks.ValueTask
-static Microsoft.AspNetCore.Components.Forms.BrowserFileExtensions.RequestImageFileAsync(this Microsoft.AspNetCore.Components.Forms.IBrowserFile! browserFile, string! format, int maxWith, int maxHeight) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
+static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference, bool preventScroll) -> System.Threading.Tasks.ValueTask
+static Microsoft.AspNetCore.Components.Forms.BrowserFileExtensions.RequestImageFileAsync(this Microsoft.AspNetCore.Components.Forms.IBrowserFile! browserFile, string! format, int maxWidth, int maxHeight) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
 static Microsoft.AspNetCore.Components.Forms.EditContextFieldClassExtensions.FieldCssClass(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext, in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> string!
 static Microsoft.AspNetCore.Components.Forms.EditContextFieldClassExtensions.FieldCssClass<TField>(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext, System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> string!
 static Microsoft.AspNetCore.Components.Forms.EditContextFieldClassExtensions.SetFieldCssClassProvider(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext, Microsoft.AspNetCore.Components.Forms.FieldCssClassProvider! fieldCssClassProvider) -> void

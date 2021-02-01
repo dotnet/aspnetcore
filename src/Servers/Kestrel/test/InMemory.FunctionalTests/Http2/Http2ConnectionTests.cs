@@ -4631,7 +4631,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var logMessage = LogMessages.Single(m => m.EventId == 20);
 
-            Assert.Equal("Connection id \"(null)\" request processing ended abnormally.", logMessage.Message);
+            Assert.Equal("Connection id \"TestConnectionId\" request processing ended abnormally.", logMessage.Message);
             Assert.Same(ioException, logMessage.Exception);
         }
 

@@ -102,7 +102,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Theory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27372")]
         [InlineData("target")]
         [InlineData("intermediate")]
         public void StopPropagation(string whereToStopPropagation)
@@ -165,7 +164,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23757")]
         public void PreventDefaultCanBlockKeystrokes()
         {
             // By default, the textbox accepts keystrokes

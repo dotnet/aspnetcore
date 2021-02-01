@@ -16,18 +16,18 @@ param(
 
 try {
   . $PSScriptRoot\post-build-utils.ps1
-  # Hard coding darc version till the next arcade-services roll out, cos this version has required API changes for darc add-build-to-channel
-  $darc = Get-Darc "1.1.0-beta.20418.1"
+
+  $darc = Get-Darc 
 
   $optionalParams = [System.Collections.ArrayList]::new()
 
   if ("" -ne $ArtifactsPublishingAdditionalParameters) {
-    $optionalParams.Add("artifact-publishing-parameters") | Out-Null
+    $optionalParams.Add("--artifact-publishing-parameters") | Out-Null
     $optionalParams.Add($ArtifactsPublishingAdditionalParameters) | Out-Null
   }
 
   if ("" -ne $SymbolPublishingAdditionalParameters) {
-    $optionalParams.Add("symbol-publishing-parameters") | Out-Null
+    $optionalParams.Add("--symbol-publishing-parameters") | Out-Null
     $optionalParams.Add($SymbolPublishingAdditionalParameters) | Out-Null
   }
 

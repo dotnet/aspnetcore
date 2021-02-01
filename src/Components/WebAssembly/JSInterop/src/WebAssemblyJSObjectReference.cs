@@ -9,7 +9,8 @@ namespace Microsoft.JSInterop.WebAssembly
     {
         private readonly WebAssemblyJSRuntime _jsRuntime;
 
-        public WebAssemblyJSObjectReference(WebAssemblyJSRuntime jsRuntime, long id) : base(jsRuntime, id)
+        public WebAssemblyJSObjectReference(WebAssemblyJSRuntime jsRuntime, long id)
+            : base(jsRuntime, id)
         {
             _jsRuntime = jsRuntime;
         }

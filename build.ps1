@@ -116,7 +116,7 @@ Running tests.
     build.ps1 -test
 
 .LINK
-Online version: https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md
+Online version: https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md
 #>
 [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName='Groups')]
 param(
@@ -355,6 +355,24 @@ if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
 if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
     Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
 }
+
+# Check dotnet-format is installed or not
+$dotnetFormat = Get-Command dotnet-format -ErrorAction Ignore -CommandType Application
+
+if($dotnetFormat)
+{
+    Write-Host -f Magenta "dotnet format tool is already installed."
+}
+else
+{
+    Write-Host -f Magenta "Installing dotnet-format tool.."
+    & dotnet tool install -g dotnet-format
+}
+
+# We need to change default git hooks directory as .git folder is not tracked. And by default hooks are stored in .git/hooks folder.
+# So we are setting git hooks default directory to .githooks, so that we can track and version the git hooks.
+& git config core.hooksPath .githooks
+
 
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore

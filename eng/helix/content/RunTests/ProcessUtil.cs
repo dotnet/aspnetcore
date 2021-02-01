@@ -53,7 +53,7 @@ namespace RunTests
         public static Task CaptureDumpAsync(int pid, string dumpFilePath)
         {
             // Skip this on OSX, we know it's unsupported right now
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (OperatingSystem.IsMacOS())
             {
                 // Can we capture stacks or do a gcdump instead?
                 return Task.CompletedTask;
@@ -178,7 +178,7 @@ namespace RunTests
                     await CaptureDumpAsync(process.Id, dumpFilePath);
                 }
 
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (!OperatingSystem.IsWindows())
                 {
                     sys_kill(process.Id, sig: 2); // SIGINT
 

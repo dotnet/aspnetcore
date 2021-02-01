@@ -1,10 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Microsoft.JSInterop.Implementation;
-using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
 {
@@ -13,16 +10,6 @@ namespace Microsoft.JSInterop
     /// </summary>
     public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="JSInProcessRuntime"/>.
-        /// </summary>
-        protected JSInProcessRuntime()
-        {
-            JsonSerializerOptions.Converters.Add(
-                new JSObjectReferenceJsonConverter<IJSInProcessObjectReference, JSInProcessObjectReference>(
-                    id => new JSInProcessObjectReference(this, id)));
-        }
-
         internal TValue Invoke<TValue>(string identifier, long targetInstanceId, params object?[]? args)
         {
             var resultJson = InvokeJS(

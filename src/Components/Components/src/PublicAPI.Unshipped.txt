@@ -1,3 +1,11 @@
 #nullable enable
+Microsoft.AspNetCore.Components.DynamicComponent
+Microsoft.AspNetCore.Components.DynamicComponent.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
+Microsoft.AspNetCore.Components.DynamicComponent.DynamicComponent() -> void
+Microsoft.AspNetCore.Components.DynamicComponent.Parameters.get -> System.Collections.Generic.IDictionary<string!, object!>?
+Microsoft.AspNetCore.Components.DynamicComponent.Parameters.set -> void
+Microsoft.AspNetCore.Components.DynamicComponent.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.DynamicComponent.Type.get -> System.Type!
+Microsoft.AspNetCore.Components.DynamicComponent.Type.set -> void
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!

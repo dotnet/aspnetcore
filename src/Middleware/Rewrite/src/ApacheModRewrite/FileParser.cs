@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
     {
         public IList<IRule> Parse(TextReader input)
         {
-            string line;
+            string? line;
             var rules = new List<IRule>();
             var builder = new RuleBuilder();
             var lineNum = 0;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                 {
                     continue;
                 }
-                var tokens = tokenizer.Tokenize(line);
+                var tokens = tokenizer.Tokenize(line)!;
                 if (tokens.Count > 4)
                 {
                     // This means the line didn't have an appropriate format, throw format exception

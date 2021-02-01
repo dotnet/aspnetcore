@@ -54,6 +54,7 @@ namespace Templates.Test.Helpers
             await ProcessLock.DotNetNewLock.WaitAsync();
             try
             {
+                output.WriteLine("Acquired DotNetNewLock");
                 if (!_haveReinstalledTemplatePackages)
                 {
                     if (Directory.Exists(CustomHivePath))
@@ -67,6 +68,7 @@ namespace Templates.Test.Helpers
             finally
             {
                 ProcessLock.DotNetNewLock.Release();
+                output.WriteLine("Released DotNetNewLock");
             }
         }
 
@@ -175,7 +177,7 @@ namespace Templates.Test.Helpers
             {
                 var proc = await RunDotNetNew(output, $"\"{templateName}\"");
 
-                if (!proc.Output.Contains("Couldn't find an installed template that matches the input, searching online for one that does..."))
+                if (!proc.Error.Contains("No templates found matching:"))
                 {
                     throw new InvalidOperationException($"Failed to uninstall previous templates. The template '{templateName}' could still be found.");
                 }

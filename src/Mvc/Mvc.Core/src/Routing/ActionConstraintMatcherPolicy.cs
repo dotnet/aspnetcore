@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 var endpoint = endpoints[i];
                 var action = endpoint.Metadata.GetMetadata<ActionDescriptor>();
-                if (action?.ActionConstraints?.Count > 0 && HasSignificantActionConstraint(action))
+                if (action?.ActionConstraints is IList<IActionConstraintMetadata> { Count: > 0} constraints && HasSignificantActionConstraint(constraints))
                 {
                     // We need to check for some specific action constraint implementations.
                     // We've implemented consumes, and HTTP method support inside endpoint routing, so
@@ -58,11 +60,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             return false;
 
-            bool HasSignificantActionConstraint(ActionDescriptor a)
+            bool HasSignificantActionConstraint(IList<IActionConstraintMetadata> constraints)
             {
-                for (var i = 0; i < a.ActionConstraints.Count; i++)
+                for (var i = 0; i < constraints.Count; i++)
                 {
-                    var actionConstraint = a.ActionConstraints[i];
+                    var actionConstraint = constraints[i];
                     if (actionConstraint.GetType() == typeof(HttpMethodActionConstraint))
                     {
                         // This one is OK, we implement this in endpoint routing.
@@ -107,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // This is almost the same as the code in ActionSelector, but we can't really share the logic
         // because we need to track the index of each candidate - and, each candidate has its own route
         // values.
-        private IReadOnlyList<(int index, ActionSelectorCandidate candidate)> EvaluateActionConstraints(
+        private IReadOnlyList<(int index, ActionSelectorCandidate candidate)>? EvaluateActionConstraints(
             HttpContext httpContext,
             CandidateSet candidateSet)
         {
@@ -159,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return EvaluateActionConstraintsCore(httpContext, candidateSet, items, startingOrder: null);
         }
 
-        private IReadOnlyList<(int index, ActionSelectorCandidate candidate)> EvaluateActionConstraintsCore(
+        private IReadOnlyList<(int index, ActionSelectorCandidate candidate)>? EvaluateActionConstraintsCore(
             HttpContext httpContext,
             CandidateSet candidateSet,
             IReadOnlyList<(int index, ActionSelectorCandidate candidate)> items,
@@ -224,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
                             ref var candidate = ref candidateSet[item.index];
 
-                            var routeData = new RouteData(candidate.Values);
+                            var routeData = new RouteData(candidate.Values!);
 
                             var dataTokens = candidate.Endpoint.Metadata.GetMetadata<IDataTokensMetadata>()?.DataTokens;
 

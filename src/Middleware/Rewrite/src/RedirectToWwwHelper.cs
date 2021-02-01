@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Rewrite
     {
         private const string Localhost = "localhost";
 
-        public static bool IsHostInDomains(HttpRequest request, string[] domains)
+        public static bool IsHostInDomains(HttpRequest request, string[]? domains)
         {
             if (request.Host.Host.Equals(Localhost, StringComparison.OrdinalIgnoreCase))
             {

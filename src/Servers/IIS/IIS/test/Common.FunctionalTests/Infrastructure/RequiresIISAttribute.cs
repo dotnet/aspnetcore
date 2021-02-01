@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Testing;
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 return;
             }
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!OperatingSystem.IsWindows())
             {
                 _skipReasonStatic = "IIS tests can only be run on Windows";
                 return;

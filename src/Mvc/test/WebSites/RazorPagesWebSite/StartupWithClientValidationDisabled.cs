@@ -18,8 +18,7 @@ namespace RazorPagesWebSite
             services.AddRazorPages(options =>
                 {
                     options.Conventions.AuthorizeFolder("/Admin");
-                })
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                });
 
             services.Configure<MvcViewOptions>(o => o.HtmlHelperOptions.ClientValidationEnabled = false);
         }

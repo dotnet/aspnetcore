@@ -206,6 +206,9 @@ namespace Microsoft.AspNetCore.Http
         // We send an anonymous object with an HttpContext property
         // via DiagnosticListener in various events throughout the pipeline. Instead
         // we just send the HttpContext to avoid extra allocations
+        /// <summary>
+        /// This API is used by ASP.NET Core's infrastructure and should not be used by application code.
+        /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public HttpContext HttpContext => this;
 

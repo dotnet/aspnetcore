@@ -55,6 +55,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// to and decrypt data from this key.
         /// </summary>
         /// <returns>An <see cref="IAuthenticatedEncryptor"/>.</returns>
-        IAuthenticatedEncryptor CreateEncryptor();
+        IAuthenticatedEncryptor? CreateEncryptor();
     }
 }

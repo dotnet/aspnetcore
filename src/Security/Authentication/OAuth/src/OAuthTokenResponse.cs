@@ -59,12 +59,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <summary>
         /// Gets or sets the received JSON payload.
         /// </summary>
-        public JsonDocument Response { get; set; }
+        public JsonDocument? Response { get; set; }
 
         /// <summary>
         /// Gets or sets the access token issued by the OAuth provider.
         /// </summary>
-        public string AccessToken { get; set; }
+        public string? AccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets the token type.
@@ -72,21 +72,21 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <remarks>
         /// Typically the string “bearer”.
         /// </remarks>
-        public string TokenType { get; set; }
+        public string? TokenType { get; set; }
 
         /// <summary>
         /// Gets or sets a refresh token that applications can use to obtain another access token if tokens can expire.
         /// </summary>
-        public string RefreshToken { get; set; }
+        public string? RefreshToken { get; set; }
 
         /// <summary>
         /// Gets or sets the validatity lifetime of the token in seconds.
         /// </summary>
-        public string ExpiresIn { get; set; }
+        public string? ExpiresIn { get; set; }
 
         /// <summary>
         /// The exception in the event the response was a failure.
         /// </summary>
-        public Exception Error { get; set; }
+        public Exception? Error { get; set; }
     }
 }
