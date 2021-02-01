@@ -424,36 +424,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 //
                 // __Blazor.MyComponent.TypeInference.CreateMyComponent_0(__builder, 0, 1, ..., 2, ..., 3, ....);
 
-                // If we're cascading any of the inferred generic types, emit variables for them so that
-                // we don't have to evaluate their expressions more than once
-                IDisposable typeInferenceVariablesScope = null;
-                List<string> typeInferenceVariablesToClear = null;
-                foreach (var cascadingGenericTypeGroup in node.ProvidesInferredCascadingGenericTypes.GroupBy(t => t.ValueSourceNode))
-                {
-                    if (typeInferenceVariablesScope == null)
-                    {
-                        typeInferenceVariablesScope = context.CodeWriter.BuildScope();
-                        typeInferenceVariablesToClear = new();
-                    }
-
-                    // The (depth, name) pair will be unique within lexical scope
-                    var variableName = $"typeInferenceArg_{_scopeStack.Depth}_{cascadingGenericTypeGroup.Key.BoundAttribute.GetPropertyName()}";
-                    typeInferenceVariablesToClear.Add(variableName);
-                    context.CodeWriter.WriteLine();
-                    context.CodeWriter.WriteLine("#pragma warning disable 219 // Variable is assigned but its value is never used");
-                    context.CodeWriter.Write("var ");
-                    context.CodeWriter.Write(variableName);
-                    context.CodeWriter.Write(" = ");
-                    WriteComponentAttributeInnards(context, cascadingGenericTypeGroup.Key, canTypeCheck: false);
-                    context.CodeWriter.WriteLine(";");
-                    context.CodeWriter.WriteLine("#pragma warning restore 219");
-
-                    foreach (var cascadingGenericType in cascadingGenericTypeGroup)
-                    {
-                        cascadingGenericType.ValueExpression = variableName;
-                    }
-                }
-
                 // Preserve order of attributes + splats
                 var attributes = node.Children.Where(s =>
                 {
@@ -560,8 +530,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 context.CodeWriter.Write(");");
                 context.CodeWriter.WriteLine();
-
-                typeInferenceVariablesScope?.Dispose();
             }
 
             // We want to generate something that references the Component type to avoid
