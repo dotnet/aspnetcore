@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     typeName = "global::" + typeName;
                 }
-                p.Add(new TypeInferenceMethodParameter($"__seq{p.Count}", typeName, $"__arg{p.Count}", usedForTypeInference: true, childContent));
+                p.Add(new TypeInferenceMethodParameter($"__seq{p.Count}", typeName, $"__arg{p.Count}", usedForTypeInference: false, childContent));
             }
 
             foreach (var capture in node.Component.SetKeys)
