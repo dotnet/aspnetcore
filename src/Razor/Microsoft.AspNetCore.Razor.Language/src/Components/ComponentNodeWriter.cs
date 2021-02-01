@@ -333,13 +333,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return p;
         }
 
-        protected readonly struct TypeInferenceMethodParameter
+        protected class TypeInferenceMethodParameter
         {
-            public readonly string SeqName;
-            public readonly string TypeName;
-            public readonly string ParameterName;
-            public readonly bool UsedForTypeInference;
-            public readonly object Source;
+            public string SeqName { get; private set; }
+            public string TypeName { get; private set; }
+            public string ParameterName { get; private set; }
+            public bool UsedForTypeInference { get; private set; }
+            public object Source { get; private set; }
 
             public TypeInferenceMethodParameter(string seqName, string typeName, string parameterName, bool usedForTypeInference, object source)
             {
@@ -348,6 +348,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 ParameterName = parameterName;
                 UsedForTypeInference = usedForTypeInference;
                 Source = source;
+            }
+
+            public void ReplaceSourceWithCapturedVariable(string variableName)
+            {
+                Source = new TypeInferenceCapturedVariable(variableName);
+            }
+        }
+
+        protected class TypeInferenceCapturedVariable
+        {
+            public string VariableName { get; private set; }
+
+            public TypeInferenceCapturedVariable(string variableName)
+            {
+                VariableName = variableName;
             }
         }
     }
