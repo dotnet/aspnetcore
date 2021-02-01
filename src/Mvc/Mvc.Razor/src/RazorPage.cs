@@ -215,43 +215,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         /// <param name="sectionName">The section to ignore.</param>
         public void IgnoreSection(string sectionName)
-            => IgnoreSectionCore(sectionName, true);
-
-        /// <summary>
-        /// In layout pages, ignores rendering the content of the section named <paramref name="sectionName"/>.
-        /// </summary>
-        /// <param name="sectionName">The section to ignore.</param>
-        /// <param name="required">Indicates the <paramref name="sectionName"/> section must be registered
-        /// (using <c>@section</c>) in the page.</param>
-        public void IgnoreSection(string sectionName, bool required)
-            => IgnoreSectionCore(sectionName, required);
-
-        private void IgnoreSectionCore(string sectionName, bool required)
         {
             if (sectionName == null)
             {
                 throw new ArgumentNullException(nameof(sectionName));
             }
 
-            if (!PreviousSectionWriters.ContainsKey(sectionName))
+            if (PreviousSectionWriters.ContainsKey(sectionName))
             {
-                if (required)
+                if (_ignoredSections == null)
                 {
-                    // If the section is not defined, throw an error.
-                    throw new InvalidOperationException(Resources.FormatSectionNotDefined(
-                        ViewContext.ExecutingFilePath,
-                        sectionName,
-                        ViewContext.View.Path));
+                    _ignoredSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 }
-                return;
-            }
 
-            if (_ignoredSections == null)
-            {
-                _ignoredSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                _ignoredSections.Add(sectionName);
             }
-
-            _ignoredSections.Add(sectionName);
         }
 
         /// <inheritdoc />
