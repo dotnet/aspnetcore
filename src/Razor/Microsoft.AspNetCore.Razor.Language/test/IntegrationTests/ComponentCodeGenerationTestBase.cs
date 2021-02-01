@@ -3161,6 +3161,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
+    [CascadeTypeParam(nameof(TItem))]
     public class Grid<TItem> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
@@ -3192,6 +3193,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
+    [CascadeTypeParam(nameof(TItem))]
     public class Grid<TItem> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
@@ -3223,6 +3225,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
+    [CascadeTypeParam(nameof(TItem))]
     public class Grid<TItem> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
@@ -3255,6 +3258,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
+    [CascadeTypeParam(nameof(TItem))]
     public class Grid<TItem> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
@@ -3289,6 +3293,9 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
+    [CascadeTypeParam(nameof(TKey))]
+    [CascadeTypeParam(nameof(TValue))]
+    [CascadeTypeParam(nameof(TOther))]
     public class Parent<TKey, TValue, TOther> : ComponentBase
     {
         [Parameter] public Dictionary<TKey, TValue> Data { get; set; }
@@ -3331,6 +3338,8 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
+    [CascadeTypeParam(nameof(TItem))]
+    [CascadeTypeParam(nameof(TUnrelated))]
     public class Grid<TItem, TUnrelated> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.Dictionary<TItem, TUnrelated> Items { get; set; }
