@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // This is ugly because CodeWriter doesn't allow us to erase, but we need to comma-delimit. So we have to
             // materizalize something can iterate, or use string.Join. We'll need this multiple times, so materializing
             // it.
-            var parameters = GetParameterDeclarations(node);
+            var parameters = GetTypeInferenceMethodParameters(node);
 
             // This is really similar to the code in WriteComponentAttribute and WriteComponentChildContent - except simpler because
             // attributes and child contents look like variables. 
@@ -193,6 +193,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         context.CodeWriter.Write($"(__value) => {{ {parameter.ParameterName}({cast}__value); }}");
                         context.CodeWriter.WriteEndMethodInvocation();
                         break;
+
+                    case CascadingGenericTypeParameter:
+                        // We only use the synthetic cascading parameters for type inference
+                        break;
+
+                    default:
+                        throw new InvalidOperationException($"Not implemented: type inference method parameter from source {parameter.Source}");
                 }
             }
 
@@ -201,7 +208,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             writer.WriteLine("}");
         }
 
-        protected List<TypeInferenceMethodParameter> GetParameterDeclarations(ComponentTypeInferenceMethodIntermediateNode node)
+        protected List<TypeInferenceMethodParameter> GetTypeInferenceMethodParameters(ComponentTypeInferenceMethodIntermediateNode node)
         {
             var p = new List<TypeInferenceMethodParameter>();
 

@@ -410,17 +410,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 //
                 // __Blazor.MyComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, ..., 2, ..., 3, ...);
 
-                // Preserve order of attributes and splats
-                var attributes = node.Children.Where(n =>
-                {
-                    return n is ComponentAttributeIntermediateNode || n is SplatIntermediateNode;
-                }).ToList();
-                var childContents = node.ChildContents.ToList();
-                var captures = node.Captures.ToList();
-                var setKeys = node.SetKeys.ToList();
-                var remaining = attributes.Count + childContents.Count + captures.Count + setKeys.Count
-                    + (node.TypeInferenceNode.ReceivesCascadingGenericTypes?.Count ?? 0);
-
                 context.CodeWriter.Write(node.TypeInferenceNode.FullTypeName);
                 context.CodeWriter.Write(".");
                 context.CodeWriter.Write(node.TypeInferenceNode.MethodName);
@@ -430,98 +419,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 context.CodeWriter.Write(", ");
 
                 context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
-                context.CodeWriter.Write(", ");
 
-                if (node.TypeInferenceNode.ReceivesCascadingGenericTypes != null)
+                foreach (var parameter in GetTypeInferenceMethodParameters(node.TypeInferenceNode))
                 {
-                    foreach (var syntheticArg in node.TypeInferenceNode.ReceivesCascadingGenericTypes)
-                    {
-                        context.CodeWriter.Write(string.IsNullOrEmpty(syntheticArg.ValueExpression)
-                            ? "default" // This shouldn't be possible, but we don't want to kill the whole compilation if it is
-                            : syntheticArg.ValueExpression);
-
-                        remaining--;
-                        if (remaining > 0)
-                        {
-                            context.CodeWriter.Write(", ");
-                        }
-                    }
-                }
-
-                for (var i = 0; i < attributes.Count; i++)
-                {
-                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
                     context.CodeWriter.Write(", ");
 
-                    // Don't type check generics, since we can't actually write the type name.
-                    // The type checking with happen anyway since we defined a method and we're generating
-                    // a call to it.
-                    if (attributes[i] is ComponentAttributeIntermediateNode attribute)
+                    if (!string.IsNullOrEmpty(parameter.SeqName))
                     {
-                        var providedGenericType = node.ProvidesInferredCascadingGenericTypes
-                            .FirstOrDefault(t => t.ValueSourceNode == attributes[i] && !string.IsNullOrEmpty(t.ValueExpression));
-                        if (providedGenericType != null)
-                        {
-                            // We just made a variable to represent this for cascaded generic type inference,
-                            // so use that instead of evaluating the expression for a second time
-                            context.CodeWriter.Write(providedGenericType.ValueExpression);
-                        }
-                        else
-                        {
+                        context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
+                        context.CodeWriter.Write(", ");
+                    }
+
+                    switch (parameter.Source)
+                    {
+                        case ComponentAttributeIntermediateNode attribute:
+                            // Don't type check generics, since we can't actually write the type name.
+                            // The type checking with happen anyway since we defined a method and we're generating
+                            // a call to it.
                             WriteComponentAttributeInnards(context, attribute, canTypeCheck: false);
-                        }
-                    }
-                    else if (attributes[i] is SplatIntermediateNode splat)
-                    {
-                        WriteSplatInnards(context, splat, canTypeCheck: false);
-                    }
-
-                    remaining--;
-                    if (remaining > 0)
-                    {
-                        context.CodeWriter.Write(", ");
-                    }
-                }
-
-                for (var i = 0; i < childContents.Count; i++)
-                {
-                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
-                    context.CodeWriter.Write(", ");
-
-                    WriteComponentChildContentInnards(context, childContents[i]);
-
-                    remaining--;
-                    if (remaining > 0)
-                    {
-                        context.CodeWriter.Write(", ");
-                    }
-                }
-
-                for (var i = 0; i < setKeys.Count; i++)
-                {
-                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
-                    context.CodeWriter.Write(", ");
-
-                    WriteSetKeyInnards(context, setKeys[i]);
-
-                    remaining--;
-                    if (remaining > 0)
-                    {
-                        context.CodeWriter.Write(", ");
-                    }
-                }
-
-                for (var i = 0; i < captures.Count; i++)
-                {
-                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
-                    context.CodeWriter.Write(", ");
-
-                    WriteReferenceCaptureInnards(context, captures[i], shouldTypeCheck: false);
-
-                    remaining--;
-                    if (remaining > 0)
-                    {
-                        context.CodeWriter.Write(", ");
+                            break;
+                        case SplatIntermediateNode splat:
+                            WriteSplatInnards(context, splat, canTypeCheck: false);
+                            break;
+                        case ComponentChildContentIntermediateNode childNode:
+                            WriteComponentChildContentInnards(context, childNode);
+                            break;
+                        case SetKeyIntermediateNode setKey:
+                            WriteSetKeyInnards(context, setKey);
+                            break;
+                        case ReferenceCaptureIntermediateNode capture:
+                            WriteReferenceCaptureInnards(context, capture, shouldTypeCheck: false);
+                            break;
+                        case CascadingGenericTypeParameter syntheticArg:
+                            context.CodeWriter.Write(syntheticArg.ValueExpression);
+                            break;
+                        default:
+                            throw new InvalidOperationException($"Not implemented: type inference method parameter from source {parameter.Source}");
                     }
                 }
 
