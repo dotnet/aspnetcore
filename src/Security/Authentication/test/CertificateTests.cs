@@ -320,6 +320,22 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         }
 
         [Fact]
+        public async Task VerifyValidClientCertWithAdditionalCertificatesAuthenticates()
+        {
+            using var host = await CreateHost(
+                new CertificateAuthenticationOptions
+                {
+                    Events = successfulValidationEvents,
+                    AdditionalChainCertificates = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot },
+                    RevocationMode = X509RevocationMode.NoCheck
+                }, Certificates.SignedClient);
+
+            using var server = host.GetTestServer();
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+        
+        [Fact]
         public async Task VerifyHeaderIsUsedIfCertIsNotPresent()
         {
             using var host = await CreateHost(
