@@ -52,13 +52,13 @@ function InvokeInstallDotnet([string]$command) {
     exit 1
 }
 
-if ($FeedCred -eq $null) (
+if ($FeedCred -eq $null) {
     InvokeInstallDotnet(". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch `'`' `$true `'`' `'`' `$true")
     InvokeInstallDotnet(". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $RuntimeVersion $Arch dotnet `$true `'`' `'`' `$true")
-) else (
+} else {
     InvokeInstallDotnet(". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch `'`' `$true https://dotnetclimsrc.blob.core.windows.net/dotnet $FeedCred `$true")
     InvokeInstallDotnet(". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $RuntimeVersion $Arch dotnet `$true https://dotnetclimsrc.blob.core.windows.net/dotnet $FeedCred `$true")
-)
+}
 
 Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
 dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
