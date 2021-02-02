@@ -62,8 +62,8 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         internal struct QueueFrame : IDisposable
         {
-            private ValueStopwatch? _timer;
-            private ConcurrencyLimiterEventSource _parent;
+            private readonly ValueStopwatch? _timer;
+            private readonly ConcurrencyLimiterEventSource _parent;
 
             public QueueFrame(ValueStopwatch? timer, ConcurrencyLimiterEventSource parent)
             {
