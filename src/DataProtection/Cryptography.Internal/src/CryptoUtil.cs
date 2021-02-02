@@ -101,12 +101,21 @@ namespace Microsoft.AspNetCore.Cryptography
             // An error at the call site isn't usable for timing attacks.
             Assert(countA == countB, "countA == countB");
 
+#if NETCOREAPP
+            unsafe
+            {
+                return CryptographicOperations.FixedTimeEquals(
+                    ((Span<byte>)bufA).Slice(start: offsetA, length: countA),
+                    ((Span<byte>)bufB).Slice(start: offsetB, length: countB));
+            }
+#else
             bool areEqual = true;
             for (int i = 0; i < countA; i++)
             {
                 areEqual &= (bufA[offsetA + i] == bufB[offsetB + i]);
             }
             return areEqual;
+#endif
         }
     }
 }
