@@ -52,10 +52,6 @@ function InvokeInstallDotnet([string]$command) {
     exit 1
 }
 
-# InvokeInstallDotnet("Write-Host Running `$PID; Write-Host Completed `$PID")
-# InvokeInstallDotnet("Write-Host Running `$PID; exit 1")
-# InvokeInstallDotnet("Write-Host Running `$PID; Start-Sleep -s 15 ; Write-Host Completed `$PID")
-
 if ($FeedCred -eq $null) (
     InvokeInstallDotnet(". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch `'`' `$true `'`' `'`' `$true")
     InvokeInstallDotnet(". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $RuntimeVersion $Arch dotnet `$true `'`' `'`' `$true")
