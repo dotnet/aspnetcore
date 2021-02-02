@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Cryptography
             unsafe
             {
                 return CryptographicOperations.FixedTimeEquals(
-                    ((Span<byte>)bufA).Slice(start: offsetA, length: countA),
+                    bufA.AsSpan(start: offsetA, length: countA),
                     ((Span<byte>)bufB).Slice(start: offsetB, length: countB));
             }
 #else
