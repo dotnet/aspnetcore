@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Cryptography
             {
                 return CryptographicOperations.FixedTimeEquals(
                     bufA.AsSpan(start: offsetA, length: countA),
-                    ((Span<byte>)bufB).Slice(start: offsetB, length: countB));
+                    bufB.AsSpan(start: offsetB, length: countB));
             }
 #else
             bool areEqual = true;
