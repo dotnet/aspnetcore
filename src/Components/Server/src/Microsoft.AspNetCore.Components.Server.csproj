@@ -91,11 +91,27 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <BlazorServerJSFile>..\..\Web.JS\dist\$(Configuration)\blazor.server.js</BlazorServerJSFile>
+    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
+    <BlazorServerJSFile
+        Condition=" '$(Configuration)' == 'Debug' ">..\..\Web.JS\dist\Debug\blazor.server.js</BlazorServerJSFile>
+    <BlazorServerJSFile
+        Condition=" '$(Configuration)' != 'Debug' ">..\..\Web.JS\dist\Release\blazor.server.js</BlazorServerJSFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/%(Filename)%(Extension)" />
-    <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('$(BlazorServerJSFile).map')" />
-  </ItemGroup>
+  <!-- blazor.server.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. Fall back if not. -->
+  <Target Name="_CheckBlazorServerJSPath" AfterTargets="ResolveProjectReferences"
+      Condition=" !EXISTS('$(BlazorServerJSFile)') ">
+    <Warning Text="'$(BlazorServerJSFile)' does not exist. Falling back to checked-in copy." />
+    <PropertyGroup>
+      <BlazorServerJSFile>..\..\Web.JS\dist\Release\blazor.server.js</BlazorServerJSFile>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_AddEmbeddedBlazor" AfterTargets="_CheckBlazorServerJSPath">
+    <ItemGroup>
+      <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/%(Filename)%(Extension)" />
+      <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/%(Filename)%(Extension)"
+          Condition="Exists('$(BlazorServerJSFile).map')" />
+    </ItemGroup>
+  </Target>
 </Project>
