@@ -20,6 +20,7 @@
       "src\\Middleware\\HttpsPolicy\\src\\Microsoft.AspNetCore.HttpsPolicy.csproj",
       "src\\Middleware\\ResponseCompression\\src\\Microsoft.AspNetCore.ResponseCompression.csproj",
       "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
+      "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
       "src\\Servers\\IIS\\AspNetCoreModuleV2\\AspNetCore\\AspNetCore.vcxproj",
       "src\\Servers\\IIS\\AspNetCoreModuleV2\\CommonLibTests\\CommonLibTests.vcxproj",
       "src\\Servers\\IIS\\AspNetCoreModuleV2\\CommonLib\\CommonLib.vcxproj",
@@ -41,15 +42,14 @@
       "src\\Servers\\IIS\\IIS\\test\\IIS.Tests\\IIS.Tests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\IISExpress.FunctionalTests\\IISExpress.FunctionalTests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\testassets\\IIS.Common.TestLib\\IIS.Common.TestLib.csproj",
+      "src\\Servers\\IIS\\IIS\\test\\testassets\\InProcessNewShimWebSite\\InProcessNewShimWebSite.csproj",
       "src\\Servers\\IIS\\IIS\\test\\testassets\\InProcessWebSite\\InProcessWebSite.csproj",
       "src\\Servers\\IIS\\IIS\\test\\testassets\\TestTasks\\TestTasks.csproj",
       "src\\Servers\\IIS\\IntegrationTesting.IIS\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj",
       "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
-      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
-      "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
-      "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
-      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj"
+      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
     ]
   }
 }
