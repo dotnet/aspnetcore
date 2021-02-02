@@ -27,7 +27,7 @@ function InvokeInstallDotnet([string]$command) {
     foreach ($i in 1..5) {
         Write-Host "InstallDotNet $command"
 
-        $timeoutSeconds = 10
+        $timeoutSeconds = 120
         $proc = Start-Process -filePath powershell.exe -ArgumentList "-noLogo -NoProfile -ExecutionPolicy unrestricted -command `"$command`"" -NoNewWindow -PassThru
 
         $proc | Wait-Process -Timeout $timeoutSeconds
