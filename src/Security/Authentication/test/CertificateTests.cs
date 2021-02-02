@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 new CertificateAuthenticationOptions
                 {
                     Events = successfulValidationEvents,
-                    AdditionalChainCertificates = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot },
+                    AdditionalChainCertificates = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, Certificates.SignedSecondaryRoot },
                     RevocationMode = X509RevocationMode.NoCheck
                 }, Certificates.SignedClient);
 
@@ -709,6 +709,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                                 options.RevocationFlag = configureOptions.RevocationFlag;
                                 options.RevocationMode = configureOptions.RevocationMode;
                                 options.ValidateValidityPeriod = configureOptions.ValidateValidityPeriod;
+                                options.AdditionalChainCertificates = configureOptions.AdditionalChainCertificates;
                             });
                         }
                         else
