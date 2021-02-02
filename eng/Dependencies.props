@@ -75,7 +75,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
     <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. -->
     <LatestPackageReference Include="System.Security.AccessControl" />
-    <LatestPackageReference Include="System.Security.Cryptography.Algorithms" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
