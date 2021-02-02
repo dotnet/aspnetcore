@@ -71,4 +71,4 @@ Write-Host "Running tests: dotnet run --no-restore --project RunTests\RunTests.c
 dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout
 
 Write-Host "Finished running tests: exit_code=$LastExitCode"
-exit $LastExitCode"
+exit $LastExitCode
