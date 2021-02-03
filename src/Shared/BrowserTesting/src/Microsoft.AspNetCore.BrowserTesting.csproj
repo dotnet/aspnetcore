@@ -7,13 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="build\*" Pack="true" PackagePath="build\" />
-    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
-    <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="PlaywrightSharp" />
+    <Reference Include="PlaywrightSharp" ExcludeAssets="build" Condition="'$(TargetOsName)' == 'linux-musl'" />
     <Reference Include="xunit.abstractions" />
     <Reference Include="xunit.extensibility.core" />
   </ItemGroup>
