@@ -5,8 +5,8 @@
     "noEmitOnError": true,
     "removeComments": false,
     "sourceMap": true,
-    "target": "es2018",
-    "lib": ["es2018", "dom"],
+    "target": "es2019",
+    "lib": ["es2019", "dom"],
     "strict": true
   }
 }
