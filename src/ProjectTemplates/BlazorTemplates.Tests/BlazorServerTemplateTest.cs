@@ -66,7 +66,6 @@ namespace Templates.Test
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
                 var page = await aspNetProcess.VisitInBrowserAsync(browser);
-                using var capture = page.CaptureLogs(Output);
                 await TestBasicNavigation(page);
                 await page.CloseAsync();
             }
@@ -79,7 +78,6 @@ namespace Templates.Test
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
                 var page = await aspNetProcess.VisitInBrowserAsync(browser);
-                using var capture = page.CaptureLogs(Output);
                 await TestBasicNavigation(page);
                 await page.CloseAsync();
             }
@@ -210,36 +208,6 @@ namespace Templates.Test
 
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
-        }
-    }
-
-    internal static class PlaywrightTestExtensions
-    {
-        public static IDisposable CaptureLogs(this IPage page, ITestOutputHelper output)
-        {
-            page.Console += WriteLog;
-
-            return new Registration(() => page.Console -= WriteLog);
-
-            void WriteLog(object sender, ConsoleEventArgs e)
-            {
-                output.WriteLine(e.Message.Text);
-            }
-        }
-
-
-        private class Registration : IDisposable
-        {
-            private readonly Action _unsubscribe;
-
-            public Registration(Action unsubscribe)
-            {
-                _unsubscribe = unsubscribe;
-            }
-            public void Dispose()
-            {
-                _unsubscribe();
-            }
         }
     }
 }
