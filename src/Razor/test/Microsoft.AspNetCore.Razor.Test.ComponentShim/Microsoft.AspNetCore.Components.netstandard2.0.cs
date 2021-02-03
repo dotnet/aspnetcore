@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.Components
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public sealed partial class CascadeTypeParamAttribute : System.Attribute
+    public sealed partial class CascadingTypeParameterAttribute : System.Attribute
     {
-        public CascadeTypeParamAttribute(string name) { }
+        public CascadingTypeParameterAttribute(string name) { }
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public partial class CascadingValue<TValue> : Microsoft.AspNetCore.Components.IComponent

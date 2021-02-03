@@ -117,7 +117,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 var cascadeGenericTypeAttributes = type
                     .GetAttributes()
-                    .Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.CascadeTypeParamAttribute))
+                    .Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.CascadingTypeParameterAttribute))
                     .Select(attribute => attribute.ConstructorArguments.FirstOrDefault().Value as string)
                     .ToList();
 
@@ -517,8 +517,8 @@ namespace Microsoft.CodeAnalysis.Razor
                     return null;
                 }
 
-                symbols.CascadeTypeParamAttribute = compilation.GetTypeByMetadataName(ComponentsApi.CascadeTypeParamAttribute.MetadataName);
-                if (symbols.CascadeTypeParamAttribute == null)
+                symbols.CascadingTypeParameterAttribute = compilation.GetTypeByMetadataName(ComponentsApi.CascadingTypeParameterAttribute.MetadataName);
+                if (symbols.CascadingTypeParameterAttribute == null)
                 {
                     // No definition for [CascadeTypeParam]. For back-compat, just don't activate this feature.
                 }
@@ -544,7 +544,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             public INamedTypeSymbol EventCallbackOfT { get; private set; }
 
-            public INamedTypeSymbol CascadeTypeParamAttribute { get; private set; }
+            public INamedTypeSymbol CascadingTypeParameterAttribute { get; private set; }
         }
 
         private class ComponentTypeVisitor : SymbolVisitor
