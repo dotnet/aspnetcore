@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             throw new NotImplementedException();
         }
-        
+
         public virtual RazorCodeDocument ProcessDesignTime(RazorProjectItem projectItem)
         {
             if (projectItem == null)
@@ -172,6 +172,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             features.Add(new DefaultTagHelperOptimizationPass());
             features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
             features.Add(new EliminateMethodBodyPass());
+            features.Add(new ComponentCssScopePass());
 
             // Default Code Target Extensions
             var targetExtensionFeature = new DefaultRazorTargetExtensionFeature();
@@ -228,7 +229,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Directive Classifier
             builder.Features.Add(new ComponentWhitespacePass());
-            
+
             // Optimization
             builder.Features.Add(new ComponentComplexAttributeContentPass());
             builder.Features.Add(new ComponentLoweringPass());

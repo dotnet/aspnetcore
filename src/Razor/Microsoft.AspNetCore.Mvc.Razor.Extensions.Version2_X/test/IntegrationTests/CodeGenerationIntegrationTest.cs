@@ -1,6 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
@@ -45,6 +48,29 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.IntegrationTests
 
             var diagnostics = compiled.Compilation.GetDiagnostics().Where(d => d.Severity >= DiagnosticSeverity.Warning);
             Assert.Equal("The using directive for 'System' appeared previously in this namespace", Assert.Single(diagnostics).GetMessage());
+        }
+
+        [Fact]
+        public void View_WithCssScope()
+        {
+            // Arrange
+            // Act
+            // This test case attempts to use all syntaxes that might interact with auto-generated attributes
+            var generated = CompileToCSharp(@"@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData[""Title""] = ""Home page"";
+}
+<div class=""text-center"">
+    <h1 class=""display-4"">Welcome</h1>
+    <p>Learn about<a href= ""https://docs.microsoft.com/aspnet/core"" > building Web apps with ASP.NET Core</a>.</p>
+</div>
+", cssScope: "TestCssScope");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument.GetCSharpDocument());
+            CompileToAssembly(generated);
         }
 
         [Fact]

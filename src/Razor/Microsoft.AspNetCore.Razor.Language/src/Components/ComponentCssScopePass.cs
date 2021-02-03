@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,21 +14,51 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
-            if (!IsComponentDocument(documentNode))
-            {
-                return;
-            }
-
             var cssScope = codeDocument.GetCssScope();
             if (string.IsNullOrEmpty(cssScope))
             {
                 return;
             }
 
-            var nodes = documentNode.FindDescendantNodes<MarkupElementIntermediateNode>();
-            for (var i = 0; i < nodes.Count; i++)
+            if (IsComponentDocument(documentNode))
             {
-                ProcessElement(nodes[i], cssScope);
+                var nodes = documentNode.FindDescendantNodes<MarkupElementIntermediateNode>();
+                for (var i = 0; i < nodes.Count; i++)
+                {
+                    ProcessElement(nodes[i], cssScope);
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debugger.Launch();
+                var nodes = documentNode.FindDescendantNodes<HtmlContentIntermediateNode>();
+                for (var i = 0; i < nodes.Count; i++)
+                {
+                    ProcessElement(nodes[i], cssScope);
+                }
+            }
+        }
+
+        private void ProcessElement(HtmlContentIntermediateNode node, string cssScope)
+        {
+            cssScope = " " + cssScope;
+            // Add a minimized attribute whose name is simply the CSS scope
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                var child = node.Children[i];
+                if (child is IntermediateToken token && token.IsHtml)
+                {
+                    var content = token.Content;
+                    if (content.StartsWith("<") && !content.StartsWith("</"))
+                    {
+                        node.Children.Insert(i + 1, new LazyIntermediateToken() {
+                            ContentFactory = () => cssScope,
+                            Kind = TokenKind.Html,
+                            Source = null
+                        });
+                        i++;
+                    }
+                }
             }
         }
 
