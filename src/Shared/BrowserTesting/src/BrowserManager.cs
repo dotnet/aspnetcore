@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -144,5 +145,33 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
         public bool IsExplicitlyDisabled(BrowserKind browserKind) =>
             _browserManagerConfiguration.IsDisabled || _browserManagerConfiguration.DisabledBrowsers.Contains(browserKind.ToString());
+
+        public static IEnumerable<object []> WithBrowsers<T>(IEnumerable<BrowserKind> browsers, IEnumerable<T []> data)
+        {
+            var result = new List<object[]>();
+            foreach (var browser in browsers)
+            {
+                foreach (var item in data)
+                {
+                    result.Add(item.Cast<object>().Prepend(browser).ToArray());
+                }
+            }
+
+            return result;
+        }
+
+        public static IEnumerable<object[]> WithBrowsers(IEnumerable<BrowserKind> browsers, params object [] data)
+        {
+            var result = new List<object[]>();
+            foreach (var browser in browsers)
+            {
+                foreach (var item in data)
+                {
+                    result.Add(new[] { browser, item });
+                }
+            }
+
+            return result;
+        }
     }
 }

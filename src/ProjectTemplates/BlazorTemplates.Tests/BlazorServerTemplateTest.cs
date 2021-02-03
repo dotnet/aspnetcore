@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -110,9 +111,11 @@ namespace Templates.Test
             }
         }
 
+        public static IEnumerable<object[]> BlazorServerTemplateWorks_IndividualAuthData =>
+                BrowserManager.WithBrowsers(new[] { BrowserKind.Chromium }, true , false);
+
         [Theory]
-        [InlineData(BrowserKind.Chromium, true)]
-        [InlineData(BrowserKind.Chromium, false)]
+        [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
         public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
