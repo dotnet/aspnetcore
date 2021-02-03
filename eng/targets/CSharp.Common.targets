@@ -20,7 +20,8 @@
     <NoWarn Condition=" '$(IsTestProject)' == 'true' OR
         '$(IsTestAssetProject)' == 'true' OR
         '$(ISBenchmarkProject)' == 'true' OR
-        '$(IsSampleProject)' == 'true' ">$(NoWarn);CA1416</NoWarn>
+        '$(IsSampleProject)' == 'true' OR
+        '$(IsMicrobenchmarksProject)' == 'true'">$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(DotNetBuildFromSource)' != 'true' AND $(AddPublicApiAnalyzers) ">
@@ -97,7 +98,7 @@
     </When>
   </Choose>
 
-  <Target Name="ValidateBenchmarks" AfterTargets="Build" Condition="'$(IsBenchmarkProject)' == 'true' AND 'true' == 'false'">
+  <Target Name="ValidateBenchmarks" BeforeTargets="Test" Condition="'$(IsMicrobenchmarksProject)' == 'true' AND 'true' == 'false'">
     <Message Text="%0ARunning benchmark validation for:%0A$(MSBuildProjectName)%0A"
     Importance="High" />
 
