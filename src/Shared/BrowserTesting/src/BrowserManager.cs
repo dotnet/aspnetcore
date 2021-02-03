@@ -139,9 +139,10 @@ namespace Microsoft.AspNetCore.BrowserTesting
             Playwright.Dispose();
         }
 
-        public bool IsAvailable(BrowserKind browserKind)
-        {
-            return _launchBrowsers.ContainsKey(browserKind.ToString());
-        }
+        public bool IsAvailable(BrowserKind browserKind) =>
+            _launchBrowsers.ContainsKey(browserKind.ToString());
+
+        public bool IsExplicitlyDisabled(BrowserKind browserKind) =>
+            _browserManagerConfiguration.IsDisabled || _browserManagerConfiguration.DisabledBrowsers.Contains(browserKind.ToString());
     }
 }

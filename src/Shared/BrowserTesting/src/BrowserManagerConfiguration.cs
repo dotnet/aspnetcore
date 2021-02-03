@@ -17,21 +17,26 @@ namespace Microsoft.AspNetCore.BrowserTesting
             Load(configuration);
         }
 
-        public int TimeoutInMilliseconds { get; set; }
+        public int TimeoutInMilliseconds { get; private set; }
 
-        public int TimeoutAfterFirstFailureInMilliseconds { get; set; }
+        public int TimeoutAfterFirstFailureInMilliseconds { get; private set; }
 
-        public string BaseArtifactsFolder { get; set; }
+        public string BaseArtifactsFolder { get; private set; }
 
-        public LaunchOptions GlobalBrowserOptions { get; set; }
+        public bool IsDisabled { get; private set; }
 
-        public BrowserContextOptions GlobalContextOptions { get; set; }
+        public LaunchOptions GlobalBrowserOptions { get; private set; }
 
-        public IDictionary<string, BrowserOptions> BrowserOptions { get; set; } =
+        public BrowserContextOptions GlobalContextOptions { get; private set; }
+
+        public IDictionary<string, BrowserOptions> BrowserOptions { get; } =
             new Dictionary<string, BrowserOptions>(StringComparer.OrdinalIgnoreCase);
 
-        public IDictionary<string, BrowserContextOptions> ContextOptions { get; set; } =
-            new Dictionary<string, BrowserContextOptions>();
+        public ISet<string> DisabledBrowsers { get; } =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        public IDictionary<string, BrowserContextOptions> ContextOptions { get; private set; } =
+            new Dictionary<string, BrowserContextOptions>(StringComparer.OrdinalIgnoreCase);
 
         public LaunchOptions GetLaunchOptions(LaunchOptions browserLaunchOptions)
         {
@@ -71,6 +76,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
         {
             TimeoutInMilliseconds = configuration.GetValue(nameof(TimeoutInMilliseconds), 30000);
             TimeoutAfterFirstFailureInMilliseconds = configuration.GetValue(nameof(TimeoutAfterFirstFailureInMilliseconds), 10000);
+            IsDisabled = configuration.GetValue(nameof(IsDisabled), false);
             BaseArtifactsFolder = Path.GetFullPath(configuration.GetValue(nameof(BaseArtifactsFolder), Path.Combine(Directory.GetCurrentDirectory(), "playwright")));
             Directory.CreateDirectory(BaseArtifactsFolder);
 
@@ -99,6 +105,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
                 var browserKind = browser.GetValue<BrowserKind>("BrowserKind");
                 if (!isEnabled)
                 {
+                    DisabledBrowsers.Add(browserName);
                     continue;
                 }
 

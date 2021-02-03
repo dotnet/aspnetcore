@@ -75,7 +75,12 @@ namespace Templates.Test
                 }
                 else
                 {
-                    Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var errorMessage), errorMessage);
+                    Assert.False(
+                        TestHelpers.TryValidateBrowserRequired(
+                            browserKind,
+                            isRequired: !Fixture.BrowserManager.IsExplicitlyDisabled(browserKind),
+                            out var errorMessage),
+                        errorMessage);
                 }
             }
         }
@@ -125,7 +130,12 @@ namespace Templates.Test
             }
             else
             {
-                Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var errorMessage), errorMessage);
+                Assert.False(
+                    TestHelpers.TryValidateBrowserRequired(
+                        browserKind,
+                        isRequired: !Fixture.BrowserManager.IsExplicitlyDisabled(browserKind),
+                        out var errorMessage),
+                    errorMessage);
             }
         }
 
@@ -188,7 +198,12 @@ namespace Templates.Test
             }
             else
             {
-                Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var error), error);
+                Assert.False(
+                    TestHelpers.TryValidateBrowserRequired(
+                        browserKind,
+                        isRequired: !Fixture.BrowserManager.IsExplicitlyDisabled(browserKind),
+                        out var errorMessage),
+                    errorMessage);
             }
         }
 
@@ -246,7 +261,12 @@ namespace Templates.Test
             }
             else
             {
-                Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var error), error);
+                Assert.False(
+                    TestHelpers.TryValidateBrowserRequired(
+                        browserKind,
+                        isRequired: !Fixture.BrowserManager.IsExplicitlyDisabled(browserKind),
+                        out var errorMessage),
+                    errorMessage);
             }
         }
 
@@ -355,7 +375,12 @@ namespace Templates.Test
             }
             else
             {
-                Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var error), error);
+                Assert.False(
+                    TestHelpers.TryValidateBrowserRequired(
+                        browserKind,
+                        isRequired: !Fixture.BrowserManager.IsExplicitlyDisabled(browserKind),
+                        out var errorMessage),
+                    errorMessage);
             }
         }
 
@@ -515,7 +540,12 @@ namespace Templates.Test
             }
             else
             {
-                Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var errorMessage), errorMessage);
+                Assert.False(
+                    TestHelpers.TryValidateBrowserRequired(
+                        browserKind,
+                        isRequired: !Fixture.BrowserManager.IsExplicitlyDisabled(browserKind),
+                        out var errorMessage),
+                    errorMessage);
             }
         }
 

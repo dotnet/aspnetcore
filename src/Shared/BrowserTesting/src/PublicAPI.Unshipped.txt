@@ -14,27 +14,23 @@ Microsoft.AspNetCore.BrowserTesting.BrowserManager.GetBrowserInstance(string bro
 Microsoft.AspNetCore.BrowserTesting.BrowserManager.HasFailedTests.get -> bool
 Microsoft.AspNetCore.BrowserTesting.BrowserManager.HasFailedTests.set -> void
 Microsoft.AspNetCore.BrowserTesting.BrowserManager.IsAvailable(Microsoft.AspNetCore.BrowserTesting.BrowserKind browserKind) -> bool
+Microsoft.AspNetCore.BrowserTesting.BrowserManager.IsExplicitlyDisabled(Microsoft.AspNetCore.BrowserTesting.BrowserKind browserKind) -> bool
 Microsoft.AspNetCore.BrowserTesting.BrowserManager.Playwright.get -> PlaywrightSharp.IPlaywright
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.BaseArtifactsFolder.get -> string
-Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.BaseArtifactsFolder.set -> void
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.BrowserManagerConfiguration(Microsoft.Extensions.Configuration.IConfiguration configuration) -> void
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.BrowserOptions.get -> System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.BrowserTesting.BrowserOptions>
-Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.BrowserOptions.set -> void
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.ContextOptions.get -> System.Collections.Generic.IDictionary<string, PlaywrightSharp.BrowserContextOptions>
-Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.ContextOptions.set -> void
+Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.DisabledBrowsers.get -> System.Collections.Generic.ISet<string>
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.GetContextOptions(string browser) -> PlaywrightSharp.BrowserContextOptions
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.GetContextOptions(string browser, string contextName) -> PlaywrightSharp.BrowserContextOptions
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.GetContextOptions(string browser, string contextName, PlaywrightSharp.BrowserContextOptions options) -> PlaywrightSharp.BrowserContextOptions
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.GetLaunchOptions(PlaywrightSharp.LaunchOptions browserLaunchOptions) -> PlaywrightSharp.LaunchOptions
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.GlobalBrowserOptions.get -> PlaywrightSharp.LaunchOptions
-Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.GlobalBrowserOptions.set -> void
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.GlobalContextOptions.get -> PlaywrightSharp.BrowserContextOptions
-Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.GlobalContextOptions.set -> void
+Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.IsDisabled.get -> bool
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.TimeoutAfterFirstFailureInMilliseconds.get -> int
-Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.TimeoutAfterFirstFailureInMilliseconds.set -> void
 Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.TimeoutInMilliseconds.get -> int
-Microsoft.AspNetCore.BrowserTesting.BrowserManagerConfiguration.TimeoutInMilliseconds.set -> void
 Microsoft.AspNetCore.BrowserTesting.BrowserOptions
 Microsoft.AspNetCore.BrowserTesting.BrowserOptions.BrowserKind.get -> Microsoft.AspNetCore.BrowserTesting.BrowserKind
 Microsoft.AspNetCore.BrowserTesting.BrowserOptions.BrowserKind.init -> void

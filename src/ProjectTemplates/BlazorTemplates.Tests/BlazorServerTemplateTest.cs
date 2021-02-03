@@ -56,7 +56,10 @@ namespace Templates.Test
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
-            var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+            var browser = Fixture.BrowserManager.IsAvailable(browserKind) ?
+                await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo) :
+                null;
+
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
                 Assert.False(
@@ -65,9 +68,21 @@ namespace Templates.Test
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
-                var page = await aspNetProcess.VisitInBrowserAsync(browser);
-                await TestBasicNavigation(page);
-                await page.CloseAsync();
+                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                {
+                    var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                    await TestBasicNavigation(page);
+                    await page.CloseAsync();
+                }
+                else
+                {
+                    Assert.False(
+                        TestHelpers.TryValidateBrowserRequired(
+                            browserKind,
+                            isRequired: !Fixture.BrowserManager.IsExplicitlyDisabled(browserKind),
+                            out var errorMessage),
+                        errorMessage);
+                }
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
@@ -77,9 +92,21 @@ namespace Templates.Test
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-                var page = await aspNetProcess.VisitInBrowserAsync(browser);
-                await TestBasicNavigation(page);
-                await page.CloseAsync();
+                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                {
+                    var page = await aspNetProcess.VisitInBrowserAsync(browser);
+                    await TestBasicNavigation(page);
+                    await page.CloseAsync();
+                }
+                else
+                {
+                    Assert.False(
+                        TestHelpers.TryValidateBrowserRequired(
+                            browserKind,
+                            isRequired: !Fixture.BrowserManager.IsExplicitlyDisabled(browserKind),
+                            out var errorMessage),
+                        errorMessage);
+                }
             }
         }
 
@@ -106,7 +133,10 @@ namespace Templates.Test
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
-            var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+            var browser = !Fixture.BrowserManager.IsAvailable(browserKind) ?
+                null :
+                await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
                 Assert.False(
@@ -122,7 +152,12 @@ namespace Templates.Test
                 }
                 else
                 {
-                    Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var error), error);
+                    Assert.False(
+                        TestHelpers.TryValidateBrowserRequired(
+                            browserKind,
+                            isRequired: !Fixture.BrowserManager.IsExplicitlyDisabled(browserKind),
+                            out var errorMessage),
+                        errorMessage);
                 }
             }
 
@@ -141,7 +176,12 @@ namespace Templates.Test
                 }
                 else
                 {
-                    Assert.False(TestHelpers.TryValidateBrowserRequired(browserKind, isRequired: OperatingSystem.IsWindows(), out var error), error);
+                    Assert.False(
+                        TestHelpers.TryValidateBrowserRequired(
+                            browserKind,
+                            isRequired: !Fixture.BrowserManager.IsExplicitlyDisabled(browserKind),
+                            out var errorMessage),
+                        errorMessage);
                 }
             }
         }
