@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // not set the items. We won't be able to do type inference on this and so it will just be nonsense.
                 foreach (var attribute in node.Attributes)
                 {
-                    if (TryFindGenericTypeNames(attribute.BoundAttribute, out var typeParameters))
+                    if (attribute != null && TryFindGenericTypeNames(attribute.BoundAttribute, out var typeParameters))
                     {
                         var attributeValueIsLambda = _pass.TypeNameFeature.IsLambda(GetContent(attribute));
                         var provideCascadingGenericTypes = new CascadingGenericTypeParameter
