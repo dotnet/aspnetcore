@@ -326,13 +326,32 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 new CertificateAuthenticationOptions
                 {
                     Events = successfulValidationEvents,
-                    AdditionalChainCertificates = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, Certificates.SignedSecondaryRoot },
+                    ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
+                    CustomTrustStore = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, },
+                    AdditionalChainCertificates = new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
                     RevocationMode = X509RevocationMode.NoCheck
                 }, Certificates.SignedClient);
 
             using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyValidClientCertFailsWithoutAdditionalCertificatesAuthenticates()
+        {
+            using var host = await CreateHost(
+                new CertificateAuthenticationOptions
+                {
+                    Events = successfulValidationEvents,
+                    ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
+                    CustomTrustStore = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, },
+                    RevocationMode = X509RevocationMode.NoCheck
+                }, Certificates.SignedClient);
+
+            using var server = host.GetTestServer();
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
         [Fact]
