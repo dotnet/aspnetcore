@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 return;
             }
 
-            if (!string.Equals(documentNode.DocumentKind, "mvc.1.0.view", StringComparison.Ordinal))
+            if (!string.Equals(documentNode.DocumentKind, "mvc.1.0.view", StringComparison.Ordinal) &&
+                !string.Equals(documentNode.DocumentKind, "mvc.1.0.razor-page", StringComparison.Ordinal))
             {
                 return;
             }
