@@ -2,18 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -32,6 +36,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         /// <param name="args">The argument passed to the application's main method.</param>
         /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(EntrypointInvoker))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(JSInteropMethods))]
+        [DynamicDependency(JsonSerialized, typeof(WebEventDescriptor))]
         public static WebAssemblyHostBuilder CreateDefault(string[]? args = default)
         {
             // We don't use the args for anything right now, but we want to accept them

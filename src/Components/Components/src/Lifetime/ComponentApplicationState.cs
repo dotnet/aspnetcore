@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -133,7 +134,7 @@ namespace Microsoft.AspNetCore.Components
         /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
         /// <param name="key">The key to use to persist the state.</param>
         /// <param name="instance">The instance to persist.</param>
-        public void PersistAsJson<TValue>(string key, TValue instance)
+        public void PersistAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, TValue instance)
         {
             if (key is null)
             {
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="key">The key used to persist the instance.</param>
         /// <param name="instance">The persisted instance.</param>
         /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-        public bool TryRedeemFromJson<TValue>(string key, [MaybeNullWhen(false)] out TValue? instance)
+        public bool TryRedeemFromJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, [MaybeNullWhen(false)] out TValue? instance)
         {
             if (key is null)
             {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components.Reflection
@@ -13,6 +14,10 @@ namespace Microsoft.AspNetCore.Components.Reflection
 
         private readonly Action<object, object> _setterDelegate;
 
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2060:MakeGenericMethod",
+            Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
         public PropertySetter(Type targetType, PropertyInfo property)
         {
             if (property.SetMethod == null)

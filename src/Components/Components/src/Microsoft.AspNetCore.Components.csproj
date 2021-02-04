@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
