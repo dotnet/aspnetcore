@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -525,6 +525,49 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             var diagnotics = compiled.CodeDocument.GetCSharpDocument().Diagnostics;
             Assert.Equal("RZ3906", Assert.Single(diagnotics).Id);
         }
+
+        [Fact]
+        public void View_WithCssScope()
+        {
+            // Arrange
+            AddCSharpSyntaxTree($@"
+[{typeof(HtmlTargetElementAttribute).FullName}({"\"all\""})]
+public class AllTagHelper : {typeof(TagHelper).FullName}
+{{
+    public string Bar {{ get; set; }}
+}}
+
+[{typeof(HtmlTargetElementAttribute).FullName}({"\"form\""})]
+public class FormTagHelper : {typeof(TagHelper).FullName}
+{{
+}}
+");
+
+            // Act
+            // This test case attempts to use all syntaxes that might interact with auto-generated attributes
+            var generated = CompileToCSharp(@"@page
+@addTagHelper *, AppCode
+@{
+    ViewData[""Title""] = ""Home page"";
+}
+<div class=""text-center"">
+    <h1 class=""display-4"">Welcome</h1>
+    <p>Learn about<a href= ""https://docs.microsoft.com/aspnet/core"" > building Web apps with ASP.NET Core</a>.</p>
+</div>
+<all Bar=""Foo""></all>
+<form asp-route=""register"" method=""post"">
+  <input name=""regular input"" />
+</form>
+", cssScope: "TestCssScope");
+
+            // Assert
+            var intermediate = generated.CodeDocument.GetDocumentIntermediateNode();
+            var csharp = generated.CodeDocument.GetCSharpDocument();
+            AssertDocumentNodeMatchesBaseline(intermediate);
+            AssertCSharpDocumentMatchesBaseline(csharp);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region DesignTime

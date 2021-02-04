@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             features.Add(new DefaultTagHelperOptimizationPass());
             features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
             features.Add(new EliminateMethodBodyPass());
-            features.Add(new ComponentCssScopePass());
+            features.Add(new ViewCssScopePass());
 
             // Default Code Target Extensions
             var targetExtensionFeature = new DefaultRazorTargetExtensionFeature();

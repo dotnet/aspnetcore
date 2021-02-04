@@ -51,29 +51,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.IntegrationTests
         }
 
         [Fact]
-        public void View_WithCssScope()
-        {
-            // Arrange
-            // Act
-            // This test case attempts to use all syntaxes that might interact with auto-generated attributes
-            var generated = CompileToCSharp(@"@page
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@{
-    ViewData[""Title""] = ""Home page"";
-}
-<div class=""text-center"">
-    <h1 class=""display-4"">Welcome</h1>
-    <p>Learn about<a href= ""https://docs.microsoft.com/aspnet/core"" > building Web apps with ASP.NET Core</a>.</p>
-</div>
-", cssScope: "TestCssScope");
-
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument.GetDocumentIntermediateNode());
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument.GetCSharpDocument());
-            CompileToAssembly(generated);
-        }
-
-        [Fact]
         public void InvalidNamespaceAtEOF_Runtime()
         {
             // Arrange

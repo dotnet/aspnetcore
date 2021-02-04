@@ -4,9 +4,9 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    internal class ComponentCssScopePass : ComponentIntermediateNodePassBase, IRazorOptimizationPass
+    internal class ViewCssScopePass : IntermediateNodePassBase, IRazorOptimizationPass
     {
         // Runs after components/bind, since it's preferable for the auto-generated attribute to appear later
         // in the DOM than developer-written ones
@@ -20,21 +20,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return;
             }
 
-            if (IsComponentDocument(documentNode))
+            if (!string.Equals(documentNode.DocumentKind, "mvc.1.0.view", StringComparison.Ordinal))
             {
-                var nodes = documentNode.FindDescendantNodes<MarkupElementIntermediateNode>();
-                for (var i = 0; i < nodes.Count; i++)
-                {
-                    ProcessElement(nodes[i], cssScope);
-                }
+                return;
             }
-            else
+
+            var nodes = documentNode.FindDescendantNodes<HtmlContentIntermediateNode>();
+            for (var i = 0; i < nodes.Count; i++)
             {
-                var nodes = documentNode.FindDescendantNodes<HtmlContentIntermediateNode>();
-                for (var i = 0; i < nodes.Count; i++)
-                {
-                    ProcessElement(nodes[i], cssScope);
-                }
+                ProcessElement(nodes[i], cssScope);
             }
         }
 
@@ -50,8 +44,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     var content = token.Content;
                     if (content.StartsWith("<") && !content.StartsWith("</"))
                     {
-                        node.Children.Insert(i + 1, new LazyIntermediateToken() {
-                            ContentFactory = () => cssScope,
+                        node.Children.Insert(i + 1, new IntermediateToken()
+                        {
+                            Content = cssScope,
                             Kind = TokenKind.Html,
                             Source = null
                         });
