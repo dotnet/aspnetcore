@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
         }
 
         [ConditionalFact]
-        [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/29549")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29549")]
         public async Task UseSpa_KillsRds_WhenAppIsStopped()
         {
             var serviceProvider = GetServiceProvider(s => s.RootPath = "/");
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
         }
 
         [ConditionalFact]
-        [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/29549")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29549")]
         public async Task UseSpa_KillsAngularCli_WhenAppIsStopped()
         {
             var serviceProvider = GetServiceProvider(s => s.RootPath = "/");
