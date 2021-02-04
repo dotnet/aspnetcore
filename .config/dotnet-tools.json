@@ -7,6 +7,12 @@
       "commands": [
         "dotnet-serve"
       ]
+    },
+    "dotnet-format": {
+      "version": "4.1.131201",
+      "commands": [
+        "dotnet-format"
+      ]
     }
   }
 }
