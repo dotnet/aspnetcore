@@ -7,7 +7,6 @@
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
     <!--Do not run this test project on Helix.-->
-    <BuildHelixPayload>false</BuildHelixPayload>
     <SkipHelixArm>true</SkipHelixArm>
 
     <BaseOutputPath />
