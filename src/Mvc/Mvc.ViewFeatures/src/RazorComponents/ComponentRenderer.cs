@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             if (!context.Response.HasStarted)
             {
-                context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, must-revalidate, max-age=0";
+                context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, max-age=0";
             }
 
             var currentInvocation = _serverComponentSerializer.SerializeInvocation(
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             if (!context.Response.HasStarted)
             {
-                context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, must-revalidate, max-age=0";
+                context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, max-age=0";
             }
 
             var currentInvocation = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
