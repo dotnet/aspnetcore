@@ -24,13 +24,13 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             var maxConcurrentRequests = queuePolicyOptions.MaxConcurrentRequests;
             if (maxConcurrentRequests <= 0)
             {
-                throw new ArgumentException(nameof(maxConcurrentRequests), "MaxConcurrentRequests must be a positive integer.");
+                throw new ArgumentException("MaxConcurrentRequests must be a positive integer.", nameof(maxConcurrentRequests));
             }
 
             var requestQueueLimit = queuePolicyOptions.RequestQueueLimit;
             if (requestQueueLimit < 0)
             {
-                throw new ArgumentException(nameof(requestQueueLimit), "The RequestQueueLimit cannot be a negative number.");
+                throw new ArgumentException("The RequestQueueLimit cannot be a negative number.", nameof(requestQueueLimit));
             }
 
             _serverSemaphore = new SemaphoreSlim(maxConcurrentRequests);
