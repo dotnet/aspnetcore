@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
@@ -87,6 +88,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private async Task<IHtmlContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
         {
+            if (!context.Response.HasStarted)
+            {
+                context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, max-age=0";
+            }
+
             var currentInvocation = _serverComponentSerializer.SerializeInvocation(
                 invocationId,
                 type,
@@ -124,6 +130,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private IHtmlContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
         {
+            if (!context.Response.HasStarted)
+            {
+                context.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, max-age=0";
+            }
+
             var currentInvocation = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
 
             return new ComponentHtmlContent(_serverComponentSerializer.GetPreamble(currentInvocation));
