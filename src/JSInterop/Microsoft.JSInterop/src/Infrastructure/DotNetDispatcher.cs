@@ -384,12 +384,18 @@ namespace Microsoft.JSInterop.Infrastructure
             // set of already-loaded assemblies.
             // In some edge cases this might force developers to explicitly call something on the
             // target assembly (from .NET) before they can invoke its allowed methods from JS.
-            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-            // Using LastOrDefault to workaround for https://github.com/dotnet/arcade/issues/2816.
+            // Using the last to workaround https://github.com/dotnet/arcade/issues/2816.
             // In most ordinary scenarios, we wouldn't have two instances of the same Assembly in the AppDomain
             // so this doesn't change the outcome.
-            var assembly = loadedAssemblies.LastOrDefault(a => new AssemblyKey(a).Equals(assemblyKey));
+            Assembly? assembly = null;
+            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (new AssemblyKey(a).Equals(assemblyKey))
+                {
+                    assembly = a;
+                }
+            }
 
             return assembly
                 ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyKey.AssemblyName}'.");

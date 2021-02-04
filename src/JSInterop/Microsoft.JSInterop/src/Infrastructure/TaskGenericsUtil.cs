@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.JSInterop.Infrastructure
@@ -51,7 +50,7 @@ namespace Microsoft.JSInterop.Infrastructure
             }
 
             return taskType.IsGenericType
-                ? taskType.GetGenericArguments().Single()
+                ? taskType.GetGenericArguments()[0]
                 : null;
         }
 
@@ -108,7 +107,7 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             return _cachedResultSetters.GetOrAdd(taskCompletionSource.GetType(), tcsType =>
             {
-                var resultType = tcsType.GetGenericArguments().Single();
+                var resultType = tcsType.GetGenericArguments()[0];
                 return (ITcsResultSetter)Activator.CreateInstance(
                     typeof(TcsResultSetter<>).MakeGenericType(resultType))!;
             });
