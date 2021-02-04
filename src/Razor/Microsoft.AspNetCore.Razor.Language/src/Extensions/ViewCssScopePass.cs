@@ -8,8 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     internal class ViewCssScopePass : IntermediateNodePassBase, IRazorOptimizationPass
     {
-        // Runs after components/bind, since it's preferable for the auto-generated attribute to appear later
-        // in the DOM than developer-written ones
+        // Runs after taghelpers are bound
         public override int Order => 110;
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
