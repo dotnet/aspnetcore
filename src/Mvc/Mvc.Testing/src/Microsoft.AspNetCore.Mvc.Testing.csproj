@@ -27,5 +27,6 @@
 
   <ItemGroup>
     <Content Include="Microsoft.AspNetCore.Mvc.Testing.targets" Pack="true" PackagePath="build/$(TargetFramework)/" />
+    <Content Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive/$(TargetFramework)/" />
   </ItemGroup>
 </Project>
