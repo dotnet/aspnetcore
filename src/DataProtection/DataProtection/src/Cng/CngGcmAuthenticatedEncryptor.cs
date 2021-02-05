@@ -177,11 +177,11 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                             dwFlags: 0);
                         UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
                         CryptoUtil.Assert(cbDecryptedBytesWritten == cbPlaintext, "cbDecryptedBytesWritten == cbPlaintext");
-                    }
 
-                    // At this point, retVal := { decryptedPayload }
-                    // And we're done!
-                    return retVal;
+                        // At this point, retVal := { decryptedPayload }
+                        // And we're done!
+                        return retVal;
+                    }
                 }
                 finally
                 {
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                 var subKey = new byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
 
                 //byte* pbSymmetricEncryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
-
+                // TODO: REVERT
                 fixed (byte* pbSymmetricEncryptionSubkey = subKey)
                     try
                     {
