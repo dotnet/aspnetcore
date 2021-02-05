@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             }
             else
             {
-                if (OSVersionUtil.IsWindows() && !IsGcmAlgorithm(authenticatedConfiguration.EncryptionAlgorithm))
+                if (OSVersionUtil.IsWindows())
                 {
                     Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
                     // CNG preferred over managed implementations if running on Windows

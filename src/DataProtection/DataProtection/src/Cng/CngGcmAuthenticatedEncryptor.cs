@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             // Is the key size appropriate?
             AlgorithmAssert.IsAllowableSymmetricAlgorithmKeySize(checked(symmetricAlgorithmKeySizeInBytes * 8));
             CryptoUtil.Assert(symmetricAlgorithmHandle.GetCipherBlockLength() == 128 / 8, "GCM requires a block cipher algorithm with a 128-bit block size.");
-            
+
             _genRandom = genRandom ?? BCryptGenRandomImpl.Instance;
             _sp800_108_ctr_hmac_provider = SP800_108_CTR_HMACSHA512Util.CreateProvider(keyDerivationKey);
             _symmetricAlgorithmHandle = symmetricAlgorithmHandle;
@@ -255,36 +255,36 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                 //byte* pbSymmetricEncryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
 
                 fixed (byte* pbSymmetricEncryptionSubkey = subKey)
-                try
-                {
-                    _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
-                        pbLabel: pbAdditionalAuthenticatedData,
-                        cbLabel: cbAdditionalAuthenticatedData,
-                        contextHeader: _contextHeader,
-                        pbContext: pbKeyModifier,
-                        cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
-                        pbDerivedKey: pbSymmetricEncryptionSubkey,
-                        cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
+                    try
+                    {
+                        _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
+                            pbLabel: pbAdditionalAuthenticatedData,
+                            cbLabel: cbAdditionalAuthenticatedData,
+                            contextHeader: _contextHeader,
+                            pbContext: pbKeyModifier,
+                            cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
+                            pbDerivedKey: pbSymmetricEncryptionSubkey,
+                            cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
 
-                    // Perform the encryption operation
-                    DoGcmEncrypt(
-                        pbKey: pbSymmetricEncryptionSubkey,
-                        cbKey: _symmetricAlgorithmSubkeyLengthInBytes,
-                        pbNonce: pbNonce,
-                        pbPlaintextData: pbPlaintext,
-                        cbPlaintextData: cbPlaintext,
-                        pbEncryptedData: pbEncryptedData,
-                        pbTag: pbAuthTag);
+                        // Perform the encryption operation
+                        DoGcmEncrypt(
+                            pbKey: pbSymmetricEncryptionSubkey,
+                            cbKey: _symmetricAlgorithmSubkeyLengthInBytes,
+                            pbNonce: pbNonce,
+                            pbPlaintextData: pbPlaintext,
+                            cbPlaintextData: cbPlaintext,
+                            pbEncryptedData: pbEncryptedData,
+                            pbTag: pbAuthTag);
 
-                    // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
-                    // And we're done!
-                    return retVal;
-                }
-                finally
-                {
-                    // The buffer contains key material, so delete it.
-                    UnsafeBufferUtil.SecureZeroMemory(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes);
-                }
+                        // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
+                        // And we're done!
+                        return retVal;
+                    }
+                    finally
+                    {
+                        // The buffer contains key material, so delete it.
+                        UnsafeBufferUtil.SecureZeroMemory(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes);
+                    }
             }
         }
     }
