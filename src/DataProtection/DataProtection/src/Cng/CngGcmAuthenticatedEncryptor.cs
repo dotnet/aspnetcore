@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Linq.Expressions;
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
@@ -153,18 +150,6 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                         cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
 
                     // Perform the decryption operation
-#if NETCOREAPP
-                    unsafe
-                    {
-                        var nonce = new Span<byte>(pbNonce, (int)NONCE_SIZE_IN_BYTES);
-                        var key = new Span<byte>(pbSymmetricDecryptionSubkey, (int)_symmetricAlgorithmSubkeyLengthInBytes);
-                        var tag = new Span<byte>(pbAuthTag, (int)TAG_SIZE_IN_BYTES);
-                        var plaintext = new Span<byte>(retVal);
-                        var encrypted = new Span<byte>(pbEncryptedData, (int)cbPlaintext);
-                        using var aes = new AesGcm(key);
-                        aes.Decrypt(nonce, encrypted, tag, plaintext);
-                    }
-#else
                     using (var decryptionSubkeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricDecryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
                     {
                         byte dummy;
@@ -193,7 +178,6 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                         UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
                         CryptoUtil.Assert(cbDecryptedBytesWritten == cbPlaintext, "cbDecryptedBytesWritten == cbPlaintext");
                     }
-#endif
 
                     // At this point, retVal := { decryptedPayload }
                     // And we're done!
@@ -220,18 +204,6 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         // 'pbEncryptedData' must point to a buffer the same length as 'pbPlaintextData'.
         private void DoGcmEncrypt(byte* pbKey, uint cbKey, byte* pbNonce, byte* pbPlaintextData, uint cbPlaintextData, byte* pbEncryptedData, byte* pbTag)
         {
-#if NETCOREAPP
-            unsafe
-            {
-                var nonce = new Span<byte>(pbNonce, (int)NONCE_SIZE_IN_BYTES);
-                var key = new Span<byte>(pbKey, (int)cbKey);
-                var tag = new Span<byte>(pbTag, (int)TAG_SIZE_IN_BYTES);
-                var plaintext = new Span<byte>(pbPlaintextData, (int)cbPlaintextData);
-                var encrypted = new Span<byte>(pbEncryptedData, (int)cbPlaintextData);
-                using var aes = new AesGcm(key);
-                aes.Encrypt(nonce, plaintext, encrypted, tag);
-            }
-#else
             BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO authCipherInfo;
             BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO.Init(out authCipherInfo);
             authCipherInfo.pbNonce = pbNonce;
@@ -256,7 +228,6 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                 UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
                 CryptoUtil.Assert(cbResult == cbPlaintextData, "cbResult == cbPlaintextData");
             }
-#endif
         }
 
         protected override byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer)
