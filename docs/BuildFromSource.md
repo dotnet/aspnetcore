@@ -224,6 +224,8 @@ code .
 
 When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](using-dotnet-on-command-line-in-this-repo).
 
+After navigating to the parent directory of the desired project, you can run the build script for that individual project.
+
 On Windows:
 
 ```powershell
@@ -266,7 +268,7 @@ source ./activate.sh
 
 ### Running tests on command-line
 
-Tests are not run by default. Use the `-test` option to run tests in addition to building.
+Tests are not run by default. Within an project's parent directory, use the `-test` option to run tests in addition to building.
 
 On Windows:
 

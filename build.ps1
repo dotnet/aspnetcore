@@ -192,6 +192,10 @@ if ($Help) {
     exit 1
 }
 
+if (-not $CI -and -not $Projects) {
+    Write-Warning "It looks like you might be running the top-level build script during local development. We recommend running the build scripts within a project's directory."
+}
+
 if ($DumpProcesses -or $CI) {
     # Dump running processes
     Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot

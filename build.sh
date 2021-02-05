@@ -226,6 +226,10 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+if [ "$ci" != true ] && [ -z "$build_projects" ]; then
+    __warn "It looks like you might be running the top-level build script during local development. We recommend running the build scripts within a project's directory."
+fi
+
 if [ "$build_all" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildAllProjects=true"
 fi
