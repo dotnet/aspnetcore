@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq.Expressions;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
     // going to the IV. This means that we'll only hit the 2^-32 probability limit after 2^96 encryption
     // operations, which will realistically never happen. (At the absurd rate of one encryption operation
     // per nanosecond, it would still take 180 times the age of the universe to hit 2^96 operations.)
-    internal unsafe sealed class GcmAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
+    internal unsafe sealed class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
     {
         // Having a key modifier ensures with overwhelming probability that no two encryption operations
         // will ever derive the same (encryption subkey, MAC subkey) pair. This limits an attacker's
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         private readonly BCryptAlgorithmHandle _symmetricAlgorithmHandle;
         private readonly uint _symmetricAlgorithmSubkeyLengthInBytes;
 
-        public GcmAuthenticatedEncryptor(Secret keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, IBCryptGenRandom? genRandom = null)
+        public CngGcmAuthenticatedEncryptor(Secret keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, IBCryptGenRandom? genRandom = null)
         {
             // Is the key size appropriate?
             AlgorithmAssert.IsAllowableSymmetricAlgorithmKeySize(checked(symmetricAlgorithmKeySizeInBytes * 8));
@@ -278,7 +279,11 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
 
                 // Use the KDF to generate a new symmetric block cipher key
                 // We'll need a temporary buffer to hold the symmetric encryption subkey
-                byte* pbSymmetricEncryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
+                var subKey = new byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
+
+                //byte* pbSymmetricEncryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
+
+                fixed (byte* pbSymmetricEncryptionSubkey = subKey)
                 try
                 {
                     _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(

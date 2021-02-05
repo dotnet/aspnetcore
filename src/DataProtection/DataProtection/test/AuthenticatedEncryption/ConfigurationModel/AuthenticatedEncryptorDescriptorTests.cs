@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             // Arrange
             var masterKey = Secret.Random(512 / 8);
-            var control = new GcmAuthenticatedEncryptor(
+            var control = new CngGcmAuthenticatedEncryptor(
                 keyDerivationKey: masterKey,
                 symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_GCM,
                 symmetricAlgorithmKeySizeInBytes: (uint)(keyLengthInBits / 8));
