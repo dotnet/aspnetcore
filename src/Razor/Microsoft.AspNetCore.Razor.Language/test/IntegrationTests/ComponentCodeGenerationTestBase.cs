@@ -3161,7 +3161,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [CascadeTypeParam(nameof(TItem))]
+    [CascadingTypeParameter(nameof(TItem))]
     public class Grid<TItem> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
@@ -3193,7 +3193,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [CascadeTypeParam(nameof(TItem))]
+    [CascadingTypeParameter(nameof(TItem))]
     public class Grid<TItem> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
@@ -3219,7 +3219,7 @@ namespace Test
         [Fact]
         public void ChildComponent_Generic_Explicit_NotCascaded()
         {
-            // The point of this test is to show that, without [CascadeTypeParam], we don't cascade
+            // The point of this test is to show that, without [CascadingTypeParameter], we don't cascade
 
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3260,7 +3260,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [CascadeTypeParam(nameof(TItem))]
+    [CascadingTypeParameter(nameof(TItem))]
     public class Grid<TItem> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
@@ -3292,7 +3292,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [CascadeTypeParam(nameof(TItem))]
+    [CascadingTypeParameter(nameof(TItem))]
     public class Ancestor<TItem> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
@@ -3332,7 +3332,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [CascadeTypeParam(nameof(TItem))]
+    [CascadingTypeParameter(nameof(TItem))]
     public class Grid<TItem> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
@@ -3398,7 +3398,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [CascadeTypeParam(nameof(TItem))]
+    [CascadingTypeParameter(nameof(TItem))]
     public class Grid<TItem> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
@@ -3431,7 +3431,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [CascadeTypeParam(nameof(TItem))]
+    [CascadingTypeParameter(nameof(TItem))]
     public class Grid<TItem> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
@@ -3458,7 +3458,7 @@ namespace Test
         [Fact]
         public void ChildComponent_Generic_TypeInference_CascadedWithMultipleTypes()
         {
-            
+
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System.Collections.Generic;
@@ -3466,9 +3466,9 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [CascadeTypeParam(nameof(TKey))]
-    [CascadeTypeParam(nameof(TValue))]
-    [CascadeTypeParam(nameof(TOther))]
+    [CascadingTypeParameter(nameof(TKey))]
+    [CascadingTypeParameter(nameof(TValue))]
+    [CascadingTypeParameter(nameof(TOther))]
     public class Parent<TKey, TValue, TOther> : ComponentBase
     {
         [Parameter] public Dictionary<TKey, TValue> Data { get; set; }
@@ -3511,8 +3511,8 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [CascadeTypeParam(nameof(TItem))]
-    [CascadeTypeParam(nameof(TUnrelated))]
+    [CascadingTypeParameter(nameof(TItem))]
+    [CascadingTypeParameter(nameof(TUnrelated))]
     public class Grid<TItem, TUnrelated> : ComponentBase
     {
         [Parameter] public System.Collections.Generic.Dictionary<TItem, TUnrelated> Items { get; set; }

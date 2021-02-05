@@ -520,7 +520,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 symbols.CascadingTypeParameterAttribute = compilation.GetTypeByMetadataName(ComponentsApi.CascadingTypeParameterAttribute.MetadataName);
                 if (symbols.CascadingTypeParameterAttribute == null)
                 {
-                    // No definition for [CascadeTypeParam]. For back-compat, just don't activate this feature.
+                    // No definition for [CascadingTypeParameter]. For back-compat, just don't activate this feature.
                 }
 
                 return symbols;
