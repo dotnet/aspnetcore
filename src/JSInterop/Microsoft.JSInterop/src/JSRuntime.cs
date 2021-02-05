@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -120,7 +119,7 @@ namespace Microsoft.JSInterop
                     return new ValueTask<TValue>(tcs.Task);
                 }
 
-                var argsJson = args?.Any() == true ?
+                var argsJson = args is not null && args.Length != 0 ?
                     JsonSerializer.Serialize(args, JsonSerializerOptions) :
                     null;
                 var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
