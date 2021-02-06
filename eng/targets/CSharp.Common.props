@@ -4,7 +4,7 @@
     <LangVersion>9.0</LangVersion>
 
     <!-- Enables Strict mode for Roslyn compiler -->
-    <Features>strict</Features>
+    <Features>strict;nullablePublicOnly</Features>
   </PropertyGroup>
 
   <ItemGroup>
