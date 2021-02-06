@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private string? _connectionId;
         private readonly ConnectionLogScope _logScope;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly Uri _url;
         private Func<Task<string?>>? _accessTokenProvider;
 
         /// <inheritdoc />
@@ -147,6 +148,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
             _httpConnectionOptions = httpConnectionOptions;
+
+            _url = _httpConnectionOptions.Url;
 
             if (!httpConnectionOptions.SkipNegotiation || httpConnectionOptions.Transports != HttpTransportType.WebSockets)
             {
@@ -303,7 +306,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private async Task SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
         {
-            var uri = _httpConnectionOptions.Url;
+            var uri = _url;
             // Set the initial access token provider back to the original one from options
             _accessTokenProvider = _httpConnectionOptions.AccessTokenProvider;
 
