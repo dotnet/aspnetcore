@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                     if (readResult.IsCompleted)
                     {
-                        throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
+                        throw new InvalidDataException("Unexpected end of Stream, could not read all multipart headers.");
                     }
                 }
                 finally
@@ -254,14 +254,12 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
 
                 var lineReader = new SequenceReader<byte>(line);
-                ReadOnlySequence<byte> value;
 
                 if (!lineReader.TryReadTo(out ReadOnlySequence<byte> key, ColonDelimiter))
                 {
                     throw new InvalidDataException($"Invalid header line: {GetStringFromReadOnlySequence(line)}");
                 }
-                value = line.Slice(lineReader.Position);
-
+                var value = line.Slice(lineReader.Position);
 
                 var decodedKey = GetStringFromReadOnlySequence(key);
                 var decodedValue = GetStringFromReadOnlySequence(value);
@@ -269,7 +267,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 AppendAndVerify(ref accumulator, decodedKey, decodedValue);
             }
 
-            buffer = default;
+            buffer = buffer.Slice(sequenceReader.Position);
             headersLength += sequenceReader.Consumed;
             return false;
         }

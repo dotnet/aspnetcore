@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using static Microsoft.AspNetCore.WebUtilities.MultipartSectionPipeReaderTest;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private static PipeReader MakeReader(string text)
         {
-            return PipeReader.Create(new MemoryStream(Encoding.UTF8.GetBytes(text)));
+            return PipeReader.Create(new SingleByteReadStream(Encoding.UTF8.GetBytes(text)));
         }
 
         private static string GetString(ReadOnlySequence<byte> buffer)
@@ -116,6 +117,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.NotNull(section);
 
             Assert.Single(section!.Headers);
+            Assert.Single(section!.Headers!["Content-Disposition"]);
             Assert.Equal("form-data; name=\"text\"", section!.Headers!["Content-Disposition"][0]);
 
             var result = await section!.ReadAsStringAsync();
@@ -147,7 +149,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             };
 
             var exception = await Assert.ThrowsAsync<InvalidDataException>(() => reader.ReadNextSectionAsync());
-            Assert.Equal("Line length limit 17 exceeded.", exception.Message);
+            Assert.Equal("Line length limit 15 exceeded.", exception.Message);
         }
 
         [Fact]

@@ -137,7 +137,7 @@ TextWithPartialBoundaryMatch +
 
      
         // Returns one byte at a time to test parsing boundary logic
-        private class SingleByteReadStream : Stream
+        public class SingleByteReadStream : Stream
         {
             public SingleByteReadStream(byte[] input)
             {
