@@ -7,6 +7,8 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <DefineConstants>$(DefineConstants);IGNITOR</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
