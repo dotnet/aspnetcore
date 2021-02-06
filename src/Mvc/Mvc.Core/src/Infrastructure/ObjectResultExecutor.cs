@@ -151,22 +151,18 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private static void InferContentTypes(ActionContext context, ObjectResult result)
         {
             Debug.Assert(result.ContentTypes != null);
-            if (result.ContentTypes.Count != 0)
-            {
-                return;
-            }
 
             // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
             // then the one set on ObjectResult takes precedence over the Response object
             var responseContentType = context.HttpContext.Response.ContentType;
-            if (!string.IsNullOrEmpty(responseContentType))
-            {
-                result.ContentTypes.Add(responseContentType);
-            }
-            else if (result.Value is ProblemDetails)
+            if (result.Value is ProblemDetails)
             {
                 result.ContentTypes.Add("application/problem+json");
                 result.ContentTypes.Add("application/problem+xml");
+            }
+            else if (!string.IsNullOrEmpty(responseContentType))
+            {
+                result.ContentTypes.Add(responseContentType);
             }
         }
 
