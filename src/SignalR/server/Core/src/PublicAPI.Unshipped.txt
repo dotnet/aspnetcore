@@ -1,1 +1,2 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.SignalR.HubInvocationContext.HubInvocationContext(Microsoft.AspNetCore.SignalR.HubCallerContext! context, string! hubMethodName, object?[]! hubMethodArguments) -> void

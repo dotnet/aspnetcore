@@ -1,4 +1,6 @@
 #nullable enable
+*REMOVED*static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object!>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
+*REMOVED*virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo! fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.DynamicComponent
 Microsoft.AspNetCore.Components.DynamicComponent.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
 Microsoft.AspNetCore.Components.DynamicComponent.DynamicComponent() -> void

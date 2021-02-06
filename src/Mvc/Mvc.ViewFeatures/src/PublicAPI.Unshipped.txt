@@ -1,4 +1,5 @@
 #nullable enable
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewComponentResultExecutor.ViewComponentResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> mvcHelperOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataDictionaryFactory) -> void
 ~Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentFactory.ReleaseViewComponentAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context, object component) -> System.Threading.Tasks.ValueTask
 ~Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentActivator.ReleaseAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context, object viewComponent) -> System.Threading.Tasks.ValueTask
 ~Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentFactory.ReleaseViewComponentAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context, object component) -> System.Threading.Tasks.ValueTask
