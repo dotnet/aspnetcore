@@ -65,7 +65,18 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static void ConfigureDefaultFeatureProviders(ApplicationPartManager manager)
         {
-            if (!manager.FeatureProviders.OfType<ControllerFeatureProvider>().Any())
+            var controllerFeaturePresent = false;
+
+            foreach(var feature in manager.FeatureProviders)
+            {
+                if(feature.GetType() == typeof(ControllerFeatureProvider))
+                {
+                    controllerFeaturePresent = true;
+                    break;
+                }
+            }
+
+            if(!controllerFeaturePresent)
             {
                 manager.FeatureProviders.Add(new ControllerFeatureProvider());
             }
