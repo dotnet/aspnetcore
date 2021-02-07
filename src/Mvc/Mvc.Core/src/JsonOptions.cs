@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// or using <see cref="BadRequestObjectResult"/>. In effect, this setting controls whether clients can receive
         /// detailed error messages about submitted JSON data.
         /// </remarks>
-        public bool AllowSystemTextJsonInputFormatterExceptionMessages { get; set; } = true;
+        public bool AllowInputFormatterExceptionMessages { get; set; } = true;
         
         /// <summary>
         /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used by <see cref="SystemTextJsonInputFormatter"/> and

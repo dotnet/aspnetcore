@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -131,13 +131,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [InlineData("{\"a\":{\"b\"}}", "$.a", "'}' is invalid after a property name. Expected a ':'. Path: $.a | LineNumber: 0 | BytePositionInLine: 9.")]
         [InlineData("{\"age\":\"x\"}", "$.age", "The JSON value could not be converted to System.Decimal. Path: $.age | LineNumber: 0 | BytePositionInLine: 10.")]
         [InlineData("{\"login\":1}", "$.login", "The JSON value could not be converted to Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatterTest+UserLogin. Path: $.login | LineNumber: 0 | BytePositionInLine: 10.")]
-        public async Task ReadAsync_WithAllowSystemTextJsonInputFormatterExceptionMessages_RegistersJsonInputExceptionsAsInputFormatterException(
+        public async Task ReadAsync_WithAllowInputFormatterExceptionMessages_RegistersJsonInputExceptionsAsInputFormatterException(
                     string content,
                     string modelStateKey,
                     string expectedMessage)
         {
             // Arrange
-            var formatter = GetInputFormatter(allowSystemTextJsonInputFormatterExceptionMessages: true);
+            var formatter = GetInputFormatter(allowInputFormatterExceptionMessages: true);
 
             var contentBytes = Encoding.UTF8.GetBytes(content);
             var httpContext = GetHttpContext(contentBytes);
@@ -157,10 +157,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public async Task ReadAsync_DoNotAllowSystemTextJsonInputFormatterExceptionMessages_DoesNotWrapJsonInputExceptions()
+        public async Task ReadAsync_DoNotAllowInputFormatterExceptionMessages_DoesNotWrapJsonInputExceptions()
         {
             // Arrange
-            var formatter = GetInputFormatter(allowSystemTextJsonInputFormatterExceptionMessages: false);
+            var formatter = GetInputFormatter(allowInputFormatterExceptionMessages: false);
             var contentBytes = Encoding.UTF8.GetBytes("{");
             var httpContext = GetHttpContext(contentBytes);
 
@@ -179,12 +179,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Empty(modelError.ErrorMessage);
         }
 
-        protected override TextInputFormatter GetInputFormatter(bool allowSystemTextJsonInputFormatterExceptionMessages = true)
+        protected override TextInputFormatter GetInputFormatter(bool allowInputFormatterExceptionMessages = true)
         {
             return new SystemTextJsonInputFormatter(
                 new JsonOptions
                 {
-                    AllowSystemTextJsonInputFormatterExceptionMessages = allowSystemTextJsonInputFormatterExceptionMessages
+                    AllowInputFormatterExceptionMessages = allowInputFormatterExceptionMessages
                 },
                 LoggerFactory.CreateLogger<SystemTextJsonInputFormatter>());
         }

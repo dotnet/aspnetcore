@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         private Exception WrapExceptionForModelState(JsonException jsonException)
         {
-            if (!_jsonOptions.AllowSystemTextJsonInputFormatterExceptionMessages)
+            if (!_jsonOptions.AllowInputFormatterExceptionMessages)
             {
                 // This app is not opted-in to System.Text.Json messages, return the original exception.
                 return jsonException;
