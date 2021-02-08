@@ -69,7 +69,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.CookiePolicy" ProjectPath="$(RepoRoot)src\Security\CookiePolicy\src\Microsoft.AspNetCore.CookiePolicy.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Web.Xdt.Extensions" ProjectPath="$(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" />
     <ProjectReferenceProvider Include="dotnet-getdocument" ProjectPath="$(RepoRoot)src\Tools\dotnet-getdocument\src\dotnet-getdocument.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Watch.BrowserRefresh" ProjectPath="$(RepoRoot)src\Tools\dotnet-watch\BrowserRefresh\src\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Client" ProjectPath="$(RepoRoot)src\Tools\Extensions.ApiDescription.Client\src\Microsoft.Extensions.ApiDescription.Client.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Server" ProjectPath="$(RepoRoot)src\Tools\Extensions.ApiDescription.Server\src\Microsoft.Extensions.ApiDescription.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" ProjectPath="$(RepoRoot)src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj" />

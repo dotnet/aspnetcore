@@ -1,9 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <OutputType>Exe</OutputType>
-  </PropertyGroup>
-
-</Project>
