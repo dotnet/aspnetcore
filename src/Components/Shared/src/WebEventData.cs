@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -10,8 +11,8 @@ namespace Microsoft.AspNetCore.Components.Web
     internal class WebEventData
     {
         // This class represents the second half of parsing incoming event data,
-        // once the type of the eventArgs becomes known.
-        public static WebEventData Parse(string eventDescriptorJson, string eventArgsJson)
+        // once the event ID (and possibly the type of the eventArgs) becomes known.
+        public static WebEventData Parse(Renderer renderer, string eventDescriptorJson, string eventArgsJson)
         {
             WebEventDescriptor eventDescriptor;
             try
@@ -24,17 +25,19 @@ namespace Microsoft.AspNetCore.Components.Web
             }
 
             return Parse(
+                renderer,
                 eventDescriptor,
                 eventArgsJson);
         }
 
-        public static WebEventData Parse(WebEventDescriptor eventDescriptor, string eventArgsJson)
+        public static WebEventData Parse(Renderer renderer, WebEventDescriptor eventDescriptor, string eventArgsJson)
         {
+            var parsedEventArgs = ParseEventArgsJson(renderer, eventDescriptor.EventHandlerId, eventDescriptor.EventName, eventArgsJson);
             return new WebEventData(
                 eventDescriptor.BrowserRendererId,
                 eventDescriptor.EventHandlerId,
                 InterpretEventFieldInfo(eventDescriptor.EventFieldInfo),
-                ParseEventArgsJson(eventDescriptor.EventHandlerId, eventDescriptor.EventArgsType, eventArgsJson));
+                parsedEventArgs);
         }
 
         private WebEventData(int browserRendererId, ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
@@ -53,36 +56,140 @@ namespace Microsoft.AspNetCore.Components.Web
 
         public EventArgs EventArgs { get; }
 
-        private static EventArgs ParseEventArgsJson(ulong eventHandlerId, string eventArgsType, string eventArgsJson)
+        private static EventArgs ParseEventArgsJson(Renderer renderer, ulong eventHandlerId, string eventName, string eventArgsJson)
         {
             try
             {
-                return eventArgsType switch
+                if (TryGetStandardWebEventArgsType(eventName, out var eventArgsType))
                 {
-                    "change" => DeserializeChangeEventArgs(eventArgsJson),
-                    "clipboard" => Deserialize<ClipboardEventArgs>(eventArgsJson),
-                    "drag" => Deserialize<DragEventArgs>(eventArgsJson),
-                    "error" => Deserialize<ErrorEventArgs>(eventArgsJson),
-                    "focus" => Deserialize<FocusEventArgs>(eventArgsJson),
-                    "keyboard" => Deserialize<KeyboardEventArgs>(eventArgsJson),
-                    "mouse" => Deserialize<MouseEventArgs>(eventArgsJson),
-                    "pointer" => Deserialize<PointerEventArgs>(eventArgsJson),
-                    "progress" => Deserialize<ProgressEventArgs>(eventArgsJson),
-                    "touch" => Deserialize<TouchEventArgs>(eventArgsJson),
-                    "unknown" => EventArgs.Empty,
-                    "wheel" => Deserialize<WheelEventArgs>(eventArgsJson),
-                    "toggle" => Deserialize<EventArgs>(eventArgsJson),
-                    _ => throw new InvalidOperationException($"Unsupported event type '{eventArgsType}'. EventId: '{eventHandlerId}'."),
-                };
+                    // Special case for ChangeEventArgs because its value type can be one of
+                    // several types, and System.Text.Json doesn't pick types dynamically
+                    if (eventArgsType == typeof(ChangeEventArgs))
+                    {
+                        return DeserializeChangeEventArgs(eventArgsJson);
+                    }
+                }
+                else
+                {
+                    // For custom events, the args type is determined from the associated delegate
+                    eventArgsType = renderer.GetEventArgsType(eventHandlerId);
+                }
+
+                return (EventArgs)JsonSerializer.Deserialize(eventArgsJson, eventArgsType, JsonSerializerOptionsProvider.Options)!;
             }
             catch (Exception e)
             {
                 throw new InvalidOperationException($"There was an error parsing the event arguments. EventId: '{eventHandlerId}'.", e);
             }
-
         }
 
-        static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, JsonSerializerOptionsProvider.Options)!;
+        private static bool TryGetStandardWebEventArgsType(string eventName, [MaybeNullWhen(false)] out Type type)
+        {
+            // For back-compatibility, we recognize the built-in list of web event names and hard-code
+            // rules about the deserialization type for their eventargs. This makes it possible to declare
+            // an event handler as receiving EventArgs, and have it actually receive a subclass at runtime
+            // depending on the event that was raised.
+            //
+            // The following list should remain in sync with EventForDotNet.ts.
+
+            switch (eventName)
+            {
+                case "input":
+                case "change":
+                    type = typeof(ChangeEventArgs);
+                    return true;
+
+                case "copy":
+                case "cut":
+                case "paste":
+                    type = typeof(EventArgs);
+                    return true;
+
+                case "drag":
+                case "dragend":
+                case "dragenter":
+                case "dragleave":
+                case "dragover":
+                case "dragstart":
+                case "drop":
+                    type = typeof(DragEventArgs);
+                    return true;
+
+                case "focus":
+                case "blur":
+                case "focusin":
+                case "focusout":
+                    type = typeof(EventArgs);
+                    return true;
+
+                case "keydown":
+                case "keyup":
+                case "keypress":
+                    type = typeof(KeyboardEventArgs);
+                    return true;
+
+                case "contextmenu":
+                case "click":
+                case "mouseover":
+                case "mouseout":
+                case "mousemove":
+                case "mousedown":
+                case "mouseup":
+                case "dblclick":
+                    type = typeof(MouseEventArgs);
+                    return true;
+
+                case "error":
+                    type = typeof(ErrorEventArgs);
+                    return true;
+
+                case "loadstart":
+                case "timeout":
+                case "abort":
+                case "load":
+                case "loadend":
+                case "progress":
+                    type = typeof(ProgressEventArgs);
+                    return true;
+
+                case "touchcancel":
+                case "touchend":
+                case "touchmove":
+                case "touchenter":
+                case "touchleave":
+                case "touchstart":
+                    type = typeof(TouchEventArgs);
+                    return true;
+
+                case "gotpointercapture":
+                case "lostpointercapture":
+                case "pointercancel":
+                case "pointerdown":
+                case "pointerenter":
+                case "pointerleave":
+                case "pointermove":
+                case "pointerout":
+                case "pointerover":
+                case "pointerup":
+                    type = typeof(PointerEventArgs);
+                    return true;
+
+                case "wheel":
+                case "mousewheel":
+                    type = typeof(WheelEventArgs);
+                    return true;
+
+                case "toggle":
+                    type = typeof(EventArgs);
+                    return true;
+
+                default:
+                    // For custom event types, there are no built-in rules, so the deserialization type is
+                    // determined by the parameter declared on the delegate.
+                    type = null;
+                    return false;
+            }
+        }
 
         private static EventFieldInfo? InterpretEventFieldInfo(EventFieldInfo? fieldInfo)
         {
@@ -110,6 +217,8 @@ namespace Microsoft.AspNetCore.Components.Web
 
             return null;
         }
+
+        static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, JsonSerializerOptionsProvider.Options)!;
 
         private static ChangeEventArgs DeserializeChangeEventArgs(string eventArgsJson)
         {

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// For framework use only.
         /// </summary>
-        public string EventArgsType { get; set; } = default!;
+        public string EventName { get; set; } = default!;
 
         /// <summary>
         /// For framework use only.

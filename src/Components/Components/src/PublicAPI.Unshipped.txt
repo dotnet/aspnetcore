@@ -15,6 +15,7 @@ Microsoft.AspNetCore.Components.DynamicComponent.Type.set -> void
 Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute
 Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute.CascadingTypeParameterAttribute(string! name) -> void
 Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute.Name.get -> string!
+Microsoft.AspNetCore.Components.RenderTree.Renderer.GetEventArgsType(ulong eventHandlerId) -> System.Type!
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
 *REMOVED*readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.RemovedAttributeName -> string
