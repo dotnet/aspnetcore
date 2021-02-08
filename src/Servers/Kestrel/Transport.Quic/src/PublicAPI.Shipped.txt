@@ -12,13 +12,13 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOpt
 Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxWriteBufferSize.get -> long?
 Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxWriteBufferSize.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.QuicTransportOptions() -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Alpn.get -> string?
-Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Alpn.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Certificate.get -> System.Security.Cryptography.X509Certificates.X509Certificate2?
-Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Certificate.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.CertificateFilePath.get -> string?
-Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.CertificateFilePath.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.PrivateKeyFilePath.get -> string?
-Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.PrivateKeyFilePath.set -> void
-static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions!>! configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Alpn.get -> string
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Alpn.set -> void
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Certificate.get -> System.Security.Cryptography.X509Certificates.X509Certificate2
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Certificate.set -> void
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.CertificateFilePath.get -> string
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.CertificateFilePath.set -> void
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.PrivateKeyFilePath.get -> string
+~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.PrivateKeyFilePath.set -> void
+~static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
+~static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions> configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder

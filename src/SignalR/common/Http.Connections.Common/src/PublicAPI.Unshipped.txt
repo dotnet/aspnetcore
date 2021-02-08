@@ -1,1 +1,2 @@
 #nullable enable
+*REMOVED*~static Microsoft.AspNetCore.Http.Connections.NegotiateProtocol.ParseResponse(System.IO.Stream content) -> Microsoft.AspNetCore.Http.Connections.NegotiationResponse
