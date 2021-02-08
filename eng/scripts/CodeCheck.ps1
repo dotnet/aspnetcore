@@ -190,6 +190,26 @@ try {
             & git --no-pager diff --ignore-space-change $filePath
         }
     }
+
+    # Retrieve the set of changed files compared to main
+    $changedFilesFromMain = & cmd /c 'git --no-pager diff main... --ignore-space-change --name-only 2>nul'
+    $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
+
+    if ($changedFilesFromMain) {
+        foreach ($file in $changedFilesFromMain) {
+            if ($file.EndsWith('PublicAPI.Shipped.txt'),"InvariantCultureIgnoreCase") {
+                $changedAPIBaselines.Add($file)
+            }
+        }
+    }
+
+    if ($changedAPIBaselines.count -gt 0) {
+        LogError "Detected modification to baseline API files. PublicAPI.Shipped.txt files should only be updated after a major release. See /docs/APIBaselines.md for more information."
+        LogError "Modified API baseline files:"
+        foreach ($file in $changedAPIBaselines) {
+            LogError $file
+        }
+    }
 }
 finally {
     Write-Host ""

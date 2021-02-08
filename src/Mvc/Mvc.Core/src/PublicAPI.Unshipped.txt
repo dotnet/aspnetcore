@@ -1060,4 +1060,4 @@ virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelper.GenerateUrl(string? protocol,
 virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelper.GetVirtualPathData(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary! values) -> Microsoft.AspNetCore.Routing.VirtualPathData?
 virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Content(string? contentPath) -> string?
 virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.IsLocalUrl(string? url) -> bool
-virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Link(string? routeName, object? values) -> string
+virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Link(string? routeName, object? values) -> string?
