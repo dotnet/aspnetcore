@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             if (IsGcmAlgorithm(authenticatedConfiguration.EncryptionAlgorithm))
             {
 #if NETCOREAPP
-                return new AesGcmAuthenticatedEncryptor(new Secret(secret), GetAlgorithmKeySizeInBits(authenticatedConfiguration.EncryptionAlgorithm));
+                return new AesGcmAuthenticatedEncryptor(new Secret(secret), GetAlgorithmKeySizeInBits(authenticatedConfiguration.EncryptionAlgorithm) / 8);
 #else
                 // GCM requires CNG, and CNG is only supported on Windows.
                 if (!OSVersionUtil.IsWindows())

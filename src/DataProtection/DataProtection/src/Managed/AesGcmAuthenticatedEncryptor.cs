@@ -41,21 +41,21 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
         private readonly int _derivedkeySizeInBytes;
         private readonly IManagedGenRandom _genRandom;
 
-        public AesGcmAuthenticatedEncryptor(Secret keyDerivationKey, int derivedKeySizesInBytes, IManagedGenRandom? genRandom = null)
+        public AesGcmAuthenticatedEncryptor(Secret keyDerivationKey, int derivedKeySizeInBytes, IManagedGenRandom? genRandom = null)
         {
             _keyDerivationKey = keyDerivationKey;
-            _derivedkeySizeInBytes = derivedKeySizesInBytes / 8;
+            _derivedkeySizeInBytes = derivedKeySizeInBytes;
 
-            switch (derivedKeySizesInBytes)
+            switch (_derivedkeySizeInBytes)
             {
-                case 128:
+                case 16:
                     _contextHeader = AES_128_GCM_Header;
                     break;
-                case 192:
-                    _contextHeader = AES_128_GCM_Header;
+                case 24:
+                    _contextHeader = AES_192_GCM_Header;
                     break;
-                case 256:
-                    _contextHeader = AES_128_GCM_Header;
+                case 32:
+                    _contextHeader = AES_256_GCM_Header;
                     break;
                 default:
                     throw Error.CryptCommon_GenericError(); // should never happen
@@ -124,6 +124,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                             var nonce = new Span<byte>(ciphertext.Array, nonceOffset, NONCE_SIZE_IN_BYTES);
                             var tag = new Span<byte>(ciphertext.Array, tagOffset, TAG_SIZE_IN_BYTES);
                             var encrypted = new Span<byte>(ciphertext.Array, encryptedDataOffset, plaintextBytes);
+                            Console.WriteLine("Derived key: "+Convert.ToBase64String(derivedKey));
                             using var aes = new AesGcm(derivedKey);
                             aes.Decrypt(nonce, encrypted, tag, plaintext);
                             return plaintext;
@@ -170,9 +171,11 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                     }
 
                     // Randomly generate the key modifier and nonce
-                    var keyModifierNonce = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES);
+                    var keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
+                    var nonceBytes = _genRandom.GenRandom(NONCE_SIZE_IN_BYTES);
 
-                    Buffer.BlockCopy(keyModifierNonce, 0, retVal, (int)preBufferSize, keyModifierNonce.Length);
+                    Buffer.BlockCopy(keyModifier, 0, retVal, (int)preBufferSize, keyModifier.Length);
+                    Buffer.BlockCopy(nonceBytes, 0, retVal, (int)preBufferSize + keyModifier.Length, nonceBytes.Length);
 
                     // At this point, retVal := { preBuffer | keyModifier | nonce | _____ | _____ | postBuffer }
 
@@ -190,7 +193,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                                 kdk: decryptedKdk,
                                 label: additionalAuthenticatedData,
                                 contextHeader: _contextHeader,
-                                context: keyModifierNonce,
+                                context: keyModifier,
                                 prfFactory: _kdkPrfFactory,
                                 output: new ArraySegment<byte>(derivedKey));
 

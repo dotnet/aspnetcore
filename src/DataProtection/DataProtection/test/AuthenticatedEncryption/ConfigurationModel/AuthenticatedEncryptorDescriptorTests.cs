@@ -76,6 +76,31 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             Assert.Equal(plaintext, roundTripPlaintext);
         }
 
+        [ConditionalTheory]
+        [ConditionalRunTestOnlyOnWindows]
+        [InlineData(EncryptionAlgorithm.AES_128_GCM)]
+        [InlineData(EncryptionAlgorithm.AES_192_GCM)]
+        [InlineData(EncryptionAlgorithm.AES_256_GCM)]
+        public void CreateAuthenticatedEncryptor_RoundTripsData_AesGcmImplementation(EncryptionAlgorithm encryptionAlgorithm)
+        {
+            // Parse test input
+            int keyLengthInBits = Int32.Parse(Regex.Match(encryptionAlgorithm.ToString(), @"^AES_(?<keyLength>\d{3})_GCM$").Groups["keyLength"].Value, CultureInfo.InvariantCulture);
+
+            // Arrange
+            var masterKey = Secret.Random(512 / 8);
+            var control = new AesGcmAuthenticatedEncryptor(
+                keyDerivationKey: masterKey,
+                derivedKeySizeInBytes: (keyLengthInBits / 8));
+            var test = CreateEncryptorInstanceFromDescriptor(CreateDescriptor(encryptionAlgorithm, ValidationAlgorithm.HMACSHA256 /* unused */, masterKey));
+
+            // Act & assert - data round trips properly from control to test
+            byte[] plaintext = new byte[] { 1, 2, 3, 4, 5 };
+            byte[] aad = new byte[] { 2, 4, 6, 8, 0 };
+            byte[] ciphertext = control.Encrypt(new ArraySegment<byte>(plaintext), new ArraySegment<byte>(aad));
+            byte[] roundTripPlaintext = test.Decrypt(new ArraySegment<byte>(ciphertext), new ArraySegment<byte>(aad));
+            Assert.Equal(plaintext, roundTripPlaintext);
+        }
+
         public static TheoryData CreateAuthenticatedEncryptor_RoundTripsData_ManagedImplementationData
             => new TheoryData<EncryptionAlgorithm, ValidationAlgorithm, Func<HMAC>>
             {
