@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.Web
                 case "copy":
                 case "cut":
                 case "paste":
-                    type = typeof(EventArgs);
+                    type = typeof(ClipboardEventArgs);
                     return true;
 
                 case "drag":
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Components.Web
                 case "blur":
                 case "focusin":
                 case "focusout":
-                    type = typeof(EventArgs);
+                    type = typeof(FocusEventArgs);
                     return true;
 
                 case "keydown":
