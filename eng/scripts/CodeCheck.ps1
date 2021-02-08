@@ -190,6 +190,31 @@ try {
             & git --no-pager diff --ignore-space-change $filePath
         }
     }
+
+    Write-Host "Checking for changes to API baseline files"
+
+    # Retrieve the set of changed files compared to main
+    $commitSha = git rev-parse HEAD
+    $changedFilesFromMain = git --no-pager diff origin/main...$commitSha --ignore-space-change --name-only
+    $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
+
+    if ($changedFilesFromMain) {
+        foreach ($file in $changedFilesFromMain) {
+            if ($file -like '*PublicAPI.Shipped.txt') {
+                $changedAPIBaselines.Add($file)
+            }
+        }
+    }
+
+    Write-Host "Found changes in $($changedAPIBaselines.count) API baseline files"
+
+    if ($changedAPIBaselines.count -gt 0) {
+        LogError "Detected modification to baseline API files. PublicAPI.Shipped.txt files should only be updated after a major release. See /docs/APIBaselines.md for more information."
+        LogError "Modified API baseline files:"
+        foreach ($file in $changedAPIBaselines) {
+            LogError $file
+        }
+    }
 }
 finally {
     Write-Host ""
