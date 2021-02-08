@@ -33,7 +33,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          IHttpContextFeature,
                                          IHttpTransportFeature,
                                          IConnectionInherentKeepAliveFeature,
-                                         IConnectionLifetimeFeature
+                                         IConnectionLifetimeFeature,
+                                         IThreadPoolWorkItem
     {
         private static long _tenSeconds = TimeSpan.FromSeconds(10).Ticks;
 
@@ -46,6 +47,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private IDuplexPipe _application;
         private IDictionary<object, object> _items;
         private CancellationTokenSource _connectionClosedTokenSource;
+
+        // No need to RunContinuationsAsynchronously since we're at the tail of a threadpool thread
+        private TaskCompletionSource _connectionDelegateTcs = new TaskCompletionSource();
+        private ConnectionDelegate _connectionDelegate;
 
         private CancellationTokenSource _sendCts;
         private bool _activeSend;
@@ -547,12 +552,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Verify some initialization invariants
             Debug.Assert(TransportType != HttpTransportType.None, "Transport has not been initialized yet");
 
-            // Jump onto the thread pool thread so blocking user code doesn't block the setup of the
-            // connection and transport
-            await AwaitableThreadPool.Yield();
+            _connectionDelegate = connectionDelegate;
 
-            // Running this in an async method turns sync exceptions into async ones
-            await connectionDelegate(this);
+            // Queue the connection for execution
+            ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
+
+            // Wait for that task to finish signaling the end of the application execution
+            await _connectionDelegateTcs.Task;
         }
 
         internal void StartSendCancellation()
@@ -587,6 +593,29 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             {
                 _activeSend = false;
             }
+        }
+
+        public void Execute()
+        {
+            async Task ExecuteCore()
+            {
+                try
+                {
+                    await _connectionDelegate(this);
+
+                    _connectionDelegateTcs.TrySetResult();
+                }
+                catch (OperationCanceledException ex)
+                {
+                    _connectionDelegateTcs.TrySetCanceled(ex.CancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _connectionDelegateTcs.TrySetException(ex);
+                }
+            }
+
+            _ = ExecuteCore();
         }
 
         private static class Log
