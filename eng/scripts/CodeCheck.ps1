@@ -193,8 +193,10 @@ try {
 
     Write-Host "Checking for changes to API baseline files"
 
+    git --no-pager diff main... --ignore-space-change --name-only
+
     # Retrieve the set of changed files compared to main
-    $changedFilesFromMain = & cmd /c 'git --no-pager diff main... --ignore-space-change --name-only 2>nul'
+    $changedFilesFromMain = & cmd /c 'git --no-pager diff main... --ignore-space-change --name-only'
     $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
 
     if ($changedFilesFromMain) {
