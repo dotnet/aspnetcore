@@ -346,7 +346,94 @@ namespace Microsoft.AspNetCore.Components.Test
                 match => {
                     Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.LocalValueName);
                     Assert.Same(states[1].Component, match.ValueSupplier);
-                    Assert.Null(match.ValueSupplier.CurrentValue);
+                    Assert.Null(match.ValueSupplier.GetValue(typeof(object), null));
+                });
+        }
+
+        [Fact]
+        public void FindCascadingParameters_CustomComponent_IfHasNoMatchesInAncestors_ReturnsEmpty()
+        {
+            // Arrange: Build the ancestry list
+            var states = CreateAncestry(
+                new ComponentWithNoParams(),
+                CreateCustomCascadingValueComponent(("Hello", null)),
+                new ComponentWithNoParams(),
+                new ComponentWithCascadingParams());
+
+            // Act
+            var result = CascadingParameterState.FindCascadingParameters(states.Last());
+
+            // Assert
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public void FindCascadingParameters_CustomComponent_IfHasPartialMatchesInAncestors_ReturnsMatches()
+        {
+            // Arrange
+            var states = CreateAncestry(
+                new ComponentWithNoParams(),
+                CreateCustomCascadingValueComponent((new ValueType2(), null)),
+                new ComponentWithNoParams(),
+                new ComponentWithCascadingParams());
+
+            // Act
+            var result = CascadingParameterState.FindCascadingParameters(states.Last());
+
+            // Assert
+            Assert.Collection(result, match =>
+            {
+                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam2), match.LocalValueName);
+                Assert.Same(states[1].Component, match.ValueSupplier);
+            });
+        }
+
+        [Fact]
+        public void FindCascadingParameters_CustomComponent_IfHasMultipleMatchesInAncestors_ReturnsMatches()
+        {
+            // Arrange
+            var states = CreateAncestry(
+                new ComponentWithNoParams(),
+                CreateCustomCascadingValueComponent((new ValueType2(), null), (new ValueType1(), null)),
+                new ComponentWithCascadingParams());
+
+            // Act
+            var result = CascadingParameterState.FindCascadingParameters(states.Last());
+
+            // Assert
+            Assert.Collection(result.OrderBy(x => x.LocalValueName),
+                match => {
+                    Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.LocalValueName);
+                    Assert.Same(states[1].Component, match.ValueSupplier);
+                },
+                match => {
+                    Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam2), match.LocalValueName);
+                    Assert.Same(states[1].Component, match.ValueSupplier);
+                });
+        }
+
+        [Fact]
+        public void FindCascadingParameters_CustomComponent_IfHasMultipleMatchesInAncestors_ReturnsNearestMatches()
+        {
+            // Arrange
+            var states = CreateAncestry(
+                new ComponentWithNoParams(),
+                CreateCustomCascadingValueComponent((new ValueType2(), null), (new ValueType1(), null)),
+                CreateCustomCascadingValueComponent((new ValueType1(), null)),
+                new ComponentWithCascadingParams());
+
+            // Act
+            var result = CascadingParameterState.FindCascadingParameters(states.Last());
+
+            // Assert
+            Assert.Collection(result.OrderBy(x => x.LocalValueName),
+                match => {
+                    Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.LocalValueName);
+                    Assert.Same(states[2].Component, match.ValueSupplier);
+                },
+                match => {
+                    Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam2), match.LocalValueName);
+                    Assert.Same(states[1].Component, match.ValueSupplier);
                 });
         }
 
@@ -390,6 +477,16 @@ namespace Microsoft.AspNetCore.Components.Test
             return supplier;
         }
 
+        static CustomCascadingValueComponent CreateCustomCascadingValueComponent(params (object value, string name)[] values)
+        {
+            var supplier = new CustomCascadingValueComponent();
+            foreach (var (value, name) in values)
+            {
+                supplier.AddValue(value?.GetType(), name, value);
+            }
+            return supplier;
+        }
+
         class ComponentWithNoParams : TestComponentBase
         {
         }
@@ -421,6 +518,55 @@ namespace Microsoft.AspNetCore.Components.Test
             [CascadingParameter(Name = "MatchOnName")]
             internal ValueType1 SomeLocalName { get; set; }
         }
+
+        class CustomCascadingValueComponent : TestComponentBase, ICascadingValueComponent
+        {
+            private HashSet<IComponentState> _subscribers;
+            private readonly IDictionary<(Type valueType, string valueName), object> _values =
+                new Dictionary<(Type valueType, string valueName), object>();
+            public CustomCascadingValueComponent(): this(false) { }
+            public CustomCascadingValueComponent(bool isFixed)
+            {
+                IsFixed = isFixed;
+            }
+            public bool IsFixed { get; }
+
+            public bool HasValue(Type valueType, string valueName)
+            {
+                return _values.ContainsKey((valueType, valueName));
+            }
+
+            public object GetValue(Type valueType, string valueName)
+            {
+                return _values.TryGetValue((valueType, valueName), out var value) ? value : null;
+            }
+
+            public CustomCascadingValueComponent AddValue(Type valueType, string valueName, object value)
+            {
+                _values.Add((valueType, valueName), value);
+                return this;
+            }
+
+            public void Subscribe(IComponentState subscriber)
+            {
+                _subscribers ??= new HashSet<IComponentState>();
+                _subscribers.Add(subscriber);
+            }
+
+            public void Unsubscribe(IComponentState subscriber)
+            {
+                _subscribers.Remove(subscriber);
+            }
+
+            protected void UpdateSubscribers(in ParameterView parameters)
+            {
+                if (_subscribers is null) return;
+                foreach (var subscriber in _subscribers)
+                {
+                    subscriber.NotifyChanged(parameters);
+                }
+            }
+    }
 
         class TestComponentBase : IComponent
         {

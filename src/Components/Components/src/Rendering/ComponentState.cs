@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// within the context of a <see cref="Renderer"/>. This is an internal implementation
     /// detail of <see cref="Renderer"/>.
     /// </summary>
-    internal class ComponentState : IDisposable
+    internal class ComponentState : IDisposable, IComponentState
     {
         private readonly Renderer _renderer;
         private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
@@ -177,6 +177,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _renderer.AddToPendingTasks(task);
         }
 
+        void IComponentState.NotifyChanged(in ParameterView parameters)
+        {
+            NotifyCascadingValueChanged(parameters.Lifetime);
+        }
+
         private bool AddCascadingParameterSubscriptions()
         {
             var hasSubscription = false;
@@ -185,7 +190,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             for (var i = 0; i < numCascadingParameters; i++)
             {
                 var valueSupplier = _cascadingParameters[i].ValueSupplier;
-                if (!valueSupplier.CurrentValueIsFixed)
+                if (!valueSupplier.IsFixed)
                 {
                     valueSupplier.Subscribe(this);
                     hasSubscription = true;
@@ -201,7 +206,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             for (var i = 0; i < numCascadingParameters; i++)
             {
                 var supplier = _cascadingParameters[i].ValueSupplier;
-                if (!supplier.CurrentValueIsFixed)
+                if (!supplier.IsFixed)
                 {
                     supplier.Unsubscribe(this);
                 }

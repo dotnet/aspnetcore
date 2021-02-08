@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components
     public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
     {
         private RenderHandle _renderHandle;
-        private HashSet<ComponentState> _subscribers; // Lazily instantiated
+        private HashSet<IComponentState> _subscribers; // Lazily instantiated
         private bool _hasSetParametersPreviously;
 
         /// <summary>
@@ -46,9 +46,9 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         [Parameter] public bool IsFixed { get; set; }
 
-        object ICascadingValueComponent.CurrentValue => Value;
+        object ICascadingValueComponent.GetValue(Type valueType, string valueName) => Value;
 
-        bool ICascadingValueComponent.CurrentValueIsFixed => IsFixed;
+        bool ICascadingValueComponent.IsFixed => IsFixed;
 
         /// <inheritdoc />
         public void Attach(RenderHandle renderHandle)
@@ -129,13 +129,13 @@ namespace Microsoft.AspNetCore.Components
 
             if (_subscribers != null && ChangeDetection.MayHaveChanged(previousValue, Value))
             {
-                NotifySubscribers(parameters.Lifetime);
+                NotifySubscribers(parameters);
             }
 
             return Task.CompletedTask;
         }
 
-        bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string requestedName)
+        bool ICascadingValueComponent.HasValue(Type requestedType, string requestedName)
         {
             if (!requestedType.IsAssignableFrom(typeof(TValue)))
             {
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Components
                 || string.Equals(requestedName, Name, StringComparison.OrdinalIgnoreCase); // Also match on name
         }
 
-        void ICascadingValueComponent.Subscribe(ComponentState subscriber)
+        void ICascadingValueComponent.Subscribe(IComponentState subscriber)
         {
 #if DEBUG
             if (IsFixed)
@@ -159,22 +159,22 @@ namespace Microsoft.AspNetCore.Components
 
             if (_subscribers == null)
             {
-                 _subscribers = new HashSet<ComponentState>();
+                 _subscribers = new HashSet<IComponentState>();
             }
 
             _subscribers.Add(subscriber);
         }
 
-        void ICascadingValueComponent.Unsubscribe(ComponentState subscriber)
+        void ICascadingValueComponent.Unsubscribe(IComponentState subscriber)
         {
             _subscribers.Remove(subscriber);
         }
 
-        private void NotifySubscribers(in ParameterViewLifetime lifetime)
+        private void NotifySubscribers(in ParameterView parameters)
         {
             foreach (var subscriber in _subscribers)
             {
-                subscriber.NotifyCascadingValueChanged(lifetime);
+                subscriber.NotifyChanged(parameters);
             }
         }
 

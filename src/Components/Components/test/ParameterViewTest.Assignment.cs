@@ -680,7 +680,7 @@ namespace Microsoft.AspNetCore.Components
                 {
                     if (kvp.Cascading)
                     {
-                        cascadingParameters.Add(new CascadingParameterState(kvp.Name, new TestCascadingValueProvider(kvp.Value)));
+                        cascadingParameters.Add(new CascadingParameterState(kvp.Name, kvp.Value.GetType(), new TestCascadingValueProvider(kvp.Value)));
                     }
                 }
 
@@ -690,26 +690,28 @@ namespace Microsoft.AspNetCore.Components
 
         private class TestCascadingValueProvider : ICascadingValueComponent
         {
+            private readonly object _value;
+
             public TestCascadingValueProvider(object value)
             {
-                CurrentValue = value;
+                _value = value;
             }
 
-            public object CurrentValue { get; }
+            public object GetValue(Type valueType, string valueName) => _value;
 
-            public bool CurrentValueIsFixed => throw new NotImplementedException();
+            public bool IsFixed => throw new NotImplementedException();
 
-            public bool CanSupplyValue(Type valueType, string valueName)
+            public bool HasValue(Type valueType, string valueName)
             {
                 throw new NotImplementedException();
             }
 
-            public void Subscribe(ComponentState subscriber)
+            public void Subscribe(IComponentState subscriber)
             {
                 throw new NotImplementedException();
             }
 
-            public void Unsubscribe(ComponentState subscriber)
+            public void Unsubscribe(IComponentState subscriber)
             {
                 throw new NotImplementedException();
             }

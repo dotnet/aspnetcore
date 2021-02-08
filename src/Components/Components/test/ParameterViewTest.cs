@@ -99,8 +99,8 @@ namespace Microsoft.AspNetCore.Components
                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value)
             }, 0).WithCascadingParameters(new List<CascadingParameterState>
             {
-                new CascadingParameterState("attribute 2", new TestCascadingValue(attribute2Value)),
-                new CascadingParameterState("attribute 3", new TestCascadingValue(attribute3Value)),
+                new CascadingParameterState("attribute 2", typeof(object), new TestCascadingValue(attribute2Value)),
+                new CascadingParameterState("attribute 3", typeof(object), new TestCascadingValue(attribute3Value)),
             });
 
             // Assert
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Components
                 RenderTreeFrame.Attribute(1, "some other entry", new object())
             }, 0).WithCascadingParameters(new List<CascadingParameterState>
             {
-                new CascadingParameterState("another entry", new TestCascadingValue(null))
+                new CascadingParameterState("another entry", typeof(object), new TestCascadingValue(null))
             });
 
             // Act
@@ -310,9 +310,9 @@ namespace Microsoft.AspNetCore.Components
                 RenderTreeFrame.Attribute(1, "unrelated value", new object())
             }, 0).WithCascadingParameters(new List<CascadingParameterState>
             {
-                new CascadingParameterState("unrelated value 2", new TestCascadingValue(null)),
-                new CascadingParameterState("my entry", new TestCascadingValue(myEntryValue)),
-                new CascadingParameterState("unrelated value 3", new TestCascadingValue(null)),
+                new CascadingParameterState("unrelated value 2", typeof(object), new TestCascadingValue(null)),
+                new CascadingParameterState("my entry", typeof(object), new TestCascadingValue(myEntryValue)),
+                new CascadingParameterState("unrelated value 3", typeof(object), new TestCascadingValue(null)),
             });
 
             // Act
@@ -377,22 +377,25 @@ namespace Microsoft.AspNetCore.Components
 
         private class TestCascadingValue : ICascadingValueComponent
         {
+            private readonly object _value;
+
             public TestCascadingValue(object value)
             {
-                CurrentValue = value;
+                _value = value;
             }
 
-            public object CurrentValue { get; }
+            public bool IsFixed => false;
 
-            public bool CurrentValueIsFixed => false;
+            public object GetValue(Type valueType, string valueName) => _value;
+            
 
-            public bool CanSupplyValue(Type valueType, string valueName)
+            public bool HasValue(Type valueType, string valueName)
                 => throw new NotImplementedException();
 
-            public void Subscribe(ComponentState subscriber)
+            public void Subscribe(IComponentState subscriber)
                 => throw new NotImplementedException();
 
-            public void Unsubscribe(ComponentState subscriber)
+            public void Unsubscribe(IComponentState subscriber)
                 => throw new NotImplementedException();
         }
     }

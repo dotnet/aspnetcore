@@ -16,11 +16,13 @@ namespace Microsoft.AspNetCore.Components
             = new ConcurrentDictionary<Type, ReflectedCascadingParameterInfo[]>();
 
         public string LocalValueName { get; }
+        public Type LocalType { get; }
         public ICascadingValueComponent ValueSupplier { get; }
 
-        public CascadingParameterState(string localValueName, ICascadingValueComponent valueSupplier)
+        public CascadingParameterState(string localValueName, Type localType, ICascadingValueComponent valueSupplier)
         {
             LocalValueName = localValueName;
+            LocalType = localType;
             ValueSupplier = valueSupplier;
         }
 
@@ -52,7 +54,7 @@ namespace Microsoft.AspNetCore.Components
                         resultStates = new List<CascadingParameterState>(infos.Length - infoIndex);
                     }
 
-                    resultStates.Add(new CascadingParameterState(info.ConsumerValueName, supplier));
+                    resultStates.Add(new CascadingParameterState(info.ConsumerValueName, info.ValueType, supplier));
                 }
             }
 
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore.Components
             do
             {
                 if (componentState.Component is ICascadingValueComponent candidateSupplier
-                    && candidateSupplier.CanSupplyValue(info.ValueType, info.SupplierValueName))
+                    && candidateSupplier.HasValue(info.ValueType, info.SupplierValueName))
                 {
                     return candidateSupplier;
                 }

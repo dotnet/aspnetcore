@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Components
                     _currentIndex = nextIndex;
 
                     var state = _cascadingParameters[_currentIndex];
-                    _current = new ParameterValue(state.LocalValueName, state.ValueSupplier.CurrentValue!, true);
+                    _current = new ParameterValue(state.LocalValueName, state.ValueSupplier.GetValue(state.LocalType, state.LocalValueName)!, true);
                     return true;
                 }
                 else
