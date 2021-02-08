@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions.AdditionalChainCertificates.get -> System.Security.Cryptography.X509Certificates.X509Certificate2Collection!
+Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions.AdditionalChainCertificates.set -> void
