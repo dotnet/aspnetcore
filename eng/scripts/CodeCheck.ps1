@@ -191,6 +191,9 @@ try {
         }
     }
 
+
+    Write-Host "Checking for changes to API baseline files"
+
     # Retrieve the set of changed files compared to main
     $changedFilesFromMain = & cmd /c 'git --no-pager diff main... --ignore-space-change --name-only 2>nul'
     $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
@@ -202,6 +205,8 @@ try {
             }
         }
     }
+
+    Write-Host "Found changes in $($changedAPIBaselines.count) API baseline files"
 
     if ($changedAPIBaselines.count -gt 0) {
         LogError "Detected modification to baseline API files. PublicAPI.Shipped.txt files should only be updated after a major release. See /docs/APIBaselines.md for more information."
