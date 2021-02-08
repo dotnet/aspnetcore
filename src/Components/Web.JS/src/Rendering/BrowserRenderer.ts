@@ -1,6 +1,6 @@
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './EventDelegator';
-import { EventForDotNet, UIEventArgs, EventArgsType } from './EventForDotNet';
+import { UIEventArgs } from './EventForDotNet';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { EventFieldInfo } from './EventFieldInfo';
@@ -462,7 +462,7 @@ export interface ComponentDescriptor {
 export interface EventDescriptor {
   browserRendererId: number;
   eventHandlerId: number;
-  eventArgsType: EventArgsType;
+  eventName: string;
   eventFieldInfo: EventFieldInfo | null;
 }
 
@@ -495,7 +495,7 @@ function raiseEvent(
   event: Event,
   browserRendererId: number,
   eventHandlerId: number,
-  eventArgs: EventForDotNet<UIEventArgs>,
+  eventArgs: UIEventArgs,
   eventFieldInfo: EventFieldInfo | null
 ): void {
   if (preventDefaultEvents[event.type]) {
@@ -505,11 +505,11 @@ function raiseEvent(
   const eventDescriptor = {
     browserRendererId,
     eventHandlerId,
-    eventArgsType: eventArgs.type,
+    eventName: eventArgs.type,
     eventFieldInfo: eventFieldInfo,
   };
 
-  dispatchEvent(eventDescriptor, eventArgs.data);
+  dispatchEvent(eventDescriptor, eventArgs);
 }
 
 function clearElement(element: Element) {

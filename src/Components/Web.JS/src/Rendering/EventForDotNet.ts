@@ -1,112 +1,108 @@
-export class EventForDotNet<TData extends UIEventArgs> {
-  public constructor(public readonly type: EventArgsType, public readonly data: TData) {
-  }
+export function fromDOMEvent(event: Event): UIEventArgs {
+  switch (event.type) {
 
-  public static fromDOMEvent(event: Event): EventForDotNet<UIEventArgs> {
-    const element = event.target as Element;
-    switch (event.type) {
+    case 'input':
+    case 'change':
+      return parseChangeEvent(event);
 
-      case 'input':
-      case 'change': {
+    case 'copy':
+    case 'cut':
+    case 'paste':
+      return { type: event.type };
 
-        if (isTimeBasedInput(element)) {
-          const normalizedValue = normalizeTimeBasedValue(element);
-          return new EventForDotNet<UIChangeEventArgs>('change', { type: event.type, value: normalizedValue });
-        }
+    case 'drag':
+    case 'dragend':
+    case 'dragenter':
+    case 'dragleave':
+    case 'dragover':
+    case 'dragstart':
+    case 'drop':
+      return parseDragEvent(event);
 
-        const targetIsCheckbox = isCheckbox(element);
-        const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
-        return new EventForDotNet<UIChangeEventArgs>('change', { type: event.type, value: newValue });
-      }
+    case 'focus':
+    case 'blur':
+    case 'focusin':
+    case 'focusout':
+      return { type: event.type };
 
-      case 'copy':
-      case 'cut':
-      case 'paste':
-        return new EventForDotNet<UIClipboardEventArgs>('clipboard', { type: event.type });
+    case 'keydown':
+    case 'keyup':
+    case 'keypress':
+      return parseKeyboardEvent(event as KeyboardEvent);
 
-      case 'drag':
-      case 'dragend':
-      case 'dragenter':
-      case 'dragleave':
-      case 'dragover':
-      case 'dragstart':
-      case 'drop':
-        return new EventForDotNet<UIDragEventArgs>('drag', parseDragEvent(event));
+    case 'contextmenu':
+    case 'click':
+    case 'mouseover':
+    case 'mouseout':
+    case 'mousemove':
+    case 'mousedown':
+    case 'mouseup':
+    case 'dblclick':
+      return parseMouseEvent(event as MouseEvent);
 
-      case 'focus':
-      case 'blur':
-      case 'focusin':
-      case 'focusout':
-        return new EventForDotNet<UIFocusEventArgs>('focus', { type: event.type });
+    case 'error':
+      return parseErrorEvent(event as ErrorEvent);
 
-      case 'keydown':
-      case 'keyup':
-      case 'keypress':
-        return new EventForDotNet<UIKeyboardEventArgs>('keyboard', parseKeyboardEvent(event as KeyboardEvent));
+    case 'loadstart':
+    case 'timeout':
+    case 'abort':
+    case 'load':
+    case 'loadend':
+    case 'progress':
+      return parseProgressEvent(event as ProgressEvent);
 
-      case 'contextmenu':
-      case 'click':
-      case 'mouseover':
-      case 'mouseout':
-      case 'mousemove':
-      case 'mousedown':
-      case 'mouseup':
-      case 'dblclick':
-        return new EventForDotNet<UIMouseEventArgs>('mouse', parseMouseEvent(event as MouseEvent));
+    case 'touchcancel':
+    case 'touchend':
+    case 'touchmove':
+    case 'touchenter':
+    case 'touchleave':
+    case 'touchstart':
+      return parseTouchEvent(event as TouchEvent);
 
-      case 'error':
-        return new EventForDotNet<UIErrorEventArgs>('error', parseErrorEvent(event as ErrorEvent));
+    case 'gotpointercapture':
+    case 'lostpointercapture':
+    case 'pointercancel':
+    case 'pointerdown':
+    case 'pointerenter':
+    case 'pointerleave':
+    case 'pointermove':
+    case 'pointerout':
+    case 'pointerover':
+    case 'pointerup':
+      return parsePointerEvent(event as PointerEvent);
 
-      case 'loadstart':
-      case 'timeout':
-      case 'abort':
-      case 'load':
-      case 'loadend':
-      case 'progress':
-        return new EventForDotNet<UIProgressEventArgs>('progress', parseProgressEvent(event as ProgressEvent));
+    case 'wheel':
+    case 'mousewheel':
+      return parseWheelEvent(event as WheelEvent);
 
-      case 'touchcancel':
-      case 'touchend':
-      case 'touchmove':
-      case 'touchenter':
-      case 'touchleave':
-      case 'touchstart':
-        return new EventForDotNet<UITouchEventArgs>('touch', parseTouchEvent(event as TouchEvent));
+    case 'toggle':
+      return { type: event.type };
 
-      case 'gotpointercapture':
-      case 'lostpointercapture':
-      case 'pointercancel':
-      case 'pointerdown':
-      case 'pointerenter':
-      case 'pointerleave':
-      case 'pointermove':
-      case 'pointerout':
-      case 'pointerover':
-      case 'pointerup':
-        return new EventForDotNet<UIPointerEventArgs>('pointer', parsePointerEvent(event as PointerEvent));
-
-      case 'wheel':
-      case 'mousewheel':
-        return new EventForDotNet<UIWheelEventArgs>('wheel', parseWheelEvent(event as WheelEvent));
-
-      case 'toggle':
-        return new EventForDotNet<UIEventArgs>('toggle', { type: event.type });
-
-      default:
-        return new EventForDotNet<UIEventArgs>('unknown', { type: event.type });
-    }
+    default:
+      return { type: event.type };
   }
 }
 
-function parseDragEvent(event: any) {
+function parseChangeEvent(event: any): UIChangeEventArgs {
+  const element = event.target as Element;
+  if (isTimeBasedInput(element)) {
+    const normalizedValue = normalizeTimeBasedValue(element);
+    return { type: event.type, value: normalizedValue };
+  } else {
+    const targetIsCheckbox = isCheckbox(element);
+    const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
+    return { type: event.type, value: newValue };
+  }
+}
+
+function parseDragEvent(event: any): UIDragEventArgs {
   return {
     ...parseMouseEvent(event),
     dataTransfer: event.dataTransfer,
-
   };
 }
 
-function parseWheelEvent(event: WheelEvent) {
+function parseWheelEvent(event: WheelEvent): UIWheelEventArgs {
   return {
     ...parseMouseEvent(event),
     deltaX: event.deltaX,
@@ -116,7 +112,7 @@ function parseWheelEvent(event: WheelEvent) {
   };
 }
 
-function parseErrorEvent(event: ErrorEvent) {
+function parseErrorEvent(event: ErrorEvent): UIErrorEventArgs {
   return {
     type: event.type,
     message: event.message,
@@ -126,7 +122,7 @@ function parseErrorEvent(event: ErrorEvent) {
   };
 }
 
-function parseProgressEvent(event: ProgressEvent) {
+function parseProgressEvent(event: ProgressEvent): UIProgressEventArgs {
   return {
     type: event.type,
     lengthComputable: event.lengthComputable,
@@ -135,7 +131,7 @@ function parseProgressEvent(event: ProgressEvent) {
   };
 }
 
-function parseTouchEvent(event: TouchEvent) {
+function parseTouchEvent(event: TouchEvent): UITouchEventArgs {
 
   function parseTouch(touchList: TouchList) {
     const touches: UITouchPoint[] = [];
@@ -168,7 +164,7 @@ function parseTouchEvent(event: TouchEvent) {
   };
 }
 
-function parseKeyboardEvent(event: KeyboardEvent) {
+function parseKeyboardEvent(event: KeyboardEvent): UIKeyboardEventArgs {
   return {
     type: event.type,
     key: event.key,
@@ -182,7 +178,7 @@ function parseKeyboardEvent(event: KeyboardEvent) {
   };
 }
 
-function parsePointerEvent(event: PointerEvent) {
+function parsePointerEvent(event: PointerEvent): UIPointerEventArgs {
   return {
     ...parseMouseEvent(event),
     pointerId: event.pointerId,
@@ -196,7 +192,7 @@ function parsePointerEvent(event: PointerEvent) {
   };
 }
 
-function parseMouseEvent(event: MouseEvent) {
+function parseMouseEvent(event: MouseEvent): UIMouseEventArgs {
   return {
     type: event.type,
     detail: event.detail,
@@ -250,8 +246,6 @@ function normalizeTimeBasedValue(element: HTMLInputElement): string {
 }
 
 // The following interfaces must be kept in sync with the UIEventArgs C# classes
-
-export type EventArgsType = 'change' | 'clipboard' | 'drag' | 'error' | 'focus' | 'keyboard' | 'mouse' | 'pointer' | 'progress' | 'touch' | 'unknown' | 'wheel' | 'toggle';
 
 export interface UIEventArgs {
   type: string;
