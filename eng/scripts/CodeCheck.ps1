@@ -200,7 +200,9 @@ try {
 
     if ($changedFilesFromMain) {
         foreach ($file in $changedFilesFromMain) {
+            Write-Host "Scanning $file"
             if ($file.EndsWith('PublicAPI.Shipped.txt'),"InvariantCultureIgnoreCase") {
+                Write-Host "$file is an API baseline file"
                 $changedAPIBaselines.Add($file)
             }
         }
@@ -215,6 +217,7 @@ try {
             LogError $file
         }
     }
+
 }
 finally {
     Write-Host ""
