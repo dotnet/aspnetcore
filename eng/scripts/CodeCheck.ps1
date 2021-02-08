@@ -193,21 +193,14 @@ try {
 
     Write-Host "Checking for changes to API baseline files"
 
-    git --version
-    git log -n 5
-
     # Retrieve the set of changed files compared to main
-    git rev-parse HEAD
     $commitSha = git rev-parse HEAD
-    git --no-pager diff origin/main...$commitSha --ignore-space-change --name-only
     $changedFilesFromMain = git --no-pager diff origin/main...$commitSha --ignore-space-change --name-only
     $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
 
     if ($changedFilesFromMain) {
         foreach ($file in $changedFilesFromMain) {
-            Write-Host "Scanning $file"
             if ($file -like '*PublicAPI.Shipped.txt') {
-                Write-Host "$file is an API baseline file"
                 $changedAPIBaselines.Add($file)
             }
         }
