@@ -40,6 +40,8 @@ Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationEvents.
 Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationFailedContext.CertificateAuthenticationFailedContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions! options) -> void
 Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationFailedContext.Exception.get -> System.Exception!
 Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationFailedContext.Exception.set -> void
+Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions.AdditionalChainCertificates.get -> System.Security.Cryptography.X509Certificates.X509Certificate2Collection!
+Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions.AdditionalChainCertificates.set -> void
 Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions.CustomTrustStore.get -> System.Security.Cryptography.X509Certificates.X509Certificate2Collection!
 Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions.CustomTrustStore.set -> void
 Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions.Events.get -> Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationEvents?
