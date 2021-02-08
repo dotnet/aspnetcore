@@ -34,8 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private const int MaxRetries = 10;
 
         [ConditionalFact]
-        [HostNameIsReachable]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27377")]
+        [OSSkipCondition(OperatingSystems.MacOSX)] // Hostname is arbitrarily available on macOS, see https://github.com/dotnet/aspnetcore/issues/27377
         public async Task RegisterAddresses_HostName_Success()
         {
             var hostName = Dns.GetHostName();
@@ -364,8 +363,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [ConditionalFact]
-        [HostNameIsReachable]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27377")]
+        [OSSkipCondition(OperatingSystems.MacOSX)] // Hostname is arbitrarily available on macOS, see https://github.com/dotnet/aspnetcore/issues/27377
         public async Task ListenAnyIP_HostName_Success()
         {
             var hostName = Dns.GetHostName();
