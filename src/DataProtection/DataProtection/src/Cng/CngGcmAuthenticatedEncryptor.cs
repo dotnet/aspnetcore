@@ -252,39 +252,37 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                 // We'll need a temporary buffer to hold the symmetric encryption subkey
                 var subKey = new byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
 
-                //byte* pbSymmetricEncryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
-                // TODO: REVERT
-                fixed (byte* pbSymmetricEncryptionSubkey = subKey)
-                    try
-                    {
-                        _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
-                            pbLabel: pbAdditionalAuthenticatedData,
-                            cbLabel: cbAdditionalAuthenticatedData,
-                            contextHeader: _contextHeader,
-                            pbContext: pbKeyModifier,
-                            cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
-                            pbDerivedKey: pbSymmetricEncryptionSubkey,
-                            cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
+                byte* pbSymmetricEncryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
+                try
+                {
+                    _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
+                        pbLabel: pbAdditionalAuthenticatedData,
+                        cbLabel: cbAdditionalAuthenticatedData,
+                        contextHeader: _contextHeader,
+                        pbContext: pbKeyModifier,
+                        cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
+                        pbDerivedKey: pbSymmetricEncryptionSubkey,
+                        cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
 
-                        // Perform the encryption operation
-                        DoGcmEncrypt(
-                            pbKey: pbSymmetricEncryptionSubkey,
-                            cbKey: _symmetricAlgorithmSubkeyLengthInBytes,
-                            pbNonce: pbNonce,
-                            pbPlaintextData: pbPlaintext,
-                            cbPlaintextData: cbPlaintext,
-                            pbEncryptedData: pbEncryptedData,
-                            pbTag: pbAuthTag);
+                    // Perform the encryption operation
+                    DoGcmEncrypt(
+                        pbKey: pbSymmetricEncryptionSubkey,
+                        cbKey: _symmetricAlgorithmSubkeyLengthInBytes,
+                        pbNonce: pbNonce,
+                        pbPlaintextData: pbPlaintext,
+                        cbPlaintextData: cbPlaintext,
+                        pbEncryptedData: pbEncryptedData,
+                        pbTag: pbAuthTag);
 
-                        // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
-                        // And we're done!
-                        return retVal;
-                    }
-                    finally
-                    {
-                        // The buffer contains key material, so delete it.
-                        UnsafeBufferUtil.SecureZeroMemory(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes);
-                    }
+                    // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
+                    // And we're done!
+                    return retVal;
+                }
+                finally
+                {
+                    // The buffer contains key material, so delete it.
+                    UnsafeBufferUtil.SecureZeroMemory(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes);
+                }
             }
         }
     }
