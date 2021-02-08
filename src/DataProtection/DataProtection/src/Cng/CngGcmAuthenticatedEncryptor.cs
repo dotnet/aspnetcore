@@ -250,8 +250,6 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
 
                 // Use the KDF to generate a new symmetric block cipher key
                 // We'll need a temporary buffer to hold the symmetric encryption subkey
-                var subKey = new byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
-
                 byte* pbSymmetricEncryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
                 try
                 {
