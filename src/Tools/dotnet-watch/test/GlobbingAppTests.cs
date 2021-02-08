@@ -97,7 +97,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             await _app.HasRestarted().TimeoutAfter(DefaultTimeout);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25967")]
         public async Task ChangeExcludedFile()
         {
             await _app.StartWatcherAsync().TimeoutAfter(DefaultTimeout);
