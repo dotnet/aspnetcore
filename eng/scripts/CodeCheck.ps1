@@ -199,8 +199,8 @@ try {
     # Retrieve the set of changed files compared to main
     git rev-parse HEAD
     $commitSha = git rev-parse HEAD
-    git --no-pager diff main..$commitSha --ignore-space-change --name-only
-    $changedFilesFromMain = git --no-pager diff main..$commitSha --ignore-space-change --name-only
+    git --no-pager diff origin/main...$commitSha --ignore-space-change --name-only
+    $changedFilesFromMain = git --no-pager diff origin/main...$commitSha --ignore-space-change --name-only
     $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
 
     if ($changedFilesFromMain) {
