@@ -191,7 +191,6 @@ try {
         }
     }
 
-
     Write-Host "Checking for changes to API baseline files"
 
     # Retrieve the set of changed files compared to main
@@ -201,7 +200,7 @@ try {
     if ($changedFilesFromMain) {
         foreach ($file in $changedFilesFromMain) {
             Write-Host "Scanning $file"
-            if ($file.EndsWith('PublicAPI.Shipped.txt'),"InvariantCultureIgnoreCase") {
+            if ($file -like '*PublicAPI.Shipped.txt') {
                 Write-Host "$file is an API baseline file"
                 $changedAPIBaselines.Add($file)
             }
@@ -217,7 +216,6 @@ try {
             LogError $file
         }
     }
-
 }
 finally {
     Write-Host ""
