@@ -263,7 +263,6 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
         private static int CheckHttpsCertificate(CommandOption trust, IReporter reporter)
         {
-            var now = DateTimeOffset.Now;
             var certificateManager = CertificateManager.Instance;
             var certificates = certificateManager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
             if (certificates.Count == 0)
@@ -292,8 +291,6 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             {
                 if(!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    var store = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? StoreName.My : StoreName.Root;
-                    var trustedCertificates = certificateManager.ListCertificates(store, StoreLocation.CurrentUser, isValid: true);
                     if (!certificates.Any(c => certificateManager.IsTrusted(c)))
                     {
                         reporter.Output($@"The following certificates were found, but none of them is trusted:
