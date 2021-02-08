@@ -124,7 +124,6 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                             var nonce = new Span<byte>(ciphertext.Array, nonceOffset, NONCE_SIZE_IN_BYTES);
                             var tag = new Span<byte>(ciphertext.Array, tagOffset, TAG_SIZE_IN_BYTES);
                             var encrypted = new Span<byte>(ciphertext.Array, encryptedDataOffset, plaintextBytes);
-                            Console.WriteLine("Derived key: "+Convert.ToBase64String(derivedKey));
                             using var aes = new AesGcm(derivedKey);
                             aes.Decrypt(nonce, encrypted, tag, plaintext);
                             return plaintext;
@@ -233,4 +232,4 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
         }
     }
 #endif
-                }
+}
