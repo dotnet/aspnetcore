@@ -451,8 +451,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             return NullLogger.Instance;
         }
 
-        protected override TextInputFormatter GetInputFormatter()
-            => CreateFormatter(allowInputFormatterExceptionMessages: true);
+        protected override TextInputFormatter GetInputFormatter(bool allowInputFormatterExceptionMessages = true)
+            => CreateFormatter(allowInputFormatterExceptionMessages: allowInputFormatterExceptionMessages);
 
         private NewtonsoftJsonInputFormatter CreateFormatter(JsonSerializerSettings serializerSettings = null, bool allowInputFormatterExceptionMessages = false)
         {
