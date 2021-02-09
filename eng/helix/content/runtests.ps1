@@ -11,53 +11,72 @@ param(
     [string]$FeedCred
 )
 
-$currentDirectory = Get-Location
-$random = Get-Random -Maximum 1024
-
-$env:DOTNET_HOME = Join-Path $currentDirectory "sdk$random"
-$env:DOTNET_ROOT = Join-Path $env:DOTNET_HOME $Arch
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
 $env:DOTNET_MULTILEVEL_LOOKUP = 0
-$env:DOTNET_CLI_HOME = Join-Path $currentDirectory "home$random"
-$env:PATH = "$env:DOTNET_ROOT;$env:PATH;$env:HELIX_CORRELATION_PAYLOAD\node\bin"
 
-Write-Host "Set PATH to: $env:PATH"
+$currentDirectory = Get-Location
+$envPath = "$env:PATH;$env:HELIX_CORRELATION_PAYLOAD\node\bin"
 
 function InvokeInstallDotnet([string]$command) {
-    foreach ($i in 1..5) {
-        Write-Host "InstallDotNet $command"
+    Write-Host "InstallDotNet $command"
 
-        $timeoutSeconds = 120
-        $proc = Start-Process -filePath powershell.exe -ArgumentList "-noLogo -NoProfile -ExecutionPolicy unrestricted -command `"$command`"" -NoNewWindow -PassThru
+    $timeoutSeconds = 180
+    $proc = Start-Process -filePath powershell.exe -ArgumentList "-noLogo -NoProfile -ExecutionPolicy unrestricted -command `"$command`"" -NoNewWindow -PassThru
 
-        $proc | Wait-Process -Timeout $timeoutSeconds
-        $exitCode = $proc.ExitCode
+    $proc | Wait-Process -Timeout $timeoutSeconds
+    $exitCode = $proc.ExitCode
 
-        if ($exitCode -eq 0) {
-            Write-Host "InstallDotNet $command completed successfully"
-            return
-        }
-
-        if ([string]::IsNullOrWhiteSpace($exitCode)) {
-            Write-Warning "InstallDotNet $command timed out after $timeoutSeconds seconds retrying..."
-        }
-        else {
-            Write-Warning "InstallDotNet $command failed with exit code $exitCode retrying..."
-        }
-
-        $proc | Stop-Process -Force
+    if ($exitCode -eq 0) {
+        Write-Host "InstallDotNet $command completed successfully"
+        return $true
+    }
+    elseif ([string]::IsNullOrWhiteSpace($exitCode)) {
+        Write-Warning "InstallDotNet $command timed out after $timeoutSeconds seconds"
+    }
+    else {
+        Write-Warning "InstallDotNet $command failed with exit code $exitCode"
     }
 
-    Write-Warning "InstallDotNet $command exceeded retry limit"
+    $proc | Stop-Process -Force
+
+    return $false
+}
+
+function InstallDotnetSDKAndRuntime([string]$Feed, [string]$FeedCred) {
+    foreach ($i in 1..5) {
+        $random = Get-Random -Maximum 1024
+        $env:DOTNET_HOME = Join-Path $currentDirectory "sdk$random"
+        $env:DOTNET_ROOT = Join-Path $env:DOTNET_HOME $Arch
+        $env:DOTNET_CLI_HOME = Join-Path $currentDirectory "home$random"
+        $env:PATH = "$env:DOTNET_ROOT;$envPath"
+
+        Write-Host "Set PATH to: $env:PATH"
+
+        $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch `'`' `$true `'$Feed`' `'$FeedCred`' `$true"
+
+        if (!$success) {
+            Write-Host "Retrying..."
+            continue
+        }
+
+        $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch dotnet `$true `'$Feed`' `'$FeedCred`' `$true"
+
+        if (!$success) {
+            Write-Host "Retrying..."
+            continue
+        }
+
+        return
+    }
+
+    Write-Error "InstallDotNet $command exceeded retry limit"
     exit 1
 }
 
 if ($FeedCred -eq $null) {
-    InvokeInstallDotnet(". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch `'`' `$true `'`' `'`' `$true")
-    InvokeInstallDotnet(". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $RuntimeVersion $Arch dotnet `$true `'`' `'`' `$true")
+    InstallDotnetSDKAndRuntime
 } else {
-    InvokeInstallDotnet(". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch `'`' `$true https://dotnetclimsrc.blob.core.windows.net/dotnet $FeedCred `$true")
-    InvokeInstallDotnet(". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $RuntimeVersion $Arch dotnet `$true https://dotnetclimsrc.blob.core.windows.net/dotnet $FeedCred `$true")
+    InstallDotnetSDKAndRuntime "https://dotnetclimsrc.blob.core.windows.net/dotnet" $FeedCred
 }
 
 Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
