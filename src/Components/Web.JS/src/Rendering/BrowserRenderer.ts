@@ -1,6 +1,5 @@
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './EventDelegator';
-import { UIEventArgs } from './EventForDotNet';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { EventFieldInfo } from './EventFieldInfo';
@@ -20,12 +19,13 @@ export class BrowserRenderer {
 
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
-  private browserRendererId: number;
-
   public constructor(browserRendererId: number) {
-    this.browserRendererId = browserRendererId;
-    this.eventDelegator = new EventDelegator((event, eventHandlerId, eventArgs, eventFieldInfo) => {
-      raiseEvent(event, this.browserRendererId, eventHandlerId, eventArgs, eventFieldInfo);
+    this.eventDelegator = new EventDelegator((event, eventHandlerId, eventName, eventArgs, eventFieldInfo) => {
+      if (preventDefaultEvents[event.type]) {
+        event.preventDefault();
+      }
+
+      dispatchEvent({ browserRendererId, eventHandlerId, eventName, eventFieldInfo }, eventArgs);
     });
 
     // We don't yet know whether or not navigation interception will be enabled, but in case it will be,
@@ -489,27 +489,6 @@ function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): numb
     default:
       return 0;
   }
-}
-
-function raiseEvent(
-  event: Event,
-  browserRendererId: number,
-  eventHandlerId: number,
-  eventArgs: UIEventArgs,
-  eventFieldInfo: EventFieldInfo | null
-): void {
-  if (preventDefaultEvents[event.type]) {
-    event.preventDefault();
-  }
-
-  const eventDescriptor = {
-    browserRendererId,
-    eventHandlerId,
-    eventName: eventArgs.type,
-    eventFieldInfo: eventFieldInfo,
-  };
-
-  dispatchEvent(eventDescriptor, eventArgs);
 }
 
 function clearElement(element: Element) {

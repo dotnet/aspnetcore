@@ -1,4 +1,4 @@
-import { fromDOMEvent, UIEventArgs } from './EventForDotNet';
+import { fromDOMEvent } from './EventForDotNet';
 import { EventFieldInfo } from './EventFieldInfo';
 
 const nonBubblingEvents = toLookup([
@@ -25,7 +25,7 @@ const nonBubblingEvents = toLookup([
 const disableableEventNames = toLookup(['click', 'dblclick', 'mousedown', 'mousemove', 'mouseup']);
 
 export interface OnEventCallback {
-  (event: Event, eventHandlerId: number, eventArgs: UIEventArgs, eventFieldInfo: EventFieldInfo | null): void;
+  (event: Event, eventHandlerId: number, eventName: string, eventArgs: any, eventFieldInfo: EventFieldInfo | null): void;
 }
 
 // Responsible for adding/removing the eventInfo on an expando property on DOM elements, and
@@ -107,7 +107,8 @@ export class EventDelegator {
 
     // Scan up the element hierarchy, looking for any matching registered event handlers
     let candidateElement = evt.target as Element | null;
-    let eventArgs: UIEventArgs | null = null; // Populate lazily
+    let eventArgs: any = null; // Populate lazily
+    let eventArgsIsPopulated = false;
     const eventIsNonBubbling = nonBubblingEvents.hasOwnProperty(evt.type);
     let stopPropagationWasRequested = false;
     while (candidateElement) {
@@ -116,12 +117,13 @@ export class EventDelegator {
         const handlerInfo = handlerInfos.getHandler(evt.type);
         if (handlerInfo && !eventIsDisabledOnElement(candidateElement, evt.type)) {
           // We are going to raise an event for this element, so prepare info needed by the .NET code
-          if (!eventArgs) {
+          if (!eventArgsIsPopulated) {
             eventArgs = fromDOMEvent(evt);
+            eventArgsIsPopulated = true;
           }
 
           const eventFieldInfo = EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, evt);
-          this.onEvent(evt, handlerInfo.eventHandlerId, eventArgs, eventFieldInfo);
+          this.onEvent(evt, handlerInfo.eventHandlerId, evt.type, eventArgs, eventFieldInfo);
         }
 
         if (handlerInfos.stopPropagation(evt.type)) {

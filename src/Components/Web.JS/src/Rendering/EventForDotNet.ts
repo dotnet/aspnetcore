@@ -1,4 +1,4 @@
-export function fromDOMEvent(event: Event): UIEventArgs {
+export function fromDOMEvent(event: Event): any {
   switch (event.type) {
 
     case 'input':
@@ -8,7 +8,7 @@ export function fromDOMEvent(event: Event): UIEventArgs {
     case 'copy':
     case 'cut':
     case 'paste':
-      return { type: event.type };
+      return {};
 
     case 'drag':
     case 'dragend':
@@ -23,7 +23,7 @@ export function fromDOMEvent(event: Event): UIEventArgs {
     case 'blur':
     case 'focusin':
     case 'focusout':
-      return { type: event.type };
+      return {};
 
     case 'keydown':
     case 'keyup':
@@ -76,33 +76,33 @@ export function fromDOMEvent(event: Event): UIEventArgs {
       return parseWheelEvent(event as WheelEvent);
 
     case 'toggle':
-      return { type: event.type };
+      return {};
 
     default:
-      return { type: event.type };
+      return {};
   }
 }
 
-function parseChangeEvent(event: any): UIChangeEventArgs {
+function parseChangeEvent(event: any): ChangeEventArgs {
   const element = event.target as Element;
   if (isTimeBasedInput(element)) {
     const normalizedValue = normalizeTimeBasedValue(element);
-    return { type: event.type, value: normalizedValue };
+    return { value: normalizedValue };
   } else {
     const targetIsCheckbox = isCheckbox(element);
     const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
-    return { type: event.type, value: newValue };
+    return { value: newValue };
   }
 }
 
-function parseDragEvent(event: any): UIDragEventArgs {
+function parseDragEvent(event: any): DragEventArgs {
   return {
     ...parseMouseEvent(event),
     dataTransfer: event.dataTransfer,
   };
 }
 
-function parseWheelEvent(event: WheelEvent): UIWheelEventArgs {
+function parseWheelEvent(event: WheelEvent): WheelEventArgs {
   return {
     ...parseMouseEvent(event),
     deltaX: event.deltaX,
@@ -112,9 +112,8 @@ function parseWheelEvent(event: WheelEvent): UIWheelEventArgs {
   };
 }
 
-function parseErrorEvent(event: ErrorEvent): UIErrorEventArgs {
+function parseErrorEvent(event: ErrorEvent): ErrorEventArgs {
   return {
-    type: event.type,
     message: event.message,
     filename: event.filename,
     lineno: event.lineno,
@@ -122,19 +121,18 @@ function parseErrorEvent(event: ErrorEvent): UIErrorEventArgs {
   };
 }
 
-function parseProgressEvent(event: ProgressEvent): UIProgressEventArgs {
+function parseProgressEvent(event: ProgressEvent): ProgressEventArgs {
   return {
-    type: event.type,
     lengthComputable: event.lengthComputable,
     loaded: event.loaded,
     total: event.total,
   };
 }
 
-function parseTouchEvent(event: TouchEvent): UITouchEventArgs {
+function parseTouchEvent(event: TouchEvent): TouchEventArgs {
 
   function parseTouch(touchList: TouchList) {
-    const touches: UITouchPoint[] = [];
+    const touches: TouchPoint[] = [];
 
     for (let i = 0; i < touchList.length; i++) {
       const touch = touchList[i];
@@ -152,7 +150,6 @@ function parseTouchEvent(event: TouchEvent): UITouchEventArgs {
   }
 
   return {
-    type: event.type,
     detail: event.detail,
     touches: parseTouch(event.touches),
     targetTouches: parseTouch(event.targetTouches),
@@ -164,9 +161,8 @@ function parseTouchEvent(event: TouchEvent): UITouchEventArgs {
   };
 }
 
-function parseKeyboardEvent(event: KeyboardEvent): UIKeyboardEventArgs {
+function parseKeyboardEvent(event: KeyboardEvent): KeyboardEventArgs {
   return {
-    type: event.type,
     key: event.key,
     code: event.code,
     location: event.location,
@@ -178,7 +174,7 @@ function parseKeyboardEvent(event: KeyboardEvent): UIKeyboardEventArgs {
   };
 }
 
-function parsePointerEvent(event: PointerEvent): UIPointerEventArgs {
+function parsePointerEvent(event: PointerEvent): PointerEventArgs {
   return {
     ...parseMouseEvent(event),
     pointerId: event.pointerId,
@@ -192,9 +188,8 @@ function parsePointerEvent(event: PointerEvent): UIPointerEventArgs {
   };
 }
 
-function parseMouseEvent(event: MouseEvent): UIMouseEventArgs {
+function parseMouseEvent(event: MouseEvent): MouseEventArgs {
   return {
-    type: event.type,
     detail: event.detail,
     screenX: event.screenX,
     screenY: event.screenY,
@@ -247,20 +242,13 @@ function normalizeTimeBasedValue(element: HTMLInputElement): string {
 
 // The following interfaces must be kept in sync with the UIEventArgs C# classes
 
-export interface UIEventArgs {
-  type: string;
-}
-
-interface UIChangeEventArgs extends UIEventArgs {
+interface ChangeEventArgs {
   value: string | boolean;
 }
 
-interface UIClipboardEventArgs extends UIEventArgs {
-}
-
-interface UIDragEventArgs extends UIEventArgs {
+interface DragEventArgs {
   detail: number;
-  dataTransfer: UIDataTransfer;
+  dataTransfer: DataTransfer;
   screenX: number;
   screenY: number;
   clientX: number;
@@ -273,20 +261,20 @@ interface UIDragEventArgs extends UIEventArgs {
   metaKey: boolean;
 }
 
-interface UIDataTransfer {
+interface DataTransfer {
   dropEffect: string;
   effectAllowed: string;
   files: string[];
-  items: UIDataTransferItem[];
+  items: DataTransferItem[];
   types: string[];
 }
 
-interface UIDataTransferItem {
+interface DataTransferItem {
   kind: string;
   type: string;
 }
 
-interface UIErrorEventArgs extends UIEventArgs {
+interface ErrorEventArgs {
   message: string;
   filename: string;
   lineno: number;
@@ -296,10 +284,7 @@ interface UIErrorEventArgs extends UIEventArgs {
   // do that. https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent
 }
 
-interface UIFocusEventArgs extends UIEventArgs {
-}
-
-interface UIKeyboardEventArgs extends UIEventArgs {
+interface KeyboardEventArgs {
   key: string;
   code: string;
   location: number;
@@ -310,7 +295,7 @@ interface UIKeyboardEventArgs extends UIEventArgs {
   metaKey: boolean;
 }
 
-interface UIMouseEventArgs extends UIEventArgs {
+interface MouseEventArgs {
   detail: number;
   screenX: number;
   screenY: number;
@@ -326,7 +311,7 @@ interface UIMouseEventArgs extends UIEventArgs {
   metaKey: boolean;
 }
 
-interface UIPointerEventArgs extends UIMouseEventArgs {
+interface PointerEventArgs extends MouseEventArgs {
   pointerId: number;
   width: number;
   height: number;
@@ -337,24 +322,24 @@ interface UIPointerEventArgs extends UIMouseEventArgs {
   isPrimary: boolean;
 }
 
-interface UIProgressEventArgs extends UIEventArgs {
+interface ProgressEventArgs {
   lengthComputable: boolean;
   loaded: number;
   total: number;
 }
 
-interface UITouchEventArgs extends UIEventArgs {
+interface TouchEventArgs {
   detail: number;
-  touches: UITouchPoint[];
-  targetTouches: UITouchPoint[];
-  changedTouches: UITouchPoint[];
+  touches: TouchPoint[];
+  targetTouches: TouchPoint[];
+  changedTouches: TouchPoint[];
   ctrlKey: boolean;
   shiftKey: boolean;
   altKey: boolean;
   metaKey: boolean;
 }
 
-interface UITouchPoint {
+interface TouchPoint {
   identifier: number;
   screenX: number;
   screenY: number;
@@ -364,7 +349,7 @@ interface UITouchPoint {
   pageY: number;
 }
 
-interface UIWheelEventArgs extends UIMouseEventArgs {
+interface WheelEventArgs extends MouseEventArgs {
   deltaX: number;
   deltaY: number;
   deltaZ: number;

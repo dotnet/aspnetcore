@@ -1,11 +1,9 @@
 import { EventDescriptor } from './BrowserRenderer';
-import { UIEventArgs } from './EventForDotNet';
-
-type EventDispatcher = (eventDescriptor: EventDescriptor, eventArgs: UIEventArgs) => void;
+type EventDispatcher = (eventDescriptor: EventDescriptor, eventArgs: any) => void;
 
 let eventDispatcherInstance: EventDispatcher;
 
-export function dispatchEvent(eventDescriptor: EventDescriptor, eventArgs: UIEventArgs): void {
+export function dispatchEvent(eventDescriptor: EventDescriptor, eventArgs: any): void {
   if (!eventDispatcherInstance) {
     throw new Error('eventDispatcher not initialized. Call \'setEventDispatcher\' to configure it.');
   }
@@ -13,6 +11,6 @@ export function dispatchEvent(eventDescriptor: EventDescriptor, eventArgs: UIEve
   eventDispatcherInstance(eventDescriptor, eventArgs);
 }
 
-export function setEventDispatcher(newDispatcher: (eventDescriptor: EventDescriptor, eventArgs: UIEventArgs) => void): void {
+export function setEventDispatcher(newDispatcher: (eventDescriptor: EventDescriptor, eventArgs: any) => void): void {
   eventDispatcherInstance = newDispatcher;
 }
