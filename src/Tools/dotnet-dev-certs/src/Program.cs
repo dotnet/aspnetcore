@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
         {
             var certificateManager = CertificateManager.Instance;
             var certificates = certificateManager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
-            X509Certificate2 validCertificate = null;
+            var validCertificates = new List<X509Certificate2>();
             if (certificates.Count == 0)
             {
                 reporter.Output("No valid certificate found.");
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         reporter.Warn(status.FailureMessage);
                         return InvalidCertificateState;
                     }
-                    validCertificate = certificate;
+                    validCertificates.Add(certificate);
                 }
             }
 
@@ -292,15 +292,15 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             {
                 if(!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    var trustedCertificate = certificates.FirstOrDefault(c => certificateManager.IsTrusted(c));
-                    if (trustedCertificate == null)
+                    var trustedCertificates = certificates.Where(c => certificateManager.IsTrusted(c)).ToList();
+                    if (!trustedCertificates.Any())
                     {
                         reporter.Output($@"The following certificates were found, but none of them is trusted: {CertificateManager.ToCertificateDescription(certificates)}");
                         return ErrorCertificateNotTrusted;
                     }
                     else
                     {
-                        reporter.Output($"A trusted certificate was found: {CertificateManager.GetDescription(trustedCertificate)}");
+                        ReportCertificates(reporter, trustedCertificates, "trusted");
                     }
                 }
                 else
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             }
             else
             {
-                reporter.Output($"A valid certificate was found: {CertificateManager.GetDescription(validCertificate)}");
+                ReportCertificates(reporter, validCertificates, "valid");
                 if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     reporter.Output("Run the command with both --check and --trust options to ensure that the certificate is not only valid but also trusted.");
@@ -319,6 +319,15 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             }
 
             return Success;
+        }
+
+        private static void ReportCertificates(IReporter reporter, IReadOnlyList<X509Certificate2> certificates, string certificateState)
+        {
+            reporter.Output(certificates.Count switch
+            {
+                1 => $"A {certificateState} certificate was found: {CertificateManager.GetDescription(certificates[0])}",
+                _ => $"{certificates.Count} {certificateState} certificates were found: {CertificateManager.ToCertificateDescription(certificates)}"
+            });
         }
 
         private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption exportFormat, IReporter reporter)
