@@ -118,7 +118,7 @@ export class EventDelegator {
           // We are going to raise an event for this element, so prepare info needed by the .NET code
           if (!eventArgsIsPopulated) {
             const eventOptions = getEventTypeOptions(evt.type);
-            eventArgs = eventOptions.createEventArgs(evt);
+            eventArgs = eventOptions.createEventArgs ? eventOptions.createEventArgs(evt) : {};
             eventArgsIsPopulated = true;
           }
 

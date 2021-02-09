@@ -1,15 +1,27 @@
 interface EventTypeOptions {
   browserEventName?: string;
-  createEventArgs: (event: Event) => any;
+  createEventArgs?: (event: Event) => any;
 }
 
 const eventTypeRegistry: Map<string, EventTypeOptions> = new Map();
-const emptyEventArgsOptions: EventTypeOptions = {
-  createEventArgs: () => ({})
-};
+const emptyEventArgsOptions: EventTypeOptions = {};
 
-export function getEventTypeOptions(eventTypeName: string): EventTypeOptions {
-  return eventTypeRegistry.get(eventTypeName) || emptyEventArgsOptions;
+export function registerCustomEventType(eventName: string, options: EventTypeOptions): void {
+  if (!options) {
+    throw new Error('The options parameter is required.');
+  }
+
+  // There can't be more than one registration for the same event name because then we wouldn't
+  // know which eventargs data to supply.
+  if (eventTypeRegistry.has(eventName)) {
+    throw new Error(`The event '${eventName}' is already registered.`);
+  }
+
+  eventTypeRegistry.set(eventName, options);
+}
+
+export function getEventTypeOptions(eventName: string): EventTypeOptions {
+  return eventTypeRegistry.get(eventName) || emptyEventArgsOptions;
 }
 
 function registerBuiltInEventType(eventNames: string[], options: EventTypeOptions) {
