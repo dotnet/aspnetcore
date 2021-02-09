@@ -2,7 +2,6 @@ import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, Edit
 import { EventDelegator } from './Events/EventDelegator';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
-import { dispatchEvent } from './Events/EventDispatcher';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
@@ -18,9 +17,7 @@ export class BrowserRenderer {
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
   public constructor(browserRendererId: number) {
-    this.eventDelegator = new EventDelegator((eventHandlerId, eventName, eventArgs, eventFieldInfo) => {
-      dispatchEvent({ browserRendererId, eventHandlerId, eventName, eventFieldInfo }, eventArgs);
-    });
+    this.eventDelegator = new EventDelegator(browserRendererId);
 
     // We don't yet know whether or not navigation interception will be enabled, but in case it will be,
     // we wire up the navigation manager to the event delegator so it has the option to participate

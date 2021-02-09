@@ -1,5 +1,6 @@
 import { createEventArgsFromDOMEvent } from './EventArgsFactory';
 import { EventFieldInfo } from './EventFieldInfo';
+import { dispatchEvent } from './EventDispatcher';
 
 const nonBubblingEvents = toLookup([
   'abort',
@@ -26,10 +27,6 @@ const alwaysPreventDefaultEvents: { [eventType: string]: boolean } = { submit: t
 
 const disableableEventNames = toLookup(['click', 'dblclick', 'mousedown', 'mousemove', 'mouseup']);
 
-export interface OnEventCallback {
-  (eventHandlerId: number, eventName: string, eventArgs: any, eventFieldInfo: EventFieldInfo | null): void;
-}
-
 // Responsible for adding/removing the eventInfo on an expando property on DOM elements, and
 // calling an EventInfoStore that deals with registering/unregistering the underlying delegated
 // event listeners as required (and also maps actual events back to the given callback).
@@ -42,7 +39,7 @@ export class EventDelegator {
 
   private eventInfoStore: EventInfoStore;
 
-  constructor(private onEvent: OnEventCallback) {
+  constructor(private browserRendererId: number) {
     const eventDelegatorId = ++EventDelegator.nextEventDelegatorId;
     this.eventsCollectionKey = `_blazorEvents_${eventDelegatorId}`;
     this.eventInfoStore = new EventInfoStore(this.onGlobalEvent.bind(this));
@@ -130,8 +127,12 @@ export class EventDelegator {
             evt.preventDefault();
           }
 
-          const eventFieldInfo = EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, evt);
-          this.onEvent(handlerInfo.eventHandlerId, evt.type, eventArgs, eventFieldInfo);
+          dispatchEvent({
+            browserRendererId: this.browserRendererId,
+            eventHandlerId: handlerInfo.eventHandlerId,
+            eventName: evt.type,
+            eventFieldInfo: EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, evt)
+          }, eventArgs);
         }
 
         if (handlerInfos.stopPropagation(evt.type)) {
