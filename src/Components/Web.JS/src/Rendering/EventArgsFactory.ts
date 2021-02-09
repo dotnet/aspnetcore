@@ -1,4 +1,4 @@
-export function fromDOMEvent(event: Event): any {
+export function createEventArgsFromDOMEvent(event: Event): any {
   switch (event.type) {
 
     case 'input':

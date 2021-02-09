@@ -1,4 +1,4 @@
-import { fromDOMEvent } from './EventForDotNet';
+import { createEventArgsFromDOMEvent } from './EventArgsFactory';
 import { EventFieldInfo } from './EventFieldInfo';
 
 const nonBubblingEvents = toLookup([
@@ -118,7 +118,7 @@ export class EventDelegator {
         if (handlerInfo && !eventIsDisabledOnElement(candidateElement, evt.type)) {
           // We are going to raise an event for this element, so prepare info needed by the .NET code
           if (!eventArgsIsPopulated) {
-            eventArgs = fromDOMEvent(evt);
+            eventArgs = createEventArgsFromDOMEvent(evt);
             eventArgsIsPopulated = true;
           }
 
