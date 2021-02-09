@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Builder
@@ -37,19 +36,22 @@ namespace Microsoft.AspNetCore.Builder
 
             var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(action);
 
-            var routeAttributes = action.Method.GetCustomAttributes().OfType<IRouteTemplateProvider>();
+            var routeAttributes = action.Method.GetCustomAttributes().OfType<IRoutePatternMetadata>();
             var conventionBuilders = new List<IEndpointConventionBuilder>();
 
             const int defaultOrder = 0;
 
             foreach (var routeAttribute in routeAttributes)
             {
-                if (routeAttribute.Template is null)
+                if (routeAttribute.RoutePattern is not string pattern)
                 {
                     continue;
                 }
 
-                var conventionBuilder = endpoints.Map(routeAttribute.Template, requestDelegate);
+                var routeName = (routeAttribute as IRouteNameMetadata)?.RouteName;
+                var routeOrder = (routeAttribute as IRouteOrderMetadata)?.RouteOrder;
+
+                var conventionBuilder = endpoints.Map(pattern, requestDelegate);
 
                 conventionBuilder.Add(endpointBuilder =>
                 {
@@ -58,9 +60,10 @@ namespace Microsoft.AspNetCore.Builder
                         endpointBuilder.Metadata.Add(attribute);
                     }
 
-                    endpointBuilder.DisplayName = routeAttribute.Name ?? routeAttribute.Template;
 
-                    ((RouteEndpointBuilder)endpointBuilder).Order = routeAttribute.Order ?? defaultOrder;
+                    endpointBuilder.DisplayName = routeName ?? pattern;
+
+                    ((RouteEndpointBuilder)endpointBuilder).Order = routeOrder ?? defaultOrder;
                 });
 
                 conventionBuilders.Add(conventionBuilder);

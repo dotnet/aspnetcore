@@ -6,8 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Moq;
 using Xunit;
@@ -29,17 +27,17 @@ namespace Microsoft.AspNetCore.Builder
         [Fact]
         public void MapAction_BuildsEndpointFromAttributes()
         {
-            const string customTemplate = "/CustomTemplate";
+            const string customPattern = "/CustomTemplate";
             const string customMethod = "CUSTOM_METHOD";
 
-            [HttpMethods(Template = customTemplate, Methods = new[] { customMethod })]
+            [CustomRouteMetadata(Pattern = customPattern, Methods = new[] { customMethod })]
             void TestAction() { };
 
             var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
             _ = builder.MapAction((Action)TestAction);
 
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal(customTemplate, routeEndpointBuilder.RoutePattern.RawText);
+            Assert.Equal(customPattern, routeEndpointBuilder.RoutePattern.RawText);
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             var endpoint = Assert.Single(dataSource.Endpoints);
@@ -55,7 +53,7 @@ namespace Microsoft.AspNetCore.Builder
             const string customName = "Custom Name";
             const int customOrder = 1337;
 
-            [HttpMethods(Name = customName, Order = customOrder)]
+            [CustomRouteMetadata(Name = customName, Order = customOrder)]
             void TestAction() { };
 
             var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
@@ -70,21 +68,25 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal(customOrder, routeEndpointBuilder.Order);
         }
 
-        private class HttpMethodsAttribute : Attribute, IHttpMethodMetadata, IRouteTemplateProvider
+        private class CustomRouteMetadataAttribute : Attribute, IRoutePatternMetadata, IHttpMethodMetadata, IRouteNameMetadata, IRouteOrderMetadata
         {
-            public string[] Methods { get; set; } = new[] { "GET" };
-
-            public string Template { get; set; } = "/";
-
-            public int Order { get; set; }
+            public string Pattern { get; set; } = "/";
 
             public string? Name { get; set; }
 
-            public bool AcceptCorsPreflight => false;
+            public int Order { get; set; } = 0;
+
+            public string[] Methods { get; set; } = new[] { "GET" };
+
+            string? IRoutePatternMetadata.RoutePattern => Pattern;
+
+            string? IRouteNameMetadata.RouteName => Name;
+
+            int? IRouteOrderMetadata.RouteOrder => Order;
 
             IReadOnlyList<string> IHttpMethodMetadata.HttpMethods => Methods;
 
-            int? IRouteTemplateProvider.Order => Order;
+            bool IHttpMethodMetadata.AcceptCorsPreflight => false;
         }
     }
 }

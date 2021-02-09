@@ -4,14 +4,12 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Api;
-using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         [Fact]
         public async Task MapAction_FromBodyWorksWithJsonPayload()
         {
-            [HttpMethods(new[] { "POST" }, "/EchoTodo")]
+            [HttpPost("/EchoTodo")]
             Todo EchoTodo([FromBody] Todo todo) => todo;
 
             using var host = new HostBuilder()
@@ -40,7 +38,6 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddAuthorization();
                     services.AddRouting();
                 })
                 .Build();
@@ -67,27 +64,6 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             public int Id { get; set; }
             public string Name { get; set; } = "Todo";
             public bool IsComplete { get; set; }
-        }
-
-        private class FromBodyAttribute : Attribute, IFromBodyMetadata { }
-
-        private class HttpMethodsAttribute : Attribute, IRouteTemplateProvider, IHttpMethodMetadata
-        {
-            public HttpMethodsAttribute(string[] httpMethods, string? template)
-            {
-                HttpMethods = httpMethods;
-                Template = template;
-            }
-
-            public string? Template { get; }
-
-            public IReadOnlyList<string> HttpMethods { get; }
-
-            public int? Order => null;
-
-            public string? Name => null;
-
-            public bool AcceptCorsPreflight => false;
         }
     }
 }
