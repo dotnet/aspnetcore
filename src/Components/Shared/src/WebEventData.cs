@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.Web
             // an event handler as receiving EventArgs, and have it actually receive a subclass at runtime
             // depending on the event that was raised.
             //
-            // The following list should remain in sync with EventForDotNet.ts.
+            // The following list should remain in sync with EventArgsFactory.ts.
 
             switch (eventName)
             {
