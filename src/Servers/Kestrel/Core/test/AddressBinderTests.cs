@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -127,6 +128,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await Assert.ThrowsAsync<IOException>(() =>
                 AddressBinder.BindAsync(options.ListenOptions, addressBindContext));
+        }
+
+        [Fact]
+        public void LogsWarningWhenHostingAddressesAreOverridden()
+        {
+            var logger = new TestApplicationErrorLogger();
+
+            var overriddenAddress = "http://localhost:5000";
+            var addresses = new ServerAddressesFeature();
+            addresses.InternalCollection.Add(overriddenAddress);
+
+            var options = new KestrelServerOptions();
+            options.ListenAnyIP(8080);
+
+            var addressBindContext = TestContextFactory.CreateAddressBindContext(
+                addresses,
+                options,
+                logger,
+                endpoint => Task.CompletedTask);
+
+            var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext);
+            Assert.True(bindTask.IsCompletedSuccessfully);
+
+            var log = Assert.Single(logger.Messages);
+            Assert.Equal(LogLevel.Warning, log.LogLevel);
+            Assert.Equal(CoreStrings.FormatOverridingWithKestrelOptions(overriddenAddress), log.Message);
+        }
+
+        [Fact]
+        public void LogsInformationWhenKestrelAddressesAreOverridden()
+        {
+            var logger = new TestApplicationErrorLogger();
+
+            var overriddenAddress = "http://localhost:5000";
+            var addresses = new ServerAddressesFeature();
+            addresses.InternalCollection.Add(overriddenAddress);
+
+            var options = new KestrelServerOptions();
+            options.ListenAnyIP(8080);
+
+            var addressBindContext = TestContextFactory.CreateAddressBindContext(
+                addresses,
+                options,
+                logger,
+                endpoint => Task.CompletedTask);
+
+            addressBindContext.ServerAddressesFeature.PreferHostingUrls = true;
+
+            var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext);
+            Assert.True(bindTask.IsCompletedSuccessfully);
+
+            var log = Assert.Single(logger.Messages);
+            Assert.Equal(LogLevel.Information, log.LogLevel);
+            Assert.Equal(CoreStrings.FormatOverridingWithPreferHostingUrls(nameof(addressBindContext.ServerAddressesFeature.PreferHostingUrls), overriddenAddress), log.Message);
         }
 
         [Theory]

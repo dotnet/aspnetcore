@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Flaky on Alpine", Queues = "(Alpine.312.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29549")]
         public async Task UseSpa_KillsRds_WhenAppIsStopped()
         {
             var serviceProvider = GetServiceProvider(s => s.RootPath = "/");
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("Flaky on Alpine", Queues = "(Alpine.312.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29549")]
         public async Task UseSpa_KillsAngularCli_WhenAppIsStopped()
         {
             var serviceProvider = GetServiceProvider(s => s.RootPath = "/");

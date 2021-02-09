@@ -57,23 +57,20 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="PublishAssets" AfterTargets="Publish">
-    <ItemGroup>
-      <_PublishFiles Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Identity.UI\$(Configuration)\$(DefaultNetCoreTargetFramework)\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
-      <_PublishFiles Include="$(ArtifactsBinDir)Identity.DefaultUI.WebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\Identity.DefaultUI.WebSite.deps.json" />
-      <_PublishFiles Include="$(ArtifactsBinDir)Identity.DefaultUI.WebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\Identity.DefaultUI.WebSite.deps.json" />
-      <_wwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\wwwroot\**\*.*" />
-      <_PagesFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\Pages\**\*.*" />
-      <_IdentityUIContent Include="$(MSBuildThisFileDirectory)..\..\UI\src\wwwroot\**\*" />
-      <_IdentityUIPages Include="$(MSBuildThisFileDirectory)..\..\UI\src\Areas\Identity\Pages\**\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)" />
-    <Copy SourceFiles="@(_PagesFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" />
-    <Copy SourceFiles="@(_wwwrootFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />
-    <Copy SourceFiles="@(_IdentityUIContent)" DestinationFiles="$(PublishDir)\UI\wwwroot\%(_IdentityUIContent.RecursiveDir)\%(_IdentityUIContent.FileName)%(_IdentityUIContent.Extension)" />
-    <Copy SourceFiles="@(_IdentityUIPages)" DestinationFiles="$(PublishDir)UI\Areas\Identity\Pages\%(_IdentityUIPages.RecursiveDir)\%(_IdentityUIPages.FileName)%(_IdentityUIPages.Extension)" />
-    <!-- Drop a dummy sln to specify content root location -->
-    <WriteLinesToFile File="$(PublishDir)\contentroot.sln" Lines="Ignored" Overwrite="true" Encoding="Unicode" />
+  <Target Name="PublishAssets" AfterTargets="Publish">	
+    <ItemGroup>	
+      <_PublishFiles Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Identity.UI\$(Configuration)\$(DefaultNetCoreTargetFramework)\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />	
+      <_wwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\wwwroot\**\*.*" />	
+      <_PagesFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\Pages\**\*.*" />	
+      <_IdentityUIContent Include="$(MSBuildThisFileDirectory)..\..\UI\src\wwwroot\**\*" />	
+      <_IdentityUIPages Include="$(MSBuildThisFileDirectory)..\..\UI\src\Areas\Identity\Pages\**\*" />	
+    </ItemGroup>	
+    <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)" />	
+    <Copy SourceFiles="@(_PagesFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" />	
+    <Copy SourceFiles="@(_wwwrootFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />	
+    <Copy SourceFiles="@(_IdentityUIContent)" DestinationFiles="$(PublishDir)\UI\wwwroot\%(_IdentityUIContent.RecursiveDir)\%(_IdentityUIContent.FileName)%(_IdentityUIContent.Extension)" />	
+    <Copy SourceFiles="@(_IdentityUIPages)" DestinationFiles="$(PublishDir)UI\Areas\Identity\Pages\%(_IdentityUIPages.RecursiveDir)\%(_IdentityUIPages.FileName)%(_IdentityUIPages.Extension)" />	
+    <!-- Drop a dummy sln to specify content root location -->	
+    <WriteLinesToFile File="$(PublishDir)\contentroot.sln" Lines="Ignored" Overwrite="true" Encoding="Unicode" />	
   </Target>
-
 </Project>

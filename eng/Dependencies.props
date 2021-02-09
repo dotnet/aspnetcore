@@ -136,7 +136,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <LatestPackageReference Include="System.Net.Experimental.MsQuic" />
     <LatestPackageReference Include="System.Net.Http.WinHttpHandler" />
-    <LatestPackageReference Include="System.Net.WebSockets.WebSocketProtocol" />
     <LatestPackageReference Include="System.ServiceProcess.ServiceController" />
     <LatestPackageReference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>

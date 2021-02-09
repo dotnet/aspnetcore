@@ -48,12 +48,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         MinDataRate? IHttpMinRequestBodyDataRateFeature.MinDataRate
         {
-            get => throw new NotSupportedException(CoreStrings.Http2MinDataRateNotSupported);
+            get => throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
             set 
             {
                 if (value != null)
                 {
-                    throw new NotSupportedException(CoreStrings.Http2MinDataRateNotSupported);
+                    throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
                 }
 
                 MinRequestBodyDataRate = value;

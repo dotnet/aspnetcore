@@ -6,9 +6,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-// Remove once HttpSys has enabled nullable
-#nullable enable
-
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal class SafeNativeOverlapped : SafeHandle

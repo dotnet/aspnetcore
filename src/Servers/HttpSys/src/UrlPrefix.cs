@@ -103,10 +103,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <param name="prefix">The string that the <see cref="UrlPrefix"/> will be created from.</param>
         public static UrlPrefix Create(string prefix)
         {
-            string scheme = null;
-            string host = null;
+            string scheme;
+            string host;
             int? port = null;
-            string path = null;
+            string path;
             var whole = prefix ?? string.Empty;
 
             var schemeDelimiterEnd = whole.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public string FullPrefix { get; }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return string.Equals(FullPrefix, Convert.ToString(obj, CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
         }

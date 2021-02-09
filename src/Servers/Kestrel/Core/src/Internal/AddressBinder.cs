@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             public override Task BindAsync(AddressBindContext context)
             {
                 var joined = string.Join(", ", _originalAddresses);
-                context.Logger.LogWarning(CoreStrings.OverridingWithKestrelOptions, joined, "UseKestrel()");
+                context.Logger.LogWarning(CoreStrings.OverridingWithKestrelOptions, joined);
 
                 return base.BindAsync(context);
             }
