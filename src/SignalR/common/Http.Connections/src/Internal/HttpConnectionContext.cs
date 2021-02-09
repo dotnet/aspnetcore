@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private CancellationTokenSource _connectionClosedTokenSource;
 
         // No need to RunContinuationsAsynchronously since we're at the tail of a threadpool thread
-        private TaskCompletionSource _connectionDelegateTcs = new TaskCompletionSource();
+        private readonly TaskCompletionSource _connectionDelegateTcs = new ();
         private ConnectionDelegate _connectionDelegate;
 
         private CancellationTokenSource _sendCts;
