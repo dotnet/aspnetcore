@@ -14,9 +14,9 @@ using Microsoft.AspNetCore.Http.Api;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Routing.MapAction
+namespace Microsoft.AspNetCore.Routing
 {
-    internal class MapActionExpressionTreeBuilder
+    internal static class MapActionExpressionTreeBuilder
     {
         private static readonly MethodInfo ChangeTypeMethodInfo = GetMethodInfo<Func<object, Type, object>>((value, type) => Convert.ChangeType(value, type, CultureInfo.InvariantCulture));
         private static readonly MethodInfo ExecuteTaskOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
