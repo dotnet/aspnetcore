@@ -1007,7 +1007,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             StopServer();
 
             var expectedString = new string('a', 30000);
-            Assert.Contains(TestSink.Writes, context => context.Message.Contains(expectedString));
+
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString), Logger);
         }
 
