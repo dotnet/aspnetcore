@@ -254,6 +254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var loggerProvider = new HandshakeErrorLoggerProvider();
+            loggerProvider.FilterLogger = new HttpsConnectionFilterLogger(expectedEventId: 3); // HttpConnectionEstablished
             LoggerFactory.AddProvider(loggerProvider);
 
             await using (var server = new TestServer(async httpContext =>
@@ -512,7 +513,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         private class HandshakeErrorLoggerProvider : ILoggerProvider
         {
-            public HttpsConnectionFilterLogger FilterLogger { get; } = new HttpsConnectionFilterLogger();
+            public HttpsConnectionFilterLogger FilterLogger { get; set; } = new HttpsConnectionFilterLogger();
             public ApplicationErrorLogger ErrorLogger { get; } = new ApplicationErrorLogger();
 
             public ILogger CreateLogger(string categoryName)
@@ -534,15 +535,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         private class HttpsConnectionFilterLogger : ILogger
         {
+            private int? _expectedEventId;
+
+            public HttpsConnectionFilterLogger()
+            {
+            }
+
+            public HttpsConnectionFilterLogger(int expectedEventId)
+            {
+                _expectedEventId = expectedEventId;
+            }
+
             public LogLevel LastLogLevel { get; set; }
             public EventId LastEventId { get; set; }
             public TaskCompletionSource LogTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
-                LastLogLevel = logLevel;
-                LastEventId = eventId;
-                LogTcs.SetResult();
+                if (!_expectedEventId.HasValue || _expectedEventId.Value == eventId)
+                {
+                    LastLogLevel = logLevel;
+                    LastEventId = eventId;
+                    LogTcs.SetResult();
+                }
             }
 
             public bool IsEnabled(LogLevel logLevel)
