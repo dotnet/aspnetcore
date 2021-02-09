@@ -1,9 +1,8 @@
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
-import { EventDelegator } from './EventDelegator';
+import { EventDelegator } from './Events/EventDelegator';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
-import { EventFieldInfo } from './EventFieldInfo';
-import { dispatchEvent } from './RendererEventDispatcher';
+import { dispatchEvent } from './Events/EventDispatcher';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
@@ -452,13 +451,6 @@ export class BrowserRenderer {
 export interface ComponentDescriptor {
   start: Node;
   end: Node;
-}
-
-export interface EventDescriptor {
-  browserRendererId: number;
-  eventHandlerId: number;
-  eventName: string;
-  eventFieldInfo: EventFieldInfo | null;
 }
 
 function parseMarkup(markup: string, isSvg: boolean) {
