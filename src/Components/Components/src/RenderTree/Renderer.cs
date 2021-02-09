@@ -294,33 +294,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <returns>The parameter type expected by the event handler. Normally this is a subclass of <see cref="EventArgs"/>.</returns>
         public Type GetEventArgsType(ulong eventHandlerId)
         {
-            var callback = GetRequiredEventCallback(eventHandlerId);
+            var methodInfo = GetRequiredEventCallback(eventHandlerId).Delegate?.Method;
 
             // The DispatchEventAsync code paths allow for the case where Delegate or its method
             // is null, and in this case the event receiver just receives null. This won't happen
             // under normal circumstances, but to avoid creating a new failure scenario, allow for
             // that edge case here too.
-            var parameterInfos = callback.Delegate?.Method.GetParameters();
-            if (parameterInfos == null || parameterInfos.Length == 0)
-            {
-                return typeof(EventArgs);
-            }
-            else if (parameterInfos.Length > 1)
-            {
-                throw new InvalidOperationException($"The event handler for event {eventHandlerId} declares more than one parameter. Only one is supported.");
-            }
-            else
-            {
-                var declaredType = parameterInfos[0].ParameterType;
-                if (typeof(EventArgs).IsAssignableFrom(declaredType))
-                {
-                    return declaredType;
-                }
-                else
-                {
-                    throw new InvalidOperationException($"The event handler parameter type {declaredType.FullName} for event must inherit from {typeof(EventArgs).FullName}.");
-                }
-            }
+            return methodInfo == null
+                ? typeof(EventArgs)
+                : EventArgsTypeCache.GetEventArgsType(methodInfo);
         }
 
         internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
