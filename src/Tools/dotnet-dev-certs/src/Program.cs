@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
                     CommandOption trust = null;
                     trust = c.Option("-t|--trust",
-                        "Trust the certificate on the current platform",
+                        "Trust the certificate on the current platform. When combined with the --check option, validates that the certificate is trusted.",
                         CommandOptionType.NoValue);
 
                     var verbose = c.Option("-v|--verbose",
