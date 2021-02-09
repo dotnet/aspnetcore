@@ -5,9 +5,15 @@
 *REMOVED*Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string!
 *REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string!
 *REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string! routeName) -> void
+Microsoft.AspNetCore.Builder.MapActionEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider
+Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Name.get -> string?
+Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Order.get -> int?
+Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Template.get -> string?
 Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object?>! dataTokens) -> void
 Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string?
 Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string?
 Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string? routeName) -> void
+static Microsoft.AspNetCore.Builder.MapActionEndpointRouteBuilderExtensions.MapAction(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, System.Delegate! action) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!

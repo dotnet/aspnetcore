@@ -858,8 +858,8 @@ Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.Name.get -> string?
 Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.Name.set -> void
 Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.Template.get -> string?
 Microsoft.AspNetCore.Mvc.Routing.IActionHttpMethodProvider.HttpMethods.get -> System.Collections.Generic.IEnumerable<string!>!
-Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Name.get -> string?
-Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Template.get -> string?
+Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Name.get -> string? (forwarded, contained in Microsoft.AspNetCore.Routing)
+Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Template.get -> string? (forwarded, contained in Microsoft.AspNetCore.Routing)
 Microsoft.AspNetCore.Mvc.Routing.IRouteValueProvider.RouteKey.get -> string!
 Microsoft.AspNetCore.Mvc.Routing.IRouteValueProvider.RouteValue.get -> string?
 Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory.GetUrlHelper(Microsoft.AspNetCore.Mvc.ActionContext! context) -> Microsoft.AspNetCore.Mvc.IUrlHelper!
