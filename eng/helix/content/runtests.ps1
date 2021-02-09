@@ -42,7 +42,7 @@ function InvokeInstallDotnet([string]$command) {
     return $false
 }
 
-function InstallDotnetSDKAndRuntime([string]$Feed, [string]$FeedCred) {
+function InstallDotnetSDKAndRuntime([string]$Feed, [string]$FeedCredParam) {
     foreach ($i in 1..5) {
         $random = Get-Random -Maximum 1024
         $env:DOTNET_HOME = Join-Path $currentDirectory "sdk$random"
@@ -52,14 +52,14 @@ function InstallDotnetSDKAndRuntime([string]$Feed, [string]$FeedCred) {
 
         Write-Host "Set PATH to: $env:PATH"
 
-        $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch `'`' `$true `'$Feed`' `'$FeedCred`' `$true"
+        $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch `'`' `$true `'$Feed`' `'$FeedCredParam`' `$true"
 
         if (!$success) {
             Write-Host "Retrying..."
             continue
         }
 
-        $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch dotnet `$true `'$Feed`' `'$FeedCred`' `$true"
+        $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch dotnet `$true `'$Feed`' `'$FeedCredParam`' `$true"
 
         if (!$success) {
             Write-Host "Retrying..."
@@ -73,7 +73,7 @@ function InstallDotnetSDKAndRuntime([string]$Feed, [string]$FeedCred) {
     exit 1
 }
 
-if ($FeedCred -eq $null) {
+if ([string]::IsNullOrEmpty($FeedCred)) {
     InstallDotnetSDKAndRuntime
 } else {
     InstallDotnetSDKAndRuntime "https://dotnetclimsrc.blob.core.windows.net/dotnet" $FeedCred
