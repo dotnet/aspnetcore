@@ -1,89 +1,64 @@
-export function createEventArgsFromDOMEvent(event: Event): any {
-  switch (event.type) {
-
-    case 'input':
-    case 'change':
-      return parseChangeEvent(event);
-
-    case 'copy':
-    case 'cut':
-    case 'paste':
-      return {};
-
-    case 'drag':
-    case 'dragend':
-    case 'dragenter':
-    case 'dragleave':
-    case 'dragover':
-    case 'dragstart':
-    case 'drop':
-      return parseDragEvent(event);
-
-    case 'focus':
-    case 'blur':
-    case 'focusin':
-    case 'focusout':
-      return {};
-
-    case 'keydown':
-    case 'keyup':
-    case 'keypress':
-      return parseKeyboardEvent(event as KeyboardEvent);
-
-    case 'contextmenu':
-    case 'click':
-    case 'mouseover':
-    case 'mouseout':
-    case 'mousemove':
-    case 'mousedown':
-    case 'mouseup':
-    case 'dblclick':
-      return parseMouseEvent(event as MouseEvent);
-
-    case 'error':
-      return parseErrorEvent(event as ErrorEvent);
-
-    case 'loadstart':
-    case 'timeout':
-    case 'abort':
-    case 'load':
-    case 'loadend':
-    case 'progress':
-      return parseProgressEvent(event as ProgressEvent);
-
-    case 'touchcancel':
-    case 'touchend':
-    case 'touchmove':
-    case 'touchenter':
-    case 'touchleave':
-    case 'touchstart':
-      return parseTouchEvent(event as TouchEvent);
-
-    case 'gotpointercapture':
-    case 'lostpointercapture':
-    case 'pointercancel':
-    case 'pointerdown':
-    case 'pointerenter':
-    case 'pointerleave':
-    case 'pointermove':
-    case 'pointerout':
-    case 'pointerover':
-    case 'pointerup':
-      return parsePointerEvent(event as PointerEvent);
-
-    case 'wheel':
-    case 'mousewheel':
-      return parseWheelEvent(event as WheelEvent);
-
-    case 'toggle':
-      return {};
-
-    default:
-      return {};
-  }
+interface EventTypeOptions {
+  browserEventName?: string;
+  createEventArgs: (event: Event) => any;
 }
 
-function parseChangeEvent(event: any): ChangeEventArgs {
+const eventTypeRegistry: Map<string, EventTypeOptions> = new Map();
+const emptyEventArgsOptions: EventTypeOptions = {
+  createEventArgs: () => ({})
+};
+
+export function getEventTypeOptions(eventTypeName: string): EventTypeOptions {
+  return eventTypeRegistry.get(eventTypeName) || emptyEventArgsOptions;
+}
+
+function registerBuiltInEventType(eventNames: string[], options: EventTypeOptions) {
+  eventNames.forEach(eventName => eventTypeRegistry.set(eventName, options));
+}
+
+registerBuiltInEventType(['input', 'change'], {
+  createEventArgs: parseChangeEvent
+});
+
+registerBuiltInEventType(['copy', 'cut', 'paste'], emptyEventArgsOptions);
+
+registerBuiltInEventType(['drag', 'dragend', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop'], {
+  createEventArgs: e => parseDragEvent(e as DragEvent)
+});
+
+registerBuiltInEventType(['focus', 'blur', 'focusin', 'focusout'], emptyEventArgsOptions);
+
+registerBuiltInEventType(['keydown', 'keyup', 'keypress'], {
+  createEventArgs: e => parseKeyboardEvent(e as KeyboardEvent)
+});
+
+registerBuiltInEventType(['contextmenu', 'click', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mouseup', 'dblclick'], {
+  createEventArgs: e => parseMouseEvent(e as MouseEvent)
+});
+
+registerBuiltInEventType(['error'], {
+  createEventArgs: e => parseErrorEvent(e as ErrorEvent)
+});
+
+registerBuiltInEventType(['loadstart', 'timeout', 'abort', 'load', 'loadend', 'progress'], {
+  createEventArgs: e => parseProgressEvent(e as ProgressEvent)
+});
+
+registerBuiltInEventType(['touchcancel', 'touchend', 'touchmove', 'touchenter', 'touchleave', 'touchstart'], {
+  createEventArgs: e => parseTouchEvent(e as TouchEvent)
+});
+
+registerBuiltInEventType(['gotpointercapture', 'lostpointercapture', 'pointercancel', 'pointerdown', 'pointerenter', 'pointerleave', 'pointermove', 'pointerout', 'pointerover', 'pointerup'], {
+  createEventArgs: e => parsePointerEvent(e as PointerEvent)
+});
+
+registerBuiltInEventType(['wheel', 'mousewheel'], {
+  createEventArgs: e => parseWheelEvent(e as WheelEvent)
+});
+
+registerBuiltInEventType(['toggle'], emptyEventArgsOptions);
+
+function parseChangeEvent(event: Event): ChangeEventArgs {
   const element = event.target as Element;
   if (isTimeBasedInput(element)) {
     const normalizedValue = normalizeTimeBasedValue(element);
@@ -93,13 +68,6 @@ function parseChangeEvent(event: any): ChangeEventArgs {
     const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
     return { value: newValue };
   }
-}
-
-function parseDragEvent(event: any): DragEventArgs {
-  return {
-    ...parseMouseEvent(event),
-    dataTransfer: event.dataTransfer,
-  };
 }
 
 function parseWheelEvent(event: WheelEvent): WheelEventArgs {
@@ -112,43 +80,21 @@ function parseWheelEvent(event: WheelEvent): WheelEventArgs {
   };
 }
 
-function parseErrorEvent(event: ErrorEvent): ErrorEventArgs {
+function parsePointerEvent(event: PointerEvent): PointerEventArgs {
   return {
-    message: event.message,
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
-  };
-}
-
-function parseProgressEvent(event: ProgressEvent): ProgressEventArgs {
-  return {
-    lengthComputable: event.lengthComputable,
-    loaded: event.loaded,
-    total: event.total,
+    ...parseMouseEvent(event),
+    pointerId: event.pointerId,
+    width: event.width,
+    height: event.height,
+    pressure: event.pressure,
+    tiltX: event.tiltX,
+    tiltY: event.tiltY,
+    pointerType: event.pointerType,
+    isPrimary: event.isPrimary,
   };
 }
 
 function parseTouchEvent(event: TouchEvent): TouchEventArgs {
-
-  function parseTouch(touchList: TouchList) {
-    const touches: TouchPoint[] = [];
-
-    for (let i = 0; i < touchList.length; i++) {
-      const touch = touchList[i];
-      touches.push({
-        identifier: touch.identifier,
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        screenX: touch.screenX,
-        screenY: touch.screenY,
-        pageX: touch.pageX,
-        pageY: touch.pageY,
-      });
-    }
-    return touches;
-  }
-
   return {
     detail: event.detail,
     touches: parseTouch(event.touches),
@@ -158,6 +104,23 @@ function parseTouchEvent(event: TouchEvent): TouchEventArgs {
     shiftKey: event.shiftKey,
     altKey: event.altKey,
     metaKey: event.metaKey,
+  };
+}
+
+function parseProgressEvent(event: ProgressEvent<EventTarget>): ProgressEventArgs {
+  return {
+    lengthComputable: event.lengthComputable,
+    loaded: event.loaded,
+    total: event.total,
+  };
+}
+
+function parseErrorEvent(event: ErrorEvent): ErrorEventArgs {
+  return {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
   };
 }
 
@@ -174,18 +137,35 @@ function parseKeyboardEvent(event: KeyboardEvent): KeyboardEventArgs {
   };
 }
 
-function parsePointerEvent(event: PointerEvent): PointerEventArgs {
+function parseDragEvent(event: DragEvent): DragEventArgs {
   return {
     ...parseMouseEvent(event),
-    pointerId: event.pointerId,
-    width: event.width,
-    height: event.height,
-    pressure: event.pressure,
-    tiltX: event.tiltX,
-    tiltY: event.tiltY,
-    pointerType: event.pointerType,
-    isPrimary: event.isPrimary,
+    dataTransfer: event.dataTransfer ? {
+      dropEffect: event.dataTransfer.dropEffect,
+      effectAllowed: event.dataTransfer.effectAllowed,
+      files: Array.from(event.dataTransfer.files).map(f => f.name),
+      items: Array.from(event.dataTransfer.items).map(i => ({ kind: i.kind, type: i.type })),
+      types: event.dataTransfer.types,
+    } : null,
   };
+}
+
+function parseTouch(touchList: TouchList): TouchPoint[] {
+  const touches: TouchPoint[] = [];
+
+  for (let i = 0; i < touchList.length; i++) {
+    const touch = touchList[i];
+    touches.push({
+      identifier: touch.identifier,
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      screenX: touch.screenX,
+      screenY: touch.screenY,
+      pageX: touch.pageX,
+      pageY: touch.pageY,
+    });
+  }
+  return touches;
 }
 
 function parseMouseEvent(event: MouseEvent): MouseEventArgs {
@@ -240,7 +220,7 @@ function normalizeTimeBasedValue(element: HTMLInputElement): string {
   throw new Error(`Invalid element type '${type}'.`);
 }
 
-// The following interfaces must be kept in sync with the UIEventArgs C# classes
+// The following interfaces must be kept in sync with the EventArgs C# classes
 
 interface ChangeEventArgs {
   value: string | boolean;
@@ -248,7 +228,7 @@ interface ChangeEventArgs {
 
 interface DragEventArgs {
   detail: number;
-  dataTransfer: DataTransfer;
+  dataTransfer: DataTransferEventArgs | null;
   screenX: number;
   screenY: number;
   clientX: number;
@@ -261,12 +241,12 @@ interface DragEventArgs {
   metaKey: boolean;
 }
 
-interface DataTransfer {
+interface DataTransferEventArgs {
   dropEffect: string;
   effectAllowed: string;
-  files: string[];
-  items: DataTransferItem[];
-  types: string[];
+  files: readonly string[];
+  items: readonly DataTransferItem[];
+  types: readonly string[];
 }
 
 interface DataTransferItem {

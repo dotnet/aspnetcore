@@ -1,6 +1,6 @@
-import { createEventArgsFromDOMEvent } from './EventArgsFactory';
 import { EventFieldInfo } from './EventFieldInfo';
 import { dispatchEvent } from './EventDispatcher';
+import { getEventTypeOptions } from './EventTypes';
 
 const nonBubblingEvents = toLookup([
   'abort',
@@ -117,7 +117,8 @@ export class EventDelegator {
         if (handlerInfo && !eventIsDisabledOnElement(candidateElement, evt.type)) {
           // We are going to raise an event for this element, so prepare info needed by the .NET code
           if (!eventArgsIsPopulated) {
-            eventArgs = createEventArgsFromDOMEvent(evt);
+            const eventOptions = getEventTypeOptions(evt.type);
+            eventArgs = eventOptions.createEventArgs(evt);
             eventArgsIsPopulated = true;
           }
 
