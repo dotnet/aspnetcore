@@ -24,6 +24,7 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +36,10 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
     <Reference Include="Microsoft.Extensions.Options" />
 
     <Compile Include="$(SharedSourceRoot)HashCodeCombiner\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="MapAction\" />
   </ItemGroup>
 
 </Project>
