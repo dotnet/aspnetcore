@@ -22,10 +22,12 @@ const nonBubblingEvents = toLookup([
   'DOMNodeRemovedFromDocument',
 ]);
 
+const alwaysPreventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
+
 const disableableEventNames = toLookup(['click', 'dblclick', 'mousedown', 'mousemove', 'mouseup']);
 
 export interface OnEventCallback {
-  (event: Event, eventHandlerId: number, eventName: string, eventArgs: any, eventFieldInfo: EventFieldInfo | null): void;
+  (eventHandlerId: number, eventName: string, eventArgs: any, eventFieldInfo: EventFieldInfo | null): void;
 }
 
 // Responsible for adding/removing the eventInfo on an expando property on DOM elements, and
@@ -122,8 +124,14 @@ export class EventDelegator {
             eventArgsIsPopulated = true;
           }
 
+          // For certain built-in events, having any .NET handler implicitly means we will prevent
+          // the browser's default behavior
+          if (alwaysPreventDefaultEvents.hasOwnProperty(evt.type)) {
+            evt.preventDefault();
+          }
+
           const eventFieldInfo = EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, evt);
-          this.onEvent(evt, handlerInfo.eventHandlerId, evt.type, eventArgs, eventFieldInfo);
+          this.onEvent(handlerInfo.eventHandlerId, evt.type, eventArgs, eventFieldInfo);
         }
 
         if (handlerInfos.stopPropagation(evt.type)) {

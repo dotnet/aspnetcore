@@ -8,7 +8,6 @@ import { attachToEventDelegator as attachNavigationManagerToEventDelegator } fro
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-const preventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
 const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
 const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
@@ -20,11 +19,7 @@ export class BrowserRenderer {
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
   public constructor(browserRendererId: number) {
-    this.eventDelegator = new EventDelegator((event, eventHandlerId, eventName, eventArgs, eventFieldInfo) => {
-      if (preventDefaultEvents[event.type]) {
-        event.preventDefault();
-      }
-
+    this.eventDelegator = new EventDelegator((eventHandlerId, eventName, eventArgs, eventFieldInfo) => {
       dispatchEvent({ browserRendererId, eventHandlerId, eventName, eventFieldInfo }, eventArgs);
     });
 
