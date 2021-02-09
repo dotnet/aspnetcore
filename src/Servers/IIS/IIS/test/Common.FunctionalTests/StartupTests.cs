@@ -1006,9 +1006,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             StopServer();
 
-            var expectedString = new string('a', 30000);
+            // Logs can be split due to the ANCM logging occuring at the same time as logs from the app, so check for a portion of the
+            // string instead of the entire string. The entire string will still be present in the event log.
+            var expectedLogString = new string('a', 16);
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString), Logger);
+            Assert.Contains(TestSink.Writes, context => context.Message.Contains(expectedLogString));
+            var expectedEventLogString = new string('a', 30000);
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedEventLogString), Logger);
         }
 
         [ConditionalTheory]
@@ -1027,10 +1032,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             await AssertFailsToStart(deploymentResult);
 
             var contents = GetLogFileContent(deploymentResult);
-            var expectedString = new string('a', 30000);
 
-            Assert.Contains(expectedString, contents);
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString), Logger);
+            // Logs can be split due to the ANCM logging occuring at the same time as logs from the app, so check for a portion of the
+            // string instead of the entire string. The entire string will still be present in the event log.
+            var expectedLogString = new string('a', 16);
+
+            Assert.Contains(expectedLogString, contents);
+
+            var expectedEventLogString = new string('a', 30000);
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedEventLogString), Logger);
         }
 
         [ConditionalFact]
@@ -1202,7 +1213,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_IIS_HTTPAUTH"] = "shouldberemoved";
 
-            Assert.DoesNotContain("shouldberemoved", await GetStringAsync(deploymentParameters,"/GetEnvironmentVariable?name=ASPNETCORE_IIS_HTTPAUTH"));
+            Assert.DoesNotContain("shouldberemoved", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_IIS_HTTPAUTH"));
         }
 
         [ConditionalFact]
@@ -1314,7 +1325,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             deploymentParameters.AddHttpsToServerConfig();
             deploymentParameters.SetWindowsAuth(false);
             deploymentParameters.AddServerConfigAction(
-                (element, root) => {
+                (element, root) =>
+                {
                     element.Descendants("site").Single().Element("application").SetAttributeValue("path", "/" + appName);
                     Helpers.CreateEmptyApplication(element, root);
                 });
@@ -1332,7 +1344,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
             deploymentParameters.AddServerConfigAction(
-                element => {
+                element =>
+                {
                     element.Descendants("bindings")
                         .Single()
                         .GetOrAdd("binding", "protocol", "https")
@@ -1358,7 +1371,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             deploymentParameters.ApplicationBaseUriHint = $"http://localhost:{TestPortHelper.GetNextPort()}/";
 
             deploymentParameters.AddServerConfigAction(
-                element => {
+                element =>
+                {
                     element.Descendants("bindings")
                         .Single()
                         .AddAndGetInnerElement("binding", "protocol", "https")
@@ -1403,7 +1417,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
             deploymentParameters.AddServerConfigAction(
-                element => {
+                element =>
+                {
                     element.Descendants("bindings")
                         .Single()
                         .Add(
