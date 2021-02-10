@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Internal;
 
 namespace Microsoft.AspNetCore.Builder
 {

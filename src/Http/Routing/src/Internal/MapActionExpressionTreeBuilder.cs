@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing.Internal
 {
     internal static class MapActionExpressionTreeBuilder
     {

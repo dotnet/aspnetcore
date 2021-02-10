@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Moq;
 using Xunit;
 
@@ -66,27 +67,6 @@ namespace Microsoft.AspNetCore.Builder
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
             Assert.Equal(customName, routeEndpointBuilder.DisplayName);
             Assert.Equal(customOrder, routeEndpointBuilder.Order);
-        }
-
-        private class CustomRouteMetadataAttribute : Attribute, IRoutePatternMetadata, IHttpMethodMetadata, IRouteNameMetadata, IRouteOrderMetadata
-        {
-            public string Pattern { get; set; } = "/";
-
-            public string? Name { get; set; }
-
-            public int Order { get; set; } = 0;
-
-            public string[] Methods { get; set; } = new[] { "GET" };
-
-            string? IRoutePatternMetadata.RoutePattern => Pattern;
-
-            string? IRouteNameMetadata.RouteName => Name;
-
-            int? IRouteOrderMetadata.RouteOrder => Order;
-
-            IReadOnlyList<string> IHttpMethodMetadata.HttpMethods => Methods;
-
-            bool IHttpMethodMetadata.AcceptCorsPreflight => false;
         }
     }
 }
