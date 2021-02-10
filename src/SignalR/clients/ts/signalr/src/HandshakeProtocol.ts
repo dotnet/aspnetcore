@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { TextMessageFormat } from "./TextMessageFormat";
+import { isArrayBuffer } from "./Utils";
 
 /** @private */
 export interface HandshakeRequestMessage {
@@ -26,7 +27,7 @@ export class HandshakeProtocol {
         let messageData: string;
         let remainingData: any;
 
-        if (data instanceof ArrayBuffer) {
+        if (isArrayBuffer(data)) {
             // Format is binary but still need to read JSON text from handshake response
             const binaryData = new Uint8Array(data);
             const separatorIndex = binaryData.indexOf(TextMessageFormat.RecordSeparatorCode);
