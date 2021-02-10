@@ -1,19 +1,19 @@
 {
   "sdk": {
-    "version": "5.0.102"
+    "version": "5.0.103"
   },
   "tools": {
-    "dotnet": "5.0.102",
+    "dotnet": "5.0.103",
     "runtimes": {
       "dotnet/x64": [
-        "2.1.24",
+        "2.1.25",
         "$(MicrosoftNETCoreAppInternalPackageVersion)"
       ],
       "dotnet/x86": [
         "$(MicrosoftNETCoreAppInternalPackageVersion)"
       ],
       "aspnetcore/x64": [
-        "3.1.11"
+        "3.1.12"
       ]
     },
     "Git": "2.22.0",
