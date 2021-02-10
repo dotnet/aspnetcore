@@ -1,10 +1,9 @@
 ﻿<h3 id="event-bubbling">Bubbling standard event</h3>
 
-@* Temporarily hard-coding the internal names - this will be replaced once the Razor compiler supports @onevent:stopPropagation and @onevent:preventDefault *@
 <div @onclick="@(() => LogEvent("parent onclick"))">
     @* This element shows you can stop propagation even without necessarily also handling the event *@
-    <div __internal_stopPropagation_onclick="@intermediateStopPropagation">
-        <button id="button-with-onclick" @onclick="@(() => LogEvent("target onclick"))" __internal_stopPropagation_onclick="@targetStopPropagation">
+    <div @onclick:stopPropagation="@intermediateStopPropagation">
+        <button id="button-with-onclick" @onclick="@(() => LogEvent("target onclick"))" @onclick:stopPropagation="@targetStopPropagation">
             Button with onclick handler
         </button>
         <button id="button-without-onclick">
@@ -27,21 +26,21 @@
 
 <h3>PreventDefault</h3>
 
-<div __internal_preventDefault_onclick="@ancestorPreventDefault">
+<div @onclick:preventDefault="@ancestorPreventDefault">
     <p>
         <label>
-            <input type="checkbox" id="checkbox-with-preventDefault-true" __internal_preventDefault_onclick @onclick="@(() => LogEvent("Checkbox click"))" @onchange="@(() => LogEvent("Checkbox change"))" />
+            <input type="checkbox" id="checkbox-with-preventDefault-true" @onclick:preventDefault @onclick="@(() => LogEvent("Checkbox click"))" @onchange="@(() => LogEvent("Checkbox change"))" />
             Checkbox with onclick preventDefault
         </label>
     </p>
     <p>
         <label>
-            <input type="checkbox" id="checkbox-with-preventDefault-false" __internal_preventDefault_onclick="@false" @onclick="@(() => LogEvent("Checkbox click"))" @onchange="@(() => LogEvent("Checkbox change"))" />
+            <input type="checkbox" id="checkbox-with-preventDefault-false" @onclick:preventDefault="@false" @onclick="@(() => LogEvent("Checkbox click"))" @onchange="@(() => LogEvent("Checkbox change"))" />
             Checkbox with onclick preventDefault = false
         </label>
     </p>
     <p>
-        Textbox that can block keystrokes: <input id="textbox-that-can-block-keystrokes" __internal_preventDefault_onkeydown="@preventOnKeyDown" @onkeydown="@(() => LogEvent("Received keydown"))" />
+        Textbox that can block keystrokes: <input id="textbox-that-can-block-keystrokes" @onkeydown:preventDefault="@preventOnKeyDown" @onkeydown="@(() => LogEvent("Received keydown"))" />
     </p>
 </div>
 
