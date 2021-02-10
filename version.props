@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>24</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>26</AspNetCorePatchVersion>
     <PreReleaseLabel>servicing</PreReleaseLabel>
     <PreReleaseBrandingLabel>Servicing</PreReleaseBrandingLabel>
     <BuildNumber Condition="'$(BuildNumber)' == '' OR '$(UsingLocalBuildNumber)' == 'true'">t000</BuildNumber>

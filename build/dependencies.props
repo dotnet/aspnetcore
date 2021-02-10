@@ -30,7 +30,7 @@
     <MicrosoftExtensionsCachingSqlServerPackageVersion>2.1.2</MicrosoftExtensionsCachingSqlServerPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>2.1.1</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
-    <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>2.1.1</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
+    <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>2.1.24</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>2.1.10</MicrosoftExtensionsConfigurationBinderPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.1</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
     <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.1.1</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>

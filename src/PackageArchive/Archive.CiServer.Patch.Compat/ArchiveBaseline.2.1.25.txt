@@ -1,0 +1,3 @@
+runtime.native.system.data.sqlclient.sni\4.4.0\.signature.p7s
+system.collections.specialized\4.3.0\.signature.p7s
+system.security.claims\4.3.0\.signature.p7s

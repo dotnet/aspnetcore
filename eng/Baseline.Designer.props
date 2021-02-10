@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.23</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.25</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -275,7 +275,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.AspNetCore.DataProtection.AzureKeyVault-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureKeyVault' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.24</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureKeyVault' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
@@ -284,7 +284,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.AzureStorage-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureStorage' ">
-    <BaselinePackageVersion>2.1.13</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.24</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureStorage' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
@@ -931,35 +931,35 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Core' ">
-    <BaselinePackageVersion>2.1.7</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.25</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Core' AND '$(TargetFramework)' == 'netcoreapp2.1' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.1.3, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[2.1.10, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="System.Memory" Version="[4.5.2, )" />
+    <BaselinePackageReference Include="System.Memory" Version="[4.5.4, )" />
     <BaselinePackageReference Include="System.Numerics.Vectors" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.2, )" />
-    <BaselinePackageReference Include="System.Security.Cryptography.Cng" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.3, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Cng" Version="[4.5.2, )" />
+    <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.4, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.1.3, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[2.1.10, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="System.Memory" Version="[4.5.2, )" />
+    <BaselinePackageReference Include="System.Memory" Version="[4.5.4, )" />
     <BaselinePackageReference Include="System.Numerics.Vectors" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.2, )" />
-    <BaselinePackageReference Include="System.Security.Cryptography.Cng" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.3, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Cng" Version="[4.5.2, )" />
+    <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Https-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Https' ">
