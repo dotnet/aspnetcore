@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -20,12 +19,13 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 using Xunit.Sdk;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
@@ -34,7 +34,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private const int MaxRetries = 10;
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX)] // Hostname is arbitrarily available on macOS, see https://github.com/dotnet/aspnetcore/issues/27377
+        [HostNameIsReachable]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27377")]
         public async Task RegisterAddresses_HostName_Success()
         {
             var hostName = Dns.GetHostName();
@@ -363,7 +364,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX)] // Hostname is arbitrarily available on macOS, see https://github.com/dotnet/aspnetcore/issues/27377
+        [HostNameIsReachable]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27377")]
         public async Task ListenAnyIP_HostName_Success()
         {
             var hostName = Dns.GetHostName();
