@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             foreach(var feature in manager.FeatureProviders)
             {
-                if(feature.GetType() == typeof(ControllerFeatureProvider))
+                if(feature is ControllerFeatureProvider)
                 {
                     controllerFeaturePresent = true;
                     break;
