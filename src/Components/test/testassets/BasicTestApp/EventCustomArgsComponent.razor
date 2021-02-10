@@ -7,7 +7,8 @@
 <div id="test-event-target" style="border: 1px solid black; background: silver; padding: 1em; margin-bottom: 1em;"
      @onkeydown="@(e => { LogMessage("Received native keydown event"); })"
      @ontestevent="@HandleTestEvent"
-     @onkeydown.testvariant="@HandleCustomKeyDown">
+     @onkeydown.testvariant="@HandleCustomKeyDown"
+     @oncustommouseover="@(e => { LogMessage("Received custom mouseover event"); })">
     Event target
     <div id="test-event-target-child" style="background: #afa; padding: 1em;">
         Child
@@ -38,9 +39,14 @@
     Register testevent with createventargs that supplies args
 </button>
 
-<button id="register-testevent-with-createventargs-that-supplies-args"
+<button id="register-custom-keydown"
         onclick="Blazor.registerCustomEventType('keydown.testvariant', { browserEventName: 'keydown', createEventArgs: event => ({ customKeyInfo: event.key }) })">
     Register custom keydown event
+</button>
+
+<button id="register-custom-mouseover"
+        onclick="Blazor.registerCustomEventType('custommouseover', { browserEventName: 'mouseover' })">
+    Register custom mouseover event (which has no corresponding native listener)
 </button>
 
 <p>

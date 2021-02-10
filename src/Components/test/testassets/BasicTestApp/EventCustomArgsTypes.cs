@@ -5,6 +5,7 @@ namespace BasicTestApp.CustomEventTypesNamespace
 {
     [EventHandler("ontestevent", typeof(TestEventArgs), true, true)]
     [EventHandler("onkeydown.testvariant", typeof(TestKeyDownEventArgs), true, true)]
+    [EventHandler("oncustommouseover", typeof(EventArgs), true, true)]
     public static class EventHandlers
     {
     }
