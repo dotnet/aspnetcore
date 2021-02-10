@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Http.Api
+namespace Microsoft.AspNetCore.Http.Metadata
 {
     /// <summary>
     /// Defines a contract that represents the result of an HTTP endpoint.

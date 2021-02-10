@@ -4,11 +4,11 @@
 *REMOVED*Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object! value) -> bool
 *REMOVED*static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Type! middleware, params object![]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 *REMOVED*static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware<TMiddleware>(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, params object![]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-Microsoft.AspNetCore.Http.Api.IFromBodyMetadata
-Microsoft.AspNetCore.Http.Api.IFromRouteMetadata
-Microsoft.AspNetCore.Http.Api.IFromRouteMetadata.Name.get -> string!
-Microsoft.AspNetCore.Http.Api.IResult
-Microsoft.AspNetCore.Http.Api.IResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata
+Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata
+Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata.Name.get -> string!
+Microsoft.AspNetCore.Http.Metadata.IResult
+Microsoft.AspNetCore.Http.Metadata.IResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.Endpoint.Endpoint(Microsoft.AspNetCore.Http.RequestDelegate? requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, string? displayName) -> void
 Microsoft.AspNetCore.Http.Endpoint.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate?
 Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object? value) -> bool

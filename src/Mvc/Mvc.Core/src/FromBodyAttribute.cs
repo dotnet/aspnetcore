@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Http.Api;
+using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc
 {
