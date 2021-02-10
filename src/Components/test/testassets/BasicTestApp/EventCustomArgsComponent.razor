@@ -1,0 +1,51 @@
+﻿@using BasicTestApp.CustomEventTypesNamespace
+
+<h3 id="event-custom-args">Custom event types</h3>
+
+<p>This component exercises various scenarios around custom event types and arguments.</p>
+
+<div id="test-event-target" style="border: 1px solid black; background: silver; padding: 1em"
+     @ontestevent="@HandleTestEvent">
+    Event target
+    <div id="test-event-target-child" style="background: #afa">Child</div>
+</div>
+
+<button id="trigger-testevent-directly"
+        onclick="document.getElementById('test-event-target-child').dispatchEvent(new CustomEvent('testevent', { bubbles: true }))">
+    Trigger testevent directly
+</button>
+
+<button id="register-testevent-with-no-createventargs"
+        onclick="Blazor.registerCustomEventType('testevent', {})">
+    Register testevent with no createventargs
+</button>
+
+<button id="register-testevent-with-createventargs-that-returns-null"
+        onclick="Blazor.registerCustomEventType('testevent', { createEventArgs: e => null })">
+    Register testevent with createventargs that returns null
+</button>
+
+<button id="register-testevent-with-createventargs-that-supplies-args"
+        onclick="Blazor.registerCustomEventType('testevent', { createEventArgs: e => ({ myProp: `Native event target ID=${e.target.id}` }) })">
+    Register testevent with createventargs that supplies args
+</button>
+
+<h3>Event log</h3>
+
+<textarea readonly @bind="logValue" cols="100" rows="10"></textarea>
+<button id="clear-log" @onclick="@(() => { logValue = string.Empty; })">Clear log</button>
+
+@code {
+    string logValue = string.Empty;
+
+    void LogMessage(string message)
+    {
+        logValue += message + Environment.NewLine;
+    }
+
+    void HandleTestEvent(TestEventArgs eventArgs)
+    {
+        var args = eventArgs == null ? "null" : $"{{ MyProp={eventArgs.MyProp ?? "null"} }}";
+        LogMessage($"Received testevent with args '{args}'");
+    }
+}
