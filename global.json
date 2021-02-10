@@ -6,7 +6,7 @@
     "dotnet": "6.0.100-preview.1.21073.4",
     "runtimes": {
       "dotnet/x64": [
-        "2.1.23",
+        "2.1.25",
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "dotnet/x86": [
