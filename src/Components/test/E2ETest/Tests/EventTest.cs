@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: true);
-            Browser.MountTestComponent<EventBubblingComponent>();
         }
 
         [Fact]

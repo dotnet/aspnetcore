@@ -65,7 +65,7 @@
 
 <h3>Event log</h3>
 
-<textarea readonly @bind="logValue" cols="100" rows="10"></textarea>
+<textarea id="test-log" readonly @bind="logValue" cols="100" rows="10"></textarea>
 <button id="clear-log" @onclick="@(() => { logValue = string.Empty; })">Clear log</button>
 
 @code {

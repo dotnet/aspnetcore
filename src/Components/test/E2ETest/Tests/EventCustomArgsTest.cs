@@ -1,0 +1,154 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Linq;
+using BasicTestApp;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.E2ETesting;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
+{
+    public class EventCustomArgsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
+    {
+        public EventCustomArgsTest(
+            BrowserFixture browserFixture,
+            ToggleExecutionModeServerFixture<Program> serverFixture,
+            ITestOutputHelper output)
+            : base(browserFixture, serverFixture, output)
+        {
+        }
+
+        protected override void InitializeAsyncCore()
+        {
+            // Always do a full page reload because these tests need to start with no custom event registrations
+            Navigate(ServerPathBase, noReload: false);
+            Browser.MountTestComponent<EventCustomArgsComponent>();
+        }
+
+        [Fact]
+        public void UnregisteredCustomEventWorks()
+        {
+            // This reflects functionality in 5.0 and earlier, in which you could have custom events
+            // registered with the Razor compiler but no way to register them with the runtime, so
+            // you could only receive empty eventargs.
+            Browser.Exists(By.Id("trigger-testevent-directly")).Click();
+            Browser.Equal("Received testevent with args '{ MyProp=null }'", () => GetLogLines().Single());
+        }
+
+        [Fact]
+        public void CanRegisterCustomEventAfterRender_WithNoCreateEventArgs()
+        {
+            Browser.Exists(By.Id("register-testevent-with-no-createventargs")).Click();
+            Browser.FindElement(By.Id("trigger-testevent-directly")).Click();
+            Browser.Equal("Received testevent with args '{ MyProp=null }'", () => GetLogLines().Single());
+        }
+
+        [Fact]
+        public void CanRegisterCustomEventAfterRender_WithCreateEventArgsReturningNull()
+        {
+            Browser.Exists(By.Id("register-testevent-with-createventargs-that-returns-null")).Click();
+            Browser.FindElement(By.Id("trigger-testevent-directly")).Click();
+            Browser.Equal("Received testevent with args 'null'", () => GetLogLines().Single());
+        }
+
+        [Fact]
+        public void CanRegisterCustomEventAfterRender_WithCreateEventArgsReturningData()
+        {
+            Browser.Exists(By.Id("register-testevent-with-createventargs-that-supplies-args")).Click();
+            Browser.FindElement(By.Id("trigger-testevent-directly")).Click();
+            Browser.Equal("Received testevent with args '{ MyProp=Native event target ID=test-event-target-child }'", () => GetLogLines().Single());
+        }
+
+        [Fact]
+        public void CanAliasBrowserEvent_WithCreateEventArgsReturningData()
+        {
+            var input = Browser.Exists(By.CssSelector("#test-event-target-child input"));
+            Browser.FindElement(By.Id("register-custom-keydown")).Click();
+            SendKeysSequentially(input, "ab");
+
+            Browser.Equal(new[]
+            {
+                "Received native keydown event",
+                "You pressed: a",
+                "Received native keydown event",
+                "You pressed: b",
+            }, GetLogLines);
+
+            Assert.Equal("ab", input.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanAliasBrowserEvent_PreventDefaultOnNativeEvent()
+        {
+            var input = Browser.Exists(By.CssSelector("#test-event-target-child input"));
+            Browser.FindElement(By.Id("register-custom-keydown")).Click();
+            Browser.FindElement(By.Id("custom-keydown-prevent-default")).Click();
+            SendKeysSequentially(input, "ab");
+
+            Browser.Equal(new[]
+            {
+                "Received native keydown event",
+                "You pressed: a",
+                "Received native keydown event",
+                "You pressed: b",
+            }, GetLogLines);
+
+            // Check it was actually preventDefault-ed
+            Assert.Equal("", input.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanAliasBrowserEvent_StopPropagationIndependentOfNativeEvent()
+        {
+            var input = Browser.Exists(By.CssSelector("#test-event-target-child input"));
+            Browser.FindElement(By.Id("register-custom-keydown")).Click();
+            Browser.FindElement(By.Id("custom-keydown-stop-propagation")).Click();
+            SendKeysSequentially(input, "ab");
+
+            Browser.Equal(new[]
+            {
+                // The native event still bubbles up to its listener on an ancestor, but the
+                // custom variant does not bubble up past the stopPropagation point
+                "Received native keydown event",
+                "Received native keydown event",
+            }, GetLogLines);
+
+            Assert.Equal("ab", input.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanAliasBrowserEvent_WithoutAnyNativeListenerForBrowserEvent()
+        {
+            // Sets up a registration for a custom event name that's an alias for mouseover,
+            // but there's no regular listener for mouseover in the application at this point
+            Browser.Exists(By.Id("register-custom-mouseover")).Click();
+
+            new Actions(Browser)
+                .MoveToElement(Browser.FindElement(By.Id("test-event-target-child")))
+                .Perform();
+
+            // Nonetheless, the custom event is still received
+            Browser.True(() => GetLogLines().Contains("Received custom mouseover event"));
+        }
+
+        void SendKeysSequentially(IWebElement target, string text)
+        {
+            foreach (var c in text)
+            {
+                target.SendKeys(c.ToString());
+            }
+        }
+
+        private string[] GetLogLines()
+            => Browser.Exists(By.Id("test-log"))
+            .GetAttribute("value")
+            .Replace("\r\n", "\n")
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+    }
+}
