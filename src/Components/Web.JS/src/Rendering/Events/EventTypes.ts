@@ -4,7 +4,9 @@ interface EventTypeOptions {
 }
 
 const eventTypeRegistry: Map<string, EventTypeOptions> = new Map();
-const emptyEventArgsOptions: EventTypeOptions = {};
+const browserEventNamesToAliases: Map<string, string[]> = new Map();
+const unknownEventTypeOptions: EventTypeOptions = { };
+const createBlankEventArgsOptions: EventTypeOptions = { createEventArgs: () => ({}) };
 
 export function registerCustomEventType(eventName: string, options: EventTypeOptions): void {
   if (!options) {
@@ -17,11 +19,27 @@ export function registerCustomEventType(eventName: string, options: EventTypeOpt
     throw new Error(`The event '${eventName}' is already registered.`);
   }
 
+  // If applicable, register this as an alias of the given browserEventName
+  if (options.browserEventName) {
+    const aliasGroup = browserEventNamesToAliases.get(options.browserEventName);
+    if (aliasGroup) {
+      aliasGroup.push(eventName);
+    } else {
+      browserEventNamesToAliases.set(options.browserEventName, [eventName]);
+    }
+
+      // Make sure there's a global delegating handler for that browserEventName
+  }
+
   eventTypeRegistry.set(eventName, options);
 }
 
 export function getEventTypeOptions(eventName: string): EventTypeOptions {
-  return eventTypeRegistry.get(eventName) || emptyEventArgsOptions;
+  return eventTypeRegistry.get(eventName) || unknownEventTypeOptions;
+}
+
+export function getEventNameAliases(eventName: string): string[] | undefined {
+  return browserEventNamesToAliases.get(eventName);
 }
 
 function registerBuiltInEventType(eventNames: string[], options: EventTypeOptions) {
@@ -32,13 +50,13 @@ registerBuiltInEventType(['input', 'change'], {
   createEventArgs: parseChangeEvent
 });
 
-registerBuiltInEventType(['copy', 'cut', 'paste'], emptyEventArgsOptions);
+registerBuiltInEventType(['copy', 'cut', 'paste'], createBlankEventArgsOptions);
 
 registerBuiltInEventType(['drag', 'dragend', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop'], {
   createEventArgs: e => parseDragEvent(e as DragEvent)
 });
 
-registerBuiltInEventType(['focus', 'blur', 'focusin', 'focusout'], emptyEventArgsOptions);
+registerBuiltInEventType(['focus', 'blur', 'focusin', 'focusout'], createBlankEventArgsOptions);
 
 registerBuiltInEventType(['keydown', 'keyup', 'keypress'], {
   createEventArgs: e => parseKeyboardEvent(e as KeyboardEvent)
@@ -68,7 +86,7 @@ registerBuiltInEventType(['wheel', 'mousewheel'], {
   createEventArgs: e => parseWheelEvent(e as WheelEvent)
 });
 
-registerBuiltInEventType(['toggle'], emptyEventArgsOptions);
+registerBuiltInEventType(['toggle'], createBlankEventArgsOptions);
 
 function parseChangeEvent(event: Event): ChangeEventArgs {
   const element = event.target as Element;
