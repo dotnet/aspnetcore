@@ -7,6 +7,8 @@ const eventTypeRegistry: Map<string, EventTypeOptions> = new Map();
 const browserEventNamesToAliases: Map<string, string[]> = new Map();
 const createBlankEventArgsOptions: EventTypeOptions = { createEventArgs: () => ({}) };
 
+export const eventNameAliasRegisteredCallbacks: ((aliasEventName: string, browserEventName) => void)[] = [];
+
 export function registerCustomEventType(eventName: string, options: EventTypeOptions): void {
   if (!options) {
     throw new Error('The options parameter is required.');
@@ -27,7 +29,11 @@ export function registerCustomEventType(eventName: string, options: EventTypeOpt
       browserEventNamesToAliases.set(options.browserEventName, [eventName]);
     }
 
-      // Make sure there's a global delegating handler for that browserEventName
+    // For developer convenience, it's allowed to register the custom event type *after*
+    // some listeners for it are already present. Once the event name alias gets registered,
+    // we have to notify any existing event delegators so they can update their delegated
+    // events list.
+    eventNameAliasRegisteredCallbacks.forEach(callback => callback(eventName, options.browserEventName));
   }
 
   eventTypeRegistry.set(eventName, options);
@@ -39,6 +45,11 @@ export function getEventTypeOptions(eventName: string): EventTypeOptions | undef
 
 export function getEventNameAliases(eventName: string): string[] | undefined {
   return browserEventNamesToAliases.get(eventName);
+}
+
+export function getBrowserEventName(possibleAliasEventName: string): string {
+  const eventOptions = eventTypeRegistry.get(possibleAliasEventName);
+  return eventOptions?.browserEventName || possibleAliasEventName;
 }
 
 function registerBuiltInEventType(eventNames: string[], options: EventTypeOptions) {

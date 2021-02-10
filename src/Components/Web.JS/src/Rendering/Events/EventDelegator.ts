@@ -1,6 +1,6 @@
 import { EventFieldInfo } from './EventFieldInfo';
 import { dispatchEvent } from './EventDispatcher';
-import { getEventNameAliases, getEventTypeOptions } from './EventTypes';
+import { eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions } from './EventTypes';
 
 const nonBubblingEvents = toLookup([
   'abort',
@@ -191,6 +191,7 @@ class EventInfoStore {
   private countByEventName: { [eventName: string]: number } = {};
 
   constructor(private globalListener: EventListener) {
+    eventNameAliasRegisteredCallbacks.push(this.handleEventNameAliasAdded.bind(this));
   }
 
   public add(info: EventHandlerInfo) {
@@ -209,6 +210,9 @@ class EventInfoStore {
   }
 
   public addGlobalListener(eventName: string) {
+    // If this event name is an alias, update the global listener for the corresponding browser event
+    eventName = getBrowserEventName(eventName);
+
     if (this.countByEventName.hasOwnProperty(eventName)) {
       this.countByEventName[eventName]++;
     } else {
@@ -239,7 +243,9 @@ class EventInfoStore {
     if (info) {
       delete this.infosByEventHandlerId[eventHandlerId];
 
-      const eventName = info.eventName;
+      // If this event name is an alias, update the global listener for the corresponding browser event
+      const eventName = getBrowserEventName(info.eventName);
+
       if (--this.countByEventName[eventName] === 0) {
         delete this.countByEventName[eventName];
         document.removeEventListener(eventName, this.globalListener);
@@ -247,6 +253,22 @@ class EventInfoStore {
     }
 
     return info;
+  }
+
+  private handleEventNameAliasAdded(aliasEventName, browserEventName) {
+    // If an event name alias gets registered later, we need to update the global listener
+    // registrations to match. This makes it equivalent to the alias having been registered
+    // before the elements with event handlers got rendered.
+    if (this.countByEventName.hasOwnProperty(aliasEventName)) {
+      // Delete old
+      const countByAliasEventName = this.countByEventName[aliasEventName];
+      delete this.countByEventName[aliasEventName];
+      document.removeEventListener(aliasEventName, this.globalListener);
+
+      // Ensure corresponding count is added to new
+      this.addGlobalListener(browserEventName);
+      this.countByEventName[browserEventName] += countByAliasEventName - 1;
+    }
   }
 }
 
