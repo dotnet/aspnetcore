@@ -11,9 +11,8 @@ import { eachTransport, eachTransportAndProtocol, ENDPOINT_BASE_HTTPS_URL, ENDPO
 import "./LogBannerReporter";
 import { TestLogger } from "./TestLogger";
 
-import { PromiseSource } from "../../signalr/tests/Utils";
-
 import * as RX from "rxjs";
+import { PromiseSource } from "./Utils";
 
 const TESTHUBENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub";
 const TESTHUBENDPOINT_HTTPS_URL = ENDPOINT_BASE_HTTPS_URL ? (ENDPOINT_BASE_HTTPS_URL + "/testhub") : undefined;
