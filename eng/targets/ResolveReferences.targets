@@ -62,7 +62,7 @@
       Turn Reference items into a ProjectReference when UseProjectReferences is true.
       Order matters. This comes before package resolution because projects should be used when possible instead of packages.
     -->
-    <_ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
+    <_ProjectReferenceByAssemblyName Condition=" $(UseProjectReferences) "
       Include="@(ProjectReferenceProvider)"
       Exclude="@(_UnusedProjectReferenceProvider)" />
 
@@ -146,6 +146,60 @@
     <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)')"
            Code="MSB3245"
            Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;" />
+  </Target>
+
+  <!--
+    Remove @(ResolvedCompileFileDefinitions) and @(RuntimeCopyLocalItems) items for patched assemblies between item
+    generation and use. Instead, ensure @(ProjectReference) items include the patched projects. This covers indirect
+    references and improves test coverage; @(ProjectReference) items were set correctly for direct references. Changes
+    are necessary only in servicing builds, in the release/2.1 branch, and when building non-implementation projects.
+
+    This is imperfect because it covers only indirect references to project reference providers (most C#
+    implementation projects) and does not work for legacy samples or other non-.NET SDK projects.
+
+    Note: Project reference providers have matching assembly and project names. %(Filename) matches work :)
+  -->
+  <Target Name="_TestWithPatchedAssemblies"
+      Condition=" $(UseProjectReferences) AND '$(PackagesInPatch)' != '' AND
+          (@(ResolvedCompileFileDefinitions->Count()) != 0 OR @(RuntimeCopyLocalItems->Count()) != 0) "
+      AfterTargets="ResolvePackageAssets"
+      BeforeTargets="AssignProjectConfiguration;
+          GenerateBuildDependencyFile;
+          GeneratePublishDependencyFile;
+          ILLink;
+          ResolveLockFileCopyLocalFiles;
+          ResolveLockFileReferences"
+      DependsOnTargets="ResolvePackageAssets">
+    <!-- Find projects patched in this build that need to be added as references. -->
+    <ItemGroup>
+      <_ProjectsInPatch Remove="@(_ProjectsInPatch)" />
+      <_ProjectsInPatch Include="@(ProjectReferenceProvider->'%(ProjectPath)')"
+          Condition=" $(PackagesInPatch.Contains(' %(ProjectReferenceProvider.Identity);')) "
+          KeepMetadata="None" />
+      <!-- dotnet-razorpagegenerator project is unique in overriding its package ID. -->
+      <_ProjectsInPatch Include="@(ProjectReferenceProvider->WithMetadataValue('Identity', 'dotnet-razorpagegenerator')->'%(ProjectPath)')"
+          Condition=" $(PackagesInPatch.Contains(' RazorPageGenerator;')) "
+          KeepMetadata="None" />
+
+      <!-- Ignore unreferenced assemblies and directly-referenced projects. -->
+      <_ProjectsToAdd Remove="@(_ProjectsToAdd)" />
+      <!-- Condition uses same Filename metadata when evaluating the other two item groups. -->
+      <_ProjectsToAdd Include="@(_ProjectsInPatch)"
+          Condition=" '%(Filename)' != '' AND
+              ('@(ResolvedCompileFileDefinitions)' != '' OR '@(RuntimeCopyLocalItems)' != '') "
+          Exclude="@(ProjectReference)" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" @(_ProjectsToAdd->Count()) != 0 ">
+      <!-- Add direct project references. -->
+      <ProjectReference Include="@(_ProjectsToAdd)" IsImplicitlyDefined="true" />
+
+      <!-- Remove assembly references for newly-direct project references (were from baseline packages). -->
+      <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)"
+          Condition=" '%(Filename)' != '' AND '@(_ProjectsToAdd)' != '' " />
+      <RuntimeCopyLocalItems Remove="@(RuntimeCopyLocalItems)"
+          Condition=" '%(Filename)' != '' AND '@(_ProjectsToAdd)' != '' " />
+    </ItemGroup>
   </Target>
 
   <!-- These targets are used to generate the map of assembly name to project files. See also the /t:GenerateProjectList target in build/repo.targets. -->
