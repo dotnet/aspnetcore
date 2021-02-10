@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
     /// <summary>
     /// Provides programmatic configuration of Libuv transport features.
     /// </summary>
-    [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)]
+    [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)] // Remove after .NET 6.
     public class LibuvTransportOptions
     {
         /// <summary>
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
         /// <remarks>
         /// Defaults to half of <see cref="Environment.ProcessorCount" /> rounded down and clamped between 1 and 16.
         /// </remarks>
-        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)]
+        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)] // Remove after .NET 6.
         public int ThreadCount { get; set; } = ProcessorThreadCount;
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
         /// <remarks>
         /// Defaults to true.
         /// </remarks>
-        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)]
+        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)] // Remove after .NET 6.
         public bool NoDelay { get; set; } = true;
 
         /// <summary>
@@ -36,13 +36,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
         /// <remarks>
         /// Defaults to 128.
         /// </remarks>
-        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)]
+        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)] // Remove after .NET 6.
         public int Backlog { get; set; } = 128;
 
-        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)]
+        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)] // Remove after .NET 6.
         public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
-        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)]
+        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)] // Remove after .NET 6.
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;

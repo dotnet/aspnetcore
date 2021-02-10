@@ -429,3 +429,5 @@ virtual Microsoft.AspNetCore.Components.RouteView.Render(Microsoft.AspNetCore.Co
 ~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.MarkupContent.get -> string
 ~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.TextContent.get -> string
 ~override Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ToString() -> string
+Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
+Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void

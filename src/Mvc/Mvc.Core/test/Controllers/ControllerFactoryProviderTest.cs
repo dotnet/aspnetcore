@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -58,6 +59,31 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             // Act
             var releaser = provider.CreateControllerReleaser(descriptor);
             releaser(new ControllerContext(), controller);
+
+            // Assert
+            factory.Verify();
+        }
+
+        [Fact]
+        public async Task CreateAsyncControllerReleaser_InvokesIControllerFactory_IfItIsNotDefaultControllerFactoryAsync()
+        {
+            // Arrange
+            var controller = new object();
+            var factory = new Mock<IControllerFactory>();
+            factory.Setup(f => f.ReleaseControllerAsync(It.IsAny<ControllerContext>(), controller))
+                .Verifiable();
+            var provider = new ControllerFactoryProvider(
+                Mock.Of<IControllerActivatorProvider>(),
+                factory.Object,
+                Enumerable.Empty<IControllerPropertyActivator>());
+            var descriptor = new ControllerActionDescriptor
+            {
+                ControllerTypeInfo = typeof(object).GetTypeInfo(),
+            };
+
+            // Act
+            var releaser = provider.CreateAsyncControllerReleaser(descriptor);
+            await releaser(new ControllerContext(), controller);
 
             // Assert
             factory.Verify();

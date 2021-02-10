@@ -1,7 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+#nullable enable
+
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="prefix">The prefix to use.</param>
         /// <param name="propertyName">The property name.</param>
         /// <returns>The property model name.</returns>
-        public static string CreatePropertyModelName(string prefix, string propertyName)
+        public static string CreatePropertyModelName(string? prefix, string? propertyName)
         {
             if (string.IsNullOrEmpty(prefix))
             {
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return prefix ?? string.Empty;
             }
 
-            if (propertyName.StartsWith("[", StringComparison.Ordinal))
+            if (propertyName.StartsWith('['))
             {
                 // The propertyName might represent an indexer access, in which case combining
                 // with a 'dot' would be invalid. This case occurs only when called from ValidationVisitor.

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -44,9 +46,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public virtual void Validate(
             ActionContext actionContext,
-            ValidationStateDictionary validationState,
-            string prefix,
-            object model)
+            ValidationStateDictionary? validationState,
+            string? prefix,
+            object? model)
         {
             var visitor = GetValidationVisitor(
                 actionContext,
@@ -73,9 +75,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="metadata">The <see cref="ModelMetadata"/>.</param>
         public virtual void Validate(
             ActionContext actionContext,
-            ValidationStateDictionary validationState,
-            string prefix,
-            object model,
+            ValidationStateDictionary? validationState,
+            string? prefix,
+            object? model,
             ModelMetadata metadata)
             => Validate(actionContext, validationState, prefix, model, metadata, container: null);
 
@@ -94,11 +96,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="container">The model container</param>
         public virtual void Validate(
             ActionContext actionContext,
-            ValidationStateDictionary validationState,
-            string prefix,
-            object model,
+            ValidationStateDictionary? validationState,
+            string? prefix,
+            object? model,
             ModelMetadata metadata,
-            object container)
+            object? container)
         {
             var visitor = GetValidationVisitor(
                 actionContext,
@@ -124,6 +126,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IModelValidatorProvider validatorProvider,
             ValidatorCache validatorCache,
             IModelMetadataProvider metadataProvider,
-            ValidationStateDictionary validationState);
+            ValidationStateDictionary? validationState);
     }
 }

@@ -8,29 +8,42 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Default implementation for <see cref="IFeatureCollection"/>.
+    /// </summary>
     public class FeatureCollection : IFeatureCollection
     {
-        private static KeyComparer FeatureKeyComparer = new KeyComparer();
+        private static readonly KeyComparer FeatureKeyComparer = new KeyComparer();
         private readonly IFeatureCollection? _defaults;
         private IDictionary<Type, object>? _features;
         private volatile int _containerRevision;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FeatureCollection"/>.
+        /// </summary>
         public FeatureCollection()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FeatureCollection"/> with the specified defaults.
+        /// </summary>
+        /// <param name="defaults">The feature defaults.</param>
         public FeatureCollection(IFeatureCollection defaults)
         {
             _defaults = defaults;
         }
 
+        /// <inheritdoc />
         public virtual int Revision
         {
             get { return _containerRevision + (_defaults?.Revision ?? 0); }
         }
 
+        /// <inheritdoc />
         public bool IsReadOnly { get { return false; } }
 
+        /// <inheritdoc />
         public object? this[Type key]
         {
             get
@@ -40,8 +53,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     throw new ArgumentNullException(nameof(key));
                 }
 
-                object? result;
-                return _features != null && _features.TryGetValue(key, out result) ? result : _defaults?[key];
+                return _features != null && _features.TryGetValue(key, out var result) ? result : _defaults?[key];
             }
             set
             {
@@ -73,6 +85,7 @@ namespace Microsoft.AspNetCore.Http.Features
             return GetEnumerator();
         }
 
+        /// <inheritdoc />
         public IEnumerator<KeyValuePair<Type, object>> GetEnumerator()
         {
             if (_features != null)
@@ -93,12 +106,14 @@ namespace Microsoft.AspNetCore.Http.Features
             }
         }
 
+        /// <inheritdoc />
         public TFeature? Get<TFeature>()
         {
             return (TFeature?)this[typeof(TFeature)];
         }
 
-        public void Set<TFeature>(TFeature instance)
+        /// <inheritdoc />
+        public void Set<TFeature>(TFeature? instance)
         {
             this[typeof(TFeature)] = instance;
         }

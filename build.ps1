@@ -81,11 +81,11 @@ MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
 .PARAMETER MSBuildArguments
 Additional MSBuild arguments to be passed through.
 
-.PARAMETER DotNetRuntimeSourceFeed
-Additional feed that can be used when downloading .NET runtimes
+.PARAMETER RuntimeSourceFeed
+Additional feed that can be used when downloading .NET runtimes and SDKs
 
-.PARAMETER DotNetRuntimeSourceFeedKey
-Key for feed that can be used when downloading .NET runtimes
+.PARAMETER RuntimeSourceFeedKey
+Key for feed that can be used when downloading .NET runtimes and SDKs
 
 .EXAMPLE
 Building both native and managed projects.
@@ -116,7 +116,7 @@ Running tests.
     build.ps1 -test
 
 .LINK
-Online version: https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md
+Online version: https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md
 #>
 [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName='Groups')]
 param(
@@ -174,8 +174,10 @@ param(
 
     # Optional arguments that enable downloading an internal
     # runtime or runtime from a non-default location
-    [string]$DotNetRuntimeSourceFeed,
-    [string]$DotNetRuntimeSourceFeedKey,
+    [Alias('DotNetRuntimeSourceFeed')]
+    [string]$RuntimeSourceFeed,
+    [Alias('DotNetRuntimeSourceFeedKey')]
+    [string]$RuntimeSourceFeedKey,
 
     # Capture the rest
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -257,9 +259,9 @@ if (-not $Configuration) {
 $MSBuildArguments += "/p:Configuration=$Configuration"
 
 [string[]]$ToolsetBuildArguments = @()
-if ($DotNetRuntimeSourceFeed -or $DotNetRuntimeSourceFeedKey) {
-    $runtimeFeedArg = "/p:DotNetRuntimeSourceFeed=$DotNetRuntimeSourceFeed"
-    $runtimeFeedKeyArg = "/p:DotNetRuntimeSourceFeedKey=$DotNetRuntimeSourceFeedKey"
+if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
+    $runtimeFeedArg = "/p:DotNetRuntimeSourceFeed=$RuntimeSourceFeed"
+    $runtimeFeedKeyArg = "/p:DotNetRuntimeSourceFeedKey=$RuntimeSourceFeedKey"
     $MSBuildArguments += $runtimeFeedArg
     $MSBuildArguments += $runtimeFeedKeyArg
     $ToolsetBuildArguments += $runtimeFeedArg
@@ -353,6 +355,10 @@ if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
 if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
     Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
 }
+
+# We need to change default git hooks directory as .git folder is not tracked. And by default hooks are stored in .git/hooks folder.
+# So we are setting git hooks default directory to .githooks, so that we can track and version the git hooks.
+& git config core.hooksPath .githooks
 
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore

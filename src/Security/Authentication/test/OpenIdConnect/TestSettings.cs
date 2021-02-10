@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                     break;
             }
 
-            if (!absoluteUri.StartsWith(expectedAuthority))
+            if (!absoluteUri.StartsWith(expectedAuthority, StringComparison.Ordinal))
             {
                 errors.Add($"ExpectedAuthority: {expectedAuthority}");
             }

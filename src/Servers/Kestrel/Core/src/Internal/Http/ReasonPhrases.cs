@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Encoding.ASCII.GetBytes(statusCode.ToString(CultureInfo.InvariantCulture) + " " + reasonPhrase);
         }
 
-        public static byte[] ToStatusBytes(int statusCode, string reasonPhrase = null)
+        public static byte[] ToStatusBytes(int statusCode, string? reasonPhrase = null)
         {
             if (string.IsNullOrEmpty(reasonPhrase))
             {

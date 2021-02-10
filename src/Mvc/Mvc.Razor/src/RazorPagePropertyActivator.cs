@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,8 +36,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             if (viewDataDictionaryModelType != null)
             {
                 _viewDataDictionaryType = typeof(ViewDataDictionary<>).MakeGenericType(viewDataDictionaryModelType);
-                _rootFactory = ViewDataDictionaryFactory.CreateFactory(viewDataDictionaryModelType.GetTypeInfo());
-                _nestedFactory = ViewDataDictionaryFactory.CreateNestedFactory(viewDataDictionaryModelType.GetTypeInfo());
+                _rootFactory = ViewDataDictionaryFactory.CreateFactory(viewDataDictionaryModelType);
+                _nestedFactory = ViewDataDictionaryFactory.CreateNestedFactory(viewDataDictionaryModelType);
             }
 
             _propertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(

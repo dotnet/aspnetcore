@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Routing
         public override string? GetUriByAddress<TAddress>(
             TAddress address,
             RouteValueDictionary values,
-            string scheme,
+            string? scheme,
             HostString host,
             PathString pathBase = default,
             FragmentString fragment = default,
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Routing
             _cache.Dispose();
         }
 
-        #nullable disable
+#nullable disable
         private static class Log
         {
             public static class EventIds

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
@@ -1354,7 +1355,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
 
             // Assert
             var rule = Assert.Single(descriptor.TagMatchingRules);
-            var errorMessages = rule.GetAllDiagnostics().Select(diagnostic => diagnostic.GetMessage()).ToArray();
+            var errorMessages = rule.GetAllDiagnostics().Select(diagnostic => diagnostic.GetMessage(CultureInfo.CurrentCulture)).ToArray();
             Assert.Equal(expectedErrorMessages.Length, errorMessages.Length);
             for (var i = 0; i < expectedErrorMessages.Length; i++)
             {
@@ -1618,7 +1619,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var descriptor = factory.CreateDescriptor(tagHelperType);
 
             // Assert
-            var errorMessages = descriptor.GetAllDiagnostics().Select(diagnostic => diagnostic.GetMessage());
+            var errorMessages = descriptor.GetAllDiagnostics().Select(diagnostic => diagnostic.GetMessage(CultureInfo.CurrentCulture));
             Assert.Equal(expectedErrorMessages, errorMessages);
         }
 
@@ -1664,7 +1665,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var descriptor = factory.CreateDescriptor(tagHelperType);
 
             // Assert
-            var errorMessages = descriptor.GetAllDiagnostics().Select(diagnostic => diagnostic.GetMessage());
+            var errorMessages = descriptor.GetAllDiagnostics().Select(diagnostic => diagnostic.GetMessage(CultureInfo.CurrentCulture));
             Assert.Equal(expectedErrorMessages, errorMessages);
         }
 
@@ -1706,7 +1707,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var descriptor = factory.CreateDescriptor(tagHelperType);
 
             // Assert
-            var errorMessages = descriptor.GetAllDiagnostics().Select(diagnostic => diagnostic.GetMessage());
+            var errorMessages = descriptor.GetAllDiagnostics().Select(diagnostic => diagnostic.GetMessage(CultureInfo.CurrentCulture));
             Assert.Equal(expectedErrorMessages, errorMessages);
         }
 
@@ -1747,7 +1748,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var descriptor = factory.CreateDescriptor(tagHelperType);
 
             // Assert
-            var errorMessages = descriptor.GetAllDiagnostics().Select(diagnostic => diagnostic.GetMessage());
+            var errorMessages = descriptor.GetAllDiagnostics().Select(diagnostic => diagnostic.GetMessage(CultureInfo.CurrentCulture));
             Assert.Equal(expectedErrorMessages, errorMessages);
         }
 

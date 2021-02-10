@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 
@@ -169,7 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 var messages = new string[diagnostics.Count];
                 for (var i = 0; i < diagnostics.Count; i++)
                 {
-                    messages[i] = diagnostics[i].GetMessage();
+                    messages[i] = diagnostics[i].GetMessage(CultureInfo.CurrentCulture);
                 }
 
                 _malformedPageDirective(logger, filePath, messages, null);

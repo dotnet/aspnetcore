@@ -16,6 +16,9 @@ namespace Microsoft.Net.Http.Headers
         {
         }
 
+        /// <summary>
+        /// Gets the <see cref="MediaTypeHeaderValueComparer"/> instance.
+        /// </summary>
         public static MediaTypeHeaderValueComparer QualityComparer { get; } = new MediaTypeHeaderValueComparer();
 
         /// <inheritdoc />

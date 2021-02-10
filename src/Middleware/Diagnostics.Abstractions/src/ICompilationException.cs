@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <summary>
         /// Gets a sequence of <see cref="CompilationFailure"/> with compilation failures.
         /// </summary>
-        IEnumerable<CompilationFailure> CompilationFailures { get; }
+        IEnumerable<CompilationFailure?>? CompilationFailures { get; }
     }
 }

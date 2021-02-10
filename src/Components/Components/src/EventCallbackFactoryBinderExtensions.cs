@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Components
         {
             Action<ChangeEventArgs> callback = e =>
             {
-                T value = default;
+                T? value = default;
                 var converted = false;
                 try
                 {
@@ -565,7 +565,7 @@ namespace Microsoft.AspNetCore.Components
         {
             Action<ChangeEventArgs> callback = e =>
             {
-                T value = default;
+                T? value = default;
                 var converted = false;
                 try
                 {

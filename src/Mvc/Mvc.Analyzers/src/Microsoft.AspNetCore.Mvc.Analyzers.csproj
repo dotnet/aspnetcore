@@ -10,7 +10,6 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

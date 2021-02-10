@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -29,6 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     /// keys of the dictionary are not validated as they must be simple types.
     /// </remarks>
     internal class ShortFormDictionaryValidationStrategy<TKey, TValue> : IValidationStrategy
+        where TKey : notnull
     {
         private readonly ModelMetadata _valueMetadata;
 
@@ -88,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
             public bool MoveNext()
             {
-                TValue value;
+                TValue? value;
                 while (true)
                 {
                     if (!_keyMappingEnumerator.MoveNext())

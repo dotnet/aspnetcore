@@ -8,6 +8,12 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Helper type that allows copying a file to a Stream.
+    /// <para>
+    /// This type is part of ASP.NET Core's infrastructure and should not used by application code.
+    /// </para>
+    /// </summary>
     public static class SendFileFallback
     {
         /// <summary>
@@ -34,7 +40,7 @@ namespace Microsoft.AspNetCore.Http
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            int bufferSize = 1024 * 16;
+            const int bufferSize = 1024 * 16;
 
             var fileStream = new FileStream(
                 filePath,

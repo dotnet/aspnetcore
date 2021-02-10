@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         internal static bool PathEndsInSlash(PathString path)
         {
-            return path.Value.EndsWith("/", StringComparison.Ordinal);
+            return path.HasValue && path.Value!.EndsWith("/", StringComparison.Ordinal);
         }
 
         internal static string GetPathValueWithSlash(PathString path)
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 return path.Value + "/";
             }
-            return path.Value;
+            return path.Value!;
         }
 
         internal static void RedirectToPathWithSlash(HttpContext context)

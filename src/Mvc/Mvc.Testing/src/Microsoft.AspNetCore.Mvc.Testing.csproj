@@ -2,7 +2,6 @@
   <PropertyGroup>
     <Description>Support for writing functional tests for MVC applications.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;aspnetcoremvctesting</PackageTags>
@@ -15,6 +14,15 @@
     <Reference Include="Microsoft.Extensions.DependencyModel" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference
+        Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
+        Targets="Build"
+        ReferenceOutputAssembly="false"
+        SkipGetTargetFrameworkProperties="true"
+        UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
   </ItemGroup>
 
   <ItemGroup>

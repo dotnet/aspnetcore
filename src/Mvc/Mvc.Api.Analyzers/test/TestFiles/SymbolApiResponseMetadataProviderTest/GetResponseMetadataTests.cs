@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
     {
         private string _statusCode;
 
-        public CustomInvalidProducesResponseTypeAttribute() 
+        public CustomInvalidProducesResponseTypeAttribute()
             : base(0)
         {
         }
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             set
             {
                 _statusCode = value;
-                base.StatusCode = int.Parse(value);
+                base.StatusCode = int.Parse(value, CultureInfo.InvariantCulture);
             }
         }
     }

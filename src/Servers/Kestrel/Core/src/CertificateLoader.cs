@@ -8,18 +8,29 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
+    /// <summary>
+    /// Enables loading TLS certificates from the certificate store.
+    /// </summary>
     public static class CertificateLoader
     {
         // See http://oid-info.com/get/1.3.6.1.5.5.7.3.1
         // Indicates that a certificate can be used as a SSL server certificate
         private const string ServerAuthenticationOid = "1.3.6.1.5.5.7.3.1";
 
+        /// <summary>
+        /// Loads a certificate from the certificate store.
+        /// </summary>
+        /// <param name="subject">The certificate subject.</param>
+        /// <param name="storeName">The certificate store name.</param>
+        /// <param name="storeLocation">The certificate store location.</param>
+        /// <param name="allowInvalid">Whether or not to load certificates that are considered invalid.</param>
+        /// <returns>The loaded certificate.</returns>
         public static X509Certificate2 LoadFromStoreCert(string subject, string storeName, StoreLocation storeLocation, bool allowInvalid)
         {
             using (var store = new X509Store(storeName, storeLocation))
             {
-                X509Certificate2Collection storeCertificates = null;
-                X509Certificate2 foundCertificate = null;
+                X509Certificate2Collection? storeCertificates = null;
+                X509Certificate2? foundCertificate = null;
 
                 try
                 {
@@ -71,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                 hasEkuExtension = true;
                 foreach (var oid in extension.EnhancedKeyUsages)
                 {
-                    if (oid.Value.Equals(ServerAuthenticationOid, StringComparison.Ordinal))
+                    if (string.Equals(oid.Value, ServerAuthenticationOid, StringComparison.Ordinal))
                     {
                         return true;
                     }
@@ -84,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         internal static bool DoesCertificateHaveAnAccessiblePrivateKey(X509Certificate2 certificate)
             => certificate.HasPrivateKey;
 
-        private static void DisposeCertificates(X509Certificate2Collection certificates, X509Certificate2 except)
+        private static void DisposeCertificates(X509Certificate2Collection? certificates, X509Certificate2? except)
         {
             if (certificates != null)
             {

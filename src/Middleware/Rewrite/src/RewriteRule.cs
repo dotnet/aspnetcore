@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Rewrite
                     result = "/";
                 }
 
-                if (result.IndexOf("://", StringComparison.Ordinal) >= 0)
+                if (result.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal) >= 0)
                 {
                     string scheme;
                     HostString host;

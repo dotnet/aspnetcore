@@ -29,18 +29,15 @@ namespace InteropTests
         public Task EmptyUnary() => InteropTestCase("empty_unary");
 
         [Fact]
-        [QuarantinedTest]
         public Task LargeUnary() => InteropTestCase("large_unary");
 
         [Fact]
-        [QuarantinedTest]
         public Task ClientStreaming() => InteropTestCase("client_streaming");
 
         [Fact]
         public Task ServerStreaming() => InteropTestCase("server_streaming");
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/22101")]
         public Task PingPong() => InteropTestCase("ping_pong");
 
         [Fact]
@@ -56,7 +53,6 @@ namespace InteropTests
         public Task TimeoutOnSleepingServer() => InteropTestCase("timeout_on_sleeping_server");
 
         [Fact]
-        [QuarantinedTest]
         public Task CustomMetadata() => InteropTestCase("custom_metadata");
 
         [Fact]
@@ -72,15 +68,12 @@ namespace InteropTests
         public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
 
         [Fact]
-        [QuarantinedTest("Server is getting 'identity' encoding. Will resolve in gRPC project when updated SDK is available.")]
         public Task ClientCompressedUnary() => InteropTestCase("client_compressed_unary");
 
         [Fact]
-        [QuarantinedTest("Server is getting 'identity' encoding. Will resolve in gRPC project when updated SDK is available.")]
         public Task ClientCompressedStreaming() => InteropTestCase("client_compressed_streaming");
 
         [Fact]
-        [QuarantinedTest]
         public Task ServerCompressedUnary() => InteropTestCase("server_compressed_unary");
 
         [Fact]

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
             {
                 if (!_hasConsent.HasValue)
                 {
-                    var cookie = Context.Request.Cookies[Options.ConsentCookie.Name];
+                    var cookie = Context.Request.Cookies[Options.ConsentCookie.Name!];
                     _hasConsent = string.Equals(cookie, ConsentValue, StringComparison.Ordinal);
                     _logger.HasConsent(_hasConsent.Value);
                 }
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
             {
                 var cookieOptions = Options.ConsentCookie.Build(Context);
                 // Note policy will be applied. We don't want to bypass policy because we want HttpOnly, Secure, etc. to apply.
-                Append(Options.ConsentCookie.Name, ConsentValue, cookieOptions);
+                Append(Options.ConsentCookie.Name!, ConsentValue, cookieOptions);
                 _logger.ConsentGranted();
             }
             _hasConsent = true;
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
             {
                 var cookieOptions = Options.ConsentCookie.Build(Context);
                 // Note policy will be applied. We don't want to bypass policy because we want HttpOnly, Secure, etc. to apply.
-                Delete(Options.ConsentCookie.Name, cookieOptions);
+                Delete(Options.ConsentCookie.Name!, cookieOptions);
                 _logger.ConsentWithdrawn();
             }
             _hasConsent = false;
@@ -94,6 +95,8 @@ namespace Microsoft.AspNetCore.CookiePolicy
             var key = Options.ConsentCookie.Name;
             var value = ConsentValue;
             var options = Options.ConsentCookie.Build(Context);
+
+            Debug.Assert(key != null);
             ApplyAppendPolicy(ref key, ref value, options);
 
             var setCookieHeaderValue = new Net.Http.Headers.SetCookieHeaderValue(

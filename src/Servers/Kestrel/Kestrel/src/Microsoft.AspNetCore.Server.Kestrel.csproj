@@ -6,8 +6,8 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
-    <NoWarn>CS1591;$(NoWarn)</NoWarn>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

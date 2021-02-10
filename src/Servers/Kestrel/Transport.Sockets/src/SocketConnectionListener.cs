@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
@@ -19,10 +20,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private readonly int _numSchedulers;
         private readonly PipeScheduler[] _schedulers;
         private readonly ISocketsTrace _trace;
-        private Socket _listenSocket;
+        private Socket? _listenSocket;
         private int _schedulerIndex;
         private readonly SocketTransportOptions _options;
-        private SafeSocketHandle _socketHandle;
+        private SafeSocketHandle? _socketHandle;
 
         public EndPoint EndPoint { get; private set; }
 
@@ -102,6 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 }
             }
 
+            Debug.Assert(listenSocket.LocalEndPoint != null);
             EndPoint = listenSocket.LocalEndPoint;
 
             listenSocket.Listen(_options.Backlog);
@@ -109,12 +111,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _listenSocket = listenSocket;
         }
 
-        public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
         {
             while (true)
             {
                 try
                 {
+                    Debug.Assert(_listenSocket != null, "Bind must be called first.");
+
                     var acceptSocket = await _listenSocket.AcceptAsync();
 
                     // Only apply no delay to Tcp based endpoints

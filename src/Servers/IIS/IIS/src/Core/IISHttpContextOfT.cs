@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
-    internal class IISHttpContextOfT<TContext> : IISHttpContext
+    internal class IISHttpContextOfT<TContext> : IISHttpContext where TContext : notnull
     {
         private readonly IHttpApplication<TContext> _application;
 
@@ -111,13 +111,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     await FireOnCompleted();
                 }
 
-                try
+                if (context != null)
                 {
-                    _application.DisposeContext(context, _applicationException);
-                }
-                catch (Exception ex)
-                {
-                    ReportApplicationError(ex);
+                    try
+                    {
+                        _application.DisposeContext(context, _applicationException);
+                    }
+                    catch (Exception ex)
+                    {
+                        ReportApplicationError(ex);
+                    }
                 }
             }
             return success;

@@ -33,18 +33,6 @@ namespace Microsoft.AspNetCore.SignalR
             Context = context;
         }
 
-        /// <summary>
-        /// Instantiates a new instance of the <see cref="HubInvocationContext"/> class.
-        /// </summary>
-        /// <param name="context">Context for the active Hub connection and caller.</param>
-        /// <param name="hubMethodName">The name of the Hub method being invoked.</param>
-        /// <param name="hubMethodArguments">The arguments provided by the client.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative is to use the other constructor.")]
-        public HubInvocationContext(HubCallerContext context, string hubMethodName, object?[] hubMethodArguments)
-        {
-            throw new NotSupportedException("This constructor no longer works. Use the other constructor.");
-        }
-
         internal HubInvocationContext(ObjectMethodExecutor objectMethodExecutor, HubCallerContext context, IServiceProvider serviceProvider, Hub hub, object?[] hubMethodArguments)
             : this(context, serviceProvider, hub, objectMethodExecutor.MethodInfo, hubMethodArguments)
         {

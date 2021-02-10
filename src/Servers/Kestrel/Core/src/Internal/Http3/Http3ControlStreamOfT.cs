@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Hosting.Server.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal sealed class Http3ControlStream<TContext> : Http3ControlStream, IHostContextContainer<TContext>
+    internal sealed class Http3ControlStream<TContext> : Http3ControlStream, IHostContextContainer<TContext> where TContext : notnull
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public Http3ControlStream(IHttpApplication<TContext> application, Http3Connection connection, HttpConnectionContext context) : base(connection, context)
+        public Http3ControlStream(IHttpApplication<TContext> application, Http3Connection connection, Http3StreamContext context) : base(connection, context)
         {
             _application = application;
         }
@@ -21,6 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         }
 
         // Pooled Host context
-        TContext IHostContextContainer<TContext>.HostContext { get; set; }
+        TContext? IHostContextContainer<TContext>.HostContext { get; set; }
     }
 }

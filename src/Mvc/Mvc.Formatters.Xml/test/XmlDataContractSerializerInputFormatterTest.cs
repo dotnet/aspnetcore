@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -610,6 +611,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var SubstituteRootNamespace = "http://tempuri.org";
 
             var input = string.Format(
+                CultureInfo.InvariantCulture,
                 "<{0} xmlns=\"{1}\"><SampleInt xmlns=\"\">1</SampleInt></{0}>",
                 SubstituteRootName,
                 SubstituteRootNamespace);
@@ -630,6 +632,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var SubstituteRootNamespace = "http://tempuri.org";
 
             var input = string.Format(
+                CultureInfo.InvariantCulture,
                 "<{0} xmlns=\"{1}\"><SampleInt xmlns=\"\">{2}</SampleInt></{0}>",
                 SubstituteRootName,
                 SubstituteRootNamespace,
@@ -666,10 +669,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var InstanceNamespace = "http://www.w3.org/2001/XMLSchema-instance";
 
             var input = string.Format(
-                    "<DummyClass i:type=\"{0}\" xmlns:i=\"{1}\"><SampleInt>1</SampleInt>"
-                    + "<SampleString>Some text</SampleString></DummyClass>",
-                    KnownTypeName,
-                    InstanceNamespace);
+                CultureInfo.InvariantCulture,
+                "<DummyClass i:type=\"{0}\" xmlns:i=\"{1}\"><SampleInt>1</SampleInt>"
+                + "<SampleString>Some text</SampleString></DummyClass>",
+                KnownTypeName,
+                InstanceNamespace);
             var formatter = new XmlDataContractSerializerInputFormatter(new MvcOptions());
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
@@ -688,12 +692,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var InstanceNamespace = "http://www.w3.org/2001/XMLSchema-instance";
 
             var input = string.Format(
-                    "<DummyClass i:type=\"{0}\" xmlns:i=\"{1}\"><SampleInt>{2}</SampleInt>"
-                    + "<SampleString>{3}</SampleString></DummyClass>",
-                    KnownTypeName,
-                    InstanceNamespace,
-                    expectedInt,
-                    expectedString);
+                CultureInfo.InvariantCulture,
+                "<DummyClass i:type=\"{0}\" xmlns:i=\"{1}\"><SampleInt>{2}</SampleInt>"
+                + "<SampleString>{3}</SampleString></DummyClass>",
+                KnownTypeName,
+                InstanceNamespace,
+                expectedInt,
+                expectedString);
             var settings = new DataContractSerializerSettings
             {
                 KnownTypes = new[] { typeof(SomeDummyClass) }

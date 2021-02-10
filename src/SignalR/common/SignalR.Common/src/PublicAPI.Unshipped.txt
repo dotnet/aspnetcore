@@ -1,1 +1,5 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage.InvocationBindingFailureMessage(string! invocationId, string! target, System.Runtime.ExceptionServices.ExceptionDispatchInfo! bindingFailure) -> void
+*REMOVED*Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage.StreamInvocationMessage(string! invocationId, string! target, object![]! arguments, string![]! streamIds) -> void
+Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage.InvocationBindingFailureMessage(string? invocationId, string! target, System.Runtime.ExceptionServices.ExceptionDispatchInfo! bindingFailure) -> void
+Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage.StreamInvocationMessage(string! invocationId, string! target, object![]! arguments, string![]? streamIds) -> void

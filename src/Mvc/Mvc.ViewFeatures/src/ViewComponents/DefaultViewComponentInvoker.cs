@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -79,25 +81,34 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
 
             IViewComponentResult result;
-            if (executor.IsMethodAsync)
+            object? component = null;
+            try
             {
-                result = await InvokeAsyncCore(executor, context);
+                component = _viewComponentFactory.CreateViewComponent(context);
+                if (executor.IsMethodAsync)
+                {
+                    result = await InvokeAsyncCore(executor, component, context);
+                }
+                else
+                {
+                    // We support falling back to synchronous if there is no InvokeAsync method, in this case we'll still
+                    // execute the IViewResult asynchronously.
+                    result = InvokeSyncCore(executor, component, context);
+                }
             }
-            else
+            finally
             {
-                // We support falling back to synchronous if there is no InvokeAsync method, in this case we'll still
-                // execute the IViewResult asynchronously.
-                result = InvokeSyncCore(executor, context);
+                if (component != null)
+                {
+                    await _viewComponentFactory.ReleaseViewComponentAsync(context, executor);
+                }
             }
 
             await result.ExecuteAsync(context);
         }
 
-#nullable enable
-        private async Task<IViewComponentResult> InvokeAsyncCore(ObjectMethodExecutor executor, ViewComponentContext context)
+        private async Task<IViewComponentResult> InvokeAsyncCore(ObjectMethodExecutor executor, object component, ViewComponentContext context)
         {
-            var component = _viewComponentFactory.CreateViewComponent(context);
-
             using (_logger.ViewComponentScope(context))
             {
                 var arguments = PrepareArguments(context.Arguments, executor);
@@ -112,15 +123,33 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
                 if (returnType == typeof(Task<IViewComponentResult>))
                 {
-                    resultAsObject = await (Task<IViewComponentResult>)executor.Execute(component, arguments);
+                    var task = executor.Execute(component, arguments);
+                    if (task is null)
+                    {
+                        throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
+                    }
+
+                    resultAsObject = await (Task<IViewComponentResult>)task;
                 }
                 else if (returnType == typeof(Task<string>))
                 {
-                    resultAsObject = await (Task<string>)executor.Execute(component, arguments);
+                    var task = executor.Execute(component, arguments);
+                    if (task is null)
+                    {
+                        throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
+                    }
+
+                    resultAsObject = await (Task<string>)task;
                 }
                 else if (returnType == typeof(Task<IHtmlContent>))
                 {
-                    resultAsObject = await (Task<IHtmlContent>)executor.Execute(component, arguments);
+                    var task = executor.Execute(component, arguments);
+                    if (task is null)
+                    {
+                        throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
+                    }
+
+                    resultAsObject = await (Task<IHtmlContent>)task;
                 }
                 else
                 {
@@ -131,16 +160,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
                 _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
 
-                _viewComponentFactory.ReleaseViewComponent(context, component);
-
                 return viewComponentResult;
             }
         }
 
-        private IViewComponentResult InvokeSyncCore(ObjectMethodExecutor executor, ViewComponentContext context)
+        private IViewComponentResult InvokeSyncCore(ObjectMethodExecutor executor, object component, ViewComponentContext context)
         {
-            var component = _viewComponentFactory.CreateViewComponent(context);
-
             using (_logger.ViewComponentScope(context))
             {
                 var arguments = PrepareArguments(context.Arguments, executor);
@@ -149,29 +174,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 _logger.ViewComponentExecuting(context, arguments);
 
                 var stopwatch = ValueStopwatch.StartNew();
-                object result;
+                object? result;
 
-                try
-                {
-                    result = executor.Execute(component, arguments);
-                }
-                finally
-                {
-                    _viewComponentFactory.ReleaseViewComponent(context, component);
-                }
+                result = executor.Execute(component, arguments);
 
                 var viewComponentResult = CoerceToViewComponentResult(result);
                 _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
                 _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
 
-                _viewComponentFactory.ReleaseViewComponent(context, component);
-
                 return viewComponentResult;
             }
         }
-#nullable restore
 
-        private static IViewComponentResult CoerceToViewComponentResult(object value)
+        private static IViewComponentResult CoerceToViewComponentResult(object? value)
         {
             if (value == null)
             {
@@ -199,7 +214,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 typeof(IViewComponentResult).Name));
         }
 
-        private static object[] PrepareArguments(
+        private static object?[]? PrepareArguments(
             IDictionary<string, object> parameters,
             ObjectMethodExecutor objectMethodExecutor)
         {
@@ -210,12 +225,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 return null;
             }
 
-            var arguments = new object[count];
+            var arguments = new object?[count];
             for (var index = 0; index < count; index++)
             {
                 var parameterInfo = declaredParameterInfos[index];
 
-                if (!parameters.TryGetValue(parameterInfo.Name, out var value))
+                if (!parameters.TryGetValue(parameterInfo.Name!, out var value))
                 {
                     value = objectMethodExecutor.GetDefaultValueForParameter(index);
                 }

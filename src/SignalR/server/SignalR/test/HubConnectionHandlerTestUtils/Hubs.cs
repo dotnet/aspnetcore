@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -650,7 +651,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 for (int i = 0; i < count; i++)
                 {
-                    await channel.Writer.WriteAsync(i.ToString());
+                    await channel.Writer.WriteAsync(i.ToString(CultureInfo.InvariantCulture));
                 }
                 channel.Writer.Complete();
             });
@@ -675,7 +676,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             for (int i = 0; i < count; i++)
             {
                 await Task.Yield();
-                yield return i.ToString();
+                yield return i.ToString(CultureInfo.InvariantCulture);
             }
         }
 

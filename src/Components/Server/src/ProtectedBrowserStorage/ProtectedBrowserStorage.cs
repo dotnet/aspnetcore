@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
         private protected ProtectedBrowserStorage(string storeName, IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
         {
             // Performing data protection on the client would give users a false sense of security, so we'll prevent this.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
+            if (OperatingSystem.IsBrowser())
             {
                 throw new PlatformNotSupportedException($"{GetType()} cannot be used when running in a browser.");
             }

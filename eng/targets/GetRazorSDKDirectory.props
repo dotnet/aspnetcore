@@ -1,5 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRoot)' == ''">$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
-  </PropertyGroup>
-</Project>

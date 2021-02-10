@@ -82,7 +82,9 @@ $SetupArguments = "--repository https://github.com/$Repository --branch $Branch 
 #This grabs the LKG version number of dotnet and passes it to our scripts
 $VersionJSON = Get-Content global.json | ConvertFrom-Json
 $DotNetVersion = $VersionJSON.tools.dotnet
-$SetupArguments = "--dotnet-versions $DotNetVersion $SetupArguments"
+# TODO: Change this back to parsing when we have a good story for dealing with TFM changes or when the LKG in runtime gets updated to include net6.0
+# $SetupArguments = "--dotnet-versions $DotNetVersion $SetupArguments"
+$SetupArguments = "--dotnet-versions 6.0.100-alpha.1.20553.6 $SetupArguments"
 
 
 if ($RunFromPerformanceRepo) {

@@ -8,7 +8,9 @@
 
     <_UploadPathRoot>aspnetcore</_UploadPathRoot>
     <ProductVersionFileName>productVersion.txt</ProductVersionFileName>
+    <RepoProductVersionFileName>$(_UploadPathRoot)-$(ProductVersionFileName)</RepoProductVersionFileName>
     <ProductVersionFileLocation>$(ArtifactsShippingPackagesDir)$(ProductVersionFileName)</ProductVersionFileLocation>
+    <RepoProductVersionFileLocation>$(ArtifactsShippingPackagesDir)$(RepoProductVersionFileName)</RepoProductVersionFileLocation>
   </PropertyGroup>
 
   <!-- $(InstallersOutputPath), $(SymbolsOutputPath), and $(ChecksumExtensions) are not defined. Root Directory.Build.props is not imported. -->
@@ -33,7 +35,7 @@
     <_ChecksumsToPublish Include="$(ArtifactsDir)**\*.sha512" />
   </ItemGroup>
 
-  <Target 
+  <Target
     Name="_PublishInstallersAndChecksumsAndProductVersion"
     DependsOnTargets="_WriteProductVersionFile">
     <!--
@@ -58,10 +60,6 @@
            Do not remove if post build sign is true, as we avoid the xplat codesign jobs, and need to have
            the nupkgs pushed. -->
       <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT' and '$(PostBuildSign)' != 'true'" />
-      <!-- Linux x64 is built in 3 stages: Build the base packages, layout, and archive. Then build deb and rpm installers.
-           The first and last segments will both publish the layout (they share artifacts). Only publish this during the first pass. -->
-      <_InstallersToPublish Remove="$(ArtifactsDir)installers\**\*.tar.gz" Condition="'$(BuildRuntimeArchive)' == 'false'" />
-      <_ChecksumsToPublish Remove="$(ArtifactsDir)installers\**\*.tar.gz.sha512" Condition="'$(BuildRuntimeArchive)' == 'false'" />
 
       <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
         <PublishFlatContainer>true</PublishFlatContainer>
@@ -78,10 +76,15 @@
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(ProductVersionFileName)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
+
+      <ItemsToPushToBlobFeed Include="$(RepoProductVersionFileLocation)" Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
+        <PublishFlatContainer>true</PublishFlatContainer>
+        <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(RepoProductVersionFileName)</RelativeBlobPath>
+      </ItemsToPushToBlobFeed>
     </ItemGroup>
   </Target>
 
-  <Target 
+  <Target
     Name="_WriteProductVersionFile"
     Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
     <!--
@@ -103,6 +106,11 @@
     <!-- Generate productVersion.txt containing the value of $(PackageVersion) -->
     <WriteLinesToFile
       File="$(ProductVersionFileLocation)"
+      Lines="$(_ProductVersion)"
+      Overwrite="true"
+      Encoding="ASCII" />
+    <WriteLinesToFile
+      File="$(RepoProductVersionFileLocation)"
       Lines="$(_ProductVersion)"
       Overwrite="true"
       Encoding="ASCII" />

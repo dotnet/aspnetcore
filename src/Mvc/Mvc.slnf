@@ -9,6 +9,7 @@
       "src\\Mvc\\test\\WebSites\\ApiExplorerWebSite\\ApiExplorerWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\VersioningWebSite\\VersioningWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\TagHelpersWebSite\\TagHelpersWebSite.csproj",
+      "src\\Mvc\\test\\WebSites\\RoutingWebSite\\Mvc.RoutingWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\FilesWebSite\\FilesWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\ApplicationModelWebSite\\ApplicationModelWebSite.csproj",
       "src\\Mvc\\test\\WebSites\\HtmlGenerationWebSite\\HtmlGenerationWebSite.csproj",
@@ -106,6 +107,7 @@
       "src\\Mvc\\test\\Mvc.IntegrationTests\\Microsoft.AspNetCore.Mvc.IntegrationTests.csproj",
       "src\\Mvc\\shared\\Mvc.TestDiagnosticListener\\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj",
       "src\\Mvc\\Mvc.Testing\\src\\Microsoft.AspNetCore.Mvc.Testing.csproj",
+      "src\\Mvc\\Mvc.Testing.Tasks\\src\\Microsoft.AspNetCore.Mvc.Testing.Tasks.csproj",
       "src\\Mvc\\shared\\Mvc.Core.TestCommon\\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj",
       "src\\Mvc\\Mvc.NewtonsoftJson\\src\\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj",
       "src\\Mvc\\Mvc.NewtonsoftJson\\test\\Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test.csproj",
@@ -126,7 +128,11 @@
       "src\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
       "src\\Components\\Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
-      "src\\DataProtection\\Extensions\\src\\Microsoft.AspNetCore.DataProtection.Extensions.csproj"
+      "src\\DataProtection\\Extensions\\src\\Microsoft.AspNetCore.DataProtection.Extensions.csproj",
+      "src\\FileProviders\\Embedded\\src\\Microsoft.Extensions.FileProviders.Embedded.csproj",
+      "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj",
+      "src\\Localization\\Localization\\src\\Microsoft.Extensions.Localization.csproj",
+      "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj"
     ]
   }
 }

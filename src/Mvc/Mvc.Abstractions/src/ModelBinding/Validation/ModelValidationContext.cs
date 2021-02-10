@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             ActionContext actionContext,
             ModelMetadata modelMetadata,
             IModelMetadataProvider metadataProvider,
-            object container,
-            object model)
+            object? container,
+            object? model)
             : base(actionContext, modelMetadata, metadataProvider)
         {
             Container = container;
@@ -31,11 +31,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <summary>
         /// Gets the model object.
         /// </summary>
-        public object Model { get; }
+        public object? Model { get; }
 
         /// <summary>
         /// Gets the model container object.
         /// </summary>
-        public object Container { get; }
+        public object? Container { get; }
     }
 }

@@ -3,9 +3,15 @@
   "isRoot": true,
   "tools": {
     "dotnet-serve": {
-      "version": "1.7.125",
+      "version": "1.7.139",
       "commands": [
         "dotnet-serve"
+      ]
+    },
+    "dotnet-format": {
+      "version": "5.0.210401",
+      "commands": [
+        "dotnet-format"
       ]
     }
   }

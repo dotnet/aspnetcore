@@ -181,6 +181,12 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 return new ValueTask(CompleteWriteAsync(task));
             }
+            else
+            {
+                // If it's a IValueTaskSource backed ValueTask,
+                // inform it its result has been read so it can reset
+                task.GetAwaiter().GetResult();
+            }
 
             // Otherwise, release the lock acquired when entering WriteAsync
             _writeLock.Release();
@@ -217,6 +223,12 @@ namespace Microsoft.AspNetCore.SignalR
             if (!task.IsCompletedSuccessfully)
             {
                 return new ValueTask(CompleteWriteAsync(task));
+            }
+            else
+            {
+                // If it's a IValueTaskSource backed ValueTask,
+                // inform it its result has been read so it can reset
+                task.GetAwaiter().GetResult();
             }
 
             // Otherwise, release the lock acquired when entering WriteAsync

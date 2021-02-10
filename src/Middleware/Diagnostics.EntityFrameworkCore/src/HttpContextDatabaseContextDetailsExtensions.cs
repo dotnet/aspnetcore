@@ -15,7 +15,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-#nullable enable
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
     internal static class HttpContextDatabaseContextDetailsExtensions
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
             if (context == null)
             {
-                logger.ContextNotRegisteredDatabaseErrorPageMiddleware(dbcontextType.FullName);
+                logger.ContextNotRegisteredDatabaseErrorPageMiddleware(dbcontextType.FullName!);
                 return null;
             }
 
@@ -48,26 +47,15 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             var modelDiffer = context.GetService<IMigrationsModelDiffer>();
 
             var snapshotModel = migrationsAssembly.ModelSnapshot?.Model;
-            if (snapshotModel is IConventionModel conventionModel)
-            {
-                var conventionSet = context.GetService<IConventionSetBuilder>().CreateConventionSet();
-
-                var typeMappingConvention = conventionSet.ModelFinalizingConventions.OfType<TypeMappingConvention>().FirstOrDefault();
-                if (typeMappingConvention != null)
-                {
-                    typeMappingConvention.ProcessModelFinalizing(conventionModel.Builder, null);
-                }
-
-                var relationalModelConvention = conventionSet.ModelFinalizedConventions.OfType<RelationalModelConvention>().FirstOrDefault();
-                if (relationalModelConvention != null)
-                {
-                    snapshotModel = relationalModelConvention.ProcessModelFinalized(conventionModel);
-                }
-            }
 
             if (snapshotModel is IMutableModel mutableModel)
             {
                 snapshotModel = mutableModel.FinalizeModel();
+            }
+
+            if (snapshotModel != null)
+            {
+                snapshotModel = context.GetService<IModelRuntimeInitializer>().Initialize(snapshotModel, validationLogger: null);
             }
 
             // HasDifferences will return true if there is no model snapshot, but if there is an existing database
