@@ -4,10 +4,18 @@
 
 <p>This component exercises various scenarios around custom event types and arguments.</p>
 
-<div id="test-event-target" style="border: 1px solid black; background: silver; padding: 1em"
-     @ontestevent="@HandleTestEvent">
+<div id="test-event-target" style="border: 1px solid black; background: silver; padding: 1em; margin-bottom: 1em;"
+     @onpaste="@(e => { LogMessage("Received native paste event"); })"
+     @ontestevent="@HandleTestEvent"
+     @onpaste.testvariant="@HandleCustomPaste">
     Event target
-    <div id="test-event-target-child" style="background: #afa">Child</div>
+    <div id="test-event-target-child" style="background: #afa; padding: 1em;">
+        Child
+        <p @onpaste.testvariant:preventDefault="@customPastePreventDefault"
+           @onpaste.testvariant:stopPropagation="@customPasteStopPropagation">
+            <input placeholder="Paste into me" />
+        </p>
+    </div>
 </div>
 
 <button id="trigger-testevent-directly"
@@ -30,6 +38,25 @@
     Register testevent with createventargs that supplies args
 </button>
 
+<button id="register-testevent-with-createventargs-that-supplies-args"
+        onclick="Blazor.registerCustomEventType('paste.testvariant', { browserEventName: 'paste', createEventArgs: event => ({ pastedText: event.clipboardData.getData('text') }) })">
+    Register custom paste event
+</button>
+
+<p>
+    <label>
+        <input type="checkbox" id="custom-paste-prevent-default" @bind="customPastePreventDefault" />
+        Custom paste: prevent default
+    </label>
+</p>
+
+<p>
+    <label>
+        <input type="checkbox" id="custom-paste-stop-propagation" @bind="customPasteStopPropagation" />
+        Custom paste: stop propagation
+    </label>
+</p>
+
 <h3>Event log</h3>
 
 <textarea readonly @bind="logValue" cols="100" rows="10"></textarea>
@@ -37,6 +64,8 @@
 
 @code {
     string logValue = string.Empty;
+    bool customPastePreventDefault;
+    bool customPasteStopPropagation;
 
     void LogMessage(string message)
     {
@@ -47,5 +76,10 @@
     {
         var args = eventArgs == null ? "null" : $"{{ MyProp={eventArgs.MyProp ?? "null"} }}";
         LogMessage($"Received testevent with args '{args}'");
+    }
+
+    void HandleCustomPaste(TestPasteEventArgs eventArgs)
+    {
+        LogMessage($"You pasted: {eventArgs.PastedText}");
     }
 }
