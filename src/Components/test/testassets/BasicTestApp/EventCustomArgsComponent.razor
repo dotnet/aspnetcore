@@ -5,15 +5,15 @@
 <p>This component exercises various scenarios around custom event types and arguments.</p>
 
 <div id="test-event-target" style="border: 1px solid black; background: silver; padding: 1em; margin-bottom: 1em;"
-     @onpaste="@(e => { LogMessage("Received native paste event"); })"
+     @onkeydown="@(e => { LogMessage("Received native keydown event"); })"
      @ontestevent="@HandleTestEvent"
-     @onpaste.testvariant="@HandleCustomPaste">
+     @onkeydown.testvariant="@HandleCustomKeyDown">
     Event target
     <div id="test-event-target-child" style="background: #afa; padding: 1em;">
         Child
-        <p @onpaste.testvariant:preventDefault="@customPastePreventDefault"
-           @onpaste.testvariant:stopPropagation="@customPasteStopPropagation">
-            <input placeholder="Paste into me" />
+        <p @onkeydown.testvariant:preventDefault="@customKeyDownPreventDefault"
+           @onkeydown.testvariant:stopPropagation="@customKeyDownStopPropagation">
+            <input placeholder="Type into me" />
         </p>
     </div>
 </div>
@@ -39,21 +39,21 @@
 </button>
 
 <button id="register-testevent-with-createventargs-that-supplies-args"
-        onclick="Blazor.registerCustomEventType('paste.testvariant', { browserEventName: 'paste', createEventArgs: event => ({ pastedText: event.clipboardData.getData('text') }) })">
-    Register custom paste event
+        onclick="Blazor.registerCustomEventType('keydown.testvariant', { browserEventName: 'keydown', createEventArgs: event => ({ customKeyInfo: event.key }) })">
+    Register custom keydown event
 </button>
 
 <p>
     <label>
-        <input type="checkbox" id="custom-paste-prevent-default" @bind="customPastePreventDefault" />
-        Custom paste: prevent default
+        <input type="checkbox" id="custom-keydown-prevent-default" @bind="customKeyDownPreventDefault" />
+        Custom keydown: prevent default
     </label>
 </p>
 
 <p>
     <label>
-        <input type="checkbox" id="custom-paste-stop-propagation" @bind="customPasteStopPropagation" />
-        Custom paste: stop propagation
+        <input type="checkbox" id="custom-keydown-stop-propagation" @bind="customKeyDownStopPropagation" />
+        Custom keydown: stop propagation
     </label>
 </p>
 
@@ -64,8 +64,8 @@
 
 @code {
     string logValue = string.Empty;
-    bool customPastePreventDefault;
-    bool customPasteStopPropagation;
+    bool customKeyDownPreventDefault;
+    bool customKeyDownStopPropagation;
 
     void LogMessage(string message)
     {
@@ -78,8 +78,8 @@
         LogMessage($"Received testevent with args '{args}'");
     }
 
-    void HandleCustomPaste(TestPasteEventArgs eventArgs)
+    void HandleCustomKeyDown(TestKeyDownEventArgs eventArgs)
     {
-        LogMessage($"You pasted: {eventArgs.PastedText}");
+        LogMessage($"You pressed: {eventArgs.CustomKeyInfo}");
     }
 }
