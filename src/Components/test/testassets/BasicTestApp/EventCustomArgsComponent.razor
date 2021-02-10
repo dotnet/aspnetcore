@@ -8,6 +8,7 @@
      @onkeydown="@(e => { LogMessage("Received native keydown event"); })"
      @ontestevent="@HandleTestEvent"
      @onkeydown.testvariant="@HandleCustomKeyDown"
+     @onkeydown.yetanother="@HandleYetAnotherKeyboardEvent"
      @oncustommouseover="@(e => { LogMessage("Received custom mouseover event"); })">
     Event target
     <div id="test-event-target-child" style="background: #afa; padding: 1em;">
@@ -42,6 +43,11 @@
 <button id="register-custom-keydown"
         onclick="Blazor.registerCustomEventType('keydown.testvariant', { browserEventName: 'keydown', createEventArgs: event => ({ customKeyInfo: event.key }) })">
     Register custom keydown event
+</button>
+
+<button id="register-yet-another-keydown"
+        onclick="Blazor.registerCustomEventType('keydown.yetanother', { browserEventName: 'keydown', createEventArgs: event => ({ youPressed: event.key }) })">
+    Register yet another custom keyboard event
 </button>
 
 <button id="register-custom-mouseover"
@@ -87,5 +93,10 @@
     void HandleCustomKeyDown(TestKeyDownEventArgs eventArgs)
     {
         LogMessage($"You pressed: {eventArgs.CustomKeyInfo}");
+    }
+
+    void HandleYetAnotherKeyboardEvent(YetAnotherCustomKeyboardEventArgs eventArgs)
+    {
+        LogMessage($"Yet another aliased event received: {eventArgs.YouPressed}");
     }
 }

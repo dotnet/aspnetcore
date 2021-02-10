@@ -108,15 +108,40 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var input = Browser.Exists(By.CssSelector("#test-event-target-child input"));
             Browser.FindElement(By.Id("register-custom-keydown")).Click();
+            Browser.FindElement(By.Id("register-yet-another-keydown")).Click();
             Browser.FindElement(By.Id("custom-keydown-stop-propagation")).Click();
             SendKeysSequentially(input, "ab");
 
             Browser.Equal(new[]
             {
-                // The native event still bubbles up to its listener on an ancestor, but the
-                // custom variant does not bubble up past the stopPropagation point
+                // The native event still bubbles up to its listener on an ancestor, and
+                // other aliased events still receive it, but the stopPropagation-ed
+                // variant does not
                 "Received native keydown event",
+                "Yet another aliased event received: a",
                 "Received native keydown event",
+                "Yet another aliased event received: b",
+            }, GetLogLines);
+
+            Assert.Equal("ab", input.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanHaveMultipleAliasesForASingleBrowserEvent()
+        {
+            var input = Browser.Exists(By.CssSelector("#test-event-target-child input"));
+            Browser.FindElement(By.Id("register-custom-keydown")).Click();
+            Browser.FindElement(By.Id("register-yet-another-keydown")).Click();
+            SendKeysSequentially(input, "ab");
+
+            Browser.Equal(new[]
+            {
+                "Received native keydown event",
+                "You pressed: a",
+                "Yet another aliased event received: a",
+                "Received native keydown event",
+                "You pressed: b",
+                "Yet another aliased event received: b",
             }, GetLogLines);
 
             Assert.Equal("ab", input.GetAttribute("value"));
