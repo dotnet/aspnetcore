@@ -5,7 +5,6 @@ interface EventTypeOptions {
 
 const eventTypeRegistry: Map<string, EventTypeOptions> = new Map();
 const browserEventNamesToAliases: Map<string, string[]> = new Map();
-const unknownEventTypeOptions: EventTypeOptions = { };
 const createBlankEventArgsOptions: EventTypeOptions = { createEventArgs: () => ({}) };
 
 export function registerCustomEventType(eventName: string, options: EventTypeOptions): void {
@@ -34,8 +33,8 @@ export function registerCustomEventType(eventName: string, options: EventTypeOpt
   eventTypeRegistry.set(eventName, options);
 }
 
-export function getEventTypeOptions(eventName: string): EventTypeOptions {
-  return eventTypeRegistry.get(eventName) || unknownEventTypeOptions;
+export function getEventTypeOptions(eventName: string): EventTypeOptions | undefined {
+  return eventTypeRegistry.get(eventName);
 }
 
 export function getEventNameAliases(eventName: string): string[] | undefined {

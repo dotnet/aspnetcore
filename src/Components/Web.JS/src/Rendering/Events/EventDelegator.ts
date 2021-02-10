@@ -135,8 +135,12 @@ export class EventDelegator {
         if (handlerInfo && !eventIsDisabledOnElement(candidateElement, browserEvent.type)) {
           // We are going to raise an event for this element, so prepare info needed by the .NET code
           if (!eventArgsIsPopulated) {
-            const eventOptions = getEventTypeOptions(eventName);
-            eventArgs = eventOptions.createEventArgs ? eventOptions.createEventArgs(browserEvent) : null;
+            const eventOptionsIfRegistered = getEventTypeOptions(eventName);
+            // For back-compat, if there's no registered createEventArgs, we supply empty event args (not null).
+            // But if there is a registered createEventArgs, it can supply anything (including null).
+            eventArgs = eventOptionsIfRegistered?.createEventArgs
+              ? eventOptionsIfRegistered.createEventArgs(browserEvent)
+              : {};
             eventArgsIsPopulated = true;
           }
 
