@@ -11,5 +11,8 @@ module.exports = (env, args) => ({
         'blazor.webassembly': './Boot.WebAssembly.ts',
         'blazor.server': './Boot.Server.ts',
     },
-    output: { path: path.join(__dirname, '/..', '/dist', args.mode == 'development' ? '/Debug' : '/Release'), filename: '[name].js' }
+    output: { path: path.join(__dirname, '/..', '/dist', args.mode == 'development' ? '/Debug' : '/Release'), filename: '[name].js' },
+    performance: {
+        maxAssetSize: 270000,
+    }
 });
