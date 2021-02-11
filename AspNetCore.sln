@@ -1148,9 +1148,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Securi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Negotiate", "Negotiate", "{3FE077EF-DD37-4652-B71C-3174D4C485E2}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{A641BE9F-113E-4F2F-8DC0-995E97C5BD27}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A641BE9F-113E-4F2F-8DC0-995E97C5BD27}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NegotiateAuthSample", "src\Security\Authentication\Negotiate\Samples\NegotiateAuthSample\NegotiateAuthSample.csproj", "{7F67C1C2-7352-414F-9149-1F16D53C7435}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NegotiateAuthSample", "src\Security\Authentication\Negotiate\samples\NegotiateAuthSample\NegotiateAuthSample.csproj", "{7F67C1C2-7352-414F-9149-1F16D53C7435}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Negotiate", "src\Security\Authentication\Negotiate\src\Microsoft.AspNetCore.Authentication.Negotiate.csproj", "{046AFDDE-B31B-4205-B059-0E8E194E954D}"
 EndProject

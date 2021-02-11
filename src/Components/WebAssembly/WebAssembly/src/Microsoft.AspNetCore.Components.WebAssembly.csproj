@@ -44,11 +44,22 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <BlazorWebAssemblyJSFile>..\..\..\Web.JS\dist\$(Configuration)\blazor.webassembly.js</BlazorWebAssemblyJSFile>
+    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
+    <BlazorWebAssemblyJSFile
+        Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\blazor.webassembly.js</BlazorWebAssemblyJSFile>
+    <BlazorWebAssemblyJSFile
+        Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\blazor.webassembly.js</BlazorWebAssemblyJSFile>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="$(BlazorWebAssemblyJSFile)" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" LinkBase="build\$(DefaultNetCoreTargetFramework)\" />
     <Content Include="build\$(DefaultNetCoreTargetFramework)\*.props" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
   </ItemGroup>
+
+  <!-- blazor.webassembly.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. -->
+  <Target Name="_CheckBlazorServerJSPath" BeforeTargets="GenerateNuspec" DependsOnTargets="ResolveProjectReferences"
+      Condition=" '$(IsPackable)' == 'true' ">
+    <Error Text="'$(BlazorWebAssemblyJSFile)' does not exist. Enable NodeJS to pack this project."
+        Condition=" !EXISTS('$(BlazorWebAssemblyJSFile)') " />
+  </Target>
 </Project>
