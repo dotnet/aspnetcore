@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
-        public void ActivityOnExportHookIsCalled()
+        public void ActivityOnImportHookIsCalled()
         {
             var diagnosticListener = new DiagnosticListener("DummySource");
             var hostingApplication = CreateApplication(out var features, diagnosticListener: diagnosticListener);
@@ -477,7 +477,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 onActivityImport: (activity, context) =>
                 {
                     onActivityImportCalled = true;
-                    Assert.Null(Activity.Current);
+                    // Review: Breaking change
+                    // Since we fire OnActivityImport after Activity.Start(), it will no longer be not null
+                    //Assert.Null(Activity.Current);
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", activity.OperationName);
                     Assert.NotNull(context);
                     Assert.IsAssignableFrom<HttpContext>(context);

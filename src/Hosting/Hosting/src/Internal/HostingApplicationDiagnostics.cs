@@ -24,6 +24,10 @@ namespace Microsoft.AspNetCore.Hosting
         private const string DeprecatedDiagnosticsEndRequestKey = "Microsoft.AspNetCore.Hosting.EndRequest";
         private const string DiagnosticsUnhandledExceptionKey = "Microsoft.AspNetCore.Hosting.UnhandledException";
 
+        private const string ActivitySourceName = "Microsoft.AspNetCore.Hosting";
+        private static readonly ActivitySource _activitySource = new ActivitySource(ActivitySourceName);
+        private ActivityListener? _dummyListener;
+
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger _logger;
 
@@ -48,11 +52,19 @@ namespace Microsoft.AspNetCore.Hosting
             var diagnosticListenerEnabled = _diagnosticListener.IsEnabled();
             var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
+            // TODO: If loggingEnabled check to change to if ActivityPropogation options are enabled
             if (loggingEnabled || (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext)))
             {
-                context.Activity = StartActivity(httpContext, out var hasDiagnosticListener);
-                context.HasDiagnosticListener = hasDiagnosticListener;
+                // Review: Force creation of Activity by creating dummy listener
+                _dummyListener = new ActivityListener()
+                {
+                    ShouldListenTo = activitySource => activitySource.Name.Equals(ActivitySourceName),
+                    Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.PropagationData
+                };
+                ActivitySource.AddActivityListener(_dummyListener);
             }
+            context.Activity = StartActivity(httpContext, out var hasDiagnosticListener);
+            context.HasDiagnosticListener = hasDiagnosticListener;
 
             if (diagnosticListenerEnabled)
             {
@@ -62,6 +74,10 @@ namespace Microsoft.AspNetCore.Hosting
                     RecordBeginRequestDiagnostics(httpContext, startTimestamp);
                 }
             }
+
+            // Dispose dummy listener
+            // TODO: How do we avoid allocating a new listener on each request
+            _dummyListener?.Dispose();
 
             // To avoid allocation, return a null scope if the logger is not on at least to some degree.
             if (loggingEnabled)
@@ -245,56 +261,53 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity StartActivity(HttpContext httpContext, out bool hasDiagnosticListener)
+        private Activity? StartActivity(HttpContext httpContext, out bool hasDiagnosticListener)
         {
-            var activity = new Activity(ActivityName);
             hasDiagnosticListener = false;
+            if (_diagnosticListener.IsEnabled(ActivityStartKey))
+            {
+                hasDiagnosticListener = true;
+            }
 
+            // TODO: Don't look at headers if there no listeners
             var headers = httpContext.Request.Headers;
             if (!headers.TryGetValue(HeaderNames.TraceParent, out var requestId))
             {
                 headers.TryGetValue(HeaderNames.RequestId, out requestId);
             }
-
-            if (!StringValues.IsNullOrEmpty(requestId))
+            var activity = _activitySource.StartActivity(ActivityName, ActivityKind.Server, requestId);
+            if (activity is not null)
             {
-                activity.SetParentId(requestId);
-                if (headers.TryGetValue(HeaderNames.TraceState, out var traceState))
+                if (!StringValues.IsNullOrEmpty(requestId))
                 {
-                    activity.TraceStateString = traceState;
-                }
-
-                // We expect baggage to be empty by default
-                // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                var baggage = headers.GetCommaSeparatedValues(HeaderNames.Baggage);
-                if (baggage.Length == 0)
-                {
-                    baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
-                }
-
-                // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
-                // An order could be important if baggage has two items with the same key (that is allowed by the contract)
-                for (var i = baggage.Length - 1; i >= 0; i--)
-                {
-                    if (NameValueHeaderValue.TryParse(baggage[i], out var baggageItem))
+                    // activity.SetParentId(requestId);
+                    if (headers.TryGetValue(HeaderNames.TraceState, out var traceState))
                     {
-                        activity.AddBaggage(baggageItem.Name.ToString(), HttpUtility.UrlDecode(baggageItem.Value.ToString()));
+                        activity.TraceStateString = traceState;
+                    }
+
+                    // We expect baggage to be empty by default
+                    // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
+                    var baggage = headers.GetCommaSeparatedValues(HeaderNames.Baggage);
+                    if (baggage.Length == 0)
+                    {
+                        baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
+                    }
+
+                    // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
+                    // An order could be important if baggage has two items with the same key (that is allowed by the contract)
+                    for (var i = baggage.Length - 1; i >= 0; i--)
+                    {
+                        if (NameValueHeaderValue.TryParse(baggage[i], out var baggageItem))
+                        {
+                            activity.AddBaggage(baggageItem.Name.ToString(), HttpUtility.UrlDecode(baggageItem.Value.ToString()));
+                        }
                     }
                 }
-            }
 
-            _diagnosticListener.OnActivityImport(activity, httpContext);
-
-            if (_diagnosticListener.IsEnabled(ActivityStartKey))
-            {
-                hasDiagnosticListener = true;
-                StartActivity(activity, httpContext);
+                // Review: Breaking change: We will no longer fire OnActivityImport before Activity.Start()
+                _diagnosticListener.OnActivityImport(activity, httpContext);
             }
-            else
-            {
-                activity.Start();
-            }
-
             return activity;
         }
 
@@ -303,32 +316,15 @@ namespace Microsoft.AspNetCore.Hosting
         {
             if (hasDiagnosticListener)
             {
-                StopActivity(activity, httpContext);
+                // Stop sets the end time if it was unset, but we want it set before we issue the write
+                // so we do it now.
+                if (activity.Duration == TimeSpan.Zero)
+                {
+                    activity.SetEndTime(DateTime.UtcNow);
+                }
+                _diagnosticListener.Write(ActivityStopKey, httpContext);
             }
-            else
-            {
-                activity.Stop();
-            }
-        }
-
-        // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
-        private Activity StartActivity(Activity activity, HttpContext httpContext)
-        {
-            activity.Start();
-            _diagnosticListener.Write(ActivityStartKey, httpContext);
-            return activity;
-        }
-
-        private void StopActivity(Activity activity, HttpContext httpContext)
-        {
-            // Stop sets the end time if it was unset, but we want it set before we issue the write
-            // so we do it now.
-            if (activity.Duration == TimeSpan.Zero)
-            {
-                activity.SetEndTime(DateTime.UtcNow);
-            }
-            _diagnosticListener.Write(ActivityStopKey, httpContext);
-            activity.Stop();    // Resets Activity.Current (we want this after the Write)
+            activity.Dispose();
         }
     }
 }
