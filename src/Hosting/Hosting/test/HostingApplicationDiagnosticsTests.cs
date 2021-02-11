@@ -362,6 +362,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value4");
         }
 
+
         [Fact]
         public void ActivityBaggagePreservesItemsOrder()
         {
@@ -492,6 +493,35 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.True(onActivityImportCalled);
             Assert.NotNull(Activity.Current);
             Assert.True(Activity.Current.Recorded);
+        }
+
+        [Fact]
+        public void ActivityListenersAreCalled()
+        {
+            var hostingApplication = CreateApplication(out var features);
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = activitySource => true,
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+                ActivityStarted = activity =>
+                {
+                    Assert.Equal("0123456789abcdef", Activity.Current.ParentSpanId.ToHexString());
+                },
+                //ActivityStopped = activity => Assert..
+            };
+
+            ActivitySource.AddActivityListener(listener);
+
+            features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+            {
+                Headers = new HeaderDictionary()
+                {
+                    {"traceparent", "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"},
+                    {"tracestate", "TraceState1"},
+                    {"baggage", "Key1=value1, Key2=value2"}
+                }
+            });
+            hostingApplication.CreateContext(features);
         }
 
 

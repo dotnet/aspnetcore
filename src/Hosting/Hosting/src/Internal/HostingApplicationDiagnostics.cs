@@ -55,7 +55,6 @@ namespace Microsoft.AspNetCore.Hosting
             // TODO: If loggingEnabled check to change to if ActivityPropogation options are enabled
             if (loggingEnabled || (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext)))
             {
-                // Review: Force creation of Activity by creating dummy listener
                 _dummyListener = new ActivityListener()
                 {
                     ShouldListenTo = activitySource => activitySource.Name.Equals(ActivitySourceName),
@@ -63,6 +62,7 @@ namespace Microsoft.AspNetCore.Hosting
                 };
                 ActivitySource.AddActivityListener(_dummyListener);
             }
+
             context.Activity = StartActivity(httpContext, out var hasDiagnosticListener);
             context.HasDiagnosticListener = hasDiagnosticListener;
 
@@ -269,7 +269,12 @@ namespace Microsoft.AspNetCore.Hosting
                 hasDiagnosticListener = true;
             }
 
-            // TODO: Don't look at headers if there no listeners
+            // Short-circuit to avoid doing an expensive header lookup
+            if (!(hasDiagnosticListener || _activitySource.HasListeners()))
+            {
+                return null;
+            }
+
             var headers = httpContext.Request.Headers;
             if (!headers.TryGetValue(HeaderNames.TraceParent, out var requestId))
             {
@@ -307,6 +312,12 @@ namespace Microsoft.AspNetCore.Hosting
 
                 // Review: Breaking change: We will no longer fire OnActivityImport before Activity.Start()
                 _diagnosticListener.OnActivityImport(activity, httpContext);
+
+                if (hasDiagnosticListener)
+                {
+                    //Review: Do we need to explicity call this?
+                    _diagnosticListener.Write(ActivityStartKey, httpContext);
+                }
             }
             return activity;
         }
@@ -316,15 +327,20 @@ namespace Microsoft.AspNetCore.Hosting
         {
             if (hasDiagnosticListener)
             {
-                // Stop sets the end time if it was unset, but we want it set before we issue the write
-                // so we do it now.
-                if (activity.Duration == TimeSpan.Zero)
-                {
-                    activity.SetEndTime(DateTime.UtcNow);
-                }
-                _diagnosticListener.Write(ActivityStopKey, httpContext);
+                StopActivity(activity, httpContext);
             }
-            activity.Dispose();
+            activity.Stop();
+        }
+
+        private void StopActivity(Activity activity, HttpContext httpContext)
+        {
+            // Stop sets the end time if it was unset, but we want it set before we issue the write
+            // so we do it now.
+            if (activity.Duration == TimeSpan.Zero)
+            {
+                activity.SetEndTime(DateTime.UtcNow);
+            }
+            _diagnosticListener.Write(ActivityStopKey, httpContext);
         }
     }
 }
