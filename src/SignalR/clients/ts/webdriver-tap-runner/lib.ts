@@ -31,10 +31,7 @@ function applyBrowserSettings(options: RunnerOptions, builder: Builder) {
         chromeOptions.headless();
         chromeOptions.addArguments("--disable-dev-shm-usage");
 
-        // If we're root, we need to disable the sandbox.
-        if (process.getuid && process.getuid() === 0) {
-            chromeOptions.addArguments("--no-sandbox");
-        }
+        chromeOptions.addArguments("--no-sandbox");
 
         if (options.chromeBinaryPath) {
             debug(`Using Chrome Binary Path: ${options.chromeBinaryPath}`);
