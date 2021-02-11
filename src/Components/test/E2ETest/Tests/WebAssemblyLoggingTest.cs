@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("none", errorUi.GetCssValue("display"));
         }
 
-        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
+        [Fact]
         public void LogsSimpleExceptionsUsingLogger()
         {
             Browser.Exists(By.Id("throw-simple-exception")).Click();
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 "at BasicTestApp.ErrorComponent.ThrowSimple");
         }
 
-        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
+        [Fact]
         public void LogsInnerExceptionsUsingLogger()
         {
             Browser.Exists(By.Id("throw-inner-exception")).Click();
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 "at BasicTestApp.ErrorComponent.ThrowInner");
         }
 
-        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
+        [Fact]
         public void LogsAggregateExceptionsUsingLogger()
         {
             Browser.Exists(By.Id("throw-aggregate-exception")).Click();
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 "System.InvalidTimeZoneException: Aggregate exception 3");
         }
 
-        [Fact(Skip = "Browser logs cannot be retrieved: https://github.com/dotnet/aspnetcore/issues/25803")]
+        [Fact]
         public void LogsUsingCustomLogger()
         {
             Browser.MountTestComponent<LoggingComponent>();
