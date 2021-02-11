@@ -175,6 +175,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />
     <LatestPackageReference Include="NuGet.Versioning" />
+    <LatestPackageReference Include="PlaywrightSharp" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />
     <LatestPackageReference Include="Selenium.Support" />

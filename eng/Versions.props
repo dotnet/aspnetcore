@@ -273,6 +273,7 @@
     <NewtonsoftJsonBsonVersion>1.0.2</NewtonsoftJsonBsonVersion>
     <NewtonsoftJsonVersion>12.0.2</NewtonsoftJsonVersion>
     <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
+    <PlaywrightSharpVersion>0.180.0</PlaywrightSharpVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
     <PollyVersion>7.1.0</PollyVersion>
     <SeleniumSupportVersion>4.0.0-alpha07</SeleniumSupportVersion>
