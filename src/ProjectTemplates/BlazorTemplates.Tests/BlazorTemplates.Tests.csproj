@@ -55,4 +55,12 @@
 
   <!-- Shared testing infrastructure for running E2E template tests -->
   <Import Project="..\TestInfrastructure\PrepareForTest.targets" />
+
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_browsers Include="$(USERPROFILE)\AppData\Local\ms-playwright\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_browsers)" DestinationFiles="$(PublishDir)\ms-playwright\%(_browsers.RecursiveDir)\%(_browsers.FileName)%(_browsers.Extension)" />
+  </Target>
+  
 </Project>
