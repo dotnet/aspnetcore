@@ -29,6 +29,7 @@ function applyBrowserSettings(options: RunnerOptions, builder: Builder) {
     if (options.browser === "chrome") {
         const chromeOptions = new ChromeOptions();
         chromeOptions.headless();
+        chromeOptions.addArguments("--disable-dev-shm-usage");
 
         // If we're root, we need to disable the sandbox.
         if (process.getuid && process.getuid() === 0) {
