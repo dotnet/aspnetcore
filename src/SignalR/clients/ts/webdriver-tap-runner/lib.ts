@@ -30,10 +30,11 @@ function applyBrowserSettings(options: RunnerOptions, builder: Builder) {
         const chromeOptions = new ChromeOptions();
         chromeOptions.headless();
 
-        // If we're root, we need to disable the sandbox.
-        if (process.getuid && process.getuid() === 0) {
-            chromeOptions.addArguments("--no-sandbox");
-        }
+        chromeOptions.addArguments("--disable-gpu");
+        chromeOptions.addArguments("--remote-debugging-port=9222");
+        chromeOptions.addArguments("--remote-debugging-address=0.0.0.0");
+        chromeOptions.addArguments("--disable-dev-shm-usage");
+        chromeOptions.addArguments("--no-sandbox");
 
         if (options.chromeBinaryPath) {
             debug(`Using Chrome Binary Path: ${options.chromeBinaryPath}`);
