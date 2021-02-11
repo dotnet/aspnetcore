@@ -116,7 +116,7 @@
     <SystemReflectionMetadataVersion>6.0.0-preview.2.21110.2</SystemReflectionMetadataVersion>
     <SystemResourcesExtensionsVersion>6.0.0-preview.2.21110.2</SystemResourcesExtensionsVersion>
     <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.2.21110.2</SystemRuntimeCompilerServicesUnsafeVersion>
-    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. -->
+    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. -->
     <SystemSecurityAccessControlVersion>6.0.0-preview.2.21110.2</SystemSecurityAccessControlVersion>
     <SystemSecurityCryptographyCngVersion>6.0.0-preview.2.21110.2</SystemSecurityCryptographyCngVersion>
     <SystemSecurityCryptographyPkcsVersion>6.0.0-preview.2.21110.2</SystemSecurityCryptographyPkcsVersion>
@@ -175,18 +175,18 @@
     because System.Security.AccessControl will otherwise be loadable. This should not be necessary in servicing.
   -->
   <PropertyGroup Condition=" '$(IsServicingBuild)' == 'true' ">
-    <MicrosoftWin32RegistryV0PackageVersion>$(MicrosoftWin32RegistryPackageVersion.Split('.')[0]).$(MicrosoftWin32RegistryPackageVersion.Split('.')[1]).0</MicrosoftWin32RegistryV0PackageVersion>
-    <MicrosoftWin32SystemEventsV0PackageVersion>$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsV0PackageVersion>
-    <SystemDiagnosticsEventLogV0PackageVersion>$(SystemDiagnosticsEventLogPackageVersion.Split('.')[0]).$(SystemDiagnosticsEventLogPackageVersion.Split('.')[1]).0</SystemDiagnosticsEventLogV0PackageVersion>
-    <SystemDrawingCommonV0PackageVersion>$(SystemDrawingCommonPackageVersion.Split('.')[0]).$(SystemDrawingCommonPackageVersion.Split('.')[1]).0</SystemDrawingCommonV0PackageVersion>
-    <SystemIOPipelinesV0PackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesV0PackageVersion>
-    <SystemSecurityAccessControlV0PackageVersion>$(SystemSecurityAccessControlPackageVersion.Split('.')[0]).$(SystemSecurityAccessControlPackageVersion.Split('.')[1]).0</SystemSecurityAccessControlV0PackageVersion>
-    <SystemSecurityCryptographyCngV0PackageVersion>$(SystemSecurityCryptographyCngPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyCngPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyCngV0PackageVersion>
-    <SystemSecurityCryptographyPkcsV0PackageVersion>$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyPkcsV0PackageVersion>
-    <SystemSecurityCryptographyXmlV0PackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlV0PackageVersion>
-    <SystemSecurityPermissionsV0PackageVersion>$(SystemSecurityPermissionsPackageVersion.Split('.')[0]).$(SystemSecurityPermissionsPackageVersion.Split('.')[1]).0</SystemSecurityPermissionsV0PackageVersion>
-    <SystemSecurityPrincipalWindowsV0PackageVersion>$(SystemSecurityPrincipalWindowsPackageVersion.Split('.')[0]).$(SystemSecurityPrincipalWindowsPackageVersion.Split('.')[1]).0</SystemSecurityPrincipalWindowsV0PackageVersion>
-    <SystemWindowsExtensionsV0PackageVersion>$(SystemWindowsExtensionsPackageVersion.Split('.')[0]).$(SystemWindowsExtensionsPackageVersion.Split('.')[1]).0</SystemWindowsExtensionsV0PackageVersion>
+    <MicrosoftWin32RegistryV0Version>$(MicrosoftWin32RegistryVersion.Split('.')[0]).$(MicrosoftWin32RegistryVersion.Split('.')[1]).0</MicrosoftWin32RegistryV0Version>
+    <MicrosoftWin32SystemEventsV0Version>$(MicrosoftWin32SystemEventsVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsV0Version>
+    <SystemDiagnosticsEventLogV0Version>$(SystemDiagnosticsEventLogVersion.Split('.')[0]).$(SystemDiagnosticsEventLogVersion.Split('.')[1]).0</SystemDiagnosticsEventLogV0Version>
+    <SystemDrawingCommonV0Version>$(SystemDrawingCommonVersion.Split('.')[0]).$(SystemDrawingCommonVersion.Split('.')[1]).0</SystemDrawingCommonV0Version>
+    <SystemIOPipelinesV0Version>$(SystemIOPipelinesVersion.Split('.')[0]).$(SystemIOPipelinesVersion.Split('.')[1]).0</SystemIOPipelinesV0Version>
+    <SystemSecurityAccessControlV0Version>$(SystemSecurityAccessControlVersion.Split('.')[0]).$(SystemSecurityAccessControlVersion.Split('.')[1]).0</SystemSecurityAccessControlV0Version>
+    <SystemSecurityCryptographyCngV0Version>$(SystemSecurityCryptographyCngVersion.Split('.')[0]).$(SystemSecurityCryptographyCngVersion.Split('.')[1]).0</SystemSecurityCryptographyCngV0Version>
+    <SystemSecurityCryptographyPkcsV0Version>$(SystemSecurityCryptographyPkcsVersion.Split('.')[0]).$(SystemSecurityCryptographyPkcsVersion.Split('.')[1]).0</SystemSecurityCryptographyPkcsV0Version>
+    <SystemSecurityCryptographyXmlV0Version>$(SystemSecurityCryptographyXmlVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlV0Version>
+    <SystemSecurityPermissionsV0Version>$(SystemSecurityPermissionsVersion.Split('.')[0]).$(SystemSecurityPermissionsVersion.Split('.')[1]).0</SystemSecurityPermissionsV0Version>
+    <SystemSecurityPrincipalWindowsV0Version>$(SystemSecurityPrincipalWindowsVersion.Split('.')[0]).$(SystemSecurityPrincipalWindowsVersion.Split('.')[1]).0</SystemSecurityPrincipalWindowsV0Version>
+    <SystemWindowsExtensionsV0Version>$(SystemWindowsExtensionsVersion.Split('.')[0]).$(SystemWindowsExtensionsVersion.Split('.')[1]).0</SystemWindowsExtensionsV0Version>
   </PropertyGroup>
   <PropertyGroup Label="Manual">
     <!-- Packages from dotnet/roslyn -->
