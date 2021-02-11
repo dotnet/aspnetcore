@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Blazor WebAssembly 應用程式",
+    "description": "此專案範本可用於建立在 WebAssembly 上執行的 Blazor 應用程式，並可選擇是否要裝載在 ASP.NET Core 應用程式上。此範本可供搭載豐富動態使用者介面 (UI) 的 Web 應用程式使用。",
+    "parameter.Hosted.name": "裝載在 ASP.NET Core 上(_H)",
+    "parameter.PWA.name": "漸進式 Web 應用程式(_P)"
+  }
+}
