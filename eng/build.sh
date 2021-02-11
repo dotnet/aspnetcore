@@ -226,10 +226,6 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-if [ "$ci" != true ] && [ -z "$build_projects" ]; then
-    __warn "It looks like you might be running the top-level build script during local development. We recommend running the build scripts within a project's directory."
-fi
-
 if [ "$build_all" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildAllProjects=true"
 fi
@@ -322,7 +318,7 @@ if [ "$(uname)" = "Darwin" ]; then
 fi
 
 # Import Arcade
-. "$DIR/eng/common/tools.sh"
+. "$DIR/common/tools.sh"
 
 # Add default .binlog location if not already on the command line. tools.sh does not handle this; it just checks
 # $binary_log, $ci and $exclude_ci_binary_log values for an error case.
@@ -359,7 +355,7 @@ restore=$_tmp_restore=
 if [ "$build_repo_tasks" = true ]; then
     MSBuild $_InitializeToolset \
         -p:RepoRoot="$repo_root" \
-        -p:Projects="$DIR/eng/tools/RepoTasks/RepoTasks.csproj" \
+        -p:Projects="$DIR/tools/RepoTasks/RepoTasks.csproj" \
         -p:Configuration=Release \
         -p:Restore=$run_restore \
         -p:Build=true \

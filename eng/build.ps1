@@ -192,10 +192,6 @@ if ($Help) {
     exit 1
 }
 
-if (-not $CI -and -not $Projects) {
-    Write-Warning "It looks like you might be running the top-level build script during local development. We recommend running the build scripts within a project's directory."
-}
-
 if ($DumpProcesses -or $CI) {
     # Dump running processes
     Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
@@ -389,7 +385,7 @@ Remove-Item variable:global:_ToolsetBuildProj -ea Ignore
 Remove-Item variable:global:_MSBuildExe -ea Ignore
 
 # Import Arcade
-. "$PSScriptRoot/eng/common/tools.ps1"
+. "$PSScriptRoot/common/tools.ps1"
 
 # Add default .binlog location if not already on the command line. tools.ps1 does not handle this; it just checks
 # $BinaryLog, $CI and $ExcludeCIBinarylog values for an error case. But tools.ps1 provides a nice function to help.
@@ -482,7 +478,7 @@ finally {
     }
 
     if ($ci) {
-        & "$PSScriptRoot/eng/scripts/KillProcesses.ps1"
+        & "$PSScriptRoot/scripts/KillProcesses.ps1"
     }
 }
 
