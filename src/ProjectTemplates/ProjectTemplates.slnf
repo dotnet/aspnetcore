@@ -2,6 +2,7 @@
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
     "projects" : [
+      "src\\ProjectTemplates\\BlazorTemplates.Tests\\BlazorTemplates.Tests.csproj",
       "src\\ProjectTemplates\\Web.ProjectTemplates\\Microsoft.DotNet.Web.ProjectTemplates.csproj",
       "src\\ProjectTemplates\\Web.Spa.ProjectTemplates\\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj",
       "src\\ProjectTemplates\\Web.Client.ItemTemplates\\Microsoft.DotNet.Web.Client.ItemTemplates.csproj",
@@ -46,6 +47,7 @@
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
       "src\\Security\\Authorization\\Policy\\src\\Microsoft.AspNetCore.Authorization.Policy.csproj",
       "src\\Security\\CookiePolicy\\src\\Microsoft.AspNetCore.CookiePolicy.csproj",
+      "src\\Shared\\BrowserTesting\\src\\Microsoft.AspNetCore.BrowserTesting.csproj",
       "src\\Middleware\\CORS\\src\\Microsoft.AspNetCore.Cors.csproj",
       "src\\Middleware\\Diagnostics.Abstractions\\src\\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj",
       "src\\Middleware\\Diagnostics\\src\\Microsoft.AspNetCore.Diagnostics.csproj",

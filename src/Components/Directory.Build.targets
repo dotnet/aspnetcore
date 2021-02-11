@@ -1,6 +1,10 @@
 ﻿<Project>
   <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
-    <BlazorWebAssemblyJSPath>$(RepoRoot)src\Components\Web.JS\dist\$(Configuration)\blazor.webassembly.js</BlazorWebAssemblyJSPath>
+    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
+    <BlazorWebAssemblyJSPath
+        Condition=" '$(Configuration)' == 'Debug' ">$(RepoRoot)src\Components\Web.JS\dist\Debug\blazor.webassembly.js</BlazorWebAssemblyJSPath>
+    <BlazorWebAssemblyJSPath
+        Condition=" '$(Configuration)' != 'Debug' ">$(RepoRoot)src\Components\Web.JS\dist\Release\blazor.webassembly.js</BlazorWebAssemblyJSPath>
     <BlazorWebAssemblyJSMapPath>$(BlazorWebAssemblyJSPath).map</BlazorWebAssemblyJSMapPath>
 
     <_BlazorDevServerPath>$(ArtifactsDir)bin/Microsoft.AspNetCore.Components.WebAssembly.DevServer/$(Configuration)/$(DefaultNetCoreTargetFramework)/blazor-devserver.dll</_BlazorDevServerPath>
@@ -19,6 +23,12 @@
       UndefineProperties="TargetFramework"
       Private="false" />
   </ItemGroup>
+
+  <!-- blazor.webassembly.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. -->
+  <Target Name="_CheckBlazorWebAssemblyJSPath" AfterTargets="ResolveProjectReferences"
+    Condition=" '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' AND !EXISTS('$(BlazorWebAssemblyJSPath)') ">
+    <Error Text="'$(BlazorWebAssemblyJSPath)' does not exist. Enable NodeJS to build this project." />
+  </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 </Project>

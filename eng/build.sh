@@ -237,6 +237,9 @@ elif [ "$build_all" != true ] && [ -z "$build_managed$build_nodejs$build_java$bu
     # We believe the most common thing our contributors will work on is C#, so if no other build group was picked, build the C# projects.
     __warn "No default group of projects was specified, so building the 'managed' and its dependent subset of projects. Run ``build.sh --help`` for more details."
     build_managed=true
+elif [ "$build_all" != true ] && [ -z "$build_managed" ] && ! [[ "$build_nodejs$build_java$build_native$build_installers" =~ "true" ]]; then
+    # If only negative options were chosen, assume --build-managed.
+    build_managed=true
 fi
 
 if [ "$build_deps" = false ]; then
