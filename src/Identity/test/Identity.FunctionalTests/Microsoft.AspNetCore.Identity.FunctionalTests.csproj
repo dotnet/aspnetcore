@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!-- Test asset publishing not working on arm64 https://github.com/dotnet/aspnetcore/issues/11205 -->
-    <SkipHelixArm>true</SkipHelixArm>
    </PropertyGroup>
 
   <ItemGroup>
@@ -28,9 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Testing.DefaultWebSite.StaticWebAssets.V4.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Testing.DefaultWebSite.StaticWebAssets.V4.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -70,7 +65,5 @@
     <Copy SourceFiles="@(_wwwrootFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />	
     <Copy SourceFiles="@(_IdentityUIContent)" DestinationFiles="$(PublishDir)\UI\wwwroot\%(_IdentityUIContent.RecursiveDir)\%(_IdentityUIContent.FileName)%(_IdentityUIContent.Extension)" />	
     <Copy SourceFiles="@(_IdentityUIPages)" DestinationFiles="$(PublishDir)UI\Areas\Identity\Pages\%(_IdentityUIPages.RecursiveDir)\%(_IdentityUIPages.FileName)%(_IdentityUIPages.Extension)" />	
-    <!-- Drop a dummy sln to specify content root location -->	
-    <WriteLinesToFile File="$(PublishDir)\contentroot.sln" Lines="Ignored" Overwrite="true" Encoding="Unicode" />	
   </Target>
 </Project>
