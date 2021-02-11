@@ -194,7 +194,7 @@ if ($Help) {
 
 if ($DumpProcesses -or $CI) {
     # Dump running processes
-    Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
+    Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
 }
 
 # Project selection
@@ -353,7 +353,7 @@ if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
 }
 
 if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
-    Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
+    Write-Error "Could not find the JDK. Either run $PSScriptRoot\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\..\docs\BuildFromSource.md for details)."
 }
 
 # We need to change default git hooks directory as .git folder is not tracked. And by default hooks are stored in .git/hooks folder.
