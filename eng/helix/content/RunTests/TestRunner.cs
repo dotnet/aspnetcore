@@ -40,6 +40,12 @@ namespace RunTests
                 Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
                 EnvironmentVariables.Add("DotNetEfFullPath", dotnetEFFullPath);
 
+                // Playwright will download and look for browsers to this directory
+                var playwrightBrowsers = Path.Combine(helixDir, "playwrightBrowsers");
+                EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
+                Console.WriteLine($"Creating playwright browsers directory: {playwrightBrowsers}");
+                Directory.CreateDirectory(playwrightBrowsers);
+
                 Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
                 Directory.CreateDirectory(nugetRestore);
 
