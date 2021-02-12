@@ -45,3 +45,4 @@ charset = utf-8-bom
 
 [*.cs]
 dotnet_analyzer_diagnostic.category-Globalization.severity = error
+dotnet_diagnostic.CA1309.severity = suggestion
