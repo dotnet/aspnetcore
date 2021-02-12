@@ -80,7 +80,11 @@ if ([string]::IsNullOrEmpty($FeedCred)) {
 }
 
 Write-Host "Enable-WindowsOptionalFeature -Online -FeatureName ServerMediaFoundation  (For Playwright)"
-Enable-WindowsOptionalFeature -Online -FeatureName ServerMediaFoundation 
+try {
+    Enable-WindowsOptionalFeature -Online -FeatureName ServerMediaFoundation 
+} catch {
+    Write-Host "Enable-WindowsOptionalFeature -Online -FeatureName ServerMediaFoundation threw an exception: $PSItem.Exception.Message"
+}
 
 Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
 dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
