@@ -80,7 +80,7 @@ if ([string]::IsNullOrEmpty($FeedCred)) {
 }
 
 Write-Host "Enable-WindowsOptionalFeature Server-Media-Foundation (For Playwright)"
-Enable-WindowsOptionalFeature Server-Media-Foundation
+Enable-WindowsOptionalFeature -FeatureName ServerMediaFoundation 
 
 Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
 dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
