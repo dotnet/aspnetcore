@@ -305,7 +305,7 @@ $performDotnetBuild = $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
     ($Projects -and -not ($BuildInstallers -or $specifiedBuildNative))
 $foundJdk = $false
 $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
-$localJdkPath = "$PSScriptRoot\.tools\jdk\win-x64\"
+$localJdkPath = "$PSScriptRoot\..\.tools\jdk\win-x64\"
 if (Test-Path "$localJdkPath\bin\javac.exe") {
     $foundJdk = $true
     Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
