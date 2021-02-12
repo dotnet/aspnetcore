@@ -25,7 +25,7 @@ export class Arg {
 /** @private */
 export function getDataDetail(data: any, includeContent: boolean): string {
     let length: string = null;
-    if (data instanceof ArrayBuffer) {
+    if (isArrayBuffer(data)) {
         length = `Binary data of length ${data.byteLength}`;
         if (includeContent) {
             length += `. Content: '${formatArrayBuffer(data)}'`;
@@ -179,4 +179,12 @@ export class ConsoleLogger implements ILogger {
             }
         }
     }
+}
+
+/** @private */
+export function isArrayBuffer(val: any): val is ArrayBuffer {
+    return val && typeof ArrayBuffer !== "undefined" &&
+        (val instanceof ArrayBuffer ||
+        // Sometimes we get an ArrayBuffer that doesn't satisfy instanceof
+        (val.constructor && val.constructor.name === "ArrayBuffer"));
 }

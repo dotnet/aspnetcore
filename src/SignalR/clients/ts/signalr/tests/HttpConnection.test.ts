@@ -50,7 +50,7 @@ describe("HttpConnection", () => {
 
         expect(connection.start(TransferFormat.Text))
             .rejects
-            .toThrow("error");
+            .toBe("error");
     });
 
     it("cannot start a running connection", async () => {
@@ -105,11 +105,11 @@ describe("HttpConnection", () => {
 
         await expect(connection.start(TransferFormat.Text))
             .rejects
-            .toThrow("reached negotiate");
+            .toBe("reached negotiate");
 
         await expect(connection.start(TransferFormat.Text))
             .rejects
-            .toThrow("reached negotiate");
+            .toBe("reached negotiate");
     });
 
     it("can stop a starting connection", async () => {

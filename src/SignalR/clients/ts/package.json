@@ -14,9 +14,8 @@
   "jest": {
     "globals": {
       "ts-jest": {
-        "tsConfigFile": "./tsconfig.jest.json",
-        "skipBabel": true,
-        "enableTsDiagnostics": true
+        "tsConfig": "./tsconfig.jest.json",
+        "diagnostics": true
       }
     },
     "transform": {

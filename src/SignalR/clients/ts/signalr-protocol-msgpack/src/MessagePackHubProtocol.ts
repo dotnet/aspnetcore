@@ -7,6 +7,7 @@ import * as msgpack5 from "msgpack5";
 import { CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage, LogLevel, MessageHeaders, MessageType, NullLogger, StreamInvocationMessage, StreamItemMessage, TransferFormat } from "@aspnet/signalr";
 
 import { BinaryMessageFormat } from "./BinaryMessageFormat";
+import { isArrayBuffer } from "./Utils";
 
 // TypeDoc's @inheritDoc and @link don't work across modules :(
 
@@ -26,7 +27,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
      */
     public parseMessages(input: ArrayBuffer, logger: ILogger): HubMessage[] {
         // The interface does allow "string" to be passed in, but this implementation does not. So let's throw a useful error.
-        if (!(input instanceof ArrayBuffer)) {
+        if (!isArrayBuffer(input)) {
             throw new Error("Invalid input for MessagePack hub protocol. Expected an ArrayBuffer.");
         }
 
@@ -61,7 +62,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
         }
 
         const msgpack = msgpack5();
-        const properties = msgpack.decode(new Buffer(input));
+        const properties = msgpack.decode(Buffer.from(input));
         if (properties.length === 0 || !(properties instanceof Array)) {
             throw new Error("Invalid payload.");
         }
