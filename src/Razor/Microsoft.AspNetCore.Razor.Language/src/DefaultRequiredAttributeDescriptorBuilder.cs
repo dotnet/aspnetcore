@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 Value,
                 ValueComparisonMode,
                 displayName,
-                diagnostics?.ToArray() ?? Array.Empty<RazorDiagnostic>(),
+                diagnostics.ToArray(),
                 new Dictionary<string, string>(Metadata));
 
             return rule;

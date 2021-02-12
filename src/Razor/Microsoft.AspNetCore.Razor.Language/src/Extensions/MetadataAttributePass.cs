@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             // Checksum of the main source
             var checksum = codeDocument.Source.GetChecksum();
             var checksumAlgorithm = codeDocument.Source.GetChecksumAlgorithm();
-            if (checksum == null || checksum.Length == 0 || checksumAlgorithm == null || identifier == null)
+            if (checksum == null || checksum.Length == 0 || checksumAlgorithm == null)
             {
                 // Don't generate anything unless we have all of the required information.
                 return;

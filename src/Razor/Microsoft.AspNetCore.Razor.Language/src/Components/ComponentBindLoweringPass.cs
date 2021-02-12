@@ -548,7 +548,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             if (bindEntry.BindEventNode == null)
             {
                 // @bind:event not specified
-                changeAttributeName ??= node.TagHelper.GetChangeAttributeName();
+                changeAttributeName = node.TagHelper.GetChangeAttributeName();
             }
             else if (TryExtractEventNodeStaticText(bindEntry.BindEventNode, out var text))
             {
