@@ -32,7 +32,9 @@ namespace Templates.Test
         public Project Project { get; private set; }
 
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(BrowserKind.Chromium)]
         public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
         {
@@ -103,7 +105,9 @@ namespace Templates.Test
         public static IEnumerable<object[]> BlazorServerTemplateWorks_IndividualAuthData =>
                 BrowserManager.WithBrowsers(new[] { BrowserKind.Chromium }, true, false);
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
         public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
         {
@@ -207,7 +211,9 @@ namespace Templates.Test
             Assert.Equal(5, (await page.QuerySelectorAllAsync("p+table>tbody>tr")).Count());
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", null)]
