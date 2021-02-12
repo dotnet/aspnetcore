@@ -6,6 +6,7 @@
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+    <BuildHelixPayload Condition="'!$(IsWindowsHelixQueue)'">false</BuildHelixPayload>
     <SkipHelixArm>true</SkipHelixArm>
 
     <BaseOutputPath />
