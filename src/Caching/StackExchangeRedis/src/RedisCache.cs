@@ -439,7 +439,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     options.AbsoluteExpiration.Value,
                     "The absolute expiration value must be in the future.");
             }
-            
+
             if (options.AbsoluteExpirationRelativeToNow.HasValue)
             {
                 return creationTime + options.AbsoluteExpirationRelativeToNow;
@@ -451,13 +451,26 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         /// <inheritdoc />
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Override this method for any additional cleanup.
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
             if (_disposed)
             {
                 return;
             }
 
+            if (disposing)
+            {
+                _connection?.Close();
+            }
+
             _disposed = true;
-            _connection?.Close();
         }
 
         private void CheckDisposed()
