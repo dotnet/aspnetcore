@@ -79,8 +79,8 @@ if ([string]::IsNullOrEmpty($FeedCred)) {
     InstallDotnetSDKAndRuntime "https://dotnetclimsrc.blob.core.windows.net/dotnet" $FeedCred
 }
 
-Write-Host "Enable-WindowsOptionalFeature Server-Media-Foundation (For Playwright)"
-Enable-WindowsOptionalFeature -FeatureName ServerMediaFoundation 
+Write-Host "Enable-WindowsOptionalFeature -Online -FeatureName ServerMediaFoundation  (For Playwright)"
+Enable-WindowsOptionalFeature -Online -FeatureName ServerMediaFoundation 
 
 Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
 dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
