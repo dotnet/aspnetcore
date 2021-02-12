@@ -356,10 +356,6 @@ if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJ
     Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
 }
 
-# We need to change default git hooks directory as .git folder is not tracked. And by default hooks are stored in .git/hooks folder.
-# So we are setting git hooks default directory to .githooks, so that we can track and version the git hooks.
-& git config core.hooksPath .githooks
-
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
 
