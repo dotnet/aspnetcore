@@ -1,8 +1,11 @@
 #!/bin/sh
 LC_ALL=C
 
+# Stash unstaged changes
+git stash -q --keep-index
+
 # Select files to format
-FILES=$(git show --name-only --pretty="")
+FILES=$(git diff --cached --name-only --pretty="")
 [ -z "$FILES" ] && exit 0
 
 # Format all selected files with dotnet-format
@@ -12,4 +15,8 @@ echo "dotnet-format: $(git diff --cached --numstat | wc -l) file(s) formatted."
 
 # Add files to staging
 echo "$FILES" | xargs git add
+
+# Restore unstaged changes
+git stash pop -q
+
 exit 0
