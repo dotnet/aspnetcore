@@ -40,8 +40,7 @@ namespace Templates.Test
 
         public ContextInformation BrowserContextInfo { get; }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [Theory]
         [InlineData(BrowserKind.Chromium)]
         public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
         {
@@ -89,8 +88,7 @@ namespace Templates.Test
             return page;
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [Theory]
         [InlineData(BrowserKind.Chromium)]
         public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
         {
@@ -149,8 +147,7 @@ namespace Templates.Test
             Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [Theory]
         [InlineData(BrowserKind.Chromium)]
         public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
         {
@@ -197,8 +194,7 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [Theory]
         [InlineData(BrowserKind.Chromium)]
         public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
         {
@@ -289,8 +285,7 @@ namespace Templates.Test
             return BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [Theory]
         [InlineData(BrowserKind.Chromium)]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
         {
@@ -368,8 +363,7 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [Theory]
         [InlineData(BrowserKind.Chromium, Skip = "https://github.com/dotnet/aspnetcore/issues/28596")]
         public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works(BrowserKind browserKind)
         {
@@ -485,8 +479,7 @@ namespace Templates.Test
             public string[] Arguments { get; }
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [Theory]
         [MemberData(nameof(TemplateData))]
         public async Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
         {
