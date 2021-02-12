@@ -13,7 +13,12 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
-    // Note this is for use both in HTTP (https://tools.ietf.org/html/rfc6266) and MIME (https://tools.ietf.org/html/rfc2183)
+    /// <summary>
+    /// Represents the value of a <c>Content-Disposition</c> header.
+    /// </summary>
+    /// <remarks>
+    /// Note this is for use both in HTTP (https://tools.ietf.org/html/rfc6266) and MIME (https://tools.ietf.org/html/rfc2183)
+    /// </remarks>
     public class ContentDispositionHeaderValue
     {
         private const string FileNameString = "filename";
@@ -38,12 +43,19 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ContentDispositionHeaderValue"/>.
+        /// </summary>
+        /// <param name="dispositionType">A <see cref="StringSegment"/> that represents a content disposition type.</param>
         public ContentDispositionHeaderValue(StringSegment dispositionType)
         {
             CheckDispositionTypeFormat(dispositionType, "dispositionType");
             _dispositionType = dispositionType;
         }
 
+        /// <summary>
+        /// Gets or sets a content disposition type.
+        /// </summary>
         public StringSegment DispositionType
         {
             get { return _dispositionType; }
@@ -54,6 +66,9 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets a collection of parameters included the <c>Content-Disposition</c> header.
+        /// </summary>
         public IList<NameValueHeaderValue> Parameters
         {
             get
@@ -68,43 +83,65 @@ namespace Microsoft.Net.Http.Headers
 
         // Helpers to access specific parameters in the list
 
+        /// <summary>
+        /// Gets or sets the name of the content body part.
+        /// </summary>
         public StringSegment Name
         {
             get { return GetName(NameString); }
             set { SetName(NameString, value); }
         }
 
-
+        /// <summary>
+        /// Gets or sets a value that suggests how to construct a filename for storing the message payload
+        /// to be used if the entity is detached and stored in a separate file.
+        /// </summary>
         public StringSegment FileName
         {
             get { return GetName(FileNameString); }
             set { SetName(FileNameString, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value that suggests how to construct filenames for storing message payloads
+        /// to be used if the entities are detached and stored in a separate files.
+        /// </summary>
         public StringSegment FileNameStar
         {
             get { return GetName(FileNameStarString); }
             set { SetName(FileNameStarString, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="DateTimeOffset"/> at which the file was created.
+        /// </summary>
         public DateTimeOffset? CreationDate
         {
             get { return GetDate(CreationDateString); }
             set { SetDate(CreationDateString, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="DateTimeOffset"/> at which the file was last modified.
+        /// </summary>
         public DateTimeOffset? ModificationDate
         {
             get { return GetDate(ModificationDateString); }
             set { SetDate(ModificationDateString, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="DateTimeOffset"/> at which the file was last read.
+        /// </summary>
         public DateTimeOffset? ReadDate
         {
             get { return GetDate(ReadDateString); }
             set { SetDate(ReadDateString, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the approximate size, in bytes, of the file.
+        /// </summary>
         public long? Size
         {
             get
@@ -175,11 +212,13 @@ namespace Microsoft.Net.Http.Headers
             FileName = fileName;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return _dispositionType + NameValueHeaderValue.ToString(_parameters, ';', true);
         }
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             var other = obj as ContentDispositionHeaderValue;
@@ -193,18 +232,30 @@ namespace Microsoft.Net.Http.Headers
                 HeaderUtilities.AreEqualCollections(_parameters, other._parameters);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             // The dispositionType string is case-insensitive.
             return StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_dispositionType) ^ NameValueHeaderValue.GetHashCode(_parameters);
         }
 
+        /// <summary>
+        /// Parses <paramref name="input"/> as a <see cref="ContentDispositionHeaderValue"/> value.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static ContentDispositionHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return Parser.ParseValue(input, ref index)!;
         }
 
+        /// <summary>
+        /// Attempts to parse the specified <paramref name="input"/> as a <see cref="ContentDispositionHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <param name="parsedValue">The parsed value.</param>
+        /// <returns><see langword="true"/> if input is a valid <see cref="ContentDispositionHeaderValue"/>, otherwise <see langword="false"/>.</returns>
         public static bool TryParse(StringSegment input, [NotNullWhen(true)] out ContentDispositionHeaderValue? parsedValue)
         {
             var index = 0;

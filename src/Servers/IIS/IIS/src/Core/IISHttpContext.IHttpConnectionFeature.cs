@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Http.Features;
@@ -9,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal partial class IISHttpContext : IHttpConnectionFeature
     {
-        IPAddress IHttpConnectionFeature.RemoteIpAddress
+        IPAddress? IHttpConnectionFeature.RemoteIpAddress
         {
             get
             {
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             set => RemoteIpAddress = value;
         }
 
-        IPAddress IHttpConnectionFeature.LocalIpAddress
+        IPAddress? IHttpConnectionFeature.LocalIpAddress
         {
             get
             {
@@ -98,6 +99,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
+        [MemberNotNull(nameof(RequestConnectionId))]
         private void InitializeConnectionId()
         {
             RequestConnectionId = ConnectionId.ToString(CultureInfo.InvariantCulture);

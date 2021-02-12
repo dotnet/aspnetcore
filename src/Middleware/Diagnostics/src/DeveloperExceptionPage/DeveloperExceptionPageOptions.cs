@@ -32,6 +32,6 @@ namespace Microsoft.AspNetCore.Builder
         /// <remarks>
         /// If <c>null</c> <see cref="DeveloperExceptionPageMiddleware" /> will use a <see cref="PhysicalFileProvider"/>.
         /// </remarks>
-        public IFileProvider FileProvider { get; set; }
+        public IFileProvider? FileProvider { get; set; }
     }
 }

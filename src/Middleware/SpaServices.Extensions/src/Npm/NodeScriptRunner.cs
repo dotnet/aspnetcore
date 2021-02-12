@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.AspNetCore.NodeServices.Util;
@@ -19,13 +18,13 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
     /// </summary>
     internal class NodeScriptRunner : IDisposable
     {
-        private Process _npmProcess;
+        private Process? _npmProcess;
         public EventedStreamReader StdOut { get; }
         public EventedStreamReader StdErr { get; }
 
         private static Regex AnsiColorRegex = new Regex("\x001b\\[[0-9;]*m", RegexOptions.None, TimeSpan.FromSeconds(1));
 
-        public NodeScriptRunner(string workingDirectory, string scriptName, string arguments, IDictionary<string, string> envVars, string pkgManagerCommand, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
+        public NodeScriptRunner(string workingDirectory, string scriptName, string? arguments, IDictionary<string, string>? envVars, string pkgManagerCommand, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
         {
             if (string.IsNullOrEmpty(workingDirectory))
             {
@@ -44,7 +43,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
 
             var exeToRun = pkgManagerCommand;
             var completeArguments = $"run {scriptName} -- {arguments ?? string.Empty}";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 // On Windows, the node executable is a .cmd file, so it can't be executed
                 // directly (except with UseShellExecute=true, but that's no good, because
@@ -76,7 +75,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
             StdErr = new EventedStreamReader(_npmProcess.StandardError);
 
             applicationStoppingToken.Register(((IDisposable)this).Dispose);
-            
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.NodeServices.Npm.NpmStarted"))
             {
                 diagnosticSource.Write(
@@ -114,6 +113,8 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
             // hence just pass it through to StdOut regardless of logger config.
             StdErr.OnReceivedChunk += chunk =>
             {
+                Debug.Assert(chunk.Array != null);
+
                 var containsNewline = Array.IndexOf(
                     chunk.Array, '\n', chunk.Offset, chunk.Count) >= 0;
                 if (!containsNewline)
@@ -130,7 +131,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
         {
             try
             {
-                var process = Process.Start(startInfo);
+                var process = Process.Start(startInfo)!;
 
                 // See equivalent comment in OutOfProcessNodeInstance.cs for why
                 process.EnableRaisingEvents = true;

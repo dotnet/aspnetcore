@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Helpers for writing tests for Roslyn analyzers.</Description>
@@ -11,6 +11,8 @@
     <!-- This package is internal, so we don't generate a package baseline. Always build against the latest dependencies. -->
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <IsShippingPackage>false</IsShippingPackage>
+    <!-- Nullable disabled because package is used in tests. -->
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

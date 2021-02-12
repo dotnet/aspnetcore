@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Localization.Routing
 {
@@ -28,15 +27,15 @@ namespace Microsoft.AspNetCore.Localization.Routing
         public string UIRouteDataStringKey { get; set; } = "ui-culture";
 
         /// <inheritdoc />
-        public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
+        public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            string culture = null;
-            string uiCulture = null;
+            string? culture = null;
+            string? uiCulture = null;
 
             if (!string.IsNullOrEmpty(RouteDataStringKey))
             {
@@ -67,7 +66,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
 
             var providerResultCulture = new ProviderCultureResult(culture, uiCulture);
 
-            return Task.FromResult(providerResultCulture);
+            return Task.FromResult<ProviderCultureResult?>(providerResultCulture);
         }
     }
 }

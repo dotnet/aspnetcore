@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Testing
             await base.AfterTestAssemblyStartingAsync();
 
             // Find all the AssemblyFixtureAttributes on the test assembly
-            Aggregator.Run(() =>
+            await Aggregator.RunAsync(async () =>
             {
                 var fixturesAttributes = ((IReflectionAssemblyInfo)TestAssembly.Assembly)
                     .Assembly
@@ -42,19 +43,27 @@ namespace Microsoft.AspNetCore.Testing
                 foreach (var fixtureAttribute in fixturesAttributes)
                 {
                     var ctorWithDiagnostics = fixtureAttribute.FixtureType.GetConstructor(new[] { typeof(IMessageSink) });
+                    object instance = null;
                     if (ctorWithDiagnostics != null)
                     {
-                        _assemblyFixtureMappings[fixtureAttribute.FixtureType] = Activator.CreateInstance(fixtureAttribute.FixtureType, DiagnosticMessageSink);
+                        instance = Activator.CreateInstance(fixtureAttribute.FixtureType, DiagnosticMessageSink);
                     }
                     else
                     {
-                        _assemblyFixtureMappings[fixtureAttribute.FixtureType] = Activator.CreateInstance(fixtureAttribute.FixtureType);
+                        instance = Activator.CreateInstance(fixtureAttribute.FixtureType);
+                    }
+
+                    _assemblyFixtureMappings[fixtureAttribute.FixtureType] = instance;
+
+                    if (instance is IAsyncLifetime asyncInit)
+                    {
+                        await asyncInit.InitializeAsync();
                     }
                 }
             });
         }
 
-        protected override Task BeforeTestAssemblyFinishedAsync()
+        protected override async Task BeforeTestAssemblyFinishedAsync()
         {
             // Dispose fixtures
             foreach (var disposable in _assemblyFixtureMappings.Values.OfType<IDisposable>())
@@ -62,7 +71,12 @@ namespace Microsoft.AspNetCore.Testing
                 Aggregator.Run(disposable.Dispose);
             }
 
-            return base.BeforeTestAssemblyFinishedAsync();
+            foreach (var disposable in _assemblyFixtureMappings.Values.OfType<IAsyncLifetime>())
+            {
+                await Aggregator.RunAsync(disposable.DisposeAsync);
+            }
+
+            await base.BeforeTestAssemblyFinishedAsync();
         }
 
         protected override Task<RunSummary> RunTestCollectionAsync(

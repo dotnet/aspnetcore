@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 
@@ -11,9 +13,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     /// </summary>
     public class DisplayMetadata
     {
-        private Func<string> _displayFormatStringProvider = () => null;
-        private Func<string> _editFormatStringProvider = () => null;
-        private Func<string> _nullDisplayTextProvider = () => null;
+        private Func<string?> _displayFormatStringProvider = () => null;
+        private Func<string?> _editFormatStringProvider = () => null;
+        private Func<string?> _nullDisplayTextProvider = () => null;
 
         /// <summary>
         /// Gets a set of additional values. See <see cref="ModelMetadata.AdditionalValues"/>
@@ -31,13 +33,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets or sets the name of the data type.
         /// See <see cref="ModelMetadata.DataTypeName"/>
         /// </summary>
-        public string DataTypeName { get; set; }
+        public string? DataTypeName { get; set; }
 
         /// <summary>
         /// Gets or sets a delegate which is used to get a value for the
         /// model description. See <see cref="ModelMetadata.Description"/>.
         /// </summary>
-        public Func<string> Description { get; set; }
+        public Func<string?>? Description { get; set; }
 
         /// <summary>
         /// Gets or sets a display format string for the model.
@@ -46,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <remarks>
         /// Setting <see cref="DisplayFormatString"/> also changes <see cref="DisplayFormatStringProvider"/>.
         /// </remarks>
-        public string DisplayFormatString
+        public string? DisplayFormatString
         {
             get
             {
@@ -65,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <remarks>
         /// Setting <see cref="DisplayFormatStringProvider"/> also changes <see cref="DisplayFormatString"/>.
         /// </remarks>
-        public Func<string> DisplayFormatStringProvider
+        public Func<string?> DisplayFormatStringProvider
         {
             get
             {
@@ -86,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets or sets a delegate which is used to get a value for the
         /// display name of the model. See <see cref="ModelMetadata.DisplayName"/>.
         /// </summary>
-        public Func<string> DisplayName { get; set; }
+        public Func<string?>? DisplayName { get; set; }
 
         /// <summary>
         /// Gets or sets an edit format string for the model.
@@ -102,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <see langword="true"/>.
         /// </para>
         /// </remarks>
-        public string EditFormatString
+        public string? EditFormatString
         {
             get
             {
@@ -127,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// also set <see cref="HasNonDefaultEditFormat"/> to <see langword="true"/>.
         /// </para>
         /// </remarks>
-        public Func<string> EditFormatStringProvider
+        public Func<string?> EditFormatStringProvider
         {
             get
             {
@@ -149,14 +151,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <see cref="ModelMetadata.UnderlyingOrModelType"/>. See
         /// <see cref="ModelMetadata.EnumGroupedDisplayNamesAndValues"/>.
         /// </summary>
-        public IEnumerable<KeyValuePair<EnumGroupAndName, string>> EnumGroupedDisplayNamesAndValues { get; set; }
+        public IEnumerable<KeyValuePair<EnumGroupAndName, string>>? EnumGroupedDisplayNamesAndValues { get; set; }
 
         /// <summary>
         /// Gets the names and values of all <see cref="System.Enum"/> values in
         /// <see cref="ModelMetadata.UnderlyingOrModelType"/>. See <see cref="ModelMetadata.EnumNamesAndValues"/>.
         /// </summary>
         // This could be implemented in DefaultModelMetadata. But value should be cached.
-        public IReadOnlyDictionary<string, string> EnumNamesAndValues { get; set; }
+        public IReadOnlyDictionary<string, string>? EnumNamesAndValues { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether or not the model has a non-default edit format.
@@ -198,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <remarks>
         /// Setting <see cref="NullDisplayText"/> also changes <see cref="NullDisplayTextProvider"/>.
         /// </remarks>
-        public string NullDisplayText
+        public string? NullDisplayText
         {
             get
             {
@@ -217,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <remarks>
         /// Setting <see cref="NullDisplayTextProvider"/> also changes <see cref="NullDisplayText"/>.
         /// </remarks>
-        public Func<string> NullDisplayTextProvider
+        public Func<string?> NullDisplayTextProvider
         {
             get
             {
@@ -244,7 +246,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets or sets a delegate which is used to get a value for the
         /// model's placeholder text. See <see cref="ModelMetadata.Placeholder"/>.
         /// </summary>
-        public Func<string> Placeholder { get; set; }
+        public Func<string?>? Placeholder { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether or not to include in the model value in display.
@@ -262,12 +264,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets or sets a the property name of a model property to use for display.
         /// See <see cref="ModelMetadata.SimpleDisplayProperty"/>
         /// </summary>
-        public string SimpleDisplayProperty { get; set; }
+        public string? SimpleDisplayProperty { get; set; }
 
         /// <summary>
         /// Gets or sets a hint for location of a display or editor template.
         /// See <see cref="ModelMetadata.TemplateHint"/>
         /// </summary>
-        public string TemplateHint { get; set; }
+        public string? TemplateHint { get; set; }
     }
 }

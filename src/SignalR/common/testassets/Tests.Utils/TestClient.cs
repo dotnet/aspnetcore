@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Threading;
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Connection.Features.Set<ITransferFormatFeature>(this);
             Connection.Features.Set<IConnectionHeartbeatFeature>(this);
 
-            var claimValue = Interlocked.Increment(ref _id).ToString();
+            var claimValue = Interlocked.Increment(ref _id).ToString(CultureInfo.InvariantCulture);
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, claimValue) };
             if (userIdentifier != null)
             {
@@ -186,7 +187,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var message = new InvocationMessage(invocationId, methodName, args, streamIds);
             return SendHubMessageAsync(message);
-        } 
+        }
 
         public async Task<string> SendHubMessageAsync(HubMessage message)
         {

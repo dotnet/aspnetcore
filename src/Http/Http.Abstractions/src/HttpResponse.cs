@@ -6,7 +6,6 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -16,13 +15,19 @@ namespace Microsoft.AspNetCore.Http
     public abstract class HttpResponse
     {
         private static readonly Func<object, Task> _callbackDelegate = callback => ((Func<Task>)callback)();
-        private static readonly Func<object, Task> _disposeDelegate = disposable =>
+        private static readonly Func<object, Task> _disposeDelegate = state =>
         {
-            ((IDisposable)disposable).Dispose();
+            // Prefer async dispose over dispose
+            if (state is IAsyncDisposable asyncDisposable)
+            {
+                return asyncDisposable.DisposeAsync().AsTask();
+            }
+            else if (state is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
             return Task.CompletedTask;
         };
-
-        private static readonly Func<object, Task> _disposeAsyncDelegate = disposable => ((IAsyncDisposable)disposable).DisposeAsync().AsTask();
 
         /// <summary>
         /// Gets the <see cref="HttpContext"/> for this response.
@@ -112,7 +117,7 @@ namespace Microsoft.AspNetCore.Http
         /// Registers an object for asynchronous disposal by the host once the request has finished processing.
         /// </summary>
         /// <param name="disposable">The object to be disposed asynchronously.</param>
-        public virtual void RegisterForDisposeAsync(IAsyncDisposable disposable) => OnCompleted(_disposeAsyncDelegate, disposable);
+        public virtual void RegisterForDisposeAsync(IAsyncDisposable disposable) => OnCompleted(_disposeDelegate, disposable);
 
         /// <summary>
         /// Adds a delegate to be invoked after the response has finished being sent to the client.

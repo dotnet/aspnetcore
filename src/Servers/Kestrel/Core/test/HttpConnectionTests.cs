@@ -4,6 +4,7 @@
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -20,12 +21,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var mockConnectionContext = new Mock<ConnectionContext>();
 
-            var httpConnectionContext = new HttpConnectionContext
-            {
-                ConnectionContext = mockConnectionContext.Object,
-                Transport = new DuplexPipe(Mock.Of<PipeReader>(), Mock.Of<PipeWriter>()),
-                ServiceContext = new TestServiceContext()
-            };
+            var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: new TestServiceContext(),
+                connectionContext: mockConnectionContext.Object,
+                connectionFeatures: new FeatureCollection(),
+                transport: new DuplexPipe(Mock.Of<PipeReader>(), Mock.Of<PipeWriter>()));
 
             var httpConnection = new HttpConnection(httpConnectionContext);
 

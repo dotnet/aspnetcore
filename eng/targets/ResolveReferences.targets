@@ -135,10 +135,6 @@
   -->
   <Target Name="_CheckForReferenceBoundaries" BeforeTargets="CollectPackageReferences;ResolveReferences">
     <Error
-        Condition="@(_InvalidReferenceToSharedFxOnlyAssembly->Count()) != 0"
-        Text="Cannot reference &quot;%(_InvalidReferenceToSharedFxOnlyAssembly.Identity)&quot; directly because it is part of the shared framework and this project is not. Use &lt;FrameworkReference Include=&quot;Microsoft.AspNetCore.App&quot; /&gt; instead." />
-
-    <Error
         Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0 AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'"
         Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
 
@@ -297,10 +293,11 @@
     If we have a ref/ assembly from dotnet/runtime for an Extension package, use that when compiling but do not reference its assemblies.
   -->
   <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
+      '$(MSBuildProjectName)' != 'RepoTasks' AND
       ($(_CompileTfmUsingReferenceAssemblies) OR
        ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
     <PackageReference Include="Microsoft.Extensions.Internal.Transport"
-        Version="$(MicrosoftExtensionsInternalTransportPackageVersion)"
+        Version="$(MicrosoftExtensionsInternalTransportVersion)"
         IsImplicitlyDefined="true"
         IncludeAssets="Compile"
         PrivateAssets="All"

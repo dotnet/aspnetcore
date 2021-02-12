@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,15 +9,17 @@ using System.Reflection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 
+#nullable enable
+
 namespace Microsoft.Extensions.StackTrace.Sources
 {
     internal class ExceptionDetailsProvider
     {
         private readonly IFileProvider _fileProvider;
-        private readonly ILogger _logger;
+        private readonly ILogger? _logger;
         private readonly int _sourceCodeLineCount;
 
-        public ExceptionDetailsProvider(IFileProvider fileProvider, ILogger logger, int sourceCodeLineCount)
+        public ExceptionDetailsProvider(IFileProvider fileProvider, ILogger? logger, int sourceCodeLineCount)
         {
             _fileProvider = fileProvider;
             _logger = logger;
@@ -30,11 +32,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
 
             foreach (var ex in exceptions)
             {
-                yield return new ExceptionDetails
-                {
-                    Error = ex,
-                    StackFrames = GetStackFrames(ex),
-                };
+                yield return new ExceptionDetails(ex, GetStackFrames(ex));
             }
         }
 
@@ -42,7 +40,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
         {
             var stackFrames = StackTraceHelper.GetFrames(original, out var exception)
                 .Select(frame => GetStackFrameSourceCodeInfo(
-                    frame.MethodDisplayInfo.ToString(),
+                    frame.MethodDisplayInfo?.ToString(),
                     frame.FilePath,
                     frame.LineNumber));
 
@@ -54,7 +52,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             return stackFrames;
         }
 
-        private static IEnumerable<Exception> FlattenAndReverseExceptionTree(Exception ex)
+        private static IEnumerable<Exception> FlattenAndReverseExceptionTree(Exception? ex)
         {
             // ReflectionTypeLoadException is special because the details are in
             // the LoaderExceptions property
@@ -67,7 +65,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
                     typeLoadExceptions.AddRange(FlattenAndReverseExceptionTree(loadException));
                 }
 
-                typeLoadExceptions.Add(ex);
+                typeLoadExceptions.Add(typeLoadException);
                 return typeLoadExceptions;
             }
 
@@ -95,7 +93,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
         }
 
         // make it internal to enable unit testing
-        internal StackFrameSourceCodeInfo GetStackFrameSourceCodeInfo(string method, string filePath, int lineNumber)
+        internal StackFrameSourceCodeInfo GetStackFrameSourceCodeInfo(string? method, string? filePath, int lineNumber)
         {
             var stackFrame = new StackFrameSourceCodeInfo
             {
@@ -109,7 +107,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 return stackFrame;
             }
 
-            IEnumerable<string> lines = null;
+            IEnumerable<string>? lines = null;
             if (File.Exists(stackFrame.File))
             {
                 lines = File.ReadLines(stackFrame.File);
@@ -174,7 +172,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
         {
             using (var reader = new StreamReader(fileInfo.CreateReadStream()))
             {
-                string line;
+                string? line;
                 while ((line = reader.ReadLine()) != null)
                 {
                     yield return line;

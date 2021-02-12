@@ -88,8 +88,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         // Gets the settings that are different from the protocol defaults (as opposed to the server defaults).
-        internal IList<Http2PeerSetting> GetNonProtocolDefaults()
+        internal List<Http2PeerSetting> GetNonProtocolDefaults()
         {
+            // By default, there is only one setting that is sent from server to client.
+            // Set capacity to that value.
             var list = new List<Http2PeerSetting>(1);
 
             if (HeaderTableSize != DefaultHeaderTableSize)

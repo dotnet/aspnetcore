@@ -1,1 +1,13 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+*REMOVED*Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object!>! dataTokens) -> void
+*REMOVED*Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+*REMOVED*Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string!
+*REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string!
+*REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string! routeName) -> void
+Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object?>! dataTokens) -> void
+Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string?
+Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string?
+Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string? routeName) -> void

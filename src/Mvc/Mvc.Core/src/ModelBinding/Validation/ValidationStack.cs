@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
         internal List<object> List { get; } = new List<object>();
 
-        internal HashSet<object> HashSet { get; set; }
+        internal HashSet<object>? HashSet { get; set; }
 
         public bool Push(object model)
         {
@@ -40,11 +42,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             return true;
         }
 
-        public void Pop(object model)
+        public void Pop(object? model)
         {
             if (HashSet != null)
             {
-                HashSet.Remove(model);
+                HashSet.Remove(model!);
             }
             else
             {

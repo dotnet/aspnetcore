@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Win32;
@@ -14,137 +17,137 @@ namespace Microsoft.Extensions.Logging
     /// </summary>
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Guid, DateTimeOffset, Exception> _usingFallbackKeyWithExpirationAsDefaultKey;
+        private static Action<ILogger, Guid, DateTimeOffset, Exception?> _usingFallbackKeyWithExpirationAsDefaultKey;
 
-        private static Action<ILogger, Guid, Exception> _usingKeyAsDefaultKey;
+        private static Action<ILogger, Guid, Exception?> _usingKeyAsDefaultKey;
 
-        private static Action<ILogger, string, string, Exception> _openingCNGAlgorithmFromProviderWithHMAC;
+        private static Action<ILogger, string, string?, Exception?> _openingCNGAlgorithmFromProviderWithHMAC;
 
-        private static Action<ILogger, string, string, Exception> _openingCNGAlgorithmFromProviderWithChainingModeCBC;
+        private static Action<ILogger, string, string?, Exception?> _openingCNGAlgorithmFromProviderWithChainingModeCBC;
 
-        private static Action<ILogger, Guid, string, Exception> _performingUnprotectOperationToKeyWithPurposes;
+        private static Action<ILogger, Guid, string, Exception?> _performingUnprotectOperationToKeyWithPurposes;
 
-        private static Action<ILogger, Guid, Exception> _keyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed;
+        private static Action<ILogger, Guid, Exception?> _keyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed;
 
-        private static Action<ILogger, Guid, Exception> _keyWasRevokedCallerRequestedUnprotectOperationProceedRegardless;
+        private static Action<ILogger, Guid, Exception?> _keyWasRevokedCallerRequestedUnprotectOperationProceedRegardless;
 
-        private static Action<ILogger, Guid, Exception> _keyWasRevokedUnprotectOperationCannotProceed;
+        private static Action<ILogger, Guid, Exception?> _keyWasRevokedUnprotectOperationCannotProceed;
 
-        private static Action<ILogger, string, string, Exception> _openingCNGAlgorithmFromProviderWithChainingModeGCM;
+        private static Action<ILogger, string, string?, Exception?> _openingCNGAlgorithmFromProviderWithChainingModeGCM;
 
-        private static Action<ILogger, string, Exception> _usingManagedKeyedHashAlgorithm;
+        private static Action<ILogger, string, Exception?> _usingManagedKeyedHashAlgorithm;
 
-        private static Action<ILogger, string, Exception> _usingManagedSymmetricAlgorithm;
+        private static Action<ILogger, string, Exception?> _usingManagedSymmetricAlgorithm;
 
         private static Action<ILogger, Guid, string, Exception> _keyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed;
 
-        private static Action<ILogger, Guid, DateTimeOffset, Exception> _consideringKeyWithExpirationDateAsDefaultKey;
+        private static Action<ILogger, Guid, DateTimeOffset, Exception?> _consideringKeyWithExpirationDateAsDefaultKey;
 
-        private static Action<ILogger, Guid, Exception> _keyIsNoLongerUnderConsiderationAsDefault;
+        private static Action<ILogger, Guid, Exception?> _keyIsNoLongerUnderConsiderationAsDefault;
 
-        private static Action<ILogger, XName, Exception> _unknownElementWithNameFoundInKeyringSkipping;
+        private static Action<ILogger, XName, Exception?> _unknownElementWithNameFoundInKeyringSkipping;
 
-        private static Action<ILogger, Guid, Exception> _markedKeyAsRevokedInTheKeyring;
+        private static Action<ILogger, Guid, Exception?> _markedKeyAsRevokedInTheKeyring;
 
-        private static Action<ILogger, Guid, Exception> _triedToProcessRevocationOfKeyButNoSuchKeyWasFound;
+        private static Action<ILogger, Guid, Exception?> _triedToProcessRevocationOfKeyButNoSuchKeyWasFound;
 
-        private static Action<ILogger, Guid, Exception> _foundKey;
+        private static Action<ILogger, Guid, Exception?> _foundKey;
 
-        private static Action<ILogger, DateTimeOffset, Exception> _foundRevocationOfAllKeysCreatedPriorTo;
+        private static Action<ILogger, DateTimeOffset, Exception?> _foundRevocationOfAllKeysCreatedPriorTo;
 
-        private static Action<ILogger, Guid, Exception> _foundRevocationOfKey;
+        private static Action<ILogger, Guid, Exception?> _foundRevocationOfKey;
 
         private static Action<ILogger, XElement, Exception> _exceptionWhileProcessingRevocationElement;
 
-        private static Action<ILogger, DateTimeOffset, string, Exception> _revokingAllKeysAsOfForReason;
+        private static Action<ILogger, DateTimeOffset, string?, Exception?> _revokingAllKeysAsOfForReason;
 
-        private static Action<ILogger, string, Exception> _keyCacheExpirationTokenTriggeredByOperation;
+        private static Action<ILogger, string, Exception?> _keyCacheExpirationTokenTriggeredByOperation;
 
         private static Action<ILogger, XElement, Exception> _anExceptionOccurredWhileProcessingTheKeyElement;
 
         private static Action<ILogger, XElement, Exception> _anExceptionOccurredWhileProcessingTheKeyElementDebug;
 
-        private static Action<ILogger, string, Exception> _encryptingToWindowsDPAPIForCurrentUserAccount;
+        private static Action<ILogger, string, Exception?> _encryptingToWindowsDPAPIForCurrentUserAccount;
 
-        private static Action<ILogger, string, Exception> _encryptingToWindowsDPAPINGUsingProtectionDescriptorRule;
+        private static Action<ILogger, string, Exception?> _encryptingToWindowsDPAPINGUsingProtectionDescriptorRule;
 
         private static Action<ILogger, string, Exception> _anErrorOccurredWhileEncryptingToX509CertificateWithThumbprint;
 
-        private static Action<ILogger, string, Exception> _encryptingToX509CertificateWithThumbprint;
+        private static Action<ILogger, string, Exception?> _encryptingToX509CertificateWithThumbprint;
 
         private static Action<ILogger, string, Exception> _exceptionOccurredWhileTryingToResolveCertificateWithThumbprint;
 
-        private static Action<ILogger, Guid, string, Exception> _performingProtectOperationToKeyWithPurposes;
+        private static Action<ILogger, Guid, string, Exception?> _performingProtectOperationToKeyWithPurposes;
 
-        private static Action<ILogger, Guid, DateTimeOffset, DateTimeOffset, DateTimeOffset, Exception> _creatingKey;
+        private static Action<ILogger, Guid, DateTimeOffset, DateTimeOffset, DateTimeOffset, Exception?> _creatingKey;
 
-        private static Action<ILogger, Guid, string, Exception> _descriptorDeserializerTypeForKeyIs;
+        private static Action<ILogger, Guid, string, Exception?> _descriptorDeserializerTypeForKeyIs;
 
-        private static Action<ILogger, Guid, Exception> _keyEscrowSinkFoundWritingKeyToEscrow;
+        private static Action<ILogger, Guid, Exception?> _keyEscrowSinkFoundWritingKeyToEscrow;
 
-        private static Action<ILogger, Guid, Exception> _noKeyEscrowSinkFoundNotWritingKeyToEscrow;
+        private static Action<ILogger, Guid, Exception?> _noKeyEscrowSinkFoundNotWritingKeyToEscrow;
 
-        private static Action<ILogger, Guid, Exception> _noXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm;
+        private static Action<ILogger, Guid, Exception?> _noXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm;
 
-        private static Action<ILogger, Guid, DateTimeOffset, string, Exception> _revokingKeyForReason;
+        private static Action<ILogger, Guid, DateTimeOffset, string?, Exception?> _revokingKeyForReason;
 
-        private static Action<ILogger, string, Exception> _readingDataFromFile;
+        private static Action<ILogger, string, Exception?> _readingDataFromFile;
 
-        private static Action<ILogger, string, string, Exception> _nameIsNotSafeFileName;
+        private static Action<ILogger, string, string, Exception?> _nameIsNotSafeFileName;
 
-        private static Action<ILogger, string, Exception> _writingDataToFile;
+        private static Action<ILogger, string, Exception?> _writingDataToFile;
 
-        private static Action<ILogger, RegistryKey, string, Exception> _readingDataFromRegistryKeyValue;
+        private static Action<ILogger, RegistryKey, string, Exception?>? _readingDataFromRegistryKeyValue;
 
-        private static Action<ILogger, string, string, Exception> _nameIsNotSafeRegistryValueName;
+        private static Action<ILogger, string, string, Exception?> _nameIsNotSafeRegistryValueName;
 
-        private static Action<ILogger, string, Exception> _decryptingSecretElementUsingWindowsDPAPING;
+        private static Action<ILogger, string?, Exception?> _decryptingSecretElementUsingWindowsDPAPING;
 
         private static Action<ILogger, Exception> _exceptionOccurredTryingToDecryptElement;
 
-        private static Action<ILogger, Exception> _encryptingUsingNullEncryptor;
+        private static Action<ILogger, Exception?> _encryptingUsingNullEncryptor;
 
-        private static Action<ILogger, Exception> _usingEphemeralDataProtectionProvider;
+        private static Action<ILogger, Exception?> _usingEphemeralDataProtectionProvider;
 
-        private static Action<ILogger, Exception> _existingCachedKeyRingIsExpiredRefreshing;
+        private static Action<ILogger, Exception?> _existingCachedKeyRingIsExpiredRefreshing;
 
         private static Action<ILogger, Exception> _errorOccurredWhileRefreshingKeyRing;
 
         private static Action<ILogger, Exception> _errorOccurredWhileReadingKeyRing;
 
-        private static Action<ILogger, Exception> _keyRingDoesNotContainValidDefaultKey;
+        private static Action<ILogger, Exception?> _keyRingDoesNotContainValidDefaultKey;
 
-        private static Action<ILogger, Exception> _usingInmemoryRepository;
+        private static Action<ILogger, Exception?> _usingInmemoryRepository;
 
-        private static Action<ILogger, Exception> _decryptingSecretElementUsingWindowsDPAPI;
+        private static Action<ILogger, Exception?> _decryptingSecretElementUsingWindowsDPAPI;
 
-        private static Action<ILogger, Exception> _defaultKeyExpirationImminentAndRepository;
+        private static Action<ILogger, Exception?> _defaultKeyExpirationImminentAndRepository;
 
-        private static Action<ILogger, Exception> _repositoryContainsNoViableDefaultKey;
+        private static Action<ILogger, Exception?> _repositoryContainsNoViableDefaultKey;
 
         private static Action<ILogger, Exception> _errorOccurredWhileEncryptingToWindowsDPAPI;
 
-        private static Action<ILogger, Exception> _encryptingToWindowsDPAPIForLocalMachineAccount;
+        private static Action<ILogger, Exception?> _encryptingToWindowsDPAPIForLocalMachineAccount;
 
         private static Action<ILogger, Exception> _errorOccurredWhileEncryptingToWindowsDPAPING;
 
-        private static Action<ILogger, Exception> _policyResolutionStatesThatANewKeyShouldBeAddedToTheKeyRing;
+        private static Action<ILogger, Exception?> _policyResolutionStatesThatANewKeyShouldBeAddedToTheKeyRing;
 
-        private static Action<ILogger, Guid, Exception> _keyRingWasLoadedOnStartup;
+        private static Action<ILogger, Guid, Exception?> _keyRingWasLoadedOnStartup;
 
         private static Action<ILogger, Exception> _keyRingFailedToLoadOnStartup;
 
-        private static Action<ILogger, Exception> _usingEphemeralKeyRepository;
+        private static Action<ILogger, Exception?> _usingEphemeralKeyRepository;
 
-        private static Action<ILogger, string, Exception> _usingRegistryAsKeyRepositoryWithDPAPI;
+        private static Action<ILogger, string, Exception?> _usingRegistryAsKeyRepositoryWithDPAPI;
 
-        private static Action<ILogger, string, Exception> _usingProfileAsKeyRepository;
+        private static Action<ILogger, string, Exception?> _usingProfileAsKeyRepository;
 
-        private static Action<ILogger, string, Exception> _usingProfileAsKeyRepositoryWithDPAPI;
+        private static Action<ILogger, string, Exception?> _usingProfileAsKeyRepositoryWithDPAPI;
 
-        private static Action<ILogger, string, Exception> _usingAzureAsKeyRepository;
+        private static Action<ILogger, string, Exception?> _usingAzureAsKeyRepository;
 
-        private static Action<ILogger, string, Exception> _usingEphemeralFileSystemLocationInContainer;
+        private static Action<ILogger, string, Exception?> _usingEphemeralFileSystemLocationInContainer;
 
         static LoggingExtensions()
         {
@@ -156,11 +159,11 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(2, "UsingKeyAsDefaultKey"),
                 logLevel: LogLevel.Debug,
                 formatString: "Using key {KeyId:B} as the default key.");
-            _openingCNGAlgorithmFromProviderWithHMAC = LoggerMessage.Define<string, string>(
+            _openingCNGAlgorithmFromProviderWithHMAC = LoggerMessage.Define<string, string?>(
                 eventId: new EventId(3, "OpeningCNGAlgorithmFromProviderWithHMAC"),
                 logLevel: LogLevel.Debug,
                 formatString: "Opening CNG algorithm '{HashAlgorithm}' from provider '{HashAlgorithmProvider}' with HMAC.");
-            _openingCNGAlgorithmFromProviderWithChainingModeCBC = LoggerMessage.Define<string, string>(
+            _openingCNGAlgorithmFromProviderWithChainingModeCBC = LoggerMessage.Define<string, string?>(
                 eventId: new EventId(4, "OpeningCNGAlgorithmFromProviderWithChainingModeCBC"),
                 logLevel: LogLevel.Debug,
                 formatString: "Opening CNG algorithm '{EncryptionAlgorithm}' from provider '{EncryptionAlgorithmProvider}' with chaining mode CBC.");
@@ -180,7 +183,7 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(8, "KeyWasRevokedUnprotectOperationCannotProceed"),
                 logLevel: LogLevel.Debug,
                 formatString: "Key {KeyId:B} was revoked. Unprotect operation cannot proceed.");
-            _openingCNGAlgorithmFromProviderWithChainingModeGCM = LoggerMessage.Define<string, string>(
+            _openingCNGAlgorithmFromProviderWithChainingModeGCM = LoggerMessage.Define<string, string?>(
                 eventId: new EventId(9, "OpeningCNGAlgorithmFromProviderWithChainingModeGCM"),
                 logLevel: LogLevel.Debug,
                 formatString: "Opening CNG algorithm '{EncryptionAlgorithm}' from provider '{EncryptionAlgorithmProvider}' with chaining mode GCM.");
@@ -232,7 +235,7 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(21, "ExceptionWhileProcessingRevocationElement"),
                 logLevel: LogLevel.Error,
                 formatString: "An exception occurred while processing the revocation element '{RevocationElement}'. Cannot continue keyring processing.");
-            _revokingAllKeysAsOfForReason = LoggerMessage.Define<DateTimeOffset, string>(
+            _revokingAllKeysAsOfForReason = LoggerMessage.Define<DateTimeOffset, string?>(
                 eventId: new EventId(22, "RevokingAllKeysAsOfForReason"),
                 logLevel: LogLevel.Information,
                 formatString: "Revoking all keys as of {RevocationDate:u} for reason '{Reason}'.");
@@ -288,7 +291,7 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(35, "NoXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm"),
                 logLevel: LogLevel.Warning,
                 formatString: "No XML encryptor configured. Key {KeyId:B} may be persisted to storage in unencrypted form.");
-            _revokingKeyForReason = LoggerMessage.Define<Guid, DateTimeOffset, string>(
+            _revokingKeyForReason = LoggerMessage.Define<Guid, DateTimeOffset, string?>(
                 eventId: new EventId(36, "RevokingKeyForReason"),
                 logLevel: LogLevel.Information,
                 formatString: "Revoking key {KeyId:B} at {RevocationDate:u} for reason '{Reason}'.");
@@ -304,15 +307,20 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(39, "WritingDataToFile"),
                 logLevel: LogLevel.Information,
                 formatString: "Writing data to file '{FileName}'.");
-            _readingDataFromRegistryKeyValue = LoggerMessage.Define<RegistryKey, string>(
-                eventId: new EventId(40, "ReadingDataFromRegistryKeyValue"),
-                logLevel: LogLevel.Debug,
-                formatString: "Reading data from registry key '{RegistryKeyName}', value '{Value}'.");
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _readingDataFromRegistryKeyValue = LoggerMessage.Define<RegistryKey, string>(
+                    eventId: new EventId(40, "ReadingDataFromRegistryKeyValue"),
+                    logLevel: LogLevel.Debug,
+                    formatString: "Reading data from registry key '{RegistryKeyName}', value '{Value}'.");
+            }
+
             _nameIsNotSafeRegistryValueName = LoggerMessage.Define<string, string>(
                 eventId: new EventId(41, "NameIsNotSafeRegistryValueName"),
                 logLevel: LogLevel.Debug,
                 formatString: "The name '{FriendlyName}' is not a safe registry value name, using '{NewFriendlyName}' instead.");
-            _decryptingSecretElementUsingWindowsDPAPING = LoggerMessage.Define<string>(
+            _decryptingSecretElementUsingWindowsDPAPING = LoggerMessage.Define<string?>(
                 eventId: new EventId(42, "DecryptingSecretElementUsingWindowsDPAPING"),
                 logLevel: LogLevel.Debug,
                 formatString: "Decrypting secret element using Windows DPAPI-NG with protection descriptor rule '{DescriptorRule}'.");
@@ -420,7 +428,7 @@ namespace Microsoft.Extensions.Logging
         /// Returns false if the logger instance is null.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsDebugLevelEnabled(this ILogger logger)
+        public static bool IsDebugLevelEnabled([NotNullWhen(true)] this ILogger? logger)
         {
             return IsLogLevelEnabledCore(logger, LogLevel.Debug);
         }
@@ -430,7 +438,7 @@ namespace Microsoft.Extensions.Logging
         /// Returns false if the logger instance is null.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsErrorLevelEnabled(this ILogger logger)
+        public static bool IsErrorLevelEnabled([NotNullWhen(true)] this ILogger? logger)
         {
             return IsLogLevelEnabledCore(logger, LogLevel.Error);
         }
@@ -440,7 +448,7 @@ namespace Microsoft.Extensions.Logging
         /// Returns false if the logger instance is null.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsInformationLevelEnabled(this ILogger logger)
+        public static bool IsInformationLevelEnabled([NotNullWhen(true)] this ILogger? logger)
         {
             return IsLogLevelEnabledCore(logger, LogLevel.Information);
         }
@@ -450,7 +458,7 @@ namespace Microsoft.Extensions.Logging
         /// Returns false if the logger instance is null.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsTraceLevelEnabled(this ILogger logger)
+        public static bool IsTraceLevelEnabled([NotNullWhen(true)] this ILogger? logger)
         {
             return IsLogLevelEnabledCore(logger, LogLevel.Trace);
         }
@@ -460,13 +468,13 @@ namespace Microsoft.Extensions.Logging
         /// Returns false if the logger instance is null.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsWarningLevelEnabled(this ILogger logger)
+        public static bool IsWarningLevelEnabled([NotNullWhen(true)] this ILogger? logger)
         {
             return IsLogLevelEnabledCore(logger, LogLevel.Warning);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsLogLevelEnabledCore(ILogger logger, LogLevel level)
+        private static bool IsLogLevelEnabledCore([NotNullWhen(true)] ILogger? logger, LogLevel level)
         {
             return (logger != null && logger.IsEnabled(level));
         }
@@ -481,12 +489,12 @@ namespace Microsoft.Extensions.Logging
             _usingKeyAsDefaultKey(logger, keyId, null);
         }
 
-        public static void OpeningCNGAlgorithmFromProviderWithHMAC(this ILogger logger, string hashAlgorithm, string hashAlgorithmProvider)
+        public static void OpeningCNGAlgorithmFromProviderWithHMAC(this ILogger logger, string hashAlgorithm, string? hashAlgorithmProvider)
         {
             _openingCNGAlgorithmFromProviderWithHMAC(logger, hashAlgorithm, hashAlgorithmProvider, null);
         }
 
-        public static void OpeningCNGAlgorithmFromProviderWithChainingModeCBC(this ILogger logger, string encryptionAlgorithm, string encryptionAlgorithmProvider)
+        public static void OpeningCNGAlgorithmFromProviderWithChainingModeCBC(this ILogger logger, string encryptionAlgorithm, string? encryptionAlgorithmProvider)
         {
             _openingCNGAlgorithmFromProviderWithChainingModeCBC(logger, encryptionAlgorithm, encryptionAlgorithmProvider, null);
         }
@@ -511,7 +519,7 @@ namespace Microsoft.Extensions.Logging
             _keyWasRevokedUnprotectOperationCannotProceed(logger, keyIdFromPayload, null);
         }
 
-        public static void OpeningCNGAlgorithmFromProviderWithChainingModeGCM(this ILogger logger, string encryptionAlgorithm, string encryptionAlgorithmProvider)
+        public static void OpeningCNGAlgorithmFromProviderWithChainingModeGCM(this ILogger logger, string encryptionAlgorithm, string? encryptionAlgorithmProvider)
         {
             _openingCNGAlgorithmFromProviderWithChainingModeGCM(logger, encryptionAlgorithm, encryptionAlgorithmProvider, null);
         }
@@ -576,7 +584,7 @@ namespace Microsoft.Extensions.Logging
             _exceptionWhileProcessingRevocationElement(logger, revocationElement, exception);
         }
 
-        public static void RevokingAllKeysAsOfForReason(this ILogger logger, DateTimeOffset revocationDate, string reason)
+        public static void RevokingAllKeysAsOfForReason(this ILogger logger, DateTimeOffset revocationDate, string? reason)
         {
             _revokingAllKeysAsOfForReason(logger, revocationDate, reason, null);
         }
@@ -641,7 +649,7 @@ namespace Microsoft.Extensions.Logging
             _noXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm(logger, keyId, null);
         }
 
-        public static void RevokingKeyForReason(this ILogger logger, Guid keyId, DateTimeOffset revocationDate, string reason)
+        public static void RevokingKeyForReason(this ILogger logger, Guid keyId, DateTimeOffset revocationDate, string? reason)
         {
             _revokingKeyForReason(logger, keyId, revocationDate, reason, null);
         }
@@ -661,9 +669,13 @@ namespace Microsoft.Extensions.Logging
             _writingDataToFile(logger, finalFilename, null);
         }
 
+        [SupportedOSPlatform("windows")]
         public static void ReadingDataFromRegistryKeyValue(this ILogger logger, RegistryKey regKey, string valueName)
         {
-            _readingDataFromRegistryKeyValue(logger, regKey, valueName, null);
+            if (_readingDataFromRegistryKeyValue != null)
+            {
+                _readingDataFromRegistryKeyValue(logger, regKey, valueName, null);
+            }
         }
 
         public static void NameIsNotSafeRegistryValueName(this ILogger logger, string friendlyName, string newFriendlyName)
@@ -671,7 +683,7 @@ namespace Microsoft.Extensions.Logging
             _nameIsNotSafeRegistryValueName(logger, friendlyName, newFriendlyName, null);
         }
 
-        public static void DecryptingSecretElementUsingWindowsDPAPING(this ILogger logger, string protectionDescriptorRule)
+        public static void DecryptingSecretElementUsingWindowsDPAPING(this ILogger logger, string? protectionDescriptorRule)
         {
             _decryptingSecretElementUsingWindowsDPAPING(logger, protectionDescriptorRule, null);
         }

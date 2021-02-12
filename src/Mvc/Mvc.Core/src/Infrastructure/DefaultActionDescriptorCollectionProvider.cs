@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -18,9 +20,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         // The lock is used to protect WRITES to the following (do not need to protect reads once initialized).
         private readonly object _lock;
-        private ActionDescriptorCollection _collection;
-        private IChangeToken _changeToken;
-        private CancellationTokenSource _cancellationTokenSource;
+        private ActionDescriptorCollection? _collection;
+        private IChangeToken? _changeToken;
+        private CancellationTokenSource? _cancellationTokenSource;
         private int _version = 0;
 
         public DefaultActionDescriptorCollectionProvider(

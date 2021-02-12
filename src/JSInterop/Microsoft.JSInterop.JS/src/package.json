@@ -5,7 +5,7 @@
   "main": "dist/Microsoft.JSInterop.js",
   "types": "dist/Microsoft.JSInterop.d.ts",
   "scripts": {
-    "preclean": "yarn install",
+    "preclean": "yarn install --mutex network",
     "clean": "node node_modules/rimraf/bin.js ./dist",
     "build": "npm run clean && npm run build:esm",
     "build:lint": "node node_modules/tslint/bin/tslint -p ./tsconfig.json",
@@ -20,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/dotnet/aspnetcore/issues"
   },
-  "homepage": "https://github.com/dotnet/aspnetcore/tree/master/src/JSInterop",
+  "homepage": "https://github.com/dotnet/aspnetcore/tree/main/src/JSInterop",
   "files": [
     "dist/**"
   ],

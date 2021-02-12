@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language;
@@ -64,6 +64,64 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Single(context.Results, d => TagHelperDescriptorComparer.Default.Equals(d, expectedDescriptor));
+        }
+
+        [Fact]
+        public void DescriptorProvider_WithCurrentCompilationFilter_FindsDescriptorFromCurrentCompilation()
+        {
+            // Arrange
+            var code = @"
+        public class StringParameterViewComponent
+        {
+            public string Invoke(string foo, string bar) => null;
+        }
+";
+
+            var compilation = MvcShim.BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+            context.Items.SetTagHelperDiscoveryFilter(TagHelperDiscoveryFilter.CurrentCompilation);
+
+            var provider = new ViewComponentTagHelperDescriptorProvider()
+            {
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
+            };
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            Assert.Single(context.Results);
+        }
+
+        [Fact]
+        public void DescriptorProvider_WithReferenceAssembliesFilter_DoesNotFindDescriptorFromCurrentCompilation()
+        {
+            // Arrange
+            var code = @"
+        public class StringParameterViewComponent
+        {
+            public string Invoke(string foo, string bar) => null;
+        }
+";
+
+            var compilation = MvcShim.BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+            context.Items.SetTagHelperDiscoveryFilter(TagHelperDiscoveryFilter.ReferenceAssemblies);
+
+            var provider = new ViewComponentTagHelperDescriptorProvider()
+            {
+                Engine = RazorProjectEngine.CreateEmpty().Engine,
+            };
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            Assert.Empty(context.Results);
         }
     }
 }

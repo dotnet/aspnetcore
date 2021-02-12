@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -350,7 +351,7 @@ namespace RazorSyntaxGenerator
 
             WriteLine("    }");
 
-            // IWritable 
+            // IWritable
             WriteLine();
             WriteLine("    internal override void WriteTo(ObjectWriter writer)");
             WriteLine("    {");
@@ -387,7 +388,7 @@ namespace RazorSyntaxGenerator
                 case "bool":
                     return "WriteBoolean";
                 default:
-                    throw new InvalidOperationException(string.Format("Type '{0}' not supported for object reader serialization.", type));
+                    throw new InvalidOperationException($"Type 'type' not supported for object reader serialization.");
             }
         }
 
@@ -398,7 +399,7 @@ namespace RazorSyntaxGenerator
                 case "bool":
                     return "ReadBoolean";
                 default:
-                    throw new InvalidOperationException(string.Format("Type '{0}' not supported for object reader serialization.", type));
+                    throw new InvalidOperationException($"Type 'type' not supported for object reader serialization.");
             }
         }
 
@@ -1306,7 +1307,7 @@ namespace RazorSyntaxGenerator
                     if (nWritten > 0)
                         WriteLine();
                     nWritten++;
-                    WriteComment(string.Format("<summary>Called when the visitor visits a {0} node.</summary>", node.Name), "    ");
+                    WriteComment(string.Format(CultureInfo.InvariantCulture, "<summary>Called when the visitor visits a {0} node.</summary>", node.Name), "    ");
                     WriteLine("    public virtual " + (genericResult ? "TResult" : "void") + " Visit{0}({1} node{2})", StripPost(node.Name, "Syntax"), node.Name, genericArgument ? ", TArgument argument" : "");
                     WriteLine("    {");
                     WriteLine("      " + (genericResult ? "return " : "") + "DefaultVisit(node{0});", genericArgument ? ", argument" : "");
@@ -1738,7 +1739,7 @@ namespace RazorSyntaxGenerator
             var valueFields = nd.Fields.Where(n => IsValueField(n)).ToList();
             var nodeFields = nd.Fields.Where(n => !IsValueField(n)).ToList();
 
-            WriteComment(string.Format("<summary>Creates a new {0} instance.</summary>", nd.Name), "    ");
+            WriteComment(string.Format(CultureInfo.InvariantCulture, "<summary>Creates a new {0} instance.</summary>", nd.Name), "    ");
 
             Write("    {0} static {1} {2}(", "public", nd.Name, StripPost(nd.Name, "Syntax"));
             WriteRedFactoryParameters(nd);
@@ -1896,24 +1897,24 @@ namespace RazorSyntaxGenerator
 
             if (IsOptional(field) || IsAnyList(field.Type))
             {
-                return string.Format("default({0})", GetRedPropertyType(field));
+                return string.Format(CultureInfo.InvariantCulture, "default({0})", GetRedPropertyType(field));
             }
             else if (field.Type == "SyntaxToken")
             {
                 // auto construct token?
                 if (field.Kinds.Count == 1)
                 {
-                    return string.Format("SyntaxFactory.Token(SyntaxKind.{0})", field.Kinds[0].Name);
+                    return string.Format(CultureInfo.InvariantCulture, "SyntaxFactory.Token(SyntaxKind.{0})", field.Kinds[0].Name);
                 }
                 else
                 {
-                    return string.Format("SyntaxFactory.Token(Get{0}{1}Kind(kind))", StripPost(nd.Name, "Syntax"), StripPost(field.Name, "Opt"));
+                    return string.Format(CultureInfo.InvariantCulture, "SyntaxFactory.Token(Get{0}{1}Kind(kind))", StripPost(nd.Name, "Syntax"), StripPost(field.Name, "Opt"));
                 }
             }
             else
             {
                 var referencedNode = GetNode(field.Type);
-                return string.Format("SyntaxFactory.{0}()", StripPost(referencedNode.Name, "Syntax"));
+                return string.Format(CultureInfo.InvariantCulture, "SyntaxFactory.{0}()", StripPost(referencedNode.Name, "Syntax"));
             }
         }
 
@@ -1970,7 +1971,7 @@ namespace RazorSyntaxGenerator
 
             WriteLine();
 
-            WriteComment(string.Format("<summary>Creates a new {0} instance.</summary>", nd.Name), "    ");
+            WriteComment(string.Format(CultureInfo.InvariantCulture, "<summary>Creates a new {0} instance.</summary>", nd.Name), "    ");
             Write("    {0} static {1} {2}(", "public", nd.Name, StripPost(nd.Name, "Syntax"));
 
             bool hasPreviousParameter = false;
@@ -2091,7 +2092,7 @@ namespace RazorSyntaxGenerator
 
             WriteLine();
 
-            WriteComment(string.Format("<summary>Creates a new {0} instance.</summary>", nd.Name), "    ");
+            WriteComment(string.Format(CultureInfo.InvariantCulture, "<summary>Creates a new {0} instance.</summary>", nd.Name), "    ");
             Write("    {0} static {1} {2}(", "public", nd.Name, StripPost(nd.Name, "Syntax"));
 
             bool hasPreviousParameter = false;

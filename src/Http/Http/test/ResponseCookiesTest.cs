@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Http.Tests
 
             var cookieHeaderValues = headers[HeaderNames.SetCookie];
             Assert.Single(cookieHeaderValues);
-            Assert.Contains($"max-age={maxAgeTime.TotalSeconds.ToString()}", cookieHeaderValues[0]);
+            Assert.Contains($"max-age={maxAgeTime.TotalSeconds}", cookieHeaderValues[0]);
         }
 
         [Theory]

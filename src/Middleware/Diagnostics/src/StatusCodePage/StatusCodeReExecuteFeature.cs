@@ -7,12 +7,12 @@ namespace Microsoft.AspNetCore.Diagnostics
     public class StatusCodeReExecuteFeature : IStatusCodeReExecuteFeature
     {
         /// <inheritdoc/>
-        public string OriginalPath { get; set; }
+        public string OriginalPath { get; set; } = default!;
 
         /// <inheritdoc/>
-        public string OriginalPathBase { get; set; }
+        public string OriginalPathBase { get; set; } = default!;
 
         /// <inheritdoc/>
-        public string OriginalQueryString { get; set; }
+        public string? OriginalQueryString { get; set; }
     }
 }

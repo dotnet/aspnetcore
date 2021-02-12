@@ -12,7 +12,6 @@ class PER_CPU
 public:
 
     template<typename FunctionInitializer>
-    inline
     static
     HRESULT
     Create(
@@ -20,29 +19,23 @@ public:
         __deref_out PER_CPU<T> **   ppInstance
     );
 
-    inline
     T *
     GetLocal(
-        VOID
     );
 
     template<typename FunctionForEach>
-    inline
     VOID
     ForEach(
         FunctionForEach Function
     );
 
-    inline
     VOID
     Dispose(
-        VOID
     );
 
 private:
 
     PER_CPU(
-        VOID
     )
     {
         //
@@ -52,7 +45,6 @@ private:
     }
 
     ~PER_CPU(
-        VOID
     )
     {
         //
@@ -91,7 +83,6 @@ private:
 
 template<typename T>
 template<typename FunctionInitializer>
-inline
 // static
 HRESULT
 PER_CPU<T>::Create(
@@ -173,10 +164,8 @@ Finished:
 }
 
 template<typename T>
-inline
 T *
 PER_CPU<T>::GetLocal(
-    VOID
 )
 {
     // Use GetCurrentProcessorNumber (up to 64 logical processors) instead of
@@ -193,7 +182,6 @@ PER_CPU<T>::GetLocal(
 }
 
 template<typename T>
-inline
 T *
 PER_CPU<T>::GetObject(
     DWORD Index
@@ -204,7 +192,6 @@ PER_CPU<T>::GetObject(
 
 template<typename T>
 template<typename FunctionForEach>
-inline
 VOID
 PER_CPU<T>::ForEach(
     FunctionForEach Function
@@ -220,7 +207,6 @@ PER_CPU<T>::ForEach(
 template<typename T>
 VOID
 PER_CPU<T>::Dispose(
-    VOID
 )
 {
      _aligned_free(this);
@@ -228,7 +214,6 @@ PER_CPU<T>::Dispose(
 
 template<typename T>
 template<typename FunctionInitializer>
-inline
 HRESULT
 PER_CPU<T>::Initialize(
     FunctionInitializer Initializer,

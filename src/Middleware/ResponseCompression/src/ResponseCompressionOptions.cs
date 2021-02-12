@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.ResponseCompression
@@ -14,12 +15,12 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <summary>
         /// Response Content-Type MIME types to compress.
         /// </summary>
-        public IEnumerable<string> MimeTypes { get; set; }
+        public IEnumerable<string> MimeTypes { get; set; } = Enumerable.Empty<string>();
 
         /// <summary>
         /// Response Content-Type MIME types to not compress.
         /// </summary>
-        public IEnumerable<string> ExcludedMimeTypes { get; set; }
+        public IEnumerable<string> ExcludedMimeTypes { get; set; } = Enumerable.Empty<string>();
 
         /// <summary>
         /// Indicates if responses over HTTPS connections should be compressed. The default is 'false'.
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <remarks>
         /// This can be overridden per request using <see cref="IHttpsCompressionFeature"/>.
         /// </remarks>
-        public bool EnableForHttps { get; set; } = false;
+        public bool EnableForHttps { get; set; }
 
         /// <summary>
         /// The <see cref="ICompressionProvider"/> types to use for responses.

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -21,6 +22,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel
 {
+    /// <summary>
+    /// Configuration loader for Kestrel.
+    /// </summary>
     public class KestrelConfigurationLoader
     {
         private bool _loaded = false;
@@ -45,7 +49,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             CertificateConfigLoader = new CertificateConfigLoader(hostEnvironment, logger);
         }
 
+        /// <summary>
+        /// Gets the <see cref="KestrelServerOptions"/>.
+        /// </summary>
         public KestrelServerOptions Options { get; }
+
+        /// <summary>
+        /// Gets the application <see cref="IConfiguration"/>.
+        /// </summary>
         public IConfiguration Configuration { get; internal set; }
 
         /// <summary>
@@ -68,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         // Actions that will be delayed until Load so that they aren't applied if the configuration loader is replaced.
         private IList<Action> EndpointsToAdd { get; } = new List<Action>();
 
-        private CertificateConfig DefaultCertificateConfig { get; set; }
+        private CertificateConfig? DefaultCertificateConfig { get; set; }
 
         /// <summary>
         /// Specifies a configuration Action to run when an endpoint with the given name is loaded from configuration.
@@ -260,6 +271,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
         }
 
+        /// <summary>
+        /// Loads the configuration.
+        /// </summary>
         public void Load()
         {
             if (_loaded)
@@ -423,16 +437,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
         }
 
-        private (X509Certificate2, CertificateConfig) FindDeveloperCertificateFile()
+        private (X509Certificate2?, CertificateConfig?) FindDeveloperCertificateFile()
         {
-            string certificatePath = null;
-            try
+            string? certificatePath = null;
+            if (ConfigurationReader.Certificates.TryGetValue("Development", out var certificateConfig) &&
+                certificateConfig.Path == null &&
+                certificateConfig.Password != null &&
+                TryGetCertificatePath(out certificatePath) &&
+                File.Exists(certificatePath))
             {
-                if (ConfigurationReader.Certificates.TryGetValue("Development", out var certificateConfig) &&
-                    certificateConfig.Path == null &&
-                    certificateConfig.Password != null &&
-                    TryGetCertificatePath(out certificatePath) &&
-                    File.Exists(certificatePath))
+                try
                 {
                     var certificate = new X509Certificate2(certificatePath, certificateConfig.Password);
 
@@ -441,14 +455,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                         return (certificate, certificateConfig);
                     }
                 }
-                else if (!string.IsNullOrEmpty(certificatePath))
+                catch (CryptographicException)
                 {
-                    Logger.FailedToLocateDevelopmentCertificateFile(certificatePath);
+                    Logger.FailedToLoadDevelopmentCertificate(certificatePath);
                 }
             }
-            catch (CryptographicException)
+            else if (!string.IsNullOrEmpty(certificatePath))
             {
-                Logger.FailedToLoadDevelopmentCertificate(certificatePath);
+                Logger.FailedToLocateDevelopmentCertificateFile(certificatePath);
             }
 
             return (null, null);
@@ -463,7 +477,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
             foreach (var ext in certificate.Extensions)
             {
-                if (string.Equals(ext.Oid.Value, CertificateManager.AspNetHttpsOid, StringComparison.Ordinal))
+                if (string.Equals(ext.Oid?.Value, CertificateManager.AspNetHttpsOid, StringComparison.Ordinal))
                 {
                     return true;
                 }
@@ -472,7 +486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return false;
         }
 
-        private bool TryGetCertificatePath(out string path)
+        private bool TryGetCertificatePath([NotNullWhen(true)] out string? path)
         {
             // This will go away when we implement
             // https://github.com/aspnet/Hosting/issues/1294

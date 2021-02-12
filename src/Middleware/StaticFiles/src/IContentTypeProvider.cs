@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.StaticFiles
 {
     /// <summary>
@@ -14,6 +16,6 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <param name="subpath">A file path</param>
         /// <param name="contentType">The resulting MIME type</param>
         /// <returns>True if MIME type could be determined</returns>
-        bool TryGetContentType(string subpath, out string contentType);
+        bool TryGetContentType(string subpath, [MaybeNullWhen(false)] out string contentType);
     }
 }

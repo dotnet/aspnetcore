@@ -12,8 +12,7 @@ namespace CorsWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers(ConfigureMvcOptions)
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            services.AddControllers(ConfigureMvcOptions);
             services.Configure<CorsOptions>(options =>
             {
                 options.AddPolicy(

@@ -26,13 +26,13 @@ namespace Microsoft.AspNetCore.StaticFiles
         private readonly ILogger _logger;
         private readonly IFileProvider _fileProvider;
         private readonly string _method;
-        private readonly string _contentType;
+        private readonly string? _contentType;
 
         private IFileInfo _fileInfo;
-        private EntityTagHeaderValue _etag;
-        private RequestHeaders _requestHeaders;
-        private ResponseHeaders _responseHeaders;
-        private RangeItemHeaderValue _range;
+        private EntityTagHeaderValue? _etag;
+        private RequestHeaders? _requestHeaders;
+        private ResponseHeaders? _responseHeaders;
+        private RangeItemHeaderValue? _range;
 
         private long _length;
         private readonly PathString _subPath;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private RequestType _requestType;
 
-        public StaticFileContext(HttpContext context, StaticFileOptions options, ILogger logger, IFileProvider fileProvider, string contentType, PathString subPath)
+        public StaticFileContext(HttpContext context, StaticFileOptions options, ILogger logger, IFileProvider fileProvider, string? contentType, PathString subPath)
         {
             _context = context;
             _options = options;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             _fileProvider = fileProvider;
             _method = _request.Method;
             _contentType = contentType;
-            _fileInfo = null;
+            _fileInfo = default!;
             _etag = null;
             _requestHeaders = null;
             _responseHeaders = null;
@@ -107,9 +107,9 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
         }
 
-        public string SubPath => _subPath.Value;
+        public string SubPath => _subPath.Value!;
 
-        public string PhysicalPath => _fileInfo?.PhysicalPath;
+        public string PhysicalPath => _fileInfo.PhysicalPath;
 
         public bool LookupFileInfo()
         {
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 _response.ContentLength = _length;
             }
 
-            _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo));
+            _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo!));
         }
 
         public PreconditionState GetPreconditionState()
@@ -388,8 +388,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         // Note: This assumes ranges have been normalized to absolute byte offsets.
         private ContentRangeHeaderValue ComputeContentRange(RangeItemHeaderValue range, out long start, out long length)
         {
-            start = range.From.Value;
-            long end = range.To.Value;
+            start = range.From!.Value;
+            var end = range.To!.Value;
             length = end - start + 1;
             return new ContentRangeHeaderValue(start, end, _length);
         }

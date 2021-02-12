@@ -3085,6 +3085,7 @@ class HubConnectionTest {
     public void LongPollingTransportAccessTokenProviderThrowsDuringStop() {
         AtomicInteger requestCount = new AtomicInteger(0);
         CompletableSubject blockGet = CompletableSubject.create();
+        CompletableSubject blockStop = CompletableSubject.create();
         TestHttpClient client = new TestHttpClient()
             .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
@@ -3092,6 +3093,7 @@ class HubConnectionTest {
                                 + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
             .on("GET", (req) -> {
                 if (requestCount.getAndIncrement() > 1) {
+                    blockStop.onComplete();
                     blockGet.blockingAwait();
                 }
                 return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
@@ -3120,6 +3122,7 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
 
+        blockStop.timeout(30, TimeUnit.SECONDS).blockingAwait();
         try {
             hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
             assertTrue(false);

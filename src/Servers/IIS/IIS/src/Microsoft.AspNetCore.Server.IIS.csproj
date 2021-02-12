@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -10,9 +10,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NativeAssetsTargetFramework>$(DefaultNetCoreTargetFramework)</NativeAssetsTargetFramework>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
 
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
@@ -66,7 +66,7 @@
           DependsOnTargets="DebugSymbolsProjectOutputGroup"
           Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
-      <None Include="%(InProcessComponents.DllLocation)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />
+      <None Include="%(InProcessComponents.DllLocation)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" Condition="Exists('%(InProcessComponents.DllLocation)')" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />
     </ItemGroup>
   </Target>
 </Project>

@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal async Task<bool> TryServeCachedResponseAsync(ResponseCachingContext context, IResponseCacheEntry cacheEntry)
+        internal async Task<bool> TryServeCachedResponseAsync(ResponseCachingContext context, IResponseCacheEntry? cacheEntry)
         {
             if (!(cacheEntry is CachedResponse cachedResponse))
             {
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 var varyQueryKeys = new StringValues(context.HttpContext.Features.Get<IResponseCachingFeature>()?.VaryByQueryKeys);
                 context.CachedResponseValidFor = context.ResponseSharedMaxAge ??
                     context.ResponseMaxAge ??
-                    (context.ResponseExpires - context.ResponseTime.Value) ??
+                    (context.ResponseExpires - context.ResponseTime!.Value) ??
                     DefaultExpirationTimeSpan;
 
                 // Generate a base key if none exist
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 // Ensure date header is set
                 if (!context.ResponseDate.HasValue)
                 {
-                    context.ResponseDate = context.ResponseTime.Value;
+                    context.ResponseDate = context.ResponseTime!.Value;
                     // Setting the date on the raw response headers.
                     context.HttpContext.Response.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(context.ResponseDate.Value);
                 }
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         }
 
         internal static void RemoveResponseCachingFeature(HttpContext context) =>
-            context.Features.Set<IResponseCachingFeature>(null);
+            context.Features.Set<IResponseCachingFeature?>(null);
 
         internal static void UnshimResponseStream(ResponseCachingContext context)
         {
@@ -460,10 +460,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 }
 
                 EntityTagHeaderValue eTag;
-                IList<EntityTagHeaderValue> ifNoneMatchEtags;
                 if (!StringValues.IsNullOrEmpty(cachedResponseHeaders[HeaderNames.ETag])
                     && EntityTagHeaderValue.TryParse(cachedResponseHeaders[HeaderNames.ETag].ToString(), out eTag)
-                    && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out ifNoneMatchEtags))
+                    && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out var ifNoneMatchEtags))
                 {
                     for (var i = 0; i < ifNoneMatchEtags.Count; i++)
                     {

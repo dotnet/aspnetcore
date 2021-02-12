@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
@@ -39,15 +40,24 @@ namespace Microsoft.CodeAnalysis.Razor
             var types = new List<INamedTypeSymbol>();
             var visitor = new ComponentTypeVisitor(symbols, types);
 
-            // Visit the primary output of this compilation, as well as all references.
-            visitor.Visit(compilation.Assembly);
-            foreach (var reference in compilation.References)
+            var discoveryMode = context.Items.GetTagHelperDiscoveryFilter();
+
+            if ((discoveryMode & TagHelperDiscoveryFilter.CurrentCompilation) == TagHelperDiscoveryFilter.CurrentCompilation)
             {
-                // We ignore .netmodules here - there really isn't a case where they are used by user code
-                // even though the Roslyn APIs all support them.
-                if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                // Visit the primary output of this compilation
+                visitor.Visit(compilation.Assembly);
+            }
+
+            if ((discoveryMode & TagHelperDiscoveryFilter.ReferenceAssemblies) == TagHelperDiscoveryFilter.ReferenceAssemblies)
+            {
+                foreach (var reference in compilation.References)
                 {
-                    visitor.Visit(assembly);
+                    // We ignore .netmodules here - there really isn't a case where they are used by user code
+                    // even though the Roslyn APIs all support them.
+                    if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                    {
+                        visitor.Visit(assembly);
+                    }
                 }
             }
 
@@ -244,7 +254,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 pb.Metadata[ComponentMetadata.Component.TypeParameterKey] = bool.TrueString;
 
-                pb.Documentation = string.Format(ComponentResources.ComponentTypeParameter_Documentation, typeParameter.Name, builder.Name);
+                pb.Documentation = string.Format(CultureInfo.InvariantCulture, ComponentResources.ComponentTypeParameter_Documentation, typeParameter.Name, builder.Name);
             });
         }
 
@@ -309,7 +319,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 }
                 else
                 {
-                    b.Documentation = string.Format(ComponentResources.ChildContentParameterName_Documentation, childContentName);
+                    b.Documentation = string.Format(CultureInfo.InvariantCulture, ComponentResources.ChildContentParameterName_Documentation, childContentName);
                 }
             });
         }

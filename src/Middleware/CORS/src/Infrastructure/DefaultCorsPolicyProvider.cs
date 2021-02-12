@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     /// <inheritdoc />
     public class DefaultCorsPolicyProvider : ICorsPolicyProvider
     {
-        private static readonly Task<CorsPolicy> NullResult = Task.FromResult<CorsPolicy>(null);
+        private static readonly Task<CorsPolicy?> NullResult = Task.FromResult<CorsPolicy?>(null);
         private readonly CorsOptions _options;
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         /// <inheritdoc />
-        public Task<CorsPolicy> GetPolicyAsync(HttpContext context, string policyName)
+        public Task<CorsPolicy?> GetPolicyAsync(HttpContext context, string? policyName)
         {
             if (context == null)
             {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             policyName ??= _options.DefaultPolicyName;
             if (_options.PolicyMap.TryGetValue(policyName, out var result))
             {
-                return result.policyTask;
+                return result.policyTask!;
             }
 
             return NullResult;

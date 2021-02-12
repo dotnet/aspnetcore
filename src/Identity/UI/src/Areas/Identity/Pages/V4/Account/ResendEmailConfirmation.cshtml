@@ -5,7 +5,7 @@
 }
 
 <h1>@ViewData["Title"]</h1>
-<h4>Enter your email.</h4>
+<h2>Enter your email.</h2>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -13,7 +13,7 @@
             <div asp-validation-summary="All" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Input.Email"></label>
-                <input asp-for="Input.Email" class="form-control" />
+                <input asp-for="Input.Email" class="form-control" aria-required="true" />
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
             <button type="submit" class="btn btn-primary">Resend</button>

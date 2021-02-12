@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return false;
             }
 
-            var baseType = baseDefinition.GetTypeInfo().IsGenericType ? baseDefinition.GetGenericTypeDefinition() : baseDefinition;
+            var baseType = baseDefinition.IsGenericType ? baseDefinition.GetGenericTypeDefinition() : baseDefinition;
             return typeof(Hub) != baseType;
         }
     }

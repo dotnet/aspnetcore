@@ -303,6 +303,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, serverComponent.AssemblyName);
             Assert.Equal(typeof(TestComponent).FullName, serverComponent.TypeName);
             Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
+
+            Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers[HeaderNames.CacheControl]);
         }
 
         [Fact]
@@ -344,6 +346,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Null(epilogueMarker.Sequence);
             Assert.Null(epilogueMarker.Descriptor);
             Assert.Null(epilogueMarker.Type);
+
+            Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers[HeaderNames.CacheControl]);
         }
 
         [Fact]

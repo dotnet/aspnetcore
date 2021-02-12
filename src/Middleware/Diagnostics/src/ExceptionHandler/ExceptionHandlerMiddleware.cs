@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
             static async Task Awaited(ExceptionHandlerMiddleware middleware, HttpContext context, Task task)
             {
-                ExceptionDispatchInfo edi = null;
+                ExceptionDispatchInfo? edi = null;
                 try
                 {
                     await task;
@@ -123,14 +123,14 @@ namespace Microsoft.AspNetCore.Diagnostics
                 var exceptionHandlerFeature = new ExceptionHandlerFeature()
                 {
                     Error = edi.SourceException,
-                    Path = originalPath.Value,
+                    Path = originalPath.Value!,
                 };
                 context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
                 context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
-                await _options.ExceptionHandler(context);
+                await _options.ExceptionHandler!(context);
 
                 if (context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
                 {

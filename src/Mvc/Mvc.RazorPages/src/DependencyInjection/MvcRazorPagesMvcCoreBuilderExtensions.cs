@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -101,14 +102,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Transient<IConfigureOptions<RazorPagesOptions>, RazorPagesOptionsSetup>());
 
             // Routing
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, PageLoaderMatcherPolicy>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicPageEndpointMatcherPolicy>());
             services.TryAddSingleton<DynamicPageEndpointSelectorCache>();
             services.TryAddSingleton<PageActionEndpointDataSourceIdProvider>();
 
             // Action description and invocation
             services.TryAddEnumerable(
-                ServiceDescriptor.Singleton<IActionDescriptorProvider, PageActionDescriptorProvider>());
+                ServiceDescriptor.Singleton<IActionDescriptorProvider, CompiledPageActionDescriptorProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageRouteModelProvider, CompiledPageRouteModelProvider>());
             services.TryAddSingleton<PageActionEndpointDataSourceFactory>();
@@ -131,6 +131,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IActionInvokerProvider, PageActionInvokerProvider>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IRequestDelegateFactory, PageRequestDelegateFactory>());
+            services.TryAddSingleton<PageActionInvokerCache>();
 
             // Page and Page model creation and activation
             services.TryAddSingleton<IPageModelActivatorProvider, DefaultPageModelActivatorProvider>();

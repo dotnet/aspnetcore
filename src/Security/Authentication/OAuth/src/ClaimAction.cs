@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         public string ValueType { get; }
 
         /// <summary>
-        /// Examine the given userData json, determine if the requisite data is present, and optionally add it
+        /// Examine the given userData JSON, determine if the requisite data is present, and optionally add it
         /// as a new Claim on the ClaimsIdentity.
         /// </summary>
         /// <param name="userData">The source data to examine. This value may be null.</param>

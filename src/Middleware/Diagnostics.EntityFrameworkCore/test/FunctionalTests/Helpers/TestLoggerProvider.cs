@@ -29,14 +29,25 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.H
         {
             private List<string> _messages = new List<string>();
 
+            private object _sync = new object();
+
             public IEnumerable<string> Messages
             {
-                get { return _messages; }
+                get
+                {
+                    lock (_sync)
+                    {
+                        return new List<string>(_messages);
+                    }
+                }
             }
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
-                _messages.Add(formatter(state, exception));
+                lock (_sync)
+                {
+                    _messages.Add(formatter(state, exception));
+                }
             }
 
             public bool IsEnabled(LogLevel logLevel)

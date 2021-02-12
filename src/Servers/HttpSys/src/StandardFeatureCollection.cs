@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal sealed class StandardFeatureCollection : IFeatureCollection
     {
-        private static readonly Func<FeatureContext, object> _identityFunc = ReturnIdentity;
-        private static readonly Dictionary<Type, Func<FeatureContext, object>> _featureFuncLookup = new Dictionary<Type, Func<FeatureContext, object>>()
+        private static readonly Func<RequestContext, object> _identityFunc = ReturnIdentity;
+        private static readonly Dictionary<Type, Func<RequestContext, object?>> _featureFuncLookup = new()
         {
             { typeof(IHttpRequestFeature), _identityFunc },
             { typeof(IHttpRequestBodyDetectionFeature), _identityFunc },
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },
             { typeof(IHttpAuthenticationFeature), _identityFunc },
             { typeof(IHttpRequestIdentifierFeature), _identityFunc },
-            { typeof(RequestContext), ctx => ctx.RequestContext },
+            { typeof(RequestContext), ctx => ctx },
             { typeof(IHttpMaxRequestBodySizeFeature), _identityFunc },
             { typeof(IHttpBodyControlFeature), _identityFunc },
             { typeof(IHttpSysRequestInfoFeature), _identityFunc },
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpResetFeature), ctx => ctx.GetResetFeature() },
         };
 
-        private readonly FeatureContext _featureContext;
+        private readonly RequestContext _featureContext;
 
         static StandardFeatureCollection()
         {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public StandardFeatureCollection(FeatureContext featureContext)
+        public StandardFeatureCollection(RequestContext featureContext)
         {
             _featureContext = featureContext;
         }
@@ -68,11 +68,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             get { return 0; }
         }
 
-        public object this[Type key]
+        public object? this[Type key]
         {
             get
             {
-                Func<FeatureContext, object> lookupFunc;
+                Func<RequestContext, object?>? lookupFunc;
                 _featureFuncLookup.TryGetValue(key, out lookupFunc);
                 return lookupFunc?.Invoke(_featureContext);
             }
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        private static object ReturnIdentity(FeatureContext featureContext)
+        private static object ReturnIdentity(RequestContext featureContext)
         {
             return featureContext;
         }
@@ -104,12 +104,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public TFeature Get<TFeature>()
+        public TFeature? Get<TFeature>()
         {
-            return (TFeature)this[typeof(TFeature)];
+            return (TFeature?)this[typeof(TFeature)];
         }
 
-        public void Set<TFeature>(TFeature instance)
+        public void Set<TFeature>(TFeature? instance)
         {
             this[typeof(TFeature)] = instance;
         }

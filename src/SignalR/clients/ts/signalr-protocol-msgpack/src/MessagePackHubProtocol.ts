@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { Buffer } from "buffer";
 import * as msgpack5 from "msgpack5";
 
 import { MessagePackOptions } from "./MessagePackOptions";
@@ -51,13 +50,13 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     /** Creates an array of HubMessage objects from the specified serialized representation.
      *
-     * @param {ArrayBuffer | Buffer} input An ArrayBuffer or Buffer containing the serialized representation.
+     * @param {ArrayBuffer} input An ArrayBuffer containing the serialized representation.
      * @param {ILogger} logger A logger that will be used to log messages that occur during parsing.
      */
-    public parseMessages(input: ArrayBuffer | Buffer, logger: ILogger): HubMessage[] {
+    public parseMessages(input: ArrayBuffer, logger: ILogger): HubMessage[] {
         // The interface does allow "string" to be passed in, but this implementation does not. So let's throw a useful error.
-        if (!(input instanceof Buffer) && !(isArrayBuffer(input))) {
-            throw new Error("Invalid input for MessagePack hub protocol. Expected an ArrayBuffer or Buffer.");
+        if (!(isArrayBuffer(input))) {
+            throw new Error("Invalid input for MessagePack hub protocol. Expected an ArrayBuffer.");
         }
 
         if (logger === null) {
@@ -108,7 +107,8 @@ export class MessagePackHubProtocol implements IHubProtocol {
         }
 
         const msgpack = msgpack5(this.messagePackOptions);
-        const properties = msgpack.decode(Buffer.from(input));
+        // To avoid using the Buffer type we cast to 'any'. msgpack5 works with Uint8Array's
+        const properties = msgpack.decode(input as any);
         if (properties.length === 0 || !(properties instanceof Array)) {
             throw new Error("Invalid payload.");
         }

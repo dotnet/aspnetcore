@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.Extensions.Caching.SqlConfig.Tools
 {
@@ -39,12 +40,13 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
             }
 
             var tableNameWithSchema = string.Format(
-                "{0}.{1}", DelimitIdentifier(schemaName), DelimitIdentifier(tableName));
-            CreateTable = string.Format(CreateTableFormat, tableNameWithSchema);
+                CultureInfo.InvariantCulture, "{0}.{1}", DelimitIdentifier(schemaName), DelimitIdentifier(tableName));
+            CreateTable = string.Format(CultureInfo.InvariantCulture, CreateTableFormat, tableNameWithSchema);
             CreateNonClusteredIndexOnExpirationTime = string.Format(
+                CultureInfo.InvariantCulture,
                 CreateNonClusteredIndexOnExpirationTimeFormat,
                 tableNameWithSchema);
-            TableInfo = string.Format(TableInfoFormat, EscapeLiteral(schemaName), EscapeLiteral(tableName));
+            TableInfo = string.Format(CultureInfo.InvariantCulture, TableInfoFormat, EscapeLiteral(schemaName), EscapeLiteral(tableName));
         }
 
         public string CreateTable { get; }

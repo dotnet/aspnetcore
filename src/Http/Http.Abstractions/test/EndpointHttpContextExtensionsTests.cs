@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions.Tests
         }
 
         [Fact]
-        public void GetEndpoint_ContextWithFeatureAndEndpoint_ReturnsNull()
+        public void GetEndpoint_ContextWithFeatureAndEndpoint_ReturnsEndpoint()
         {
             // Arrange
             var context = new DefaultHttpContext();

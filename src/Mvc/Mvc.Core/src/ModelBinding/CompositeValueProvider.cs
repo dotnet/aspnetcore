@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -80,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new CompositeValueProvider(valueProviderFactoryContext.ValueProviders);
         }
 
-        internal static async ValueTask<(bool success, CompositeValueProvider valueProvider)> TryCreateAsync(
+        internal static async ValueTask<(bool success, CompositeValueProvider? valueProvider)> TryCreateAsync(
             ActionContext actionContext,
             IList<IValueProviderFactory> factories)
         {
@@ -168,7 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public IValueProvider Filter(BindingSource bindingSource)
+        public IValueProvider? Filter(BindingSource bindingSource)
         {
             if (bindingSource == null)
             {
@@ -220,7 +222,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Value providers are included by default. If a contained <see cref="IValueProvider"/> does not implement
         /// <see cref="IKeyRewriterValueProvider"/>, <see cref="Filter()"/> will not remove it.
         /// </remarks>
-        public IValueProvider Filter()
+        public IValueProvider? Filter()
         {
             var shouldFilter = false;
             for (var i = 0; i < Count; i++)

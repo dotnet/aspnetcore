@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -1017,7 +1018,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 var knownNetworkParts = knownNetwork.Split('/');
                 var networkIp = IPAddress.Parse(knownNetworkParts[0]);
-                var prefixLength = int.Parse(knownNetworkParts[1]);
+                var prefixLength = int.Parse(knownNetworkParts[1], CultureInfo.InvariantCulture);
                 options.KnownNetworks.Add(new IPNetwork(networkIp, prefixLength));
             }
 

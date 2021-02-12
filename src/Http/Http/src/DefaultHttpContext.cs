@@ -36,6 +36,10 @@ namespace Microsoft.AspNetCore.Http
         private DefaultConnectionInfo? _connection;
         private DefaultWebSocketManager? _websockets;
 
+        // This is field exists to make analyzing memory dumps easier.
+        // https://github.com/dotnet/aspnetcore/issues/29709
+        internal bool _active;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHttpContext"/> class.
         /// </summary>
@@ -73,6 +77,7 @@ namespace Microsoft.AspNetCore.Http
             _response.Initialize(revision);
             _connection?.Initialize(features, revision);
             _websockets?.Initialize(features, revision);
+            _active = true;
         }
 
         /// <summary>
@@ -85,6 +90,7 @@ namespace Microsoft.AspNetCore.Http
             _response.Uninitialize();
             _connection?.Uninitialize();
             _websockets?.Uninitialize();
+            _active = false;
         }
 
         /// <summary>
@@ -206,6 +212,9 @@ namespace Microsoft.AspNetCore.Http
         // We send an anonymous object with an HttpContext property
         // via DiagnosticListener in various events throughout the pipeline. Instead
         // we just send the HttpContext to avoid extra allocations
+        /// <summary>
+        /// This API is used by ASP.NET Core's infrastructure and should not be used by application code.
+        /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public HttpContext HttpContext => this;
 

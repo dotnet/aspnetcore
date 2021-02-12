@@ -58,15 +58,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             _timeoutControl = new Mock<ITimeoutControl>();
-            _http1ConnectionContext = new HttpConnectionContext
-            {
-                ServiceContext = _serviceContext,
-                ConnectionContext = Mock.Of<ConnectionContext>(),
-                ConnectionFeatures = connectionFeatures,
-                MemoryPool = _pipelineFactory,
-                TimeoutControl = _timeoutControl.Object,
-                Transport = pair.Transport
-            };
+            _http1ConnectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: _serviceContext,
+                connectionContext: Mock.Of<ConnectionContext>(),
+                transport: pair.Transport,
+                timeoutControl: _timeoutControl.Object,
+                memoryPool: _pipelineFactory,
+                connectionFeatures: connectionFeatures);
 
             _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
         }

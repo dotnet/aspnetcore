@@ -3,14 +3,15 @@
 
 // Most of the code in this file comes from the default Roslyn Analyzer project template
 
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Formatting;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using Xunit;
 
 namespace TestHelper
@@ -82,7 +83,7 @@ namespace TestHelper
             var analyzerDiagnostics = GetSortedDiagnosticsFromDocuments(analyzer, new[] { document });
             var compilerDiagnostics = GetCompilerDiagnostics(document);
             var attempts = analyzerDiagnostics.Length;
-            
+
             for (int i = 0; i < attempts; ++i)
             {
                 var actions = new List<CodeAction>();
@@ -113,7 +114,9 @@ namespace TestHelper
                     newCompilerDiagnostics = GetNewDiagnostics(compilerDiagnostics, GetCompilerDiagnostics(document));
 
                     Assert.True(false,
-                        string.Format("Fix introduced new compiler diagnostics:\r\n{0}\r\n\r\nNew document:\r\n{1}\r\n",
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Fix introduced new compiler diagnostics:\r\n{0}\r\n\r\nNew document:\r\n{1}\r\n",
                             string.Join("\r\n", newCompilerDiagnostics.Select(d => d.ToString())),
                             document.GetSyntaxRootAsync().Result.ToFullString()));
                 }

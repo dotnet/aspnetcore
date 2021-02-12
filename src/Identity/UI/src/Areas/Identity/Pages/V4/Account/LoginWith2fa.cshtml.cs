@@ -130,17 +130,17 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
 
             if (result.Succeeded)
             {
-                _logger.LogInformation("User logged in with 2fa.");
+                _logger.LogInformation(LoggerEventIds.UserLoginWith2FA, "User logged in with 2fa.");
                 return LocalRedirect(returnUrl);
             }
             else if (result.IsLockedOut)
             {
-                _logger.LogWarning("User account locked out.");
+                _logger.LogWarning(LoggerEventIds.UserLockout, "User account locked out.");
                 return RedirectToPage("./Lockout");
             }
             else
             {
-                _logger.LogWarning("Invalid authenticator code entered.");
+                _logger.LogWarning(LoggerEventIds.InvalidAuthenticatorCode, "Invalid authenticator code entered.");
                 ModelState.AddModelError(string.Empty, "Invalid authenticator code.");
                 return Page();
             }

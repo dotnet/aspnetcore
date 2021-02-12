@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         internal static IEnumerable<ContentRootMapping> Parse(Stream manifest)
         {
             var document = XDocument.Load(manifest);
-            if (!string.Equals(document.Root.Name.LocalName, ManifestRootElementName, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(document.Root!.Name.LocalName, ManifestRootElementName, StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException($"Invalid manifest format. Manifest root must be '{ManifestRootElementName}'");
             }
