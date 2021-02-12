@@ -44,9 +44,8 @@ end_of_line = lf
 charset = utf-8-bom
 
 [*.cs]
-dotnet_diagnostic.CA1304.severity = error
-dotnet_diagnostic.CA1305.severity = error
-dotnet_diagnostic.CA1310.severity = error
+# Temporarily disabling, waiting on PR feedback to re-enable
+dotnet_diagnostic.CA1310.severity = none
 
 # Disabled due to crashing: https://github.com/dotnet/roslyn-analyzers/issues/4750
 # Delete the following line when we have a working version.
