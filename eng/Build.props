@@ -151,7 +151,7 @@
                           $(RepoRoot)src\Hosting\**\*.*proj;
                           $(RepoRoot)src\Http\**\*.*proj;
                           $(RepoRoot)src\HttpClientFactory\**\*.*proj;
-                          $(RepoRoot)src\Html\*.*proj;
+                          $(RepoRoot)src\Html.Abstractions\*.*proj;
                           $(RepoRoot)src\Identity\**\*.*proj;
                           $(RepoRoot)src\Servers\**\*.csproj;
                           $(RepoRoot)src\Security\**\*.*proj;
@@ -195,7 +195,7 @@
                           $(RepoRoot)src\Hosting\**\src\*.csproj;
                           $(RepoRoot)src\Http\**\src\*.csproj;
                           $(RepoRoot)src\HttpClientFactory\**\src\*.csproj;
-                          $(RepoRoot)src\Html\src\*.csproj;
+                          $(RepoRoot)src\Html.Abstractions\src\*.csproj;
                           $(RepoRoot)src\Identity\**\src\*.csproj;
                           $(RepoRoot)src\Servers\**\src\*.csproj;
                           $(RepoRoot)src\Security\**\src\*.csproj;
