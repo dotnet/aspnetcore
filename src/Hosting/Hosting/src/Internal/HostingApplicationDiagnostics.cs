@@ -50,20 +50,22 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             var diagnosticListenerEnabled = _diagnosticListener.IsEnabled();
+            var diagnosticListenerActivityCreationEnabled = (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext));
             var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
             // TODO: If loggingEnabled check to change to if ActivityPropogation options are enabled
-            if (loggingEnabled || (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext)))
+            if (loggingEnabled || diagnosticListenerActivityCreationEnabled)
             {
                 _dummyListener = new ActivityListener()
                 {
-                    ShouldListenTo = activitySource => activitySource.Name.Equals(ActivitySourceName),
-                    Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.PropagationData
+                    ShouldListenTo = activitySource => ReferenceEquals(activitySource, _activitySource),
+                    Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.PropagationData,
+                    SampleUsingParentId = (ref ActivityCreationOptions<string> options) => ActivitySamplingResult.PropagationData
                 };
                 ActivitySource.AddActivityListener(_dummyListener);
             }
 
-            context.Activity = StartActivity(httpContext, out var hasDiagnosticListener);
+            context.Activity = StartActivity(httpContext, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
             context.HasDiagnosticListener = hasDiagnosticListener;
 
             if (diagnosticListenerEnabled)
@@ -261,12 +263,15 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity? StartActivity(HttpContext httpContext, out bool hasDiagnosticListener)
+        private Activity? StartActivity(HttpContext httpContext, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
         {
             hasDiagnosticListener = false;
-            if (_diagnosticListener.IsEnabled(ActivityStartKey))
+            if (diagnosticListenerActivityCreationEnabled)
             {
-                hasDiagnosticListener = true;
+                if (_diagnosticListener.IsEnabled(ActivityStartKey))
+                {
+                    hasDiagnosticListener = true;
+                }
             }
 
             // Short-circuit to avoid doing an expensive header lookup
@@ -310,13 +315,16 @@ namespace Microsoft.AspNetCore.Hosting
                     }
                 }
 
-                // Review: Breaking change: We will no longer fire OnActivityImport before Activity.Start()
-                _diagnosticListener.OnActivityImport(activity, httpContext);
-
-                if (hasDiagnosticListener)
+                if (diagnosticListenerActivityCreationEnabled)
                 {
-                    //Review: Do we need to explicity call this?
-                    _diagnosticListener.Write(ActivityStartKey, httpContext);
+                    // Review: Breaking change: We will no longer fire OnActivityImport before Activity.Start()
+                    _diagnosticListener.OnActivityImport(activity, httpContext);
+
+                    if (hasDiagnosticListener)
+                    {
+                        //Review: Do we need to explicity call this?
+                        _diagnosticListener.Write(ActivityStartKey, httpContext);
+                    }
                 }
             }
             return activity;

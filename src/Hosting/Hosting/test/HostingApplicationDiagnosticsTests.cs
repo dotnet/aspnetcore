@@ -506,8 +506,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 ActivityStarted = activity =>
                 {
                     Assert.Equal("0123456789abcdef", Activity.Current.ParentSpanId.ToHexString());
-                },
-                //ActivityStopped = activity => Assert..
+                }
             };
 
             ActivitySource.AddActivityListener(listener);
