@@ -64,7 +64,6 @@ function SetupCredProvider {
   }
 
   if (($endpoints | Measure-Object).Count -gt 0) {
-      # Create the JSON object. It should look like '{"endpointCredentials": [{"endpoint":"http://example.index.json", "username":"optional", "password":"accesstoken"}]}'
       $endpointCredentials = @{endpointCredentials=$endpoints} | ConvertTo-Json -Compress
 
      # Create the environment variables the AzDo way
