@@ -5,9 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+
+#nullable enable
 
 namespace Microsoft.AspNetCore.Components.Analyzers
 {
@@ -22,6 +27,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 DiagnosticDescriptors.ComponentParameterSettersShouldBePublic,
                 DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
                 DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
+                DiagnosticDescriptors.ComponentParametersShouldBeAutoProperty,
             });
         }
 
@@ -60,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                         return;
                     }
 
-                    context.RegisterSymbolEndAction(context =>
+                    context.RegisterSymbolEndAction(async context =>
                     {
                         var captureUnmatchedValuesParameters = new List<IPropertySymbol>();
 
@@ -104,6 +110,14 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                                         symbols.ParameterCaptureUnmatchedValuesRuntimeType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
                                 }
                             }
+
+                            if (!IsAutoProperty(property) && !await IsSameSemanticAsAutoPropertyAsync(property, context.CancellationToken).ConfigureAwait(false))
+                            {
+                                context.ReportDiagnostic(Diagnostic.Create(
+                                    DiagnosticDescriptors.ComponentParametersShouldBeAutoProperty,
+                                    propertyLocation,
+                                    property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                            }
                         }
 
                         // Check if the type defines multiple CaptureUnmatchedValues parameters. Doing this outside the loop means we place the
@@ -122,6 +136,85 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                     });
                 }, SymbolKind.NamedType);
             });
+        }
+
+        /// <summary>
+        /// Check if a property is an auto-property.
+        /// TODO: Remove this helper when https://github.com/dotnet/roslyn/issues/46682 is handled.
+        /// </summary>
+        private static bool IsAutoProperty(IPropertySymbol propertySymbol)
+           => propertySymbol.ContainingType.GetMembers()
+                  .OfType<IFieldSymbol>()
+                  .Any(f => f.IsImplicitlyDeclared && SymbolEqualityComparer.Default.Equals(propertySymbol, f.AssociatedSymbol));
+
+        private async Task<bool> IsSameSemanticAsAutoPropertyAsync(IPropertySymbol symbol, CancellationToken cancellationToken)
+        {
+            // This is not the preferred way to do things. There is a current work to support C# and VB with separate projects.
+            // When that's done, this should be made abstract and have different C# and VB implementations.
+            if (symbol.DeclaringSyntaxReferences.Length == 1 &&
+                await symbol.DeclaringSyntaxReferences[0].GetSyntaxAsync(cancellationToken).ConfigureAwait(false) is PropertyDeclarationSyntax syntax &&
+                syntax.AccessorList?.Accessors.Count == 2)
+            {
+                var getterAccessor = syntax.AccessorList.Accessors[0];
+                var setterAccessor = syntax.AccessorList.Accessors[1];
+                if (getterAccessor.IsKind(SyntaxKind.SetAccessorDeclaration))
+                {
+                    // Swap if necessary.
+                    (getterAccessor, setterAccessor) = (setterAccessor, getterAccessor);
+                }
+
+                if (!getterAccessor.IsKind(SyntaxKind.GetAccessorDeclaration) || !setterAccessor.IsKind(SyntaxKind.SetAccessorDeclaration))
+                {
+                    return false;
+                }
+
+                IdentifierNameSyntax? identifierUsedInGetter = GetIdentifierUsedInGetter(getterAccessor);
+                if (identifierUsedInGetter is null)
+                {
+                    return false;
+                }
+
+                IdentifierNameSyntax? identifierUsedInSetter = GetIdentifierUsedInSetter(setterAccessor);
+                return identifierUsedInGetter.Identifier.ValueText == identifierUsedInSetter?.Identifier.ValueText;
+
+
+            }
+
+            return false;
+        }
+
+        private static IdentifierNameSyntax? GetIdentifierUsedInGetter(AccessorDeclarationSyntax getter)
+        {
+            if (getter.Body is { Statements: { Count: 1 } } && getter.Body.Statements[0] is ReturnStatementSyntax returnStatement)
+            {
+                return returnStatement.Expression as IdentifierNameSyntax;
+            }
+
+            return getter.ExpressionBody?.Expression as IdentifierNameSyntax;
+        }
+
+        private IdentifierNameSyntax? GetIdentifierUsedInSetter(AccessorDeclarationSyntax setter)
+        {
+            AssignmentExpressionSyntax? assignmentExpression = null;
+            if (setter.Body is not null)
+            {
+                if (setter.Body.Statements.Count == 1)
+                {
+                    assignmentExpression = (setter.Body.Statements[0] as ExpressionStatementSyntax)?.Expression as AssignmentExpressionSyntax;
+                }
+            }
+            else
+            {
+                assignmentExpression = setter.ExpressionBody?.Expression as AssignmentExpressionSyntax;
+            }
+
+            if (assignmentExpression is not null && assignmentExpression.Right is IdentifierNameSyntax right &&
+                right.Identifier.ValueText == "value")
+            {
+                return assignmentExpression.Left as IdentifierNameSyntax;
+            }
+
+            return null;
         }
     }
 }
