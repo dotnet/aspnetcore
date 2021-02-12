@@ -62,7 +62,6 @@ function SetupCredProvider {
   endpoints+=']'
 
   if [ ${#endpoints} -gt 2 ]; then 
-      # Create the JSON object. It should look like '{"endpointCredentials": [{"endpoint":"http://example.index.json", "username":"optional", "password":"accesstoken"}]}'
       local endpointCredentials="{\"endpointCredentials\": "$endpoints"}"
 
       echo "##vso[task.setvariable variable=VSS_NUGET_EXTERNAL_FEED_ENDPOINTS]$endpointCredentials"

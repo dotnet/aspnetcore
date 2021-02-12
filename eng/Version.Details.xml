@@ -418,17 +418,17 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-extensions</Uri>
       <Sha>4210e7d19b3e18ecadbd1c4c8589e39eea035d5f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.21072.7">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.21110.10">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>620462dd065490620c03a80cea8e251004f6bf21</Sha>
+      <Sha>251249a04a9686ca2660e2acaa3094446a48f10d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.21072.7">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.21110.10">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>620462dd065490620c03a80cea8e251004f6bf21</Sha>
+      <Sha>251249a04a9686ca2660e2acaa3094446a48f10d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.21072.7">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.21110.10">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>620462dd065490620c03a80cea8e251004f6bf21</Sha>
+      <Sha>251249a04a9686ca2660e2acaa3094446a48f10d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.12-servicing.21069.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-extensions</Uri>
