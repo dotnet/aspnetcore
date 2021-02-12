@@ -1,5 +1,4 @@
 # Editor configuration, see http://editorconfig.org
-root = true
 
 [*]
 charset = utf-8
