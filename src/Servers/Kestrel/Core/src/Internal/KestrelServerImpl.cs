@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Threading;
@@ -207,7 +208,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
             catch (Exception ex)
             {
-                Trace.LogCritical(0, ex, "Unable to start Kestrel.");
+                // Do not log stack trace for known errors #29801
+                if (ex is IOException && ex.InnerException is AddressInUseException)
+                {
+                    Trace.LogCritical(0, "Unable to start Kestrel. {Message}", ex.Message);
+                }
+                else
+                {
+                    Trace.LogCritical(0, ex, "Unable to start Kestrel.");
+                }
+
                 Dispose();
                 throw;
             }
