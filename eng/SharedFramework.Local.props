@@ -51,11 +51,10 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.WebUtilities" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Html.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Identity" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.HttpSys" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IIS" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
@@ -69,6 +68,7 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.HostFiltering" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Html.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpOverrides" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpsPolicy" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization.Routing" />
@@ -90,8 +90,8 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Localization" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Razor" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc" />
