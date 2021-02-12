@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                         return;
                     }
 
-                    context.RegisterSymbolEndAction(async context =>
+                    context.RegisterSymbolEndAction(context =>
                     {
                         var captureUnmatchedValuesParameters = new List<IPropertySymbol>();
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                                 }
                             }
 
-                            if (!IsAutoProperty(property) && !await IsSameSemanticAsAutoPropertyAsync(property, context.CancellationToken).ConfigureAwait(false))
+                            if (!IsAutoProperty(property) && !IsSameSemanticAsAutoProperty(property, context.CancellationToken))
                             {
                                 context.ReportDiagnostic(Diagnostic.Create(
                                     DiagnosticDescriptors.ComponentParametersShouldBeAutoProperty,
@@ -147,12 +147,10 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                   .OfType<IFieldSymbol>()
                   .Any(f => f.IsImplicitlyDeclared && SymbolEqualityComparer.Default.Equals(propertySymbol, f.AssociatedSymbol));
 
-        private async Task<bool> IsSameSemanticAsAutoPropertyAsync(IPropertySymbol symbol, CancellationToken cancellationToken)
+        private static bool IsSameSemanticAsAutoProperty(IPropertySymbol symbol, CancellationToken cancellationToken)
         {
-            // This is not the preferred way to do things. There is a current work to support C# and VB with separate projects.
-            // When that's done, this should be made abstract and have different C# and VB implementations.
             if (symbol.DeclaringSyntaxReferences.Length == 1 &&
-                await symbol.DeclaringSyntaxReferences[0].GetSyntaxAsync(cancellationToken).ConfigureAwait(false) is PropertyDeclarationSyntax syntax &&
+                symbol.DeclaringSyntaxReferences[0].GetSyntax(cancellationToken) is PropertyDeclarationSyntax syntax &&
                 syntax.AccessorList?.Accessors.Count == 2)
             {
                 var getterAccessor = syntax.AccessorList.Accessors[0];
@@ -193,7 +191,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             return getter.ExpressionBody?.Expression as IdentifierNameSyntax;
         }
 
-        private IdentifierNameSyntax? GetIdentifierUsedInSetter(AccessorDeclarationSyntax setter)
+        private static IdentifierNameSyntax? GetIdentifierUsedInSetter(AccessorDeclarationSyntax setter)
         {
             AssignmentExpressionSyntax? assignmentExpression = null;
             if (setter.Body is not null)
