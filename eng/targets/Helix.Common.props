@@ -14,7 +14,6 @@
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\TestCert.pfx" />
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" />
 
-    <HelixPreCommand Include="call RunPowershell.cmd installPlaywrightReqs.ps1 || exit /b 1" />
     <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1 || exit /b 1" />
     <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
   </ItemGroup>
