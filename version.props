@@ -39,7 +39,9 @@
     <ExperimentalPackageVersion  Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(ExperimentalVersionPrefix)-$(VersionSuffix)</ExperimentalPackageVersion>
 
     <VersionMetadata Condition=" '$(DotNetProductBuildId)' != '' ">pb-$(DotNetProductBuildId)</VersionMetadata>
-    <VersionSuffix Condition=" '$(VersionMetadata)' != '' ">$(VersionSuffix)+$(VersionMetadata)</VersionSuffix>
+
+    <!-- `npm` will truncate the '+' and everything after when updating project.json. Condition avoids _Pack failures. -->
+    <VersionSuffix Condition=" '$(VersionMetadata)' != '' AND '$(MSBuildProjectExtension)' != '.npmproj' ">$(VersionSuffix)+$(VersionMetadata)</VersionSuffix>
 
     <SharedFxCliBlobChannel>release/$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</SharedFxCliBlobChannel>
 
