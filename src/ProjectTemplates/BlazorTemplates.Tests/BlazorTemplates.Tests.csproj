@@ -17,6 +17,7 @@
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+    <TestDependsOnMssql>true</TestDependsOnMssql>
   </PropertyGroup>
 
   <ItemGroup>
