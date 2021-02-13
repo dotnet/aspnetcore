@@ -12,6 +12,16 @@
     <HelixPreCommand Include="call RunPowershell.cmd installPlaywrightReqs.ps1 || exit /b 1" />
   </ItemGroup>
   
+  <ItemGroup Condition="$(TestDependsOnIIS)' == 'true' AND '$(IsWindowsOnlyTest)' == 'true'">
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\update_schema.ps1" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\TestCert.pfx" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" />
+
+    <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1 || exit /b 1" />
+    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
     <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(TargetArchitecture)" />
   </ItemGroup>
