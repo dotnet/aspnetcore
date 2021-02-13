@@ -141,6 +141,14 @@ namespace RunTests
                         throwOnError: false,
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
+                    await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                        $"tool install dotnet-serve --tool-path {Options.HELIX_WORKITEM_ROOT}",
+                        environmentVariables: EnvironmentVariables,
+                        outputDataReceived: Console.WriteLine,
+                        errorDataReceived: Console.Error.WriteLine,
+                        throwOnError: false,
+                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+                    
                     // ';' is the path separator on Windows, and ':' on Unix
                     Options.Path += OperatingSystem.IsWindows() ? ";" : ":";
                     Options.Path += $"{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
