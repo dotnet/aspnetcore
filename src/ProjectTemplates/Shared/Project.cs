@@ -231,11 +231,7 @@ namespace Templates.Test.Helpers
         {
             var assembly = typeof(ProjectFactoryFixture).Assembly;
 
-            var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(attribute => attribute.Key == "DotNetEfFullPath")
-                .Value;
-
-            var args = $"\"{dotNetEfFullPath}\" --verbose --no-build database update";
+            var args = "--verbose --no-build database update";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
@@ -243,7 +239,17 @@ namespace Templates.Test.Helpers
             try
             {
                 Output.WriteLine("Acquired DotNetNewLock");
-                using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
+                var command = DotNetMuxer.MuxerPathOrDefault();
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
+                {
+                    args = $"\"{DotNetEfFullPath}\" " + args;
+                }
+                else
+                {
+                    command = "dotnet-ef";
+                }
+                
+                using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
                 await result.Exited;
                 return new ProcessResult(result);
             }
