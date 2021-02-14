@@ -11,26 +11,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         // ConnectionRead: Reserved: 3
 
         private static readonly Action<ILogger, string, Exception?> _connectionPause =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, nameof(ConnectionPause)), @"Connection id ""{ConnectionId}"" paused.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "ConnectionPause"), @"Connection id ""{ConnectionId}"" paused.");
 
         private static readonly Action<ILogger, string, Exception?> _connectionResume =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, nameof(ConnectionResume)), @"Connection id ""{ConnectionId}"" resumed.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "ConnectionResume"), @"Connection id ""{ConnectionId}"" resumed.");
 
         private static readonly Action<ILogger, string, Exception?> _connectionReadFin =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, nameof(ConnectionReadFin)), @"Connection id ""{ConnectionId}"" received FIN.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "ConnectionReadFin"), @"Connection id ""{ConnectionId}"" received FIN.");
 
         private static readonly Action<ILogger, string, string, Exception?> _connectionWriteFin =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(ConnectionWriteFin)), @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, "ConnectionWriteFin"), @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""");
 
         // ConnectionWrite: Reserved: 11
 
         // ConnectionWriteCallback: Reserved: 12
 
         private static readonly Action<ILogger, string, Exception?> _connectionError =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, nameof(ConnectionError)), @"Connection id ""{ConnectionId}"" communication error.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, "ConnectionError"), @"Connection id ""{ConnectionId}"" communication error.");
 
         private static readonly Action<ILogger, string, Exception?> _connectionReset =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(19, nameof(ConnectionReset)), @"Connection id ""{ConnectionId}"" reset.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(19, "ConnectionReset"), @"Connection id ""{ConnectionId}"" reset.");
 
         private readonly ILogger _logger;
 

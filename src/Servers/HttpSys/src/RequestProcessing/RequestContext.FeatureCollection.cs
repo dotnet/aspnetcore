@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Pipelines;
@@ -41,40 +42,47 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpResetFeature,
         IHttpSysRequestDelegationFeature
     {
-        private IFeatureCollection _features;
+        private IFeatureCollection? _features;
         private bool _enableResponseCaching;
 
-        private Stream _requestBody;
-        private IHeaderDictionary _requestHeaders;
-        private string _scheme;
-        private string _httpMethod;
-        private string _httpProtocolVersion;
-        private string _query;
-        private string _pathBase;
-        private string _path;
-        private string _rawTarget;
-        private IPAddress _remoteIpAddress;
-        private IPAddress _localIpAddress;
+        private Stream? _requestBody;
+        private IHeaderDictionary _requestHeaders = default!;
+        private string _scheme = default!;
+        private string _httpMethod = default!;
+        private string? _httpProtocolVersion;
+        private string _query = default!;
+        private string _pathBase = default!;
+        private string _path = default!;
+        private string _rawTarget = default!;
+        private IPAddress? _remoteIpAddress;
+        private IPAddress? _localIpAddress;
         private int _remotePort;
         private int _localPort;
-        private string _connectionId;
-        private string _traceIdentitfier;
-        private X509Certificate2 _clientCert;
-        private ClaimsPrincipal _user;
-        private Stream _responseStream;
-        private PipeWriter _pipeWriter;
+        private string? _connectionId;
+        private string? _traceIdentitfier;
+        private X509Certificate2? _clientCert;
+        private ClaimsPrincipal? _user;
+        private Stream _responseStream = default!;
+        private PipeWriter? _pipeWriter;
         private bool _bodyCompleted;
-        private IHeaderDictionary _responseHeaders;
-        private IHeaderDictionary _responseTrailers;
+        private IHeaderDictionary _responseHeaders = default!;
+        private IHeaderDictionary? _responseTrailers;
 
         private Fields _initializedFields;
 
-        private List<Tuple<Func<object, Task>, object>> _onStartingActions = new List<Tuple<Func<object, Task>, object>>();
-        private List<Tuple<Func<object, Task>, object>> _onCompletedActions = new List<Tuple<Func<object, Task>, object>>();
+        private List<Tuple<Func<object, Task>, object>>? _onStartingActions = new List<Tuple<Func<object, Task>, object>>();
+        private List<Tuple<Func<object, Task>, object>>? _onCompletedActions = new List<Tuple<Func<object, Task>, object>>();
         private bool _responseStarted;
         private bool _completed;
 
-        internal IFeatureCollection Features => _features; 
+        internal IFeatureCollection Features
+        {
+            get
+            {
+                Debug.Assert(_features != null);
+                return _features;
+            }
+        }
 
         [Flags]
         // Fields that may be lazy-initialized
@@ -141,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _requestBody = Request.Body;
                     SetInitialized(Fields.RequestBody);
                 }
-                return _requestBody;
+                return _requestBody!;
             }
             set
             {
@@ -183,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _httpProtocolVersion = HttpProtocol.GetHttpProtocol(Request.ProtocolVersion);
                     SetInitialized(Fields.Protocol);
                 }
-                return _httpProtocolVersion;
+                return _httpProtocolVersion!;
             }
             set
             {
@@ -212,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         bool IHttpRequestBodyDetectionFeature.CanHaveBody => Request.HasEntityBody;
 
-        IPAddress IHttpConnectionFeature.LocalIpAddress
+        IPAddress? IHttpConnectionFeature.LocalIpAddress
         {
             get
             {
@@ -230,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        IPAddress IHttpConnectionFeature.RemoteIpAddress
+        IPAddress? IHttpConnectionFeature.RemoteIpAddress
         {
             get
             {
@@ -293,7 +301,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _connectionId = Request.ConnectionId.ToString(CultureInfo.InvariantCulture);
                     SetInitialized(Fields.ConnectionId);
                 }
-                return _connectionId;
+                return _connectionId!;
             }
             set
             {
@@ -302,7 +310,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        X509Certificate2 ITlsConnectionFeature.ClientCertificate
+        X509Certificate2? ITlsConnectionFeature.ClientCertificate
         {
             get
             {
@@ -330,7 +338,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        async Task<X509Certificate2> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
+        async Task<X509Certificate2?> ITlsConnectionFeature.GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             if (IsNotInitialized(Fields.ClientCertificate))
             {
@@ -351,17 +359,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return _clientCert;
         }
 
-        internal ITlsConnectionFeature GetTlsConnectionFeature()
+        internal ITlsConnectionFeature? GetTlsConnectionFeature()
         {
             return Request.IsHttps ? this : null;
         }
 
-        internal ITlsHandshakeFeature GetTlsHandshakeFeature()
+        internal ITlsHandshakeFeature? GetTlsHandshakeFeature()
         {
             return Request.IsHttps ? this : null;
         }
 
-        internal IHttpResponseTrailersFeature GetResponseTrailersFeature()
+        internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
         {
             if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsTrailers)
             {
@@ -370,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return null;
         }
 
-        internal IHttpResetFeature GetResetFeature()
+        internal IHttpResetFeature? GetResetFeature()
         {
             if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsReset)
             {
@@ -452,7 +460,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _onCompletedActions.Add(new Tuple<Func<object, Task>, object>(callback, state));
         }
 
-        string IHttpResponseFeature.ReasonPhrase
+        string? IHttpResponseFeature.ReasonPhrase
         {
             get { return Response.ReasonPhrase; }
             set { Response.ReasonPhrase = value; }
@@ -513,7 +521,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _disconnectToken = DisconnectToken;
                     SetInitialized(Fields.RequestAborted);
                 }
-                return _disconnectToken.Value;
+                return _disconnectToken!.Value;
             }
             set
             {
@@ -532,7 +540,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return await UpgradeAsync();
         }
 
-        ClaimsPrincipal IHttpAuthenticationFeature.User
+        ClaimsPrincipal? IHttpAuthenticationFeature.User
         {
             get { return _user; }
             set { _user = value; }
@@ -547,7 +555,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _traceIdentitfier = TraceIdentifier.ToString();
                     SetInitialized(Fields.TraceIdentifier);
                 }
-                return _traceIdentitfier;
+                return _traceIdentitfier!;
             }
             set
             {
@@ -662,7 +670,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             // We require 'public' and 's-max-age' or 'max-age' or the Expires header.
-            CacheControlHeaderValue cacheControl;
+            CacheControlHeaderValue? cacheControl;
             if (CacheControlHeaderValue.TryParse(cacheControlHeader.ToString(), out cacheControl) && cacheControl.Public)
             {
                 if (cacheControl.SharedMaxAge.HasValue)

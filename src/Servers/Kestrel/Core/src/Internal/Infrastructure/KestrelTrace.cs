@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -47,11 +49,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, Exception?> _notAllConnectionsAborted =
             LoggerMessage.Define(LogLevel.Debug, new EventId(21, "NotAllConnectionsAborted"), "Some connections failed to abort during server shutdown.");
 
-        private static readonly Action<ILogger, TimeSpan, TimeSpan, DateTimeOffset, Exception?> _heartbeatSlow =
-            LoggerMessage.Define<TimeSpan, TimeSpan, DateTimeOffset>(LogLevel.Warning, new EventId(22, "HeartbeatSlow"), @"As of ""{now}"", the heartbeat has been running for ""{heartbeatDuration}"" which is longer than ""{interval}"". This could be caused by thread pool starvation.");
+        private static readonly Action<ILogger, DateTimeOffset, TimeSpan, TimeSpan, Exception?> _heartbeatSlow =
+            LoggerMessage.Define<DateTimeOffset, TimeSpan, TimeSpan>(LogLevel.Warning, new EventId(22, "HeartbeatSlow"), @"As of ""{now}"", the heartbeat has been running for ""{heartbeatDuration}"" which is longer than ""{interval}"". This could be caused by thread pool starvation.");
 
         private static readonly Action<ILogger, string, Exception?> _applicationNeverCompleted =
-            LoggerMessage.Define<string>(LogLevel.Critical, new EventId(23, "ApplicationNeverCompleted"), @"Connection id ""{ConnectionId}"" application never completed");
+            LoggerMessage.Define<string>(LogLevel.Critical, new EventId(23, "ApplicationNeverCompleted"), @"Connection id ""{ConnectionId}"" application never completed.");
 
         private static readonly Action<ILogger, string, Exception?> _connectionRejected =
             LoggerMessage.Define<string>(LogLevel.Warning, new EventId(24, "ConnectionRejected"), @"Connection id ""{ConnectionId}"" rejected because the maximum number of concurrent connections has been reached.");
@@ -86,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, string, string, Exception?> _applicationAbortedConnection =
             LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(34, "RequestBodyDrainTimedOut"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.");
 
-        private static readonly Action<ILogger, string, Http2ErrorCode, Exception> _http2StreamResetError =
+        private static readonly Action<ILogger, string, Http2ErrorCode, Exception> _http2StreamResetAbort =
             LoggerMessage.Define<string, Http2ErrorCode>(LogLevel.Debug, new EventId(35, "Http2StreamResetAbort"),
                 @"Trace id ""{TraceIdentifier}"": HTTP/2 stream error ""{error}"". A Reset is being sent to the stream.");
 
@@ -95,16 +97,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 @"Connection id ""{ConnectionId}"" is closing.");
 
         private static readonly Action<ILogger, string, int, Exception?> _http2ConnectionClosed =
-            LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(36, "Http2ConnectionClosed"),
+            LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(48, "Http2ConnectionClosed"),
                 @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
 
         private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception?> _http2FrameReceived =
             LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, "Http2FrameReceived"),
-                @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length} and flags {flags}");
+                @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length} and flags {flags}.");
 
         private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception?> _http2FrameSending =
-            LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, "Http2FrameReceived"),
-                @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length} and flags {flags}");
+            LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(49, "Http2FrameSending"),
+                @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length} and flags {flags}.");
 
         private static readonly Action<ILogger, string, int, Exception> _hpackEncodingError =
             LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(38, "HPackEncodingError"),
@@ -120,6 +122,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, Exception?> _invalidResponseHeaderRemoved =
             LoggerMessage.Define(LogLevel.Warning, new EventId(41, "InvalidResponseHeaderRemoved"),
                 "One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'.");
+
+        private static readonly Action<ILogger, string, Exception> _http3ConnectionError =
+               LoggerMessage.Define<string>(LogLevel.Debug, new EventId(42, "Http3ConnectionError"), @"Connection id ""{ConnectionId}"": HTTP/3 connection error.");
+
+        private static readonly Action<ILogger, string, Exception?> _http3ConnectionClosing =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(43, "Http3ConnectionClosing"),
+                @"Connection id ""{ConnectionId}"" is closing.");
+
+        private static readonly Action<ILogger, string, long, Exception?> _http3ConnectionClosed =
+            LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(44, "Http3ConnectionClosed"),
+                @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
+
+        private static readonly Action<ILogger, string, Http3ErrorCode, Exception> _http3StreamAbort =
+            LoggerMessage.Define<string, Http3ErrorCode>(LogLevel.Debug, new EventId(45, "Http3StreamAbort"),
+                @"Trace id ""{TraceIdentifier}"": HTTP/3 stream error ""{error}"". An abort is being sent to the stream.");
+
+        private static readonly Action<ILogger, string, Http3FrameType, long, long, Exception?> _http3FrameReceived =
+            LoggerMessage.Define<string, Http3FrameType, long, long>(LogLevel.Trace, new EventId(46, "Http3FrameReceived"),
+                @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length}.");
+
+        private static readonly Action<ILogger, string, Http3FrameType, long, long, Exception?> _http3FrameSending =
+            LoggerMessage.Define<string, Http3FrameType, long, long>(LogLevel.Trace, new EventId(47, "Http3FrameSending"),
+                @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length}.");
 
         protected readonly ILogger _logger;
 
@@ -200,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public virtual void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now)
         {
-            _heartbeatSlow(_logger, heartbeatDuration, interval, now, null);
+            _heartbeatSlow(_logger, now, heartbeatDuration, interval, null);
         }
 
         public virtual void ApplicationNeverCompleted(string connectionId)
@@ -265,7 +290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason)
         {
-            _http2StreamResetError(_logger, traceIdentifier, error, abortReason);
+            _http2StreamResetAbort(_logger, traceIdentifier, error, abortReason);
         }
 
         public virtual void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
@@ -302,6 +327,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public void InvalidResponseHeaderRemoved()
         {
             _invalidResponseHeaderRemoved(_logger, null);
+        }
+
+        public void Http3ConnectionError(string connectionId, Http3ConnectionException ex)
+        {
+            _http3ConnectionError(_logger, connectionId, ex);
+        }
+
+        public void Http3ConnectionClosing(string connectionId)
+        {
+            _http3ConnectionClosing(_logger, connectionId, null);
+        }
+
+        public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId)
+        {
+            _http3ConnectionClosed(_logger, connectionId, highestOpenedStreamId, null);
+        }
+
+        public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
+        {
+            _http3StreamAbort(_logger, traceIdentifier, error, abortReason);
+        }
+
+        public void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame)
+        {
+            _http3FrameReceived(_logger, connectionId, frame.Type, streamId, frame.Length, null);
+        }
+
+        public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame)
+        {
+            _http3FrameSending(_logger, connectionId, frame.Type, streamId, frame.Length, null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)

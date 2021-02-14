@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0.102-ca-patch-buster-slim AS build
 
 ENV StressRunDuration=0
 ARG DEBIAN_FRONTEND=noninteractive
@@ -12,7 +12,7 @@ RUN apt-get update \
     nodejs \
     git
 
-ARG gitBranch=master
+ARG gitBranch=main
 
 WORKDIR /src
 ADD https://api.github.com/repos/dotnet/aspnetcore/git/ref/heads/${gitBranch} /aspnetcore.commit

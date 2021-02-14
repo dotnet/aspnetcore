@@ -48,12 +48,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         // Internal for testing
         internal ControllerContext ControllerContext => _controllerContext;
 
-        protected override void ReleaseResources()
+        protected override ValueTask ReleaseResources()
         {
             if (_instance != null && _cacheEntry.ControllerReleaser != null)
             {
-                _cacheEntry.ControllerReleaser(_controllerContext, _instance);
+                return _cacheEntry.ControllerReleaser(_controllerContext, _instance);
             }
+
+            return default;
         }
 
         private Task Next(ref State next, ref Scope scope, ref object? state, ref bool isCompleted)

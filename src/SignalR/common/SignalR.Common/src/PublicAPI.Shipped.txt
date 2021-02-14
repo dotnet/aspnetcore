@@ -55,6 +55,7 @@ Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol.Version.get -> int
 Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol.WriteMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message, System.Buffers.IBufferWriter<byte>! output) -> void
 Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage
 Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage.BindingFailure.get -> System.Runtime.ExceptionServices.ExceptionDispatchInfo!
+Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage.InvocationBindingFailureMessage(string! invocationId, string! target, System.Runtime.ExceptionServices.ExceptionDispatchInfo! bindingFailure) -> void
 Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage.Target.get -> string!
 Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage
 Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage.InvocationMessage(string! target, object?[]? arguments) -> void
@@ -67,6 +68,7 @@ Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage.Id.get -> stri
 Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage.StreamBindingFailureMessage(string! id, System.Runtime.ExceptionServices.ExceptionDispatchInfo! bindingFailure) -> void
 Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage
 Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage.StreamInvocationMessage(string! invocationId, string! target, object![]! arguments) -> void
+Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage.StreamInvocationMessage(string! invocationId, string! target, object![]! arguments, string![]! streamIds) -> void
 Microsoft.AspNetCore.SignalR.Protocol.StreamItemMessage
 Microsoft.AspNetCore.SignalR.Protocol.StreamItemMessage.Item.get -> object?
 Microsoft.AspNetCore.SignalR.Protocol.StreamItemMessage.StreamItemMessage(string! invocationId, object? item) -> void

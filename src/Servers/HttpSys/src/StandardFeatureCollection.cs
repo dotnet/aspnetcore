@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     internal sealed class StandardFeatureCollection : IFeatureCollection
     {
         private static readonly Func<RequestContext, object> _identityFunc = ReturnIdentity;
-        private static readonly Dictionary<Type, Func<RequestContext, object>> _featureFuncLookup = new()
+        private static readonly Dictionary<Type, Func<RequestContext, object?>> _featureFuncLookup = new()
         {
             { typeof(IHttpRequestFeature), _identityFunc },
             { typeof(IHttpRequestBodyDetectionFeature), _identityFunc },
@@ -68,11 +68,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             get { return 0; }
         }
 
-        public object this[Type key]
+        public object? this[Type key]
         {
             get
             {
-                Func<RequestContext, object> lookupFunc;
+                Func<RequestContext, object?>? lookupFunc;
                 _featureFuncLookup.TryGetValue(key, out lookupFunc);
                 return lookupFunc?.Invoke(_featureContext);
             }
@@ -104,12 +104,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public TFeature Get<TFeature>()
+        public TFeature? Get<TFeature>()
         {
-            return (TFeature)this[typeof(TFeature)];
+            return (TFeature?)this[typeof(TFeature)];
         }
 
-        public void Set<TFeature>(TFeature instance)
+        public void Set<TFeature>(TFeature? instance)
         {
             this[typeof(TFeature)] = instance;
         }

@@ -5,7 +5,13 @@
         <Package InstallerVersion="$(var.InstallerVersion)" Compressed="yes" InstallScope="perMachine" />
 
         <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." Schedule="afterInstallFinalize" />
-        <Media Id="1" Cabinet="$(var.Cabinet)" CompressionLevel="high" EmbedCab="$(var.EmbedCab)" />
+
+        <?if $(var.EmbedCab)=yes?>
+            <!-- Ignore var.Cabinet This element should choose an appropriate name for the embedded CAB. -->
+            <MediaTemplate CompressionLevel="high" EmbedCab="yes" />
+        <?else?>
+            <Media Id="1" Cabinet="$(var.Cabinet)" CompressionLevel="high" EmbedCab="no" />
+        <?endif?>
 
         <WixVariable Id="WixUILicenseRtf" Value="$(var.files)\eula.rtf" />
         <UIRef Id="WixUI_Minimal" />

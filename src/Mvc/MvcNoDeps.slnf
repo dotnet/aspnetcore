@@ -32,6 +32,7 @@
       "src\\Mvc\\Mvc.TagHelpers\\src\\Microsoft.AspNetCore.Mvc.TagHelpers.csproj",
       "src\\Mvc\\Mvc.TagHelpers\\test\\Microsoft.AspNetCore.Mvc.TagHelpers.Test.csproj",
       "src\\Mvc\\Mvc.Testing\\src\\Microsoft.AspNetCore.Mvc.Testing.csproj",
+      "src\\Mvc\\Mvc.Testing.Tasks\\src\\Microsoft.AspNetCore.Mvc.Testing.Tasks.csproj",
       "src\\Mvc\\Mvc.ViewFeatures\\src\\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj",
       "src\\Mvc\\Mvc.ViewFeatures\\test\\Microsoft.AspNetCore.Mvc.ViewFeatures.Test.csproj",
       "src\\Mvc\\Mvc\\src\\Microsoft.AspNetCore.Mvc.csproj",

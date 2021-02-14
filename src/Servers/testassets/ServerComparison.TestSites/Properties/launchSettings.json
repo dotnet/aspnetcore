@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ServerComparison.TestSites": {
+      "commandName": "Project",
+      "launchBrowser": true
+    }
+  }
+}

@@ -27,21 +27,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 return "(null)";
             }
-            else if (objectValue is string && ((string)objectValue).Length == 0)
+            else if (objectValue is string s && s.Length == 0)
             {
                 return "(string.empty)";
             }
-            else if (objectValue is Exception)
+            else if (objectValue is Exception ex)
             {
-                return ExceptionMessage(objectValue as Exception);
+                return ExceptionMessage(ex);
             }
-            else if (objectValue is IntPtr)
+            else if (objectValue is IntPtr ptr)
             {
-                return "0x" + ((IntPtr)objectValue).ToString("x", CultureInfo.InvariantCulture);
+                return "0x" + ptr.ToString("x", CultureInfo.InvariantCulture);
             }
             else
             {
-                return objectValue.ToString();
+                return objectValue.ToString()!;
             }
         }
 

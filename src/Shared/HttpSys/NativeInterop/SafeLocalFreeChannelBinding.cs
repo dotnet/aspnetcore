@@ -4,9 +4,6 @@
 using System;
 using System.Security.Authentication.ExtendedProtection;
 
-// Remove once HttpSys has enabled nullable
-#nullable enable
-
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal class SafeLocalFreeChannelBinding : ChannelBinding

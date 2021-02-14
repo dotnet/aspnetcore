@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Blazor-WebAssembly-App",
+    "description": "Eine Projektvorlage zum Erstellen einer Blazor-App, die auf WebAssembly ausgeführt und optional durch eine ASP.NET Core-App gehostet wird. Diese Vorlage kann für Web-Apps mit umfangreichen dynamischen Benutzeroberflächen verwendet werden.",
+    "parameter.Hosted.name": "ASP.NET Core, _gehostet",
+    "parameter.PWA.name": "_Progressive Webanwendung"
+  }
+}

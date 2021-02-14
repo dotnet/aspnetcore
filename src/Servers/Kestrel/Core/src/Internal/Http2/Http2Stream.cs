@@ -450,6 +450,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
                             // _inputFlowControl.Advance() didn't throw.
                             Debug.Assert(flushTask.IsCompletedSuccessfully);
+                            
+                            // If it's a IValueTaskSource backed ValueTask,
+                            // inform it its result has been read so it can reset
+                            flushTask.GetAwaiter().GetResult();
                         }
                     }
                 }

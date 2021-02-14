@@ -268,6 +268,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpResetFeature = this;
         }
 
+        protected void ResetHttp3Features()
+        {
+            _currentIHttpResponseTrailersFeature = this;
+            _currentIHttpResetFeature = this;
+        }
+
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
             OnStarting(callback, state);

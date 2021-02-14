@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 // With legacy routing, we're forced to perform a blocking call. The exceptation is that
                 // in the most common case - build time views or successsively cached runtime views - this should finish synchronously.
-                page.CompiledPageDescriptor = _pageLoader.LoadAsync(page).GetAwaiter().GetResult();
+                page.CompiledPageDescriptor = _pageLoader.LoadAsync(page, EndpointMetadataCollection.Empty).GetAwaiter().GetResult();
             }
 
             var (cacheEntry, filters) = _pageActionInvokerCache.GetCachedResult(actionContext);

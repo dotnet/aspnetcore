@@ -3,9 +3,6 @@
 
 using System;
 
-// Remove once HttpSys has enabled nullable
-#nullable enable
-
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static class NclUtilities

@@ -24,10 +24,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // The native request queue
         private long _requestQueueLength = DefaultRequestQueueLength;
         private long? _maxConnections;
-        private RequestQueue _requestQueue;
-        private UrlGroup _urlGroup;
+        private RequestQueue? _requestQueue;
+        private UrlGroup? _urlGroup;
         private long? _maxRequestBodySize = DefaultMaxRequestBodySize;
-        private string _requestQueueName;
+        private string? _requestQueueName;
 
         /// <summary>
         /// Initializes a new <see cref="HttpSysOptions"/>.
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// The name of the Http.Sys request queue
         /// </summary>
-        public string RequestQueueName
+        public string? RequestQueueName
         {
             get => _requestQueueName;
             set

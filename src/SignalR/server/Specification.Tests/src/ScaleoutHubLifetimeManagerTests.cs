@@ -1,8 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -10,10 +8,24 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Specification.Tests
 {
-    public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeManagerTestsBase<MyHub>
+    /// <summary>
+    /// Base test class for lifetime manager implementations that support server scale-out.
+    /// </summary>
+    /// <typeparam name="TBackplane">An in-memory implementation of the backplane that <see cref="HubLifetimeManager{THub}"/>s communicate with.</typeparam>
+    public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeManagerTestsBase<Hub>
     {
+        /// <summary>
+        /// Method to create an implementation of an in-memory backplane for use in tests.
+        /// </summary>
+        /// <returns>The backplane implementation.</returns>
         public abstract TBackplane CreateBackplane();
-        public abstract HubLifetimeManager<MyHub> CreateNewHubLifetimeManager(TBackplane backplane);
+
+        /// <summary>
+        /// Method to create an implementation of <see cref="HubLifetimeManager{THub}"/> that uses the backplane from <see cref="CreateBackplane"/>.
+        /// </summary>
+        /// <param name="backplane">The backplane implementation for use in the <see cref="HubLifetimeManager{THub}"/>.</param>
+        /// <returns></returns>
+        public abstract HubLifetimeManager<Hub> CreateNewHubLifetimeManager(TBackplane backplane);
 
         private async Task AssertMessageAsync(TestClient client)
         {
@@ -23,9 +35,12 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             Assert.Equal("World", (string)message.Arguments[0]);
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task InvokeAllAsyncWithMultipleServersWritesToAllConnectionsOutput()
-
         {
             var backplane = CreateBackplane();
             var manager1 = CreateNewHubLifetimeManager(backplane);
@@ -47,6 +62,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task InvokeAllAsyncWithMultipleServersDoesNotWriteToDisconnectedConnectionsOutput()
         {
@@ -73,6 +92,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task InvokeConnectionAsyncOnServerWithoutConnectionWritesOutputToConnection()
         {
@@ -93,6 +116,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task InvokeGroupAsyncOnServerWithoutConnectionWritesOutputToGroupConnection()
         {
@@ -115,6 +142,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task DisconnectConnectionRemovesConnectionFromGroup()
         {
@@ -137,6 +168,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task RemoveGroupFromLocalConnectionNotInGroupDoesNothing()
         {
@@ -153,6 +188,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task RemoveGroupFromConnectionOnDifferentServerNotInGroupDoesNothing()
         {
@@ -170,6 +209,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task AddGroupAsyncForConnectionOnDifferentServerWorks()
         {
@@ -191,6 +234,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task AddGroupAsyncForLocalConnectionAlreadyInGroupDoesNothing()
         {
@@ -213,6 +260,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task AddGroupAsyncForConnectionOnDifferentServerAlreadyInGroupDoesNothing()
         {
@@ -236,6 +287,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task RemoveGroupAsyncForConnectionOnDifferentServerWorks()
         {
@@ -263,6 +318,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task InvokeConnectionAsyncForLocalConnectionDoesNotPublishToBackplane()
         {
@@ -285,6 +344,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task WritingToRemoteConnectionThatFailsDoesNotThrow()
         {
@@ -305,6 +368,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task WritingToGroupWithOneConnectionFailingSecondConnectionStillReceivesMessage()
         {
@@ -336,6 +403,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task InvokeUserSendsToAllConnectionsForUser()
         {
@@ -360,6 +431,10 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
             }
         }
 
+        /// <summary>
+        /// Specification test for SignalR HubLifetimeManager.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
         [Fact]
         public async Task StillSubscribedToUserAfterOneOfMultipleConnectionsAssociatedWithUserDisconnects()
         {
@@ -388,8 +463,5 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
                 await AssertMessageAsync(client2);
             }
         }
-    }
-    public class MyHub : Hub
-    {
     }
 }

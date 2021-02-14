@@ -128,6 +128,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                         return requestContext;
                     }
 
+                    requestContext.ReleasePins();
                     requestContext.Dispose();
                 }
             }

@@ -9,14 +9,14 @@
     <AspNetCoreMajorVersion>6</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>2</PreReleaseVersionIteration>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
-    <PreReleaseVersionLabel>alpha</PreReleaseVersionLabel>
-    <PreReleaseBrandingLabel>Alpha $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseBrandingLabel>Preview $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
     <IncludePreReleaseLabelInPackageVersion Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</IncludePreReleaseLabelInPackageVersion>
     <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
@@ -64,84 +64,83 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
-    <MicrosoftExtensionsDependencyModelVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsDependencyModelVersion>
-    <MicrosoftNETCoreAppRefVersion>6.0.0-alpha.1.21051.2</MicrosoftNETCoreAppRefVersion>
-    <MicrosoftNETCoreAppRuntimewinx64Version>6.0.0-alpha.1.21051.2</MicrosoftNETCoreAppRuntimewinx64Version>
-    <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.0-alpha.1.21051.2</MicrosoftNETCoreBrowserDebugHostTransportVersion>
-    <MicrosoftWin32RegistryVersion>6.0.0-alpha.1.21051.2</MicrosoftWin32RegistryVersion>
-    <MicrosoftWin32SystemEventsVersion>6.0.0-alpha.1.21051.2</MicrosoftWin32SystemEventsVersion>
-    <MicrosoftExtensionsCachingAbstractionsVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsCachingAbstractionsVersion>
-    <MicrosoftExtensionsCachingMemoryVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsCachingMemoryVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsConfigurationAbstractionsVersion>
-    <MicrosoftExtensionsConfigurationBinderVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsConfigurationBinderVersion>
-    <MicrosoftExtensionsConfigurationCommandLineVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsConfigurationCommandLineVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsConfigurationFileExtensionsVersion>
-    <MicrosoftExtensionsConfigurationIniVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsConfigurationIniVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsConfigurationJsonVersion>
-    <MicrosoftExtensionsConfigurationVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsConfigurationUserSecretsVersion>
-    <MicrosoftExtensionsConfigurationXmlVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsConfigurationXmlVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsFileProvidersAbstractionsVersion>
-    <MicrosoftExtensionsFileProvidersCompositeVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsFileProvidersCompositeVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsFileProvidersPhysicalVersion>
-    <MicrosoftExtensionsFileSystemGlobbingVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsFileSystemGlobbingVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
-    <MicrosoftExtensionsHostingAbstractionsVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsHostingAbstractionsVersion>
-    <MicrosoftExtensionsHostingVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsHostingVersion>
-    <MicrosoftExtensionsHttpVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsHttpVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingConfigurationVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsLoggingConfigurationVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingDebugVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsLoggingDebugVersion>
-    <MicrosoftExtensionsLoggingEventSourceVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsLoggingEventSourceVersion>
-    <MicrosoftExtensionsLoggingEventLogVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsLoggingEventLogVersion>
-    <MicrosoftExtensionsLoggingVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsLoggingTraceSourceVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsLoggingTraceSourceVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
-    <MicrosoftExtensionsOptionsDataAnnotationsVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsOptionsDataAnnotationsVersion>
-    <MicrosoftExtensionsOptionsVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsOptionsVersion>
-    <MicrosoftExtensionsPrimitivesVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftExtensionsInternalTransportVersion>6.0.0-alpha.1.21051.2</MicrosoftExtensionsInternalTransportVersion>
-    <SystemComponentModelAnnotationsVersion>6.0.0-alpha.1.21051.2</SystemComponentModelAnnotationsVersion>
-    <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-alpha.1.21051.2</SystemDiagnosticsDiagnosticSourceVersion>
-    <SystemDiagnosticsEventLogVersion>6.0.0-alpha.1.21051.2</SystemDiagnosticsEventLogVersion>
-    <SystemDirectoryServicesProtocolsVersion>6.0.0-alpha.1.21051.2</SystemDirectoryServicesProtocolsVersion>
-    <SystemDrawingCommonVersion>6.0.0-alpha.1.21051.2</SystemDrawingCommonVersion>
-    <SystemIOPipelinesVersion>6.0.0-alpha.1.21051.2</SystemIOPipelinesVersion>
-    <SystemNetHttpJsonVersion>6.0.0-alpha.1.21051.2</SystemNetHttpJsonVersion>
-    <SystemNetHttpWinHttpHandlerVersion>6.0.0-alpha.1.21051.2</SystemNetHttpWinHttpHandlerVersion>
-    <SystemNetWebSocketsWebSocketProtocolVersion>6.0.0-alpha.1.21051.2</SystemNetWebSocketsWebSocketProtocolVersion>
-    <SystemReflectionMetadataVersion>6.0.0-alpha.1.21051.2</SystemReflectionMetadataVersion>
-    <SystemResourcesExtensionsVersion>6.0.0-alpha.1.21051.2</SystemResourcesExtensionsVersion>
-    <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-alpha.1.21051.2</SystemRuntimeCompilerServicesUnsafeVersion>
-    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. -->
-    <SystemSecurityAccessControlVersion>6.0.0-alpha.1.21051.2</SystemSecurityAccessControlVersion>
-    <SystemSecurityCryptographyCngVersion>6.0.0-alpha.1.21051.2</SystemSecurityCryptographyCngVersion>
-    <SystemSecurityCryptographyPkcsVersion>6.0.0-alpha.1.21051.2</SystemSecurityCryptographyPkcsVersion>
-    <SystemSecurityCryptographyXmlVersion>6.0.0-alpha.1.21051.2</SystemSecurityCryptographyXmlVersion>
-    <SystemSecurityPermissionsVersion>6.0.0-alpha.1.21051.2</SystemSecurityPermissionsVersion>
-    <SystemSecurityPrincipalWindowsVersion>6.0.0-alpha.1.21051.2</SystemSecurityPrincipalWindowsVersion>
-    <SystemServiceProcessServiceControllerVersion>6.0.0-alpha.1.21051.2</SystemServiceProcessServiceControllerVersion>
-    <SystemTextEncodingsWebVersion>6.0.0-alpha.1.21051.2</SystemTextEncodingsWebVersion>
-    <SystemTextJsonVersion>6.0.0-alpha.1.21051.2</SystemTextJsonVersion>
-    <SystemThreadingChannelsVersion>6.0.0-alpha.1.21051.2</SystemThreadingChannelsVersion>
-    <SystemWindowsExtensionsVersion>6.0.0-alpha.1.21051.2</SystemWindowsExtensionsVersion>
+    <MicrosoftExtensionsDependencyModelVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsDependencyModelVersion>
+    <MicrosoftNETCoreAppRefVersion>6.0.0-preview.2.21113.2</MicrosoftNETCoreAppRefVersion>
+    <MicrosoftNETCoreAppRuntimewinx64Version>6.0.0-preview.2.21113.2</MicrosoftNETCoreAppRuntimewinx64Version>
+    <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.0-preview.2.21113.2</MicrosoftNETCoreBrowserDebugHostTransportVersion>
+    <MicrosoftWin32RegistryVersion>6.0.0-preview.2.21113.2</MicrosoftWin32RegistryVersion>
+    <MicrosoftWin32SystemEventsVersion>6.0.0-preview.2.21113.2</MicrosoftWin32SystemEventsVersion>
+    <MicrosoftExtensionsCachingAbstractionsVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsCachingAbstractionsVersion>
+    <MicrosoftExtensionsCachingMemoryVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationBinderVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsConfigurationBinderVersion>
+    <MicrosoftExtensionsConfigurationCommandLineVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsConfigurationCommandLineVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsConfigurationFileExtensionsVersion>
+    <MicrosoftExtensionsConfigurationIniVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsConfigurationIniVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsConfigurationUserSecretsVersion>
+    <MicrosoftExtensionsConfigurationXmlVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsConfigurationXmlVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsFileProvidersCompositeVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsFileProvidersCompositeVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsFileProvidersPhysicalVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
+    <MicrosoftExtensionsHostingAbstractionsVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsHostingAbstractionsVersion>
+    <MicrosoftExtensionsHostingVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsHostingVersion>
+    <MicrosoftExtensionsHttpVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsHttpVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingConfigurationVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsLoggingConfigurationVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingDebugVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsLoggingDebugVersion>
+    <MicrosoftExtensionsLoggingEventSourceVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsLoggingEventSourceVersion>
+    <MicrosoftExtensionsLoggingEventLogVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsLoggingEventLogVersion>
+    <MicrosoftExtensionsLoggingVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingTraceSourceVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsLoggingTraceSourceVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
+    <MicrosoftExtensionsOptionsDataAnnotationsVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsOptionsDataAnnotationsVersion>
+    <MicrosoftExtensionsOptionsVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsOptionsVersion>
+    <MicrosoftExtensionsPrimitivesVersion>6.0.0-preview.2.21113.2</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftExtensionsInternalTransportVersion>6.0.0-preview.2.21106.9</MicrosoftExtensionsInternalTransportVersion>
+    <SystemComponentModelAnnotationsVersion>6.0.0-preview.2.21113.2</SystemComponentModelAnnotationsVersion>
+    <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-preview.2.21113.2</SystemDiagnosticsDiagnosticSourceVersion>
+    <SystemDiagnosticsEventLogVersion>6.0.0-preview.2.21113.2</SystemDiagnosticsEventLogVersion>
+    <SystemDirectoryServicesProtocolsVersion>6.0.0-preview.2.21113.2</SystemDirectoryServicesProtocolsVersion>
+    <SystemDrawingCommonVersion>6.0.0-preview.2.21113.2</SystemDrawingCommonVersion>
+    <SystemIOPipelinesVersion>6.0.0-preview.2.21113.2</SystemIOPipelinesVersion>
+    <SystemNetHttpJsonVersion>6.0.0-preview.2.21113.2</SystemNetHttpJsonVersion>
+    <SystemNetHttpWinHttpHandlerVersion>6.0.0-preview.2.21113.2</SystemNetHttpWinHttpHandlerVersion>
+    <SystemReflectionMetadataVersion>6.0.0-preview.2.21113.2</SystemReflectionMetadataVersion>
+    <SystemResourcesExtensionsVersion>6.0.0-preview.2.21113.2</SystemResourcesExtensionsVersion>
+    <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.2.21113.2</SystemRuntimeCompilerServicesUnsafeVersion>
+    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. -->
+    <SystemSecurityAccessControlVersion>6.0.0-preview.2.21113.2</SystemSecurityAccessControlVersion>
+    <SystemSecurityCryptographyCngVersion>6.0.0-preview.2.21113.2</SystemSecurityCryptographyCngVersion>
+    <SystemSecurityCryptographyPkcsVersion>6.0.0-preview.2.21113.2</SystemSecurityCryptographyPkcsVersion>
+    <SystemSecurityCryptographyXmlVersion>6.0.0-preview.2.21113.2</SystemSecurityCryptographyXmlVersion>
+    <SystemSecurityPermissionsVersion>6.0.0-preview.2.21113.2</SystemSecurityPermissionsVersion>
+    <SystemSecurityPrincipalWindowsVersion>6.0.0-preview.2.21113.2</SystemSecurityPrincipalWindowsVersion>
+    <SystemServiceProcessServiceControllerVersion>6.0.0-preview.2.21113.2</SystemServiceProcessServiceControllerVersion>
+    <SystemTextEncodingsWebVersion>6.0.0-preview.2.21113.2</SystemTextEncodingsWebVersion>
+    <SystemTextJsonVersion>6.0.0-preview.2.21113.2</SystemTextJsonVersion>
+    <SystemThreadingChannelsVersion>6.0.0-preview.2.21113.2</SystemThreadingChannelsVersion>
+    <SystemWindowsExtensionsVersion>6.0.0-preview.2.21113.2</SystemWindowsExtensionsVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <MicrosoftNETCorePlatformsVersion>6.0.0-alpha.1.21051.2</MicrosoftNETCorePlatformsVersion>
+    <MicrosoftNETCorePlatformsVersion>6.0.0-preview.2.21113.2</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>6.0.0-alpha.1.21051.1</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-alpha.1.21051.1</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>6.0.0-alpha.1.21051.1</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>6.0.0-alpha.1.21051.1</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>6.0.0-alpha.1.21051.1</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>6.0.0-alpha.1.21051.1</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>6.0.0-alpha.1.21051.1</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-alpha.1.21051.1</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>6.0.0-preview.2.21112.9</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-preview.2.21112.9</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>6.0.0-preview.2.21112.9</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>6.0.0-preview.2.21112.9</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>6.0.0-preview.2.21112.9</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>6.0.0-preview.2.21112.9</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>6.0.0-preview.2.21112.9</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-preview.2.21112.9</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.20621.12</MicrosoftDotNetBuildTasksInstallersVersion>
+    <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.21105.5</MicrosoftDotNetBuildTasksInstallersVersion>
   </PropertyGroup>
   <!--
 
@@ -176,18 +175,18 @@
     because System.Security.AccessControl will otherwise be loadable. This should not be necessary in servicing.
   -->
   <PropertyGroup Condition=" '$(IsServicingBuild)' == 'true' ">
-    <MicrosoftWin32RegistryV0PackageVersion>$(MicrosoftWin32RegistryPackageVersion.Split('.')[0]).$(MicrosoftWin32RegistryPackageVersion.Split('.')[1]).0</MicrosoftWin32RegistryV0PackageVersion>
-    <MicrosoftWin32SystemEventsV0PackageVersion>$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsV0PackageVersion>
-    <SystemDiagnosticsEventLogV0PackageVersion>$(SystemDiagnosticsEventLogPackageVersion.Split('.')[0]).$(SystemDiagnosticsEventLogPackageVersion.Split('.')[1]).0</SystemDiagnosticsEventLogV0PackageVersion>
-    <SystemDrawingCommonV0PackageVersion>$(SystemDrawingCommonPackageVersion.Split('.')[0]).$(SystemDrawingCommonPackageVersion.Split('.')[1]).0</SystemDrawingCommonV0PackageVersion>
-    <SystemIOPipelinesV0PackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesV0PackageVersion>
-    <SystemSecurityAccessControlV0PackageVersion>$(SystemSecurityAccessControlPackageVersion.Split('.')[0]).$(SystemSecurityAccessControlPackageVersion.Split('.')[1]).0</SystemSecurityAccessControlV0PackageVersion>
-    <SystemSecurityCryptographyCngV0PackageVersion>$(SystemSecurityCryptographyCngPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyCngPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyCngV0PackageVersion>
-    <SystemSecurityCryptographyPkcsV0PackageVersion>$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyPkcsV0PackageVersion>
-    <SystemSecurityCryptographyXmlV0PackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlV0PackageVersion>
-    <SystemSecurityPermissionsV0PackageVersion>$(SystemSecurityPermissionsPackageVersion.Split('.')[0]).$(SystemSecurityPermissionsPackageVersion.Split('.')[1]).0</SystemSecurityPermissionsV0PackageVersion>
-    <SystemSecurityPrincipalWindowsV0PackageVersion>$(SystemSecurityPrincipalWindowsPackageVersion.Split('.')[0]).$(SystemSecurityPrincipalWindowsPackageVersion.Split('.')[1]).0</SystemSecurityPrincipalWindowsV0PackageVersion>
-    <SystemWindowsExtensionsV0PackageVersion>$(SystemWindowsExtensionsPackageVersion.Split('.')[0]).$(SystemWindowsExtensionsPackageVersion.Split('.')[1]).0</SystemWindowsExtensionsV0PackageVersion>
+    <MicrosoftWin32RegistryV0Version>$(MicrosoftWin32RegistryVersion.Split('.')[0]).$(MicrosoftWin32RegistryVersion.Split('.')[1]).0</MicrosoftWin32RegistryV0Version>
+    <MicrosoftWin32SystemEventsV0Version>$(MicrosoftWin32SystemEventsVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsV0Version>
+    <SystemDiagnosticsEventLogV0Version>$(SystemDiagnosticsEventLogVersion.Split('.')[0]).$(SystemDiagnosticsEventLogVersion.Split('.')[1]).0</SystemDiagnosticsEventLogV0Version>
+    <SystemDrawingCommonV0Version>$(SystemDrawingCommonVersion.Split('.')[0]).$(SystemDrawingCommonVersion.Split('.')[1]).0</SystemDrawingCommonV0Version>
+    <SystemIOPipelinesV0Version>$(SystemIOPipelinesVersion.Split('.')[0]).$(SystemIOPipelinesVersion.Split('.')[1]).0</SystemIOPipelinesV0Version>
+    <SystemSecurityAccessControlV0Version>$(SystemSecurityAccessControlVersion.Split('.')[0]).$(SystemSecurityAccessControlVersion.Split('.')[1]).0</SystemSecurityAccessControlV0Version>
+    <SystemSecurityCryptographyCngV0Version>$(SystemSecurityCryptographyCngVersion.Split('.')[0]).$(SystemSecurityCryptographyCngVersion.Split('.')[1]).0</SystemSecurityCryptographyCngV0Version>
+    <SystemSecurityCryptographyPkcsV0Version>$(SystemSecurityCryptographyPkcsVersion.Split('.')[0]).$(SystemSecurityCryptographyPkcsVersion.Split('.')[1]).0</SystemSecurityCryptographyPkcsV0Version>
+    <SystemSecurityCryptographyXmlV0Version>$(SystemSecurityCryptographyXmlVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlV0Version>
+    <SystemSecurityPermissionsV0Version>$(SystemSecurityPermissionsVersion.Split('.')[0]).$(SystemSecurityPermissionsVersion.Split('.')[1]).0</SystemSecurityPermissionsV0Version>
+    <SystemSecurityPrincipalWindowsV0Version>$(SystemSecurityPrincipalWindowsVersion.Split('.')[0]).$(SystemSecurityPrincipalWindowsVersion.Split('.')[1]).0</SystemSecurityPrincipalWindowsV0Version>
+    <SystemWindowsExtensionsV0Version>$(SystemWindowsExtensionsVersion.Split('.')[0]).$(SystemWindowsExtensionsVersion.Split('.')[1]).0</SystemWindowsExtensionsV0Version>
   </PropertyGroup>
   <PropertyGroup Label="Manual">
     <!-- Packages from dotnet/roslyn -->
@@ -274,6 +273,7 @@
     <NewtonsoftJsonBsonVersion>1.0.2</NewtonsoftJsonBsonVersion>
     <NewtonsoftJsonVersion>12.0.2</NewtonsoftJsonVersion>
     <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
+    <PlaywrightSharpVersion>0.180.0</PlaywrightSharpVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
     <PollyVersion>7.1.0</PollyVersion>
     <SeleniumSupportVersion>4.0.0-alpha07</SeleniumSupportVersion>

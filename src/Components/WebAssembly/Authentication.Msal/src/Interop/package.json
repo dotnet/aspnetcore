@@ -7,12 +7,12 @@
     "watch": "webpack --watch --mode development --env.configuration=Debug"
   },
   "devDependencies": {
-    "ts-loader": "^6.2.1",
-    "typescript": "^3.7.5",
+    "ts-loader": "^8.0.14",
+    "typescript": "^4.1.3",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
-    "@azure/msal-browser": "^2.0.0"
+    "@azure/msal-browser": "2.8.0"
   }
 }

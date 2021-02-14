@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
     <_MvcTestingTasksAssembly Condition="$(_MvcTestingTasksAssembly) == ''">$(MSBuildThisFileDirectory)..\tasks\Microsoft.AspNetCore.Mvc.Testing.dll</_MvcTestingTasksAssembly>
@@ -44,6 +44,18 @@
         CopyToPublishDirectory="Never"/>
       <FileWrites Include="$(IntermediateOutputPath)MvcTestingAppManifest.json" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="_GeneratePublishTestManifest" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
+    <ItemGroup>
+      <_PublishManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
+        <ContentRoot>~</ContentRoot>
+      </_PublishManifestProjects>
+      <_DepsFileToPublish Include="$([System.IO.Path]::ChangeExtension('%(_ContentRootProjectReferences.Identity)', 'deps.json'))" />
+    </ItemGroup>
+
+    <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_PublishManifestProjects)" />
+    <Copy SourceFiles="%(_DepsFileToPublish.FullPath)" DestinationFolder="$(PublishDir)" Condition="Exists('%(_DepsFileToPublish.FullPath)')" />
   </Target>
 
   <Target Name="_MvcCopyDependencyFiles" AfterTargets="Build;_ResolveMvcTestProjectReferences" Condition="'$(TargetFramework)'!=''">

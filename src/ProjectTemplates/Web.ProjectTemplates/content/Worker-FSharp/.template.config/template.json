@@ -10,8 +10,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating a worker service.",
   "groupIdentity": "Microsoft.Worker.Empty",
-  "precedence": "7000",
-  "identity": "Microsoft.Worker.Empty.FSharp.5.0",
+  "precedence": "8000",
+  "identity": "Microsoft.Worker.Empty.FSharp.6.0",
   "shortName": "worker",
   "tags": {
     "language": "F#",

@@ -26,7 +26,7 @@ Microsoft.AspNetCore.Http.Features.FeatureCollection.FeatureCollection(Microsoft
 Microsoft.AspNetCore.Http.Features.FeatureCollection.Get<TFeature>() -> TFeature?
 Microsoft.AspNetCore.Http.Features.FeatureCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type!, object!>>!
 Microsoft.AspNetCore.Http.Features.FeatureCollection.IsReadOnly.get -> bool
-Microsoft.AspNetCore.Http.Features.FeatureCollection.Set<TFeature>(TFeature? instance) -> void
+Microsoft.AspNetCore.Http.Features.FeatureCollection.Set<TFeature>(TFeature instance) -> void
 Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].get -> object?
 Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].set -> void
 Microsoft.AspNetCore.Http.Features.FeatureReference<T>
@@ -46,10 +46,10 @@ Microsoft.AspNetCore.Http.Features.HttpsCompressionMode.Compress = 2 -> Microsof
 Microsoft.AspNetCore.Http.Features.HttpsCompressionMode.Default = 0 -> Microsoft.AspNetCore.Http.Features.HttpsCompressionMode
 Microsoft.AspNetCore.Http.Features.HttpsCompressionMode.DoNotCompress = 1 -> Microsoft.AspNetCore.Http.Features.HttpsCompressionMode
 Microsoft.AspNetCore.Http.Features.IFeatureCollection
-Microsoft.AspNetCore.Http.Features.IFeatureCollection.Get<TFeature>() -> TFeature?
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.Get<TFeature>() -> TFeature
 Microsoft.AspNetCore.Http.Features.IFeatureCollection.IsReadOnly.get -> bool
 Microsoft.AspNetCore.Http.Features.IFeatureCollection.Revision.get -> int
-Microsoft.AspNetCore.Http.Features.IFeatureCollection.Set<TFeature>(TFeature? instance) -> void
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.Set<TFeature>(TFeature instance) -> void
 Microsoft.AspNetCore.Http.Features.IFeatureCollection.this[System.Type! key].get -> object?
 Microsoft.AspNetCore.Http.Features.IFeatureCollection.this[System.Type! key].set -> void
 Microsoft.AspNetCore.Http.Features.IFormFeature
@@ -61,6 +61,9 @@ Microsoft.AspNetCore.Http.Features.IFormFeature.ReadFormAsync(System.Threading.C
 Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature
 Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature.AllowSynchronousIO.get -> bool
 Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature.AllowSynchronousIO.set -> void
+Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature
+Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature.DisableRequestBuffering() -> void
+Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature.DisableResponseBuffering() -> void
 Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature
 Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature.ConnectionId.get -> string!
 Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature.ConnectionId.set -> void
@@ -129,8 +132,10 @@ Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.ReasonPhrase.set -> void
 Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.StatusCode.get -> int
 Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.StatusCode.set -> void
 Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature
-Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature.Trailers.set -> void
 Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature.Trailers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
+Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature.Trailers.set -> void
+Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature
+Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature.SendFileAsync(string! path, long offset, long? count, System.Threading.CancellationToken cancellation) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature
 Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature.IsUpgradableRequest.get -> bool
 Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature.UpgradeAsync() -> System.Threading.Tasks.Task<System.IO.Stream!>!
@@ -154,7 +159,7 @@ Microsoft.AspNetCore.Http.Features.IRequestCookiesFeature.Cookies.set -> void
 Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature
 Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature.Cookies.get -> Microsoft.AspNetCore.Http.IResponseCookies!
 Microsoft.AspNetCore.Http.Features.IServerVariablesFeature
-Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string?
+Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string!
 Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].set -> void
 Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature
 Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature.RequestServices.get -> System.IServiceProvider!
@@ -228,7 +233,7 @@ Microsoft.AspNetCore.Http.ISession.Keys.get -> System.Collections.Generic.IEnume
 Microsoft.AspNetCore.Http.ISession.LoadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.ISession.Remove(string! key) -> void
 Microsoft.AspNetCore.Http.ISession.Set(string! key, byte[]! value) -> void
-Microsoft.AspNetCore.Http.ISession.TryGetValue(string! key, out byte[]? value) -> bool
+Microsoft.AspNetCore.Http.ISession.TryGetValue(string! key, out byte[]! value) -> bool
 Microsoft.AspNetCore.Http.SameSiteMode
 Microsoft.AspNetCore.Http.SameSiteMode.Lax = 1 -> Microsoft.AspNetCore.Http.SameSiteMode
 Microsoft.AspNetCore.Http.SameSiteMode.None = 0 -> Microsoft.AspNetCore.Http.SameSiteMode

@@ -1,13 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         private static readonly IValueProvider EmptyValueProvider = new CompositeValueProvider();
         private readonly int _maxModelBindingCollectionSize = MvcOptions.DefaultMaxModelBindingCollectionSize;
-        private Func<object> _modelCreator;
+        private Func<object>? _modelCreator;
 
         /// <summary>
         /// Creates a new <see cref="CollectionModelBinder{TElement}"/>.
@@ -197,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <inheritdoc />
         public virtual bool CanCreateInstance(Type targetType)
         {
-            if (targetType.IsAssignableFrom(typeof(List<TElement>)))
+            if (targetType.IsAssignableFrom(typeof(List<TElement?>)))
             {
                 // Simple case such as ICollection<TElement>, IEnumerable<TElement> and IList<TElement>.
                 return true;
@@ -238,10 +239,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <remarks>Called when creating a default 'empty' model for a top level bind.</remarks>
         protected virtual object CreateEmptyCollection(Type targetType)
         {
-            if (targetType.IsAssignableFrom(typeof(List<TElement>)))
+            if (targetType.IsAssignableFrom(typeof(List<TElement?>)))
             {
                 // Simple case such as ICollection<TElement>, IEnumerable<TElement> and IList<TElement>.
-                return new List<TElement>();
+                return new List<TElement?>();
             }
 
             return CreateInstance(targetType);
@@ -262,7 +263,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             return _modelCreator();
-
         }
 
         // Used when the ValueProvider contains the collection to be bound as a single element, e.g. the raw value
@@ -272,9 +272,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             ModelBindingContext bindingContext,
             ValueProviderResult values)
         {
-            var boundCollection = new List<TElement>();
+            var boundCollection = new List<TElement?>();
 
-            var elementMetadata = bindingContext.ModelMetadata.ElementMetadata;
+            var elementMetadata = bindingContext.ModelMetadata.ElementMetadata!;
 
             foreach (var value in values)
             {
@@ -302,10 +302,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
             }
 
-            return new CollectionResult
-            {
-                Model = boundCollection
-            };
+            return new CollectionResult(boundCollection);
         }
 
         // Used when the ValueProvider contains the collection to be bound as multiple elements, e.g. foo[0], foo[1].
@@ -331,7 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         // Internal for testing.
         internal async Task<CollectionResult> BindComplexCollectionFromIndexes(
             ModelBindingContext bindingContext,
-            IEnumerable<string> indexNames)
+            IEnumerable<string>? indexNames)
         {
             bool indexNamesIsFinite;
             if (indexNames != null)
@@ -349,9 +346,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     .Select(i => i.ToString(CultureInfo.InvariantCulture));
             }
 
-            var elementMetadata = bindingContext.ModelMetadata.ElementMetadata;
+            var elementMetadata = bindingContext.ModelMetadata.ElementMetadata!;
 
-            var boundCollection = new List<TElement>();
+            var boundCollection = new List<TElement?>();
 
             foreach (var indexName in indexNames)
             {
@@ -369,7 +366,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
 
                 var didBind = false;
-                object boundValue = null;
+                object? boundValue = null;
                 if (result != null && result.Value.IsModelSet)
                 {
                     didBind = true;
@@ -404,10 +401,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     bindingContext.ModelMetadata.ElementType));
             }
 
-            return new CollectionResult
+            return new CollectionResult(boundCollection)
             {
-                Model = boundCollection,
-
                 // If we're working with a fixed set of indexes then this is the format like:
                 //
                 //  ?parameter.index=zero&parameter.index=one&parameter.index=two&parameter[zero]=0&parameter[one]=1&parameter[two]=2...
@@ -421,11 +416,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         // Internal for testing.
-        internal class CollectionResult
+        internal record CollectionResult(IEnumerable<TElement?> Model)
         {
-            public IEnumerable<TElement> Model { get; set; }
-
-            public IValidationStrategy ValidationStrategy { get; set; }
+            public IValidationStrategy? ValidationStrategy { get; init; }
         }
 
         /// <summary>
@@ -444,14 +437,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// Extensibility point that allows the bound collection to be manipulated or transformed before being
         /// returned from the binder.
         /// </remarks>
-        protected virtual object ConvertToCollectionType(Type targetType, IEnumerable<TElement> collection)
+        protected virtual object? ConvertToCollectionType(Type targetType, IEnumerable<TElement?> collection)
         {
             if (collection == null)
             {
                 return null;
             }
 
-            if (targetType.IsAssignableFrom(typeof(List<TElement>)))
+            if (targetType.IsAssignableFrom(typeof(List<TElement?>)))
             {
                 // Depends on fact BindSimpleCollection() and BindComplexCollection() always return a List<TElement>
                 // instance or null.
@@ -471,17 +464,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <param name="sourceCollection">
         /// Collection of values retrieved from value providers. <see langword="null"/> if nothing was bound.
         /// </param>
-        protected virtual void CopyToModel(object target, IEnumerable<TElement> sourceCollection)
+        protected virtual void CopyToModel(object target, IEnumerable<TElement?> sourceCollection)
         {
             if (target == null)
             {
                 throw new ArgumentNullException(nameof(target));
             }
 
-            var targetCollection = target as ICollection<TElement>;
+            var targetCollection = target as ICollection<TElement?>;
             Debug.Assert(targetCollection != null, "This binder is instantiated only for ICollection<T> model types.");
 
-            if (sourceCollection != null && targetCollection != null && !targetCollection.IsReadOnly)
+            if (sourceCollection != null && !targetCollection.IsReadOnly)
             {
                 targetCollection.Clear();
                 foreach (var element in sourceCollection)
@@ -491,9 +484,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
 
-        private static IEnumerable<string> GetIndexNamesFromValueProviderResult(ValueProviderResult valueProviderResult)
+        private static IEnumerable<string>? GetIndexNamesFromValueProviderResult(ValueProviderResult valueProviderResult)
         {
-            var indexes = (string[])valueProviderResult;
+            var indexes = (string[]?)valueProviderResult;
             return (indexes == null || indexes.Length == 0) ? null : indexes;
         }
     }

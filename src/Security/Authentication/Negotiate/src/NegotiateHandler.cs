@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         private const string AuthHeaderPrefix = NegotiateVerb + " ";
 
         private bool _requestProcessed;
-        private INegotiateState _negotiateState;
+        private INegotiateState? _negotiateState;
 
         /// <summary>
         /// Creates a new <see cref="NegotiateHandler"/>
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// </summary>
         protected new NegotiateEvents Events
         {
-            get => (NegotiateEvents)base.Events;
+            get => (NegotiateEvents)base.Events!;
             set => base.Events = value;
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns><see langword="true" /> if a response was generated, otherwise <see langword="false"/>.</returns>
         public async Task<bool> HandleRequestAsync()
         {
-            AuthPersistence persistence = null;
+            AuthPersistence? persistence = null;
             bool authFailedEventCalled = false;
             try
             {
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 }
 
                 var connectionItems = GetConnectionItems();
-                persistence = (AuthPersistence)connectionItems[AuthPersistenceKey];
+                persistence = (AuthPersistence)connectionItems[AuthPersistenceKey]!;
                 _negotiateState = persistence?.State;
 
                 var authorizationHeader = Request.Headers[HeaderNames.Authorization];
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 }
 
                 var authorization = authorizationHeader.ToString();
-                string token = null;
+                string? token = null;
                 if (authorization.StartsWith(AuthHeaderPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     token = authorization.Substring(AuthHeaderPrefix.Length).Trim();
@@ -121,7 +121,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     Logger.Reauthenticating();
                     _negotiateState.Dispose();
                     _negotiateState = null;
-                    persistence.State = null;
+                    if (persistence != null)
+                    {
+                        persistence.State = null;
+                    }
                 }
 
                 _negotiateState ??= Options.StateFactory.CreateInstance();
@@ -129,6 +132,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 var outgoing = _negotiateState.GetOutgoingBlob(token, out var errorType, out var exception);
                 if (errorType != BlobErrorType.None)
                 {
+                    Debug.Assert(exception != null);
+
                     Logger.NegotiateError(errorType.ToString());
                     _negotiateState.Dispose();
                     _negotiateState = null;
@@ -338,7 +343,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     return ldapContext.Result;
                 }
 
-                await LdapAdapter.RetrieveClaimsAsync(ldapContext.LdapSettings, ldapContext.Principal.Identity as ClaimsIdentity, Logger);
+                await LdapAdapter.RetrieveClaimsAsync(ldapContext.LdapSettings, (ldapContext.Principal.Identity as ClaimsIdentity)!, Logger);
 
                 authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
                 {
@@ -385,7 +390,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             Logger.ChallengeNegotiate();
         }
 
-        private AuthPersistence EstablishConnectionPersistence(IDictionary<object, object> items)
+        private AuthPersistence EstablishConnectionPersistence(IDictionary<object, object?> items)
         {
             Debug.Assert(!items.ContainsKey(AuthPersistenceKey), "This should only be registered once per connection");
             var persistence = new AuthPersistence();
@@ -394,7 +399,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             return persistence;
         }
 
-        private IDictionary<object, object> GetConnectionItems()
+        private IDictionary<object, object?> GetConnectionItems()
         {
             return Context.Features.Get<IConnectionItemsFeature>()?.Items
                 ?? throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionItemsFeature)} like Kestrel.");
@@ -416,7 +421,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         // This allows us to have one disposal registration per connection and limits churn on the Items collection.
         private class AuthPersistence : IDisposable
         {
-            internal INegotiateState State { get; set; }
+            internal INegotiateState? State { get; set; }
 
             public void Dispose()
             {

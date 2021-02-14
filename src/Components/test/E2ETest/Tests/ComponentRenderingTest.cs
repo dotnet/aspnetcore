@@ -537,7 +537,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27375")]
         public void CanRenderMarkupBlocks()
         {
             var appElement = Browser.MountTestComponent<MarkupBlockComponent>();
@@ -734,6 +733,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var log = Browser.Manage().Logs.GetLog(LogType.Browser);
             Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
             Browser.Equal("", () => input.Text);
-        } 
+        }
     }
 }

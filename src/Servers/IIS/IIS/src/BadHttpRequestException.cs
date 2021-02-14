@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Server.IIS
 {
     ///<inheritdoc/>
-    [Obsolete("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException")]
+    [Obsolete("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException. See https://aka.ms/badhttprequestexception for details.")] // Never remove.
     public sealed class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpRequestException
     {
         internal BadHttpRequestException(string message, int statusCode, RequestRejectionReason reason)
