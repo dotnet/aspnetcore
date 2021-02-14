@@ -1,4 +1,4 @@
-# TODO: Delete this file when we get analyzers with the fix from: https://github.com/dotnet/roslyn-analyzers/pull/4724
+# Description: All Globalization Rules are enabled with default severity.
 
 # Code files
 [*.{cs,vb}]
