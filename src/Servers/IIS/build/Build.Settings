@@ -16,6 +16,7 @@
    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
      <UseDebugLibraries>false</UseDebugLibraries>
      <WholeProgramOptimization>true</WholeProgramOptimization>
+     <CodeAnalysisRuleSet>..\DefaultRules.ruleset</CodeAnalysisRuleSet>
      <RunCodeAnalysis>false</RunCodeAnalysis>
      <EnablePREfast>$(RunCodeAnalysis)</EnablePREfast>
    </PropertyGroup>
