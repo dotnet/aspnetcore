@@ -28,7 +28,16 @@ Our team members also monitor several other discussion forums:
 
 ## Contributing code and content
 
-We accept fixes and features! Here are some resources to help you get started on how to contribute code or new content.
+We are always happy to see PRs from community members both for bug fixes as well as new features.
+To help you be successful here we've put together a few simple rules to follow when you prepare to contribute to our codebase:
+1. **Start from the areas we need help with, not a random one.**
+  Over the years we've seen many PRs targeting areas of the framework, which we didn't plan to expand further at the time.
+  In all these cases we had to say `no` to those PRs and close them. That, obviously, is not a great outcome for us. And it's especially bad for the contributor, as they've spent a lot of effort preparing the change.
+  To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with `help wanted` label. You can find all these issues at: [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted)
+2. TBD
+
+By following the above listed rules, you will greatly increase chances for your PR to be merged.
+Here are some resources to help you get started on how to contribute code or new content.
 
 * Look at the [Contributor documentation](/docs/) to get started on building the source code on your own.
 * ["Help wanted" issues](https://github.com/dotnet/aspnetcore/labels/help%20wanted) - these issues are up for grabs. Comment on an issue if you want to create a fix.
