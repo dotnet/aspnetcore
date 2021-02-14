@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Testing
 
             var targetQueue = GetTargetHelixQueue().ToLowerInvariant();
 
-            if (Queues.Contains("All.OSX") && targetQueue.StartsWith("osx"))
+            if (Queues.Contains("All.OSX") && targetQueue.StartsWith("osx", StringComparison.Ordinal))
             {
                 return true;
             }
