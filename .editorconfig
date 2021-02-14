@@ -68,3 +68,7 @@ end_of_line = lf
 
 [*.{razor,cshtml}]
 charset = utf-8-bom
+
+[*.{cs,vb}]
+# CA1305: Specify IFormatProvider
+dotnet_diagnostic.CA1305.severity = error

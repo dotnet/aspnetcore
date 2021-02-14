@@ -12,8 +12,5 @@ dotnet_diagnostic.CA3076.severity = none
 # CA1304: Specify CultureInfo
 dotnet_diagnostic.CA1304.severity = error
 
-# CA1305: Specify IFormatProvider
-dotnet_diagnostic.CA1305.severity = error
-
 # CA1310: Specify StringComparison for correctness
 dotnet_diagnostic.CA1310.severity = error
