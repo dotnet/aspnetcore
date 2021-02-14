@@ -36,6 +36,24 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.Contains("The Date property field must be a date.", validationMessages);
         }
 
+        [Fact]
+        public async Task InputElementIsAssignedSuccessfully()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.DateProperty,
+            };
+
+            // Act
+            var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+            // Assert
+            Assert.NotNull(inputSelectComponent.Element);
+        }
+
         private class TestModel
         {
             public DateTime DateProperty { get; set; }

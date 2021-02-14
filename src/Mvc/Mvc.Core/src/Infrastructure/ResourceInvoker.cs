@@ -83,59 +83,17 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return Awaited(this, task, scope);
             }
 
-            Exception? releaseException = null;
-            try
-            {
-                ReleaseResources();
-            }
-            catch (Exception exception)
-            {
-                releaseException = exception;
-            }
-
-            Exception? scopeException = null;
-            try
-            {
-                scope?.Dispose();
-            }
-            catch (Exception exception)
-            {
-                scopeException = exception;
-            }
-
-            if (releaseException == null && scopeException == null)
-            {
-                return Task.CompletedTask;
-            }
-            else if (releaseException != null && scopeException != null)
-            {
-                return Task.FromException(new AggregateException(releaseException, scopeException));
-            }
-            else if (releaseException != null)
-            {
-                return Task.FromException(releaseException);
-            }
-            else
-            {
-                return Task.FromException(scopeException!);
-            }
+            return ReleaseResourcesCore(scope).AsTask();
 
             static async Task Awaited(ResourceInvoker invoker, Task task, IDisposable? scope)
             {
                 try
                 {
-                    try
-                    {
-                        await task;
-                    }
-                    finally
-                    {
-                        invoker.ReleaseResources();
-                    }
+                    await task;
                 }
                 finally
                 {
-                    scope?.Dispose();
+                    await invoker.ReleaseResourcesCore(scope);
                 }
             }
 
@@ -143,7 +101,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 var actionContext = invoker._actionContext;
                 invoker._actionContextAccessor.ActionContext = actionContext;
-
                 try
                 {
                     var logger = invoker._logger;
@@ -153,28 +110,27 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         actionContext.HttpContext,
                         actionContext.RouteData);
 
-                    using (logger.ActionScope(actionContext.ActionDescriptor))
+                    var actionScope = logger.ActionScope(actionContext.ActionDescriptor);
+
+                    logger.ExecutingAction(actionContext.ActionDescriptor);
+
+                    var filters = invoker._filters;
+                    logger.AuthorizationFiltersExecutionPlan(filters);
+                    logger.ResourceFiltersExecutionPlan(filters);
+                    logger.ActionFiltersExecutionPlan(filters);
+                    logger.ExceptionFiltersExecutionPlan(filters);
+                    logger.ResultFiltersExecutionPlan(filters);
+
+                    var stopwatch = ValueStopwatch.StartNew();
+
+                    try
                     {
-                        logger.ExecutingAction(actionContext.ActionDescriptor);
-
-                        var filters = invoker._filters;
-                        logger.AuthorizationFiltersExecutionPlan(filters);
-                        logger.ResourceFiltersExecutionPlan(filters);
-                        logger.ActionFiltersExecutionPlan(filters);
-                        logger.ExceptionFiltersExecutionPlan(filters);
-                        logger.ResultFiltersExecutionPlan(filters);
-
-                        var stopwatch = ValueStopwatch.StartNew();
-
-                        try
-                        {
-                            await invoker.InvokeFilterPipelineAsync();
-                        }
-                        finally
-                        {
-                            invoker.ReleaseResources();
-                            logger.ExecutedAction(actionContext.ActionDescriptor, stopwatch.GetElapsedTime());
-                        }
+                        await invoker.InvokeFilterPipelineAsync();
+                    }
+                    finally
+                    {
+                        await invoker.ReleaseResourcesCore(actionScope);
+                        logger.ExecutedAction(actionContext.ActionDescriptor, stopwatch.GetElapsedTime());
                     }
                 }
                 finally
@@ -187,11 +143,76 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
+        internal ValueTask ReleaseResourcesCore(IDisposable? scope)
+        {
+            Exception? releaseException = null;
+            ValueTask releaseResult = default;
+            try
+            {
+                releaseResult = ReleaseResources();
+                if (!releaseResult.IsCompletedSuccessfully)
+                {
+                    return HandleAsyncReleaseErrors(releaseResult, scope);
+                }
+            }
+            catch (Exception exception)
+            {
+                releaseException = exception;
+            }
+
+            return HandleReleaseErrors(scope, releaseException);
+
+            static async ValueTask HandleAsyncReleaseErrors(ValueTask releaseResult, IDisposable? scope)
+            {
+                Exception? releaseException = null;
+                try
+                {
+                    await releaseResult;
+                }
+                catch (Exception exception)
+                {
+                    releaseException = exception;
+                }
+
+                await HandleReleaseErrors(scope, releaseException);
+            }
+
+            static ValueTask HandleReleaseErrors(IDisposable? scope, Exception? releaseException)
+            {
+                Exception? scopeException = null;
+                try
+                {
+                    scope?.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    scopeException = exception;
+                }
+
+                if (releaseException == null && scopeException == null)
+                {
+                    return default;
+                }
+                else if (releaseException != null && scopeException != null)
+                {
+                    return ValueTask.FromException(new AggregateException(releaseException, scopeException));
+                }
+                else if (releaseException != null)
+                {
+                    return ValueTask.FromException(releaseException);
+                }
+                else
+                {
+                    return ValueTask.FromException(scopeException!);
+                }
+            }
+        }
+
         /// <summary>
         /// In derived types, releases resources such as controller, model, or page instances created as
         /// part of invoking the inner pipeline.
         /// </summary>
-        protected abstract void ReleaseResources();
+        protected abstract ValueTask ReleaseResources();
 
         private Task InvokeFilterPipelineAsync()
         {

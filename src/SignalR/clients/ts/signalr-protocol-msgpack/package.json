@@ -37,14 +37,14 @@
   "bugs": {
     "url": "https://github.com/dotnet/aspnetcore/issues"
   },
-  "homepage": "https://github.com/dotnet/aspnetcore/tree/master/src/SignalR#readme",
+  "homepage": "https://github.com/dotnet/aspnetcore/tree/main/src/SignalR#readme",
   "files": [
     "dist/**/*",
     "src/**/*"
   ],
   "dependencies": {
     "@microsoft/signalr": "link:../signalr",
-    "msgpack5": "^4.0.2"
+    "msgpack5": "^4.5.0"
   },
   "devDependencies": {
     "@types/msgpack5": "^3.4.1"

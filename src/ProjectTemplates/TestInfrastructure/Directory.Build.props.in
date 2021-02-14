@@ -7,6 +7,4 @@
 
   <Import Project="${ArtifactsBinDir}GenerateFiles\Directory.Build.props" />
 
-  <Import Project="${RepoRoot}src\Components\WebAssembly\Sdk\src\build\$(DefaultNetCoreTargetFramework)\Microsoft.NET.Sdk.BlazorWebAssembly.props"
-      Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'" />
 </Project>

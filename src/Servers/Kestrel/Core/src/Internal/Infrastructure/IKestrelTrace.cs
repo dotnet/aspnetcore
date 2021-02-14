@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -78,5 +80,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void Http2MaxConcurrentStreamsReached(string connectionId);
 
         void InvalidResponseHeaderRemoved();
+
+        void Http3ConnectionError(string connectionId, Http3ConnectionException ex);
+
+        void Http3ConnectionClosing(string connectionId);
+
+        void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId);
+
+        void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason);
+
+        void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame);
+
+        void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame);
     }
 }

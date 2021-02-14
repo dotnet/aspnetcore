@@ -1,18 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -88,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         // Called by the DefaultModelBinderProviderContext when we're recursively creating a binder
         // so that all intermediate results can be cached.
-        private IModelBinder CreateBinderCoreCached(DefaultModelBinderProviderContext providerContext, object token)
+        private IModelBinder CreateBinderCoreCached(DefaultModelBinderProviderContext providerContext, object? token)
         {
             if (TryGetCachedBinder(providerContext.Metadata, token, out var binder))
             {
@@ -107,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return binder;
         }
 
-        private IModelBinder CreateBinderCoreUncached(DefaultModelBinderProviderContext providerContext, object token)
+        private IModelBinder? CreateBinderCoreUncached(DefaultModelBinderProviderContext providerContext, object? token)
         {
             if (!providerContext.Metadata.IsBindingAllowed)
             {
@@ -147,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // to create the binder.
             visited.Add(key, null);
 
-            IModelBinder result = null;
+            IModelBinder? result = null;
 
             for (var i = 0; i < _providers.Length; i++)
             {
@@ -175,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return result;
         }
 
-        private void AddToCache(ModelMetadata metadata, object cacheToken, IModelBinder binder)
+        private void AddToCache(ModelMetadata metadata, object? cacheToken, IModelBinder binder)
         {
             Debug.Assert(metadata != null);
             Debug.Assert(binder != null);
@@ -188,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             _cache.TryAdd(new Key(metadata, cacheToken), binder);
         }
 
-        private bool TryGetCachedBinder(ModelMetadata metadata, object cacheToken, out IModelBinder binder)
+        private bool TryGetCachedBinder(ModelMetadata metadata, object? cacheToken, [NotNullWhen(true)] out IModelBinder? binder)
         {
             Debug.Assert(metadata != null);
 
@@ -225,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 BindingInfo = bindingInfo;
 
                 MetadataProvider = _factory._metadataProvider;
-                Visited = new Dictionary<Key, IModelBinder>();
+                Visited = new Dictionary<Key, IModelBinder?>();
             }
 
             private DefaultModelBinderProviderContext(
@@ -247,7 +248,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public override IModelMetadataProvider MetadataProvider { get; }
 
-            public Dictionary<Key, IModelBinder> Visited { get; }
+            public Dictionary<Key, IModelBinder?> Visited { get; }
 
             public override IServiceProvider Services => _factory._serviceProvider;
 
@@ -291,9 +292,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private readonly struct Key : IEquatable<Key>
         {
             private readonly ModelMetadata _metadata;
-            private readonly object _token; // Explicitly using ReferenceEquality for tokens.
+            private readonly object? _token; // Explicitly using ReferenceEquality for tokens.
 
-            public Key(ModelMetadata metadata, object token)
+            public Key(ModelMetadata metadata, object? token)
             {
                 _metadata = metadata;
                 _token = token;
@@ -304,10 +305,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return _metadata.Equals(other._metadata) && object.ReferenceEquals(_token, other._token);
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
-                var other = obj as Key?;
-                return other.HasValue && Equals(other.Value);
+                return obj is Key other && Equals(other);
             }
 
             public override int GetHashCode()
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     case ModelMetadataKind.Parameter:
                         return $"{_token} (Parameter: '{_metadata.ParameterName}' Type: '{_metadata.ModelType.Name}')";
                     case ModelMetadataKind.Property:
-                        return $"{_token} (Property: '{_metadata.ContainerType.Name}.{_metadata.PropertyName}' " +
+                        return $"{_token} (Property: '{_metadata.ContainerType!.Name}.{_metadata.PropertyName}' " +
                             $"Type: '{_metadata.ModelType.Name}')";
                     case ModelMetadataKind.Type:
                         return $"{_token} (Type: '{_metadata.ModelType.Name}')";

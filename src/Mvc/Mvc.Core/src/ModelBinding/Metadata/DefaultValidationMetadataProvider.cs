@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Linq;
 using System.Reflection;
@@ -40,12 +42,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             // that type. Thus, we ignore context.TypeAttributes for properties and not check at all for types.
             if (context.Key.MetadataKind == ModelMetadataKind.Property)
             {
-                var validationFilter = context.PropertyAttributes.OfType<IPropertyValidationFilter>().FirstOrDefault();
+                var validationFilter = context.PropertyAttributes!.OfType<IPropertyValidationFilter>().FirstOrDefault();
                 if (validationFilter == null)
                 {
                     // No IPropertyValidationFilter attributes on the property.
                     // Check if container has such an attribute.
-                    validationFilter = context.Key.ContainerType
+                    validationFilter = context.Key.ContainerType!
                         .GetCustomAttributes(inherit: true)
                         .OfType<IPropertyValidationFilter>()
                         .FirstOrDefault();
@@ -55,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
             else if (context.Key.MetadataKind == ModelMetadataKind.Parameter)
             {
-                var validationFilter = context.ParameterAttributes.OfType<IPropertyValidationFilter>().FirstOrDefault();
+                var validationFilter = context.ParameterAttributes!.OfType<IPropertyValidationFilter>().FirstOrDefault();
                 context.ValidationMetadata.PropertyValidationFilter = validationFilter;
             }
         }

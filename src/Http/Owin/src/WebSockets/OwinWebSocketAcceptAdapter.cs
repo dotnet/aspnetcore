@@ -108,6 +108,12 @@ namespace Microsoft.AspNetCore.Owin
         // 7. The middleware completes the alternate Task it returned from Invoke, telling the server that the request pipeline has completed.
         // 8. The server invokes the middleware's callback, which creates a WebSocket adapter and completes the original Accept Task with it.
         // 9. The middleware waits while the application uses the WebSocket, where the end is signaled by the Next's Task completion.
+        //
+        /// <summary>
+        /// Adapt web sockets to OWIN.
+        /// </summary>
+        /// <param name="next">The next OWIN app delegate.</param>
+        /// <returns>An OWIN app delegate.</returns>
         public static AppFunc AdaptWebSockets(AppFunc next)
         {
             return environment =>

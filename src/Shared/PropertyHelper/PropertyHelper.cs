@@ -47,8 +47,8 @@ namespace Microsoft.Extensions.Internal
         // 'ref struct' types.
         private static readonly Type? IsByRefLikeAttribute = Type.GetType("System.Runtime.CompilerServices.IsByRefLikeAttribute", throwOnError: false);
 
-        private Action<object, object>? _valueSetter;
-        private Func<object, object>? _valueGetter;
+        private Action<object, object?>? _valueSetter;
+        private Func<object, object?>? _valueGetter;
 
         /// <summary>
         /// Initializes a fast <see cref="PropertyHelper"/>.
@@ -73,7 +73,7 @@ namespace Microsoft.Extensions.Internal
         /// <summary>
         /// Gets the property value getter.
         /// </summary>
-        public Func<object, object> ValueGetter
+        public Func<object, object?> ValueGetter
         {
             get
             {
@@ -89,7 +89,7 @@ namespace Microsoft.Extensions.Internal
         /// <summary>
         /// Gets the property value setter.
         /// </summary>
-        public Action<object, object> ValueSetter
+        public Action<object, object?> ValueSetter
         {
             get
             {
@@ -107,7 +107,7 @@ namespace Microsoft.Extensions.Internal
         /// </summary>
         /// <param name="instance">The object whose property value will be returned.</param>
         /// <returns>The property value.</returns>
-        public object GetValue(object instance)
+        public object? GetValue(object instance)
         {
             return ValueGetter(instance);
         }
@@ -117,7 +117,7 @@ namespace Microsoft.Extensions.Internal
         /// </summary>
         /// <param name="instance">The object whose property value will be set.</param>
         /// <param name="value">The property value.</param>
-        public void SetValue(object instance, object value)
+        public void SetValue(object instance, object? value)
         {
             ValueSetter(instance, value);
         }
@@ -193,7 +193,7 @@ namespace Microsoft.Extensions.Internal
         /// This method is more memory efficient than a dynamically compiled lambda, and about the
         /// same speed.
         /// </remarks>
-        public static Func<object, object> MakeFastPropertyGetter(PropertyInfo propertyInfo)
+        public static Func<object, object?> MakeFastPropertyGetter(PropertyInfo propertyInfo)
         {
             Debug.Assert(propertyInfo != null);
 
@@ -212,7 +212,7 @@ namespace Microsoft.Extensions.Internal
         /// This method is more memory efficient than a dynamically compiled lambda, and about the
         /// same speed.
         /// </remarks>
-        public static Func<object, object> MakeNullSafeFastPropertyGetter(PropertyInfo propertyInfo)
+        public static Func<object, object?> MakeNullSafeFastPropertyGetter(PropertyInfo propertyInfo)
         {
             Debug.Assert(propertyInfo != null);
 
@@ -222,7 +222,7 @@ namespace Microsoft.Extensions.Internal
                 CallNullSafePropertyGetterByReferenceOpenGenericMethod);
         }
 
-        private static Func<object, object> MakeFastPropertyGetter(
+        private static Func<object, object?> MakeFastPropertyGetter(
             PropertyInfo propertyInfo,
             MethodInfo propertyGetterWrapperMethod,
             MethodInfo propertyGetterByRefWrapperMethod)
@@ -265,7 +265,7 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        private static Func<object, object> MakeFastPropertyGetter(
+        private static Func<object, object?> MakeFastPropertyGetter(
             Type openGenericDelegateType,
             MethodInfo propertyGetMethod,
             MethodInfo openGenericWrapperMethod)
@@ -278,10 +278,10 @@ namespace Microsoft.Extensions.Internal
 
             var wrapperDelegateMethod = openGenericWrapperMethod.MakeGenericMethod(typeInput, typeOutput);
             var accessorDelegate = wrapperDelegateMethod.CreateDelegate(
-                typeof(Func<object, object>),
+                typeof(Func<object, object?>),
                 propertyGetterDelegate);
 
-            return (Func<object, object>)accessorDelegate;
+            return (Func<object, object?>)accessorDelegate;
         }
 
         /// <summary>
@@ -293,7 +293,7 @@ namespace Microsoft.Extensions.Internal
         /// This method is more memory efficient than a dynamically compiled lambda, and about the
         /// same speed. This only works for reference types.
         /// </remarks>
-        public static Action<object, object> MakeFastPropertySetter(PropertyInfo propertyInfo)
+        public static Action<object, object?> MakeFastPropertySetter(PropertyInfo propertyInfo)
         {
             Debug.Assert(propertyInfo != null);
             Debug.Assert(!propertyInfo.DeclaringType!.IsValueType);
@@ -318,9 +318,9 @@ namespace Microsoft.Extensions.Internal
                 CallPropertySetterOpenGenericMethod.MakeGenericMethod(typeInput, parameterType);
             var callPropertySetterDelegate =
                 callPropertySetterClosedGenericMethod.CreateDelegate(
-                    typeof(Action<object, object>), propertySetterAsAction);
+                    typeof(Action<object, object?>), propertySetterAsAction);
 
-            return (Action<object, object>)callPropertySetterDelegate;
+            return (Action<object, object?>)callPropertySetterDelegate;
         }
 
         /// <summary>
@@ -334,15 +334,14 @@ namespace Microsoft.Extensions.Internal
         /// The implementation of PropertyHelper will cache the property accessors per-type. This is
         /// faster when the same type is used multiple times with ObjectToDictionary.
         /// </remarks>
-        public static IDictionary<string, object> ObjectToDictionary(object value)
+        public static IDictionary<string, object?> ObjectToDictionary(object value)
         {
-            var dictionary = value as IDictionary<string, object>;
-            if (dictionary != null)
+            if (value is IDictionary<string, object?> dictionary)
             {
-                return new Dictionary<string, object>(dictionary, StringComparer.OrdinalIgnoreCase);
+                return new Dictionary<string, object?>(dictionary, StringComparer.OrdinalIgnoreCase);
             }
 
-            dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            dictionary = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
             if (value != null)
             {

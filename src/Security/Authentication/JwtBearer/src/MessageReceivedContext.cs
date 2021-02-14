@@ -23,6 +23,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// <summary>
         /// Bearer Token. This will give the application an opportunity to retrieve a token from an alternative location.
         /// </summary>
-        public string Token { get; set; }
+        public string? Token { get; set; }
     }
 }

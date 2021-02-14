@@ -22,6 +22,11 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// Collection of X509 certificates which are trusted components of the certificate chain.
         /// </summary>
         public X509Certificate2Collection CustomTrustStore { get; set; } = new X509Certificate2Collection();
+        
+        /// <summary>
+        /// Collection of X509 certificates which are added to the X509Chain.ChainPolicy.ExtraStore of the certificate chain.
+        /// </summary>
+        public X509Certificate2Collection AdditionalChainCertificates { get; set; } = new X509Certificate2Collection();
 
         /// <summary>
         /// Method used to validate certificate chains against <see cref="CustomTrustStore"/>.
@@ -72,9 +77,9 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// The application may implement the interface fully, or it may create an instance of CertificateAuthenticationEvents
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public new CertificateAuthenticationEvents Events
+        public new CertificateAuthenticationEvents? Events
         {
-            get { return (CertificateAuthenticationEvents)base.Events; }
+            get { return (CertificateAuthenticationEvents?)base.Events; }
 
             set { base.Events = value; }
         }

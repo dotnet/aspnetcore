@@ -236,6 +236,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 var result = ((IAsyncDisposable)Component).DisposeAsync();
                 if (result.IsCompletedSuccessfully)
                 {
+                    // If it's a IValueTaskSource backed ValueTask,
+                    // inform it its result has been read so it can reset
+                    result.GetAwaiter().GetResult();
                     return Task.CompletedTask;
                 }
                 else

@@ -28,11 +28,18 @@ namespace Microsoft.AspNetCore.Owin
             Task<WebSocket>
         >;
 
+    /// <summary>
+    /// A loosely-typed OWIN environment wrapper over an <see cref="HttpContext"/>.
+    /// </summary>
     public class OwinEnvironment : IDictionary<string, object>
     {
         private HttpContext _context;
         private IDictionary<string, FeatureMap> _entries;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OwinEnvironment"/>.
+        /// </summary>
+        /// <param name="context">The request context.</param>
         public OwinEnvironment(HttpContext context)
         {
             if (context.Features.Get<IHttpRequestFeature>() == null)
@@ -131,6 +138,9 @@ namespace Microsoft.AspNetCore.Owin
         }
 
         // Public in case there's a new/custom feature interface that needs to be added.
+        /// <summary>
+        /// Get the environment's feature maps.
+        /// </summary>
         public IDictionary<string, FeatureMap> FeatureMaps
         {
             get { return _entries; }
@@ -269,6 +279,7 @@ namespace Microsoft.AspNetCore.Owin
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             foreach (var entryPair in _entries)
@@ -290,27 +301,63 @@ namespace Microsoft.AspNetCore.Owin
             return GetEnumerator();
         }
 
+        /// <summary>
+        /// Maps OWIN keys to ASP.NET Core features.
+        /// </summary>
         public class FeatureMap
         {
+            /// <summary>
+            /// Create a <see cref="FeatureMap"/> for the specified feature interface type.
+            /// </summary>
+            /// <param name="featureInterface">The feature interface type.</param>
+            /// <param name="getter">Value getter.</param>
             public FeatureMap(Type featureInterface, Func<object, object> getter)
                 : this(featureInterface, getter, defaultFactory: null)
             {
             }
+
+            /// <summary>
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
+            /// </summary>
+            /// <param name="featureInterface">The feature interface type.</param>
+            /// <param name="getter">Value getter delegate.</param>
+            /// <param name="defaultFactory">Default value factory delegate.</param>
             public FeatureMap(Type featureInterface, Func<object, object> getter, Func<object> defaultFactory)
                 : this(featureInterface, getter, defaultFactory, setter: null)
             {
             }
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
+            /// </summary>
+            /// <param name="featureInterface">The feature interface type.</param>
+            /// <param name="getter">Value getter delegate.</param>
+            /// <param name="setter">Value setter delegate.</param>
             public FeatureMap(Type featureInterface, Func<object, object> getter, Action<object, object> setter)
                 : this(featureInterface, getter, defaultFactory: null, setter: setter)
             {
             }
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
+            /// </summary>
+            /// <param name="featureInterface">The feature interface type.</param>
+            /// <param name="getter">Value getter delegate.</param>
+            /// <param name="defaultFactory">Default value factory delegate.</param>
+            /// <param name="setter">Value setter delegate.</param>
             public FeatureMap(Type featureInterface, Func<object, object> getter, Func<object> defaultFactory, Action<object, object> setter)
                 : this(featureInterface, getter, defaultFactory, setter, featureFactory: null)
             {
             }
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
+            /// </summary>
+            /// <param name="featureInterface">The feature interface type.</param>
+            /// <param name="getter">Value getter delegate.</param>
+            /// <param name="defaultFactory">Default value factory delegate.</param>
+            /// <param name="setter">Value setter delegate.</param>
+            /// <param name="featureFactory">Feature factory delegate.</param>
             public FeatureMap(Type featureInterface, Func<object, object> getter, Func<object> defaultFactory, Action<object, object> setter, Func<object> featureFactory)
             {
                 FeatureInterface = featureInterface;
@@ -326,6 +373,9 @@ namespace Microsoft.AspNetCore.Owin
             private Func<object> DefaultFactory { get; set; }
             private Func<object> FeatureFactory { get; set; }
 
+            /// <summary>
+            /// Gets a value indicating whether the feature map is settable.
+            /// </summary>
             public bool CanSet
             {
                 get { return Setter != null; }
@@ -366,28 +416,59 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
+        /// <summary>
+        /// Maps OWIN keys to ASP.NET Core features.
+        /// </summary>
+        /// <typeparam name="TFeature">Feature interface type.</typeparam>
         public class FeatureMap<TFeature> : FeatureMap
         {
+            /// <summary>
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
+            /// </summary>
+            /// <param name="getter">Value getter.</param>
             public FeatureMap(Func<TFeature, object> getter)
                 : base(typeof(TFeature), feature => getter((TFeature)feature))
             {
             }
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
+            /// </summary>
+            /// <param name="getter">Value getter delegate.</param>
+            /// <param name="defaultFactory">Default value factory delegate.</param>
             public FeatureMap(Func<TFeature, object> getter, Func<object> defaultFactory)
                 : base(typeof(TFeature), feature => getter((TFeature)feature), defaultFactory)
             {
             }
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
+            /// </summary>
+            /// <param name="getter">Value getter delegate.</param>
+            /// <param name="setter">Value setter delegate.</param>
             public FeatureMap(Func<TFeature, object> getter, Action<TFeature, object> setter)
                 : base(typeof(TFeature), feature => getter((TFeature)feature), (feature, value) => setter((TFeature)feature, value))
             {
             }
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
+            /// </summary>
+            /// <param name="getter">Value getter delegate.</param>
+            /// <param name="defaultFactory">Default value factory delegate.</param>
+            /// <param name="setter">Value setter delegate.</param>
             public FeatureMap(Func<TFeature, object> getter, Func<object> defaultFactory, Action<TFeature, object> setter)
                 : base(typeof(TFeature), feature => getter((TFeature)feature), defaultFactory, (feature, value) => setter((TFeature)feature, value))
             {
             }
 
+            /// <summary>
+            /// Initializes a new instance of <see cref="FeatureMap"/> for the specified feature interface type.
+            /// </summary>
+            /// <param name="getter">Value getter delegate.</param>
+            /// <param name="defaultFactory">Default value factory delegate.</param>
+            /// <param name="setter">Value setter delegate.</param>
+            /// <param name="featureFactory">Feature factory delegate.</param>
             public FeatureMap(Func<TFeature, object> getter, Func<object> defaultFactory, Action<TFeature, object> setter, Func<TFeature> featureFactory)
                 : base(typeof(TFeature), feature => getter((TFeature)feature), defaultFactory, (feature, value) => setter((TFeature)feature, value), () => featureFactory())
             {

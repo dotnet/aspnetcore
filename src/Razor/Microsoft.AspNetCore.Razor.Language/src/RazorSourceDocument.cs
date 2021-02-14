@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 throw new ArgumentNullException(nameof(properties));
             }
-            
+
             return new StreamSourceDocument(stream, encoding, properties);
         }
 
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             // ProjectItem.PhysicalPath is usually an absolute (rooted) path.
-            var filePath = projectItem.PhysicalPath; 
+            var filePath = projectItem.PhysicalPath;
             if (string.IsNullOrEmpty(filePath))
             {
                 // Fall back to the relative path only if necessary.
@@ -191,6 +191,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 // Then fall back to the FilePath (yeah it's a bad name) which is like an MVC view engine path
                 // It's much better to have something than nothing.
                 filePath = projectItem.FilePath;
+            }
+
+            if (projectItem.RazorSourceDocument is not null)
+            {
+                return projectItem.RazorSourceDocument;
             }
 
             using (var stream = projectItem.Read())
@@ -217,7 +222,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             return Create(content, fileName, Encoding.UTF8);
         }
-           
+
 
         /// <summary>
         /// Creates a <see cref="RazorSourceDocument"/> from the specified <paramref name="content"/>.

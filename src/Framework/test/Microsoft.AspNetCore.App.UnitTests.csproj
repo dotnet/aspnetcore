@@ -12,7 +12,15 @@
     <!-- Ignore aspnetcorev2_inprocess because tests expect only managed assemblies in this item group. -->
     <_SharedFrameworkBinariesFromRepo Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage)" />
 
-    <_ExpectedSharedFrameworkBinaries Include="@(_SharedFrameworkBinariesFromRepo);@(ExternalAspNetCoreAppReference);@(_TransitiveExternalAspNetCoreAppReference)" />
+    <!--
+      Special-case System.Diagnostics.EventLog.Messages.dll because that assembly name does _not_ match a
+      package. Can't mention it in @(ExternalAspNetCoreAppReference) or underlying
+      @(_TransitiveExternalAspNetCoreAppReference) without thoroughly confusing eng/targets/ResolveReferences.targets.
+    -->
+    <_ExpectedSharedFrameworkBinaries Include="@(_SharedFrameworkBinariesFromRepo);
+        @(ExternalAspNetCoreAppReference);
+        @(_TransitiveExternalAspNetCoreAppReference);
+        System.Diagnostics.EventLog.Messages" />
     <_ExpectedSharedFrameworkBinaries Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'" Include="aspnetcorev2_inprocess" />
 
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">

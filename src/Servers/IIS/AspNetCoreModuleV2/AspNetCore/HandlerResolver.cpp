@@ -35,7 +35,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 {
     HRESULT hr = S_OK;
     PCWSTR pstrHandlerDllName = nullptr;
-    bool preventUnload = false;
+    auto preventUnload = false;
     if (pConfiguration.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
     {
         preventUnload = false;
@@ -231,7 +231,7 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
     std::wstring& handlerDllPath,
     const IHttpApplication &pApplication,
     const ShimOptions& pConfiguration,
-    std::shared_ptr<StringStreamRedirectionOutput> stringRedirectionOutput,
+    const std::shared_ptr<StringStreamRedirectionOutput>& stringRedirectionOutput,
     ErrorContext& errorContext
 )
 try
@@ -263,7 +263,7 @@ try
                 stringRedirectionOutput
             );
 
-        StandardStreamRedirection stdOutRedirection(*redirectionOutput.get(), m_pServer.IsCommandLineLaunch());
+        StandardStreamRedirection stdOutRedirection(*redirectionOutput, m_pServer.IsCommandLineLaunch());
         auto hostFxrErrorRedirection = m_hHostFxrDll.RedirectOutput(redirectionOutput.get());
 
         struNativeSearchPaths.resize(dwBufferSize);
@@ -286,7 +286,7 @@ try
             {
                 break;
             }
-            else if (dwRequiredBufferSize > dwBufferSize)
+            if (dwRequiredBufferSize > dwBufferSize)
             {
                 dwBufferSize = dwRequiredBufferSize + 1; // for null terminator
 

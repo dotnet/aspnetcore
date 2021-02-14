@@ -170,7 +170,7 @@ Microsoft.AspNetCore.Mvc.Authorization.IAllowAnonymousFilter
 Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext
 Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.ActionExecutedContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>! filters, object! controller) -> void
 Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext
-Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionExecutingContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>! filters, System.Collections.Generic.IDictionary<string!, object?>! actionArguments, object! controller) -> void
+Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionExecutingContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>! filters, System.Collections.Generic.IDictionary<string!, object!>! actionArguments, object! controller) -> void
 Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate
 Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext
 Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext.AuthorizationFilterContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>! filters) -> void
@@ -286,7 +286,7 @@ Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Model.get -> object?
 Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext
 Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext.OutputFormatterCanWriteContext(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
 Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext
-Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext.OutputFormatterWriteContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Func<System.IO.Stream!, System.Text.Encoding!, System.IO.TextWriter!>! writerFactory, System.Type? objectType, object? object) -> void
+Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext.OutputFormatterWriteContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Func<System.IO.Stream!, System.Text.Encoding!, System.IO.TextWriter!>! writerFactory, System.Type! objectType, object! object) -> void
 Microsoft.AspNetCore.Mvc.IActionResult
 Microsoft.AspNetCore.Mvc.IActionResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Mvc.IUrlHelper
@@ -774,9 +774,9 @@ virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.ExceptionDispatch
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.ExceptionDispatchInfo.set -> void
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.ExceptionHandled.get -> bool
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.ExceptionHandled.set -> void
-virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.Result.get -> Microsoft.AspNetCore.Mvc.IActionResult?
+virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.Result.get -> Microsoft.AspNetCore.Mvc.IActionResult!
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.Result.set -> void
-virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionArguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
+virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionArguments.get -> System.Collections.Generic.IDictionary<string!, object!>!
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.Controller.get -> object!
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.Result.get -> Microsoft.AspNetCore.Mvc.IActionResult?
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.Result.set -> void

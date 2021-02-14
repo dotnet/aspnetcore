@@ -20,7 +20,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal abstract class Http3Stream : HttpProtocol, IHttpHeadersHandler, IThreadPoolWorkItem
+    internal abstract partial class Http3Stream : HttpProtocol, IHttpHeadersHandler, IThreadPoolWorkItem, ITimeoutHandler, IRequestProcessor
     {
         private static ReadOnlySpan<byte> AuthorityBytes => new byte[10] { (byte)':', (byte)'a', (byte)'u', (byte)'t', (byte)'h', (byte)'o', (byte)'r', (byte)'i', (byte)'t', (byte)'y' };
         private static ReadOnlySpan<byte> MethodBytes => new byte[7] { (byte)':', (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d' };
@@ -72,7 +72,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 httpLimits.MinResponseDataRate,
                 context.ConnectionId,
                 context.MemoryPool,
-                context.ServiceContext.Log);
+                context.ServiceContext.Log,
+                _streamIdFeature);
 
             // ResponseHeaders aren't set, kind of ugly that we need to reset.
             Reset();
@@ -101,12 +102,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             Abort(ex, Http3ErrorCode.InternalError);
         }
 
-        public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode)
+        public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
         {
+            // TODO - Should there be a check here to track abort state to avoid
+            // running twice for a request?
+
+            Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
+
             _errorCodeFeature.Error = (long)errorCode;
-            // TODO replace with IKestrelTrace log.
-            Log.LogWarning(ex, ex.Message);
-            _frameWriter.Abort(ex);
+            _frameWriter.Abort(abortReason);
+
+            // Call _http3Output.Stop() prior to poisoning the request body stream or pipe to
+            // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
+            _http3Output.Stop();
+
+            CancelRequestAbortedToken();
+
+            // Unblock the request body.
+            PoisonBody(abortReason);
+            RequestBodyPipe.Writer.Complete(abortReason);
+        }
+
+        protected override void OnErrorAfterResponseStarted()
+        {
+            // We can no longer change the response, send a Reset instead.
+            var abortReason = new ConnectionAbortedException(CoreStrings.Http3StreamErrorAfterHeaders);
+            Abort(abortReason, Http3ErrorCode.InternalError);
         }
 
         public void OnHeadersComplete(bool endStream)
@@ -308,7 +329,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         protected override void OnRequestProcessingEnded()
         {
             Debug.Assert(_appCompleted != null);
-
             _appCompleted.SetResult();
         }
 
@@ -340,8 +360,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     {
                         if (!readableBuffer.IsEmpty)
                         {
-                            while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, 16 * 1024, out var framePayload))
+                            while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, out var framePayload))
                             {
+                                Log.Http3FrameReceived(ConnectionId, _streamIdFeature.StreamId, _incomingFrame);
+
                                 consumed = examined = framePayload.End;
                                 await ProcessHttp3Stream(application, framePayload);
                             }
@@ -360,6 +382,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                 }
             }
+            // catch ConnectionResetException here?
             catch (Http3StreamErrorException ex)
             {
                 error = ex;
@@ -376,8 +399,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     ?? new ConnectionAbortedException("The stream has completed.", error!);
 
                 await Input.CompleteAsync();
-
-                await RequestBodyPipe.Writer.CompleteAsync();
 
                 // Make sure application func is completed before completing writer.
                 if (_appCompleted != null)
@@ -446,6 +467,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload) where TContext : notnull
         {
             QPackDecoder.Decode(payload, handler: this);
+            QPackDecoder.Reset();
 
             // start off a request once qpack has decoded
             // Make sure to await this task.
@@ -507,12 +529,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override void OnReset()
         {
+            ResetHttp3Features();
         }
 
-        protected override void ApplicationAbort()
+        protected override void ApplicationAbort() => ApplicationAbort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication), Http3ErrorCode.InternalError);
+
+        private void ApplicationAbort(ConnectionAbortedException abortReason, Http3ErrorCode error)
         {
-            var abortReason = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication);
-            Abort(abortReason, Http3ErrorCode.InternalError);
+            Abort(abortReason, error);
         }
 
         protected override string CreateRequestId()
@@ -741,6 +765,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         /// Used to kick off the request processing loop by derived classes.
         /// </summary>
         public abstract void Execute();
+
+        public void OnTimeout(TimeoutReason reason)
+        {
+            throw new NotImplementedException();
+        }
 
         protected enum RequestHeaderParsingState
         {

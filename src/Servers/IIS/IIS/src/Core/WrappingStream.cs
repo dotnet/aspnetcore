@@ -107,9 +107,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public override void EndWrite(IAsyncResult asyncResult)
             => _inner.EndWrite(asyncResult);
 
-        [Obsolete("This Remoting API is not supported and throws PlatformNotSupportedException.", DiagnosticId = "SYSLIB0010", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#pragma warning disable CS0672, SYSLIB0010 // Overrides obsolete member
         public override object InitializeLifetimeService()
             => _inner.InitializeLifetimeService();
+#pragma warning restore CS0672, SYSLIB0010 // Overrides obsolete member
 
         public override void Close()
             => _inner.Close();

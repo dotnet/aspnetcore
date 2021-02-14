@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     Assert.False(feature.IsUpgradableRequest);
                     Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
-                    Assert.Equal(11, await context.Request.Body.ReadAsync(new byte[12], 0, 12));
+                    Assert.Equal(11, await context.Request.Body.ReadUntilEndAsync(new byte[100]));
                 }
                 else
                 {
@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     connectionTransportFeature.Transport.Input.CancelPendingRead();
 
                     // Use ReadAsync() instead of CopyToAsync() for this test since IsCanceled is only checked in
-                    // HttpRequestStream.ReadAsync() and not HttpRequestStream.CopyToAsync() 
+                    // HttpRequestStream.ReadAsync() and not HttpRequestStream.CopyToAsync()
                     Assert.Equal(0, await duplexStream.ReadAsync(new byte[1]));
                     appCompletedTcs.SetResult(null);
                 }

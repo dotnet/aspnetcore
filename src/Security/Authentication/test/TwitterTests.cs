@@ -274,6 +274,61 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         }
 
         [Fact]
+        public async Task TwitterError_Json_ThrowsParsedException()
+        {
+            using var host = await CreateHost(o =>
+            {
+                o.ConsumerKey = "Test Consumer Key";
+                o.ConsumerSecret = "Test Consumer Secret";
+                o.BackchannelHttpHandler = new TestHttpMessageHandler
+                {
+                    Sender = JsonErroredBackchannelRequestToken
+                };
+            },
+            async context =>
+            {
+                await context.ChallengeAsync("Twitter");
+                return true;
+            });
+            using var server = host.GetTestServer();
+            
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await server.SendAsync("http://example.com/challenge");
+            });
+
+            var expectedErrorMessage = "An error has occurred while calling the Twitter API, error's returned:" + Environment.NewLine
+                + "Code: 32, Message: 'Could not authenticate you.'";
+
+            Assert.Equal(expectedErrorMessage, exception.Message);
+        }
+
+        [Fact]
+        public async Task TwitterError_UnknownContentType_ThrowsHttpException()
+        {
+            using var host = await CreateHost(o =>
+            {
+                o.ConsumerKey = "Test Consumer Key";
+                o.ConsumerSecret = "Test Consumer Secret";
+                o.BackchannelHttpHandler = new TestHttpMessageHandler
+                {
+                    Sender = UnknownContentTypeErroredBackchannelRequestToken
+                };
+            },
+            async context =>
+            {
+                await context.ChallengeAsync("Twitter");
+                return true;
+            });
+            using var server = host.GetTestServer();
+
+            await Assert.ThrowsAsync<HttpRequestException>(async () =>
+            {
+                await server.SendAsync("http://example.com/challenge");
+            });
+        }
+
+        [Fact]
         public async Task BadCallbackCallsRemoteAuthFailedWithState()
         {
             using var host = await CreateHost(o =>
@@ -382,6 +437,36 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                         new StringContent("oauth_callback_confirmed=true&oauth_token=test_oauth_token&oauth_token_secret=test_oauth_token_secret",
                             Encoding.UTF8,
                             "application/x-www-form-urlencoded")
+                };
+            }
+            throw new NotImplementedException(req.RequestUri.AbsoluteUri);
+        }
+
+        private HttpResponseMessage JsonErroredBackchannelRequestToken(HttpRequestMessage req)
+        {
+            if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
+            {
+                return new HttpResponseMessage(HttpStatusCode.Forbidden)
+                {
+                    Content =
+                        new StringContent("{\"errors\":[{\"code\":32,\"message\":\"Could not authenticate you.\"}]}",
+                            Encoding.UTF8,
+                            "application/json")
+                };
+            }
+            throw new NotImplementedException(req.RequestUri.AbsoluteUri);
+        }
+
+        private HttpResponseMessage UnknownContentTypeErroredBackchannelRequestToken(HttpRequestMessage req)
+        {
+            if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
+            {
+                return new HttpResponseMessage(HttpStatusCode.Forbidden)
+                {
+                    Content =
+                        new StringContent("example response text",
+                            Encoding.UTF8,
+                            "text/html")
                 };
             }
             throw new NotImplementedException(req.RequestUri.AbsoluteUri);

@@ -16,6 +16,14 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <c>select</c> <see cref="ElementReference"/>.
+        /// <para>
+        /// May be <see langword="null"/> if accessed before the component is rendered.
+        /// </para>
+        /// </summary>
+        [DisallowNull] public ElementReference? Element { get; protected set; }
+
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -24,7 +32,8 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(2, "class", CssClass);
             builder.AddAttribute(3, "value", BindConverter.FormatValue(CurrentValueAsString));
             builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
-            builder.AddContent(5, ChildContent);
+            builder.AddElementReferenceCapture(5, __selectReference => Element = __selectReference);
+            builder.AddContent(6, ChildContent);
             builder.CloseElement();
         }
 

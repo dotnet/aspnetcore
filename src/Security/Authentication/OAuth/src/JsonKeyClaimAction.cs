@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
             {
                 foreach (var v in value.EnumerateArray())
                 {
-                    AddClaim(v.ToString(), identity, issuer);
+                    AddClaim(v.ToString()!, identity, issuer);
                 }
             }
             else if (value.ValueKind == JsonValueKind.Object || value.ValueKind == JsonValueKind.Undefined)
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
             }
             else
             {
-                AddClaim(value.ToString(), identity, issuer);
+                AddClaim(value.ToString()!, identity, issuer);
             }
         }
 

@@ -6,17 +6,4 @@
     <!-- This sets an option which prevents the tests from rolling forward into a newer shared framework. -->
     <UserRuntimeConfig>$(MSBuildThisFileDirectory)runtimeconfig.norollforward.json</UserRuntimeConfig>
   </PropertyGroup>
-
-  <!--
-    The version of the .NET Core SDK we build with often contains a version of the Razor SDK several versions older
-    than latest. We reference the project (see CSharp.Common.props) to ensure it's built before projects that use it.
-    Since this is a project reference, we must explicitly import the props file and also specify the output location
-    of the SDK directory.
-  -->
-  <PropertyGroup>
-    <RazorSdkDirectoryRoot>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\${Configuration}\sdk-output\</RazorSdkDirectoryRoot>
-    <BlazorWebAssemblySdkDirectoryRoot>$(ArtifactsBinDir)Microsoft.NET.Sdk.BlazorWebAssembly\${Configuration}\sdk-output\</BlazorWebAssemblySdkDirectoryRoot>
-  </PropertyGroup>
-  <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props"
-      Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''" />
 </Project>

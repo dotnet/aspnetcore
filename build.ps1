@@ -116,7 +116,7 @@ Running tests.
     build.ps1 -test
 
 .LINK
-Online version: https://github.com/dotnet/aspnetcore/blob/master/docs/BuildFromSource.md
+Online version: https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md
 #>
 [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName='Groups')]
 param(

@@ -19,7 +19,7 @@ ASP.NET Core uses git submodules to include the source from a few other projects
 git clone --recursive https://github.com/dotnet/aspnetcore
 ```
 
-If you've already cloned the aspnetcore repo without fetching subdmoule sources, you can fetch them after cloning by running the following command.
+If you've already cloned the aspnetcore repo without fetching submodule sources, you can fetch them after cloning by running the following command.
 
 ```powershell
 git submodule update --init --recursive
@@ -155,7 +155,7 @@ Studio because those projects are not listed in AspNetCore.sln.
 This will download the required tools and restore all projects inside the repository. At that point, you should be able
 to open the .sln file or one of the project specific .slnf files to work on the projects you care about.
 
-   > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master
+   > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the main
    > branch, we regularly update the versions of .NET Core SDK required to build the repo.
    > You will need to restart Visual Studio every time we update the .NET Core SDK.
 

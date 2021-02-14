@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IDictionary<ModelMetadata, IModelBinder> _propertyBinders;
         private readonly IReadOnlyList<IModelBinder> _parameterBinders;
         private readonly ILogger _logger;
-        private Func<object> _modelCreator;
+        private Func<object>? _modelCreator;
 
         internal ComplexObjectModelBinder(
             IDictionary<ModelMetadata, IModelBinder> propertyBinders,
@@ -84,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 // instantiating the type. This means we'll ignore a previously assigned bindingContext.Model value.
                 // This behaior is identical to input formatting with S.T.Json and Json.NET.
  
-                var values = new object[boundConstructor.BoundConstructorParameters.Count];
+                var values = new object[boundConstructor.BoundConstructorParameters!.Count];
                 var (attemptedParameterBinding, parameterBindingSucceeded) = await BindParametersAsync(
                     bindingContext,
                     propertyData,
@@ -163,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             try
             {
-                bindingContext.Model = boundConstructor.BoundConstructorInvoker(values);
+                bindingContext.Model = boundConstructor.BoundConstructorInvoker!(values);
                 return true;
             }
             catch (Exception ex)
@@ -210,7 +212,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                                 Resources.FormatComplexObjectModelBinder_NoSuitableConstructor_ForProperty(
                                     modelType.FullName,
                                     metadata.PropertyName,
-                                    bindingContext.ModelMetadata.ContainerType.FullName));
+                                    bindingContext.ModelMetadata.ContainerType!.FullName));
                         case ModelMetadataKind.Type:
                             throw new InvalidOperationException(
                                 Resources.FormatComplexObjectModelBinder_NoSuitableConstructor_ForType(
@@ -230,7 +232,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             ModelBindingContext bindingContext,
             int propertyData,
             IReadOnlyList<ModelMetadata> parameters,
-            object[] parameterValues)
+            object?[] parameterValues)
         {
             var attemptedBinding = false;
             var bindingSucceeded = false;
@@ -245,7 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 var parameter = parameters[i];
                 
-                var fieldName = parameter.BinderModelName ?? parameter.ParameterName;
+                var fieldName = parameter.BinderModelName ?? parameter.ParameterName!;
                 var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
 
                 if (!CanBindItem(bindingContext, parameter))
@@ -307,7 +309,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     var parameterBinder = _parameterBinders[i];
                     if (parameterBinder is PlaceholderBinder)
                     {
-                        var fieldName = parameter.BinderModelName ?? parameter.ParameterName;
+                        var fieldName = parameter.BinderModelName ?? parameter.ParameterName!;
                         var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
 
                         var result = await BindParameterAsync(bindingContext, parameter, parameterBinder, fieldName, modelName);
@@ -370,7 +372,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     }
                 }
 
-                var fieldName = property.BinderModelName ?? property.PropertyName;
+                var fieldName = property.BinderModelName ?? property.PropertyName!;
                 var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
                 var result = await BindPropertyAsync(bindingContext, property, propertyBinder, fieldName, modelName);
 
@@ -399,7 +401,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     var propertyBinder = _propertyBinders[property];
                     if (propertyBinder is PlaceholderBinder)
                     {
-                        var fieldName = property.BinderModelName ?? property.PropertyName;
+                        var fieldName = property.BinderModelName ?? property.PropertyName!;
                         var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
 
                         await BindPropertyAsync(bindingContext, property, propertyBinder, fieldName, modelName);
@@ -450,12 +452,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // recreate instances or overwrite inner properties that are not bound. No need for this with simple
             // values because they will be overwritten if binding succeeds. Arrays are never reused because they
             // cannot be resized.
-            object propertyModel = null;
+            object? propertyModel = null;
             if (property.PropertyGetter != null &&
                 property.IsComplexType &&
                 !property.ModelType.IsArray)
             {
-                propertyModel = property.PropertyGetter(bindingContext.Model);
+                propertyModel = property.PropertyGetter(bindingContext.Model!);
             }
 
             ModelBindingResult result;
@@ -552,7 +554,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var performsConstructorBinding = bindingContext.Model == null && modelMetadata.BoundConstructor != null;
 
             if (modelMetadata.Properties.Count == 0 &&
-                 (!performsConstructorBinding || modelMetadata.BoundConstructor.BoundConstructorParameters.Count == 0))
+                 (!performsConstructorBinding || modelMetadata.BoundConstructor!.BoundConstructorParameters!.Count == 0))
             {
                 Log.NoPublicSettableItems(_logger, bindingContext);
                 return NoDataAvailable;
@@ -599,7 +601,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
 
                 // Otherwise, check whether the (perhaps filtered) value providers have a match.
-                var fieldName = propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName;
+                var fieldName = propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName!;
                 var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
                 using (bindingContext.EnterNestedScope(
                     modelMetadata: propertyMetadata,
@@ -617,7 +619,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (performsConstructorBinding)
             {
-                var parameters = bindingContext.ModelMetadata.BoundConstructor.BoundConstructorParameters;
+                var parameters = bindingContext.ModelMetadata.BoundConstructor!.BoundConstructorParameters!;
                 for (var i = 0; i < parameters.Count; i++)
                 {
                     var parameterMetadata = parameters[i];
@@ -635,7 +637,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     }
 
                     // Otherwise, check whether the (perhaps filtered) value providers have a match.
-                    var fieldName = parameterMetadata.BinderModelName ?? parameterMetadata.ParameterName;
+                    var fieldName = parameterMetadata.BinderModelName ?? parameterMetadata.ParameterName!;
                     var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
                     using (bindingContext.EnterNestedScope(
                         modelMetadata: parameterMetadata,
@@ -710,7 +712,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var value = result.Model;
             try
             {
-                propertyMetadata.PropertySetter(bindingContext.Model, value);
+                propertyMetadata.PropertySetter!(bindingContext.Model!, value);
             }
             catch (Exception exception)
             {
@@ -740,7 +742,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Type, Exception> _noPublicSettableProperties = LoggerMessage.Define<string, Type>(
+            private static readonly Action<ILogger, string, Type, Exception?> _noPublicSettableProperties = LoggerMessage.Define<string, Type>(
                LogLevel.Debug,
                 new EventId(17, "NoPublicSettableItems"),
                "Could not bind to model with name '{ModelName}' and type '{ModelType}' as the type has no public settable properties or constructor parameters.");

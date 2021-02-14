@@ -16,10 +16,6 @@
       "src\\Tools\\dotnet-sql-cache\\src\\dotnet-sql-cache.csproj",
       "src\\Tools\\dotnet-user-secrets\\src\\dotnet-user-secrets.csproj",
       "src\\Tools\\dotnet-user-secrets\\test\\dotnet-user-secrets.Tests.csproj",
-      "src\\Tools\\dotnet-watch\\src\\dotnet-watch.csproj",
-      "src\\Tools\\dotnet-watch\\BrowserRefresh\\src\\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj",
-      "src\\Tools\\dotnet-watch\\BrowserRefresh\\test\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj",
-      "src\\Tools\\dotnet-watch\\test\\dotnet-watch.Tests.csproj",
       "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
       "src\\Hosting\\TestHost\\src\\Microsoft.AspNetCore.TestHost.csproj"
     ]

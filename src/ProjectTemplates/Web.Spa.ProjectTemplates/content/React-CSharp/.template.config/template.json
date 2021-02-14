@@ -6,8 +6,8 @@
     "SPA"
   ],
   "groupIdentity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.React",
-  "precedence": "7000",
-  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.React.CSharp.5.0",
+  "precedence": "8000",
+  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.React.CSharp.6.0",
   "name": "ASP.NET Core with React.js",
   "preferNameDirectory": true,
   "primaryOutputs": [

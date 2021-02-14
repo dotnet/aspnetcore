@@ -29,4 +29,11 @@
     <!-- Ignore warning about calling the Pack target on Web SDK projects. Our build scripts call /t:pack on everything in this repo. -->
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
   </PropertyGroup>
+
+  <!-- The SDK includes some conflict resolution targets that check for duplicate items in the publish targets. It's very greedy
+       and ends up marking the same files in different projects as duplicates of each other. We disable this check here to work
+       around this issue. -->
+  <PropertyGroup>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
 </Project>

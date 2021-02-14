@@ -221,21 +221,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new ArgumentNullException(nameof(sectionName));
             }
 
-            if (!PreviousSectionWriters.ContainsKey(sectionName))
+            if (PreviousSectionWriters.ContainsKey(sectionName))
             {
-                // If the section is not defined, throw an error.
-                throw new InvalidOperationException(Resources.FormatSectionNotDefined(
-                    ViewContext.ExecutingFilePath,
-                    sectionName,
-                    ViewContext.View.Path));
-            }
+                if (_ignoredSections == null)
+                {
+                    _ignoredSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                }
 
-            if (_ignoredSections == null)
-            {
-                _ignoredSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                _ignoredSections.Add(sectionName);
             }
-
-            _ignoredSections.Add(sectionName);
         }
 
         /// <inheritdoc />

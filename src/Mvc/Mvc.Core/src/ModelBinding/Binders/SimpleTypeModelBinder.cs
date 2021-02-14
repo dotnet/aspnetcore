@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.ComponentModel;
 using System.Runtime.ExceptionServices;
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 var value = valueProviderResult.FirstValue;
 
-                object model;
+                object? model;
                 if (bindingContext.ModelType == typeof(string))
                 {
                     // Already have a string. No further conversion required but handle ConvertEmptyStringToNull.
@@ -119,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         protected virtual void CheckModel(
             ModelBindingContext bindingContext,
             ValueProviderResult valueProviderResult,
-            object model)
+            object? model)
         {
             // When converting newModel a null value may indicate a failed conversion for an otherwise required
             // model (can't set a ValueType to null). This detects if a null model value is acceptable given the

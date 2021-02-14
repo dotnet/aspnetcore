@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
     {
         /// <summary>
         /// Key used by routing and action selection to match an attribute
-        /// route entry to agroup of action descriptors.
+        /// route entry to a group of action descriptors.
         /// </summary>
         public static readonly string RouteGroupKey = "!__route_group";
 
