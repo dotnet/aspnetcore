@@ -8,6 +8,7 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using PlaywrightSharp;
 
 namespace RunTests
 {
@@ -85,6 +86,18 @@ namespace RunTests
             }
         }
 
+        public async Task<bool> InstallPlaywrightIfNeededAsync()
+        {
+            try
+            {
+                await Playwright.InstallAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception installing playwright: {e.ToString()}");
+            }
+        }
+        
         public async Task<bool> InstallAspNetAppIfNeededAsync()
         {
             try
