@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     internal sealed class Http2Stream<TContext> : Http2Stream, IHostContextContainer<TContext> where TContext : notnull
     {
         private readonly Task _executingTask;
+        private bool _disposed;
 
         private readonly Channel<ReadResult> _requestQueue = Channel.CreateUnbounded<ReadResult>(new UnboundedChannelOptions
         {
@@ -63,8 +64,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return _requestQueue.Reader.Completion.IsCompleted;
         }
 
+        protected override void OnRequestProcessingEnded()
+        {
+            // Don't execute OnRequestProcessingEnded if disposed since that
+            // has side effects
+            if (_disposed)
+            {
+                return;
+            }
+
+            base.OnRequestProcessingEnded();
+        }
+
         public override void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
             _requestQueue.Writer.TryWrite(new ReadResult(default, isCanceled: false, isCompleted: true));
             _requestQueue.Writer.TryComplete();
             base.Dispose();
