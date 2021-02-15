@@ -55,6 +55,12 @@ namespace RunTests
                     aliases: new string[] { "--source" },
                     description: "The restore sources to use during testing")
                 { Argument = new Argument<string>() { Arity = ArgumentArity.ZeroOrMore }, Required = true }
+                
+                new Option(
+                    aliases: new string[] { "--playwright" },
+                    description: "Whether to install playwright")
+                { Argument = new Argument<bool>(), Required = true },
+                
             };
 
             var parseResult = command.Parse(args);
@@ -68,6 +74,7 @@ namespace RunTests
                 RuntimeVersion = sharedFxVersion,
                 Target = parseResult.ValueForOption<string>("--target"),
                 Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout")),
+                Playwright = parseResult.ValueForOption<bool>("--playwright"),
 
                 // When targeting pack builds, it has exactly the same version as the shared framework.
                 AspNetRef = $"Microsoft.AspNetCore.App.Ref.{sharedFxVersion}.nupkg",
@@ -88,6 +95,7 @@ namespace RunTests
         public string RuntimeVersion { get; private set; }
         public string Target { get; private set; }
         public TimeSpan Timeout { get; private set; }
+        public bool Playwright { get; private set; }
 
         public string AspNetRef { get; private set; }
         public string AspNetRuntime { get; private set; }
