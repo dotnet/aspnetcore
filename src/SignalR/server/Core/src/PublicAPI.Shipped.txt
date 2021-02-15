@@ -144,6 +144,7 @@ Microsoft.AspNetCore.SignalR.IHubClients<T>.Users(System.Collections.Generic.IRe
 Microsoft.AspNetCore.SignalR.IHubContext<THub, T>.Clients.get -> Microsoft.AspNetCore.SignalR.IHubClients<T!>!
 Microsoft.AspNetCore.SignalR.IHubContext<THub, T>.Groups.get -> Microsoft.AspNetCore.SignalR.IGroupManager!
 ~Microsoft.AspNetCore.SignalR.IHubContext<THub>
+~Microsoft.AspNetCore.SignalR.IHubContext
 Microsoft.AspNetCore.SignalR.IHubContext<THub>.Clients.get -> Microsoft.AspNetCore.SignalR.IHubClients!
 Microsoft.AspNetCore.SignalR.IHubContext<THub>.Groups.get -> Microsoft.AspNetCore.SignalR.IGroupManager!
 Microsoft.AspNetCore.SignalR.IHubFilter
