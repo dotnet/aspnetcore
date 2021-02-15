@@ -122,6 +122,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             CompleteStream(errored: false);
         }
 
+        protected override bool EndRequestProcessing()
+        {
+            CompleteStream(errored: false);
+            return true;
+        }
+
         public void CompleteStream(bool errored)
         {
             try
@@ -612,7 +618,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         /// </summary>
         public abstract void Execute();
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             _http2Output.Dispose();
         }

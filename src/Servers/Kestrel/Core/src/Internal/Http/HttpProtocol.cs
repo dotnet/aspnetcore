@@ -431,6 +431,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
         }
 
+        protected virtual bool EndRequestProcessing()
+        {
+            return !_keepAlive;
+        }
+
         protected virtual void OnErrorAfterResponseStarted()
         {
         }
@@ -609,7 +614,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private async Task ProcessRequests<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
-            while (_keepAlive)
+            while (true)
             {
                 if (_context.InitialExecutionContext is null)
                 {
@@ -749,6 +754,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (HasStartedConsumingRequestBody)
                 {
                     await messageBody.StopAsync();
+                }
+
+                if (EndRequestProcessing())
+                {
+                    break;
                 }
             }
         }
