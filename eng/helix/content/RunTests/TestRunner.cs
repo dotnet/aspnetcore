@@ -90,7 +90,10 @@ namespace RunTests
         {
             try
             {
-                await Playwright.InstallAsync();
+                if (Options.Playwright)
+                {
+                    await Playwright.InstallAsync();
+                }
             }
             catch (Exception e)
             {
