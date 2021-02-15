@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc
     {
         /// <summary>
         /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
-        /// </summary>       
+        /// </summary>
         /// <param name="statusCode">The HTTP response status code.</param>
         public ProducesResponseTypeAttribute(int statusCode)
             : this(typeof(void), statusCode)
@@ -31,6 +31,18 @@ namespace Microsoft.AspNetCore.Mvc
         {
             Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
+            OverrideDefaultErrorType = false;
+        }
+
+        /// <summary>
+        /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
+        /// <param name="statusCode">The HTTP response status code.</param>
+        /// <param name="overrideDefaultErrorType">Whether or not to override default error type</param>
+        public ProducesResponseTypeAttribute(Type type, int statusCode, bool overrideDefaultErrorType) : this(type, statusCode)
+        {
+            OverrideDefaultErrorType = overrideDefaultErrorType;
         }
 
         /// <summary>
@@ -42,6 +54,19 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the HTTP status code of the response.
         /// </summary>
         public int StatusCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether or not the default error type should be used when one
+        /// is expliclty provided as a type in the <see cref="ProducesResponseTypeAttribute"/>.
+        ///
+        /// When <see langword="true"/>, the ApiExplorer will use the provided <see cref="Type"/>
+        /// as the default type for error objects.
+        ///
+        /// When <see langword="false"/>, the ApiExplorer will use the globally configured default
+        /// error type.
+        /// </summary>
+        /// <value></value>
+        public bool OverrideDefaultErrorType { get; set; }
 
         /// <inheritdoc />
         void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes)

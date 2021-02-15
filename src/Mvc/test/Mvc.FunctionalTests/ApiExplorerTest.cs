@@ -1461,6 +1461,29 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 });
         }
 
+        [Theory]
+        [InlineData("ActionWithVoidTypeAndOverrideDisabled", typeof(ProblemDetails))]
+        [InlineData("ActionWithVoidType", typeof(void))]
+        public async Task ApiAction_ForActionWithVoidResponseType(string path, Type type)
+        {
+            // Act
+            var response = await Client.GetAsync($"http://localhost/ApiExplorerVoid/{path}");
+
+            var responseBody = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(responseBody);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Collection(
+                description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
+                responseType =>
+                {
+                    Assert.Equal(type.FullName, responseType.ResponseType);
+                    Assert.Equal(401, responseType.StatusCode);
+                    Assert.False(responseType.IsDefaultResponse);
+                });
+        }
+
         private IEnumerable<string> GetSortedMediaTypes(ApiExplorerResponseType apiResponseType)
         {
             return apiResponseType.ResponseFormats

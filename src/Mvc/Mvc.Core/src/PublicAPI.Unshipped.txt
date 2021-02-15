@@ -849,6 +849,9 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.ValidationSta
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.ValidationVisitor(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider! validatorProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache! validatorCache, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary? validationState) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.ValidatorProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache.GetValidators(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider! validatorProvider) -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidator!>!
+~Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.ProducesResponseTypeAttribute(System.Type type, int statusCode, bool overrideDefaultErrorType) -> void
+Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.OverrideDefaultErrorType.get -> bool
+Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.OverrideDefaultErrorType.set -> void
 Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.State.get -> object?
 Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.State.set -> void
 Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.HttpMethodAttribute(System.Collections.Generic.IEnumerable<string!>! httpMethods) -> void

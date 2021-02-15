@@ -101,17 +101,21 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                     if (apiResponseType.Type == typeof(void))
                     {
-                        if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
+                        var statusOkWithType = type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created);
+                        var hasDefaultErrorTypeOverride = metadataAttribute is ProducesResponseTypeAttribute producesResponseTypeAttribute && producesResponseTypeAttribute.OverrideDefaultErrorType;
+                        var errorOrDefaultResponse = IsClientError(statusCode) || apiResponseType.IsDefaultResponse;
+                        // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
+                        // In this event, use the action's return type for 200 or 201 status codes. This lets you decorate an action with a
+                        // [ProducesResponseType(201)] instead of [ProducesResponseType(201, typeof(Person)] when typeof(Person) can be inferred
+                        // from the return type.
+                        if (statusOkWithType)
                         {
-                            // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
-                            // In this event, use the action's return type for 200 or 201 status codes. This lets you decorate an action with a
-                            // [ProducesResponseType(201)] instead of [ProducesResponseType(201, typeof(Person)] when typeof(Person) can be inferred
-                            // from the return type.
                             apiResponseType.Type = type;
                         }
-                        else if (IsClientError(statusCode) || apiResponseType.IsDefaultResponse)
+                        // Use the default error type for "default" responses or 4xx client errors if no response type is specified.
+                        // Unless falling back to the default error type is explicitly disabled.
+                        else if (errorOrDefaultResponse && !hasDefaultErrorTypeOverride)
                         {
-                            // Use the default error type for "default" responses or 4xx client errors if no response type is specified.
                             apiResponseType.Type = defaultErrorType;
                         }
                     }
