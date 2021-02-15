@@ -8,6 +8,7 @@ param(
     [string]$Quarantined,
     [string]$EF,
     [string]$HelixTimeout,
+    [string]$InstallPlaywright,
     [string]$FeedCred
 )
 
@@ -87,7 +88,7 @@ if ($LastExitCode -ne 0) {
 }
 
 Write-Host "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout"
-dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout
+dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout --playwright $InstallPlaywright
 
 Write-Host "Finished running tests: exit_code=$LastExitCode"
 exit $LastExitCode
