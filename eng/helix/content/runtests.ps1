@@ -43,7 +43,7 @@ function InvokeInstallDotnet([string]$command) {
     return $false
 }
 
-function InstallDotnetSDKAndRuntime([string]$Feed, [string]$FeedCredParam) {
+function InstallDotnetSDKAndRuntime([string]$sdkVersionToInstall, [string]$runtimeVersionToInstall, [string]$Feed, [string]$FeedCredParam) {
     foreach ($i in 1..5) {
         $random = Get-Random -Maximum 1024
         $env:DOTNET_HOME = Join-Path $currentDirectory "sdk$random"
@@ -53,18 +53,21 @@ function InstallDotnetSDKAndRuntime([string]$Feed, [string]$FeedCredParam) {
 
         Write-Host "Set PATH to: $env:PATH"
 
-        $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch `'`' `$true `'$Feed`' `'$FeedCredParam`' `$true"
+        $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $sdkVersionToInstall $Arch `'`' `$true `'$Feed`' `'$FeedCredParam`' `$true"
 
         if (!$success) {
             Write-Host "Retrying..."
             continue
         }
 
-        $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $RuntimeVersion $Arch dotnet `$true `'$Feed`' `'$FeedCredParam`' `$true"
+        if (-Not [string]::IsNullOrEmpty($runtimeVersionToInstall))
+        {
+            $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $runtimeVersionToInstall $Arch dotnet `$true `'$Feed`' `'$FeedCredParam`' `$true"
 
-        if (!$success) {
-            Write-Host "Retrying..."
-            continue
+            if (!$success) {
+                Write-Host "Retrying..."
+                continue
+            }
         }
 
         return
@@ -75,9 +78,13 @@ function InstallDotnetSDKAndRuntime([string]$Feed, [string]$FeedCredParam) {
 }
 
 if ([string]::IsNullOrEmpty($FeedCred)) {
-    InstallDotnetSDKAndRuntime
+    InstallDotnetSDKAndRuntime $SdkVersion $RuntimeVersion
 } else {
-    InstallDotnetSDKAndRuntime "https://dotnetclimsrc.blob.core.windows.net/dotnet" $FeedCred
+    InstallDotnetSDKAndRuntime $SdkVersion $RuntimeVersion "https://dotnetclimsrc.blob.core.windows.net/dotnet" $FeedCred
+}
+
+if ($InstallPlaywright -eq "true") {
+    InstallDotnetSDKAndRuntime "5.0.103"
 }
 
 Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
