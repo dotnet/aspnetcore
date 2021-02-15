@@ -145,8 +145,8 @@ Microsoft.AspNetCore.SignalR.IHubContext<THub, T>.Clients.get -> Microsoft.AspNe
 Microsoft.AspNetCore.SignalR.IHubContext<THub, T>.Groups.get -> Microsoft.AspNetCore.SignalR.IGroupManager!
 ~Microsoft.AspNetCore.SignalR.IHubContext<THub>
 ~Microsoft.AspNetCore.SignalR.IHubContext
-Microsoft.AspNetCore.SignalR.IHubContext<THub>.Clients.get -> Microsoft.AspNetCore.SignalR.IHubClients!
-Microsoft.AspNetCore.SignalR.IHubContext<THub>.Groups.get -> Microsoft.AspNetCore.SignalR.IGroupManager!
+Microsoft.AspNetCore.SignalR.IHubContext.Clients.get -> Microsoft.AspNetCore.SignalR.IHubClients!
+Microsoft.AspNetCore.SignalR.IHubContext.Groups.get -> Microsoft.AspNetCore.SignalR.IGroupManager!
 Microsoft.AspNetCore.SignalR.IHubFilter
 Microsoft.AspNetCore.SignalR.IHubFilter.InvokeMethodAsync(Microsoft.AspNetCore.SignalR.HubInvocationContext! invocationContext, System.Func<Microsoft.AspNetCore.SignalR.HubInvocationContext!, System.Threading.Tasks.ValueTask<object?>>! next) -> System.Threading.Tasks.ValueTask<object?>
 Microsoft.AspNetCore.SignalR.IHubFilter.OnConnectedAsync(Microsoft.AspNetCore.SignalR.HubLifetimeContext! context, System.Func<Microsoft.AspNetCore.SignalR.HubLifetimeContext!, System.Threading.Tasks.Task!>! next) -> System.Threading.Tasks.Task!
