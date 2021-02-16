@@ -121,7 +121,10 @@ namespace Microsoft.AspNetCore.Testing
 
         Task ITestMethodLifecycle.OnTestEndAsync(TestContext context, Exception exception, CancellationToken cancellationToken)
         {
-            Logger.LogError(exception, "Test threw an exception.");
+            if (exception is not null)
+            {
+                Logger.LogError(exception, "Test threw an exception.");
+            }
             return Task.CompletedTask;
         }
     }
