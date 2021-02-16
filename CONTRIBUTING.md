@@ -30,10 +30,11 @@ Our team members also monitor several other discussion forums:
 
 We are always happy to see PRs from community members both for bug fixes as well as new features.
 To help you be successful we've put together a few simple rules to follow when you prepare to contribute to our codebase:
-1. **Start from the areas we need help with, not a random one.**
+1. **Start from an issue, not PR**
   Over the years we've seen many PRs targeting areas of the framework, which we didn't plan to expand further at the time.
   In all these cases we had to say `no` to those PRs and close them. That, obviously, is not a great outcome for us. And it's especially bad for the contributor, as they've spent a lot of effort preparing the change.
-  To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with `help wanted` label. You can find all these issues at: [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted)
+  To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with `help wanted` label. You can find all these issues at: [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted).
+  If there is some other area not included here where you want to contribute to, first open an issue to describe the problem you are trying to solve and state that you're willing to contribute a fix for it. We will then discuss in that issue, whether we think it belongs in the platform and the best approach to solve it.
 2. **Discuss the design with the team before actually working on a fix**
   This can save you a lot of time. We've seen PRs, where customers would solve an issue in a way, which either wouldn't fit into the framework because of how it's designed or it would change the framework in a way, which is not something we'd like to do. To avoid these situations, we encourage customers to discuss the preferred design with the team first. To do so, file a new `design proposal` issue, link to the issue you'd like to address and provide detailed information about how you'd like to solve a specific problem. We triage issues peridocially and it will not take long for a team member to engage with you on that proposal.
   When you get an agreement from our team members that the design proposal you have is solid, then go ahead and prepare the PR.
