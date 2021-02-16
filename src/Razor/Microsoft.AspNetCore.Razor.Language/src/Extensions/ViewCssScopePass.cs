@@ -25,16 +25,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 return;
             }
 
+            var scopeWithSeparator = " " + cssScope;
             var nodes = documentNode.FindDescendantNodes<HtmlContentIntermediateNode>();
             for (var i = 0; i < nodes.Count; i++)
             {
-                ProcessElement(nodes[i], cssScope);
+                ProcessElement(nodes[i], scopeWithSeparator);
             }
         }
 
         private void ProcessElement(HtmlContentIntermediateNode node, string cssScope)
         {
-            cssScope = " " + cssScope;
             // Add a minimized attribute whose name is simply the CSS scope
             for (var i = 0; i < node.Children.Count; i++)
             {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 if (child is IntermediateToken token && token.IsHtml)
                 {
                     var content = token.Content;
-                    if (content.StartsWith("<") && !content.StartsWith("</"))
+                    if (content.StartsWith("<", StringComparison.Ordinal) && !content.StartsWith("</", StringComparison.Ordinal))
                     {
                         node.Children.Insert(i + 1, new IntermediateToken()
                         {
@@ -54,17 +54,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     }
                 }
             }
-        }
-
-        private void ProcessElement(MarkupElementIntermediateNode node, string cssScope)
-        {
-            // Add a minimized attribute whose name is simply the CSS scope
-            node.Children.Add(new HtmlAttributeIntermediateNode
-            {
-                AttributeName = cssScope,
-                Prefix = cssScope,
-                Suffix = string.Empty,
-            });
         }
     }
 }
