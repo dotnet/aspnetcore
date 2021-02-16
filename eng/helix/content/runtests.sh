@@ -84,7 +84,7 @@ echo "Restore: $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --ignore-fai
 $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --ignore-failed-sources
 
 echo "Running tests: $DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --helixTimeout $9"
-$DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --helixTimeout $9 --playwright $10
+$DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --helixTimeout $9
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 

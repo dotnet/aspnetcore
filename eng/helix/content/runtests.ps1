@@ -18,8 +18,6 @@ $env:DOTNET_MULTILEVEL_LOOKUP = 0
 $currentDirectory = Get-Location
 $envPath = "$env:PATH;$env:HELIX_CORRELATION_PAYLOAD\node\bin"
 
-$env:PLAYWRIGHT_BROWSERS_PATH = "$currentDirectory\ms-playwright"
-
 function InvokeInstallDotnet([string]$command) {
     Write-Host "InstallDotNet $command"
 
@@ -103,12 +101,14 @@ if ($LastExitCode -ne 0) {
 }
 
 if ($InstallPlaywright -eq "true") {
+    $env:PLAYWRIGHT_BROWSERS_PATH = "$currentDirectory\ms-playwright"
+
     Write-Host "InstallPlaywright requested, building dotnet build --no-restore RunTests\RunTests.csproj -p:InstallPlaywright:true"
     dotnet build --no-restore RunTests\RunTests.csproj -p:InstallPlaywright:true
 }
 
 Write-Host "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout"
-dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout --playwright $InstallPlaywright
+dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout
 
 Write-Host "Finished running tests: exit_code=$LastExitCode"
 exit $LastExitCode
