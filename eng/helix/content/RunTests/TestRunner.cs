@@ -8,7 +8,9 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+#if INSTALLPLAYWRIGHT
 using PlaywrightSharp;
+#endif
 
 namespace RunTests
 {
@@ -41,11 +43,13 @@ namespace RunTests
                 Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
                 EnvironmentVariables.Add("DotNetEfFullPath", dotnetEFFullPath);
 
+#if INSTALLPLAYWRIGHT
                 // Playwright will download and look for browsers to this directory
                 var playwrightBrowsers = Path.Combine(helixDir, "ms-playwright");
                 Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
                 EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
-
+#endif
+    
                 Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
                 Directory.CreateDirectory(nugetRestore);
 
@@ -86,14 +90,12 @@ namespace RunTests
             }
         }
 
-        public async Task<bool> InstallPlaywrightIfNeededAsync()
+#if INSTALLPLAYWRIGHT
+        public async Task<bool> InstallPlaywrightAsync()
         {
             try
             {
-                if (Options.Playwright)
-                {
-                    await Playwright.InstallAsync(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]);
-                }
+                await Playwright.InstallAsync(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]);
                 return true;
             }
             catch (Exception e)
@@ -102,6 +104,7 @@ namespace RunTests
                 return false;
             }
         }
+#endif
         
         public async Task<bool> InstallAspNetAppIfNeededAsync()
         {
