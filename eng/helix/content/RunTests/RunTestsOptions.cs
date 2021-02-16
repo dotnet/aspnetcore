@@ -54,12 +54,12 @@ namespace RunTests
                 new Option(
                     aliases: new string[] { "--source" },
                     description: "The restore sources to use during testing")
-                { Argument = new Argument<string>() { Arity = ArgumentArity.ZeroOrMore }, Required = true }
+                { Argument = new Argument<string>() { Arity = ArgumentArity.ZeroOrMore }, Required = true },
                 
                 new Option(
                     aliases: new string[] { "--playwright" },
                     description: "Whether to install playwright")
-                { Argument = new Argument<bool>(), Required = true },
+                { Argument = new Argument<bool>(), Required = true }
                 
             };
 
