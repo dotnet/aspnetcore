@@ -55,7 +55,6 @@ namespace RunTests
                     aliases: new string[] { "--source" },
                     description: "The restore sources to use during testing")
                 { Argument = new Argument<string>() { Arity = ArgumentArity.ZeroOrMore }, Required = true }
-                
             };
 
             var parseResult = command.Parse(args);
