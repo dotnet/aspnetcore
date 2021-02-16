@@ -29,7 +29,7 @@ namespace RunTests
                 }
                 if (keepGoing)
                 {
-                    keepGoing = InstallPlaywrightIfNeededAsync();
+                    keepGoing = runner.InstallPlaywrightIfNeededAsync();
                 }
 
                 runner.DisplayContents();
