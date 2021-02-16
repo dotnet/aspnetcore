@@ -103,8 +103,8 @@ if ($LastExitCode -ne 0) {
 if ($InstallPlaywright -eq "true") {
     $env:PLAYWRIGHT_BROWSERS_PATH = "$currentDirectory\ms-playwright"
 
-    Write-Host "InstallPlaywright requested, building dotnet build --no-restore RunTests\RunTests.csproj -p:InstallPlaywright:true"
-    dotnet build --no-restore RunTests\RunTests.csproj -p:InstallPlaywright:true
+    Write-Host "InstallPlaywright requested, building dotnet build --no-restore /p:InstallPlaywright=true RunTests\RunTests.csproj"
+    dotnet build --no-restore /p:InstallPlaywright=true RunTests\RunTests.csproj
 }
 
 Write-Host "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout"
