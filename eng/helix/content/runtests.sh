@@ -25,6 +25,9 @@ export DOTNET_CLI_HOME="$DIR/.home$RANDOM"
 
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
+# Set playwright browser path
+export PLAYWRIGHT_BROWSERS_PATH="$DIR/ms-playwright"
+
 RESET="\033[0m"
 RED="\033[0;31m"
 YELLOW="\033[0;33m"
