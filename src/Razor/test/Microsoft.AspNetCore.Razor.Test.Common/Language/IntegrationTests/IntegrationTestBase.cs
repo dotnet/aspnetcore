@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             return projectItem;
         }
 
-        private RazorProjectItem CreateProjectItemFromText(string text, string filePath)
+        private RazorProjectItem CreateProjectItemFromText(string text, string filePath, string? cssScope = null)
         {
             // Consider the file path to be relative to the 'FileName' of the test.
             var workingDirectory = Path.GetDirectoryName(FileName);
@@ -158,7 +158,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 basePath: basePath,
                 filePath: filePath,
                 physicalPath: physicalPath,
-                relativePhysicalPath: relativePhysicalPath)
+                relativePhysicalPath: relativePhysicalPath,
+                cssScope: cssScope)
             {
                 Content = text,
             };
@@ -212,9 +213,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             return projectItem;
         }
 
-        protected CompiledCSharpCode CompileToCSharp(string text, string path = "test.cshtml", bool? designTime = null)
+        protected CompiledCSharpCode CompileToCSharp(string text, string path = "test.cshtml", bool? designTime = null, string? cssScope = null)
         {
-            var projectItem = CreateProjectItemFromText(text, path);
+            var projectItem = CreateProjectItemFromText(text, path, cssScope);
             return CompileToCSharp(projectItem, designTime);
         }
 
