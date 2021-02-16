@@ -47,7 +47,7 @@ By following the guidance provided above, you will greatly increase chances for 
 
 ### Resources to help you get started
 Here are some resources to help you get started on how to contribute code or new content.
-* Look at the [Contributor documentation](/docs/) to get started on building the source code on your own.
+* Look at the [Contributor documentation](/docs/README.md) to get started on building the source code on your own.
 * ["Help wanted" issues](https://github.com/dotnet/aspnetcore/labels/help%20wanted) - these issues are up for grabs. Comment on an issue if you want to create a fix.
 * ["Good first issue" issues](https://github.com/dotnet/aspnetcore/labels/good%20first%20issue) - we think these are a good for newcomers.
 
