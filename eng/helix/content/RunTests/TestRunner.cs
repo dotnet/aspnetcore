@@ -94,10 +94,12 @@ namespace RunTests
                 {
                     await Playwright.InstallAsync();
                 }
+                return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Exception installing playwright: {e.ToString()}");
+                return false;
             }
         }
         
