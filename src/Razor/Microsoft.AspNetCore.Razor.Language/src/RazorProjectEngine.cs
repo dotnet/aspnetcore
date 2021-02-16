@@ -112,6 +112,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             AddDefaultPhases(builder.Phases);
             AddDefaultFeatures(builder.Features);
 
+            if (configuration.LanguageVersion.CompareTo(RazorLanguageVersion.Version_5_0) >= 0)
+            {
+                builder.Features.Add(new ViewCssScopePass());
+            }
+
             if (configuration.LanguageVersion.CompareTo(RazorLanguageVersion.Version_3_0) >= 0)
             {
                 FunctionsDirective.Register(builder);
@@ -172,7 +177,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             features.Add(new DefaultTagHelperOptimizationPass());
             features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
             features.Add(new EliminateMethodBodyPass());
-            features.Add(new ViewCssScopePass());
 
             // Default Code Target Extensions
             var targetExtensionFeature = new DefaultRazorTargetExtensionFeature();
