@@ -78,7 +78,7 @@ function InstallDotnetSDKAndRuntime([string]$Feed, [string]$FeedCredParam) {
 if ([string]::IsNullOrEmpty($FeedCred)) {
     InstallDotnetSDKAndRuntime
 } else {
-    InstallDotnetSDKAndRuntime"https://dotnetclimsrc.blob.core.windows.net/dotnet" $FeedCred
+    InstallDotnetSDKAndRuntime "https://dotnetclimsrc.blob.core.windows.net/dotnet" $FeedCred
 }
 
 if ($InstallPlaywright -eq "true") {
