@@ -92,7 +92,7 @@ namespace RunTests
             {
                 if (Options.Playwright)
                 {
-                    await Playwright.InstallAsync();
+                    await Playwright.InstallAsync(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]);
                 }
                 return true;
             }
