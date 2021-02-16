@@ -61,14 +61,11 @@ function InstallDotnetSDKAndRuntime([string]$Feed, [string]$FeedCredParam) {
             continue
         }
 
-        if (-Not [string]::IsNullOrEmpty($runtimeVersionToInstall))
-        {
-            $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $RuntimeVersion $Arch dotnet `$true `'$Feed`' `'$FeedCredParam`' `$true"
+        $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $RuntimeVersion $Arch dotnet `$true `'$Feed`' `'$FeedCredParam`' `$true"
 
-            if (!$success) {
-                Write-Host "Retrying..."
-                continue
-            }
+        if (!$success) {
+            Write-Host "Retrying..."
+            continue
         }
 
         return
