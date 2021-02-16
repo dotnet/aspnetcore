@@ -194,8 +194,9 @@ try {
     Write-Host "Checking for changes to API baseline files"
 
     # Retrieve the set of changed files compared to main
-    $commitSha = git rev-parse HEAD
-    $changedFilesFromMain = git --no-pager diff origin/main...$commitSha --ignore-space-change --name-only --diff-filter=ar
+    $targetBranch = $env:PULLREQUEST_TARGETBRANCH
+    $sourceBranch = $env:PULLREQUEST_SOURCEBRANCH
+    $changedFilesFromMain = git --no-pager diff $targetBranch...$sourceBranch --ignore-space-change --name-only --diff-filter=ar
     $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
 
     if ($changedFilesFromMain) {
