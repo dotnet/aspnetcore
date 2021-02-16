@@ -41,7 +41,7 @@ To help you be successful we've put together a few simple rules to follow when y
   To file a design proposal, look for the relevant issue in the `New issue` page or simply click [this link](https://github.com/dotnet/aspnetcore/issues/new?assignees=&labels=design-proposal&template=4_design_proposal.md):
   ![image](https://user-images.githubusercontent.com/34246760/107969904-41b9ae80-6f65-11eb-8b84-d15e7d94753b.png)
   
-By following the above listed rules, you will greatly increase chances for your PR to be accepted and merged.
+By following the guidance provided above, you will greatly increase chances for your PR to be accepted and merged.
 
 Here are some resources to help you get started on how to contribute code or new content.
 * Look at the [Contributor documentation](/docs/) to get started on building the source code on your own.
