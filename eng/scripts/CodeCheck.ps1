@@ -202,6 +202,7 @@ try {
 
     if ($changedFilesFromMain) {
         foreach ($file in $changedFilesFromMain) {
+            # Check for changes in Shipped in dev branches and both Shipped and Unshipped in servicing branches
             if ($file -like '*PublicAPI.Shipped.txt') {
                 $changedAPIBaselines.Add($file)
             }
