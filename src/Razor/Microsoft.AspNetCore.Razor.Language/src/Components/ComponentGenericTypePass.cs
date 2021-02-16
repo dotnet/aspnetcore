@@ -208,6 +208,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                                 bindings.Remove(uncoveredBindingKey);
                                 receivesCascadingGenericTypes ??= new();
                                 receivesCascadingGenericTypes.Add(genericTypeProvider);
+
+                                // It's sufficient to identify the closest provider for each type parameter
+                                break;
                             }
 
                             bool GenericTypeIsUsed(string typeName) => componentTypeParameters

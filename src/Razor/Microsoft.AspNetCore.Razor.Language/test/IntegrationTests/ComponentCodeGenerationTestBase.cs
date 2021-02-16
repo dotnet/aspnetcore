@@ -3284,6 +3284,80 @@ namespace Test
         }
 
         [Fact]
+        public void ChildComponent_Generic_TypeInference_Cascaded_PartialCreatesDiagnostic()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem, TChildOther> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid Items=""@(Array.Empty<DateTime>())""><Column TChildOther=""long"" /></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.GenericComponentMissingTypeArgument.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void ChildComponent_Generic_TypeInference_Cascaded_WithSplatAndKey()
+        {
+            // This is an integration test to show that our type inference code doesn't
+            // have bad interactions with some of the other more complicated transformations
+
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem> : ComponentBase
+    {
+        [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object> OtherAttributes { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@{ var parentKey = new object(); var childKey = new object(); }
+<Grid @key=""@parentKey"" Items=""@(Array.Empty<DateTime>())"">
+    <Column @key=""@childKey"" Title=""Hello"" Another=""@DateTime.MinValue"" />
+</Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void ChildComponent_Generic_TypeInference_MultiLayerCascaded()
         {
             // Arrange
@@ -3313,6 +3387,41 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <Ancestor Items=""@(Array.Empty<DateTime>())""><Passthrough><Child /></Passthrough></Ancestor>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_Generic_TypeInference_MultiLayerOverrideCascade()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class TreeNode<TItem> : ComponentBase
+    {
+        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<TreeNode Item=""@DateTime.Now"">
+    <TreeNode Item=""@System.Threading.Thread.CurrentThread"">
+        <TreeNode>
+            <TreeNode />
+        </TreeNode>
+    </TreeNode>
+    <TreeNode />
+</TreeNode>");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -3535,6 +3644,50 @@ namespace Test
 
             var diagnostic = Assert.Single(generated.Diagnostics);
             Assert.Same(ComponentDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void ChildComponent_Generic_TypeInference_CascadedCombiningMultipleAncestors()
+        {
+
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TOne))]
+    public class ParentOne<TOne> : ComponentBase
+    {
+        [Parameter] public TOne Value { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    [CascadingTypeParameter(nameof(TTwo))]
+    public class ParentTwo<TTwo> : ComponentBase
+    {
+        [Parameter] public TTwo Value { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Child<TOne, TTwo> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<ParentOne Value=""@int.MaxValue"">
+    <ParentTwo Value=""@(""Hello"")"">
+        <Child />
+    </ParentTwo>
+</ParentOne>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
         }
 
         [Fact]
