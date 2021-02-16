@@ -321,7 +321,7 @@ if [ "$(uname)" = "Darwin" ]; then
 fi
 
 # Import Arcade
-. "$DIR/eng/common/tools.sh"
+. "$DIR/common/tools.sh"
 
 # Add default .binlog location if not already on the command line. tools.sh does not handle this; it just checks
 # $binary_log, $ci and $exclude_ci_binary_log values for an error case.
@@ -358,7 +358,7 @@ restore=$_tmp_restore=
 if [ "$build_repo_tasks" = true ]; then
     MSBuild $_InitializeToolset \
         -p:RepoRoot="$repo_root" \
-        -p:Projects="$DIR/eng/tools/RepoTasks/RepoTasks.csproj" \
+        -p:Projects="$DIR/tools/RepoTasks/RepoTasks.csproj" \
         -p:Configuration=Release \
         -p:Restore=$run_restore \
         -p:Build=true \

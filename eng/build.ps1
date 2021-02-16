@@ -194,7 +194,7 @@ if ($Help) {
 
 if ($DumpProcesses -or $CI) {
     # Dump running processes
-    Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
+    Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
 }
 
 # Project selection
@@ -305,7 +305,7 @@ $performDotnetBuild = $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
     ($Projects -and -not ($BuildInstallers -or $specifiedBuildNative))
 $foundJdk = $false
 $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
-$localJdkPath = "$PSScriptRoot\.tools\jdk\win-x64\"
+$localJdkPath = "$PSScriptRoot\..\.tools\jdk\win-x64\"
 if (Test-Path "$localJdkPath\bin\javac.exe") {
     $foundJdk = $true
     Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
@@ -353,7 +353,7 @@ if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
 }
 
 if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
-    Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
+    Write-Error "Could not find the JDK. Either run $PSScriptRoot\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\..\docs\BuildFromSource.md for details)."
 }
 
 # Initialize global variables need to be set before the import of Arcade is imported
@@ -381,7 +381,7 @@ Remove-Item variable:global:_ToolsetBuildProj -ea Ignore
 Remove-Item variable:global:_MSBuildExe -ea Ignore
 
 # Import Arcade
-. "$PSScriptRoot/eng/common/tools.ps1"
+. "$PSScriptRoot/common/tools.ps1"
 
 # Add default .binlog location if not already on the command line. tools.ps1 does not handle this; it just checks
 # $BinaryLog, $CI and $ExcludeCIBinarylog values for an error case. But tools.ps1 provides a nice function to help.
@@ -474,7 +474,7 @@ finally {
     }
 
     if ($ci) {
-        & "$PSScriptRoot/eng/scripts/KillProcesses.ps1"
+        & "$PSScriptRoot/scripts/KillProcesses.ps1"
     }
 }
 

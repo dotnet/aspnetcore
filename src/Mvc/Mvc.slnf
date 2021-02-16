@@ -31,7 +31,7 @@
       "src\\Mvc\\shared\\Mvc.Views.TestCommon\\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj",
       "src\\Mvc\\Mvc.Api.Analyzers\\test\\Mvc.Api.Analyzers.Test.csproj",
       "src\\Mvc\\Mvc.Api.Analyzers\\src\\Microsoft.AspNetCore.Mvc.Api.Analyzers.csproj",
-      "src\\Html\\Abstractions\\src\\Microsoft.AspNetCore.Html.Abstractions.csproj",
+      "src\\Html.Abstractions\\src\\Microsoft.AspNetCore.Html.Abstractions.csproj",
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Middleware\\CORS\\src\\Microsoft.AspNetCore.Cors.csproj",
       "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",

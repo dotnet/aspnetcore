@@ -111,7 +111,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Html", "Html", "{13E7C397-F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Abstractions", "Abstractions", "{412D4C15-F48F-4DB1-940A-131D1AA87088}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Html.Abstractions", "src\Html\Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj", "{A400C938-46E2-4B84-B06E-487B13D22E1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Html.Abstractions", "src\Html.Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj", "{A400C938-46E2-4B84-B06E-487B13D22E1B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{3D330C1E-D773-4BA8-9E91-123544B0D672}"
 EndProject

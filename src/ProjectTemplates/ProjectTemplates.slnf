@@ -30,7 +30,7 @@
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
-      "src\\Html\\Abstractions\\src\\Microsoft.AspNetCore.Html.Abstractions.csproj",
+      "src\\Html.Abstractions\\src\\Microsoft.AspNetCore.Html.Abstractions.csproj",
       "src\\Identity\\Core\\src\\Microsoft.AspNetCore.Identity.csproj",
       "src\\Identity\\Extensions.Core\\src\\Microsoft.Extensions.Identity.Core.csproj",
       "src\\Identity\\Extensions.Stores\\src\\Microsoft.Extensions.Identity.Stores.csproj",
