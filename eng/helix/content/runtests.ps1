@@ -95,11 +95,16 @@ if ($InstallPlaywright -eq "true") {
     }
 }
 
-Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
+Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources -p:InstallPlaywright:$InstallPlaywright "
 dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
 
 if ($LastExitCode -ne 0) {
     exit $LastExitCode
+}
+
+if ($InstallPlaywright -eq "true") {
+    Write-Host "InstallPlaywright requested, building dotnet build --no-restore RunTests\RunTests.csproj -p:InstallPlaywright:true"
+    dotnet build --no-restore RunTests\RunTests.csproj -p:InstallPlaywright:true
 }
 
 Write-Host "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout"
