@@ -436,7 +436,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         var variableName = $"__typeInferenceArg_{_scopeStack.Depth}_{parameter.ParameterName}";
                         context.CodeWriter.Write(variableName);
 
-                        TrackCapturedCascadingGenericParameterVariable(node, parameter, variableName);
+                        UseCapturedCascadingGenericParameterVariable(node, parameter, variableName);
                     }
                     context.CodeWriter.WriteLine(");");
                 }

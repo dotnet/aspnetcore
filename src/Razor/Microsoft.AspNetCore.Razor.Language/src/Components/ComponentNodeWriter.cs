@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return p;
         }
 
-        protected static void TrackCapturedCascadingGenericParameterVariable(ComponentIntermediateNode node, TypeInferenceMethodParameter parameter, string variableName)
+        protected static void UseCapturedCascadingGenericParameterVariable(ComponentIntermediateNode node, TypeInferenceMethodParameter parameter, string variableName)
         {
             // If this captured variable corresponds to a generic type we want to cascade to
             // descendants, supply that info to descendants
