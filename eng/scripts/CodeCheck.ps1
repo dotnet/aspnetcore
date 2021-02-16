@@ -191,11 +191,12 @@ try {
         }
     }
 
-    Write-Host "Checking for changes to API baseline files"
-
-    # Retrieve the set of changed files compared to main
     $targetBranch = $env:PULLREQUEST_TARGETBRANCH
     $sourceBranch = $env:PULLREQUEST_SOURCEBRANCH
+
+    # Retrieve the set of changed files compared to main
+    Write-Host "Checking for changes to API baseline files $targetBranch...$sourceBranch"
+
     $changedFilesFromMain = git --no-pager diff $targetBranch...$sourceBranch --ignore-space-change --name-only --diff-filter=ar
     $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
 

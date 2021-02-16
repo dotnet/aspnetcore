@@ -15,8 +15,8 @@ When creating a new implementation (i.e. src) project, it's necessary to manuall
 1. Right click in editor on underscored symbol or go straight to the “quick fix” icon to its left. Control-. also works.
 1. Choose “Add Blah to public API” / “Fix all occurrences in … Solution”
 1. Click Apply
-2. F6 # again to see if the fixer missed anything or if other RS00xx errors show up (not uncommon)
-3. Suppress or fix other problems as needed but please suppress (if suppressing) using attributes and not globally or with `#pragma`s because attributes make the justification obvious e.g. for common errors that can't be fixed
+1. F6 # again to see if the fixer missed anything or if other RS00xx errors show up (not uncommon)
+1. Suppress or fix other problems as needed but please suppress (if suppressing) using attributes and not globally or with `#pragma`s because attributes make the justification obvious e.g. for common errors that can't be fixed
     `[SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]`
     or
     `[SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]`
