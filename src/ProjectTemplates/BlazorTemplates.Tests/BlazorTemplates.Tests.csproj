@@ -8,7 +8,7 @@
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
     <IsWindowsOnlyTest>true</IsWindowsOnlyTest>
     <SkipHelixArm>true</SkipHelixArm>
-    <HelixTimeout>30</HelixTimeout>
+    <HelixTimeout>00:30:00</HelixTimeout>
     <BaseOutputPath />
     <OutputPath />
 
