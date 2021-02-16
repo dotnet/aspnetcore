@@ -18,7 +18,7 @@ export function getParameterByName(name: string) {
 export class PromiseSource<T = void> implements Promise<T> {
     public promise: Promise<T>;
 
-    private resolver!: (value?: T | PromiseLike<T>) => void;
+    private resolver!: (value: T | PromiseLike<T>) => void;
     private rejecter!: (reason?: any) => void;
 
     constructor() {
@@ -28,7 +28,7 @@ export class PromiseSource<T = void> implements Promise<T> {
         });
     }
 
-    public resolve(value?: T | PromiseLike<T>) {
+    public resolve(value: T | PromiseLike<T>) {
         this.resolver(value);
     }
 
