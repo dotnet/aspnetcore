@@ -14,10 +14,11 @@ param(
 
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
 $env:DOTNET_MULTILEVEL_LOOKUP = 0
-$env:PLAYWRIGHT_BROWSERS_PATH = $currentDirectory\ms-playwright
 
 $currentDirectory = Get-Location
 $envPath = "$env:PATH;$env:HELIX_CORRELATION_PAYLOAD\node\bin"
+
+$env:PLAYWRIGHT_BROWSERS_PATH = $currentDirectory\ms-playwright
 
 function InvokeInstallDotnet([string]$command) {
     Write-Host "InstallDotNet $command"
