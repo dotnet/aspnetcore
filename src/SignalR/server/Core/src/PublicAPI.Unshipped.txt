@@ -1,2 +1,4 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.SignalR.HubInvocationContext.HubInvocationContext(Microsoft.AspNetCore.SignalR.HubCallerContext! context, string! hubMethodName, object?[]! hubMethodArguments) -> void
+*REMOVED*virtual Microsoft.AspNetCore.SignalR.HubConnectionContext.User.get -> System.Security.Claims.ClaimsPrincipal
+virtual Microsoft.AspNetCore.SignalR.HubConnectionContext.User.get -> System.Security.Claims.ClaimsPrincipal!
