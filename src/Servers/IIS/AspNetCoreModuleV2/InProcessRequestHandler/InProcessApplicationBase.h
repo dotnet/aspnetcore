@@ -11,8 +11,7 @@ public:
 
     InProcessApplicationBase(
         IHttpServer& pHttpServer,
-        IHttpApplication& pHttpApplication,
-        const std::wstring& shadowCoypDirectory);
+        IHttpApplication& pHttpApplication);
 
     ~InProcessApplicationBase() = default;
 

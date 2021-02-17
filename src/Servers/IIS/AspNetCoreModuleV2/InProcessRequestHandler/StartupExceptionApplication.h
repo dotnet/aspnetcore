@@ -25,7 +25,7 @@ public:
         m_statusCode(statusCode),
         m_subStatusCode(subStatusCode),
         m_statusText(std::move(statusText)),
-        InProcessApplicationBase(pServer, pApplication, /* shadowCopyDirectory */ std::wstring())
+        InProcessApplicationBase(pServer, pApplication)
     {
     }
 

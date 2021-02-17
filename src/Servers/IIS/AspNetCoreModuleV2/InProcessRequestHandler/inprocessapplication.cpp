@@ -23,8 +23,7 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     APPLICATION_PARAMETER* pParameters,
     DWORD                  nParameters) :
     InProcessApplicationBase(pHttpServer,
-        pApplication,
-        FindParameter<PCWSTR>("ShadowCopyDirectory", pParameters, nParameters)),
+        pApplication),
     m_Initialized(false),
     m_blockManagedCallbacks(true),
     m_waitForShutdown(true),
@@ -37,6 +36,12 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     if (knownLocation != nullptr)
     {
         m_dotnetExeKnownLocation = knownLocation;
+    }
+
+    const auto shadowCopyDirectory = FindParameter<PCWSTR>("ShadowCopyDirectory", pParameters, nParameters);
+    if (shadowCopyDirectory != nullptr)
+    {
+        m_shadowCopyDirectory = shadowCopyDirectory;
     }
 
     m_stringRedirectionOutput = std::make_shared<StringStreamRedirectionOutput>();
