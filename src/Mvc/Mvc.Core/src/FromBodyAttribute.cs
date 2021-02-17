@@ -26,5 +26,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// </remarks>
         // REVIEW: What should we do about this? Type forward EmptyBodyBehavior? Write analyzers to warn against configuring this with MapAction?
         public EmptyBodyBehavior EmptyBodyBehavior { get; set; }
+
+        // Since the default behavior is to reject empty bodies if MvcOptions.AllowEmptyInputInBodyModelBinding is not configured,
+        // we'll consider EmptyBodyBehavior.Default the same as EmptyBodyBehavior.Disallow.
+        bool IFromBodyMetadata.AllowEmpty => EmptyBodyBehavior == EmptyBodyBehavior.Allow;
     }
 }

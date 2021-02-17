@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var consumeBodyDirectly = false;
             var consumeBodyAsForm = false;
             Type? bodyType = null;
+            var allowEmptyBody = false;
 
             // This argument represents the deserialized body returned from IHttpRequestReader
             // when the method has a FromBody attribute declared
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     var headersProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
                     paramterExpression = BindParamenter(headersProperty, parameter, headerAttribute.Name);
                 }
-                else if (parameter.CustomAttributes.Any(a => typeof(IFromBodyMetadata).IsAssignableFrom(a.AttributeType)))
+                else if (parameter.GetCustomAttributes().OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
                 {
                     if (consumeBodyDirectly)
                     {
@@ -99,6 +100,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     }
 
                     consumeBodyDirectly = true;
+                    allowEmptyBody = bodyAttribute.AllowEmpty;
                     bodyType = parameter.ParameterType;
                     paramterExpression = Expression.Convert(DeserializedBodyArg, bodyType);
                 }
@@ -244,10 +246,25 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 // delegate
                 var lambda = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(body, TargetArg, HttpContextParameter, DeserializedBodyArg);
                 var invoker = lambda.Compile();
+                object? defaultBodyValue = null;
+
+                if (allowEmptyBody && bodyType!.IsValueType)
+                {
+                    defaultBodyValue = Activator.CreateInstance(bodyType);
+                }
 
                 requestDelegate = async (target, httpContext) =>
                 {
-                    var bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType!);
+                    object? bodyValue;
+
+                    if (allowEmptyBody && httpContext.Request.ContentLength == 0)
+                    {
+                        bodyValue = defaultBodyValue;
+                    }
+                    else
+                    {
+                        bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType!);
+                    }
 
                     await invoker(target, httpContext, bodyValue);
                 };

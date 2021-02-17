@@ -185,6 +185,66 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(originalTodo.Name, deserializedRequestBody!.Name);
         }
 
+        [Fact]
+        public async Task RequestDelegateRejectsEmptyBodyGivenDefaultFromBodyParameter()
+        {
+            void TestAction([FromBody] Todo todo)
+            {
+            }
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/json";
+            httpContext.Request.Headers["Content-Length"] = "0";
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
+
+            await Assert.ThrowsAsync<JsonException>(() => requestDelegate(httpContext));
+        }
+
+        [Fact]
+        public async Task RequestDelegateAllowsEmptyBodyGivenCorrectyConfiguredFromBodyParameter()
+        {
+            var todoToBecomeNull = new Todo();
+
+            void TestAction([FromBody(AllowEmpty = true)] Todo todo)
+            {
+                todoToBecomeNull = todo;
+            }
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/json";
+            httpContext.Request.Headers["Content-Length"] = "0";
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Null(todoToBecomeNull);
+        }
+
+        [Fact]
+        public async Task RequestDelegateAllowsEmptyBodyStructGivenCorrectyConfiguredFromBodyParameter()
+        {
+            var structToBeZeroed = new BodyStruct
+            {
+                Id = 42
+            };
+
+            void TestAction([FromBody(AllowEmpty = true)] BodyStruct bodyStruct)
+            {
+                structToBeZeroed = bodyStruct;
+            }
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/json";
+            httpContext.Request.Headers["Content-Length"] = "0";
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<BodyStruct>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(default, structToBeZeroed);
+        }
 
         [Fact]
         public async Task RequestDelegatePopulatesFromFormParameterBasedOnParameterName()
@@ -351,6 +411,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
             public bool IsComplete { get; set; }
         }
 
+        private struct BodyStruct
+        {
+            public int Id { get; set; }
+        }
+
         private class FromRouteAttribute : Attribute, IFromRouteMetadata
         {
             public string? Name { get; set; }
@@ -368,6 +433,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private class FromBodyAttribute : Attribute, IFromBodyMetadata
         {
+            public bool AllowEmpty { get; set; }
         }
 
         private class FromFormAttribute : Attribute, IFromFormMetadata

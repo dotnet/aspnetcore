@@ -5,6 +5,7 @@
 *REMOVED*static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Type! middleware, params object![]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 *REMOVED*static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware<TMiddleware>(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, params object![]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata
+Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata.AllowEmpty.get -> bool
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata

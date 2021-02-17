@@ -8,5 +8,9 @@ namespace Microsoft.AspNetCore.Http.Metadata
     /// </summary>
     public interface IFromBodyMetadata
     {
+        /// <summary>
+        /// Gets whether empty input should be rejected or treated as valid.
+        /// </summary>
+        bool AllowEmpty => false;
     }
 }
