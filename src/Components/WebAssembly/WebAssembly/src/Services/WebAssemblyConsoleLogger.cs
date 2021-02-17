@@ -101,9 +101,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                         case LogLevel.Critical:
                             _jsRuntime.InvokeUnmarshalled<string, object>("Blazor._internal.dotNetCriticalError", formattedMessage);
                             break;
-                        default: // LogLevel.None or invalid enum values
-                            Console.WriteLine(formattedMessage);
-                            break;
+                        default: // invalid enum values
+                            throw new ArgumentException(nameof(logLevel));
                     }
                 }
                 finally
