@@ -31,9 +31,11 @@ const blazorStateCommentRegularExpression = /\W*Blazor-Component-State:(?<state>
 export function discoverPersistedState(node: Node): string {
   if (node.nodeType === Node.COMMENT_NODE) {
     const content = node.textContent || '';
-    const stateCommentRegex = new RegExp(blazorStateCommentRegularExpression);
-    const parsedState = stateCommentRegex.exec(content);
+    const parsedState = blazorStateCommentRegularExpression.exec(content);
     const value = parsedState && parsedState.groups && parsedState.groups['state'];
+    if(value){
+      node.parentNode?.removeChild(node);
+    }
     return value || '';
   }
 
@@ -46,7 +48,6 @@ export function discoverPersistedState(node: Node): string {
     const candidate = nodes[index];
     const result = discoverPersistedState(candidate);
     if(result && result !== ''){
-      node.removeChild(candidate);
       return result;
     }
   }

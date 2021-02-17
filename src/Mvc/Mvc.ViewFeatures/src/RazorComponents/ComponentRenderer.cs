@@ -82,32 +82,34 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void UpdateSaveStateRenderMode(ViewContext viewContext, RenderMode mode)
         {
-            if (!viewContext.Items.TryGetValue(InvokedRenderModesKey, out var result) &&
-                (mode == RenderMode.ServerPrerendered || mode == RenderMode.WebAssemblyPrerendered))
+            if (mode == RenderMode.ServerPrerendered || mode == RenderMode.WebAssemblyPrerendered)
             {
-                result = new InvokedRenderModes(mode is RenderMode.ServerPrerendered ?
-                    InvokedRenderModes.Mode.Server :
-                    InvokedRenderModes.Mode.Client);
-
-                viewContext.Items[InvokedRenderModesKey] = result;
-            }
-            else
-            {
-                var currentInvocation = mode is RenderMode.ServerPrerendered ?
-                    InvokedRenderModes.Mode.Server :
-                    InvokedRenderModes.Mode.Client;
-
-                var invokedMode = (InvokedRenderModes)result;
-                if (invokedMode.Value != currentInvocation)
+                if (!viewContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
                 {
-                    invokedMode.Value = InvokedRenderModes.Mode.ServerAndClient;
+                    result = new InvokedRenderModes(mode is RenderMode.ServerPrerendered ?
+                        InvokedRenderModes.Mode.Server :
+                        InvokedRenderModes.Mode.Client);
+
+                    viewContext.Items[InvokedRenderModesKey] = result;
+                }
+                else
+                {
+                    var currentInvocation = mode is RenderMode.ServerPrerendered ?
+                        InvokedRenderModes.Mode.Server :
+                        InvokedRenderModes.Mode.Client;
+
+                    var invokedMode = (InvokedRenderModes)result;
+                    if (invokedMode.Value != currentInvocation)
+                    {
+                        invokedMode.Value = InvokedRenderModes.Mode.ServerAndClient;
+                    }
                 }
             }
         }
 
         internal static InvokedRenderModes.Mode GetPersistStateRenderMode(ViewContext viewContext)
         {
-            if (!viewContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
+            if (viewContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
             {
                 return ((InvokedRenderModes)result).Value;
             }

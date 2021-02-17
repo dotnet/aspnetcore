@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [HtmlAttributeName(PersistenceModeName)]
         public PersistenceMode? PersistenceMode
         {
-            get => _persistenceMode ?? throw new InvalidOperationException("Invalid persistence mode.");
+            get => _persistenceMode;
             set => _persistenceMode = value;
         }
 
@@ -78,10 +78,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     throw new InvalidOperationException("Invalid persistence mode.")
             };
 
-            await manager.PersistStateAsync(store, renderer);
-
             output.TagName = null;
-            output.Content.SetHtmlContent(new PersistedStateContent(store.PersistedState));
+            if (store != null)
+            {
+                await manager.PersistStateAsync(store, renderer);
+                output.Content.SetHtmlContent(new PersistedStateContent(store.PersistedState));
+            }
         }
     }
 }

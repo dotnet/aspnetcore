@@ -6,9 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -108,7 +105,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var requestServices = ViewContext.HttpContext.RequestServices;
             var componentRenderer = requestServices.GetRequiredService<IComponentRenderer>();
-            var htmlRenderer = requestServices.GetRequiredService<HtmlRenderer>();
             var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
 
             // Reset the TagName. We don't want `component` to render.
