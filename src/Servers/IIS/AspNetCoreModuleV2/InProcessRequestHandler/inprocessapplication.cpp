@@ -326,6 +326,11 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_USE_ENTRYPOINT_FILTER, L"1"));
         RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STACK_SIZE, m_pConfig->QueryStackSize().c_str()));
 
+        if (!m_shadowCopyDirectory.empty())
+        {
+            RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(APP_CONTEXT_BASE_DIRECTORY, Environment::GetCurrentDirectoryValue().c_str()));
+        }
+
         bool clrThreadExited;
         {
             //Start CLR thread
