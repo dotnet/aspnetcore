@@ -27,9 +27,11 @@ namespace Microsoft.AspNetCore.Components
 
         public Dictionary<string, byte[]> ExistingState { get; init; }
 
-        public IDictionary<string, byte[]> GetPersistedState()
+        public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
         {
-            return ExistingState ?? throw new InvalidOperationException("The store was not initialized with any state.");
+            return ExistingState != null ?
+                Task.FromResult((IDictionary<string, byte[]>)ExistingState) :
+                throw new InvalidOperationException("The store was not initialized with any state.");
         }
 
         protected virtual byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state)

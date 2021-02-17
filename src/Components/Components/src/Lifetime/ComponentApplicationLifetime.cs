@@ -36,12 +36,10 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="store">The <see cref="IComponentApplicationStateStore"/> to restore the application state from.</param>
         /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-        public Task RestoreStateAsync(IComponentApplicationStateStore store)
+        public async Task RestoreStateAsync(IComponentApplicationStateStore store)
         {
-            var data = store.GetPersistedState();
+            var data = await store.GetPersistedStateAsync();
             State.InitializeExistingState(data);
-
-            return Task.CompletedTask;
         }
 
         /// <summary>

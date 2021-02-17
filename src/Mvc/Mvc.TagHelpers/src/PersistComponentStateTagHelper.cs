@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// Gets or sets the <see cref="PersistenceMode"/> for the state to persist.
         /// </summary>
         [HtmlAttributeName(PersistenceModeName)]
-        public PersistenceMode PersistenceMode
+        public PersistenceMode? PersistenceMode
         {
             get => _persistenceMode ?? throw new InvalidOperationException("Invalid persistence mode.");
             set => _persistenceMode = value;
@@ -58,10 +58,24 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var renderer = services.GetRequiredService<HtmlRenderer>();
             var store = PersistenceMode switch
             {
-                PersistenceMode.Server => new ProtectedPrerenderComponentApplicationStore(
-                    services.GetRequiredService<IDataProtectionProvider>()),
-                PersistenceMode.WebAssembly => new PrerenderComponentApplicationStore(),
-                _ => throw new InvalidOperationException("Invalid persistence mode.")
+                null => ComponentRenderer.GetPersistStateRenderMode(ViewContext) switch
+                {
+                    InvokedRenderModes.Mode.None =>
+                        null,
+                    InvokedRenderModes.Mode.Client =>
+                        new PrerenderComponentApplicationStore(),
+                    InvokedRenderModes.Mode.Server =>
+                        new ProtectedPrerenderComponentApplicationStore(services.GetRequiredService<IDataProtectionProvider>()),
+                    InvokedRenderModes.Mode.ServerAndClient =>
+                        throw new InvalidOperationException("The persistence mode could not be determine based on the rendered components. Specify the PersistenceMode explicitly."),
+                    _ => throw new InvalidOperationException("Invalid InvokedRenderMode.")
+                },
+                TagHelpers.PersistenceMode.Server =>
+                    new ProtectedPrerenderComponentApplicationStore(services.GetRequiredService<IDataProtectionProvider>()),
+                TagHelpers.PersistenceMode.WebAssembly =>
+                    new PrerenderComponentApplicationStore(),
+                _ =>
+                    throw new InvalidOperationException("Invalid persistence mode.")
             };
 
             await manager.PersistStateAsync(store, renderer);

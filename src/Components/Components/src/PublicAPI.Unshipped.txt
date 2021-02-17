@@ -13,7 +13,7 @@ Microsoft.AspNetCore.Components.ComponentApplicationState.RegisterOnPersistingCa
 Microsoft.AspNetCore.Components.ComponentApplicationState.TryRetrieveFromJson<T>(string! key, out T instance) -> bool
 Microsoft.AspNetCore.Components.ComponentApplicationState.TryRetrievePersistedState(string! key, out byte[]! value) -> bool
 Microsoft.AspNetCore.Components.IComponentApplicationStateStore
-Microsoft.AspNetCore.Components.IComponentApplicationStateStore.GetPersistedState() -> System.Collections.Generic.IDictionary<string!, byte[]!>!
+Microsoft.AspNetCore.Components.IComponentApplicationStateStore.GetPersistedStateAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string!, byte[]!>!>!
 Microsoft.AspNetCore.Components.IComponentApplicationStateStore.PersistStateAsync(System.Collections.Generic.IReadOnlyDictionary<string!, byte[]!>! state) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Dispose() -> void
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool

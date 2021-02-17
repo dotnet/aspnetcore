@@ -111,17 +111,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var htmlRenderer = requestServices.GetRequiredService<HtmlRenderer>();
             var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
 
-            if (ViewContext.GetAutomaticComponentPersistencePreference() && (RenderMode == RenderMode.ServerPrerendered || RenderMode == RenderMode.WebAssemblyPrerendered))
-            {
-                var lifetime = requestServices.GetRequiredService<ComponentApplicationLifetime>();
-                var store = RenderMode == RenderMode.ServerPrerendered ?
-                    new ProtectedPrerenderComponentApplicationStore(requestServices.GetRequiredService<IDataProtectionProvider>()) :
-                    new PrerenderComponentApplicationStore();
-
-                await lifetime.PersistStateAsync(store, htmlRenderer);
-                result = new ComponentWithPersistedStateContent(result, new PersistedStateContent(store.PersistedState));
-            }
-
             // Reset the TagName. We don't want `component` to render.
             output.TagName = null;
             output.Content.SetHtmlContent(result);

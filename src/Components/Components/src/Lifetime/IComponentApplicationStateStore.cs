@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components
         /// Gets the persisted state from the store.
         /// </summary>
         /// <returns>The persisted state.</returns>
-        IDictionary<string, byte[]> GetPersistedState();
+        Task<IDictionary<string, byte[]>> GetPersistedStateAsync();
 
         /// <summary>
         /// Persists the serialized state into the storage.
