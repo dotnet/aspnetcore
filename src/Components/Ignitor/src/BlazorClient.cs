@@ -453,7 +453,7 @@ namespace Ignitor
             NextErrorReceived?.Completion?.TrySetResult(null);
         }
 
-        private Task OnClosedAsync(Exception ex)
+        private Task OnClosedAsync(Exception? ex)
         {
             NextDisconnect?.Completion?.TrySetResult(null);
 

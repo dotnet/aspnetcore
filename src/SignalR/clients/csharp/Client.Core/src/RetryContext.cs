@@ -24,6 +24,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <summary>
         /// The error precipitating the current retry if any.
         /// </summary>
-        public Exception RetryReason { get; set; }
+        public Exception? RetryReason { get; set; }
     }
 }
