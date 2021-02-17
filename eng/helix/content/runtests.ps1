@@ -93,8 +93,8 @@ if ($InstallPlaywright -eq "true") {
     }
 }
 
-Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources -p:InstallPlaywright:$InstallPlaywright "
-dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
+Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources -p:InstallPlaywright:$InstallPlaywright"
+dotnet restore RunTests\RunTests.csproj --ignore-failed-sources -p:InstallPlaywright:$InstallPlaywright
 
 if ($LastExitCode -ne 0) {
     exit $LastExitCode
