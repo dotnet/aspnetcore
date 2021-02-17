@@ -3153,7 +3153,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_Explicit_Cascaded()
+        public void CascadingGenericInference_Explicit()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3185,7 +3185,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_Explicit_OverrideCascade()
+        public void CascadingGenericInference_ExplicitOverride()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3217,7 +3217,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_Explicit_NotCascaded()
+        public void CascadingGenericInference_NotCascaded_Explicit()
         {
             // The point of this test is to show that, without [CascadingTypeParameter], we don't cascade
 
@@ -3252,7 +3252,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_Cascaded()
+        public void CascadingGenericInference_NotCascaded_Inferred()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3284,7 +3284,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_Cascaded_PartialCreatesDiagnostic()
+        public void CascadingGenericInference_Partial_CreatesError()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3318,7 +3318,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_Cascaded_WithSplatAndKey()
+        public void CascadingGenericInference_WithSplatAndKey()
         {
             // This is an integration test to show that our type inference code doesn't
             // have bad interactions with some of the other more complicated transformations
@@ -3358,7 +3358,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_MultiLayerCascaded()
+        public void CascadingGenericInference_Multilayer()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3395,7 +3395,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_MultiLayerOverrideCascade()
+        public void CascadingGenericInference_Override_Multilayer()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3430,7 +3430,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_OverrideCascade()
+        public void CascadingGenericInference_Override()
         {
             // This test is to show that, even if an ancestor is trying to cascade its generic types,
             // a descendant can still override that through inference
@@ -3466,7 +3466,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_NotCascaded()
+        public void CascadingGenericInference_NotCascaded_CreatesError()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3499,7 +3499,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_CascadedWithGenericChildContent()
+        public void CascadingGenericInference_GenericChildContent()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3532,7 +3532,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_CascadedWithLambda()
+        public void CascadingGenericInference_GenericLambda()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3565,7 +3565,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_CascadedWithMultipleTypes()
+        public void CascadingGenericInference_MultipleTypes()
         {
 
             // Arrange
@@ -3605,7 +3605,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_CascadedWithUnrelatedGenericType_CreatesDiagnostic()
+        public void CascadingGenericInference_WithUnrelatedType_CreatesError()
         {
             // It would succeed if you changed this to Column<TItem, TUnrelated>, or if the Grid took a parameter
             // whose type included TItem and not TUnrelated. It just doesn't work if the only inference parameters
@@ -3647,7 +3647,7 @@ namespace Test
         }
 
         [Fact]
-        public void ChildComponent_Generic_TypeInference_CascadedCombiningMultipleAncestors()
+        public void CascadingGenericInference_CombiningMultipleAncestors()
         {
 
             // Arrange
