@@ -207,7 +207,7 @@
     </Dependency>
     <Dependency Name="System.Drawing.Common" Version="5.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>10fccb80d13fa9becf8646cbcd9a0eb00dbdf48e</Sha>
+      <Sha>f27d33729518f5aa478aa818b7b4f54a4d50bef1</Sha>
     </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="5.0.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -266,9 +266,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="5.0.0">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
+    <Dependency Name="System.Text.Encodings.Web" Version="5.0.1">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>f27d33729518f5aa478aa818b7b4f54a4d50bef1</Sha>
     </Dependency>
     <Dependency Name="System.Text.Json" Version="5.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -296,15 +296,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>10fccb80d13fa9becf8646cbcd9a0eb00dbdf48e</Sha>
+      <Sha>f27d33729518f5aa478aa818b7b4f54a4d50bef1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.4-servicing.21116.6">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.4-servicing.21116.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>10fccb80d13fa9becf8646cbcd9a0eb00dbdf48e</Sha>
+      <Sha>f27d33729518f5aa478aa818b7b4f54a4d50bef1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.4-servicing.21116.6">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.4-servicing.21116.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>10fccb80d13fa9becf8646cbcd9a0eb00dbdf48e</Sha>
+      <Sha>f27d33729518f5aa478aa818b7b4f54a4d50bef1</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
