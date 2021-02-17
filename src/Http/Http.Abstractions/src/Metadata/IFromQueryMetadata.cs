@@ -4,12 +4,12 @@
 namespace Microsoft.AspNetCore.Http.Metadata
 {
     /// <summary>
-    /// Interface marking attributes that specify a parameter should be bound using route-data from the current request.
+    /// Interface marking attributes that specify a parameter should be bound using the request query string.
     /// </summary>
-    public interface IFromRouteMetadata
+    public interface IFromQueryMetadata
     {
         /// <summary>
-        /// The <see cref="HttpRequest.RouteValues"/> name.
+        /// The name of the query string field.
         /// </summary>
         string? Name { get; }
     }

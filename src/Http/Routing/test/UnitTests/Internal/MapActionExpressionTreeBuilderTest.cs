@@ -4,12 +4,16 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Internal
@@ -23,13 +27,133 @@ namespace Microsoft.AspNetCore.Routing.Internal
             void TestAction()
             {
                 invoked = true;
-            };
+            }
 
             var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action)TestAction);
 
             await requestDelegate(null!);
 
             Assert.True(invoked);
+        }
+
+        [Fact]
+        public async Task RequestDelegatePopulatesFromRouteParameterBasedOnParameterName()
+        {
+            const string paramName = "value";
+            const int originalRouteParam = 42;
+
+            int? deserializedRouteParam = null;
+
+            void TestAction([FromRoute] int value)
+            {
+                deserializedRouteParam = value;
+            }
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(originalRouteParam, deserializedRouteParam);
+        }
+
+        [Fact]
+        public async Task RequestDelegatePopulatesFromRouteParameterBasedOnAttributeNameProperty()
+        {
+            const string specifiedName = "value";
+            const int originalRouteParam = 42;
+
+            int? deserializedRouteParam = null;
+
+            void TestAction([FromRoute(Name = specifiedName)] int foo)
+            {
+                deserializedRouteParam = foo;
+            }
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.RouteValues[specifiedName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(originalRouteParam, deserializedRouteParam);
+        }
+
+        [Fact]
+        public async Task UsesDefaultValueIfNoMatchingRouteValue()
+        {
+            const string unmatchedName = "value";
+            const int unmatchedRouteParam = 42;
+
+            int? deserializedRouteParam = null;
+
+            void TestAction([FromRoute] int foo)
+            {
+                deserializedRouteParam = foo;
+            }
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.RouteValues[unmatchedName] = unmatchedRouteParam.ToString(NumberFormatInfo.InvariantInfo);
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(0, deserializedRouteParam);
+        }
+
+        [Fact]
+        public async Task RequestDelegatePopulatesFromQueryParameterBasedOnParameterName()
+        {
+            const string paramName = "value";
+            const int originalQueryParam = 42;
+
+            int? deserializedRouteParam = null;
+
+            void TestAction([FromQuery] int value)
+            {
+                deserializedRouteParam = value;
+            }
+
+            var query = new QueryCollection(new Dictionary<string, StringValues>()
+            {
+                [paramName] = originalQueryParam.ToString(NumberFormatInfo.InvariantInfo)
+            });
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Query = query;
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(originalQueryParam, deserializedRouteParam);
+        }
+
+        [Fact]
+        public async Task RequestDelegatePopulatesFromHeaderParameterBasedOnParameterName()
+        {
+            const string customHeaderName = "X-Custom-Header";
+            const int originalHeaderParam = 42;
+
+            int? deserializedRouteParam = null;
+
+            void TestAction([FromHeader(Name = customHeaderName)] int value)
+            {
+                deserializedRouteParam = value;
+            }
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers[customHeaderName] = originalHeaderParam.ToString(NumberFormatInfo.InvariantInfo);
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(originalHeaderParam, deserializedRouteParam);
         }
 
         [Fact]
@@ -45,7 +169,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             void TestAction([FromBody] Todo todo)
             {
                 deserializedRequestBody = todo;
-            };
+            }
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
@@ -59,6 +183,116 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             Assert.NotNull(deserializedRequestBody);
             Assert.Equal(originalTodo.Name, deserializedRequestBody!.Name);
+        }
+
+
+        [Fact]
+        public async Task RequestDelegatePopulatesFromFormParameterBasedOnParameterName()
+        {
+            const string paramName = "value";
+            const int originalQueryParam = 42;
+
+            int? deserializedRouteParam = null;
+
+            void TestAction([FromForm] int value)
+            {
+                deserializedRouteParam = value;
+            }
+
+            var form = new FormCollection(new Dictionary<string, StringValues>()
+            {
+                [paramName] = originalQueryParam.ToString(NumberFormatInfo.InvariantInfo)
+            });
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Form = form;
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(originalQueryParam, deserializedRouteParam);
+        }
+
+        [Fact]
+        public void BuildRequestDelegateThrowsInvalidOperationExceptionGivenBothFromBodyAndFromFormOnDifferentParameters()
+        {
+            void TestAction([FromBody] int value1, [FromForm] int value2) { }
+            void TestActionWithFlippedParams([FromForm] int value1, [FromBody] int value2) { }
+
+            Assert.Throws<InvalidOperationException>(() => MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int, int>)TestAction));
+            Assert.Throws<InvalidOperationException>(() => MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int, int>)TestActionWithFlippedParams));
+        }
+
+        [Fact]
+        public void BuildRequestDelegateThrowsInvalidOperationExceptionGivenFromBodyOnMultipleParameters()
+        {
+            void TestAction([FromBody] int value1, [FromBody] int value2) { }
+
+            Assert.Throws<InvalidOperationException>(() => MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int, int>)TestAction));
+        }
+
+        [Fact]
+        public async Task RequestDelegatePopulatesFromServiceParameterBasedOnParameterType()
+        {
+            var myOriginalService = new MyService();
+            MyService? injectedService = null;
+
+            void TestAction([FromService] MyService myService)
+            {
+                injectedService = myService;
+            }
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(myOriginalService);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<MyService>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Same(myOriginalService, injectedService);
+        }
+
+        [Fact]
+        public async Task RequestDelegatePopulatesHttpContextParameterWithoutAttribute()
+        {
+            HttpContext? httpContextArgument = null;
+
+            void TestAction(HttpContext httpContext)
+            {
+                httpContextArgument = httpContext;
+            }
+
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<HttpContext>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Same(httpContext, httpContextArgument);
+        }
+
+        [Fact]
+        public async Task RequestDelegatePopulatesIFormCollectionParameterWithoutAttribute()
+        {
+            IFormCollection? formCollectionArgument = null;
+
+            void TestAction(IFormCollection httpContext)
+            {
+                formCollectionArgument = httpContext;
+            }
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<IFormCollection>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Same(httpContext.Request.Form, formCollectionArgument);
         }
 
         [Fact]
@@ -117,7 +351,35 @@ namespace Microsoft.AspNetCore.Routing.Internal
             public bool IsComplete { get; set; }
         }
 
+        private class FromRouteAttribute : Attribute, IFromRouteMetadata
+        {
+            public string? Name { get; set; }
+        }
+
+        private class FromQueryAttribute : Attribute, IFromQueryMetadata
+        {
+            public string? Name { get; set; }
+        }
+
+        private class FromHeaderAttribute : Attribute, IFromHeaderMetadata
+        {
+            public string? Name { get; set; }
+        }
+
         private class FromBodyAttribute : Attribute, IFromBodyMetadata
+        {
+        }
+
+        private class FromFormAttribute : Attribute, IFromFormMetadata
+        {
+            public string? Name { get; set; }
+        }
+
+        private class FromServiceAttribute : Attribute, IFromServiceMetadata
+        {
+        }
+
+        private class MyService
         {
         }
 

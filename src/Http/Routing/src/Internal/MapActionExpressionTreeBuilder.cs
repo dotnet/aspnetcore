@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -57,8 +58,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var method = action.Method;
 
-            var needForm = false;
-            var needBody = false;
+            var consumeBodyDirectly = false;
+            var consumeBodyAsForm = false;
             Type? bodyType = null;
 
             // This argument represents the deserialized body returned from IHttpRequestReader
@@ -70,59 +71,63 @@ namespace Microsoft.AspNetCore.Routing.Internal
             {
                 Expression paramterExpression = Expression.Default(parameter.ParameterType);
 
-                //if (parameter.FromQuery != null)
-                //{
-                //    var queryProperty = Expression.Property(httpRequestExpr, nameof(HttpRequest.Query));
-                //    paramterExpression = BindParamenter(queryProperty, parameter, parameter.FromQuery);
-                //}
-                //else if (parameter.FromHeader != null)
-                //{
-                //    var headersProperty = Expression.Property(httpRequestExpr, nameof(HttpRequest.Headers));
-                //    paramterExpression = BindParamenter(headersProperty, parameter, parameter.FromHeader);
-                //}
-                //else if (parameter.FromRoute != null)
-                //{
-                //    var routeValuesProperty = Expression.Property(httpRequestExpr, nameof(HttpRequest.RouteValues));
-                //    paramterExpression = BindParamenter(routeValuesProperty, parameter, parameter.FromRoute);
-                //}
-                //else if (parameter.FromCookie != null)
-                //{
-                //    var cookiesProperty = Expression.Property(httpRequestExpr, nameof(HttpRequest.Cookies));
-                //    paramterExpression = BindParamenter(cookiesProperty, parameter, parameter.FromCookie);
-                //}
-                //else if (parameter.FromServices)
-                //{
-                //    paramterExpression = Expression.Call(GetRequiredServiceMethodInfo.MakeGenericMethod(parameter.ParameterType), requestServicesExpr);
-                //}
-                //else if (parameter.FromForm != null)
-                //{
-                //    needForm = true;
-
-                //    var formProperty = Expression.Property(httpRequestExpr, nameof(HttpRequest.Form));
-                //    paramterExpression = BindParamenter(formProperty, parameter, parameter.FromForm);
-                //}
-                //else if (parameter.FromBody)
-                if (parameter.CustomAttributes.Any(a => typeof(IFromBodyMetadata).IsAssignableFrom(a.AttributeType)))
+                if (parameter.GetCustomAttributes().OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
                 {
-                    if (needBody)
+                    var routeValuesProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
+                    paramterExpression = BindParamenter(routeValuesProperty, parameter, routeAttribute.Name);
+                }
+                else if (parameter.GetCustomAttributes().OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
+                {
+                    var queryProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
+                    paramterExpression = BindParamenter(queryProperty, parameter, queryAttribute.Name);
+                }
+                else if (parameter.GetCustomAttributes().OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
+                {
+                    var headersProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
+                    paramterExpression = BindParamenter(headersProperty, parameter, headerAttribute.Name);
+                }
+                else if (parameter.CustomAttributes.Any(a => typeof(IFromBodyMetadata).IsAssignableFrom(a.AttributeType)))
+                {
+                    if (consumeBodyDirectly)
                     {
                         throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
                     }
 
-                    if (needForm)
+                    if (consumeBodyAsForm)
                     {
-                        throw new InvalidOperationException("Action cannot mix FromBody and FromForm on the same method.");
+                        ThrowCannotReadBodyDirectlyAndAsForm();
                     }
 
-                    needBody = true;
+                    consumeBodyDirectly = true;
                     bodyType = parameter.ParameterType;
                     paramterExpression = Expression.Convert(DeserializedBodyArg, bodyType);
+                }
+                else if (parameter.GetCustomAttributes().OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)
+                {
+                    if (consumeBodyDirectly)
+                    {
+                        ThrowCannotReadBodyDirectlyAndAsForm();
+                    }
+
+                    consumeBodyAsForm = true;
+
+                    var formProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
+                    paramterExpression = BindParamenter(formProperty, parameter, parameter.Name);
+                }
+                else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
+                {
+                    paramterExpression = Expression.Call(GetRequiredServiceMethodInfo.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
                 }
                 else
                 {
                     if (parameter.ParameterType == typeof(IFormCollection))
                     {
-                        needForm = true;
+                        if (consumeBodyDirectly)
+                        {
+                            ThrowCannotReadBodyDirectlyAndAsForm();
+                        }
+
+                        consumeBodyAsForm = true;
 
                         paramterExpression = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
                     }
@@ -233,7 +238,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             Func<object?, HttpContext, Task>? requestDelegate = null;
 
-            if (needBody)
+            if (consumeBodyDirectly)
             {
                 // We need to generate the code for reading from the body before calling into the 
                 // delegate
@@ -247,7 +252,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     await invoker(target, httpContext, bodyValue);
                 };
             }
-            else if (needForm)
+            else if (consumeBodyAsForm)
             {
                 var lambda = Expression.Lambda<Func<object?, HttpContext, Task>>(body, TargetArg, HttpContextParameter);
                 var invoker = lambda.Compile();
@@ -275,7 +280,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             };
         }
 
-        private static Expression BindParamenter(Expression sourceExpression, ParameterInfo parameter, string name)
+        private static Expression BindParamenter(Expression sourceExpression, ParameterInfo parameter, string? name)
         {
             var key = name ?? parameter.Name;
             var type = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
@@ -370,6 +375,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
         private static async ValueTask ExecuteTaskResult<T>(Task<T> task, HttpContext httpContext) where T : IResult
         {
             await (await task).ExecuteAsync(httpContext);
+        }
+
+        [StackTraceHidden]
+        private static void ThrowCannotReadBodyDirectlyAndAsForm()
+        {
+            throw new InvalidOperationException("Action cannot mix FromBody and FromForm on the same method.");
         }
 
         /// <summary>

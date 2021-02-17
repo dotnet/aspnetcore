@@ -4,9 +4,9 @@
 namespace Microsoft.AspNetCore.Http.Metadata
 {
     /// <summary>
-    /// Interface marking attributes that specify a parameter should be bound using the request body.
+    /// Interface marking attributes that specify a parameter should be bound using request services.
     /// </summary>
-    public interface IFromBodyMetadata
+    public interface IFromServiceMetadata
     {
     }
 }
