@@ -14,6 +14,7 @@ param(
 
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
 $env:DOTNET_MULTILEVEL_LOOKUP = 0
+$env:PLAYWRIGHT_BROWSERS_PATH = "$currentDirectory\ms-playwright"
 
 $currentDirectory = Get-Location
 $envPath = "$env:PATH;$env:HELIX_CORRELATION_PAYLOAD\node\bin"
@@ -93,22 +94,15 @@ if ($InstallPlaywright -eq "true") {
     }
 }
 
-Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources -p:InstallPlaywright:$InstallPlaywright"
-dotnet restore RunTests\RunTests.csproj --ignore-failed-sources -p:InstallPlaywright:$InstallPlaywright
+Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources /p:InstallPlaywright=$InstallPlaywright"
+dotnet restore RunTests\RunTests.csproj --ignore-failed-sources /p:InstallPlaywright=$InstallPlaywright
 
 if ($LastExitCode -ne 0) {
     exit $LastExitCode
 }
 
-if ($InstallPlaywright -eq "true") {
-    $env:PLAYWRIGHT_BROWSERS_PATH = "$currentDirectory\ms-playwright"
-
-    Write-Host "InstallPlaywright requested, building dotnet build --no-restore /p:InstallPlaywright=true RunTests\RunTests.csproj"
-    dotnet build --no-restore /p:InstallPlaywright=true RunTests\RunTests.csproj
-}
-
-Write-Host "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout"
-dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout
+Write-Host "Running tests: dotnet run --no-restore /p:InstallPlaywright=$InstallPlaywright --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout"
+dotnet run --no-restore /p:InstallPlaywright=$InstallPlaywright --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout
 
 Write-Host "Finished running tests: exit_code=$LastExitCode"
 exit $LastExitCode
