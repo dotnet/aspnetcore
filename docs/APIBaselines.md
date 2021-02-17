@@ -10,12 +10,12 @@ When creating a new implementation (i.e. src) project, it's necessary to manuall
 1. `cp .\eng\PublicAPI.empty.txt {new folder}\PublicAPI.Unshipped.txt`
 1. Update AspNetCore.sln and relevant `*.slnf` file to include the new project
 1. `{directory containing relevant *.slnf}\startvs.cmd`
-1. F6 # or whatever your favourite build gesture is
+1. F6 *or whatever your favourite build gesture is*
 1. Click on a RS0016 (or whatever) error
 1. Right click in editor on underscored symbol or go straight to the “quick fix” icon to its left. Control-. also works.
 1. Choose “Add Blah to public API” / “Fix all occurrences in … Solution”
 1. Click Apply
-1. F6 # again to see if the fixer missed anything or if other RS00xx errors show up (not uncommon)
+1. F6 *again to see if the fixer missed anything or if other RS00xx errors show up (not uncommon)*
 1. Suppress or fix other problems as needed but please suppress (if suppressing) using attributes and not globally or with `#pragma`s because attributes make the justification obvious e.g. for common errors that can't be fixed
     `[SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]`
     or
