@@ -226,16 +226,16 @@
     <MicrosoftCodeAnalysisFxCopAnalyzersVersion>3.0.0</MicrosoftCodeAnalysisFxCopAnalyzersVersion>
     <MicrosoftCssParserVersion>1.0.0-20200708.1</MicrosoftCssParserVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryVersion>3.19.8</MicrosoftIdentityModelClientsActiveDirectoryVersion>
-    <MicrosoftIdentityModelLoggingVersion>6.7.1</MicrosoftIdentityModelLoggingVersion>
-    <MicrosoftIdentityModelProtocolsOpenIdConnectVersion>6.7.1</MicrosoftIdentityModelProtocolsOpenIdConnectVersion>
-    <MicrosoftIdentityModelProtocolsWsFederationVersion>6.7.1</MicrosoftIdentityModelProtocolsWsFederationVersion>
+    <MicrosoftIdentityModelLoggingVersion>6.8.0</MicrosoftIdentityModelLoggingVersion>
+    <MicrosoftIdentityModelProtocolsOpenIdConnectVersion>6.8.0</MicrosoftIdentityModelProtocolsOpenIdConnectVersion>
+    <MicrosoftIdentityModelProtocolsWsFederationVersion>6.8.0</MicrosoftIdentityModelProtocolsWsFederationVersion>
     <MicrosoftInternalAspNetCoreH2SpecAllVersion>2.2.1</MicrosoftInternalAspNetCoreH2SpecAllVersion>
     <MicrosoftNETCoreWindowsApiSetsVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsVersion>
     <MicrosoftOwinSecurityCookiesVersion>3.0.1</MicrosoftOwinSecurityCookiesVersion>
     <MicrosoftOwinTestingVersion>3.0.1</MicrosoftOwinTestingVersion>
     <MicrosoftWebAdministrationVersion>11.1.0</MicrosoftWebAdministrationVersion>
     <MicrosoftWebXdtVersion>1.4.0</MicrosoftWebXdtVersion>
-    <SystemIdentityModelTokensJwtVersion>6.7.1</SystemIdentityModelTokensJwtVersion>
+    <SystemIdentityModelTokensJwtVersion>6.8.0</SystemIdentityModelTokensJwtVersion>
     <NuGetVersioningVersion>5.7.0</NuGetVersioningVersion>
     <SystemNetExperimentalMsQuicVersion>5.0.0-alpha.20560.6</SystemNetExperimentalMsQuicVersion>
     <!-- Packages from 2.1, 3.1, and 5.0 branches used for site extension build. -->
