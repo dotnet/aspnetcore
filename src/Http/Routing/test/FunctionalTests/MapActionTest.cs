@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         [Fact]
         public async Task MapAction_FromBodyWorksWithJsonPayload()
         {
-            [HttpPost("/EchoTodo")]
-            Todo EchoTodo([FromBody] Todo todo) => todo;
+            [HttpPost("/EchoTodo/{id}")]
+            Todo EchoTodo([FromRoute] int id, [FromBody] Todo todo) => todo with { Id = id };
 
             using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                         .Configure(app =>
                         {
                             app.UseRouting();
-                            app.UseEndpoints(b => b.MapAction((Func<Todo, Todo>)EchoTodo));
+                            app.UseEndpoints(b => b.MapAction((Func<int, Todo, Todo>)EchoTodo));
                         })
                         .UseTestServer();
                 })
@@ -51,15 +51,17 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                 Name = "Write tests!"
             };
 
-            var response = await client.PostAsJsonAsync("/EchoTodo", todo);
+            var response = await client.PostAsJsonAsync("/EchoTodo/42", todo);
             response.EnsureSuccessStatusCode();
 
             var echoedTodo = await response.Content.ReadFromJsonAsync<Todo>();
 
+            Assert.NotNull(echoedTodo);
             Assert.Equal(todo.Name, echoedTodo?.Name);
+            Assert.Equal(42, echoedTodo?.Id);
         }
 
-        private class Todo
+        private record Todo
         {
             public int Id { get; set; }
             public string Name { get; set; } = "Todo";

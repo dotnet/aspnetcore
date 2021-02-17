@@ -242,8 +242,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             if (consumeBodyDirectly)
             {
-                // We need to generate the code for reading from the body before calling into the 
-                // delegate
+                // We need to generate the code for reading from the body before calling into the delegate
                 var lambda = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(body, TargetArg, HttpContextParameter, DeserializedBodyArg);
                 var invoker = lambda.Compile();
                 object? defaultBodyValue = null;
@@ -356,19 +355,19 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private static async ValueTask ExecuteTask<T>(Task<T> task, HttpContext httpContext)
         {
-            await new JsonResult(await task).ExecuteAsync(httpContext);
+            await httpContext.Response.WriteAsJsonAsync(await task);
         }
 
         private static Task ExecuteValueTask<T>(ValueTask<T> task, HttpContext httpContext)
         {
             static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
             {
-                await new JsonResult(await task).ExecuteAsync(httpContext);
+                await httpContext.Response.WriteAsJsonAsync(await task);
             }
 
             if (task.IsCompletedSuccessfully)
             {
-                return new JsonResult(task.GetAwaiter().GetResult()).ExecuteAsync(httpContext);
+                return httpContext.Response.WriteAsJsonAsync(task.GetAwaiter().GetResult());
             }
 
             return ExecuteAwaited(task, httpContext);
@@ -398,24 +397,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
         private static void ThrowCannotReadBodyDirectlyAndAsForm()
         {
             throw new InvalidOperationException("Action cannot mix FromBody and FromForm on the same method.");
-        }
-
-        /// <summary>
-        /// Equivalent to the IResult part of Microsoft.AspNetCore.Mvc.JsonResult
-        /// </summary>
-        private class JsonResult : IResult
-        {
-            public object? Value { get; }
-
-            public JsonResult(object? value)
-            {
-                Value = value;
-            }
-
-            public Task ExecuteAsync(HttpContext httpContext)
-            {
-                return httpContext.Response.WriteAsJsonAsync(Value);
-            }
         }
     }
 }
