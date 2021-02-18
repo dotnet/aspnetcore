@@ -92,6 +92,9 @@ Later on, this will be checked using this condition:
     <PackagesInPatch>
       @aspnet/signalr;
       @aspnet/signalr-protocol-msgpack;
+      Microsoft.AspNetCore.WebUtilities;
+      Microsoft.AspNetCore.Http.Abstractions;
+      Microsoft.AspNetCore.Html.Abstractions;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
