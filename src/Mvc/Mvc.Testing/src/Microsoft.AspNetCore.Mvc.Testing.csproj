@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Microsoft.AspNetCore.Mvc.Testing.targets" Pack="true" PackagePath="build\$(TargetFramework)\" />
-    <Content Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Mvc.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.Tasks.dll" Pack="true" PackagePath="tasks\netstandard2.0\" />
+    <Content Include="Microsoft.AspNetCore.Mvc.Testing.targets" Pack="true" PackagePath="build/$(TargetFramework)/" />
+    <Content Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Mvc.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.Tasks.dll" Pack="true" PackagePath="tasks/netstandard2.0/" />
   </ItemGroup>
 </Project>
