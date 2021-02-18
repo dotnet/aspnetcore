@@ -245,10 +245,8 @@ APPLICATION_INFO::ShutDownApplication(const bool fServerInitiated)
    
     LOG_INFOF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
     app->Stop(fServerInitiated);
-    LOG_INFO(L"Setting app to null");
 
     SRWExclusiveLock lock(m_applicationLock);
-    LOG_INFO(L"lock acquired");
 
     m_pApplication = nullptr;
     m_pApplicationFactory = nullptr;

@@ -14,7 +14,7 @@
 #include "Environment.h"
 #include "HostFxr.h"
 
-IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
+IN_PROCESS_APPLICATION* IN_PROCESS_APPLICATION::s_Application = NULL;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
@@ -184,18 +184,26 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
                 {
                     if (p.path() != shadowCopyDir)
                     {
-                        std::filesystem::remove_all(p.path());
+                        try
+                        {
+                            std::filesystem::remove_all(p.path());
+                        }
+                        catch (...)
+                        {
+                            OBSERVE_CAUGHT_EXCEPTION();
+                        }
                     }
                 }
+
             }, m_shadowCopyDirectory);
     }
 
     m_workerThread = std::thread([](std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> application)
-    {
-        LOG_INFO(L"Starting in-process worker thread");
-        application->ExecuteApplication();
-        LOG_INFO(L"Stopping in-process worker thread");
-    }, ::ReferenceApplication(this));
+        {
+            LOG_INFO(L"Starting in-process worker thread");
+            application->ExecuteApplication();
+            LOG_INFO(L"Stopping in-process worker thread");
+        }, ::ReferenceApplication(this));
 
     const HANDLE waitHandles[2] = { m_pInitializeEvent, m_workerThread.native_handle() };
 
@@ -255,7 +263,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
                 m_pConfig->QueryArguments(),
                 errorContext,
                 hostFxrResolutionResult
-                ));
+            ));
 
             hostFxrResolutionResult->GetArguments(context->m_argc, context->m_argv);
             THROW_IF_FAILED(SetEnvironmentVariablesOnWorkerProcess());
@@ -440,11 +448,11 @@ void IN_PROCESS_APPLICATION::QueueStop()
     LOG_INFO(L"Queueing in-process stop thread");
 
     std::thread stoppingThread([](std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> application)
-    {
-        LOG_INFO(L"Starting in-process stop thread");
-        application->Stop(false);
-        LOG_INFO(L"Stopping in-process stop thread");
-    }, ::ReferenceApplication(this));
+        {
+            LOG_INFO(L"Starting in-process stop thread");
+            application->Stop(false);
+            LOG_INFO(L"Stopping in-process stop thread");
+        }, ::ReferenceApplication(this));
 
     stoppingThread.detach();
 }
@@ -505,7 +513,7 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
         context->m_exitCode = exitCode;
         context->m_hostFxr.Close();
     }
-    __except(GetExceptionCode() != 0)
+    __except (GetExceptionCode() != 0)
     {
         LOG_INFOF(L"Managed threw an exception %d", GetExceptionCode());
 
@@ -519,7 +527,7 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
 // in case of startup timeout
 //
 VOID
-IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrContext> &context)
+IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrContext>& context)
 {
     HandleWrapper<ModuleHandleTraits> moduleHandle;
 
@@ -550,7 +558,7 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
         QueryApplicationPhysicalPath().c_str(),
         nullptr);
 
-    for (const auto & variable : variables)
+    for (const auto& variable : variables)
     {
         LOG_INFOF(L"Setting environment variable %ls=%ls", variable.first.c_str(), variable.second.c_str());
         SetEnvironmentVariable(variable.first.c_str(), variable.second.c_str());
@@ -584,7 +592,7 @@ IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) c
                 QueryApplicationId().c_str(),
                 QueryApplicationPhysicalPath().c_str(),
                 context.m_exceptionCode
-                );
+            );
         }
         return;
     }
@@ -618,8 +626,8 @@ IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) c
 
 HRESULT
 IN_PROCESS_APPLICATION::CreateHandler(
-    _In_  IHttpContext       *pHttpContext,
-    _Out_ IREQUEST_HANDLER  **pRequestHandler)
+    _In_  IHttpContext* pHttpContext,
+    _Out_ IREQUEST_HANDLER** pRequestHandler)
 {
     try
     {
