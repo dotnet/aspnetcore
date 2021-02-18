@@ -11,7 +11,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -320,7 +319,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         private static void LogRequestBodyIOException(HttpContext httpContext, IOException exception)
         {
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger(typeof(MapActionEndpointRouteBuilderExtensions).FullName!);
+            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Routing.MapAction");
             Log.RequestBodyIOException(logger, exception);
         }
 
