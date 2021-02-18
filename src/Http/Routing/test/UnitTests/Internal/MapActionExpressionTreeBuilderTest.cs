@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegateLogsFromBodyIOExceptionsAsDebug()
+        public async Task RequestDelegateLogsFromBodyIOExceptionsAsDebugAndAborts()
         {
             var invoked = false;
 
@@ -288,6 +288,43 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
+        public async Task RequestDelegateLogsFromBodyInvalidDataExceptionsAsDebugAndSets400Response()
+        {
+            var invoked = false;
+
+            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Routing.MapAction");
+            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            void TestAction([FromBody] Todo todo)
+            {
+                invoked = true;
+            }
+
+            var invalidDataException = new InvalidDataException();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/json";
+            httpContext.Request.Body = new IOExceptionThrowingRequestBodyStream(invalidDataException);
+            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.False(invoked);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+
+            var logMessage = Assert.Single(sink.Writes);
+            Assert.Equal(new EventId(2, "RequestBodyInvalidDataException"), logMessage.EventId);
+            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            Assert.Same(invalidDataException, logMessage.Exception);
+        }
+
+        [Fact]
         public async Task RequestDelegatePopulatesFromFormParameterBasedOnParameterName()
         {
             const string paramName = "value";
@@ -316,7 +353,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegateLogsFromFormIOExceptionsAsDebug()
+        public async Task RequestDelegateLogsFromFormIOExceptionsAsDebugAndAborts()
         {
             var invoked = false;
 
@@ -349,6 +386,43 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
             Assert.Same(ioException, logMessage.Exception);
+        }
+
+        [Fact]
+        public async Task RequestDelegateLogsFromFormInvalidDataExceptionsAsDebugAndSets400Response()
+        {
+            var invoked = false;
+
+            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Routing.MapAction");
+            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            void TestAction([FromForm] int value)
+            {
+                invoked = true;
+            }
+
+            var invalidDataException = new InvalidDataException();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+            httpContext.Request.Body = new IOExceptionThrowingRequestBodyStream(invalidDataException);
+            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.False(invoked);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+
+            var logMessage = Assert.Single(sink.Writes);
+            Assert.Equal(new EventId(2, "RequestBodyInvalidDataException"), logMessage.EventId);
+            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            Assert.Same(invalidDataException, logMessage.Exception);
         }
 
         [Fact]

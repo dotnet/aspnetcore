@@ -270,8 +270,14 @@ namespace Microsoft.AspNetCore.Routing.Internal
                         }
                         catch (IOException ex)
                         {
-                            LogRequestBodyIOException(httpContext, ex);
+                            Log.RequestBodyIOException(GetLogger(httpContext), ex);
                             httpContext.Abort();
+                            return;
+                        }
+                        catch (InvalidDataException ex)
+                        {
+                            Log.RequestBodyInvalidDataException(GetLogger(httpContext), ex);
+                            httpContext.Response.StatusCode = 400;
                             return;
                         }
                     }
@@ -294,8 +300,14 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     }
                     catch (IOException ex)
                     {
-                        LogRequestBodyIOException(httpContext, ex);
+                        Log.RequestBodyIOException(GetLogger(httpContext), ex);
                         httpContext.Abort();
+                        return;
+                    }
+                    catch (InvalidDataException ex)
+                    {
+                        Log.RequestBodyInvalidDataException(GetLogger(httpContext), ex);
+                        httpContext.Response.StatusCode = 400;
                         return;
                     }
 
@@ -316,11 +328,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
             };
         }
 
-        private static void LogRequestBodyIOException(HttpContext httpContext, IOException exception)
+        private static ILogger GetLogger(HttpContext httpContext)
         {
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Routing.MapAction");
-            Log.RequestBodyIOException(logger, exception);
+            return loggerFactory.CreateLogger("Microsoft.AspNetCore.Routing.MapAction");
         }
 
         private static Expression BindParamenter(Expression sourceExpression, ParameterInfo parameter, string? name)
@@ -433,9 +444,19 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 new EventId(1, "RequestBodyIOException"),
                 "Reading the request body failed with an IOException.");
 
+            private static readonly Action<ILogger, Exception> _requestBodyInvalidDataException = LoggerMessage.Define(
+                LogLevel.Debug,
+                new EventId(2, "RequestBodyInvalidDataException"),
+                "Reading the request body failed with an InvalidDataException.");
+
             public static void RequestBodyIOException(ILogger logger, IOException exception)
             {
                 _requestBodyIOException(logger, exception);
+            }
+
+            public static void RequestBodyInvalidDataException(ILogger logger, InvalidDataException exception)
+            {
+                _requestBodyInvalidDataException(logger, exception);
             }
         }
     }
