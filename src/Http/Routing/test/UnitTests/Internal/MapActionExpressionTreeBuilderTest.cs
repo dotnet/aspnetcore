@@ -92,10 +92,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             const string unmatchedName = "value";
             const int unmatchedRouteParam = 42;
-            var structToBeZeroed = new BodyStruct
-            {
-                Id = 42
-            };
 
             int? deserializedRouteParam = null;
 
