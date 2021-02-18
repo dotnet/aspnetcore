@@ -9,10 +9,14 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -24,6 +28,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         public async Task RequestDelegateInvokesAction()
         {
             var invoked = false;
+
             void TestAction()
             {
                 invoked = true;
@@ -87,6 +92,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             const string unmatchedName = "value";
             const int unmatchedRouteParam = 42;
+            var structToBeZeroed = new BodyStruct
+            {
+                Id = 42
+            };
 
             int? deserializedRouteParam = null;
 
@@ -247,6 +256,42 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
+        public async Task RequestDelegateLogsFromBodyIOExceptionsAsDebug()
+        {
+            var invoked = false;
+
+            var sink = new TestSink(context => context.LoggerName == typeof(MapActionExpressionTreeBuilder).FullName);
+            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            void TestAction([FromBody] Todo todo)
+            {
+                invoked = true;
+            }
+
+            var ioException = new IOException();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/json";
+            httpContext.Request.Body = new IOExceptionThrowingRequestBodyStream(ioException);
+            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.False(invoked);
+            Assert.True(httpContext.RequestAborted.IsCancellationRequested);
+
+            var logMessage = Assert.Single(sink.Writes);
+            Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
+            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            Assert.Same(ioException, logMessage.Exception);
+        }
+
+        [Fact]
         public async Task RequestDelegatePopulatesFromFormParameterBasedOnParameterName()
         {
             const string paramName = "value";
@@ -272,6 +317,42 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.Equal(originalQueryParam, deserializedRouteParam);
+        }
+
+        [Fact]
+        public async Task RequestDelegateLogsFromFormIOExceptionsAsDebug()
+        {
+            var invoked = false;
+
+            var sink = new TestSink(context => context.LoggerName == typeof(MapActionExpressionTreeBuilder).FullName);
+            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            void TestAction([FromForm] int value)
+            {
+                invoked = true;
+            }
+
+            var ioException = new IOException();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+            httpContext.Request.Body = new IOExceptionThrowingRequestBodyStream(ioException);
+            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.False(invoked);
+            Assert.True(httpContext.RequestAborted.IsCancellationRequested);
+
+            var logMessage = Assert.Single(sink.Writes);
+            Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
+            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            Assert.Same(ioException, logMessage.Exception);
         }
 
         [Fact]
@@ -461,6 +542,63 @@ namespace Microsoft.AspNetCore.Routing.Internal
             public Task ExecuteAsync(HttpContext httpContext)
             {
                 return httpContext.Response.WriteAsync(_resultString);
+            }
+        }
+
+        private class IOExceptionThrowingRequestBodyStream : Stream
+        {
+            private readonly Exception _exceptionToThrow;
+
+            public IOExceptionThrowingRequestBodyStream(Exception exceptionToThrow)
+            {
+                _exceptionToThrow = exceptionToThrow;
+            }
+
+            public override bool CanRead => true;
+
+            public override bool CanSeek => false;
+
+            public override bool CanWrite => false;
+
+            public override long Length => throw new NotImplementedException();
+
+            public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+            public override void Flush()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                throw _exceptionToThrow;
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void SetLength(long value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class TestHttpRequestLifetimeFeature : IHttpRequestLifetimeFeature
+        {
+            private readonly CancellationTokenSource _requestAbortedCts = new CancellationTokenSource();
+
+            public CancellationToken RequestAborted { get => _requestAbortedCts.Token; set => throw new NotImplementedException(); }
+
+            public void Abort()
+            {
+                _requestAbortedCts.Cancel();
             }
         }
     }

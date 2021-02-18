@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
@@ -262,7 +264,16 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     }
                     else
                     {
-                        bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType!);
+                        try
+                        {
+                            bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType!);
+                        }
+                        catch (IOException ex)
+                        {
+                            LogRequestBodyIOException(httpContext, ex);
+                            httpContext.Abort();
+                            return;
+                        }
                     }
 
                     await invoker(target, httpContext, bodyValue);
@@ -277,7 +288,16 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 {
                     // Generating async code would just be insane so if the method needs the form populate it here
                     // so the within the method it's cached
-                    await httpContext.Request.ReadFormAsync();
+                    try
+                    {
+                        await httpContext.Request.ReadFormAsync();
+                    }
+                    catch (IOException ex)
+                    {
+                        LogRequestBodyIOException(httpContext, ex);
+                        httpContext.Abort();
+                        return;
+                    }
 
                     await invoker(target, httpContext);
                 };
@@ -294,6 +314,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
             {
                 return requestDelegate(action.Target, httpContext);
             };
+        }
+
+        private static void LogRequestBodyIOException(HttpContext httpContext, IOException exception)
+        {
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+
+            // REVIEW: I'm not sure how we feel about using an internal type as a category name, but this is what was done in other
+            // internal classes like DfaMather and DefaultLinkGenerator. My main concern is if we want to use the same category for
+            // other MapAction implementations (e.g. Roslyn source generators)
+            var logger = loggerFactory.CreateLogger(typeof(MapActionExpressionTreeBuilder).FullName!);
+
+            Log.RequestBodyIOException(logger, exception);
         }
 
         private static Expression BindParamenter(Expression sourceExpression, ParameterInfo parameter, string? name)
@@ -397,6 +429,19 @@ namespace Microsoft.AspNetCore.Routing.Internal
         private static void ThrowCannotReadBodyDirectlyAndAsForm()
         {
             throw new InvalidOperationException("Action cannot mix FromBody and FromForm on the same method.");
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, Exception> _requestBodyIOException = LoggerMessage.Define(
+                LogLevel.Debug,
+                new EventId(1, "RequestBodyIOException"),
+                "Reading the request body failed with an IOException.");
+
+            public static void RequestBodyIOException(ILogger logger, IOException exception)
+            {
+                _requestBodyIOException(logger, exception);
+            }
         }
     }
 }
