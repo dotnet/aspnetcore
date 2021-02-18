@@ -1,5 +1,9 @@
 MsgPack support for SignalR for ASP.NET Core
 
+> :warning: This package will no longer be supported starting August 21, 2021. This package follows the [.NET Core 2.1 support lifecycle](https://dotnet.microsoft.com/platform/support/policy/dotnet-core) which is ending soon. Please transition to using [@microsoft/signalr-protocol-msgpack](https://www.npmjs.com/package/@microsoft/signalr-protocol-msgpack) as described below.
+
+> Note: The JavaScript and TypeScript clients for SignalR for ASP.NET Core have been moved to [@microsoft/signalr-protocol-msgpack](https://www.npmjs.com/package/@microsoft/signalr-protocol-msgpack). If you are already using `@aspnet/signalr-protocol-msgpack` and are unsure when to move to `@microsoft/signalr-protocol-msgpack`, check the [Feature Distribution](https://docs.microsoft.com/en-us/aspnet/core/signalr/client-features) chart in the ASP.NET Core SignalR documentation. Newer client releases are compatible with older version of ASP.NET Core SignalR which means it is safe to upgrade the client before upgrading the server.
+
 ## Installation
 
 ```bash
