@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
-    <SkipHelixQueues>Windows.7.Amd64.Open</SkipHelixQueues>
+    <SkipHelixQueues>Windows.7.Amd64.Open;Windows.81.Amd64.Open</SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TestDependsOnPlaywright)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
