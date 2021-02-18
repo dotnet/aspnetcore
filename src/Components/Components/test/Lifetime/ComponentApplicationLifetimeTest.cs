@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,9 +17,10 @@ namespace Microsoft.AspNetCore.Components
         public async Task RestoreStateAsync_InitializesStateWithDataFromTheProvidedStore()
         {
             // Arrange
+            byte[] data = new byte[] { 0, 1, 2, 3, 4 };
             var state = new Dictionary<string, byte[]>
             {
-                ["MyState"] = new byte[] { 0, 1, 2, 3, 4 }
+                ["MyState"] = data
             };
             var store = new TestStore(state);
             var lifetime = new ComponentApplicationLifetime();
@@ -30,7 +30,8 @@ namespace Microsoft.AspNetCore.Components
 
             // Assert
             Assert.True(lifetime.State.TryRetrievePersistedState("MyState", out var retrieved));
-            Assert.Equal(state.Single().Value, retrieved);
+            Assert.Empty(state);
+            Assert.Equal(data, retrieved);
         }
 
         [Fact]

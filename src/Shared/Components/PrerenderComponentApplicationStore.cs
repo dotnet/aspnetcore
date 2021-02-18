@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Components
     {
         public PrerenderComponentApplicationStore()
         {
+            ExistingState = new();
         }
 
         public PrerenderComponentApplicationStore(string existingState)
@@ -28,14 +29,12 @@ namespace Microsoft.AspNetCore.Components
 #nullable enable
         public string? PersistedState { get; private set; }
 
-        public Dictionary<string, byte[]>? ExistingState { get; }
+        public Dictionary<string, byte[]>? ExistingState { get; protected set; }
 #nullable disable
 
         public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
         {
-            return ExistingState != null ?
-                Task.FromResult((IDictionary<string, byte[]>)ExistingState) :
-                throw new InvalidOperationException("The store was not initialized with any state.");
+            return Task.FromResult((IDictionary<string, byte[]>)ExistingState);
         }
 
         protected virtual byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state)

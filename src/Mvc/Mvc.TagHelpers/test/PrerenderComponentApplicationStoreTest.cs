@@ -46,15 +46,5 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Assert
             Assert.Equal(expected, state);
         }
-
-        [Fact]
-        public async Task GetPersistedStateAsync_ThrowsWhenNotInitializedWithState()
-        {
-            // Arrange
-            var store = new PrerenderComponentApplicationStore();
-
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => store.GetPersistedStateAsync());
-        }
     }
 }

@@ -67,7 +67,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "StartCircuit",
                 baseUri,
                 baseUri + "/home",
-                descriptors));
+                descriptors,
+                null));
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -110,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Act
             //
             // These are valid URIs by the BaseUri doesn't contain the Uri - so it fails to initialize.
-            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", uri, "http://example.com", descriptors), Timeout);
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", uri, "http://example.com", descriptors, null), Timeout);
 
             // Assert
             var actualError = Assert.Single(Errors);
