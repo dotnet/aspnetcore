@@ -41,6 +41,11 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="callback">The <see cref="Func{TResult}"/> to invoke.</param>
         public void RegisterOnPersistingCallback(Func<Task> callback)
         {
+            if (callback is null)
+            {
+                throw new ArgumentNullException(nameof(callback));
+            }
+
             _registeredCallbacks.Add(callback);
         }
 
@@ -52,12 +57,25 @@ namespace Microsoft.AspNetCore.Components
         /// <returns><c>true</c> if the state was found;<c>false</c> otherwise.</returns>
         public bool TryRetrievePersistedState(string key, [MaybeNullWhen(false)] out byte[] value)
         {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             if (_existingState == null)
             {
                 throw new InvalidOperationException("ComponentApplicationState has not been initialized.");
             }
 
-            return _existingState.TryGetValue(key, out value);
+            if (_existingState.TryGetValue(key, out value))
+            {
+                _existingState.Remove(key);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -67,7 +85,21 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="value">The state to persist.</param>
         public void PersistState(string key, byte[] value)
         {
-            _currentState[key] = value;
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (_currentState.ContainsKey(key))
+            {
+                throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
+            }
+            _currentState.Add(key, value);
         }
 
         /// <summary>
@@ -78,6 +110,11 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="instance">The instance to persist.</param>
         public void PersistAsJson<T>(string key, T instance)
         {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             PersistState(key, JsonSerializer.SerializeToUtf8Bytes(instance));
         }
 
@@ -90,6 +127,11 @@ namespace Microsoft.AspNetCore.Components
         /// <returns><c>true</c> if the state was found;<c>false</c> otherwise.</returns>
         public bool TryRetrieveFromJson<T>(string key, [MaybeNullWhen(false)] out T instance)
         {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             if (TryRetrievePersistedState(key, out var data))
             {
                 instance = JsonSerializer.Deserialize<T>(data)!;

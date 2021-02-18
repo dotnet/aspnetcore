@@ -3,10 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -110,25 +107,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Reset the TagName. We don't want `component` to render.
             output.TagName = null;
             output.Content.SetHtmlContent(result);
-        }
-
-        private class ComponentWithPersistedStateContent : IHtmlContent
-        {
-            private IHtmlContent _component;
-            private IHtmlContent _persistedState;
-
-            public ComponentWithPersistedStateContent(IHtmlContent component, IHtmlContent persistedState)
-            {
-                _component = component;
-                _persistedState = persistedState;
-            }
-
-            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
-            {
-                _component.WriteTo(writer, encoder);
-                writer.WriteLine();
-                _persistedState.WriteTo(writer, encoder);
-            }
         }
     }
 }

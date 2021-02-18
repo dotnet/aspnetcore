@@ -50,18 +50,11 @@ namespace Microsoft.AspNetCore.Components
         /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
         public Task PersistStateAsync(IComponentApplicationStateStore store, Renderer renderer)
         {
-            if (State == null)
-            {
-                throw new InvalidOperationException("ComponentApplicationLifetimeNotInitialized.");
-            }
             if (_stateIsPersisted)
             {
                 throw new InvalidOperationException("State already persisted.");
             }
-            if (_pauseCallbacks.Count > 0)
-            {
-                throw new InvalidOperationException("Not all registered instances have been paused.");
-            }
+
             _stateIsPersisted = true;
 
             return renderer.Dispatcher.InvokeAsync(PauseAndPersistState);
@@ -81,11 +74,6 @@ namespace Microsoft.AspNetCore.Components
             {
                 await callback();
             }
-        }
-
-        internal void AddRegistration(Func<Task> callback)
-        {
-            _pauseCallbacks.Add(callback);
         }
     }
 }
