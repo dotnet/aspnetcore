@@ -109,7 +109,6 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 
         if (FAILED_LOG(hr))
         {
-            OBSERVE_CAUGHT_EXCEPTION();
             EventLog::Error(
                 ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
                 ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
@@ -147,6 +146,7 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
     }
     catch (...)
     {
+        OBSERVE_CAUGHT_EXCEPTION();
         EventLog::Error(
             ASPNETCORE_CONFIGURATION_LOAD_ERROR,
             ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
