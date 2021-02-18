@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnPlaywright)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+    <SkipHelixQueues>Windows.7.Amd64.Open</SkipHelixQueues>
     <HelixPreCommand Include="call RunPowershell.cmd installPlaywrightReqs.ps1 || exit /b 1" />
   </ItemGroup>
   
