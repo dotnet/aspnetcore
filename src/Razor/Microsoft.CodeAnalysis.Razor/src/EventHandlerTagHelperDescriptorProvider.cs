@@ -48,6 +48,16 @@ namespace Microsoft.CodeAnalysis.Razor
             var visitor = new EventHandlerDataVisitor(types);
 
             var discoveryMode = context.Items.GetTagHelperDiscoveryFilter();
+
+            if ((discoveryMode & TagHelperDiscoveryFilter.TargetAssembly) == TagHelperDiscoveryFilter.TargetAssembly)
+            {
+                var targetReference = context.Items.GetTargetMetadataReference();
+                if (targetReference is IAssemblySymbol assembly)
+                {
+                    visitor.Visit(assembly.GlobalNamespace);
+                }
+            }
+
             if ((discoveryMode & TagHelperDiscoveryFilter.CurrentCompilation) == TagHelperDiscoveryFilter.CurrentCompilation)
             {
                 visitor.Visit(compilation.Assembly);

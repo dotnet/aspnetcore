@@ -25,7 +25,7 @@ namespace Microsoft.CodeAnalysis.Razor
             context.SetCompilation(compilation);
             context.ExcludeHidden = true;
 
-            // Act 
+            // Act
             descriptorProvider.Execute(context);
 
             // Assert
@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var context = TagHelperDescriptorProviderContext.Create();
 
-            // Act 
+            // Act
             descriptorProvider.Execute(context);
 
             // Assert
@@ -143,6 +143,40 @@ namespace TestAssembly
             Assert.NotEmpty(context.Results);
             Assert.NotEmpty(context.Results.Where(f => f.GetTypeName() == testTagHelper));
             Assert.NotEmpty(context.Results.Where(f => f.GetTypeName() == enumTagHelper));
+        }
+
+        [Fact]
+        public void Execute_FilterTargetAssemblyOnlyDiscoversFromTarget()
+        {
+            // Arrange
+            var testTagHelper = "TestAssembly.TestTagHelper";
+            var enumTagHelper = "Microsoft.CodeAnalysis.Razor.Workspaces.Test.EnumTagHelper";
+            var csharp = @"
+using Microsoft.AspNetCore.Razor.TagHelpers;
+namespace TestAssembly
+{
+    public class TestTagHelper : TagHelper
+    {
+        public override void Process(TagHelperContext context, TagHelperOutput output) {}
+    }
+}";
+            var compilation = TestCompilation.Create(_assembly, CSharpSyntaxTree.ParseText(csharp));
+            var descriptorProvider = new DefaultTagHelperDescriptorProvider();
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+            context.Items.SetTagHelperDiscoveryFilter(TagHelperDiscoveryFilter.TargetAssembly);
+            context.Items.SetTargetMetadataReference(MetadataReference.CreateFromFile(
+                typeof(Microsoft.AspNetCore.Razor.Language.TagHelperInfo).Assembly.Location));
+
+            // Act
+            descriptorProvider.Execute(context);
+
+            // Assert
+            Assert.NotNull(compilation.GetTypeByMetadataName(testTagHelper));
+            Assert.Empty(context.Results); // Target assembly contains no tag helpers
+            Assert.Empty(context.Results.Where(f => f.GetTypeName() == testTagHelper));
+            Assert.Empty(context.Results.Where(f => f.GetTypeName() == enumTagHelper));
         }
     }
 }

@@ -42,6 +42,15 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var discoveryMode = context.Items.GetTagHelperDiscoveryFilter();
 
+            if ((discoveryMode & TagHelperDiscoveryFilter.TargetAssembly) == TagHelperDiscoveryFilter.TargetAssembly)
+            {
+                var targetReference = context.Items.GetTargetMetadataReference();
+                if (targetReference is IAssemblySymbol assembly)
+                {
+                    visitor.Visit(assembly.GlobalNamespace);
+                }
+            }
+
             if ((discoveryMode & TagHelperDiscoveryFilter.CurrentCompilation) == TagHelperDiscoveryFilter.CurrentCompilation)
             {
                 // Visit the primary output of this compilation

@@ -12,6 +12,7 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         CurrentCompilation = 1,
         ReferenceAssemblies = 2,
+        TargetAssembly = 4,
         Default = CurrentCompilation | ReferenceAssemblies,
     };
 }
