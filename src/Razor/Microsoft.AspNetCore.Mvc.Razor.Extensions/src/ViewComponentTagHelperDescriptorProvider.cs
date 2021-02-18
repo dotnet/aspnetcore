@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var visitor = new ViewComponentTypeVisitor(vcAttribute, nonVCAttribute, types);
 
             var targetReference = context.Items.GetTargetMetadataReference();
-            if (targetReference is MetadataReference && compilation.GetAssemblyOrModuleSymbol(targetReference) is IAssemblySymbol targetAssembly)
+            if (targetReference is not null)
             {
-                if (IsTagHelperAssembly(targetAssembly))
+                if (compilation.GetAssemblyOrModuleSymbol(targetReference) is IAssemblySymbol targetAssembly && IsTagHelperAssembly(targetAssembly))
                 {
                     visitor.Visit(targetAssembly.GlobalNamespace);
                 }

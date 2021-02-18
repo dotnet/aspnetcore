@@ -49,9 +49,13 @@ namespace Microsoft.CodeAnalysis.Razor
 
 
             var targetReference = context.Items.GetTargetMetadataReference();
-            if (targetReference is MetadataReference && compilation.GetAssemblyOrModuleSymbol(targetReference) is IAssemblySymbol targetAssembly)
+            if (targetReference is not null)
             {
-                visitor.Visit(targetAssembly.GlobalNamespace);
+                if (compilation.GetAssemblyOrModuleSymbol(targetReference) is IAssemblySymbol targetAssembly)
+                {
+                    visitor.Visit(targetAssembly.GlobalNamespace);
+                }
+
             }
             else
             {
