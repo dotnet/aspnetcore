@@ -96,8 +96,6 @@ FILE_WATCHER::Create(
     RETURN_IF_FAILED(_strFullName.Append(_strDirectoryName));
     RETURN_IF_FAILED(_strFullName.Append(_strFileName));
 
-    // TODO I'm concerned about how detecting a dll change will work if it too late
-
     //
     // Resize change buffer to something "reasonable"
     //
@@ -193,7 +191,6 @@ Win32 error
 
     pFileMonitor->m_fThreadExit = TRUE;
 
-    // TODO check instead for if a dll was changed here
     if (pFileMonitor->m_fShadowCopyEnabled)
     {
         // Cancel the timer to avoid it calling copy.
@@ -334,7 +331,6 @@ FILE_WATCHER::TimerCallback(
 
 DWORD WINAPI FILE_WATCHER::CopyAndShutdown(LPVOID arg)
 {
-
     auto watcher = (FILE_WATCHER*)arg;
 
     // Only copy and shutdown once
