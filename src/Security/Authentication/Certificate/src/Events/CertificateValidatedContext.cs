@@ -28,6 +28,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <summary>
         /// The certificate to validate.
         /// </summary>
-        public X509Certificate2 ClientCertificate { get; set; }
+        public X509Certificate2 ClientCertificate { get; set; } = default!;
     }
 }

@@ -10,9 +10,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,7 +20,7 @@ namespace Microsoft.AspNetCore.Builder
     {
         private static readonly object LaunchLock = new object();
         private static readonly TimeSpan DebugProxyLaunchTimeout = TimeSpan.FromSeconds(10);
-        private static Task<string> LaunchedDebugProxyUrl;
+        private static Task<string>? LaunchedDebugProxyUrl;
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$", RegexOptions.None, TimeSpan.FromSeconds(10));
         private static readonly Regex ApplicationStartedRegex = new Regex(@"^\s*Application started\. Press Ctrl\+C to shut down\.$", RegexOptions.None, TimeSpan.FromSeconds(10));
 
@@ -58,18 +56,25 @@ namespace Microsoft.AspNetCore.Builder
             RemoveUnwantedEnvironmentVariables(processStartInfo.Environment);
 
             var debugProxyProcess = Process.Start(processStartInfo);
-            PassThroughConsoleOutput(debugProxyProcess);
-            CompleteTaskWhenServerIsReady(debugProxyProcess, tcs);
-
-            new CancellationTokenSource(DebugProxyLaunchTimeout).Token.Register(() =>
+            if (debugProxyProcess is null)
             {
-                tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {DebugProxyLaunchTimeout.TotalSeconds} seconds."));
-            });
+                tcs.TrySetException(new InvalidOperationException("Unable to start debug proxy process."));
+            }
+            else
+            {
+                PassThroughConsoleOutput(debugProxyProcess);
+                CompleteTaskWhenServerIsReady(debugProxyProcess, tcs);
+
+                new CancellationTokenSource(DebugProxyLaunchTimeout).Token.Register(() =>
+                {
+                    tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {DebugProxyLaunchTimeout.TotalSeconds} seconds."));
+                });
+            }
 
             return await tcs.Task;
         }
 
-        private static void RemoveUnwantedEnvironmentVariables(IDictionary<string, string> environment)
+        private static void RemoveUnwantedEnvironmentVariables(IDictionary<string, string?> environment)
         {
             // Generally we expect to pass through most environment variables, since dotnet might
             // need them for arbitrary reasons to function correctly. However, we specifically don't
@@ -88,7 +93,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             var assembly = Assembly.Load(environment.ApplicationName);
             var debugProxyPath = Path.Combine(
-                Path.GetDirectoryName(assembly.Location),
+                Path.GetDirectoryName(assembly.Location)!,
                 "BlazorDebugProxy",
                 "BrowserDebugHost.dll");
 
@@ -111,16 +116,17 @@ namespace Microsoft.AspNetCore.Builder
 
         private static void CompleteTaskWhenServerIsReady(Process aspNetProcess, TaskCompletionSource<string> taskCompletionSource)
         {
-            string capturedUrl = null;
+            string? capturedUrl = null;
             aspNetProcess.OutputDataReceived += OnOutputDataReceived;
             aspNetProcess.BeginOutputReadLine();
 
             void OnOutputDataReceived(object sender, DataReceivedEventArgs eventArgs)
             {
-                if (String.IsNullOrEmpty(eventArgs.Data))
+                if (string.IsNullOrEmpty(eventArgs.Data))
                 {
                     taskCompletionSource.TrySetException(new InvalidOperationException(
-                            "No output has been recevied from the application."));
+                        "No output has been recevied from the application."));
+                    return;
                 }
 
                 if (ApplicationStartedRegex.IsMatch(eventArgs.Data))

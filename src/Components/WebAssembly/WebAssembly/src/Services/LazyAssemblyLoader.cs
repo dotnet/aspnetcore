@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -48,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// <returns>A list of the loaded <see cref="Assembly"/></returns>
         public async Task<IEnumerable<Assembly>> LoadAssembliesAsync(IEnumerable<string> assembliesToLoad)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
+            if (OperatingSystem.IsBrowser())
             {
                 return await LoadAssembliesInClientAsync(assembliesToLoad);
             }
@@ -85,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             var newAssembliesToLoad = assembliesToLoad.Where(assembly => !_loadedAssemblyCache.Contains(assembly));
             var loadedAssemblies = new List<Assembly>();
 
-            var count = (int)await ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<string[], object, object, Task<object>>(
+            var count = (int)await ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<string[], object?, object?, Task<object>>(
                GetLazyAssemblies,
                newAssembliesToLoad.ToArray(),
                null,
@@ -96,13 +95,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 return loadedAssemblies;
             }
 
-            var assemblies = ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<object, object, object, byte[][]>(
+            var assemblies = ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<object?, object?, object?, byte[][]>(
                 ReadLazyAssemblies,
                 null,
                 null,
                 null);
 
-            var pdbs = ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<object, object, object, byte[][]>(
+            var pdbs = ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<object?, object?, object?, byte[][]>(
                 ReadLazyPDBs,
                 null,
                 null,

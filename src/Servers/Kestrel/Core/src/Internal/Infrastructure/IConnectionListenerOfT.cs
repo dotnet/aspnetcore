@@ -18,6 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// </summary>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         /// <returns>A <see cref="ValueTask{T}"/> that completes when a connection is accepted, yielding the <see cref="BaseConnectionContext" /> representing the connection.</returns>
-        ValueTask<T> AcceptAsync(CancellationToken cancellationToken = default);
+        ValueTask<T?> AcceptAsync(CancellationToken cancellationToken = default);
     }
 }

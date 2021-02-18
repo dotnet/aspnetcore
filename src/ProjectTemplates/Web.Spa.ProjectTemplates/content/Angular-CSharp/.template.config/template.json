@@ -6,8 +6,8 @@
     "SPA"
   ],
   "groupIdentity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.Angular",
-  "precedence": "7000",
-  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.Angular.CSharp.5.0",
+  "precedence": "8000",
+  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.Angular.CSharp.6.0",
   "name": "ASP.NET Core with Angular",
   "preferNameDirectory": true,
   "primaryOutputs": [

@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             var selectedMethod = methods[0];
             if (string.Equals(selectedMethod.Name, AsyncMethodName, StringComparison.Ordinal))
             {
-                if (!selectedMethod.ReturnType.GetTypeInfo().IsGenericType ||
+                if (!selectedMethod.ReturnType.IsGenericType ||
                     selectedMethod.ReturnType.GetGenericTypeDefinition() != typeof(Task<>))
                 {
                     throw new InvalidOperationException(Resources.FormatViewComponent_AsyncMethod_ShouldReturnTask(

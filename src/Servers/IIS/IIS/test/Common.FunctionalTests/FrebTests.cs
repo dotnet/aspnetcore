@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task CheckCommonFrebEvents()
         {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresNewShim]
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task FrebIncludesHResultFailures()
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task CheckFailedRequestEvents()
         {
@@ -83,10 +83,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         // I think this test is flaky due to freb file not being created quickly enough.
         // Adding extra logging, marking as flaky, and repeating should help
         [ConditionalFact]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2570")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [Repeat(10)]
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29428")]
         public async Task CheckFrebDisconnect()
         {
             var result = await SetupFrebApp();

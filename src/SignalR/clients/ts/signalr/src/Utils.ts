@@ -128,7 +128,7 @@ export function createLogger(logger?: ILogger | LogLevel) {
         return NullLogger.instance;
     }
 
-    if ((logger as ILogger).log) {
+    if ((logger as ILogger).log !== undefined) {
         return logger as ILogger;
     }
 

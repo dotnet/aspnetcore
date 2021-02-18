@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
+                    httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                     return httpContext.Response.WriteAsync(ex.ToString());
                 }
                 return Task.FromResult(0);
@@ -267,7 +268,36 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             }))
             {
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await SendOpaqueRequestAsync(method, address, extraHeader));
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await SendOpaqueRequestAsync(method, address, extraHeader));
+                Assert.Equal("The response status code was incorrect: HTTP/1.1 200 OK", ex.Message);
+            }
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
+        public async Task OpaqueUpgrade_PostWithBodyAndUpgradeHeaders_Accepted()
+        {
+            using (Utilities.CreateHttpServer(out string address, async httpContext =>
+            {
+                try
+                {
+                    var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+                    Assert.NotNull(opaqueFeature);
+                    Assert.False(opaqueFeature.IsUpgradableRequest);
+                }
+                catch (Exception ex)
+                {
+                    await httpContext.Response.WriteAsync(ex.ToString());
+                }
+            }))
+            {
+                using var client = new HttpClient();
+
+                var request = new HttpRequestMessage(HttpMethod.Post, address);
+                request.Headers.Connection.Add("upgrade");
+                request.Content = new StringContent("Hello World");
+                var response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
             }
         }
 

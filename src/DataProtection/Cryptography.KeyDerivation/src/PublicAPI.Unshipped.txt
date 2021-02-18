@@ -1,7 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivation
-Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf
-Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf.HMACSHA1 = 0 -> Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf
-Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf.HMACSHA256 = 1 -> Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf
-Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf.HMACSHA512 = 2 -> Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf
-static Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivation.Pbkdf2(string! password, byte[]! salt, Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf prf, int iterationCount, int numBytesRequested) -> byte[]!

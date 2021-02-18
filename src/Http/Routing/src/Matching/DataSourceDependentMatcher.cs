@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -29,7 +31,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         // Used in tests
-        internal Matcher CurrentMatcher => _cache.Value;
+        internal Matcher CurrentMatcher => _cache.Value!;
 
         public override Task MatchAsync(HttpContext httpContext)
         {

@@ -3,8 +3,12 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>false</IsShippingPackage>
+    <!-- This package is not shipping, ignore API doc requirements -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <DefineConstants>$(DefineConstants);IGNITOR</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

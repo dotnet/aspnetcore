@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             var obj = (JObject) target;
 
-            obj[segment] = JToken.FromObject(value);
+            obj[segment] = value != null ? JToken.FromObject(value) : JValue.CreateNull();
 
             errorMessage = null;
             return true;
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            obj[segment] = JToken.FromObject(value);
+            obj[segment] = value != null ? JToken.FromObject(value) : JValue.CreateNull();
 
             errorMessage = null;
             return true;

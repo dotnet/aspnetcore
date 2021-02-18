@@ -76,12 +76,12 @@ namespace Microsoft.AspNetCore.Authentication
         protected ISystemClock Clock { get; }
 
         /// <summary>
-        /// Gets the <see cref="IOptionsMonitor{TOptions}"/> to detect changes to options. 
+        /// Gets the <see cref="IOptionsMonitor{TOptions}"/> to detect changes to options.
         /// </summary>
         protected IOptionsMonitor<TOptions> OptionsMonitor { get; }
 
         /// <summary>
-        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
         protected virtual object? Events { get; set; }
@@ -99,9 +99,9 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         protected string CurrentUri
         {
-            get => Request.Scheme + "://" + Request.Host + Request.PathBase + Request.Path + Request.QueryString;
+            get => Request.Scheme + Uri.SchemeDelimiter + Request.Host + Request.PathBase + Request.Path + Request.QueryString;
         }
-        
+
         /// <summary>
         /// Initializes a new instance of <see cref="AuthenticationHandler{TOptions}"/>.
         /// </summary>
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="clock">The <see cref="ISystemClock"/>.</param>
         protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         {
-            Logger = logger.CreateLogger(this.GetType().FullName);
+            Logger = logger.CreateLogger(this.GetType().FullName!);
             UrlEncoder = encoder;
             Clock = clock;
             OptionsMonitor = options;
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="targetPath">The path.</param>
         /// <returns>The absolute url.</returns>
         protected string BuildRedirectUri(string targetPath)
-            => Request.Scheme + "://" + Request.Host + OriginalPathBase + targetPath;
+            => Request.Scheme + Uri.SchemeDelimiter + Request.Host + OriginalPathBase + targetPath;
 
         /// <summary>
         /// Resolves the scheme that this authentication operation is forwarded to.

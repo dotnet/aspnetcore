@@ -45,6 +45,13 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FileBufferingReadStream" />.
+        /// </summary>
+        /// <param name="inner">The wrapping <see cref="Stream" />.</param>
+        /// <param name="memoryThreshold">The maximum size to buffer in memory.</param>
+        /// <param name="bufferLimit">The maximum size that will be buffered before this <see cref="Stream"/> throws.</param>
+        /// <param name="tempFileDirectoryAccessor">Provides the temporary directory to which files are buffered to.</param>
         public FileBufferingReadStream(
             Stream inner,
             int memoryThreshold,
@@ -54,6 +61,14 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FileBufferingReadStream" />.
+        /// </summary>
+        /// <param name="inner">The wrapping <see cref="Stream" />.</param>
+        /// <param name="memoryThreshold">The maximum size to buffer in memory.</param>
+        /// <param name="bufferLimit">The maximum size that will be buffered before this <see cref="Stream"/> throws.</param>
+        /// <param name="tempFileDirectoryAccessor">Provides the temporary directory to which files are buffered to.</param>
+        /// <param name="bytePool">The <see cref="ArrayPool{T}"/> to use.</param>
         public FileBufferingReadStream(
             Stream inner,
             int memoryThreshold,
@@ -89,6 +104,13 @@ namespace Microsoft.AspNetCore.WebUtilities
             _tempFileDirectoryAccessor = tempFileDirectoryAccessor;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FileBufferingReadStream" />.
+        /// </summary>
+        /// <param name="inner">The wrapping <see cref="Stream" />.</param>
+        /// <param name="memoryThreshold">The maximum size to buffer in memory.</param>
+        /// <param name="bufferLimit">The maximum size that will be buffered before this <see cref="Stream"/> throws.</param>
+        /// <param name="tempFileDirectory">The temporary directory to which files are buffered to.</param>
         public FileBufferingReadStream(
             Stream inner,
             int memoryThreshold,
@@ -98,6 +120,14 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FileBufferingReadStream" />.
+        /// </summary>
+        /// <param name="inner">The wrapping <see cref="Stream" />.</param>
+        /// <param name="memoryThreshold">The maximum size to buffer in memory.</param>
+        /// <param name="bufferLimit">The maximum size that will be buffered before this <see cref="Stream"/> throws.</param>
+        /// <param name="tempFileDirectory">The temporary directory to which files are buffered to.</param>
+        /// <param name="bytePool">The <see cref="ArrayPool{T}"/> to use.</param>
         public FileBufferingReadStream(
             Stream inner,
             int memoryThreshold,
@@ -133,36 +163,47 @@ namespace Microsoft.AspNetCore.WebUtilities
             _tempFileDirectory = tempFileDirectory;
         }
 
+        /// <summary>
+        /// Gets a value that determines if the contents are buffered entirely in memory.
+        /// </summary>
         public bool InMemory
         {
             get { return _inMemory; }
         }
 
+        /// <summary>
+        /// Gets a value that determines where the contents are buffered on disk.
+        /// </summary>
         public string? TempFileName
         {
             get { return _tempFileName; }
         }
 
+        /// <inheritdoc/>
         public override bool CanRead
         {
             get { return true; }
         }
 
+        /// <inheritdoc/>
         public override bool CanSeek
         {
             get { return true; }
         }
 
+        /// <inheritdoc/>
         public override bool CanWrite
         {
             get { return false; }
         }
 
+        /// <inheritdoc/>
         public override long Length
         {
             get { return _buffer.Length; }
         }
 
+        /// <inheritdoc/>
         public override long Position
         {
             get { return _buffer.Position; }
@@ -174,6 +215,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
         public override long Seek(long offset, SeekOrigin origin)
         {
             ThrowIfDisposed();
@@ -209,6 +251,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 FileOptions.Asynchronous | FileOptions.DeleteOnClose | FileOptions.SequentialScan);
         }
 
+        /// <inheritdoc/>
         public override int Read(Span<byte> buffer)
         {
             ThrowIfDisposed();
@@ -271,16 +314,19 @@ namespace Microsoft.AspNetCore.WebUtilities
             return read;
         }
 
+        /// <inheritdoc/>
         public override int Read(byte[] buffer, int offset, int count)
         {
             return Read(buffer.AsSpan(offset, count));
         }
 
+        /// <inheritdoc/>
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             return ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
         }
 
+        /// <inheritdoc/>
         [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
@@ -343,26 +389,31 @@ namespace Microsoft.AspNetCore.WebUtilities
             return read;
         }
 
+        /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public override void SetLength(long value)
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public override void Flush()
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
             // Set a minimum buffer size of 4K since the base Stream implementation has weird behavior when the stream is
@@ -401,6 +452,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return CopyToAsyncImpl();
         }
 
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -418,6 +470,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
         public async override ValueTask DisposeAsync()
         {
             if (!_disposed)

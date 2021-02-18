@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
             BeforeMain(args);
 
             AssignConfiguration(ref args);
-            var summaries = BenchmarkSwitcher.FromAssembly(typeof(Program).GetTypeInfo().Assembly)
+            var summaries = BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly)
                 .Run(args, GetConfig());
 
             foreach (var summary in summaries)

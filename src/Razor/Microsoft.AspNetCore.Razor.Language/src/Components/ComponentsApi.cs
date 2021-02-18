@@ -158,5 +158,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.BindConverter";
             public static readonly string FormatValue = "Microsoft.AspNetCore.Components.BindConverter.FormatValue";
         }
+
+        public static class CascadingTypeParameterAttribute
+        {
+            public static readonly string MetadataName = "Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute";
+        }
     }
 }

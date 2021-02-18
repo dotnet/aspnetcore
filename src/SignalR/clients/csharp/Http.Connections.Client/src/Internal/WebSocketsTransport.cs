@@ -18,30 +18,32 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
     internal partial class WebSocketsTransport : ITransport
     {
         private readonly ClientWebSocket _webSocket;
-        private readonly Func<Task<string>> _accessTokenProvider;
-        private IDuplexPipe _application;
+        private readonly Func<Task<string?>> _accessTokenProvider;
+        private IDuplexPipe? _application;
         private WebSocketMessageType _webSocketMessageType;
         private readonly ILogger _logger;
         private readonly TimeSpan _closeTimeout;
         private volatile bool _aborted;
 
-        private IDuplexPipe _transport;
+        private IDuplexPipe? _transport;
 
         internal Task Running { get; private set; } = Task.CompletedTask;
 
-        public PipeReader Input => _transport.Input;
+        public PipeReader Input => _transport!.Input;
 
-        public PipeWriter Output => _transport.Output;
+        public PipeWriter Output => _transport!.Output;
 
-        public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string>> accessTokenProvider)
+        public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider)
         {
             _webSocket = new ClientWebSocket();
+            _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
+
             var isBrowser = OperatingSystem.IsBrowser();
             if (!isBrowser)
             {
                 // Full Framework will throw when trying to set the User-Agent header
                 // So avoid setting it in netstandard2.0 and only set it in netstandard2.1 and higher
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NET461
                 _webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
 #else
                 // Set an alternative user agent header on Full framework
@@ -102,8 +104,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
 
             _closeTimeout = httpConnectionOptions?.CloseTimeout ?? default;
-
-            _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
 
             // Ignore the HttpConnectionOptions access token provider. We were given an updated delegate from the HttpConnection.
             _accessTokenProvider = accessTokenProvider;
@@ -177,6 +177,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private async Task ProcessSocketAsync(WebSocket socket)
         {
+            Debug.Assert(_application != null);
+
             using (socket)
             {
                 // Begin sending and receiving.
@@ -232,6 +234,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private async Task StartReceiving(WebSocket socket)
         {
+            Debug.Assert(_application != null);
+
             try
             {
                 while (true)
@@ -314,7 +318,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private async Task StartSending(WebSocket socket)
         {
-            Exception error = null;
+            Debug.Assert(_application != null);
+
+            Exception? error = null;
 
             try
             {
@@ -424,8 +430,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 return;
             }
 
-            _transport.Output.Complete();
-            _transport.Input.Complete();
+            _transport!.Output.Complete();
+            _transport!.Input.Complete();
 
             // Cancel any pending reads from the application, this should start the entire shutdown process
             _application.Input.CancelPendingRead();

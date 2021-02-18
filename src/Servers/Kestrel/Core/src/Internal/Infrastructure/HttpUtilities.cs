@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding> encodingSelector)
+        public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector)
         {
             if (ReferenceEquals(KestrelServerOptions.DefaultRequestHeaderEncodingSelector, encodingSelector))
             {
@@ -421,7 +421,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             };
         }
 
-        public static string MethodToString(HttpMethod method)
+        public static string? MethodToString(HttpMethod method)
         {
             var methodIndex = (int)method;
             var methodNames = _methodNames;
@@ -432,7 +432,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return null;
         }
 
-        public static string SchemeToString(HttpScheme scheme)
+        public static string? SchemeToString(HttpScheme scheme)
         {
             return scheme switch
             {

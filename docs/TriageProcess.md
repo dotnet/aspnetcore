@@ -64,4 +64,4 @@ The following diagram summarizes the processes detailed above:
 
 
 ## References
-We rely on some automation to help us with this process. You can learn more about some of these by reading our [Issue Management Policies](https://github.com/dotnet/aspnetcore/blob/master/docs/IssueManagementPolicies.md) document.
+We rely on some automation to help us with this process. You can learn more about some of these by reading our [Issue Management Policies](https://github.com/dotnet/aspnetcore/blob/main/docs/IssueManagementPolicies.md) document.

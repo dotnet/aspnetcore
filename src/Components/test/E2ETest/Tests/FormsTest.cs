@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/3615")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27398")]
         public void InputDateInteractsWithEditContext_NonNullableDateTime()
         {
             var appElement = MountTypicalValidationComponent();
@@ -207,7 +207,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validates on edit
             Browser.Equal("valid", () => renewalDateInput.GetAttribute("class"));
-            renewalDateInput.ReplaceText("01/01/2000\t");
+            renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+            renewalDateInput.SendKeys("01/01/2000\t");
             Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
 
             // Can become invalid
@@ -216,12 +217,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
             // Empty is invalid, because it's not nullable
-            renewalDateInput.ReplaceText($"{Keys.Backspace}");
+            renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
             Browser.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
             // Can become valid
-            renewalDateInput.ReplaceText("01/01/01");
+            renewalDateInput.SendKeys("01/01/01\t");
             Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
             Browser.Empty(messagesAccessor);
         }

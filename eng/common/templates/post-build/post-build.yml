@@ -32,7 +32,6 @@ parameters:
   symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
   signingValidationAdditionalParameters: ''
-  useBuildManifest: false
 
   # Which stages should finish execution before post-build stages start
   validateDependsOn:
@@ -54,9 +53,6 @@ parameters:
   NETCoreExperimentalChannelId: 562
   NetEngServicesIntChannelId: 678
   NetEngServicesProdChannelId: 679
-  Net5Preview8ChannelId: 1155
-  Net5RC1ChannelId: 1157
-  Net5RC2ChannelId: 1329
   NetCoreSDK313xxChannelId: 759
   NetCoreSDK313xxInternalChannelId: 760
   NetCoreSDK314xxChannelId: 921
@@ -65,7 +61,9 @@ parameters:
   VS167ChannelId: 1011
   VS168ChannelId: 1154
   VSMasterChannelId: 1012
-  
+  VS169ChannelId: 1473
+  VS1610ChannelId: 1692
+
 stages:
 - ${{ if or(and(le(parameters.publishingInfraVersion, 2), eq(parameters.inline, 'true')), eq( parameters.enableNugetValidation, 'true'), eq(parameters.enableSigningValidation, 'true'), eq(parameters.enableSourceLinkValidation, 'true'), eq(parameters.SDLValidationParameters.enable, 'true')) }}:
   - stage: Validate
@@ -94,7 +92,7 @@ stages:
             inputs:
               filePath: $(Build.SourcesDirectory)/eng/common/post-build/check-channel-consistency.ps1
               arguments: -PromoteToChannels "$(TargetChannels)"
-                -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetDev5ChannelId}},${{parameters.NetDev6ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}},${{parameters.Net5Preview8ChannelId}},${{parameters.Net5RC1ChannelId}},${{parameters.Net5RC2ChannelId}},${{parameters.NetCoreSDK313xxChannelId}},${{parameters.NetCoreSDK313xxInternalChannelId}},${{parameters.NetCoreSDK314xxChannelId}},${{parameters.NetCoreSDK314xxInternalChannelId}},${{parameters.VS166ChannelId}},${{parameters.VS167ChannelId}},${{parameters.VS168ChannelId}},${{parameters.VSMasterChannelId}}
+                -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetDev5ChannelId}},${{parameters.NetDev6ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}},${{parameters.NetCoreSDK313xxChannelId}},${{parameters.NetCoreSDK313xxInternalChannelId}},${{parameters.NetCoreSDK314xxChannelId}},${{parameters.NetCoreSDK314xxInternalChannelId}},${{parameters.VS166ChannelId}},${{parameters.VS167ChannelId}},${{parameters.VS168ChannelId}},${{parameters.VSMasterChannelId}},${{parameters.VS169ChannelId}},${{parameters.VS1610ChannelId}}
 
     - job:
       displayName: NuGet Validation
@@ -142,16 +140,6 @@ stages:
       pool:
         vmImage: 'windows-2019'
       steps:
-        - ${{ if eq(parameters.useBuildManifest, true) }}:
-          - task: DownloadBuildArtifacts@0
-            displayName: Download build manifest
-            inputs:
-              buildType: specific
-              buildVersionToDownload: specific
-              project: $(AzDOProjectName)
-              pipeline: $(AzDOPipelineId)
-              buildId: $(AzDOBuildId)
-              artifactName: BuildManifests
         - task: DownloadBuildArtifacts@0
           displayName: Download Package Artifacts
           inputs:
@@ -161,6 +149,9 @@ stages:
             pipeline: $(AzDOPipelineId)
             buildId: $(AzDOBuildId)
             artifactName: PackageArtifacts
+            itemPattern: |
+              **
+              !**/Microsoft.SourceBuild.Intermediate.*.nupkg
 
         # This is necessary whenever we want to publish/restore to an AzDO private feed
         # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
@@ -238,7 +229,7 @@ stages:
 - ${{ if or(ge(parameters.publishingInfraVersion, 3), eq(parameters.inline, 'false')) }}:
   - stage: publish_using_darc
     ${{ if or(eq(parameters.enableNugetValidation, 'true'), eq(parameters.enableSigningValidation, 'true'), eq(parameters.enableSourceLinkValidation, 'true'), eq(parameters.SDLValidationParameters.enable, 'true')) }}:
-      dependsOn: Validate
+      dependsOn: ${{ parameters.publishDependsOn }}
     ${{ if and(ne(parameters.enableNugetValidation, 'true'), ne(parameters.enableSigningValidation, 'true'), ne(parameters.enableSourceLinkValidation, 'true'), ne(parameters.SDLValidationParameters.enable, 'true')) }}:
       dependsOn: ${{ parameters.validateDependsOn }}
     displayName: Publish using Darc
@@ -253,6 +244,7 @@ stages:
     - job:
       displayName: Publish Using Darc
       dependsOn: setupMaestroVars
+      timeoutInMinutes: 120
       variables:
         - name: BARBuildId
           value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
@@ -269,6 +261,8 @@ stages:
               -MaestroToken '$(MaestroApiAccessToken)'
               -WaitPublishingFinish ${{ parameters.waitPublishingFinish }}
               -PublishInstallersAndChecksums ${{ parameters.publishInstallersAndChecksums }}
+              -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
+              -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
 
 - ${{ if and(le(parameters.publishingInfraVersion, 2), eq(parameters.inline, 'true')) }}:
   - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
@@ -302,54 +296,6 @@ stages:
       transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6-transport/nuget/v3/index.json'
       shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json'
       symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6-symbols/nuget/v3/index.json'
-
-  - template: \eng\common\templates\post-build\channels\generic-internal-channel.yml
-    parameters:
-      BARBuildId: ${{ parameters.BARBuildId }}
-      PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}    
-      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-      dependsOn: ${{ parameters.publishDependsOn }}
-      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-      stageName: 'Net5_Preview8_Publish'
-      channelName: '.NET 5 Preview 8'
-      akaMSChannelName: 'net5/preview8'
-      channelId: ${{ parameters.Net5Preview8ChannelId }}
-      transportFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal-transport/nuget/v3/index.json'
-      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal/nuget/v3/index.json'
-      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal-symbols/nuget/v3/index.json'
-
-  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-    parameters:
-      BARBuildId: ${{ parameters.BARBuildId }}
-      PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
-      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-      dependsOn: ${{ parameters.publishDependsOn }}
-      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-      stageName: 'Net5_RC1_Publish'
-      channelName: '.NET 5 RC 1'
-      akaMSChannelName: 'net5/rc1'
-      channelId: ${{ parameters.Net5RC1ChannelId }}
-      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
-      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
-      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
-
-  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
-    parameters:
-      BARBuildId: ${{ parameters.BARBuildId }}
-      PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
-      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
-      dependsOn: ${{ parameters.publishDependsOn }}
-      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
-      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
-      stageName: 'Net5_RC2_Publish'
-      channelName: '.NET 5 RC 2'
-      akaMSChannelName: 'net5/rc2'
-      channelId: ${{ parameters.Net5RC2ChannelId }}
-      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
-      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
-      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
 
   - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
     parameters:
@@ -605,6 +551,36 @@ stages:
       stageName: 'VS_Master_Publishing'
       channelName: 'VS Master'
       channelId: ${{ parameters.VSMasterChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-transport/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-symbols/nuget/v3/index.json'
+
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      BARBuildId: ${{ parameters.BARBuildId }}
+      PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}    
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'VS_16_9_Publishing'
+      channelName: 'VS 16.9'
+      channelId: ${{ parameters.VS169ChannelId }}
+      transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-transport/nuget/v3/index.json'
+      shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
+      symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-symbols/nuget/v3/index.json'
+
+  - template: \eng\common\templates\post-build\channels\generic-public-channel.yml
+    parameters:
+      BARBuildId: ${{ parameters.BARBuildId }}
+      PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}    
+      artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+      dependsOn: ${{ parameters.publishDependsOn }}
+      publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+      symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+      stageName: 'VS_16_10_Publishing'
+      channelName: 'VS 16.10'
+      channelId: ${{ parameters.VS1610ChannelId }}
       transportFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-transport/nuget/v3/index.json'
       shippingFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
       symbolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-symbols/nuget/v3/index.json'

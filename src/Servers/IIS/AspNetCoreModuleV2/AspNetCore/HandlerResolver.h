@@ -7,7 +7,6 @@
 #include <string>
 #include "ShimOptions.h"
 #include "HostFxrResolutionResult.h"
-#include "HandleWrapper.h"
 #include "ApplicationFactory.h"
 #include "RedirectionOutput.h"
 #include "HostFxr.h"
@@ -28,7 +27,7 @@ private:
         std::wstring& handlerDllPath,
         const IHttpApplication &pApplication,
         const ShimOptions& pConfiguration,
-        std::shared_ptr<StringStreamRedirectionOutput> stringRedirectionOutput,
+        const std::shared_ptr<StringStreamRedirectionOutput>& stringRedirectionOutput,
         ErrorContext& errorContext);
 
     HMODULE m_hModule;

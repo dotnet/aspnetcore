@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 
         public int KeyDecryptionCertificateCount => _certs.Count;
 
-        public bool TryGetKeyDecryptionCertificates(X509Certificate2 certInfo, out IReadOnlyList<X509Certificate2> keyDecryptionCerts)
+        public bool TryGetKeyDecryptionCertificates(X509Certificate2 certInfo, [NotNullWhen(true)] out IReadOnlyList<X509Certificate2>? keyDecryptionCerts)
         {
             var key = GetKey(certInfo);
             var retVal = _certs.TryGetValue(key, out var keyDecryptionCertsRetVal);

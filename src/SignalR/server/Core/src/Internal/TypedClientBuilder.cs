@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         // There is one static instance of _builder per T
         private static readonly Lazy<Func<IClientProxy, T>> _builder = new Lazy<Func<IClientProxy, T>>(() => GenerateClientBuilder());
 
-        private static readonly PropertyInfo CancellationTokenNoneProperty = typeof(CancellationToken).GetProperty("None", BindingFlags.Public | BindingFlags.Static);
+        private static readonly PropertyInfo CancellationTokenNoneProperty = typeof(CancellationToken).GetProperty("None", BindingFlags.Public | BindingFlags.Static)!;
 
         private static readonly ConstructorInfo ObjectConstructor = typeof(object).GetConstructors().Single();
 
@@ -47,7 +45,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var clientType = GenerateInterfaceImplementation(moduleBuilder);
 
             var factoryMethod = clientType.GetMethod(nameof(Build), BindingFlags.Public | BindingFlags.Static);
-            return (Func<IClientProxy, T>)factoryMethod.CreateDelegate(typeof(Func<IClientProxy, T>));
+            return (Func<IClientProxy, T>)factoryMethod!.CreateDelegate(typeof(Func<IClientProxy, T>));
         }
 
         private static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder)
@@ -70,7 +68,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 BuildMethod(type, method, proxyField);
             }
 
-            return type.CreateTypeInfo();
+            return type.CreateTypeInfo()!;
         }
 
         private static IEnumerable<MethodInfo> GetAllInterfaceMethods(Type interfaceType)
@@ -124,7 +122,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var invokeMethod = typeof(IClientProxy).GetMethod(
                 nameof(IClientProxy.SendCoreAsync), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
-                new[] { typeof(string), typeof(object[]), typeof(CancellationToken) }, null);
+                new[] { typeof(string), typeof(object[]), typeof(CancellationToken) }, null)!;
 
             methodBuilder.SetReturnType(interfaceMethodInfo.ReturnType);
             methodBuilder.SetParameters(paramTypes);
@@ -163,7 +161,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             generator.Emit(OpCodes.Ldstr, methodName);
 
             // Create an new object array to hold all the parameters to this method
-            generator.Emit(OpCodes.Ldc_I4, paramTypes.Length); // Stack: 
+            generator.Emit(OpCodes.Ldc_I4, paramTypes.Length); // Stack:
             generator.Emit(OpCodes.Newarr, typeof(object)); // allocate object array
             generator.Emit(OpCodes.Stloc_0);
 
@@ -172,7 +170,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 generator.Emit(OpCodes.Ldloc_0); // Object array loaded
                 generator.Emit(OpCodes.Ldc_I4, i);
-                generator.Emit(OpCodes.Ldarg, i + 1); // i + 1 
+                generator.Emit(OpCodes.Ldarg, i + 1); // i + 1
                 generator.Emit(OpCodes.Box, paramTypes[i]);
                 generator.Emit(OpCodes.Stelem_Ref);
             }
@@ -188,7 +186,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             else
             {
                 // Get 'CancellationToken.None' and put it on the stack, for when method does not have CancellationToken
-                generator.Emit(OpCodes.Call, CancellationTokenNoneProperty.GetMethod);
+                generator.Emit(OpCodes.Call, CancellationTokenNoneProperty.GetMethod!);
             }
 
             // Send!

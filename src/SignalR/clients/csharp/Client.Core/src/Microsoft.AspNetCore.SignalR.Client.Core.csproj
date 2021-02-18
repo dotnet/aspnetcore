@@ -4,7 +4,7 @@
     <Description>Client for ASP.NET Core SignalR</Description>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.SignalR.Client</RootNamespace>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +14,7 @@
     <Compile Include="$(SignalRSharedSourceRoot)ReflectionHelper.cs" Link="ReflectionHelper.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TimerAwaitable.cs" Link="Internal\TimerAwaitable.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)AsyncEnumerableAdapters.cs" Link="Internal\AsyncEnumerableAdapters.cs" />
+    <Compile Include="$(SharedSourceRoot)OperatingSystem.cs" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
   <ItemGroup>

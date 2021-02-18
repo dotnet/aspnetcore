@@ -442,15 +442,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
-            var httpConnectionContext = new HttpConnectionContext
-            {
-                ConnectionContext = _mockConnectionContext.Object,
-                ConnectionFeatures = new FeatureCollection(),
-                ServiceContext = _serviceContext,
-                MemoryPool = _memoryPool,
-                Transport = _pair.Transport,
-                TimeoutControl = _mockTimeoutControl.Object
-            };
+            var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: _serviceContext,
+                connectionContext: _mockConnectionContext.Object,
+                transport: _pair.Transport,
+                memoryPool: _memoryPool,
+                connectionFeatures: new FeatureCollection(),
+                timeoutControl: _mockTimeoutControl.Object);
 
             _connection = new Http2Connection(httpConnectionContext);
 
@@ -525,14 +523,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             ((IRequestProcessor)_connection)?.Tick(now);
         }
 
-        protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream)
+        protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream, bool flushFrame = true)
         {
             var writableBuffer = _pair.Application.Output;
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
             writableBuffer.WriteStartStream(streamId, _hpackEncoder, GetHeadersEnumerator(headers), _headerEncodingBuffer, endStream);
-            return FlushAsync(writableBuffer);
+
+            if (flushFrame)
+            {
+                return FlushAsync(writableBuffer);
+            }
+            return Task.CompletedTask;
         }
 
         protected Task StartStreamAsync(int streamId, Span<byte> headerData, bool endStream)
@@ -923,11 +926,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendAsync(payload);
         }
 
-        protected Task SendDataAsync(int streamId, Memory<byte> data, bool endStream)
+        protected Task SendDataAsync(int streamId, Memory<byte> data, bool endStream, bool flushFrame = true)
         {
             var outputWriter = _pair.Application.Output;
             outputWriter.WriteData(streamId, data, endStream);
-            return FlushAsync(outputWriter);
+            if (flushFrame)
+            {
+                return FlushAsync(outputWriter);
+            }
+            return Task.CompletedTask;
         }
 
         protected async Task SendDataWithPaddingAsync(int streamId, Memory<byte> data, byte padLength, bool endStream)

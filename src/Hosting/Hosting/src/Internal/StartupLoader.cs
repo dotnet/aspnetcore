@@ -39,14 +39,14 @@ namespace Microsoft.AspNetCore.Hosting
         //
         // If the Startup class ConfigureServices returns an <see cref="IServiceProvider"/> and there is at least an <see cref="IStartupConfigureServicesFilter"/> registered we
         // throw as the filters can't be applied.
-        public static StartupMethods LoadMethods(IServiceProvider hostingServiceProvider, [DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName, object instance = null)
+        public static StartupMethods LoadMethods(IServiceProvider hostingServiceProvider, [DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName, object? instance = null)
         {
             var configureMethod = FindConfigureDelegate(startupType, environmentName);
 
             var servicesMethod = FindConfigureServicesDelegate(startupType, environmentName);
             var configureContainerMethod = FindConfigureContainerDelegate(startupType, environmentName);
 
-            if (instance == null && (!configureMethod.MethodInfo.IsStatic || (servicesMethod != null && !servicesMethod.MethodInfo.IsStatic)))
+            if (instance == null && (!configureMethod.MethodInfo.IsStatic || (servicesMethod?.MethodInfo != null && !servicesMethod.MethodInfo.IsStatic)))
             {
                 instance = ActivatorUtilities.GetServiceOrCreateInstance(hostingServiceProvider, startupType);
             }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Hosting
                 hostingServiceProvider,
                 servicesMethod,
                 configureContainerMethod,
-                instance);
+                instance)!;
 
             return new StartupMethods(instance, configureMethod.Build(instance), builder.Build());
         }
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Hosting
             public abstract Func<IServiceCollection, IServiceProvider> Build();
         }
 
-        private class ConfigureServicesDelegateBuilder<TContainerBuilder> : ConfigureServicesDelegateBuilder
+        private class ConfigureServicesDelegateBuilder<TContainerBuilder> : ConfigureServicesDelegateBuilder where TContainerBuilder : notnull
         {
             public ConfigureServicesDelegateBuilder(
                 IServiceProvider hostingServiceProvider,
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             Func<IServiceCollection, IServiceProvider> ConfigureServices(
-                Func<IServiceCollection, IServiceProvider> configureServicesCallback,
+                Func<IServiceCollection, IServiceProvider?> configureServicesCallback,
                 Action<object> configureContainerCallback)
             {
                 return ConfigureServicesWithContainerConfiguration;
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Hosting
                 IServiceProvider ConfigureServicesWithContainerConfiguration(IServiceCollection services)
                 {
                     // Call ConfigureServices, if that returned an IServiceProvider, we're done
-                    IServiceProvider applicationServiceProvider = configureServicesCallback.Invoke(services);
+                    var applicationServiceProvider = configureServicesCallback.Invoke(services);
 
                     if (applicationServiceProvider != null)
                     {
@@ -152,15 +152,16 @@ namespace Microsoft.AspNetCore.Hosting
                 }
             }
 
-            private Func<IServiceCollection, IServiceProvider> BuildStartupServicesFilterPipeline(Func<IServiceCollection, IServiceProvider> startup)
+            private Func<IServiceCollection, IServiceProvider?> BuildStartupServicesFilterPipeline(Func<IServiceCollection, IServiceProvider?> startup)
             {
                 return RunPipeline;
 
-                IServiceProvider RunPipeline(IServiceCollection services)
+                IServiceProvider? RunPipeline(IServiceCollection services)
                 {
 #pragma warning disable CS0612 // Type or member is obsolete
-                    var filters = HostingServiceProvider.GetRequiredService<IEnumerable<IStartupConfigureServicesFilter>>().Reverse().ToArray();
+                    var filters = HostingServiceProvider.GetRequiredService<IEnumerable<IStartupConfigureServicesFilter>>()
 #pragma warning restore CS0612 // Type or member is obsolete
+                        .ToArray();
 
                     // If there are no filters just run startup (makes IServiceProvider ConfigureServices(IServiceCollection services) work.
                     if (filters.Length == 0)
@@ -169,7 +170,7 @@ namespace Microsoft.AspNetCore.Hosting
                     }
 
                     Action<IServiceCollection> pipeline = InvokeStartup;
-                    for (int i = 0; i < filters.Length; i++)
+                    for (int i = filters.Length - 1; i >= 0; i--)
                     {
                         pipeline = filters[i].ConfigureServices(pipeline);
                     }
@@ -204,15 +205,13 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     var filters = HostingServiceProvider
 #pragma warning disable CS0612 // Type or member is obsolete
-                        .GetRequiredService<IEnumerable<IStartupConfigureContainerFilter<TContainerBuilder>>>()
+                        .GetRequiredService<IEnumerable<IStartupConfigureContainerFilter<TContainerBuilder>>>();
 #pragma warning restore CS0612 // Type or member is obsolete
-                        .Reverse()
-                        .ToArray();
 
                     Action<TContainerBuilder> pipeline = InvokeConfigureContainer;
-                    for (int i = 0; i < filters.Length; i++)
+                    foreach (var filter in filters.Reverse())
                     {
-                        pipeline = filters[i].ConfigureContainer(pipeline);
+                        pipeline = filter.ConfigureContainer(pipeline);
                     }
 
                     pipeline(containerBuilder);
@@ -281,7 +280,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         internal static ConfigureBuilder FindConfigureDelegate([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName)
         {
-            var configureMethod = FindMethod(startupType, "Configure{0}", environmentName, typeof(void), required: true);
+            var configureMethod = FindMethod(startupType, "Configure{0}", environmentName, typeof(void), required: true)!;
             return new ConfigureBuilder(configureMethod);
         }
 
@@ -303,7 +302,7 @@ namespace Microsoft.AspNetCore.Hosting
             return new ConfigureServicesBuilder(servicesMethod);
         }
 
-        private static MethodInfo FindMethod([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string methodName, string environmentName, Type returnType = null, bool required = true)
+        private static MethodInfo? FindMethod([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string methodName, string environmentName, Type? returnType = null, bool required = true)
         {
             var methodNameWithEnv = string.Format(CultureInfo.InvariantCulture, methodName, environmentName);
             var methodNameWithNoEnv = string.Format(CultureInfo.InvariantCulture, methodName, "");

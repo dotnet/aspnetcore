@@ -794,7 +794,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
             seenAttributeNames[name] = _entries.Count; // See comment in ProcessAttributes for why this is OK.
         }
 
-        void IDisposable.Dispose()
+        /// <inheritdoc />
+        public void Dispose()
         {
             _entries.Dispose();
         }

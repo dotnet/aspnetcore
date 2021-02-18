@@ -1,32 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.CertificateForwardingBuilderExtensions
-Microsoft.AspNetCore.Builder.ForwardedHeadersExtensions
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardLimit.get -> int?
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardLimit.set -> void
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedHeaders.get -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedHeaders.set -> void
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedHeadersOptions() -> void
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.RequireHeaderSymmetry.get -> bool
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.RequireHeaderSymmetry.set -> void
-Microsoft.AspNetCore.Builder.HttpMethodOverrideExtensions
-Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions
-Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions.HttpMethodOverrideOptions() -> void
-Microsoft.AspNetCore.HttpOverrides.CertificateForwardingMiddleware
-Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions
-Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions.CertificateForwardingOptions() -> void
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.None = 0 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor = 1 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost = 2 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto = 4 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware
-Microsoft.AspNetCore.HttpOverrides.HttpMethodOverrideMiddleware
-Microsoft.AspNetCore.HttpOverrides.IPNetwork
-Microsoft.AspNetCore.HttpOverrides.IPNetwork.PrefixLength.get -> int
-Microsoft.Extensions.DependencyInjection.CertificateForwardingServiceExtensions
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.AllowedHosts.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.AllowedHosts.set -> void
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedForHeaderName.get -> string!

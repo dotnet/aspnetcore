@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <param name="transportType">The name of the transport that failed to connect.</param>
         /// <param name="message">The reason the transport failed.</param>
         /// <param name="innerException">An optional extra exception if one was thrown while trying to connect.</param>
-        public TransportFailedException(string transportType, string message, Exception innerException = null)
+        public TransportFailedException(string transportType, string message, Exception? innerException = null)
             : base($"{transportType} failed: {message}", innerException)
         {
             TransportType = transportType;

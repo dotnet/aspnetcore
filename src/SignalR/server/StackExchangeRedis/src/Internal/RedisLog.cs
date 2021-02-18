@@ -12,28 +12,28 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
     // We'd end up creating separate instances of all the LoggerMessage.Define values for each Hub.
     internal static class RedisLog
     {
-        private static readonly Action<ILogger, string, string, Exception> _connectingToEndpoints =
+        private static readonly Action<ILogger, string, string, Exception?> _connectingToEndpoints =
             LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(1, "ConnectingToEndpoints"), "Connecting to Redis endpoints: {Endpoints}. Using Server Name: {ServerName}");
 
-        private static readonly Action<ILogger, Exception> _connected =
+        private static readonly Action<ILogger, Exception?> _connected =
             LoggerMessage.Define(LogLevel.Information, new EventId(2, "Connected"), "Connected to Redis.");
 
-        private static readonly Action<ILogger, string, Exception> _subscribing =
+        private static readonly Action<ILogger, string, Exception?> _subscribing =
             LoggerMessage.Define<string>(LogLevel.Trace, new EventId(3, "Subscribing"), "Subscribing to channel: {Channel}.");
 
-        private static readonly Action<ILogger, string, Exception> _receivedFromChannel =
+        private static readonly Action<ILogger, string, Exception?> _receivedFromChannel =
             LoggerMessage.Define<string>(LogLevel.Trace, new EventId(4, "ReceivedFromChannel"), "Received message from Redis channel {Channel}.");
 
-        private static readonly Action<ILogger, string, Exception> _publishToChannel =
+        private static readonly Action<ILogger, string, Exception?> _publishToChannel =
             LoggerMessage.Define<string>(LogLevel.Trace, new EventId(5, "PublishToChannel"), "Publishing message to Redis channel {Channel}.");
 
-        private static readonly Action<ILogger, string, Exception> _unsubscribe =
+        private static readonly Action<ILogger, string, Exception?> _unsubscribe =
             LoggerMessage.Define<string>(LogLevel.Trace, new EventId(6, "Unsubscribe"), "Unsubscribing from channel: {Channel}.");
 
-        private static readonly Action<ILogger, Exception> _notConnected =
+        private static readonly Action<ILogger, Exception?> _notConnected =
             LoggerMessage.Define(LogLevel.Error, new EventId(7, "Connected"), "Not connected to Redis.");
 
-        private static readonly Action<ILogger, Exception> _connectionRestored =
+        private static readonly Action<ILogger, Exception?> _connectionRestored =
             LoggerMessage.Define(LogLevel.Information, new EventId(8, "ConnectionRestored"), "Connection to Redis restored.");
 
         private static readonly Action<ILogger, Exception> _connectionFailed =
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
         }
 
         // This isn't DefineMessage-based because it's just the simple TextWriter logging from ConnectionMultiplexer
-        public static void ConnectionMultiplexerMessage(ILogger logger, string message)
+        public static void ConnectionMultiplexerMessage(ILogger logger, string? message)
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {

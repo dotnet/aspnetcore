@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27374")]
         public void CachesResourcesAfterFirstLoad()
         {
             // On the first load, we have to fetch everything
@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // On subsequent loads, we skip the items referenced from blazor.boot.json
             // which includes .dll files and dotnet.wasm
             Navigate("about:blank");
+            Browser.Equal(string.Empty, () => Browser.Title);
             Navigate("/");
             WaitUntilLoaded();
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20154")]
         public void IncrementallyUpdatesCache()
         {
             // Perform a first load to populate the cache
@@ -87,6 +88,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // On the next load, we'll fetch only the items we need (not things already cached)
             GetAndClearRequestedPaths();
             Navigate("about:blank");
+            Browser.Equal(string.Empty, () => Browser.Title);
             Navigate("/");
             WaitUntilLoaded();
             var subsequentResourcesRequested = GetAndClearRequestedPaths();

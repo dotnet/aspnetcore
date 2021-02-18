@@ -48,7 +48,7 @@
       "src\\Middleware\\Diagnostics.Abstractions\\src\\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj",
       "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
       "src\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",
-      "src\\Html\\Abstractions\\src\\Microsoft.AspNetCore.Html.Abstractions.csproj",
+      "src\\Html.Abstractions\\src\\Microsoft.AspNetCore.Html.Abstractions.csproj",
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
       "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",

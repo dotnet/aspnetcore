@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
@@ -20,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <param name="bindingSource">
         /// The <see cref="BindingSource"/> to assign to the given <paramref name="type"/>.
         /// </param>
-        public BindingSourceMetadataProvider(Type type, BindingSource bindingSource)
+        public BindingSourceMetadataProvider(Type type, BindingSource? bindingSource)
         {
             if (type == null)
             {
@@ -41,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <summary>
         /// The <see cref="BindingSource"/> to assign to the Type.
         /// </summary>
-        public BindingSource BindingSource { get; }
+        public BindingSource? BindingSource { get; }
 
         /// <inheritdoc />
         public void CreateBindingMetadata(BindingMetadataProviderContext context)

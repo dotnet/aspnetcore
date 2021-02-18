@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>ASP.NET Core middleware to propagate HTTP headers from the incoming request to the outgoing HTTP Client requests</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;httpclient</PackageTags>
     <Nullable>enable</Nullable>

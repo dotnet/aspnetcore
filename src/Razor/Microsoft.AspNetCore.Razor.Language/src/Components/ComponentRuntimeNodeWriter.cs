@@ -404,21 +404,48 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
             else
             {
+                var parameters = GetTypeInferenceMethodParameters(node.TypeInferenceNode);
+
+                // If this component is going to cascade any of its generic types, we have to split its type inference
+                // into two parts. First we call an inference method that captures all the parameters in local variables,
+                // then we use those to call the real type inference method that emits the component. The reason for this
+                // is so the captured variables can be used by descendants without re-evaluating the expressions.
+                CodeWriterExtensions.CSharpCodeWritingScope? typeInferenceCaptureScope = null;
+                if (node.Component.SuppliesCascadingGenericParameters())
+                {
+                    typeInferenceCaptureScope = context.CodeWriter.BuildScope();
+                    context.CodeWriter.Write(node.TypeInferenceNode.FullTypeName);
+                    context.CodeWriter.Write(".");
+                    context.CodeWriter.Write(node.TypeInferenceNode.MethodName);
+                    context.CodeWriter.Write("_CaptureParameters(");
+                    var isFirst = true;
+                    foreach (var parameter in parameters.Where(p => p.UsedForTypeInference))
+                    {
+                        if (isFirst)
+                        {
+                            isFirst = false;
+                        }
+                        else
+                        {
+                            context.CodeWriter.Write(", ");
+                        }
+
+                        WriteTypeInferenceMethodParameterInnards(context, parameter);
+                        context.CodeWriter.Write(", out var ");
+
+                        var variableName = $"__typeInferenceArg_{_scopeStack.Depth}_{parameter.ParameterName}";
+                        context.CodeWriter.Write(variableName);
+
+                        UseCapturedCascadingGenericParameterVariable(node, parameter, variableName);
+                    }
+                    context.CodeWriter.WriteLine(");");
+                }
+
                 // When we're doing type inference, we can't write all of the code inline to initialize
                 // the component on the builder. We generate a method elsewhere, and then pass all of the information
                 // to that method. We pass in all of the attribute values + the sequence numbers.
                 //
                 // __Blazor.MyComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, ..., 2, ..., 3, ...);
-
-                // Preserve order of attributes and splats
-                var attributes = node.Children.Where(n =>
-                {
-                    return n is ComponentAttributeIntermediateNode || n is SplatIntermediateNode;
-                }).ToList();
-                var childContents = node.ChildContents.ToList();
-                var captures = node.Captures.ToList();
-                var setKeys = node.SetKeys.ToList();
-                var remaining = attributes.Count + childContents.Count + captures.Count + setKeys.Count;
 
                 context.CodeWriter.Write(node.TypeInferenceNode.FullTypeName);
                 context.CodeWriter.Write(".");
@@ -429,76 +456,70 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 context.CodeWriter.Write(", ");
 
                 context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
-                context.CodeWriter.Write(", ");
 
-                for (var i = 0; i < attributes.Count; i++)
+                foreach (var parameter in parameters)
                 {
-                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
                     context.CodeWriter.Write(", ");
 
-                    // Don't type check generics, since we can't actually write the type name.
-                    // The type checking with happen anyway since we defined a method and we're generating
-                    // a call to it.
-                    if (attributes[i] is ComponentAttributeIntermediateNode attribute)
+                    if (!string.IsNullOrEmpty(parameter.SeqName))
                     {
-                        WriteComponentAttributeInnards(context, attribute, canTypeCheck: false);
-                    }
-                    else if (attributes[i] is SplatIntermediateNode splat)
-                    {
-                        WriteSplatInnards(context, splat, canTypeCheck: false);
-                    }
-
-                    remaining--;
-                    if (remaining > 0)
-                    {
+                        context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
                         context.CodeWriter.Write(", ");
                     }
-                }
 
-                for (var i = 0; i < childContents.Count; i++)
-                {
-                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
-                    context.CodeWriter.Write(", ");
-
-                    WriteComponentChildContentInnards(context, childContents[i]);
-
-                    remaining--;
-                    if (remaining > 0)
-                    {
-                        context.CodeWriter.Write(", ");
-                    }
-                }
-
-                for (var i = 0; i < setKeys.Count; i++)
-                {
-                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
-                    context.CodeWriter.Write(", ");
-
-                    WriteSetKeyInnards(context, setKeys[i]);
-
-                    remaining--;
-                    if (remaining > 0)
-                    {
-                        context.CodeWriter.Write(", ");
-                    }
-                }
-
-                for (var i = 0; i < captures.Count; i++)
-                {
-                    context.CodeWriter.Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture));
-                    context.CodeWriter.Write(", ");
-
-                    WriteReferenceCaptureInnards(context, captures[i], shouldTypeCheck: false);
-
-                    remaining--;
-                    if (remaining > 0)
-                    {
-                        context.CodeWriter.Write(", ");
-                    }
+                    WriteTypeInferenceMethodParameterInnards(context, parameter);
                 }
 
                 context.CodeWriter.Write(");");
                 context.CodeWriter.WriteLine();
+
+                if (typeInferenceCaptureScope.HasValue)
+                {
+                    foreach (var localToClear in parameters.Select(p => p.Source).OfType<TypeInferenceCapturedVariable>())
+                    {
+                        // Ensure we're not interfering with the GC lifetime of these captured values
+                        // We don't need the values any longer (code in closures only uses its types for compile-time inference)
+                        context.CodeWriter.Write(localToClear.VariableName);
+                        context.CodeWriter.WriteLine(" = default;");
+                    }
+                    typeInferenceCaptureScope.Value.Dispose();
+                }
+            }
+        }
+
+        private void WriteTypeInferenceMethodParameterInnards(CodeRenderingContext context, TypeInferenceMethodParameter parameter)
+        {
+            switch (parameter.Source)
+            {
+                case ComponentAttributeIntermediateNode attribute:
+                    // Don't type check generics, since we can't actually write the type name.
+                    // The type checking with happen anyway since we defined a method and we're generating
+                    // a call to it.
+                    WriteComponentAttributeInnards(context, attribute, canTypeCheck: false);
+                    break;
+                case SplatIntermediateNode splat:
+                    WriteSplatInnards(context, splat, canTypeCheck: false);
+                    break;
+                case ComponentChildContentIntermediateNode childNode:
+                    WriteComponentChildContentInnards(context, childNode);
+                    break;
+                case SetKeyIntermediateNode setKey:
+                    WriteSetKeyInnards(context, setKey);
+                    break;
+                case ReferenceCaptureIntermediateNode capture:
+                    WriteReferenceCaptureInnards(context, capture, shouldTypeCheck: false);
+                    break;
+                case CascadingGenericTypeParameter syntheticArg:
+                    // The value should be populated before we use it, because we emit code for creating ancestors
+                    // first, and that's where it's populated. However if this goes wrong somehow, we don't want to
+                    // throw, so use a fallback
+                    context.CodeWriter.Write(syntheticArg.ValueExpression ?? "default");
+                    break;
+                case TypeInferenceCapturedVariable capturedVariable:
+                    context.CodeWriter.Write(capturedVariable.VariableName);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Not implemented: type inference method parameter from source {parameter.Source}");
             }
         }
 

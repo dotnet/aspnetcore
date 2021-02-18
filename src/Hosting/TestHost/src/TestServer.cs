@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -18,9 +18,36 @@ namespace Microsoft.AspNetCore.TestHost
     /// </summary>
     public class TestServer : IServer
     {
-        private IWebHost _hostInstance;
+        private IWebHost? _hostInstance;
         private bool _disposed = false;
-        private ApplicationWrapper _application;
+        private ApplicationWrapper? _application;
+
+        /// <summary>
+        /// For use with IHostBuilder.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="optionsAccessor"></param>
+        public TestServer(IServiceProvider services, IOptions<TestServerOptions> optionsAccessor)
+            : this(services, new FeatureCollection(), optionsAccessor)
+        {
+
+        }
+
+        /// <summary>
+        /// For use with IHostBuilder.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="featureCollection"></param>
+        /// <param name="optionsAccessor"></param>
+        public TestServer(IServiceProvider services, IFeatureCollection featureCollection, IOptions<TestServerOptions> optionsAccessor)
+        {
+            Services = services ?? throw new ArgumentNullException(nameof(services));
+            Features = featureCollection ?? throw new ArgumentNullException(nameof(featureCollection));
+            var options = optionsAccessor?.Value ?? throw new ArgumentNullException(nameof(optionsAccessor));
+            AllowSynchronousIO = options.AllowSynchronousIO;
+            PreserveExecutionContext = options.PreserveExecutionContext;
+            BaseAddress = options.BaseAddress;
+    }
 
         /// <summary>
         /// For use with IHostBuilder.
@@ -37,6 +64,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// <param name="services"></param>
         /// <param name="featureCollection"></param>
         public TestServer(IServiceProvider services, IFeatureCollection featureCollection)
+            : this(services, featureCollection, Options.Create(new TestServerOptions()))
         {
             Services = services ?? throw new ArgumentNullException(nameof(services));
             Features = featureCollection ?? throw new ArgumentNullException(nameof(featureCollection));

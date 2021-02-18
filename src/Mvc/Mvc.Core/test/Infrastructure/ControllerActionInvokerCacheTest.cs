@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     new FilterDescriptor(filter, FilterScope.Action)
                 });
             var controllerActionInvokerCache = CreateControllerActionInvokerCache(
-                controllerContext,
                 new[] { new DefaultFilterProvider() });
 
             // Act
@@ -50,7 +49,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     new FilterDescriptor(filter, FilterScope.Action)
                 });
             var controllerActionInvokerCache = CreateControllerActionInvokerCache(
-                controllerContext,
                 new[] { new DefaultFilterProvider() });
 
             // Act
@@ -93,17 +91,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         private static ControllerActionInvokerCache CreateControllerActionInvokerCache(
-            ControllerContext controllerContext,
             IFilterProvider[] filterProviders)
         {
-            var descriptorProvider = new CustomActionDescriptorCollectionProvider(
-                new[] { controllerContext.ActionDescriptor });
             var modelMetadataProvider = new EmptyModelMetadataProvider();
             var modelBinderFactory = TestModelBinderFactory.CreateDefault();
             var mvcOptions = Options.Create(new MvcOptions());
 
             return new ControllerActionInvokerCache(
-                descriptorProvider,
                 new ParameterBinder(
                     modelMetadataProvider,
                     modelBinderFactory,

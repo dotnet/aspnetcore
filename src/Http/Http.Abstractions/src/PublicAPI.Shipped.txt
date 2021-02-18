@@ -1,1 +1,453 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.EndpointBuilder
+Microsoft.AspNetCore.Builder.EndpointBuilder.DisplayName.get -> string?
+Microsoft.AspNetCore.Builder.EndpointBuilder.DisplayName.set -> void
+Microsoft.AspNetCore.Builder.EndpointBuilder.EndpointBuilder() -> void
+Microsoft.AspNetCore.Builder.EndpointBuilder.Metadata.get -> System.Collections.Generic.IList<object!>!
+Microsoft.AspNetCore.Builder.EndpointBuilder.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate?
+Microsoft.AspNetCore.Builder.EndpointBuilder.RequestDelegate.set -> void
+Microsoft.AspNetCore.Builder.Extensions.MapMiddleware
+Microsoft.AspNetCore.Builder.Extensions.MapMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Builder.Extensions.MapMiddleware.MapMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Builder.Extensions.MapOptions! options) -> void
+Microsoft.AspNetCore.Builder.Extensions.MapOptions
+Microsoft.AspNetCore.Builder.Extensions.MapOptions.Branch.get -> Microsoft.AspNetCore.Http.RequestDelegate?
+Microsoft.AspNetCore.Builder.Extensions.MapOptions.Branch.set -> void
+Microsoft.AspNetCore.Builder.Extensions.MapOptions.MapOptions() -> void
+Microsoft.AspNetCore.Builder.Extensions.MapOptions.PathMatch.get -> Microsoft.AspNetCore.Http.PathString
+Microsoft.AspNetCore.Builder.Extensions.MapOptions.PathMatch.set -> void
+Microsoft.AspNetCore.Builder.Extensions.MapOptions.PreserveMatchedPathSegment.get -> bool
+Microsoft.AspNetCore.Builder.Extensions.MapOptions.PreserveMatchedPathSegment.set -> void
+Microsoft.AspNetCore.Builder.Extensions.MapWhenMiddleware
+Microsoft.AspNetCore.Builder.Extensions.MapWhenMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Builder.Extensions.MapWhenMiddleware.MapWhenMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Builder.Extensions.MapWhenOptions! options) -> void
+Microsoft.AspNetCore.Builder.Extensions.MapWhenOptions
+Microsoft.AspNetCore.Builder.Extensions.MapWhenOptions.Branch.get -> Microsoft.AspNetCore.Http.RequestDelegate?
+Microsoft.AspNetCore.Builder.Extensions.MapWhenOptions.Branch.set -> void
+Microsoft.AspNetCore.Builder.Extensions.MapWhenOptions.MapWhenOptions() -> void
+Microsoft.AspNetCore.Builder.Extensions.MapWhenOptions.Predicate.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, bool>?
+Microsoft.AspNetCore.Builder.Extensions.MapWhenOptions.Predicate.set -> void
+Microsoft.AspNetCore.Builder.Extensions.UsePathBaseMiddleware
+Microsoft.AspNetCore.Builder.Extensions.UsePathBaseMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Builder.Extensions.UsePathBaseMiddleware.UsePathBaseMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Http.PathString pathBase) -> void
+Microsoft.AspNetCore.Builder.IApplicationBuilder
+Microsoft.AspNetCore.Builder.IApplicationBuilder.ApplicationServices.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Builder.IApplicationBuilder.ApplicationServices.set -> void
+Microsoft.AspNetCore.Builder.IApplicationBuilder.Build() -> Microsoft.AspNetCore.Http.RequestDelegate!
+Microsoft.AspNetCore.Builder.IApplicationBuilder.New() -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+Microsoft.AspNetCore.Builder.IApplicationBuilder.Properties.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Microsoft.AspNetCore.Builder.IApplicationBuilder.ServerFeatures.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
+Microsoft.AspNetCore.Builder.IApplicationBuilder.Use(System.Func<Microsoft.AspNetCore.Http.RequestDelegate!, Microsoft.AspNetCore.Http.RequestDelegate!>! middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+Microsoft.AspNetCore.Builder.IEndpointConventionBuilder
+Microsoft.AspNetCore.Builder.IEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+Microsoft.AspNetCore.Builder.MapExtensions
+Microsoft.AspNetCore.Builder.MapWhenExtensions
+Microsoft.AspNetCore.Builder.RunExtensions
+Microsoft.AspNetCore.Builder.UseExtensions
+Microsoft.AspNetCore.Builder.UseMiddlewareExtensions
+Microsoft.AspNetCore.Builder.UsePathBaseExtensions
+Microsoft.AspNetCore.Builder.UseWhenExtensions
+Microsoft.AspNetCore.Cors.Infrastructure.ICorsMetadata
+Microsoft.AspNetCore.Http.BadHttpRequestException
+Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message) -> void
+Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message, System.Exception! innerException) -> void
+Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message, int statusCode) -> void
+Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message, int statusCode, System.Exception! innerException) -> void
+Microsoft.AspNetCore.Http.BadHttpRequestException.StatusCode.get -> int
+Microsoft.AspNetCore.Http.ConnectionInfo
+Microsoft.AspNetCore.Http.ConnectionInfo.ConnectionInfo() -> void
+Microsoft.AspNetCore.Http.CookieBuilder
+Microsoft.AspNetCore.Http.CookieBuilder.Build(Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Http.CookieOptions!
+Microsoft.AspNetCore.Http.CookieBuilder.CookieBuilder() -> void
+Microsoft.AspNetCore.Http.CookieSecurePolicy
+Microsoft.AspNetCore.Http.CookieSecurePolicy.Always = 1 -> Microsoft.AspNetCore.Http.CookieSecurePolicy
+Microsoft.AspNetCore.Http.CookieSecurePolicy.None = 2 -> Microsoft.AspNetCore.Http.CookieSecurePolicy
+Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest = 0 -> Microsoft.AspNetCore.Http.CookieSecurePolicy
+Microsoft.AspNetCore.Http.Endpoint
+Microsoft.AspNetCore.Http.Endpoint.DisplayName.get -> string?
+Microsoft.AspNetCore.Http.Endpoint.Endpoint(Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, string? displayName) -> void
+Microsoft.AspNetCore.Http.Endpoint.Metadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection!
+Microsoft.AspNetCore.Http.Endpoint.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate!
+Microsoft.AspNetCore.Http.EndpointHttpContextExtensions
+Microsoft.AspNetCore.Http.EndpointMetadataCollection
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Count.get -> int
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.EndpointMetadataCollection(System.Collections.Generic.IEnumerable<object!>! items) -> void
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.EndpointMetadataCollection(params object![]! items) -> void
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object?
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Dispose() -> void
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.MoveNext() -> bool
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Reset() -> void
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetEnumerator() -> Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetMetadata<T>() -> T?
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetOrderedMetadata<T>() -> System.Collections.Generic.IReadOnlyList<T!>!
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.this[int index].get -> object!
+Microsoft.AspNetCore.Http.Features.IEndpointFeature
+Microsoft.AspNetCore.Http.Features.IEndpointFeature.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
+Microsoft.AspNetCore.Http.Features.IEndpointFeature.Endpoint.set -> void
+Microsoft.AspNetCore.Http.Features.IRouteValuesFeature
+Microsoft.AspNetCore.Http.Features.IRouteValuesFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+Microsoft.AspNetCore.Http.Features.IRouteValuesFeature.RouteValues.set -> void
+Microsoft.AspNetCore.Http.FragmentString
+Microsoft.AspNetCore.Http.FragmentString.Equals(Microsoft.AspNetCore.Http.FragmentString other) -> bool
+Microsoft.AspNetCore.Http.FragmentString.FragmentString(string! value) -> void
+Microsoft.AspNetCore.Http.FragmentString.HasValue.get -> bool
+Microsoft.AspNetCore.Http.FragmentString.ToUriComponent() -> string!
+Microsoft.AspNetCore.Http.FragmentString.Value.get -> string!
+Microsoft.AspNetCore.Http.HeaderDictionaryExtensions
+Microsoft.AspNetCore.Http.HostString
+Microsoft.AspNetCore.Http.HostString.Equals(Microsoft.AspNetCore.Http.HostString other) -> bool
+Microsoft.AspNetCore.Http.HostString.HasValue.get -> bool
+Microsoft.AspNetCore.Http.HostString.Host.get -> string!
+Microsoft.AspNetCore.Http.HostString.HostString(string! host, int port) -> void
+Microsoft.AspNetCore.Http.HostString.HostString(string! value) -> void
+Microsoft.AspNetCore.Http.HostString.Port.get -> int?
+Microsoft.AspNetCore.Http.HostString.ToUriComponent() -> string!
+Microsoft.AspNetCore.Http.HostString.Value.get -> string!
+Microsoft.AspNetCore.Http.HttpContext
+Microsoft.AspNetCore.Http.HttpContext.HttpContext() -> void
+Microsoft.AspNetCore.Http.HttpMethods
+Microsoft.AspNetCore.Http.HttpProtocol
+Microsoft.AspNetCore.Http.HttpRequest
+Microsoft.AspNetCore.Http.HttpRequest.HttpRequest() -> void
+Microsoft.AspNetCore.Http.HttpResponse
+Microsoft.AspNetCore.Http.HttpResponse.HttpResponse() -> void
+Microsoft.AspNetCore.Http.HttpResponseWritingExtensions
+Microsoft.AspNetCore.Http.IHttpContextAccessor
+Microsoft.AspNetCore.Http.IHttpContextAccessor.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext?
+Microsoft.AspNetCore.Http.IHttpContextAccessor.HttpContext.set -> void
+Microsoft.AspNetCore.Http.IHttpContextFactory
+Microsoft.AspNetCore.Http.IHttpContextFactory.Create(Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection) -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Http.IHttpContextFactory.Dispose(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
+Microsoft.AspNetCore.Http.IMiddleware
+Microsoft.AspNetCore.Http.IMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.RequestDelegate! next) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.IMiddlewareFactory
+Microsoft.AspNetCore.Http.IMiddlewareFactory.Create(System.Type! middlewareType) -> Microsoft.AspNetCore.Http.IMiddleware?
+Microsoft.AspNetCore.Http.IMiddlewareFactory.Release(Microsoft.AspNetCore.Http.IMiddleware! middleware) -> void
+Microsoft.AspNetCore.Http.PathString
+Microsoft.AspNetCore.Http.PathString.Add(Microsoft.AspNetCore.Http.PathString other) -> Microsoft.AspNetCore.Http.PathString
+Microsoft.AspNetCore.Http.PathString.Add(Microsoft.AspNetCore.Http.QueryString other) -> string!
+Microsoft.AspNetCore.Http.PathString.Equals(Microsoft.AspNetCore.Http.PathString other) -> bool
+Microsoft.AspNetCore.Http.PathString.Equals(Microsoft.AspNetCore.Http.PathString other, System.StringComparison comparisonType) -> bool
+Microsoft.AspNetCore.Http.PathString.HasValue.get -> bool
+Microsoft.AspNetCore.Http.PathString.PathString(string? value) -> void
+Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other) -> bool
+Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, System.StringComparison comparisonType) -> bool
+Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, System.StringComparison comparisonType, out Microsoft.AspNetCore.Http.PathString matched, out Microsoft.AspNetCore.Http.PathString remaining) -> bool
+Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, System.StringComparison comparisonType, out Microsoft.AspNetCore.Http.PathString remaining) -> bool
+Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, out Microsoft.AspNetCore.Http.PathString matched, out Microsoft.AspNetCore.Http.PathString remaining) -> bool
+Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, out Microsoft.AspNetCore.Http.PathString remaining) -> bool
+Microsoft.AspNetCore.Http.PathString.ToUriComponent() -> string!
+Microsoft.AspNetCore.Http.PathString.Value.get -> string?
+Microsoft.AspNetCore.Http.QueryString
+Microsoft.AspNetCore.Http.QueryString.Add(Microsoft.AspNetCore.Http.QueryString other) -> Microsoft.AspNetCore.Http.QueryString
+Microsoft.AspNetCore.Http.QueryString.Add(string! name, string! value) -> Microsoft.AspNetCore.Http.QueryString
+Microsoft.AspNetCore.Http.QueryString.Equals(Microsoft.AspNetCore.Http.QueryString other) -> bool
+Microsoft.AspNetCore.Http.QueryString.HasValue.get -> bool
+Microsoft.AspNetCore.Http.QueryString.QueryString(string? value) -> void
+Microsoft.AspNetCore.Http.QueryString.ToUriComponent() -> string!
+Microsoft.AspNetCore.Http.QueryString.Value.get -> string?
+Microsoft.AspNetCore.Http.RequestDelegate
+Microsoft.AspNetCore.Http.RequestTrailerExtensions
+Microsoft.AspNetCore.Http.ResponseTrailerExtensions
+Microsoft.AspNetCore.Http.StatusCodes
+Microsoft.AspNetCore.Http.WebSocketManager
+Microsoft.AspNetCore.Http.WebSocketManager.WebSocketManager() -> void
+Microsoft.AspNetCore.Routing.RouteValueDictionary
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Add(string! key, object? value) -> void
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Clear() -> void
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Comparer.get -> System.Collections.Generic.IEqualityComparer<string!>!
+Microsoft.AspNetCore.Routing.RouteValueDictionary.ContainsKey(string! key) -> bool
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Count.get -> int
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string!, object?>
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Dispose() -> void
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Enumerator(Microsoft.AspNetCore.Routing.RouteValueDictionary! dictionary) -> void
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.MoveNext() -> bool
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Reset() -> void
+Microsoft.AspNetCore.Routing.RouteValueDictionary.GetEnumerator() -> Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Keys.get -> System.Collections.Generic.ICollection<string!>!
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Remove(string! key) -> bool
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Remove(string! key, out object? value) -> bool
+Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary() -> void
+Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(object? values) -> void
+Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object! value) -> bool
+Microsoft.AspNetCore.Routing.RouteValueDictionary.TryGetValue(string! key, out object? value) -> bool
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Values.get -> System.Collections.Generic.ICollection<object?>!
+Microsoft.AspNetCore.Routing.RouteValueDictionary.this[string! key].get -> object?
+Microsoft.AspNetCore.Routing.RouteValueDictionary.this[string! key].set -> void
+abstract Microsoft.AspNetCore.Builder.EndpointBuilder.Build() -> Microsoft.AspNetCore.Http.Endpoint!
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.ClientCertificate.get -> System.Security.Cryptography.X509Certificates.X509Certificate2?
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.ClientCertificate.set -> void
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.GetClientCertificateAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Security.Cryptography.X509Certificates.X509Certificate2?>!
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.Id.get -> string!
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.Id.set -> void
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.LocalIpAddress.get -> System.Net.IPAddress?
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.LocalIpAddress.set -> void
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.LocalPort.get -> int
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.LocalPort.set -> void
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.RemoteIpAddress.get -> System.Net.IPAddress?
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.RemoteIpAddress.set -> void
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.RemotePort.get -> int
+abstract Microsoft.AspNetCore.Http.ConnectionInfo.RemotePort.set -> void
+abstract Microsoft.AspNetCore.Http.HttpContext.Abort() -> void
+abstract Microsoft.AspNetCore.Http.HttpContext.Connection.get -> Microsoft.AspNetCore.Http.ConnectionInfo!
+abstract Microsoft.AspNetCore.Http.HttpContext.Features.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
+abstract Microsoft.AspNetCore.Http.HttpContext.Items.get -> System.Collections.Generic.IDictionary<object!, object?>!
+abstract Microsoft.AspNetCore.Http.HttpContext.Items.set -> void
+abstract Microsoft.AspNetCore.Http.HttpContext.Request.get -> Microsoft.AspNetCore.Http.HttpRequest!
+abstract Microsoft.AspNetCore.Http.HttpContext.RequestAborted.get -> System.Threading.CancellationToken
+abstract Microsoft.AspNetCore.Http.HttpContext.RequestAborted.set -> void
+abstract Microsoft.AspNetCore.Http.HttpContext.RequestServices.get -> System.IServiceProvider!
+abstract Microsoft.AspNetCore.Http.HttpContext.RequestServices.set -> void
+abstract Microsoft.AspNetCore.Http.HttpContext.Response.get -> Microsoft.AspNetCore.Http.HttpResponse!
+abstract Microsoft.AspNetCore.Http.HttpContext.Session.get -> Microsoft.AspNetCore.Http.ISession!
+abstract Microsoft.AspNetCore.Http.HttpContext.Session.set -> void
+abstract Microsoft.AspNetCore.Http.HttpContext.TraceIdentifier.get -> string!
+abstract Microsoft.AspNetCore.Http.HttpContext.TraceIdentifier.set -> void
+abstract Microsoft.AspNetCore.Http.HttpContext.User.get -> System.Security.Claims.ClaimsPrincipal!
+abstract Microsoft.AspNetCore.Http.HttpContext.User.set -> void
+abstract Microsoft.AspNetCore.Http.HttpContext.WebSockets.get -> Microsoft.AspNetCore.Http.WebSocketManager!
+abstract Microsoft.AspNetCore.Http.HttpRequest.Body.get -> System.IO.Stream!
+abstract Microsoft.AspNetCore.Http.HttpRequest.Body.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.ContentLength.get -> long?
+abstract Microsoft.AspNetCore.Http.HttpRequest.ContentLength.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.ContentType.get -> string!
+abstract Microsoft.AspNetCore.Http.HttpRequest.ContentType.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.Cookies.get -> Microsoft.AspNetCore.Http.IRequestCookieCollection!
+abstract Microsoft.AspNetCore.Http.HttpRequest.Cookies.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.Form.get -> Microsoft.AspNetCore.Http.IFormCollection!
+abstract Microsoft.AspNetCore.Http.HttpRequest.Form.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.HasFormContentType.get -> bool
+abstract Microsoft.AspNetCore.Http.HttpRequest.Headers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
+abstract Microsoft.AspNetCore.Http.HttpRequest.Host.get -> Microsoft.AspNetCore.Http.HostString
+abstract Microsoft.AspNetCore.Http.HttpRequest.Host.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+abstract Microsoft.AspNetCore.Http.HttpRequest.IsHttps.get -> bool
+abstract Microsoft.AspNetCore.Http.HttpRequest.IsHttps.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.Method.get -> string!
+abstract Microsoft.AspNetCore.Http.HttpRequest.Method.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.Path.get -> Microsoft.AspNetCore.Http.PathString
+abstract Microsoft.AspNetCore.Http.HttpRequest.Path.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.PathBase.get -> Microsoft.AspNetCore.Http.PathString
+abstract Microsoft.AspNetCore.Http.HttpRequest.PathBase.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.Protocol.get -> string!
+abstract Microsoft.AspNetCore.Http.HttpRequest.Protocol.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.Query.get -> Microsoft.AspNetCore.Http.IQueryCollection!
+abstract Microsoft.AspNetCore.Http.HttpRequest.Query.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.QueryString.get -> Microsoft.AspNetCore.Http.QueryString
+abstract Microsoft.AspNetCore.Http.HttpRequest.QueryString.set -> void
+abstract Microsoft.AspNetCore.Http.HttpRequest.ReadFormAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Http.IFormCollection!>!
+abstract Microsoft.AspNetCore.Http.HttpRequest.Scheme.get -> string!
+abstract Microsoft.AspNetCore.Http.HttpRequest.Scheme.set -> void
+abstract Microsoft.AspNetCore.Http.HttpResponse.Body.get -> System.IO.Stream!
+abstract Microsoft.AspNetCore.Http.HttpResponse.Body.set -> void
+abstract Microsoft.AspNetCore.Http.HttpResponse.ContentLength.get -> long?
+abstract Microsoft.AspNetCore.Http.HttpResponse.ContentLength.set -> void
+abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string!
+abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.set -> void
+abstract Microsoft.AspNetCore.Http.HttpResponse.Cookies.get -> Microsoft.AspNetCore.Http.IResponseCookies!
+abstract Microsoft.AspNetCore.Http.HttpResponse.HasStarted.get -> bool
+abstract Microsoft.AspNetCore.Http.HttpResponse.Headers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
+abstract Microsoft.AspNetCore.Http.HttpResponse.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+abstract Microsoft.AspNetCore.Http.HttpResponse.OnCompleted(System.Func<object!, System.Threading.Tasks.Task!>! callback, object! state) -> void
+abstract Microsoft.AspNetCore.Http.HttpResponse.OnStarting(System.Func<object!, System.Threading.Tasks.Task!>! callback, object! state) -> void
+abstract Microsoft.AspNetCore.Http.HttpResponse.Redirect(string! location, bool permanent) -> void
+abstract Microsoft.AspNetCore.Http.HttpResponse.StatusCode.get -> int
+abstract Microsoft.AspNetCore.Http.HttpResponse.StatusCode.set -> void
+abstract Microsoft.AspNetCore.Http.WebSocketManager.AcceptWebSocketAsync(string? subProtocol) -> System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket!>!
+abstract Microsoft.AspNetCore.Http.WebSocketManager.IsWebSocketRequest.get -> bool
+abstract Microsoft.AspNetCore.Http.WebSocketManager.WebSocketRequestedProtocols.get -> System.Collections.Generic.IList<string!>!
+const Microsoft.AspNetCore.Http.StatusCodes.Status100Continue = 100 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status101SwitchingProtocols = 101 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status102Processing = 102 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status200OK = 200 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status201Created = 201 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status202Accepted = 202 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status203NonAuthoritative = 203 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status204NoContent = 204 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status205ResetContent = 205 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status206PartialContent = 206 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status207MultiStatus = 207 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status208AlreadyReported = 208 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status226IMUsed = 226 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status300MultipleChoices = 300 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status301MovedPermanently = 301 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status302Found = 302 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status303SeeOther = 303 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status304NotModified = 304 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status305UseProxy = 305 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status306SwitchProxy = 306 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status307TemporaryRedirect = 307 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status308PermanentRedirect = 308 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest = 400 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status401Unauthorized = 401 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status402PaymentRequired = 402 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status403Forbidden = 403 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status404NotFound = 404 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status405MethodNotAllowed = 405 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status406NotAcceptable = 406 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status407ProxyAuthenticationRequired = 407 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status408RequestTimeout = 408 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status409Conflict = 409 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status410Gone = 410 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status411LengthRequired = 411 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status412PreconditionFailed = 412 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status413PayloadTooLarge = 413 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status413RequestEntityTooLarge = 413 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status414RequestUriTooLong = 414 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status414UriTooLong = 414 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status415UnsupportedMediaType = 415 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status416RangeNotSatisfiable = 416 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status416RequestedRangeNotSatisfiable = 416 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status417ExpectationFailed = 417 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status418ImATeapot = 418 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status419AuthenticationTimeout = 419 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status421MisdirectedRequest = 421 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status422UnprocessableEntity = 422 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status423Locked = 423 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status424FailedDependency = 424 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status426UpgradeRequired = 426 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status428PreconditionRequired = 428 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status429TooManyRequests = 429 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status431RequestHeaderFieldsTooLarge = 431 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status451UnavailableForLegalReasons = 451 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError = 500 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status501NotImplemented = 501 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status502BadGateway = 502 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status503ServiceUnavailable = 503 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status504GatewayTimeout = 504 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status505HttpVersionNotsupported = 505 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status506VariantAlsoNegotiates = 506 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status507InsufficientStorage = 507 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status508LoopDetected = 508 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status510NotExtended = 510 -> int
+const Microsoft.AspNetCore.Http.StatusCodes.Status511NetworkAuthenticationRequired = 511 -> int
+override Microsoft.AspNetCore.Http.Endpoint.ToString() -> string?
+override Microsoft.AspNetCore.Http.FragmentString.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Http.FragmentString.GetHashCode() -> int
+override Microsoft.AspNetCore.Http.FragmentString.ToString() -> string!
+override Microsoft.AspNetCore.Http.HostString.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Http.HostString.GetHashCode() -> int
+override Microsoft.AspNetCore.Http.HostString.ToString() -> string!
+override Microsoft.AspNetCore.Http.PathString.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Http.PathString.GetHashCode() -> int
+override Microsoft.AspNetCore.Http.PathString.ToString() -> string!
+override Microsoft.AspNetCore.Http.QueryString.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Http.QueryString.GetHashCode() -> int
+override Microsoft.AspNetCore.Http.QueryString.ToString() -> string!
+static Microsoft.AspNetCore.Builder.MapExtensions.Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Http.PathString pathMatch, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.MapExtensions.Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Http.PathString pathMatch, bool preserveMatchedPathSegment, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.MapWhenExtensions.MapWhen(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Func<Microsoft.AspNetCore.Http.HttpContext!, bool>! predicate, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.RunExtensions.Run(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Http.RequestDelegate! handler) -> void
+static Microsoft.AspNetCore.Builder.UseExtensions.Use(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Func<System.Threading.Tasks.Task!>!, System.Threading.Tasks.Task!>! middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Type! middleware, params object![]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware<TMiddleware>(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, params object![]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.UsePathBaseExtensions.UsePathBase(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Http.PathString pathBase) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.UseWhenExtensions.UseWhen(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Func<Microsoft.AspNetCore.Http.HttpContext!, bool>! predicate, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Http.EndpointHttpContextExtensions.GetEndpoint(this Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Http.Endpoint?
+static Microsoft.AspNetCore.Http.EndpointHttpContextExtensions.SetEndpoint(this Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.Endpoint? endpoint) -> void
+static Microsoft.AspNetCore.Http.FragmentString.FromUriComponent(System.Uri! uri) -> Microsoft.AspNetCore.Http.FragmentString
+static Microsoft.AspNetCore.Http.FragmentString.FromUriComponent(string! uriComponent) -> Microsoft.AspNetCore.Http.FragmentString
+static Microsoft.AspNetCore.Http.FragmentString.operator !=(Microsoft.AspNetCore.Http.FragmentString left, Microsoft.AspNetCore.Http.FragmentString right) -> bool
+static Microsoft.AspNetCore.Http.FragmentString.operator ==(Microsoft.AspNetCore.Http.FragmentString left, Microsoft.AspNetCore.Http.FragmentString right) -> bool
+static Microsoft.AspNetCore.Http.HeaderDictionaryExtensions.Append(this Microsoft.AspNetCore.Http.IHeaderDictionary! headers, string! key, Microsoft.Extensions.Primitives.StringValues value) -> void
+static Microsoft.AspNetCore.Http.HeaderDictionaryExtensions.AppendCommaSeparatedValues(this Microsoft.AspNetCore.Http.IHeaderDictionary! headers, string! key, params string![]! values) -> void
+static Microsoft.AspNetCore.Http.HeaderDictionaryExtensions.GetCommaSeparatedValues(this Microsoft.AspNetCore.Http.IHeaderDictionary! headers, string! key) -> string![]!
+static Microsoft.AspNetCore.Http.HeaderDictionaryExtensions.SetCommaSeparatedValues(this Microsoft.AspNetCore.Http.IHeaderDictionary! headers, string! key, params string![]! values) -> void
+static Microsoft.AspNetCore.Http.HostString.FromUriComponent(System.Uri! uri) -> Microsoft.AspNetCore.Http.HostString
+static Microsoft.AspNetCore.Http.HostString.FromUriComponent(string! uriComponent) -> Microsoft.AspNetCore.Http.HostString
+static Microsoft.AspNetCore.Http.HostString.MatchesAny(Microsoft.Extensions.Primitives.StringSegment value, System.Collections.Generic.IList<Microsoft.Extensions.Primitives.StringSegment>! patterns) -> bool
+static Microsoft.AspNetCore.Http.HostString.operator !=(Microsoft.AspNetCore.Http.HostString left, Microsoft.AspNetCore.Http.HostString right) -> bool
+static Microsoft.AspNetCore.Http.HostString.operator ==(Microsoft.AspNetCore.Http.HostString left, Microsoft.AspNetCore.Http.HostString right) -> bool
+static Microsoft.AspNetCore.Http.HttpMethods.Equals(string! methodA, string! methodB) -> bool
+static Microsoft.AspNetCore.Http.HttpMethods.GetCanonicalizedValue(string! method) -> string!
+static Microsoft.AspNetCore.Http.HttpMethods.IsConnect(string! method) -> bool
+static Microsoft.AspNetCore.Http.HttpMethods.IsDelete(string! method) -> bool
+static Microsoft.AspNetCore.Http.HttpMethods.IsGet(string! method) -> bool
+static Microsoft.AspNetCore.Http.HttpMethods.IsHead(string! method) -> bool
+static Microsoft.AspNetCore.Http.HttpMethods.IsOptions(string! method) -> bool
+static Microsoft.AspNetCore.Http.HttpMethods.IsPatch(string! method) -> bool
+static Microsoft.AspNetCore.Http.HttpMethods.IsPost(string! method) -> bool
+static Microsoft.AspNetCore.Http.HttpMethods.IsPut(string! method) -> bool
+static Microsoft.AspNetCore.Http.HttpMethods.IsTrace(string! method) -> bool
+static Microsoft.AspNetCore.Http.HttpProtocol.GetHttpProtocol(System.Version! version) -> string!
+static Microsoft.AspNetCore.Http.HttpProtocol.IsHttp10(string! protocol) -> bool
+static Microsoft.AspNetCore.Http.HttpProtocol.IsHttp11(string! protocol) -> bool
+static Microsoft.AspNetCore.Http.HttpProtocol.IsHttp2(string! protocol) -> bool
+static Microsoft.AspNetCore.Http.HttpProtocol.IsHttp3(string! protocol) -> bool
+static Microsoft.AspNetCore.Http.HttpResponseWritingExtensions.WriteAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, string! text, System.Text.Encoding! encoding, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Http.HttpResponseWritingExtensions.WriteAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, string! text, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Http.PathString.FromUriComponent(System.Uri! uri) -> Microsoft.AspNetCore.Http.PathString
+static Microsoft.AspNetCore.Http.PathString.FromUriComponent(string! uriComponent) -> Microsoft.AspNetCore.Http.PathString
+static Microsoft.AspNetCore.Http.PathString.implicit operator Microsoft.AspNetCore.Http.PathString(string? s) -> Microsoft.AspNetCore.Http.PathString
+static Microsoft.AspNetCore.Http.PathString.implicit operator string!(Microsoft.AspNetCore.Http.PathString path) -> string!
+static Microsoft.AspNetCore.Http.PathString.operator !=(Microsoft.AspNetCore.Http.PathString left, Microsoft.AspNetCore.Http.PathString right) -> bool
+static Microsoft.AspNetCore.Http.PathString.operator +(Microsoft.AspNetCore.Http.PathString left, Microsoft.AspNetCore.Http.PathString right) -> Microsoft.AspNetCore.Http.PathString
+static Microsoft.AspNetCore.Http.PathString.operator +(Microsoft.AspNetCore.Http.PathString left, Microsoft.AspNetCore.Http.QueryString right) -> string!
+static Microsoft.AspNetCore.Http.PathString.operator +(Microsoft.AspNetCore.Http.PathString left, string? right) -> string!
+static Microsoft.AspNetCore.Http.PathString.operator +(string! left, Microsoft.AspNetCore.Http.PathString right) -> string!
+static Microsoft.AspNetCore.Http.PathString.operator ==(Microsoft.AspNetCore.Http.PathString left, Microsoft.AspNetCore.Http.PathString right) -> bool
+static Microsoft.AspNetCore.Http.QueryString.Create(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>! parameters) -> Microsoft.AspNetCore.Http.QueryString
+static Microsoft.AspNetCore.Http.QueryString.Create(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string?>>! parameters) -> Microsoft.AspNetCore.Http.QueryString
+static Microsoft.AspNetCore.Http.QueryString.Create(string! name, string! value) -> Microsoft.AspNetCore.Http.QueryString
+static Microsoft.AspNetCore.Http.QueryString.FromUriComponent(System.Uri! uri) -> Microsoft.AspNetCore.Http.QueryString
+static Microsoft.AspNetCore.Http.QueryString.FromUriComponent(string! uriComponent) -> Microsoft.AspNetCore.Http.QueryString
+static Microsoft.AspNetCore.Http.QueryString.operator !=(Microsoft.AspNetCore.Http.QueryString left, Microsoft.AspNetCore.Http.QueryString right) -> bool
+static Microsoft.AspNetCore.Http.QueryString.operator +(Microsoft.AspNetCore.Http.QueryString left, Microsoft.AspNetCore.Http.QueryString right) -> Microsoft.AspNetCore.Http.QueryString
+static Microsoft.AspNetCore.Http.QueryString.operator ==(Microsoft.AspNetCore.Http.QueryString left, Microsoft.AspNetCore.Http.QueryString right) -> bool
+static Microsoft.AspNetCore.Http.RequestTrailerExtensions.CheckTrailersAvailable(this Microsoft.AspNetCore.Http.HttpRequest! request) -> bool
+static Microsoft.AspNetCore.Http.RequestTrailerExtensions.GetDeclaredTrailers(this Microsoft.AspNetCore.Http.HttpRequest! request) -> Microsoft.Extensions.Primitives.StringValues
+static Microsoft.AspNetCore.Http.RequestTrailerExtensions.GetTrailer(this Microsoft.AspNetCore.Http.HttpRequest! request, string! trailerName) -> Microsoft.Extensions.Primitives.StringValues
+static Microsoft.AspNetCore.Http.RequestTrailerExtensions.SupportsTrailers(this Microsoft.AspNetCore.Http.HttpRequest! request) -> bool
+static Microsoft.AspNetCore.Http.ResponseTrailerExtensions.AppendTrailer(this Microsoft.AspNetCore.Http.HttpResponse! response, string! trailerName, Microsoft.Extensions.Primitives.StringValues trailerValues) -> void
+static Microsoft.AspNetCore.Http.ResponseTrailerExtensions.DeclareTrailer(this Microsoft.AspNetCore.Http.HttpResponse! response, string! trailerName) -> void
+static Microsoft.AspNetCore.Http.ResponseTrailerExtensions.SupportsTrailers(this Microsoft.AspNetCore.Http.HttpResponse! response) -> bool
+static Microsoft.AspNetCore.Routing.RouteValueDictionary.FromArray(System.Collections.Generic.KeyValuePair<string!, object?>[]! items) -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+static readonly Microsoft.AspNetCore.Http.EndpointMetadataCollection.Empty -> Microsoft.AspNetCore.Http.EndpointMetadataCollection!
+static readonly Microsoft.AspNetCore.Http.FragmentString.Empty -> Microsoft.AspNetCore.Http.FragmentString
+static readonly Microsoft.AspNetCore.Http.HttpMethods.Connect -> string!
+static readonly Microsoft.AspNetCore.Http.HttpMethods.Delete -> string!
+static readonly Microsoft.AspNetCore.Http.HttpMethods.Get -> string!
+static readonly Microsoft.AspNetCore.Http.HttpMethods.Head -> string!
+static readonly Microsoft.AspNetCore.Http.HttpMethods.Options -> string!
+static readonly Microsoft.AspNetCore.Http.HttpMethods.Patch -> string!
+static readonly Microsoft.AspNetCore.Http.HttpMethods.Post -> string!
+static readonly Microsoft.AspNetCore.Http.HttpMethods.Put -> string!
+static readonly Microsoft.AspNetCore.Http.HttpMethods.Trace -> string!
+static readonly Microsoft.AspNetCore.Http.HttpProtocol.Http10 -> string!
+static readonly Microsoft.AspNetCore.Http.HttpProtocol.Http11 -> string!
+static readonly Microsoft.AspNetCore.Http.HttpProtocol.Http2 -> string!
+static readonly Microsoft.AspNetCore.Http.HttpProtocol.Http3 -> string!
+static readonly Microsoft.AspNetCore.Http.PathString.Empty -> Microsoft.AspNetCore.Http.PathString
+static readonly Microsoft.AspNetCore.Http.QueryString.Empty -> Microsoft.AspNetCore.Http.QueryString
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Build(Microsoft.AspNetCore.Http.HttpContext! context, System.DateTimeOffset expiresFrom) -> Microsoft.AspNetCore.Http.CookieOptions!
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Domain.get -> string?
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Domain.set -> void
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Expiration.get -> System.TimeSpan?
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Expiration.set -> void
+virtual Microsoft.AspNetCore.Http.CookieBuilder.HttpOnly.get -> bool
+virtual Microsoft.AspNetCore.Http.CookieBuilder.HttpOnly.set -> void
+virtual Microsoft.AspNetCore.Http.CookieBuilder.IsEssential.get -> bool
+virtual Microsoft.AspNetCore.Http.CookieBuilder.IsEssential.set -> void
+virtual Microsoft.AspNetCore.Http.CookieBuilder.MaxAge.get -> System.TimeSpan?
+virtual Microsoft.AspNetCore.Http.CookieBuilder.MaxAge.set -> void
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Name.get -> string?
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Name.set -> void
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Path.get -> string?
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Path.set -> void
+virtual Microsoft.AspNetCore.Http.CookieBuilder.SameSite.get -> Microsoft.AspNetCore.Http.SameSiteMode
+virtual Microsoft.AspNetCore.Http.CookieBuilder.SameSite.set -> void
+virtual Microsoft.AspNetCore.Http.CookieBuilder.SecurePolicy.get -> Microsoft.AspNetCore.Http.CookieSecurePolicy
+virtual Microsoft.AspNetCore.Http.CookieBuilder.SecurePolicy.set -> void
+virtual Microsoft.AspNetCore.Http.HttpRequest.BodyReader.get -> System.IO.Pipelines.PipeReader!
+virtual Microsoft.AspNetCore.Http.HttpRequest.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+virtual Microsoft.AspNetCore.Http.HttpRequest.RouteValues.set -> void
+virtual Microsoft.AspNetCore.Http.HttpResponse.BodyWriter.get -> System.IO.Pipelines.PipeWriter!
+virtual Microsoft.AspNetCore.Http.HttpResponse.CompleteAsync() -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Http.HttpResponse.OnCompleted(System.Func<System.Threading.Tasks.Task!>! callback) -> void
+virtual Microsoft.AspNetCore.Http.HttpResponse.OnStarting(System.Func<System.Threading.Tasks.Task!>! callback) -> void
+virtual Microsoft.AspNetCore.Http.HttpResponse.Redirect(string! location) -> void
+virtual Microsoft.AspNetCore.Http.HttpResponse.RegisterForDispose(System.IDisposable! disposable) -> void
+virtual Microsoft.AspNetCore.Http.HttpResponse.RegisterForDisposeAsync(System.IAsyncDisposable! disposable) -> void
+virtual Microsoft.AspNetCore.Http.HttpResponse.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Http.WebSocketManager.AcceptWebSocketAsync() -> System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket!>!

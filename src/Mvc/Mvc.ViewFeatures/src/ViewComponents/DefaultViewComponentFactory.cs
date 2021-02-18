@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
@@ -87,6 +88,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
 
             _activator.Release(context, component);
+        }
+
+        /// <inheritdoc />
+        public ValueTask ReleaseViewComponentAsync(ViewComponentContext context, object component)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (component == null)
+            {
+                throw new ArgumentNullException(nameof(component));
+            }
+
+            return _activator.ReleaseAsync(context, component);
         }
     }
 }

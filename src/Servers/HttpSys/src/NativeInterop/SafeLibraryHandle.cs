@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// Gets a delegate pointing to a given export from this library.
         /// </summary>
-        public TDelegate GetProcAddress<TDelegate>(string lpProcName, bool throwIfNotFound = true) where TDelegate : class
+        public TDelegate? GetProcAddress<TDelegate>(string lpProcName, bool throwIfNotFound = true) where TDelegate : class
         {
             IntPtr pfnProc = UnsafeNativeMethods.GetProcAddress(this, lpProcName);
             if (pfnProc == IntPtr.Zero)
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 UnsafeNativeMethods.ThrowExceptionForLastWin32Error();
             }
-            return handle;
+            return handle!;
         }
 
         // Do not provide a finalizer - SafeHandle's critical finalizer will call ReleaseHandle for you.

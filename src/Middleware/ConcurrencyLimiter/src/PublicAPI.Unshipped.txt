@@ -1,22 +1,15 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.ConcurrencyLimiterExtensions
-Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterMiddleware
-Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterOptions
-Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterOptions.ConcurrencyLimiterOptions() -> void
-Microsoft.AspNetCore.ConcurrencyLimiter.IQueuePolicy
-Microsoft.AspNetCore.ConcurrencyLimiter.IQueuePolicy.OnExit() -> void
-Microsoft.AspNetCore.ConcurrencyLimiter.IQueuePolicy.TryEnterAsync() -> System.Threading.Tasks.ValueTask<bool>
-Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions
-Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions.MaxConcurrentRequests.get -> int
-Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions.MaxConcurrentRequests.set -> void
-Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions.QueuePolicyOptions() -> void
-Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions.RequestQueueLimit.get -> int
-Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions.RequestQueueLimit.set -> void
-Microsoft.Extensions.DependencyInjection.QueuePolicyServiceCollectionExtensions
-~Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterMiddleware.ConcurrencyLimiterMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.ConcurrencyLimiter.IQueuePolicy queue, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterOptions> options) -> void
-~Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterOptions.OnRejected.get -> Microsoft.AspNetCore.Http.RequestDelegate
-~Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterOptions.OnRejected.set -> void
-~static Microsoft.AspNetCore.Builder.ConcurrencyLimiterExtensions.UseConcurrencyLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.Extensions.DependencyInjection.QueuePolicyServiceCollectionExtensions.AddQueuePolicy(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions> configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
-~static Microsoft.Extensions.DependencyInjection.QueuePolicyServiceCollectionExtensions.AddStackPolicy(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions> configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+*REMOVED*Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterMiddleware.ConcurrencyLimiterMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.ConcurrencyLimiter.IQueuePolicy queue, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterOptions> options) -> void
+*REMOVED*Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
+*REMOVED*Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterOptions.OnRejected.get -> Microsoft.AspNetCore.Http.RequestDelegate
+*REMOVED*Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterOptions.OnRejected.set -> void
+*REMOVED*static Microsoft.AspNetCore.Builder.ConcurrencyLimiterExtensions.UseConcurrencyLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+*REMOVED*static Microsoft.Extensions.DependencyInjection.QueuePolicyServiceCollectionExtensions.AddQueuePolicy(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions> configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+*REMOVED*static Microsoft.Extensions.DependencyInjection.QueuePolicyServiceCollectionExtensions.AddStackPolicy(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions> configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+~Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterMiddleware.ConcurrencyLimiterMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.ConcurrencyLimiter.IQueuePolicy! queue, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterOptions!>! options) -> void
+Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterOptions.OnRejected.get -> Microsoft.AspNetCore.Http.RequestDelegate!
+Microsoft.AspNetCore.ConcurrencyLimiter.ConcurrencyLimiterOptions.OnRejected.set -> void
+static Microsoft.AspNetCore.Builder.ConcurrencyLimiterExtensions.UseConcurrencyLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.Extensions.DependencyInjection.QueuePolicyServiceCollectionExtensions.AddQueuePolicy(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.QueuePolicyServiceCollectionExtensions.AddStackPolicy(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

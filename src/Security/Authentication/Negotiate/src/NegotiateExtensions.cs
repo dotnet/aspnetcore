@@ -67,7 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="displayName">The name displayed to users when selecting an authentication handler. The default is null to prevent this from displaying.</param>
         /// <param name="configureOptions">Allows for configuring the authentication handler.</param>
         /// <returns>The original builder.</returns>
-        public static AuthenticationBuilder AddNegotiate(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<NegotiateOptions> configureOptions)
+        public static AuthenticationBuilder AddNegotiate(this AuthenticationBuilder builder, string authenticationScheme, string? displayName, Action<NegotiateOptions> configureOptions)
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<NegotiateOptions>, PostConfigureNegotiateOptions>());
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter>(new NegotiateOptionsValidationStartupFilter(authenticationScheme)));

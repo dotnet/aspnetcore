@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
                     return null;
                 }
 
-                var genericType = objectType.GetTypeInfo().GenericTypeArguments[0];
+                var genericType = objectType.GenericTypeArguments[0];
 
                 // load jObject
                 var jObject = JArray.Load(reader);

@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         private async Task ExecuteAsync(Func<IHostedService, Task> callback, bool throwOnFirstFailure = true)
         {
-            List<Exception> exceptions = null;
+            List<Exception>? exceptions = null;
 
             foreach (var service in _services)
             {

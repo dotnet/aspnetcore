@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             set => TraceIdentifier = value;
         }
 
+        [MemberNotNull(nameof(TraceIdentifier))]
         private unsafe void InitializeHttpRequestIdentifierFeature()
         {
             // Copied from WebListener

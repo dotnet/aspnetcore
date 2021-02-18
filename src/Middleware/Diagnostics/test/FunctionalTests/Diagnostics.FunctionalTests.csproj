@@ -5,7 +5,6 @@
     <SignAssembly>false</SignAssembly>
     <AssemblyName>Diagnostics.FunctionalTests</AssemblyName>
     <TestDependsOnMssql>true</TestDependsOnMssql>
-    <SkipHelixQueues>Windows.10.Amd64.Server20H1.Open</SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup>

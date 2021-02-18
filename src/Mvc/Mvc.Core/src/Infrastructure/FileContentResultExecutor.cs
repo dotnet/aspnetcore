@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -61,8 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="result">The <see cref="FileContentResult"/>.</param>
         /// <param name="range">The <see cref="RangeItemHeaderValue"/>.</param>
         /// <param name="rangeLength">The length of the range.</param>
-        /// <returns></returns>
-        protected virtual Task WriteFileAsync(ActionContext context, FileContentResult result, RangeItemHeaderValue range, long rangeLength)
+        protected virtual Task WriteFileAsync(ActionContext context, FileContentResult result, RangeItemHeaderValue? range, long rangeLength)
         {
             if (context == null)
             {

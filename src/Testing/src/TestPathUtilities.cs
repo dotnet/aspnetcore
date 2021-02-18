@@ -22,6 +22,20 @@ namespace Microsoft.AspNetCore.Testing
                     return projectFileInfo.DirectoryName;
                 }
 
+                projectFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "AspNetCore.sln"));
+                if (projectFileInfo.Exists)
+                {
+                    // Have reached the solution root. Work down through the src/ folder to find the solution filter.
+                    directoryInfo = new DirectoryInfo(Path.Combine(directoryInfo.FullName, "src"));
+                    foreach (var solutionFileInfo in directoryInfo.EnumerateFiles($"{solution}.slnf", SearchOption.AllDirectories))
+                    {
+                        return solutionFileInfo.DirectoryName;
+                    }
+
+                    // No luck. Exit loop and error out.
+                    break;
+                }
+
                 directoryInfo = directoryInfo.Parent;
             }
             while (directoryInfo.Parent != null);

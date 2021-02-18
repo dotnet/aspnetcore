@@ -5,8 +5,8 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
 export function registerUnhandledRejectionHandler(): void {
     process.on("unhandledRejection", (error) => {
-        if (error && error.stack) {
-            console.error(error.stack);
+        if (error && (error as Error).stack) {
+            console.error((error as Error).stack);
         } else {
             console.error(error);
         }
@@ -37,7 +37,7 @@ export function delayUntil(timeoutInMilliseconds: number, condition?: () => bool
 export class PromiseSource<T = void> implements Promise<T> {
     public promise: Promise<T>;
 
-    private resolver!: (value?: T | PromiseLike<T>) => void;
+    private resolver!: (value: T | PromiseLike<T>) => void;
     private rejecter!: (reason?: any) => void;
 
     constructor() {
@@ -47,7 +47,14 @@ export class PromiseSource<T = void> implements Promise<T> {
         });
     }
 
-    public resolve(value?: T | PromiseLike<T>) {
+    public [Symbol.toStringTag]: string;
+
+    // @ts-ignore: onfinally not used
+    public finally(onfinally?: (() => void) | null): Promise<T> {
+        throw new Error("Method not implemented.");
+    }
+
+    public resolve(value: T | PromiseLike<T>) {
         this.resolver(value);
     }
 

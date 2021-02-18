@@ -88,8 +88,9 @@ export class ServerSentEventsTransport implements ITransport {
                     }
                 };
 
-                eventSource.onerror = (e: MessageEvent) => {
-                    const error = new Error(e.data || "Error occurred");
+                // @ts-ignore: not using event on purpose
+                eventSource.onerror = (e: Event) => {
+                    const error = new Error("Error occurred while starting EventSource");
                     if (opened) {
                         this.close(error);
                     } else {

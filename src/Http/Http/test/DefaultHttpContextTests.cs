@@ -264,6 +264,22 @@ namespace Microsoft.AspNetCore.Http
             Assert.False(scope.DisposeCalled);
         }
 
+        [Fact]
+        public void InternalActiveFlagIsSetAndUnset()
+        {
+            var context = new DefaultHttpContext();
+
+            Assert.False(context._active);
+
+            context.Initialize(new FeatureCollection());
+
+            Assert.True(context._active);
+
+            context.Uninitialize();
+
+            Assert.False(context._active);
+        }
+
         void TestAllCachedFeaturesAreNull(HttpContext context, IFeatureCollection features)
         {
             TestCachedFeaturesAreNull(context, features);

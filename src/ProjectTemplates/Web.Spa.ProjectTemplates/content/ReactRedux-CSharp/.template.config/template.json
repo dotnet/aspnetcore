@@ -6,8 +6,8 @@
     "SPA"
   ],
   "groupIdentity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.ReactRedux",
-  "precedence": "7000",
-  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.ReactRedux.CSharp.5.0",
+  "precedence": "8000",
+  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.ReactRedux.CSharp.6.0",
   "name": "ASP.NET Core with React.js and Redux",
   "preferNameDirectory": true,
   "primaryOutputs": [

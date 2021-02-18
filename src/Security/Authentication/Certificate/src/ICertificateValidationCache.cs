@@ -14,17 +14,17 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <summary>
         /// Get the <see cref="AuthenticateResult"/> for the connection and certificate.
         /// </summary>
-        /// <param name="context">The HttpContext.</param>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="certificate">The certificate.</param>
         /// <returns>the <see cref="AuthenticateResult"/></returns>
-        AuthenticateResult Get(HttpContext context, X509Certificate2 certificate);
+        AuthenticateResult? Get(HttpContext context, X509Certificate2 certificate);
 
         /// <summary>
         /// Store a <see cref="AuthenticateResult"/> for the connection and certificate
         /// </summary>
-        /// <param name="context">The HttpContext.</param>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="certificate">The certificate.</param>
-        /// <param name="result">the <see cref="AuthenticateResult"/></param>
+        /// <param name="result">The <see cref="AuthenticateResult"/></param>
         void Put(HttpContext context, X509Certificate2 certificate, AuthenticateResult result);
     }
 }

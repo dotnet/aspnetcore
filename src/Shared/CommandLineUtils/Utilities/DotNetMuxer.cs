@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 // System.AppContext.GetData is not available in these frameworks
+#nullable enable
+
 #if !NET451 && !NET452 && !NET46 && !NET461
 
 using System;
@@ -26,7 +28,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         /// <summary>
         /// The full filepath to the .NET Core muxer.
         /// </summary>
-        public static string MuxerPath { get; }
+        public static string? MuxerPath { get; }
 
         /// <summary>
         /// Finds the full filepath to the .NET Core muxer,
@@ -36,7 +38,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         public static string MuxerPathOrDefault()
             => MuxerPath ?? MuxerName;
 
-        private static string TryFindMuxerPath()
+        private static string? TryFindMuxerPath()
         {
             var fileName = MuxerName;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -46,11 +48,11 @@ namespace Microsoft.Extensions.CommandLineUtils
 
             var mainModule = Process.GetCurrentProcess().MainModule;
             if (!string.IsNullOrEmpty(mainModule?.FileName)
-                && Path.GetFileName(mainModule.FileName).Equals(fileName, StringComparison.OrdinalIgnoreCase))
+                && string.Equals(Path.GetFileName(mainModule!.FileName), fileName, StringComparison.OrdinalIgnoreCase))
             {
                 return mainModule.FileName;
             }
-            
+
             return null;
         }
     }

@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Identity
             builder.AddSignInManagerDeps();
             var managerType = typeof(SignInManager<>).MakeGenericType(builder.UserType);
             var customType = typeof(TSignInManager);
-            if (!managerType.GetTypeInfo().IsAssignableFrom(customType.GetTypeInfo()))
+            if (!managerType.IsAssignableFrom(customType))
             {
                 throw new InvalidOperationException(Resources.FormatInvalidManagerType(customType.Name, "SignInManager", builder.UserType.Name));
             }

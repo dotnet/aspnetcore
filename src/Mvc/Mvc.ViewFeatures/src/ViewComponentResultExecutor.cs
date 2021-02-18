@@ -32,20 +32,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private IHttpResponseStreamWriterFactory _writerFactory;
 
         /// <summary>
-        /// This constructor is obsolete and will be removed in a future version.
-        /// </summary>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public ViewComponentResultExecutor(
-            IOptions<MvcViewOptions> mvcHelperOptions,
-            ILoggerFactory loggerFactory,
-            HtmlEncoder htmlEncoder,
-            IModelMetadataProvider modelMetadataProvider,
-            ITempDataDictionaryFactory tempDataDictionaryFactory)
-            : this(mvcHelperOptions, loggerFactory, htmlEncoder, modelMetadataProvider, tempDataDictionaryFactory, null)
-        {
-        }
-
-        /// <summary>
         /// Initialize a new instance of <see cref="ViewComponentResultExecutor"/>
         /// </summary>
         /// <param name="mvcHelperOptions">The <see cref="IOptions{MvcViewOptions}"/>.</param>
