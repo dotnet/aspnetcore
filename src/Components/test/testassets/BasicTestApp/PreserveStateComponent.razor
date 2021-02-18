@@ -1,0 +1,33 @@
+﻿@inject ComponentApplicationState AppState
+@inject PreserveStateService PreserveService
+@using System.Text
+
+<p id="@($"state-{State}")">@State: @_state</p>
+
+@if(_restored)
+{
+    <p id="@($"restored-{State}")">true</p>
+}
+
+<p>Service state at @State render time: <span id="@($"service-{State}")">@PreserveService.Guid</span></p>
+
+@code{
+    [Parameter] public string State { get; set; }
+
+    private string _state = null;
+    private bool _restored;
+
+    protected override void OnInitialized()
+    {
+        if(AppState.TryRetrievePersistedState(State, out var preserved))
+        {
+            _state = Encoding.UTF8.GetString(preserved);
+            _restored = true;
+        }
+        else
+        {
+            _state = Guid.NewGuid().ToString();
+            AppState.PersistState(State, Encoding.UTF8.GetBytes(_state));
+        }
+    }
+}

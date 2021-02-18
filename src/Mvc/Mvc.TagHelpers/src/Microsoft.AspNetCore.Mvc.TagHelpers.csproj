@@ -21,9 +21,4 @@
     <Reference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <Reference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)Components\PrerenderComponentApplicationStore.cs" />
-    <Compile Include="$(SharedSourceRoot)Components\ProtectedPrerenderComponentApplicationStore.cs" />
-  </ItemGroup>
 </Project>

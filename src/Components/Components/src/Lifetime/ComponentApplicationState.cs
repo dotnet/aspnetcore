@@ -64,7 +64,12 @@ namespace Microsoft.AspNetCore.Components
 
             if (_existingState == null)
             {
-                throw new InvalidOperationException("ComponentApplicationState has not been initialized.");
+                // Services during prerendering might try to access their state upon injection on the page
+                // and we don't want to fail in that case.
+                // When a service is prerendering there is no state to restore and in other cases the host
+                // is responsible for initializing the state before services or components can access it.
+                value = null;
+                return false;
             }
 
             if (_existingState.TryGetValue(key, out value))
