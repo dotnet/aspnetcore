@@ -68,7 +68,18 @@ IN_PROCESS_APPLICATION::StopClr()
     // This has the state lock around it.
     LOG_INFO(L"Stopping CLR");
 
-    if (!m_blockManagedCallbacks)
+    // Signal shutdown
+    if (m_pShutdownEvent != nullptr)
+    {
+        LOG_IF_FAILED(SetEvent(m_pShutdownEvent));
+    }
+
+    // Need to wait for either the app to be initialized, the worker thread to exit, or the shutdown timeout.
+    const HANDLE waitHandles[2] = { m_pInitializeEvent, m_workerThread.native_handle() };
+
+    const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, m_pConfig->QueryShutdownTimeLimitInMS());
+
+    if (!m_blockManagedCallbacks && waitResult != WAIT_OBJECT_0 + 1)
     {
         // We cannot call into managed if the dll is detaching from the process.
         // Calling into managed code when the dll is detaching is strictly a bad idea,
@@ -88,12 +99,6 @@ IN_PROCESS_APPLICATION::StopClr()
         {
             CallRequestsDrained();
         }
-    }
-
-    // Signal shutdown
-    if (m_pShutdownEvent != nullptr)
-    {
-        LOG_IF_FAILED(SetEvent(m_pShutdownEvent));
     }
 
     if (m_workerThread.joinable())
