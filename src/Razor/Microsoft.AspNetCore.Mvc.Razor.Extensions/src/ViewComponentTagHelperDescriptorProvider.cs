@@ -37,27 +37,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var types = new List<INamedTypeSymbol>();
             var visitor = new ViewComponentTypeVisitor(vcAttribute, nonVCAttribute, types);
-            var discoveryMode = context.Items.GetTagHelperDiscoveryFilter();
 
-            if ((discoveryMode & TagHelperDiscoveryFilter.TargetAssembly) == TagHelperDiscoveryFilter.TargetAssembly)
+            var targetReference = context.Items.GetTargetMetadataReference();
+            if (targetReference is MetadataReference && compilation.GetAssemblyOrModuleSymbol(targetReference) is IAssemblySymbol targetAssembly)
             {
-                var targetReference = context.Items.GetTargetMetadataReference();
-                if (targetReference is IAssemblySymbol assembly)
+                if (IsTagHelperAssembly(targetAssembly))
                 {
-                    if (IsTagHelperAssembly(assembly))
-                    {
-                        visitor.Visit(assembly.GlobalNamespace);
-                    }
+                    visitor.Visit(targetAssembly.GlobalNamespace);
                 }
             }
-
-            if ((discoveryMode & TagHelperDiscoveryFilter.CurrentCompilation) == TagHelperDiscoveryFilter.CurrentCompilation)
+            else
             {
                 visitor.Visit(compilation.Assembly.GlobalNamespace);
-            }
-
-            if ((discoveryMode & TagHelperDiscoveryFilter.ReferenceAssemblies) == TagHelperDiscoveryFilter.ReferenceAssemblies)
-            {
                 foreach (var reference in compilation.References)
                 {
                     if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
