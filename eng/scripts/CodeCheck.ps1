@@ -191,17 +191,17 @@ try {
         }
     }
 
-    $targetBranch = $env:PULLREQUEST_TARGETBRANCH
-    $sourceBranch = $env:PULLREQUEST_SOURCEBRANCH
+    $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
+    $sourceBranch = $env:SYSTEM_PULLREQUEST_SOURCEBRANCH
 
     # Retrieve the set of changed files compared to main
     Write-Host "Checking for changes to API baseline files $targetBranch...$sourceBranch"
 
-    $changedFilesFromMain = git --no-pager diff origin/$targetBranch...origin/$sourceBranch --ignore-space-change --name-only --diff-filter=ar
+    $changedFilesFromTarget = git --no-pager diff origin/$targetBranch...origin/$sourceBranch --ignore-space-change --name-only --diff-filter=ar
     $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
 
-    if ($changedFilesFromMain) {
-        foreach ($file in $changedFilesFromMain) {
+    if ($changedFilesFromTarget) {
+        foreach ($file in $changedFilesFromTarget) {
             # Check for changes in Shipped in all branches
             if ($file -like '*PublicAPI.Shipped.txt') {
                 $changedAPIBaselines.Add($file)

@@ -63,4 +63,4 @@ Microsoft.AspNetCore.DataProtection.Infrastructure.IApplicationDiscriminator.Dis
 
 ## Updating baselines after major releases
 
-This will be performed by the build team using scripts at https://github.com/dotnet/roslyn/tree/master/scripts/PublicApi. The process moves the content of PublicAPI.Unshipped.txt into PublicAPI.Shipped.txt
+This will be performed by the build team using scripts at https://github.com/dotnet/roslyn/tree/master/scripts/PublicApi (or an Arcade successor). The process moves the content of PublicAPI.Unshipped.txt into PublicAPI.Shipped.txt
