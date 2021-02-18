@@ -199,7 +199,7 @@
     </Dependency>
     <Dependency Name="System.Diagnostics.EventLog" Version="5.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>d1e2874de3956c618626ee46554a093f28a330e2</Sha>
+      <Sha>c636bbdc8a2d393d07c0e9407a4f8923ba1a21cb</Sha>
     </Dependency>
     <Dependency Name="System.DirectoryServices.Protocols" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -311,7 +311,7 @@
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>d1e2874de3956c618626ee46554a093f28a330e2</Sha>
+      <Sha>c636bbdc8a2d393d07c0e9407a4f8923ba1a21cb</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.21112.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
