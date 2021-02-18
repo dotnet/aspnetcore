@@ -11,6 +11,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -319,12 +320,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         private static void LogRequestBodyIOException(HttpContext httpContext, IOException exception)
         {
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-
-            // REVIEW: I'm not sure how we feel about using an internal type as a category name, but this is what was done in other
-            // internal classes like DfaMather and DefaultLinkGenerator. My main concern is if we want to use the same category for
-            // other MapAction implementations (e.g. Roslyn source generators)
-            var logger = loggerFactory.CreateLogger(typeof(MapActionExpressionTreeBuilder).FullName!);
-
+            var logger = loggerFactory.CreateLogger(typeof(MapActionEndpointRouteBuilderExtensions).FullName!);
             Log.RequestBodyIOException(logger, exception);
         }
 
