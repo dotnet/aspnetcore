@@ -1617,7 +1617,7 @@ namespace Test
 
             var context = TagHelperDescriptorProviderContext.Create();
             context.SetCompilation(compilation);
-            context.Items.SetTargetMetadataReference(compilation.References.Single(r => r.Display.Contains("Newtonsoft.Json.dll")));
+            context.Items.SetTargetMetadataReference(compilation.References.Single(r => r.Display.Contains("Microsoft.CodeAnalysis.Razor.Test.dll")));
             var provider = new ComponentTagHelperDescriptorProvider();
 
             // Act
