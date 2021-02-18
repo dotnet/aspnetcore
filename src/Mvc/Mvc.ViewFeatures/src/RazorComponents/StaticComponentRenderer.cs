@@ -16,9 +16,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     internal class StaticComponentRenderer
     {
-        private Task _initialized;
+        private bool _initialized;
         private HtmlRenderer _renderer;
-        private object _lock = new();
 
         public StaticComponentRenderer(HtmlRenderer renderer)
         {
@@ -30,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             HttpContext httpContext,
             Type componentType)
         {
-            await InitializeStandardComponentServicesAsync(httpContext);
+            InitializeStandardComponentServices(httpContext);
 
             ComponentRenderedText result = default;
             try
@@ -59,22 +58,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return result.Tokens;
         }
 
-        private Task InitializeStandardComponentServicesAsync(HttpContext httpContext)
+        private void InitializeStandardComponentServices(HttpContext httpContext)
         {
-            // This might not be the first component in the request we are rendering, so
-            // we need to check if we already initialized the services in this request.
-            lock (_lock)
+            if (!_initialized)
             {
-                if (_initialized == null)
-                {
-                    _initialized = InitializeCore(httpContext);
-                }
-            }
-
-            return _initialized;
-
-            async Task InitializeCore(HttpContext httpContext)
-            {
+                _initialized = true;
                 var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
                 navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
 
@@ -84,9 +72,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     var authenticationState = new AuthenticationState(httpContext.User);
                     authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
                 }
-
-                var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentApplicationLifetime>();
-                await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
             }
         }
 

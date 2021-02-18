@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Components
     {
         public PrerenderComponentApplicationStore()
         {
-            ExistingState = new();
         }
 
         public PrerenderComponentApplicationStore(string existingState)
@@ -28,9 +27,9 @@ namespace Microsoft.AspNetCore.Components
 
 #nullable enable
         public string? PersistedState { get; private set; }
-#nullable disable
 
-        public Dictionary<string, byte[]> ExistingState { get; init; }
+        public Dictionary<string, byte[]>? ExistingState { get; }
+#nullable disable
 
         public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
         {

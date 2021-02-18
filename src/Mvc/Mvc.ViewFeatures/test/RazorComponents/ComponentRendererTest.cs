@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal("webassembly", marker.Type);
             Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, marker.Assembly);
             Assert.Equal(typeof(TestComponent).FullName, marker.TypeName);
+            Assert.Empty(viewContext.Items);
         }
 
         [Fact]
@@ -96,6 +97,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Null(epilogueMarker.Type);
             Assert.Null(epilogueMarker.ParameterDefinitions);
             Assert.Null(epilogueMarker.ParameterValues);
+            var (_, mode) = Assert.Single(viewContext.Items);
+            var invoked = Assert.IsType<InvokedRenderModes>(mode);
+            Assert.Equal(InvokedRenderModes.Mode.WebAssembly, invoked.Value);
         }
 
         [Fact]
@@ -312,6 +316,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
 
             Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers[HeaderNames.CacheControl]);
+            Assert.DoesNotContain(viewContext.Items.Values, value => value is InvokedRenderModes);
         }
 
         [Fact]
@@ -355,6 +360,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Null(epilogueMarker.Type);
 
             Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers[HeaderNames.CacheControl]);
+            var (_, mode) = Assert.Single(viewContext.Items, (kvp) => kvp.Value is InvokedRenderModes);
+            Assert.Equal(InvokedRenderModes.Mode.Server, ((InvokedRenderModes)mode).Value);
+        }
+
+        [Fact]
+        public async Task Prerender_ServerAndClientComponentUpdatesInvokedPrerenderModes()
+        {
+            // Arrange
+            var viewContext = GetViewContext();
+
+            // Act
+            var server = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = "Steve" });
+            var client = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.WebAssemblyPrerendered, new { Name = "Steve" });
+
+            // Assert
+            var (_, mode) = Assert.Single(viewContext.Items, (kvp) => kvp.Value is InvokedRenderModes);
+            Assert.Equal(InvokedRenderModes.Mode.ServerAndWebAssembly, ((InvokedRenderModes)mode).Value);
         }
 
         [Fact]

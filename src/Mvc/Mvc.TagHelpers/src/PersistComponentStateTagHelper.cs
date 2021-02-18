@@ -62,11 +62,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 {
                     InvokedRenderModes.Mode.None =>
                         null,
-                    InvokedRenderModes.Mode.Client =>
+                    InvokedRenderModes.Mode.WebAssembly =>
                         new PrerenderComponentApplicationStore(),
                     InvokedRenderModes.Mode.Server =>
                         new ProtectedPrerenderComponentApplicationStore(services.GetRequiredService<IDataProtectionProvider>()),
-                    InvokedRenderModes.Mode.ServerAndClient =>
+                    InvokedRenderModes.Mode.ServerAndWebAssembly =>
                         throw new InvalidOperationException("The persistence mode could not be determine based on the rendered components. Specify the PersistenceMode explicitly."),
                     _ => throw new InvalidOperationException("Invalid InvokedRenderMode.")
                 },

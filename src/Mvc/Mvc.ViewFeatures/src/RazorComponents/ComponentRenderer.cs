@@ -80,7 +80,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return (ServerComponentInvocationSequence)result;
         }
 
-        private static void UpdateSaveStateRenderMode(ViewContext viewContext, RenderMode mode)
+        // Internal for test only
+        internal static void UpdateSaveStateRenderMode(ViewContext viewContext, RenderMode mode)
         {
             if (mode == RenderMode.ServerPrerendered || mode == RenderMode.WebAssemblyPrerendered)
             {
@@ -88,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 {
                     result = new InvokedRenderModes(mode is RenderMode.ServerPrerendered ?
                         InvokedRenderModes.Mode.Server :
-                        InvokedRenderModes.Mode.Client);
+                        InvokedRenderModes.Mode.WebAssembly);
 
                     viewContext.Items[InvokedRenderModesKey] = result;
                 }
@@ -96,12 +97,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 {
                     var currentInvocation = mode is RenderMode.ServerPrerendered ?
                         InvokedRenderModes.Mode.Server :
-                        InvokedRenderModes.Mode.Client;
+                        InvokedRenderModes.Mode.WebAssembly;
 
                     var invokedMode = (InvokedRenderModes)result;
                     if (invokedMode.Value != currentInvocation)
                     {
-                        invokedMode.Value = InvokedRenderModes.Mode.ServerAndClient;
+                        invokedMode.Value = InvokedRenderModes.Mode.ServerAndWebAssembly;
                     }
                 }
             }
@@ -204,8 +205,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             None,
             Server,
-            Client,
-            ServerAndClient
+            WebAssembly,
+            ServerAndWebAssembly
         }
     }
 }

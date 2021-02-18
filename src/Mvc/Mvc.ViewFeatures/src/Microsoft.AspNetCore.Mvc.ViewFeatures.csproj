@@ -36,8 +36,6 @@
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
-    <Compile Include="$(SharedSourceRoot)Components\PrerenderComponentApplicationStore.cs" />
-    <Compile Include="$(SharedSourceRoot)Components\ProtectedPrerenderComponentApplicationStore.cs" />
   </ItemGroup>
 
 </Project>
