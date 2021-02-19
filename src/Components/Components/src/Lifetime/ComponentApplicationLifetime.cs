@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Lifetime
 {
@@ -17,13 +20,15 @@ namespace Microsoft.AspNetCore.Components.Lifetime
         private bool _stateIsPersisted;
         private List<ComponentApplicationState.OnPersistingCallback> _pauseCallbacks = new();
         private readonly Dictionary<string, byte[]> _currentState = new();
+        private readonly ILogger<ComponentApplicationLifetime> _logger;
 
         /// <summary>
         /// Initializes a new instance of <see cref="ComponentApplicationLifetime"/>.
         /// </summary>
-        public ComponentApplicationLifetime()
+        public ComponentApplicationLifetime(ILogger<ComponentApplicationLifetime> logger)
         {
             State = new ComponentApplicationState(_currentState, _pauseCallbacks);
+            _logger = logger;
         }
 
         /// <summary>
@@ -68,11 +73,62 @@ namespace Microsoft.AspNetCore.Components.Lifetime
             }
         }
 
-        internal async Task PauseAsync()
+        internal Task PauseAsync()
         {
-            foreach (var callback in _pauseCallbacks)
+            List<Task>? pendingCallbackTasks = null;
+
+            for (int i = 0; i < _pauseCallbacks.Count; i++)
             {
-                await callback();
+                var callback = _pauseCallbacks[i];
+                var result = ExecuteCallback(callback, _logger);
+                if (!result.IsCompletedSuccessfully)
+                {
+                    pendingCallbackTasks ??= new();
+                    pendingCallbackTasks.Add(result);
+                }
+            }
+
+            if (pendingCallbackTasks != null)
+            {
+                return Task.WhenAll(pendingCallbackTasks);
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
+
+            static Task ExecuteCallback(ComponentApplicationState.OnPersistingCallback callback, ILogger<ComponentApplicationLifetime> logger)
+            {
+                try
+                {
+                    var current = callback();
+                    if (current.IsCompletedSuccessfully)
+                    {
+                        return current;
+                    }
+                    else
+                    {
+                        return Awaited(current, logger);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
+                    return Task.CompletedTask;
+                }
+
+                static async Task Awaited(Task task, ILogger<ComponentApplicationLifetime> logger)
+                {
+                    try
+                    {
+                        await task;
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
+                        return;
+                    }
+                }
             }
         }
     }

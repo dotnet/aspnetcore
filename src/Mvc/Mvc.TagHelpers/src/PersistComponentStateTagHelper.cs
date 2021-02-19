@@ -87,9 +87,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 await manager.PersistStateAsync(store, renderer);
                 output.Content.SetHtmlContent(
                     new HtmlContentBuilder()
-                        .SetHtmlContent("<!--Blazor-Component-State:")
-                        .SetHtmlContent(store.PersistedState)
-                        .SetHtmlContent("-->"));
+                        .AppendHtml("<!--Blazor-Component-State:")
+                        .AppendHtml(store.PersistedState)
+                        .AppendHtml("-->"));
             }
         }
     }

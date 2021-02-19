@@ -9,12 +9,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     public enum PersistenceMode
     {
         /// <summary>
-        /// The state is persisted for a Blazor server application.
+        /// The state is persisted for a Blazor Server application.
         /// </summary>
         Server,
 
         /// <summary>
-        /// The state is persisted for a Blazor webassembly application.
+        /// The state is persisted for a Blazor WebAssembly application.
         /// </summary>
         WebAssembly
     }

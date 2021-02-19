@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// The state for the component and services of a components application.
+    /// The state for the components and services of a components application.
     /// </summary>
     public class ComponentApplicationState
     {
@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Represents the method that performs operations when <see cref="OnPersisting"/> is raised and the application is about to be paused.
         /// </summary>
-        /// <returns>A <see cref="ValueTask"/> that will complete when the method is done preparing for the application pause.</returns>
-        public delegate ValueTask OnPersistingCallback();
+        /// <returns>A <see cref="Task"/> that will complete when the method is done preparing for the application pause.</returns>
+        public delegate Task OnPersistingCallback();
 
         /// <summary>
         /// An event that is raised when the application is about to be paused.
@@ -130,10 +130,10 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Serializes <paramref name="instance"/> as JSON and persists it under the given <paramref name="key"/>.
         /// </summary>
-        /// <typeparam name="T">The <paramref name="instance"/> type.</typeparam>
+        /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
         /// <param name="key">The key to use to persist the state.</param>
         /// <param name="instance">The instance to persist.</param>
-        public void PersistAsJson<T>(string key, T instance)
+        public void PersistAsJson<TValue>(string key, TValue instance)
         {
             if (key is null)
             {
@@ -145,14 +145,14 @@ namespace Microsoft.AspNetCore.Components
 
         /// <summary>
         /// Tries to retrieve the persisted state as JSON with the given <paramref name="key"/> and deserializes it into an
-        /// instance of type <typeparamref name="T"/>.
+        /// instance of type <typeparamref name="TValue"/>.
         /// When the key is present, the state is successfully returned via <paramref name="instance"/>
         /// and removed from the <see cref="ComponentApplicationState"/>.
         /// </summary>
         /// <param name="key">The key used to persist the instance.</param>
         /// <param name="instance">The persisted instance.</param>
         /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-        public bool TryRedeemFromJson<T>(string key, [MaybeNullWhen(false)] out T instance)
+        public bool TryRedeemFromJson<TValue>(string key, [MaybeNullWhen(false)] out TValue? instance)
         {
             if (key is null)
             {
@@ -161,12 +161,12 @@ namespace Microsoft.AspNetCore.Components
 
             if (TryRedeemPersistedState(key, out var data))
             {
-                instance = JsonSerializer.Deserialize<T>(data)!;
+                instance = JsonSerializer.Deserialize<TValue>(data)!;
                 return true;
             }
             else
             {
-                instance = default(T);
+                instance = default(TValue);
                 return false;
             }
         }

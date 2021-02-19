@@ -34,7 +34,7 @@
         @switch (scenario)
         {
             case "SingleComponentServer":
-                <component render-mode="ServerPrerendered" type="typeof(PreserveStateComponent)" param-State="@state1"></component>
+                <component render-mode="ServerPrerendered" type="typeof(PreserveStateComponent)" param-State="@state1" param-ExtraState="@("Extra")"></component>
                 break;
             case "MultipleComponentServer":
                 <component render-mode="ServerPrerendered" type="typeof(PreserveStateComponent)" param-State="@state1"></component>
@@ -45,7 +45,7 @@
                 <component render-mode="ServerPrerendered" type="typeof(PreserveStateComponent)" param-State="@state2"></component>
                 break;
             case "SingleComponentClient":
-                <component render-mode="WebAssemblyPrerendered" type="typeof(PreserveStateComponent)" param-State="@state1"></component>
+                <component render-mode="WebAssemblyPrerendered" type="typeof(PreserveStateComponent)" param-State="@state1" param-ExtraState="@("Extra")"></component>
                 break;
             case "MultipleComponentClient":
                 <component render-mode="WebAssemblyPrerendered" type="typeof(PreserveStateComponent)" param-State="@state1"></component>

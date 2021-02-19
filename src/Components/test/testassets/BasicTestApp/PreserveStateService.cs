@@ -34,10 +34,10 @@ namespace BasicTestApp
 
         public void NewState() => Guid = Guid.NewGuid();
 
-        private ValueTask PersistState()
+        private Task PersistState()
         {
             _componentApplicationState.PersistAsJson("Service", Guid);
-            return default;
+            return Task.CompletedTask;
         }
 
         public void Dispose()

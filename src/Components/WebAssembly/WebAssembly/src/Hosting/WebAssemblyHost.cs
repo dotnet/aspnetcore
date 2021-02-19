@@ -162,6 +162,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     await _renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
                 }
 
+                store.ExistingState.Clear();
+
                 await tcs.Task;
             }
         }

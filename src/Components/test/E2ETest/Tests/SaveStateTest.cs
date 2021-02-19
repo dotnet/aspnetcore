@@ -59,6 +59,29 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         }
 
         [Theory]
+        [InlineData("SingleComponentServer")]
+        [InlineData("SingleComponentClient")]
+        public void PreservedStateIsOnlyAvailableDuringFirstRender(string link)
+        {
+            Browser.Click(By.Id(link));
+            var prerenderState = Browser.Exists(By.Id("state-State1")).Text;
+            var extraPrerenderState = Browser.Exists(By.Id("extra-Extra")).Text;
+
+            BeginInteractivity();
+
+            Browser.Contains("true", () => Browser.FindElement(By.Id("restored-State1")).Text);
+            var newState = Browser.Exists(By.Id("state-State1")).Text;
+
+            Browser.DoesNotExist(By.Id("extra-Extra"));
+
+            Browser.Click(By.Id("button-Extra"));
+
+            var extraPrerenderStateAfterClick = Browser.Exists(By.Id("extra-Extra")).Text;
+            Assert.Equal(newState, prerenderState);
+            Assert.NotEqual(extraPrerenderState, extraPrerenderStateAfterClick);
+        }
+
+        [Theory]
         [InlineData("MultipleComponentServer")]
         [InlineData("MultipleComponentClient")]
         public void PreservesStateForMultipleServerComponent(string link)

@@ -43,7 +43,7 @@ else
     protected override async Task OnInitializedAsync()
     {
 
-        if (!ApplicationState.TryRetrieveFromJson<WeatherForecast []>("fetchdata", out var forecasts))
+        if (!ApplicationState.TryRedeemFromJson<WeatherForecast []>("fetchdata", out var forecasts))
         {
             forecasts = await WeatherForecastService.GetForecastAsync(DateTime.Now);
             ApplicationState.PersistAsJson("fetchdata", forecasts);

@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.Components
 
 #nullable enable
         public string? PersistedState { get; private set; }
-
-        public Dictionary<string, byte[]>? ExistingState { get; protected set; }
 #nullable disable
+
+        public Dictionary<string, byte[]> ExistingState { get; protected set; }
 
         public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
         {

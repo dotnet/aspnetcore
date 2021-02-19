@@ -91,8 +91,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     getParameterValues: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterValues(id) || ''),
   };
 
-  const persistedState = discoverPersistedState(document);
-  window['Blazor']._internal.getPersistedState = () => BINDING.js_string_to_mono_string(persistedState);
+  window['Blazor']._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
 
   window['Blazor']._internal.attachRootComponentToElement = (selector, componentId, rendererId) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
