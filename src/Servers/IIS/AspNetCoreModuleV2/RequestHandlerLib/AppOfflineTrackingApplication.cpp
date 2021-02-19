@@ -45,7 +45,8 @@ HRESULT AppOfflineTrackingApplication::StartMonitoringAppOflineImpl()
     RETURN_IF_FAILED(m_fileWatcher->Create(m_applicationPath.c_str(),
         L"app_offline.htm",
         m_shadowCopyDirectory,
-        this));
+        this,
+        m_shutdownTimeout));
 
     return S_OK;
 }

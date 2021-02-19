@@ -20,7 +20,7 @@
 #include "file_utility.h"
 
 extern HINSTANCE           g_hServerModule;
-extern BOOL         g_fInAppOfflineShutdown;
+extern BOOL                g_fInAppOfflineShutdown;
 
 HRESULT
 APPLICATION_INFO::CreateHandler(
@@ -83,23 +83,23 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
         return S_OK;
     }
 
-    if (g_fInAppOfflineShutdown)
-    {
-        m_pApplication = make_application<ServerErrorApplication>(
-            pHttpApplication,
-            E_FAIL,
-            false /* disableStartupPage */,
-            "" /* responseContent */,
-            503i16 /* statusCode */,
-            0i16 /* subStatusCode */,
-            "Application Shutting Down");
-        return S_OK;
-    }
-
     try
     {
         const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pHttpApplication);
         ShimOptions options(configurationSource);
+
+        if (g_fInAppOfflineShutdown)
+        {
+            m_pApplication = make_application<ServerErrorApplication>(
+                pHttpApplication,
+                E_FAIL,
+                false /* disableStartupPage */,
+                "" /* responseContent */,
+                503i16 /* statusCode */,
+                0i16 /* subStatusCode */,
+                "Application Shutting Down");
+            return S_OK;
+        }
 
         ErrorContext errorContext;
         errorContext.statusCode = 500i16;
@@ -198,10 +198,11 @@ APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOpt
     LOG_INFO(L"Creating handler application");
 
     IAPPLICATION * newApplication;
+    std::wstring shadowCopyWstring = shadowCopyPath.wstring();
     RETURN_IF_FAILED(m_pApplicationFactory->Execute(
         &m_pServer,
         &pHttpContext,
-        shadowCopyPath,
+        shadowCopyWstring,
         &newApplication));
 
     m_pApplication.reset(newApplication);
@@ -287,12 +288,11 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
             {
                 try
                 {
-                    std::string::size_type size;
-                    int intFileName = std::stoi(entry.path().filename().string(), &size);
+                    int intFileName = std::stoi(entry.path().filename().string());
                     if (intFileName > directoryName)
                     {
                         directoryName = intFileName;
-                        directoryNameStr = std::string(entry.path().string());
+                        directoryNameStr = entry.path().filename().string();
                     }
                 }
                 catch (...)
@@ -303,7 +303,7 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
             }
         }
 
-        shadowCopyPath = shadowCopyPath / std::filesystem::path(directoryNameStr);
+        shadowCopyPath = shadowCopyPath / directoryNameStr;
         HRESULT hr = Environment::CopyToDirectory(physicalPath, shadowCopyPath, options.QueryCleanShadowCopyDirectory(), shadowCopyBaseDirectory.path().parent_path());
         if (hr != S_OK)
         {

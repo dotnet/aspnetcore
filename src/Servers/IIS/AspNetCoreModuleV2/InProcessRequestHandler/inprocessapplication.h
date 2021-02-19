@@ -179,6 +179,7 @@ private:
     std::shared_ptr<StringStreamRedirectionOutput> m_stringRedirectionOutput;
 
     inline static const LPCSTR      s_exeLocationParameterName = "InProcessExeLocation";
+    inline static const LPCSTR      s_shadowCopyDirectoryName = "ShadowCopyDirectory";
 
     VOID
     UnexpectedThreadExit(const ExecuteClrContext& context) const;

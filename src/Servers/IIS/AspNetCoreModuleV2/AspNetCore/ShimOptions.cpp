@@ -47,7 +47,8 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     auto cleanShadowCopyDirectory = find_element(handlerSettings, CS_ASPNETCORE_CLEAN_SHADOW_DIRECTORY_CONTENT).value_or(std::wstring());
     m_fCleanShadowCopyDirectory = equals_ignore_case(L"true", cleanShadowCopyDirectory);
 
-    m_strShadowCopyingDirectory = find_element(handlerSettings, CS_ASPNETCORE_SHADOW_COPY_DIRECTORY).value_or(std::wstring());
+    m_strShadowCopyingDirectory = find_element(handlerSettings, CS_ASPNETCORE_SHADOW_COPY_DIRECTORY)
+        .value_or(m_fEnableShadowCopying ? L"ShadowCopyDirectory" : std::wstring());
 
     m_strProcessPath = section->GetRequiredString(CS_ASPNETCORE_PROCESS_EXE_PATH);
     m_strArguments = section->GetString(CS_ASPNETCORE_PROCESS_ARGUMENTS).value_or(CS_ASPNETCORE_PROCESS_ARGUMENTS_DEFAULT);

@@ -152,7 +152,7 @@ bool Environment::IsRunning64BitProcess()
     return systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
 }
 
-HRESULT Environment::CopyToDirectory(std::wstring source, std::filesystem::path destination, bool cleanDest, std::filesystem::path directoryToIgnore)
+HRESULT Environment::CopyToDirectory(const std::wstring& source, const std::filesystem::path& destination, bool cleanDest, const std::filesystem::path& directoryToIgnore)
 {
     if (cleanDest && std::filesystem::exists(destination))
     {
@@ -201,7 +201,7 @@ void Environment::CopyToDirectoryInner(const std::filesystem::path& source, cons
     }
 }
 
-bool Environment::CheckUpToDate(std::wstring source, std::filesystem::path destination, const std::wstring& extension, const std::filesystem::path& directoryToIgnore)
+bool Environment::CheckUpToDate(const std::wstring& source, const std::filesystem::path& destination, const std::wstring& extension, const std::filesystem::path& directoryToIgnore)
 {
     for (auto& path : std::filesystem::directory_iterator(source))
     {

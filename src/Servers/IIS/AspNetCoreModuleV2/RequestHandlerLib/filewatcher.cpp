@@ -65,8 +65,9 @@ HRESULT
 FILE_WATCHER::Create(
     _In_ PCWSTR                  pszDirectoryToMonitor,
     _In_ PCWSTR                  pszFileNameToMonitor,
-    _In_ std::wstring            shadowCopyPath,
-    _In_ AppOfflineTrackingApplication* pApplication
+    _In_ const std::wstring&     shadowCopyPath,
+    _In_ AppOfflineTrackingApplication* pApplication,
+    _In_ DWORD                   shutdownTimeout
 )
 {
     m_shadowCopyPath = shadowCopyPath;
@@ -309,7 +310,7 @@ HRESULT
         // Reset timer for dll checks
         LOG_INFO(L"Detected dll change, resetting timer callback which will eventually trigger shutdown.");
         m_Timer.CancelTimer();
-        m_Timer.InitializeTimer(FILE_WATCHER::TimerCallback, this, 5000, 3000);
+        m_Timer.InitializeTimer(FILE_WATCHER::TimerCallback, this, 5000, INFINITE);
     }
 
     return S_OK;
@@ -329,10 +330,8 @@ FILE_WATCHER::TimerCallback(
     CopyAndShutdown((FILE_WATCHER*)Context);
 }
 
-DWORD WINAPI FILE_WATCHER::CopyAndShutdown(LPVOID arg)
+DWORD WINAPI FILE_WATCHER::CopyAndShutdown(FILE_WATCHER* watcher)
 {
-    auto watcher = (FILE_WATCHER*)arg;
-
     // Only copy and shutdown once
     SRWExclusiveLock lock(watcher->m_copyLock);
     if (watcher->m_copied)
@@ -443,7 +442,7 @@ FILE_WATCHER::StopMonitor()
     PostQueuedCompletionStatus(m_hCompletionPort, 0, FILE_WATCHER_SHUTDOWN_KEY, NULL);
     WaitForMonitor(200);
 
-    if (m_fShadowCopyEnabled && m_pDoneCopyEvent != nullptr)
+    if (m_fShadowCopyEnabled)
     {
         // If we are shadow copying, wait for the copying to finish.
         WaitForSingleObject(m_pDoneCopyEvent, 30000);

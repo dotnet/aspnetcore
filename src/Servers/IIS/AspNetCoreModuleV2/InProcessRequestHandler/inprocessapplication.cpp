@@ -38,11 +38,13 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
         m_dotnetExeKnownLocation = knownLocation;
     }
 
-    const auto shadowCopyDirectory = FindParameter<PCWSTR>("ShadowCopyDirectory", pParameters, nParameters);
+    const auto shadowCopyDirectory = FindParameter<PCWSTR>(s_shadowCopyDirectoryName, pParameters, nParameters);
     if (shadowCopyDirectory != nullptr)
     {
         m_shadowCopyDirectory = shadowCopyDirectory;
     }
+
+    m_shutdownTimeout = m_pConfig.get()->QueryShutdownTimeLimitInMS();
 
     m_stringRedirectionOutput = std::make_shared<StringStreamRedirectionOutput>();
 }
@@ -109,7 +111,6 @@ IN_PROCESS_APPLICATION::StopClr()
 
     if (m_folderCleanupThread.joinable())
     {
-        // Worker thread would wait for clr to finish and log error if required
         m_folderCleanupThread.join();
     }
 

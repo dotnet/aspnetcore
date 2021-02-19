@@ -66,7 +66,6 @@ public:
         return false;
     }
 
-
 private:
 
     HRESULT

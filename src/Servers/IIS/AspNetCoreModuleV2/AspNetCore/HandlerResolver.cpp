@@ -29,7 +29,7 @@ HandlerResolver::HandlerResolver(HMODULE hModule, const IHttpServer &pServer)
 
 HRESULT
 HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication,
-    std::filesystem::path shadowCopyPath,
+    const std::filesystem::path& shadowCopyPath,
     const ShimOptions& pConfiguration,
     std::unique_ptr<ApplicationFactory>& pApplicationFactory,
     ErrorContext& errorContext)
@@ -126,7 +126,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 }
 
 HRESULT
-HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std::filesystem::path shadowCopyPath, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, ErrorContext& errorContext)
+HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, const std::filesystem::path& shadowCopyPath, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, ErrorContext& errorContext)
 {
     SRWExclusiveLock lock(m_requestHandlerLoadLock);
     if (m_loadedApplicationHostingModel != HOSTING_UNKNOWN)

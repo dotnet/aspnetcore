@@ -109,7 +109,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                 if (itr->second->ConfigurationPathApplies(configurationPath))
                 {
                     applicationsToRecycle.emplace_back(itr->second);
-                    // Delete after shutting the application down to avoid creating
+                    // Delay deleting an in-process app until after shutting the application down to avoid creating
                     // another application info, which would just return app_offline.
                     if (m_handlerResolver.GetHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
                     {

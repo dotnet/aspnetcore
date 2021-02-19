@@ -28,12 +28,10 @@ public:
 
     HRESULT Create(
         _In_ PCWSTR                  pszDirectoryToMonitor,
-
         _In_ PCWSTR                  pszFileNameToMonitor,
-
-        _In_ std::wstring            shadowCopyPath,
-
-        _In_ AppOfflineTrackingApplication *pApplication
+        _In_ const std::wstring&            shadowCopyPath,
+        _In_ AppOfflineTrackingApplication *pApplication,
+        _In_ DWORD                   shutdownTimeout
     );
 
     static
@@ -50,7 +48,7 @@ public:
         _In_ PVOID Context,
         _In_ PTP_TIMER Timer);
 
-    static DWORD WINAPI CopyAndShutdown(LPVOID);
+    static DWORD WINAPI CopyAndShutdown(FILE_WATCHER* watcher);
 
     HRESULT HandleChangeCompletion(DWORD cbCompletion);
 
