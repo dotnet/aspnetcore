@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components
         public void InitializeExistingState_SetupsState()
         {
             // Arrange
-            var applicationState = new ComponentApplicationState(new Dictionary<string, byte[]>(), new List<Func<Task>>());
+            var applicationState = new ComponentApplicationState(new Dictionary<string, byte[]>(), new List<ComponentApplicationState.OnPersistingCallback>());
             var existingState = new Dictionary<string, byte[]>
             {
                 ["MyState"] = new byte[] { 1, 2, 3, 4 }
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components
             applicationState.InitializeExistingState(existingState);
 
             // Assert
-            Assert.True(applicationState.TryRetrievePersistedState("MyState", out var existing));
+            Assert.True(applicationState.TryRedeemPersistedState("MyState", out var existing));
             Assert.Equal(new byte[] { 1, 2, 3, 4 }, existing);
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components
         public void InitializeExistingState_ThrowsIfAlreadyInitialized()
         {
             // Arrange
-            var applicationState = new ComponentApplicationState(new Dictionary<string, byte[]>(), new List<Func<Task>>());
+            var applicationState = new ComponentApplicationState(new Dictionary<string, byte[]>(), new List<ComponentApplicationState.OnPersistingCallback>());
             var existingState = new Dictionary<string, byte[]>
             {
                 ["MyState"] = new byte[] { 1, 2, 3, 4 }
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components
         public void TryRetrieveState_ReturnsStateWhenItExists()
         {
             // Arrange
-            var applicationState = new ComponentApplicationState(new Dictionary<string, byte[]>(), new List<Func<Task>>());
+            var applicationState = new ComponentApplicationState(new Dictionary<string, byte[]>(), new List<ComponentApplicationState.OnPersistingCallback>());
             var existingState = new Dictionary<string, byte[]>
             {
                 ["MyState"] = new byte[] { 1, 2, 3, 4 }
@@ -59,9 +59,9 @@ namespace Microsoft.AspNetCore.Components
             applicationState.InitializeExistingState(existingState);
 
             // Assert
-            Assert.True(applicationState.TryRetrievePersistedState("MyState", out var existing));
+            Assert.True(applicationState.TryRedeemPersistedState("MyState", out var existing));
             Assert.Equal(new byte[] { 1, 2, 3, 4 }, existing);
-            Assert.False(applicationState.TryRetrievePersistedState("MyState", out var gone));
+            Assert.False(applicationState.TryRedeemPersistedState("MyState", out var gone));
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var currentState = new Dictionary<string, byte[]>();
-            var applicationState = new ComponentApplicationState(currentState, new List<Func<Task>>());
+            var applicationState = new ComponentApplicationState(currentState, new List<ComponentApplicationState.OnPersistingCallback>());
             var myState = new byte[] { 1, 2, 3, 4 };
 
             // Act
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var currentState = new Dictionary<string, byte[]>();
-            var applicationState = new ComponentApplicationState(currentState, new List<Func<Task>>());
+            var applicationState = new ComponentApplicationState(currentState, new List<ComponentApplicationState.OnPersistingCallback>());
             var myState = new byte[] { 1, 2, 3, 4 };
 
             applicationState.PersistState("MyState", myState);
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var currentState = new Dictionary<string, byte[]>();
-            var applicationState = new ComponentApplicationState(currentState, new List<Func<Task>>());
+            var applicationState = new ComponentApplicationState(currentState, new List<ComponentApplicationState.OnPersistingCallback>());
             var myState = new byte[] { 1, 2, 3, 4 };
 
             // Act
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var currentState = new Dictionary<string, byte[]>();
-            var applicationState = new ComponentApplicationState(currentState, new List<Func<Task>>());
+            var applicationState = new ComponentApplicationState(currentState, new List<ComponentApplicationState.OnPersistingCallback>());
 
             // Act
             applicationState.PersistAsJson<byte []>("MyState", null);
@@ -132,16 +132,16 @@ namespace Microsoft.AspNetCore.Components
             var myState = new byte[] { 1, 2, 3, 4 };
             var serialized = JsonSerializer.SerializeToUtf8Bytes(myState);
             var existingState = new Dictionary<string, byte[]>() { ["MyState"] = serialized };
-            var applicationState = new ComponentApplicationState(new Dictionary<string, byte[]>(), new List<Func<Task>>());
+            var applicationState = new ComponentApplicationState(new Dictionary<string, byte[]>(), new List<ComponentApplicationState.OnPersistingCallback>());
 
             applicationState.InitializeExistingState(existingState);
 
             // Act
-            Assert.True(applicationState.TryRetrieveFromJson<byte []>("MyState", out var stored));
+            Assert.True(applicationState.TryRedeemFromJson<byte []>("MyState", out var stored));
 
             // Assert
             Assert.Equal(myState, stored);
-            Assert.False(applicationState.TryRetrieveFromJson<byte[]>("MyState", out _));
+            Assert.False(applicationState.TryRedeemFromJson<byte[]>("MyState", out _));
         }
 
         [Fact]
@@ -150,16 +150,16 @@ namespace Microsoft.AspNetCore.Components
             // Arrange
             var serialized = JsonSerializer.SerializeToUtf8Bytes<byte []>(null);
             var existingState = new Dictionary<string, byte[]>() { ["MyState"] = serialized };
-            var applicationState = new ComponentApplicationState(new Dictionary<string, byte[]>(), new List<Func<Task>>());
+            var applicationState = new ComponentApplicationState(new Dictionary<string, byte[]>(), new List<ComponentApplicationState.OnPersistingCallback>());
 
             applicationState.InitializeExistingState(existingState);
 
             // Act
-            Assert.True(applicationState.TryRetrieveFromJson<byte[]>("MyState", out var stored));
+            Assert.True(applicationState.TryRedeemFromJson<byte[]>("MyState", out var stored));
 
             // Assert
             Assert.Null(stored);
-            Assert.False(applicationState.TryRetrieveFromJson<byte[]>("MyState", out _));
+            Assert.False(applicationState.TryRedeemFromJson<byte[]>("MyState", out _));
         }
     }
 }

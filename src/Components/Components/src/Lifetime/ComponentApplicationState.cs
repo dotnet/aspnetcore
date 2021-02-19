@@ -16,11 +16,11 @@ namespace Microsoft.AspNetCore.Components
     {
         private IDictionary<string, byte[]>? _existingState;
         private readonly IDictionary<string, byte[]> _currentState;
-        private readonly List<Func<Task>> _registeredCallbacks;
+        private readonly List<OnPersistingCallback> _registeredCallbacks;
 
         internal ComponentApplicationState(
             IDictionary<string, byte[]> currentState,
-            List<Func<Task>> pauseCallbacks)
+            List<OnPersistingCallback> pauseCallbacks)
         {
             _currentState = currentState;
             _registeredCallbacks = pauseCallbacks;
@@ -36,26 +36,46 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Registers a callback that will be invoked when the component application is being paused.
+        /// Represents the method that performs operations when <see cref="OnPersisting"/> is raised and the application is about to be paused.
         /// </summary>
-        /// <param name="callback">The <see cref="Func{TResult}"/> to invoke.</param>
-        public void RegisterOnPersistingCallback(Func<Task> callback)
-        {
-            if (callback is null)
-            {
-                throw new ArgumentNullException(nameof(callback));
-            }
+        /// <returns>A <see cref="ValueTask"/> that will complete when the method is done preparing for the application pause.</returns>
+        public delegate ValueTask OnPersistingCallback();
 
-            _registeredCallbacks.Add(callback);
+        /// <summary>
+        /// An event that is raised when the application is about to be paused.
+        /// Registered handlers can use this opportunity to persist their state so that it can be retrieved when the application resumes.
+        /// </summary>
+        public event OnPersistingCallback OnPersisting
+        {
+            add
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _registeredCallbacks.Add(value);
+            }
+            remove
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _registeredCallbacks.Remove(value);
+            }
         }
 
         /// <summary>
         /// Tries to retrieve the persisted state with the given <paramref name="key"/>.
+        /// When the key is present, the state is successfully returned via <paramref name="value"/>
+        /// and removed from the <see cref="ComponentApplicationState"/>.
         /// </summary>
         /// <param name="key">The key used to persist the state.</param>
         /// <param name="value">The persisted state.</param>
-        /// <returns><c>true</c> if the state was found;<c>false</c> otherwise.</returns>
-        public bool TryRetrievePersistedState(string key, [MaybeNullWhen(false)] out byte[] value)
+        /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
+        public bool TryRedeemPersistedState(string key, [MaybeNullWhen(false)] out byte[]? value)
         {
             if (key is null)
             {
@@ -126,18 +146,20 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Tries to retrieve the persisted state as JSON with the given <paramref name="key"/> and deserializes it into an
         /// instance of type <typeparamref name="T"/>.
+        /// When the key is present, the state is successfully returned via <paramref name="instance"/>
+        /// and removed from the <see cref="ComponentApplicationState"/>.
         /// </summary>
         /// <param name="key">The key used to persist the instance.</param>
         /// <param name="instance">The persisted instance.</param>
-        /// <returns><c>true</c> if the state was found;<c>false</c> otherwise.</returns>
-        public bool TryRetrieveFromJson<T>(string key, [MaybeNullWhen(false)] out T instance)
+        /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
+        public bool TryRedeemFromJson<T>(string key, [MaybeNullWhen(false)] out T instance)
         {
             if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (TryRetrievePersistedState(key, out var data))
+            if (TryRedeemPersistedState(key, out var data))
             {
                 instance = JsonSerializer.Deserialize<T>(data)!;
                 return true;

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             string baseUri,
             string uri,
             ClaimsPrincipal user,
-            string existingState)
+            IComponentApplicationStateStore store)
         {
             var scope = _scopeFactory.CreateScope();
             var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
@@ -64,9 +64,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentApplicationLifetime>();
-            var store = !string.IsNullOrEmpty(existingState) ?
-                new ProtectedPrerenderComponentApplicationStore(existingState, scope.ServiceProvider.GetRequiredService<IDataProtectionProvider>()) :
-                new PrerenderComponentApplicationStore();
             await appLifetime.RestoreStateAsync(store);
 
             var renderer = new RemoteRenderer(

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Lifetime
     public class ComponentApplicationLifetime
     {
         private bool _stateIsPersisted;
-        private List<Func<Task>> _pauseCallbacks = new();
+        private List<ComponentApplicationState.OnPersistingCallback> _pauseCallbacks = new();
         private readonly Dictionary<string, byte[]> _currentState = new();
 
         /// <summary>

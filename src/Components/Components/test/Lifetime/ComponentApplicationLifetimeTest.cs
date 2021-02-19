@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components
             await lifetime.RestoreStateAsync(store);
 
             // Assert
-            Assert.True(lifetime.State.TryRetrievePersistedState("MyState", out var retrieved));
+            Assert.True(lifetime.State.TryRedeemPersistedState("MyState", out var retrieved));
             Assert.Empty(state);
             Assert.Equal(data, retrieved);
         }
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Components
             var data = new byte[] { 1, 2, 3, 4 };
             var invoked = false;
 
-            lifetime.State.RegisterOnPersistingCallback(() => { invoked = true; return Task.CompletedTask; });
+            lifetime.State.OnPersisting += () => { invoked = true; return default; };
 
             // Act
             await lifetime.PersistStateAsync(store, renderer);

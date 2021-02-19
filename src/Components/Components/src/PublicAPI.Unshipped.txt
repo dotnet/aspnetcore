@@ -2,11 +2,13 @@
 *REMOVED*static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object!>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 *REMOVED*virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo! fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ComponentApplicationState
+Microsoft.AspNetCore.Components.ComponentApplicationState.OnPersisting -> Microsoft.AspNetCore.Components.ComponentApplicationState.OnPersistingCallback!
+Microsoft.AspNetCore.Components.ComponentApplicationState.OnPersistingCallback
 Microsoft.AspNetCore.Components.ComponentApplicationState.PersistAsJson<T>(string! key, T instance) -> void
 Microsoft.AspNetCore.Components.ComponentApplicationState.PersistState(string! key, byte[]! value) -> void
 Microsoft.AspNetCore.Components.ComponentApplicationState.RegisterOnPersistingCallback(System.Func<System.Threading.Tasks.Task!>! callback) -> void
-Microsoft.AspNetCore.Components.ComponentApplicationState.TryRetrieveFromJson<T>(string! key, out T instance) -> bool
-Microsoft.AspNetCore.Components.ComponentApplicationState.TryRetrievePersistedState(string! key, out byte[]! value) -> bool
+Microsoft.AspNetCore.Components.ComponentApplicationState.TryRedeemFromJson<T>(string! key, out T instance) -> bool
+Microsoft.AspNetCore.Components.ComponentApplicationState.TryRedeemPersistedState(string! key, out byte[]? value) -> bool
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.ComponentApplicationLifetime() -> void
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.PersistStateAsync(Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore! store, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer) -> System.Threading.Tasks.Task!

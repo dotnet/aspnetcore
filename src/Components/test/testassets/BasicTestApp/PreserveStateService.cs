@@ -7,14 +7,14 @@ using Microsoft.AspNetCore.Components;
 
 namespace BasicTestApp
 {
-    public class PreserveStateService
+    public class PreserveStateService : IDisposable
     {
         private readonly ComponentApplicationState _componentApplicationState;
 
         public PreserveStateService(ComponentApplicationState componentApplicationState)
         {
             _componentApplicationState = componentApplicationState;
-            _componentApplicationState.RegisterOnPersistingCallback(OnPersisting);
+            _componentApplicationState.OnPersisting += PersistState;
             TryRestoreState();
         }
 
@@ -22,7 +22,7 @@ namespace BasicTestApp
 
         private void TryRestoreState()
         {
-            if (_componentApplicationState.TryRetrieveFromJson<Guid>("Service", out var guid))
+            if (_componentApplicationState.TryRedeemFromJson<Guid>("Service", out var guid))
             {
                 Guid = guid;
             }
@@ -34,10 +34,15 @@ namespace BasicTestApp
 
         public void NewState() => Guid = Guid.NewGuid();
 
-        private Task OnPersisting()
+        private ValueTask PersistState()
         {
             _componentApplicationState.PersistAsJson("Service", Guid);
-            return Task.CompletedTask;
+            return default;
+        }
+
+        public void Dispose()
+        {
+            _componentApplicationState.OnPersisting -= PersistState;
         }
     }
 }
