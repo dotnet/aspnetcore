@@ -507,6 +507,29 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
+        public async Task RequestDelegatePassHttpContextRequestAbortedAsCancelationToken()
+        {
+            CancellationToken? cancellationTokenArgument = null;
+
+            void TestAction(CancellationToken cancellationToken)
+            {
+                cancellationTokenArgument = cancellationToken;
+            }
+
+            using var cts = new CancellationTokenSource();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestAborted = cts.Token
+            };
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<CancellationToken>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(httpContext.RequestAborted, cancellationTokenArgument);
+        }
+
+        [Fact]
         public async Task RequestDelegateWritesComplexReturnValueAsJsonResponseBody()
         {
             Todo originalTodo = new()

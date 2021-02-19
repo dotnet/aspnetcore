@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.RequestServices));
         private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.Request));
         private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.Response));
+        private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.RequestAborted));
 
         public static RequestDelegate BuildRequestDelegate(Delegate action)
         {
@@ -138,6 +139,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     else if (parameter.ParameterType == typeof(HttpContext))
                     {
                         paramterExpression = HttpContextParameter;
+                    }
+                    else if (parameter.ParameterType == typeof(CancellationToken))
+                    {
+                        paramterExpression = RequestAbortedExpr;
                     }
                 }
 
