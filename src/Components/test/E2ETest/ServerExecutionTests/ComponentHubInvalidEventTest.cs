@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             {
                 BrowserRendererId = 0,
                 EventHandlerId = 3,
-                EventArgsType = "mouse",
+                EventName = "click",
             });
 
             // Act
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             {
                 BrowserRendererId = 0,
                 EventHandlerId = 1990,
-                EventArgsType = "mouse",
+                EventName = "click",
             });
 
             var eventArgs = new MouseEventArgs

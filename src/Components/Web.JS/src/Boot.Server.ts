@@ -8,7 +8,7 @@ import { RenderQueue } from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, Logger } from './Platform/Logging/Logger';
 import { CircuitDescriptor } from './Platform/Circuits/CircuitManager';
-import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
+import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';

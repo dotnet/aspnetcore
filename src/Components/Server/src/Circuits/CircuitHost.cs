@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             WebEventData webEventData;
             try
             {
-                webEventData = WebEventData.Parse(eventDescriptorJson, eventArgsJson);
+                webEventData = WebEventData.Parse(Renderer, eventDescriptorJson, eventArgsJson);
             }
             catch (Exception ex)
             {
