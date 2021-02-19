@@ -446,7 +446,7 @@ FILE_WATCHER::StopMonitor()
     if (m_fShadowCopyEnabled)
     {
         // If we are shadow copying, wait for the copying to finish.
-        WaitForSingleObject(m_pDoneCopyEvent, 30000);
+        WaitForSingleObject(m_pDoneCopyEvent, m_shutdownTimeout);
     }
 
     // Release application reference
