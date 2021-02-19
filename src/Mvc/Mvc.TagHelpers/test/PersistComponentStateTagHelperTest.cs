@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 RequestServices = new ServiceCollection()
                     .AddSingleton(renderer)
-                    .AddSingleton(new ComponentApplicationLifetime())
+                    .AddSingleton(new ComponentApplicationLifetime(NullLogger<ComponentApplicationLifetime>.Instance))
                     .AddSingleton<HtmlRenderer>()
                     .AddSingleton(_ephemeralProvider)
                     .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
