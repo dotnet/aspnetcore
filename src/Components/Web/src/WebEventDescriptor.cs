@@ -7,7 +7,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
     /// of the Blazor framework. These types will change in a future release.
     /// </summary>
+#if IGNITOR
+    internal sealed class WebEventDescriptor
+#else
     public sealed class WebEventDescriptor
+#endif
     {
         // We split the incoming event data in two, because we don't know what type
         // to use when deserializing the args until we've deserialized the descriptor.
