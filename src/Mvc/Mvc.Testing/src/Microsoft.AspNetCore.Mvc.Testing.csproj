@@ -6,6 +6,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;aspnetcoremvctesting</PackageTags>
     <IsPackable>true</IsPackable>
+    <!-- We're disable NU5100 explicitly bundling assemblies as tasks so they are not referenced when consumed. -->
+    <NoWarn>NU5100</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +21,6 @@
   <ItemGroup>
     <Reference
         Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
-        Targets="Build"
         ReferenceOutputAssembly="false"
         SkipGetTargetFrameworkProperties="true"
         UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
@@ -27,5 +28,6 @@
 
   <ItemGroup>
     <Content Include="Microsoft.AspNetCore.Mvc.Testing.targets" Pack="true" PackagePath="build/$(TargetFramework)/" />
+    <Content Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Mvc.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.Tasks.dll" Pack="true" PackagePath="tasks/netstandard2.0/" />
   </ItemGroup>
 </Project>
