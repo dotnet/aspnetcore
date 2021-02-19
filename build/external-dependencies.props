@@ -207,7 +207,7 @@
     <ExternalDependency Include="System.Security.Permissions" Version="$(SystemSecurityPermissionsPackageVersion)" />
     <ExternalDependency Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)" />
     <ExternalDependency Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerPackageVersion)" />
-    <ExternalDependency Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
+    <ExternalDependency Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" AppMetapackage="true" AllMetapackage="true" MetapackageVersionRangeType="Minimum" />
     <ExternalDependency Include="System.Threading.Channels" Version="$(SystemThreadingChannelsPackageVersion)" />
     <ExternalDependency Include="System.Threading.Tasks.Dataflow" Version="$(SystemThreadingTasksDataflowPackageVersion)" />
     <ExternalDependency Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
