@@ -98,7 +98,7 @@
     </When>
   </Choose>
 
-  <Target Name="ValidateBenchmarks" BeforeTargets="Test" Condition="'$(IsMicrobenchmarksProject)' == 'true' AND 'true' == 'false'">
+  <Target Name="ValidateBenchmarks" BeforeTargets="Test" Condition="'$(IsMicrobenchmarksProject)' == 'true'">
     <Message Text="%0ARunning benchmark validation for:%0A$(MSBuildProjectName)%0A"
     Importance="High" />
 
