@@ -35,7 +35,7 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
 
   const components = discoverComponents(document, 'server') as ServerComponentDescriptor[];
   const appState = discoverPersistedState(document);
-  const circuit = new CircuitDescriptor(components, appState);
+  const circuit = new CircuitDescriptor(components, appState || '');
 
 
   const initialConnection = await initializeConnection(options, logger, circuit);
