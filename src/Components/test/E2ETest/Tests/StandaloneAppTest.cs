@@ -36,7 +36,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("Blazor standalone", Browser.Title);
         }
 
-
         [Fact]
         public void HasHeading()
         {

@@ -4,8 +4,10 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -67,7 +69,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     InvokedRenderModes.Mode.Server =>
                         new ProtectedPrerenderComponentApplicationStore(services.GetRequiredService<IDataProtectionProvider>()),
                     InvokedRenderModes.Mode.ServerAndWebAssembly =>
-                        throw new InvalidOperationException("The persistence mode could not be determine based on the rendered components. Specify the PersistenceMode explicitly."),
+                        throw new InvalidOperationException(
+                            Resources.FormatPersistComponentStateTagHelper_FailedToInferComponentPersistenceMode(PersistenceModeName)),
                     _ => throw new InvalidOperationException("Invalid InvokedRenderMode.")
                 },
                 TagHelpers.PersistenceMode.Server =>
@@ -82,7 +85,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             if (store != null)
             {
                 await manager.PersistStateAsync(store, renderer);
-                output.Content.SetHtmlContent(new PersistedStateContent(store.PersistedState));
+                output.Content.SetHtmlContent(
+                    new HtmlContentBuilder()
+                        .SetHtmlContent("<!--Blazor-Component-State:")
+                        .SetHtmlContent(store.PersistedState)
+                        .SetHtmlContent("-->"));
             }
         }
     }

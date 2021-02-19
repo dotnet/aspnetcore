@@ -1,20 +1,20 @@
 #nullable enable
 *REMOVED*static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object!>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 *REMOVED*virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo! fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.ComponentApplicationLifetime
-Microsoft.AspNetCore.Components.ComponentApplicationLifetime.ComponentApplicationLifetime() -> void
-Microsoft.AspNetCore.Components.ComponentApplicationLifetime.PersistStateAsync(Microsoft.AspNetCore.Components.IComponentApplicationStateStore! store, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.ComponentApplicationLifetime.RestoreStateAsync(Microsoft.AspNetCore.Components.IComponentApplicationStateStore! store) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.ComponentApplicationLifetime.State.get -> Microsoft.AspNetCore.Components.ComponentApplicationState!
 Microsoft.AspNetCore.Components.ComponentApplicationState
 Microsoft.AspNetCore.Components.ComponentApplicationState.PersistAsJson<T>(string! key, T instance) -> void
 Microsoft.AspNetCore.Components.ComponentApplicationState.PersistState(string! key, byte[]! value) -> void
 Microsoft.AspNetCore.Components.ComponentApplicationState.RegisterOnPersistingCallback(System.Func<System.Threading.Tasks.Task!>! callback) -> void
 Microsoft.AspNetCore.Components.ComponentApplicationState.TryRetrieveFromJson<T>(string! key, out T instance) -> bool
 Microsoft.AspNetCore.Components.ComponentApplicationState.TryRetrievePersistedState(string! key, out byte[]! value) -> bool
-Microsoft.AspNetCore.Components.IComponentApplicationStateStore
-Microsoft.AspNetCore.Components.IComponentApplicationStateStore.GetPersistedStateAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string!, byte[]!>!>!
-Microsoft.AspNetCore.Components.IComponentApplicationStateStore.PersistStateAsync(System.Collections.Generic.IReadOnlyDictionary<string!, byte[]!>! state) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime
+Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.ComponentApplicationLifetime() -> void
+Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.PersistStateAsync(Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore! store, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.RestoreStateAsync(Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore! store) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.State.get -> Microsoft.AspNetCore.Components.ComponentApplicationState!
+Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore
+Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore.GetPersistedStateAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string!, byte[]!>!>!
+Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore.PersistStateAsync(System.Collections.Generic.IReadOnlyDictionary<string!, byte[]!>! state) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Dispose() -> void
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Lifetime;
 
 namespace Microsoft.AspNetCore.Components
 {

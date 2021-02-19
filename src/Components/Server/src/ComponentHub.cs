@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Components.Server
             try
             {
                 var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
-                circuitHost = await _circuitFactory.CreateCircuitHost(
+                circuitHost = await _circuitFactory.CreateCircuitHostAsync(
                     components,
                     circuitClient,
                     baseUri,

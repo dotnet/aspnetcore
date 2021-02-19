@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Lifetime
 {
     /// <summary>
     /// Manages the lifetime of a component application.

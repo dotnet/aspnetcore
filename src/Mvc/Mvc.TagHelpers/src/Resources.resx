@@ -165,4 +165,7 @@
   <data name="AttributeIsRequired" xml:space="preserve">
     <value>A value for the '{0}' attribute must be supplied to the '{1}' tag helper.</value>
   </data>
+  <data name="PersistComponentStateTagHelper_FailedToInferComponentPersistenceMode" xml:space="preserve">
+    <value>The persistence mode could not be determined based on the rendered components. Specify a value using '{0}' attribute.</value>
+  </data>
 </root>
