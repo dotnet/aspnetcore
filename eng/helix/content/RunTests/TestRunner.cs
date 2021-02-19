@@ -48,6 +48,9 @@ namespace RunTests
                 var playwrightBrowsers = Path.Combine(helixDir, "ms-playwright");
                 Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
                 EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
+                
+                Console.WriteLine($"Setting DOTNET_ROLL_FORWARD: LatestMajor");
+                EnvironmentVariables.Add("DOTNET_ROLL_FORWARD", "LatestMajor");
 #endif
     
                 Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
