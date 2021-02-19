@@ -286,13 +286,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>bc9dc0e4303c2cc02262040260115e4e5ba06edc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Version="6.0.0-preview.2.21117.2">
+    <Dependency Name="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Version="6.0.0-preview.2.21118.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>c07d59af4edfb22ebef9a8922cca990f6242b53b</Sha>
+      <Sha>bc9dc0e4303c2cc02262040260115e4e5ba06edc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Runtime.WebAssembly.Sdk" Version="6.0.0-preview.2.21117.2">
+    <Dependency Name="Microsoft.NET.Runtime.WebAssembly.Sdk" Version="6.0.0-preview.2.21118.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>c07d59af4edfb22ebef9a8922cca990f6242b53b</Sha>
+      <Sha>bc9dc0e4303c2cc02262040260115e4e5ba06edc</Sha>
     </Dependency>
 
     <!--
