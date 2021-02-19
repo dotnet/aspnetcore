@@ -105,7 +105,7 @@ namespace Ignitor
             {
                 BrowserRendererId = 0,
                 EventHandlerId = clickEventDescriptor.EventId,
-                EventName = "mouse",
+                EventName = "click",
             };
 
             return DispatchEventCore(connection, Serialize(webEventDescriptor), Serialize(mouseEventArgs));
