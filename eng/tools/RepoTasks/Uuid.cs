@@ -11,7 +11,7 @@ namespace RepoTasks
     /// <summary>
     /// Implementation of RFC 4122 - A Universally Unique Identifier (UUID) URN Namespace.
     /// </summary>
-    internal sealed class Uuid
+    internal static class Uuid
     {
         /// <summary>
         ///   Generates a version 3 UUID given a namespace UUID and name. This is based on the algorithm described in

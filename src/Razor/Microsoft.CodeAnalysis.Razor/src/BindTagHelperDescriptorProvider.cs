@@ -431,7 +431,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 for (var i = 0; i < tagHelper.BoundAttributes.Count; i++)
                 {
                     var changeAttribute = tagHelper.BoundAttributes[i];
-                    if (!changeAttribute.Name.EndsWith("Changed") ||
+                    if (!changeAttribute.Name.EndsWith("Changed", StringComparison.Ordinal) ||
 
                         // Allow the ValueChanged attribute to be a delegate or EventCallback<>.
                         //

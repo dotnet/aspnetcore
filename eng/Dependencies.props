@@ -110,7 +110,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />

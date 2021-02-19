@@ -12,14 +12,6 @@
     <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" AllowExplicitReference="true" ExcludeAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsTestProject)' != 'true' AND '$(DotNetBuildFromSource)' != 'true' ">
-    <Reference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" PrivateAssets="All" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>$(RepoRoot)eng\AllRulesDisabled.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />
