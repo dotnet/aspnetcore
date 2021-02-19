@@ -881,6 +881,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             services.AddSingleton<IJSRuntime, UnsupportedJavaScriptRuntime>();
             services.AddSingleton<NavigationManager, HttpNavigationManager>();
             services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+            services.AddSingleton<ILogger<ComponentApplicationLifetime>, NullLogger<ComponentApplicationLifetime>>();
             services.AddSingleton<ComponentApplicationLifetime>();
             services.AddSingleton(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
             return services;
