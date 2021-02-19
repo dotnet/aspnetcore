@@ -3,8 +3,9 @@
     "tfm": "netcoreapp5.0",
     "frameworks": [
       {
-        "name": "Microsoft.NETCore.App",
-        "version": "5.0.4",
+        "name": "Microsoft.AspNetCore.App",
+        "version": "5.0.0",
+        "allowPrerelease": true,
         "rollForward": "latestMajor"
       }
     ]
