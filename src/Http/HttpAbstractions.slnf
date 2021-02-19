@@ -1,4 +1,4 @@
-{
+﻿{
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
     "projects": [
@@ -26,6 +26,7 @@
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",
       "src\\Http\\Routing.Abstractions\\test\\Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests.csproj",
       "src\\Http\\Http\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Http.Microbenchmarks.csproj",
+      "src\\Http\\Http.Abstractions\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks.csproj",
       "src\\Http\\Routing\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Routing.Microbenchmarks.csproj",
       "src\\Http\\Routing\\samples\\MapActionSample\\MapActionSample.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
