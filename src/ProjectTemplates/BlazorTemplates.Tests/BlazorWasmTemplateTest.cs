@@ -663,6 +663,7 @@ namespace Templates.Test
             else
             {
                 command = "dotnet-serve";
+                args = args + " --roll-forward LatestMajor";
             }            
             
             var serveProcess = ProcessEx.Run(Output, publishDir, command, args);
