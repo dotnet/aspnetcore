@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;

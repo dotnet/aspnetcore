@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(key));
             }
 
-            PersistState(key, JsonSerializer.SerializeToUtf8Bytes(instance));
+            PersistState(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options));
         }
 
         /// <summary>
