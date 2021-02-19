@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     {
         private Func<IServiceProvider> _createServiceProvider;
         private RootComponentTypeCache? _rootComponentCache;
+        private string? _persistedState;
 
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -60,6 +62,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Retrieve required attributes from JSRuntimeInvoker
             InitializeNavigationManager(jsRuntime);
             InitializeRegisteredRootComponents(jsRuntime);
+            InitializePersistedState(jsRuntime);
             InitializeDefaultServices();
 
             var hostEnvironment = InitializeEnvironment(jsRuntime);
@@ -106,6 +109,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
                 RootComponents.Add(componentType, registeredComponent.PrerenderId!, parameters);
             }
+        }
+
+        private void InitializePersistedState(IJSUnmarshalledRuntime jsRuntime)
+        {
+            _persistedState = jsRuntime.InvokeUnmarshalled<string>("Blazor._internal.getPersistedState");
         }
 
         private void InitializeNavigationManager(IJSUnmarshalledRuntime jsRuntime)
@@ -220,7 +228,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var services = _createServiceProvider();
             var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
-            return new WebAssemblyHost(services, scope, Configuration, RootComponents.ToArray());
+            return new WebAssemblyHost(services, scope, Configuration, RootComponents.ToArray(), _persistedState);
         }
 
         internal void InitializeDefaultServices()
@@ -229,6 +237,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
             Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
+            Services.AddSingleton<ComponentApplicationLifetime>();
+            Services.AddSingleton<ComponentApplicationState>(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
             Services.AddLogging(builder =>
             {
                 builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
