@@ -61,6 +61,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             }
 
             ResetState();
+
+            _pair.Application.Output.WriteAsync(_readData).GetAwaiter().GetResult();
         }
 
         private void ResetState()
