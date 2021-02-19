@@ -49,8 +49,11 @@ namespace RunTests
                 Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
                 EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
                 
-                Console.WriteLine($"Setting DOTNET_ROLL_FORWARD: LatestMajor");
+                Console.WriteLine($"Setting DOTNET_ROLL_FORWARD=LatestMajor");
                 EnvironmentVariables.Add("DOTNET_ROLL_FORWARD", "LatestMajor");
+                
+                Console.WriteLine($"Setting DOTNET_ROLL_FORWARD_TO_PRERELEASE=1");
+                EnvironmentVariables.Add("DOTNET_ROLL_FORWARD_TO_PRERELEASE", "1");
 #endif
     
                 Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
