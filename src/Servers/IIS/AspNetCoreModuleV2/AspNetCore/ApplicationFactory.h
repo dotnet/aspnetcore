@@ -32,7 +32,7 @@ public:
     HRESULT Execute(
         _In_  IHttpServer           *pServer,
         _In_  IHttpContext          *pHttpContext,
-        _In_  std::wstring          shadowCopyDirectory,
+        _In_  std::wstring&   shadowCopyDirectory,
         _Outptr_ IAPPLICATION       **pApplication) const
     {
         // m_location.data() is const ptr copy to local to get mutable pointer
