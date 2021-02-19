@@ -1504,6 +1504,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30309")]
         public Task Frame_MultipleStreams_RequestsNotFinished_DefaultMaxStreamsPerConnection_EnhanceYourCalmAfterDoubleMaxStreams()
         {
             // Kestrel tracks max streams per connection * 2
