@@ -47,21 +47,24 @@ namespace Microsoft.CodeAnalysis.Razor
             var types = new List<INamedTypeSymbol>();
             var visitor = new EventHandlerDataVisitor(types);
 
-            var discoveryMode = context.Items.GetTagHelperDiscoveryFilter();
-            if ((discoveryMode & TagHelperDiscoveryFilter.CurrentCompilation) == TagHelperDiscoveryFilter.CurrentCompilation)
-            {
-                visitor.Visit(compilation.Assembly);
-            }
 
-            if ((discoveryMode & TagHelperDiscoveryFilter.ReferenceAssemblies) == TagHelperDiscoveryFilter.ReferenceAssemblies)
+            var targetReference = context.Items.GetTargetMetadataReference();
+            if (targetReference is not null)
             {
+                if (compilation.GetAssemblyOrModuleSymbol(targetReference) is IAssemblySymbol targetAssembly)
+                {
+                    visitor.Visit(targetAssembly.GlobalNamespace);
+                }
+
+            }
+            else
+            {
+                visitor.Visit(compilation.Assembly.GlobalNamespace);
                 foreach (var reference in compilation.References)
                 {
-                    // We ignore .netmodules here - there really isn't a case where they are used by user code
-                    // even though the Roslyn APIs all support them.
                     if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
                     {
-                        visitor.Visit(assembly);
+                        visitor.Visit(assembly.GlobalNamespace);
                     }
                 }
             }
