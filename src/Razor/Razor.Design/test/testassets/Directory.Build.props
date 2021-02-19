@@ -28,8 +28,7 @@
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.dll"/>
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Runtime.dll"/>
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
-
-    <PackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
+    <Reference Include="$(BinariesRoot)\System.Text.Encodings.Web.dll"/>
   </ItemGroup>
 
   <Import Project="After.Directory.Build.props" Condition="Exists('After.Directory.Build.props')" />
