@@ -72,6 +72,7 @@ private:
     LONG                    _lStopMonitorCalled {};
     bool                    m_fShadowCopyEnabled;
     std::wstring            m_shadowCopyPath;
+    DWORD                   m_shutdownTimeout;
     OVERLAPPED              _overlapped;
     std::unique_ptr<AppOfflineTrackingApplication, IAPPLICATION_DELETER> _pApplication;
 };

@@ -72,6 +72,7 @@ FILE_WATCHER::Create(
 {
     m_shadowCopyPath = shadowCopyPath;
     m_fShadowCopyEnabled = !shadowCopyPath.empty();
+    m_shutdownTimeout = shutdownTimeout;
 
     RETURN_LAST_ERROR_IF_NULL(m_hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0));
 
