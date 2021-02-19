@@ -1,0 +1,12 @@
+{
+  "runtimeOptions": {
+    "tfm": "netcoreapp5.0",
+    "frameworks": [
+      {
+        "name": "Microsoft.NETCore.App",
+        "version": "5.0.4",
+        "rollForward": "latestMajor"
+      }
+    ]
+  }
+}
