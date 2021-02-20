@@ -652,6 +652,7 @@ namespace Templates.Test
         {
             var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
 
+            Output.WriteLine($"DOTNET_ROLL_FORWARD = {Environment.GetEnvironmentVariable("DOTNET_ROLL_FORWARD")} DOTNET_ROLL_FORWARD_TO_PRERELEASE = {Environment.GetEnvironmentVariable("DOTNET_ROLL_FORWARD_TO_PRERELEASE")}");
             Output.WriteLine("Running dotnet serve on published output...");
             var developmentCertificate = DevelopmentCertificate.Create(project.TemplateOutputDir);
             var args = $"-S --pfx \"{developmentCertificate.CertificatePath}\" --pfx-pwd \"{developmentCertificate.CertificatePassword}\" --port 0";
