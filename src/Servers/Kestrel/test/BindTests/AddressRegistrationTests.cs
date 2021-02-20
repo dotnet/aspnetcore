@@ -572,9 +572,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var exception = Assert.Throws<IOException>(() => host.Start());
                     var expectedMessage = CoreStrings.FormatEndpointAlreadyInUse($"http://127.0.0.1:{port}");
                     Assert.Equal(expectedMessage, exception.Message);
-                    Assert.Single(LogMessages, log => log.LogLevel == LogLevel.Critical &&
+                    Assert.Equal(0, LogMessages.Count(log => log.LogLevel == LogLevel.Critical &&
                         log.Exception is null &&
-                        log.Message.EndsWith(expectedMessage, StringComparison.Ordinal));
+                        log.Message.EndsWith(expectedMessage, StringComparison.Ordinal)));
                     await host.StopAsync();
                 }
             }
@@ -607,9 +607,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var exception = Assert.Throws<IOException>(() => host.Start());
                     var expectedMessage = CoreStrings.FormatEndpointAlreadyInUse($"http://[::1]:{port}");
                     Assert.Equal(expectedMessage, exception.Message);
-                    Assert.Single(LogMessages, log => log.LogLevel == LogLevel.Critical &&
+                    Assert.Equal(0, LogMessages.Count(log => log.LogLevel == LogLevel.Critical &&
                         log.Exception is null &&
-                        log.Message.EndsWith(expectedMessage, StringComparison.Ordinal));
+                        log.Message.EndsWith(expectedMessage, StringComparison.Ordinal)));
 
                     await host.StopAsync();
                 }
@@ -1000,9 +1000,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
 
                         Assert.Equal(CoreStrings.FormatEndpointAlreadyInUse(thisAddressString), exception.Message);
-                        Assert.Single(LogMessages, log => log.LogLevel == LogLevel.Critical &&
+                        Assert.Equal(0, LogMessages.Count(log => log.LogLevel == LogLevel.Critical &&
                             log.Exception is null &&
-                            log.Message.EndsWith(CoreStrings.FormatEndpointAlreadyInUse(thisAddressString), StringComparison.Ordinal));
+                            log.Message.EndsWith(CoreStrings.FormatEndpointAlreadyInUse(thisAddressString), StringComparison.Ordinal)));
                         break;
                     }
                 }

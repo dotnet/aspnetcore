@@ -209,11 +209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             catch (Exception ex)
             {
                 // Do not log stack trace for known errors https://github.com/dotnet/aspnetcore/issues/29801
-                if (ex is IOException && ex.InnerException is AddressInUseException)
-                {
-                    Trace.LogCritical(0, "Unable to start Kestrel. {Message}", ex.Message);
-                }
-                else
+                if (ex is not IOException && ex.InnerException is not AddressInUseException)
                 {
                     Trace.LogCritical(0, ex, "Unable to start Kestrel.");
                 }
