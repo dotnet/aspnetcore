@@ -652,7 +652,6 @@ namespace Templates.Test
         {
             var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
 
-            Output.WriteLine($"DOTNET_ROLL_FORWARD = {Environment.GetEnvironmentVariable("DOTNET_ROLL_FORWARD")} DOTNET_ROLL_FORWARD_TO_PRERELEASE = {Environment.GetEnvironmentVariable("DOTNET_ROLL_FORWARD_TO_PRERELEASE")}");
             Output.WriteLine("Running dotnet serve on published output...");
             var developmentCertificate = DevelopmentCertificate.Create(project.TemplateOutputDir);
             var args = $"-S --pfx \"{developmentCertificate.CertificatePath}\" --pfx-pwd \"{developmentCertificate.CertificatePassword}\" --port 0";
@@ -667,10 +666,7 @@ namespace Templates.Test
                 args = "--roll-forward LatestMajor" + args;
             }            
             
-            var env = new Dictionary<string, string>();
-            env["DOTNET_ROLL_FORWARD"] = "LatestMajor";
-            env["DOTNET_ROLL_FORWARD_TO_PRERELEASE"] = "1";
-            var serveProcess = ProcessEx.Run(Output, publishDir, command, args, env);
+            var serveProcess = ProcessEx.Run(Output, publishDir, command, args);
             var listeningUri = ResolveListeningUrl(serveProcess);
             return (serveProcess, listeningUri);
         }
