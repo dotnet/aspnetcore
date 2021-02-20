@@ -80,20 +80,6 @@ if ([string]::IsNullOrEmpty($FeedCred)) {
     InstallDotnetSDKAndRuntime "https://dotnetclimsrc.blob.core.windows.net/dotnet" $FeedCred
 }
 
-if ($InstallPlaywright -eq "true") {
-    foreach ($i in 1..5) {
-        $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT 5.0.103 $Arch `'`' `$true `'`' `'`' `$true"
-
-        if (!$success) {
-            Write-Host "Retrying..."
-        }
-        else
-        {
-            break
-        }
-    }
-}
-
 Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources /p:InstallPlaywright=$InstallPlaywright"
 dotnet restore RunTests\RunTests.csproj --ignore-failed-sources /p:InstallPlaywright=$InstallPlaywright
 
