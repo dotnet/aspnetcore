@@ -664,7 +664,7 @@ namespace Templates.Test
             else
             {
                 command = "dotnet-serve";
-                args = args + " --roll-forward LatestMajor";
+                args = "--roll-forward LatestMajor" + args;
             }            
             
             var env = new Dictionary<string, string>();
