@@ -308,7 +308,7 @@ namespace Microsoft.Extensions.Logging
                 logLevel: LogLevel.Information,
                 formatString: "Writing data to file '{FileName}'.");
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 _readingDataFromRegistryKeyValue = LoggerMessage.Define<RegistryKey, string>(
                     eventId: new EventId(40, "ReadingDataFromRegistryKeyValue"),

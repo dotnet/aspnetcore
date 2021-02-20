@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             var userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
             var homePath = Environment.GetEnvironmentVariable("HOME");
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !string.IsNullOrEmpty(localAppDataFromSystemPath))
+            if (OperatingSystem.IsWindows() && !string.IsNullOrEmpty(localAppDataFromSystemPath))
             {
                 // To preserve backwards-compatibility with 1.x, Environment.SpecialFolder.LocalApplicationData
                 // cannot take precedence over $LOCALAPPDATA and $HOME/.aspnet on non-Windows platforms
