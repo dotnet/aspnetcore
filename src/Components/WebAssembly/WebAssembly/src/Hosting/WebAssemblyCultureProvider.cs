@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Loader;
@@ -12,6 +13,7 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "This type loads resx files. We don't expect it's dependencies to be trimmed in the ordinary case.")]
     internal class WebAssemblyCultureProvider
     {
         internal const string GetSatelliteAssemblies = "window.Blazor._internal.getSatelliteAssemblies";

@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
-using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 {
@@ -45,14 +45,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// </summary>
         /// <param name="assembliesToLoad">The names of the assemblies to load (e.g. "MyAssembly.dll")</param>
         /// <returns>A list of the loaded <see cref="Assembly"/></returns>
-        public async Task<IEnumerable<Assembly>> LoadAssembliesAsync(IEnumerable<string> assembliesToLoad)
+        [RequiresUnreferencedCode("Types and members the loaded assemblies depend on might be removed")]
+        public Task<IEnumerable<Assembly>> LoadAssembliesAsync(IEnumerable<string> assembliesToLoad)
         {
             if (OperatingSystem.IsBrowser())
             {
-                return await LoadAssembliesInClientAsync(assembliesToLoad);
+                return LoadAssembliesInClientAsync(assembliesToLoad);
             }
 
-            return await LoadAssembliesInServerAsync(assembliesToLoad);
+            return LoadAssembliesInServerAsync(assembliesToLoad);
         }
 
         private Task<IEnumerable<Assembly>> LoadAssembliesInServerAsync(IEnumerable<string> assembliesToLoad)
@@ -74,6 +75,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             return Task.FromResult<IEnumerable<Assembly>>(loadedAssemblies);
         }
 
+        [RequiresUnreferencedCode("Types and members the loaded assemblies depend on might be removed")]
         private async Task<IEnumerable<Assembly>> LoadAssembliesInClientAsync(IEnumerable<string> assembliesToLoad)
         {
             // Check to see if the assembly has already been loaded and avoids reloading it if so.
@@ -84,28 +86,19 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             var newAssembliesToLoad = assembliesToLoad.Where(assembly => !_loadedAssemblyCache.Contains(assembly));
             var loadedAssemblies = new List<Assembly>();
 
-            var count = (int)await ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<string[], object?, object?, Task<object>>(
+            var jsRuntime = (IJSUnmarshalledRuntime)_jsRuntime;
+
+            var count = (int)await jsRuntime.InvokeUnmarshalled<string[], Task<object>>(
                GetLazyAssemblies,
-               newAssembliesToLoad.ToArray(),
-               null,
-               null);
+               newAssembliesToLoad.ToArray());
 
             if (count == 0)
             {
                 return loadedAssemblies;
             }
 
-            var assemblies = ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<object?, object?, object?, byte[][]>(
-                ReadLazyAssemblies,
-                null,
-                null,
-                null);
-
-            var pdbs = ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<object?, object?, object?, byte[][]>(
-                ReadLazyPDBs,
-                null,
-                null,
-                null);
+            var assemblies = jsRuntime.InvokeUnmarshalled<byte[][]>(ReadLazyAssemblies);
+            var pdbs = jsRuntime.InvokeUnmarshalled<byte[][]>(ReadLazyPDBs);
 
             for (int i = 0; i < assemblies.Length; i++)
             {

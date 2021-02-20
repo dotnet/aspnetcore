@@ -25,6 +25,7 @@
     <Compile Include="..\..\Components\src\RenderTree\RenderTreeFrame.cs" LinkBase="RenderTree" />
     <Compile Include="..\..\Components\src\RenderTree\RenderTreeFrameType.cs" LinkBase="RenderTree" />
     <Compile Include="..\..\Web\src\WebEventDescriptor.cs" LinkBase="RenderTree" />
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

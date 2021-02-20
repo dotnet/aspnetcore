@@ -25,6 +25,7 @@
     <Reference Include="Microsoft.Extensions.Logging" />
 
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
 
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
     <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->

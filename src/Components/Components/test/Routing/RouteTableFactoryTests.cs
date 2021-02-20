@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanDiscoverRoute()
         {
             // Arrange & Act
-            var routes = RouteTableFactory.Create(new[] { typeof(MyComponent), });
+            var routes = RouteTableFactory.Create(new List<Type> { typeof(MyComponent), });
 
             // Assert
             Assert.Equal("Test1", Assert.Single(routes.Routes).Template.TemplateText);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanDiscoverRoutes_WithInheritance()
         {
             // Arrange & Act
-            var routes = RouteTableFactory.Create(new[] { typeof(MyComponent), typeof(MyInheritedComponent), });
+            var routes = RouteTableFactory.Create(new List<Type> { typeof(MyComponent), typeof(MyInheritedComponent), });
 
             // Assert
             Assert.Collection(

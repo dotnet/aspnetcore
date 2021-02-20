@@ -6,11 +6,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
@@ -114,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
-        protected IComponent InstantiateComponent(Type componentType)
+        protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
             => _componentFactory.InstantiateComponent(_serviceProvider, componentType);
 
         /// <summary>

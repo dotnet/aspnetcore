@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TAccountClaimsPrincipalFactory">The new user factory type.</typeparam>
         /// <param name="builder">The <see cref="IRemoteAuthenticationBuilder{TRemoteAuthenticationState, TAccount}"/>.</param>
         /// <returns>The <see cref="IRemoteAuthenticationBuilder{TRemoteAuthenticationState, TAccount}"/>.</returns>
-        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddAccountClaimsPrincipalFactory<TRemoteAuthenticationState, TAccount, TAccountClaimsPrincipalFactory>(
+        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddAccountClaimsPrincipalFactory<TRemoteAuthenticationState, TAccount, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TAccountClaimsPrincipalFactory>(
             this IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> builder)
             where TRemoteAuthenticationState : RemoteAuthenticationState, new()
             where TAccount : RemoteUserAccount
@@ -37,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TAccountClaimsPrincipalFactory">The new user factory type.</typeparam>
         /// <param name="builder">The <see cref="IRemoteAuthenticationBuilder{TRemoteAuthenticationState, Account}"/>.</param>
         /// <returns>The <see cref="IRemoteAuthenticationBuilder{TRemoteAuthenticationState, Account}"/>.</returns>
-        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddAccountClaimsPrincipalFactory<TRemoteAuthenticationState, TAccountClaimsPrincipalFactory>(
+        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddAccountClaimsPrincipalFactory<TRemoteAuthenticationState, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TAccountClaimsPrincipalFactory>(
             this IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> builder)
             where TRemoteAuthenticationState : RemoteAuthenticationState, new()
             where TAccountClaimsPrincipalFactory : AccountClaimsPrincipalFactory<RemoteUserAccount> => builder.AddAccountClaimsPrincipalFactory<TRemoteAuthenticationState, RemoteUserAccount, TAccountClaimsPrincipalFactory>();

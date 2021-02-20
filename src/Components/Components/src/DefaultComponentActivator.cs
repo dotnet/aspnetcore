@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -10,15 +11,14 @@ namespace Microsoft.AspNetCore.Components
         public static IComponentActivator Instance { get; } = new DefaultComponentActivator();
 
         /// <inheritdoc />
-        public IComponent CreateInstance(Type componentType)
+        public IComponent CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type componentType)
         {
-            var instance = Activator.CreateInstance(componentType);
-            if (!(instance is IComponent component))
+            if (!typeof(IComponent).IsAssignableFrom(componentType))
             {
                 throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
             }
 
-            return component;
+            return (IComponent)Activator.CreateInstance(componentType)!;
         }
     }
 }
