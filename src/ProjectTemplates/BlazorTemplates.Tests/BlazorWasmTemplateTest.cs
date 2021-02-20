@@ -666,7 +666,10 @@ namespace Templates.Test
                 args = args + " --roll-forward LatestMajor";
             }            
             
-            var serveProcess = ProcessEx.Run(Output, publishDir, command, args);
+            var env = new Dictionary<string, string>();
+            env["DOTNET_ROLL_FORWARD"] = "LatestMajor";
+            env["DOTNET_ROLL_FORWARD_TO_PRERELEASE"] = "1";
+            var serveProcess = ProcessEx.Run(Output, publishDir, command, args, env);
             var listeningUri = ResolveListeningUrl(serveProcess);
             return (serveProcess, listeningUri);
         }
