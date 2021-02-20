@@ -531,47 +531,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         }
 
         /// <inheritdoc />
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
-            await DisposeAsyncCore();
-
             Dispose(disposing: false);
             GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources asynchronously
-        /// </summary>
-        protected virtual async ValueTask DisposeAsyncCore()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            foreach (var client in _clients)
-            {
-                client.Dispose();
-            }
-
-            foreach (var factory in _derivedFactories)
-            {
-                await factory.DisposeAsync().ConfigureAwait(false);
-            }
-
-            _server?.Dispose();
-            await _host?.StopAsync();
-
-            if (_host is IAsyncDisposable asyncDisposable)
-            {
-                await asyncDisposable.DisposeAsync();
-            }
-            else
-            {
-                _host.Dispose();
-            }
-
-            _disposed = true;
+            return ValueTask.CompletedTask;
         }
 
         private class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
