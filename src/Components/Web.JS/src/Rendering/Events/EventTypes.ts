@@ -1,4 +1,4 @@
-interface EventTypeOptions {
+export interface EventTypeOptions {
   browserEventName?: string;
   createEventArgs?: (event: Event) => any;
 }
