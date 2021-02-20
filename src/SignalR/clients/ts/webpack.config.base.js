@@ -13,9 +13,7 @@ module.exports = function (modulePath, browserBaseName, options) {
         entry: path.resolve(modulePath, "src", "browser-index.ts"),
         mode: "none",
         node: {
-            global: true,
-            process: false,
-            Buffer: false,
+            global: true
         },
         target: options.target,
         resolveLoader: {
@@ -72,11 +70,21 @@ module.exports = function (modulePath, browserBaseName, options) {
                     // need to be identifiers that can be viewed in the browser.
                     return `webpack://${pkg.umd_name}/${resourcePath}`;
                 }
-            }),
-            // ES6 Promise uses this module in certain circumstances but we don't need it.
-            new webpack.IgnorePlugin(/vertx/),
-            new webpack.IgnorePlugin(/eventsource/),
+            })
         ],
+        optimization: {
+          sideEffects: true,
+          concatenateModules: true,
+          providedExports: true,
+          usedExports: true,
+          innerGraph: true,
+        },
+        stats: {
+            warnings: true,
+            errors: true,
+            performance: true,
+            optimizationBailout: true
+        },
         externals: options.externals,
     };
 }

@@ -30,7 +30,7 @@ export class VerifyLogger implements ILogger {
     public unexpectedErrors: string[];
     private expectedErrors: ErrorMatchFunction[];
 
-    public constructor(...expectedErrors: Array<RegExp | string | ErrorMatchFunction>) {
+    public constructor(...expectedErrors: (RegExp | string | ErrorMatchFunction)[]) {
         this.unexpectedErrors = [];
         this.expectedErrors = [];
         expectedErrors.forEach((element) => {
@@ -44,7 +44,7 @@ export class VerifyLogger implements ILogger {
         }, this);
     }
 
-    public static async run(fn: (logger: VerifyLogger) => Promise<void>, ...expectedErrors: Array<RegExp | string | ErrorMatchFunction>): Promise<void> {
+    public static async run(fn: (logger: VerifyLogger) => Promise<void>, ...expectedErrors: (RegExp | string | ErrorMatchFunction)[]): Promise<void> {
         const logger = new VerifyLogger(...expectedErrors);
         await fn(logger);
         expect(logger.unexpectedErrors.join(EOL)).toBe("");

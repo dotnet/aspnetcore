@@ -99,7 +99,7 @@ describe("MessagePackHubProtocol", () => {
             invocationId: "abc",
             type: MessageType.Completion,
         } as CompletionMessage],
-    ] as Array<[number[], CompletionMessage]>).forEach(([payload, expectedMessage]) =>
+    ] as [number[], CompletionMessage][]).forEach(([payload, expectedMessage]) =>
         it("can read Completion message", () => {
             const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer, NullLogger.instance);
             expect(messages).toEqual([expectedMessage]);
@@ -120,7 +120,7 @@ describe("MessagePackHubProtocol", () => {
             item: new Date(Date.UTC(2018, 0, 1, 11, 24, 0)),
             type: MessageType.StreamItem,
         } as StreamItemMessage],
-    ] as Array<[number[], StreamItemMessage]>).forEach(([payload, expectedMessage]) =>
+    ] as [number[], StreamItemMessage][]).forEach(([payload, expectedMessage]) =>
         it("can read StreamItem message", () => {
             const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer, NullLogger.instance);
             expect(messages).toEqual([expectedMessage]);
@@ -136,7 +136,7 @@ describe("MessagePackHubProtocol", () => {
             item: 8,
             type: MessageType.StreamItem,
         } as StreamItemMessage],
-    ] as Array<[number[], StreamItemMessage]>).forEach(([payload, expectedMessage]) =>
+    ] as [number[], StreamItemMessage][]).forEach(([payload, expectedMessage]) =>
         it("can read message with headers", () => {
             const messages = new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer, NullLogger.instance);
             expect(messages).toEqual([expectedMessage]);
@@ -152,7 +152,7 @@ describe("MessagePackHubProtocol", () => {
         ["Completion message with invalid invocation id", [0x04, 0x93, 0x03, 0x80, 0xa0], "Invalid payload for Completion message."],
         ["Completion message with missing result", [0x05, 0x94, 0x03, 0x80, 0xa0, 0x01], "Invalid payload for Completion message."],
         ["Completion message with missing error", [0x05, 0x94, 0x03, 0x80, 0xa0, 0x03], "Invalid payload for Completion message."],
-    ] as Array<[string, number[], string]>).forEach(([name, payload, expectedError]) =>
+    ] as [string, number[], string][]).forEach(([name, payload, expectedError]) =>
         it("throws for " + name, () => {
             expect(() => new MessagePackHubProtocol().parseMessages(new Uint8Array(payload).buffer, NullLogger.instance))
                 .toThrow(expectedError);

@@ -36,12 +36,12 @@ export class HubConnection {
     private protocol: IHubProtocol;
     private handshakeProtocol: HandshakeProtocol;
     private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
-    private methods: { [name: string]: Array<(...args: any[]) => void> };
+    private methods: { [name: string]: ((...args: any[]) => void)[] };
     private invocationId: number;
 
-    private closedCallbacks: Array<(error?: Error) => void>;
-    private reconnectingCallbacks: Array<(error?: Error) => void>;
-    private reconnectedCallbacks: Array<(connectionId?: string) => void>;
+    private closedCallbacks: ((error?: Error) => void)[];
+    private reconnectingCallbacks: ((error?: Error) => void)[];
+    private reconnectedCallbacks: ((connectionId?: string) => void)[];
 
     private receivedHandshakeResponse: boolean;
     private handshakeResolver!: (value?: PromiseLike<{}>) => void;
@@ -855,7 +855,7 @@ export class HubConnection {
         }
     }
 
-    private launchStreams(streams: Array<IStreamResult<any>>, promiseQueue: Promise<void>): void {
+    private launchStreams(streams: IStreamResult<any>[], promiseQueue: Promise<void>): void {
         if (streams.length === 0) {
             return;
         }
@@ -891,8 +891,8 @@ export class HubConnection {
         }
     }
 
-    private replaceStreamingParams(args: any[]): [Array<IStreamResult<any>>, string[]] {
-        const streams: Array<IStreamResult<any>> = [];
+    private replaceStreamingParams(args: any[]): [IStreamResult<any>[], string[]] {
+        const streams: IStreamResult<any>[] = [];
         const streamIds: string[] = [];
         for (let i = 0; i < args.length; i++) {
             const argument = args[i];

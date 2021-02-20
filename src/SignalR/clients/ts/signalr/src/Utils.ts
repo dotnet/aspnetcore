@@ -11,7 +11,6 @@ import { Subject } from "./Subject";
 // Version token that will be replaced by the prepack command
 /** The version of the SignalR client. */
 export const VERSION: string = "0.0.0-DEV_BUILD";
-
 /** @private */
 export class Arg {
     public static isRequired(val: any, name: string): void {
@@ -232,7 +231,7 @@ export function constructUserAgent(version: string, os: string, runtime: string,
     return userAgent;
 }
 
-function getOsName(): string {
+ /*#__PURE__*/ function getOsName(): string {
     if (Platform.isNode) {
         switch (process.platform) {
             case "win32":
@@ -249,7 +248,7 @@ function getOsName(): string {
     }
 }
 
-function getRuntimeVersion(): string | undefined {
+ /*#__PURE__*/ function getRuntimeVersion(): string | undefined {
     if (Platform.isNode) {
         return process.versions.node;
     }

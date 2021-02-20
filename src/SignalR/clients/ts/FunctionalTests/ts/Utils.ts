@@ -28,6 +28,10 @@ export class PromiseSource<T = void> implements Promise<T> {
         });
     }
 
+    public finally(onfinally?: (() => void) | null): Promise<T> {
+        return this.promise.finally(onfinally);
+    }
+
     public resolve(value: T | PromiseLike<T>) {
         this.resolver(value);
     }

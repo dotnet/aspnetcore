@@ -198,7 +198,7 @@ describe("HubConnectionBuilder", () => {
             });
         });
 
-        const levelNames = Object.keys(ExpectedLogLevelMappings) as Array<keyof typeof ExpectedLogLevelMappings>;
+        const levelNames = Object.keys(ExpectedLogLevelMappings) as (keyof typeof ExpectedLogLevelMappings)[];
         for (const str of levelNames) {
             const mapped = ExpectedLogLevelMappings[str];
             const mappedName = LogLevel[mapped];

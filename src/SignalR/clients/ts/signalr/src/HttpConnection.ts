@@ -34,7 +34,7 @@ export interface INegotiateResponse {
 /** @private */
 export interface IAvailableTransport {
     transport: keyof typeof HttpTransportType;
-    transferFormats: Array<keyof typeof TransferFormat>;
+    transferFormats: (keyof typeof TransferFormat)[];
 }
 
 const MAX_REDIRECTS = 100;

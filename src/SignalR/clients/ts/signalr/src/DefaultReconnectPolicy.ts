@@ -8,7 +8,7 @@ const DEFAULT_RETRY_DELAYS_IN_MILLISECONDS = [0, 2000, 10000, 30000, null];
 
 /** @private */
 export class DefaultReconnectPolicy implements IRetryPolicy {
-    private readonly retryDelays: Array<number | null>;
+    private readonly retryDelays: (number | null)[];
 
     constructor(retryDelays?: number[]) {
         this.retryDelays = retryDelays !== undefined ? [...retryDelays, null] : DEFAULT_RETRY_DELAYS_IN_MILLISECONDS;

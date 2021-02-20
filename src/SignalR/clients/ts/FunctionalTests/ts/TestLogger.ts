@@ -5,7 +5,7 @@ import { ILogger, LogLevel } from "@microsoft/signalr";
 import { ConsoleLogger } from "@microsoft/signalr/dist/esm/Utils";
 
 export class TestLog {
-    public messages: Array<[Date, LogLevel, string]> = [];
+    public messages: [Date, LogLevel, string][] = [];
 
     public addMessage(timestamp: Date, logLevel: LogLevel, message: string): void {
         this.messages.push([timestamp, logLevel, message]);
