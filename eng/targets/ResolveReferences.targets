@@ -86,46 +86,22 @@
   </ItemGroup>
 
   <!--
-      Turn Reference items into a ProjectReference when UseProjectReferences is true. Order matters; this
-      comes before package resolution because projects should be used when possible instead of packages.
+    Turn Reference items into a ProjectReference when UseProjectReferences is true. Order matters; this
+    comes before package resolution because projects should be used when possible instead of packages.
     -->
   <ItemGroup Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND '$(UseProjectReferences)' == 'true' ">
-    <!-- Copy then Update / Copy to intersect the ProjectReferenceProvider and Reference item groups. -->
-    <_AllProjectReference Include="@(ProjectReferenceProvider)" />
+    <!--
+      For the _CheckForReferenceBoundaries target, mark project reference providers that _should_ be referenced with
+      Reference items but weren't. General principle is to use only Reference items when referencing a provider.
+      This simplifies project moves and shortens files.
+    -->
+    <ProjectReferenceProvider Update="@(ProjectReference->'%(Filename)')" DirectUse="1" />
 
-    <!-- Use only Reference items when project is a reference provider. Simplifies project moves and shortens files. -->
-    <_AllProjectReference Update="@(ProjectReference->'%(Filename)')" DirectUse="1" />
+    <!-- Find Reference items satisfied using project reference providers. -->
+    <Reference Update="@(ProjectReferenceProvider)" ProjectPath="%(ProjectReferenceProvider.ProjectPath)" />
 
-    <_AllProjectReference Update="@(Reference)" Use="1">
-      <!--
-        Metadata list is long because (a) Update defaults to copying no metadata and (b) ProjectReference metadata
-        may include (real) Reference metadata and MSBuild task parameters. Even so, the list below is not exhaustive.
-      -->
-      <Aliases>%(Reference.Aliases)</Aliases>
-      <BuildInParallel>%(Reference.BuildInParallel)</BuildInParallel>
-      <DoNotHarvest>%(Reference.DoNotHarvest)</DoNotHarvest>
-      <ExcludeAssets>%(Reference.ExcludeAssets)</ExcludeAssets>
-      <IncludeAssets>%(Reference.IncludeAssets)</IncludeAssets>
-      <IsNativeImage>%(Reference.IsNativeImage)</IsNativeImage>
-      <LinkBase>%(Reference.LinkBase)</LinkBase>
-      <Name>%(Reference.Name)</Name>
-      <OutputItemType>%(Reference.OutputItemType)</OutputItemType>
-      <Package>%(Reference.Package)</Package>
-      <Private>%(Reference.Private)</Private>
-      <PrivateAssets>%(Reference.PrivateAssets)</PrivateAssets>
-      <Project>%(Reference.Project)</Project>
-      <Properties>%(Reference.Properties)</Properties>
-      <Publish>%(Reference.Publish)</Publish>
-      <ReferenceOutputAssembly>%(Reference.ReferenceOutputAssembly)</ReferenceOutputAssembly>
-      <SetPlatform>%(Reference.SetPlatform)</SetPlatform>
-      <SkipGetTargetFrameworkProperties>%(Reference.SkipGetTargetFrameworkProperties)</SkipGetTargetFrameworkProperties>
-      <Targets>%(Reference.Targets)</Targets>
-      <UndefineProperties>%(Reference.UndefineProperties)</UndefineProperties>
-      <Watch>%(Reference.Watch)</Watch>
-    </_AllProjectReference>
-
-    <ProjectReference Include="@(_AllProjectReference->WithMetadataValue('Use', '1')->'%(ProjectPath)')" Use="" />
-    <Reference Remove="@(_AllProjectReference->WithMetadataValue('Use', '1'))" />
+    <ProjectReference Include="@(Reference->Distinct()->'%(ProjectPath)')" />
+    <Reference Remove="@(Reference->HasMetadata('ProjectPath'))" />
   </ItemGroup>
 
   <!--
@@ -136,11 +112,11 @@
   <Target Name="_CheckForReferenceBoundaries" BeforeTargets="CollectPackageReferences;ResolveReferences">
     <Error
         Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0 AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'"
-        Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
+        Text="Cannot reference &quot;%(Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
 
     <Error
-        Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND @(_AllProjectReference->WithMetadataValue('DirectUse', '1')->Count()) != 0 "
-        Text="Cannot reference &quot;%(_AllProjectReference.Identity)&quot; with a ProjectReference item; use a Reference item." />
+        Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND @(ProjectReferenceProvider->WithMetadataValue('DirectUse', '1')->Count()) != 0 "
+        Text="Cannot reference &quot;%(Identity)&quot; with a ProjectReference item; use a Reference item." />
   </Target>
 
   <Target Name="_WarnAboutRedundantRef" AfterTargets="ResolveFrameworkReferences;ProcessFrameworkReferences">
