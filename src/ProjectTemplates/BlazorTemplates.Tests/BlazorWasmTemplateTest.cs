@@ -663,7 +663,7 @@ namespace Templates.Test
             else
             {
                 command = "dotnet-serve";
-                args = "--roll-forward LatestMajor " + args; // dotnet-server targets net5.0 by default
+                args = "--roll-forward LatestMajor " + args; // dotnet-serve targets net5.0 by default
             }            
             
             var serveProcess = ProcessEx.Run(Output, publishDir, command, args);
