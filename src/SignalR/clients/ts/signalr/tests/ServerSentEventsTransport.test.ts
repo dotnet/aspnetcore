@@ -63,7 +63,7 @@ describe("ServerSentEventsTransport", () => {
 
             await expect(connectPromise)
                 .rejects
-                .toEqual(new Error("Error occurred"));
+                .toEqual(new Error("Error occurred while starting EventSource"));
             expect(closeCalled).toBe(false);
         });
     });
@@ -164,7 +164,7 @@ describe("ServerSentEventsTransport", () => {
 
             expect(closeCalled).toBe(true);
             expect(TestEventSource.eventSource.closed).toBe(true);
-            expect(error).toEqual(new Error("error"));
+            expect(error).toEqual(new Error("Error occurred while starting EventSource"));
         });
     });
 

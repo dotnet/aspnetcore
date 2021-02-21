@@ -508,7 +508,7 @@ function InitializeBuildTool() {
       ExitWithExitCode 1
     }
     $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
-    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'netcoreapp2.1' }
+    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'netcoreapp3.1' }
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
@@ -644,13 +644,26 @@ function MSBuild() {
     }
 
     $toolsetBuildProject = InitializeToolset
-    $path = Split-Path -parent $toolsetBuildProject
-    $path = Join-Path $path (Join-Path $buildTool.Framework 'Microsoft.DotNet.ArcadeLogging.dll')
-    if (-not (Test-Path $path)) {
-      $path = Split-Path -parent $toolsetBuildProject
-      $path = Join-Path $path (Join-Path $buildTool.Framework 'Microsoft.DotNet.Arcade.Sdk.dll')
+    $basePath = Split-Path -parent $toolsetBuildProject
+    $possiblePaths = @(
+      # new scripts need to work with old packages, so we need to look for the old names/versions
+      (Join-Path $basePath (Join-Path $buildTool.Framework 'Microsoft.DotNet.ArcadeLogging.dll')),
+      (Join-Path $basePath (Join-Path $buildTool.Framework 'Microsoft.DotNet.Arcade.Sdk.dll')),
+      (Join-Path $basePath (Join-Path netcoreapp2.1 'Microsoft.DotNet.ArcadeLogging.dll')),
+      (Join-Path $basePath (Join-Path netcoreapp2.1 'Microsoft.DotNet.Arcade.Sdk.dll'))
+    )
+    $selectedPath = $null
+    foreach ($path in $possiblePaths) {
+      if (Test-Path $path -PathType Leaf) {
+        $selectedPath = $path
+        break
+      }
     }
-    $args += "/logger:$path"
+    if (-not $selectedPath) {
+      Write-PipelineTelemetryError -Category 'Build' -Message 'Unable to find arcade sdk logger assembly.'
+      ExitWithExitCode 1
+    }
+    $args += "/logger:$selectedPath"
   }
 
   MSBuild-Core @args

@@ -486,19 +486,14 @@ namespace Microsoft.AspNetCore.Components
             return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
         }
 
-        private static string FormatEnumValueCore<T>(T value, CultureInfo? culture) where T : struct, Enum
-        {
-            return value.ToString(); // The overload that accepts a culture is [Obsolete]
-        }
-
-        private static string? FormatNullableEnumValueCore<T>(T? value, CultureInfo? culture) where T : struct, Enum
+        private static string? FormatEnumValueCore<T>(T value, CultureInfo? culture)
         {
             if (value == null)
             {
                 return null;
             }
 
-            return value.Value.ToString(); // The overload that accepts a culture is [Obsolete]
+            return value.ToString();
         }
 
         /// <summary>
@@ -1285,9 +1280,6 @@ namespace Microsoft.AspNetCore.Components
         {
             private readonly static ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
 
-            private static MethodInfo? _formatEnumValue;
-            private static MethodInfo? _formatNullableEnumValue;
-
             public static BindFormatter<T> Get<T>()
             {
                 if (!_cache.TryGetValue(typeof(T), out var formatter))
@@ -1370,17 +1362,9 @@ namespace Microsoft.AspNetCore.Components
                     {
                         formatter = (BindFormatter<DateTimeOffset?>)FormatNullableDateTimeOffsetValueCore;
                     }
-                    else if (typeof(T).IsEnum)
+                    else if (typeof(T).IsEnum || Nullable.GetUnderlyingType(typeof(T)) is Type { IsEnum: true } innerType)
                     {
-                        // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
-                        var method = _formatEnumValue ??= typeof(BindConverter).GetMethod(nameof(FormatEnumValueCore), BindingFlags.NonPublic | BindingFlags.Static)!;
-                        formatter = method.MakeGenericMethod(typeof(T)).CreateDelegate(typeof(BindFormatter<T>), target: null);
-                    }
-                    else if (Nullable.GetUnderlyingType(typeof(T)) is Type innerType && innerType.IsEnum)
-                    {
-                        // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
-                        var method = _formatNullableEnumValue ??= typeof(BindConverter).GetMethod(nameof(FormatNullableEnumValueCore), BindingFlags.NonPublic | BindingFlags.Static)!;
-                        formatter = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindFormatter<T>), target: null);
+                        formatter = (BindFormatter<T>)FormatEnumValueCore<T>;
                     }
                     else
                     {
@@ -1421,6 +1405,10 @@ namespace Microsoft.AspNetCore.Components
             private static MethodInfo? _convertToEnum;
             private static MethodInfo? _convertToNullableEnum;
 
+            [UnconditionalSuppressMessage(
+                "ReflectionAnalysis",
+                "IL2060:MakeGenericMethod",
+                Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
             public static BindParser<T> Get<T>()
             {
                 if (!_cache.TryGetValue(typeof(T), out var parser))

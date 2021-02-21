@@ -1,7 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <_MvcTestingTasksAssembly Condition="$(_MvcTestingTasksAssembly) == ''">$(MSBuildThisFileDirectory)..\tasks\Microsoft.AspNetCore.Mvc.Testing.dll</_MvcTestingTasksAssembly>
+    <_MvcTestingTasksAssembly Condition="$(_MvcTestingTasksAssembly) == ''">$(MSBuildThisFileDirectory)..\..\tasks\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.dll</_MvcTestingTasksAssembly>
   </PropertyGroup>
   <UsingTask TaskName="GenerateMvcTestManifestTask" AssemblyFile="$(_MvcTestingTasksAssembly)"/>
 

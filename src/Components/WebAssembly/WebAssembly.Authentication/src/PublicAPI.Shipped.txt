@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.AccessToken() -> void
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.Expires.get -> System.DateTimeOffset
@@ -133,6 +133,7 @@ virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessio
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.JsRuntime.get -> Microsoft.JSInterop.IJSRuntime
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.Navigation.get -> Microsoft.AspNetCore.Components.NavigationManager
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.Options.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TProviderOptions>
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.RemoteAuthenticationService(Microsoft.JSInterop.IJSRuntime jsRuntime, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TProviderOptions>> options, Microsoft.AspNetCore.Components.NavigationManager navigation, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory) -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState.ReturnUrl.get -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState.ReturnUrl.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationUserOptions.AuthenticationType.get -> string

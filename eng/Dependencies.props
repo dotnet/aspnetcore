@@ -110,7 +110,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
@@ -174,7 +173,9 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Moq" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />
+    <LatestPackageReference Include="NuGet.Frameworks" />
     <LatestPackageReference Include="NuGet.Versioning" />
+    <LatestPackageReference Include="PlaywrightSharp" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />
     <LatestPackageReference Include="Selenium.Support" />
@@ -201,6 +202,11 @@ and are generated based on the last package release.
     <!-- Get versions. -->
     <LatestPackageReference Update="@(LatestPackageReference)">
       <Version>$(%(VersionName)Version)</Version>
+      <RTMVersion>$(%(VersionName)V0Version)</RTMVersion>
+
+      <!-- Remove excess metadata. -->
+      <RTMVersion Condition=" '%(Version)' == '%(RTMVersion)' " />
+      <VersionName />
     </LatestPackageReference>
 
     <!--

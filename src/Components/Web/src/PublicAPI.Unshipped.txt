@@ -13,3 +13,10 @@ Microsoft.AspNetCore.Components.Forms.InputText.Element.get -> Microsoft.AspNetC
 Microsoft.AspNetCore.Components.Forms.InputText.Element.set -> void
 Microsoft.AspNetCore.Components.Forms.InputTextArea.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputTextArea.Element.set -> void
+*REMOVED*static Microsoft.AspNetCore.Components.Forms.BrowserFileExtensions.RequestImageFileAsync(this Microsoft.AspNetCore.Components.Forms.IBrowserFile! browserFile, string! format, int maxWith, int maxHeight) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
+static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference, bool preventScroll) -> System.Threading.Tasks.ValueTask
+static Microsoft.AspNetCore.Components.Forms.BrowserFileExtensions.RequestImageFileAsync(this Microsoft.AspNetCore.Components.Forms.IBrowserFile! browserFile, string! format, int maxWidth, int maxHeight) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
+Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.get -> string!
+Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.set -> void
+*REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.get -> string!
+*REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.set -> void

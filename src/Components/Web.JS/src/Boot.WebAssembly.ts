@@ -5,14 +5,14 @@ import { monoPlatform } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { shouldAutoStart } from './BootCommon';
-import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
+import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
 import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
-import { discoverComponents, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { WasmInputFile } from './WasmInputFile';
 
 let started = false;
@@ -90,6 +90,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     getParameterDefinitions: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterDefinitions(id) || ''),
     getParameterValues: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterValues(id) || ''),
   };
+
+  window['Blazor']._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
 
   window['Blazor']._internal.attachRootComponentToElement = (selector, componentId, rendererId) => {
     const element = componentAttacher.resolveRegisteredElement(selector);

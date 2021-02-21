@@ -80,7 +80,7 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
 //
 HRESULT
 APPLICATION_MANAGER::RecycleApplicationFromManager(
-    _In_ LPCWSTR pszApplicationId
+    _In_ const LPCWSTR pszApplicationId
 )
 {
     try
@@ -126,7 +126,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
         // If we receive a request at this point.
         // OutOfProcess: we will create a new application with new configuration
         // InProcess: the request would have to be rejected, as we are about to call g_HttpServer->RecycleProcess
-        // on the worker proocess
+        // on the worker process
 
         if (!applicationsToRecycle.empty())
         {
@@ -139,7 +139,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                 catch (...)
                 {
                     LOG_ERRORF(L"Failed to stop application '%ls'", application->QueryApplicationInfoKey().c_str());
-                    OBSERVE_CAUGHT_EXCEPTION();
+                    OBSERVE_CAUGHT_EXCEPTION()
 
                     // Failed to recycle an application. Log an event
                     EventLog::Error(
@@ -156,7 +156,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             }
         }
     }
-    CATCH_RETURN();
+    CATCH_RETURN()
 
     return S_OK;
 }
@@ -175,9 +175,9 @@ APPLICATION_MANAGER::ShutDown()
 
     // During shutdown we lock until we delete the application
     SRWExclusiveLock lock(m_srwLock);
-    for (auto &pair : m_pApplicationInfoHash)
+    for (auto & [str, applicationInfo] : m_pApplicationInfoHash)
     {
-        pair.second->ShutDownApplication(/* fServerInitiated */ true);
-        pair.second = nullptr;
+        applicationInfo->ShutDownApplication(/* fServerInitiated */ true);
+        applicationInfo = nullptr;
     }
 }

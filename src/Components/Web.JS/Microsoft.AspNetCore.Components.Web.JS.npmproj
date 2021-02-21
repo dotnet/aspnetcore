@@ -7,8 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <BuildOutputFiles Include="dist\release\blazor.server.js" />
-    <BuildOutputFiles Include="dist\release\blazor.webassembly.js" />
+    <!--
+      Ensure files dependent projects expect exist and are up-to-date. Batching in Npm.Common.targets might skip
+      build when (say) Debug output files are missing. webpack.config.js always capitalizes the directory name.
+    -->
+    <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.server.js" />
+    <BuildOutputFiles Condition=" '$(Configuration)' != 'Debug' " Include="dist\Release\blazor.server.js" />
+    <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.webassembly.js" />
+    <BuildOutputFiles Condition=" '$(Configuration)' != 'Debug' " Include="dist\Release\blazor.webassembly.js" />
   </ItemGroup>
 
   <ItemGroup>

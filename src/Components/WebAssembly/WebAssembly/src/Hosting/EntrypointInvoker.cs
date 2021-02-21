@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             }
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075", Justification = "MainAsync does not get linked.")]
         private static MethodBase FindUnderlyingEntrypoint(Assembly assembly)
         {
             // This is the entrypoint declared in .NET metadata. In the case of async main, it's the

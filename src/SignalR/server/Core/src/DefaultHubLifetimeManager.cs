@@ -80,12 +80,12 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         /// <inheritdoc />
-        public override Task SendAllAsync(string methodName, object?[]? args, CancellationToken cancellationToken = default)
+        public override Task SendAllAsync(string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             return SendToAllConnections(methodName, args, include: null, state: null, cancellationToken);
         }
 
-        private Task SendToAllConnections(string methodName, object?[]? args, Func<HubConnectionContext, object?, bool>? include, object? state = null, CancellationToken cancellationToken = default)
+        private Task SendToAllConnections(string methodName, object?[] args, Func<HubConnectionContext, object?, bool>? include, object? state = null, CancellationToken cancellationToken = default)
         {
             List<Task>? tasks = null;
             SerializedHubMessage? message = null;
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         // Tasks and message are passed by ref so they can be lazily created inside the method post-filtering,
         // while still being re-usable when sending to multiple groups
-        private void SendToGroupConnections(string methodName, object?[]? args, ConcurrentDictionary<string, HubConnectionContext> connections, Func<HubConnectionContext, object?, bool>? include, object? state, ref List<Task>? tasks, ref SerializedHubMessage? message, CancellationToken cancellationToken)
+        private void SendToGroupConnections(string methodName, object?[] args, ConcurrentDictionary<string, HubConnectionContext> connections, Func<HubConnectionContext, object?, bool>? include, object? state, ref List<Task>? tasks, ref SerializedHubMessage? message, CancellationToken cancellationToken)
         {
             // foreach over ConcurrentDictionary avoids allocating an enumerator
             foreach (var connection in connections)
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         /// <inheritdoc />
-        public override Task SendConnectionAsync(string connectionId, string methodName, object?[]? args, CancellationToken cancellationToken = default)
+        public override Task SendConnectionAsync(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
             {
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         /// <inheritdoc />
-        public override Task SendGroupAsync(string groupName, string methodName, object?[]? args, CancellationToken cancellationToken = default)
+        public override Task SendGroupAsync(string groupName, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             if (groupName == null)
             {
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         /// <inheritdoc />
-        public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object?[]? args, CancellationToken cancellationToken = default)
+        public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             // Each task represents the list of tasks for each of the writes within a group
             List<Task>? tasks = null;
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         /// <inheritdoc />
-        public override Task SendGroupExceptAsync(string groupName, string methodName, object?[]? args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
+        public override Task SendGroupExceptAsync(string groupName, string methodName, object?[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
             if (groupName == null)
             {
@@ -270,18 +270,18 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        private SerializedHubMessage CreateSerializedInvocationMessage(string methodName, object?[]? args)
+        private SerializedHubMessage CreateSerializedInvocationMessage(string methodName, object?[] args)
         {
             return new SerializedHubMessage(CreateInvocationMessage(methodName, args));
         }
 
-        private HubMessage CreateInvocationMessage(string methodName, object?[]? args)
+        private HubMessage CreateInvocationMessage(string methodName, object?[] args)
         {
             return new InvocationMessage(methodName, args);
         }
 
         /// <inheritdoc />
-        public override Task SendUserAsync(string userId, string methodName, object?[]? args, CancellationToken cancellationToken = default)
+        public override Task SendUserAsync(string userId, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             return SendToAllConnections(methodName, args, (connection, state) => string.Equals(connection.UserIdentifier, (string)state!, StringComparison.Ordinal), userId, cancellationToken);
         }
@@ -302,19 +302,19 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         /// <inheritdoc />
-        public override Task SendAllExceptAsync(string methodName, object?[]? args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
+        public override Task SendAllExceptAsync(string methodName, object?[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
             return SendToAllConnections(methodName, args, (connection, state) => !((IReadOnlyList<string>)state!).Contains(connection.ConnectionId), excludedConnectionIds, cancellationToken);
         }
 
         /// <inheritdoc />
-        public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object?[]? args, CancellationToken cancellationToken = default)
+        public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state!).Contains(connection.ConnectionId), connectionIds, cancellationToken);
         }
 
         /// <inheritdoc />
-        public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object?[]? args, CancellationToken cancellationToken = default)
+        public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state!).Contains(connection.UserIdentifier), userIds, cancellationToken);
         }

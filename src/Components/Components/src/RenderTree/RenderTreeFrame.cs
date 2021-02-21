@@ -4,10 +4,12 @@
 #nullable disable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 #if !IGNITOR
 using Microsoft.AspNetCore.Components.Rendering;
 #endif
+using Microsoft.AspNetCore.Internal;
 
 #if IGNITOR
 namespace Ignitor
@@ -143,7 +145,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         [FieldOffset(8)] internal int ComponentSubtreeLengthField;
         [FieldOffset(12)] internal int ComponentIdField;
-        [FieldOffset(16)] internal Type ComponentTypeField;
+        [FieldOffset(16)]
+#if !IGNITOR
+        [DynamicallyAccessedMembers(Internal.LinkerFlags.Component)]
+#endif
+        internal Type ComponentTypeField;
         [FieldOffset(24)] internal ComponentState ComponentStateField;
         [FieldOffset(32)] internal object ComponentKeyField;
 
@@ -265,7 +271,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         // Component constructor
-        private RenderTreeFrame(int sequence, int componentSubtreeLength, Type componentType, ComponentState componentState, object componentKey)
+        private RenderTreeFrame(int sequence, int componentSubtreeLength, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type componentType, ComponentState componentState, object componentKey)
             : this()
         {
             SequenceField = sequence;
@@ -351,7 +357,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         internal static RenderTreeFrame Attribute(int sequence, string name, object value)
             => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value, attributeEventHandlerId: 0, attributeEventUpdatesAttributeName: null);
 
-        internal static RenderTreeFrame ChildComponent(int sequence, Type componentType)
+        internal static RenderTreeFrame ChildComponent(int sequence, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type componentType)
             => new RenderTreeFrame(sequence, componentSubtreeLength: 0, componentType, null, null);
 
         internal static RenderTreeFrame PlaceholderChildComponentWithSubtreeLength(int subtreeLength)

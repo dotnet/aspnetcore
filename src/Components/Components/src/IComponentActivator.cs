@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -17,6 +18,6 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="componentType">The type of component to create.</param>
         /// <returns>A reference to the newly created component.</returns>
-        IComponent CreateInstance(Type componentType);
+        IComponent CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type componentType);
     }
 }

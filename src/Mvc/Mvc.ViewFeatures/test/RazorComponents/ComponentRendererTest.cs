@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
@@ -32,7 +34,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
 
-        private readonly ComponentRenderer renderer = GetComponentRenderer();
+        private readonly IServiceProvider _services = CreateDefaultServiceCollection().BuildServiceProvider();
+        private readonly ComponentRenderer renderer;
+
+        public ComponentRendererTest()
+        {
+            renderer = GetComponentRenderer();
+        }
 
         [Fact]
         public async Task CanRender_ParameterlessComponent_ClientMode()
@@ -54,6 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal("webassembly", marker.Type);
             Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, marker.Assembly);
             Assert.Equal(typeof(TestComponent).FullName, marker.TypeName);
+            Assert.Empty(viewContext.Items);
         }
 
         [Fact]
@@ -89,6 +98,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Null(epilogueMarker.Type);
             Assert.Null(epilogueMarker.ParameterDefinitions);
             Assert.Null(epilogueMarker.ParameterValues);
+            var (_, mode) = Assert.Single(viewContext.Items);
+            var invoked = Assert.IsType<InvokedRenderModes>(mode);
+            Assert.Equal(InvokedRenderModes.Mode.WebAssembly, invoked.Value);
         }
 
         [Fact]
@@ -305,6 +317,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
 
             Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers[HeaderNames.CacheControl]);
+            Assert.DoesNotContain(viewContext.Items.Values, value => value is InvokedRenderModes);
         }
 
         [Fact]
@@ -348,6 +361,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Null(epilogueMarker.Type);
 
             Assert.Equal("no-cache, no-store, max-age=0", viewContext.HttpContext.Response.Headers[HeaderNames.CacheControl]);
+            var (_, mode) = Assert.Single(viewContext.Items, (kvp) => kvp.Value is InvokedRenderModes);
+            Assert.Equal(InvokedRenderModes.Mode.Server, ((InvokedRenderModes)mode).Value);
+        }
+
+        [Fact]
+        public async Task Prerender_ServerAndClientComponentUpdatesInvokedPrerenderModes()
+        {
+            // Arrange
+            var viewContext = GetViewContext();
+
+            // Act
+            var server = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = "Steve" });
+            var client = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.WebAssemblyPrerendered, new { Name = "Steve" });
+
+            // Assert
+            var (_, mode) = Assert.Single(viewContext.Items, (kvp) => kvp.Value is InvokedRenderModes);
+            Assert.Equal(InvokedRenderModes.Mode.ServerAndWebAssembly, ((InvokedRenderModes)mode).Value);
         }
 
         [Fact]
@@ -615,6 +645,39 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Fact]
+        public async Task DisposableComponents_GetDisposedAfterScopeCompletes()
+        {
+            // Arrange
+            var collection = CreateDefaultServiceCollection();
+            collection.TryAddScoped<ComponentRenderer>();
+            collection.TryAddScoped<StaticComponentRenderer>();
+            collection.TryAddScoped<HtmlRenderer>();
+            collection.TryAddSingleton(HtmlEncoder.Default);
+            collection.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            collection.TryAddSingleton<ServerComponentSerializer>();
+            collection.TryAddSingleton(_dataprotectorProvider);
+            collection.TryAddSingleton<WebAssemblyComponentSerializer>();
+
+            var provider = collection.BuildServiceProvider();
+            var scope = provider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            var scopedProvider = scope.ServiceProvider;
+            var context = new DefaultHttpContext() { RequestServices = scopedProvider };
+            var viewContext = GetViewContext(context);
+            var renderer = scopedProvider.GetRequiredService<ComponentRenderer>();
+
+            // Act
+            var state = new AsyncDisposableState();
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(AsyncDisposableComponent), RenderMode.Static, new { state });
+
+            // Assert
+            var content = HtmlContentUtilities.HtmlContentToString(result);
+            Assert.Equal("<p>Hello</p>", content);
+            await ((IAsyncDisposable)scope).DisposeAsync();
+
+            Assert.True(state.AsyncDisposableRan);
+        }
+
+        [Fact]
         public async Task CanCatch_ComponentWithSynchronousException()
         {
             // Arrange
@@ -792,24 +855,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal(expectedContent.Replace("\r\n", "\n"), content);
         }
 
-        private static ComponentRenderer GetComponentRenderer() =>
+        private ComponentRenderer GetComponentRenderer(IServiceProvider services = null) =>
             new ComponentRenderer(
-                new StaticComponentRenderer(HtmlEncoder.Default),
+                new StaticComponentRenderer(new HtmlRenderer(services ?? _services, NullLoggerFactory.Instance, HtmlEncoder.Default)),
                 new ServerComponentSerializer(_dataprotectorProvider),
                 new WebAssemblyComponentSerializer());
 
-        private static ViewContext GetViewContext(HttpContext context = null, Action<IServiceCollection> configureServices = null)
+        private ViewContext GetViewContext(HttpContext context = null)
         {
-            var services = new ServiceCollection();
-            services.AddSingleton(_dataprotectorProvider);
-            services.AddSingleton<IJSRuntime, UnsupportedJavaScriptRuntime>();
-            services.AddSingleton<NavigationManager, HttpNavigationManager>();
-            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
-
-            configureServices?.Invoke(services);
-
             context ??= new DefaultHttpContext();
-            context.RequestServices = services.BuildServiceProvider();
+            context.RequestServices ??= _services;
             context.Request.Scheme = "http";
             context.Request.Host = new HostString("localhost");
             context.Request.PathBase = "/base";
@@ -817,6 +872,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             context.Request.QueryString = QueryString.FromUriComponent("?query=value");
 
             return new ViewContext { HttpContext = context };
+        }
+
+        private static ServiceCollection CreateDefaultServiceCollection()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton(_dataprotectorProvider);
+            services.AddSingleton<IJSRuntime, UnsupportedJavaScriptRuntime>();
+            services.AddSingleton<NavigationManager, HttpNavigationManager>();
+            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+            services.AddSingleton<ILogger<ComponentApplicationLifetime>, NullLogger<ComponentApplicationLifetime>>();
+            services.AddSingleton<ComponentApplicationLifetime>();
+            services.AddSingleton(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
+            return services;
         }
 
         private class TestComponent : IComponent
@@ -900,6 +968,27 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private class OnAfterRenderState
         {
             public bool OnAfterRenderRan { get; set; }
+        }
+
+        private class AsyncDisposableComponent : ComponentBase, IAsyncDisposable
+        {
+            [Parameter] public AsyncDisposableState State { get; set; }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.AddMarkupContent(0, "<p>Hello</p>");
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                State.AsyncDisposableRan = true;
+                return default;
+            }
+        }
+
+        private class AsyncDisposableState
+        {
+            public bool AsyncDisposableRan { get; set; }
         }
 
         private class GreetingComponent : ComponentBase

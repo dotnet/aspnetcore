@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     internal class ComponentRenderer : IComponentRenderer
     {
         private static readonly object ComponentSequenceKey = new object();
+        private static readonly object InvokedRenderModesKey = new object();
+
         private readonly StaticComponentRenderer _staticComponentRenderer;
         private readonly ServerComponentSerializer _serverComponentSerializer;
         private readonly WebAssemblyComponentSerializer _WebAssemblyComponentSerializer;
@@ -54,6 +56,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 ParameterView.Empty :
                 ParameterView.FromDictionary(HtmlHelper.ObjectToDictionary(parameters));
 
+            UpdateSaveStateRenderMode(viewContext, renderMode);
+
             return renderMode switch
             {
                 RenderMode.Server => NonPrerenderedServerComponent(context, GetOrCreateInvocationId(viewContext), componentType, parameterView),
@@ -74,6 +78,46 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             return (ServerComponentInvocationSequence)result;
+        }
+
+        // Internal for test only
+        internal static void UpdateSaveStateRenderMode(ViewContext viewContext, RenderMode mode)
+        {
+            if (mode == RenderMode.ServerPrerendered || mode == RenderMode.WebAssemblyPrerendered)
+            {
+                if (!viewContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
+                {
+                    result = new InvokedRenderModes(mode is RenderMode.ServerPrerendered ?
+                        InvokedRenderModes.Mode.Server :
+                        InvokedRenderModes.Mode.WebAssembly);
+
+                    viewContext.Items[InvokedRenderModesKey] = result;
+                }
+                else
+                {
+                    var currentInvocation = mode is RenderMode.ServerPrerendered ?
+                        InvokedRenderModes.Mode.Server :
+                        InvokedRenderModes.Mode.WebAssembly;
+
+                    var invokedMode = (InvokedRenderModes)result;
+                    if (invokedMode.Value != currentInvocation)
+                    {
+                        invokedMode.Value = InvokedRenderModes.Mode.ServerAndWebAssembly;
+                    }
+                }
+            }
+        }
+
+        internal static InvokedRenderModes.Mode GetPersistStateRenderMode(ViewContext viewContext)
+        {
+            if (viewContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
+            {
+                return ((InvokedRenderModes)result).Value;
+            }
+            else
+            {
+                return InvokedRenderModes.Mode.None;
+            }
         }
 
         private async Task<IHtmlContent> StaticComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
@@ -145,6 +189,24 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var currentInvocation = _WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
 
             return new ComponentHtmlContent(_WebAssemblyComponentSerializer.GetPreamble(currentInvocation));
+        }
+    }
+
+    internal class InvokedRenderModes
+    {
+        public InvokedRenderModes(Mode mode)
+        {
+            Value = mode;
+        }
+
+        public Mode Value { get; set; }
+
+        internal enum Mode
+        {
+            None,
+            Server,
+            WebAssembly,
+            ServerAndWebAssembly
         }
     }
 }

@@ -1293,7 +1293,7 @@ describe("HubConnection", () => {
                     const timeoutInMilliseconds = 400;
                     hubConnection.serverTimeoutInMilliseconds = timeoutInMilliseconds;
 
-                    const p = new PromiseSource<Error>();
+                    const p = new PromiseSource<Error | undefined>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
@@ -1323,7 +1323,7 @@ describe("HubConnection", () => {
                 try {
                     hubConnection.serverTimeoutInMilliseconds = 100;
 
-                    const p = new PromiseSource<Error>();
+                    const p = new PromiseSource<Error | undefined>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();

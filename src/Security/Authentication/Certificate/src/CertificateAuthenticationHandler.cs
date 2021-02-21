@@ -212,6 +212,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                 chainPolicy.TrustMode = Options.ChainTrustValidationMode;
             }
 
+            chainPolicy.ExtraStore.AddRange(Options.AdditionalChainCertificates);
+
             if (!Options.ValidateValidityPeriod)
             {
                 chainPolicy.VerificationFlags |= X509VerificationFlags.IgnoreNotTimeValid;

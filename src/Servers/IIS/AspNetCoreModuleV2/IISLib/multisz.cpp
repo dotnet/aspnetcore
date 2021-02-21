@@ -6,7 +6,6 @@
 
 #include "precomp.h"
 #include "multisz.h"
-#include <tchar.h>
 
 //
 //  Private Definitions
@@ -28,10 +27,9 @@ MULTISZ::CalcLength( const WCHAR * str,
 {
     DWORD count = 0;
     DWORD total = 1;
-    DWORD len;
 
     while( *str ) {
-        len = ::wcslen( str ) + 1;
+        DWORD len = ::wcslen(str) + 1;
         total += len;
         str += len;
         count++;
@@ -47,11 +45,8 @@ MULTISZ::CalcLength( const WCHAR * str,
 
 
 BOOL
-MULTISZ::FindString( const WCHAR * str )
+MULTISZ::FindString( const WCHAR * str ) const
 {
-
-    WCHAR * multisz;
-
     //
     // Sanity check.
     //
@@ -64,7 +59,7 @@ MULTISZ::FindString( const WCHAR * str )
     // Scan it.
     //
 
-    multisz = QueryStr();
+    WCHAR* multisz = QueryStr();
 
     while( *multisz != '\0' ) {
 
@@ -84,11 +79,8 @@ MULTISZ::FindString( const WCHAR * str )
 
 
 BOOL
-MULTISZ::FindStringNoCase( const WCHAR * str )
+MULTISZ::FindStringNoCase( const WCHAR * str ) const
 {
-
-    WCHAR * multisz;
-
     //
     // Sanity check.
     //
@@ -101,7 +93,7 @@ MULTISZ::FindStringNoCase( const WCHAR * str )
     // Scan it.
     //
 
-    multisz = QueryStr();
+    WCHAR* multisz = QueryStr();
 
     while( *multisz != '\0' ) {
 
@@ -123,13 +115,11 @@ MULTISZ::FindStringNoCase( const WCHAR * str )
 VOID
 MULTISZ::AuxInit( const WCHAR * pInit )
 {
-    BOOL fRet;
-
     if ( pInit )
     {
         DWORD cStrings;
         int cbCopy = CalcLength( pInit, &cStrings ) * sizeof(WCHAR);
-        fRet = Resize( cbCopy );
+        BOOL fRet = Resize(cbCopy);
 
         if ( fRet ) {
             CopyMemory( QueryPtr(), pInit, cbCopy );
@@ -340,7 +330,7 @@ MULTISZ::CopyToBuffer( __out_ecount_opt(*lpcch) WCHAR * lpszBuffer, LPDWORD lpcc
 BOOL
 MULTISZ::Equals(
     MULTISZ* pmszRhs
-)
+) const
 //
 // Compares this to pmszRhs, returns TRUE if equal
 //
