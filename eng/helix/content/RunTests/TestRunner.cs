@@ -162,6 +162,7 @@ namespace RunTests
                         throwOnError: false,
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
+#if INSTALLPLAYWRIGHT
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         $"tool install dotnet-serve --tool-path {Options.HELIX_WORKITEM_ROOT}",
                         environmentVariables: EnvironmentVariables,
@@ -169,6 +170,7 @@ namespace RunTests
                         errorDataReceived: Console.Error.WriteLine,
                         throwOnError: false,
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+#endif
                     
                     // ';' is the path separator on Windows, and ':' on Unix
                     Options.Path += OperatingSystem.IsWindows() ? ";" : ":";
