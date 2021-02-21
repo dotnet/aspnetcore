@@ -581,10 +581,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
         }
 
-
-
-
-
         [Fact]
         public async Task RequestDelegateUsesCustomIResult()
         {
