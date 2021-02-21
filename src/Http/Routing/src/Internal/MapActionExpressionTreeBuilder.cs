@@ -190,7 +190,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
                         body = Expression.Call(
                                            ExecuteTaskResultOfTMethodInfo.MakeGenericMethod(typeArg),
                                            methodCall,
-                                           TargetArg,
                                            HttpContextParameter);
                     }
                     else
@@ -199,7 +198,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
                         body = Expression.Call(
                                            ExecuteTaskOfTMethodInfo.MakeGenericMethod(typeArg),
                                            methodCall,
-                                           TargetArg,
                                            HttpContextParameter);
                     }
                 }
@@ -213,7 +211,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
                         body = Expression.Call(
                                            ExecuteValueResultTaskOfTMethodInfo.MakeGenericMethod(typeArg),
                                            methodCall,
-                                           TargetArg,
                                            HttpContextParameter);
                     }
                     else
@@ -222,7 +219,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
                         body = Expression.Call(
                                        ExecuteValueTaskOfTMethodInfo.MakeGenericMethod(typeArg),
                                        methodCall,
-                                       TargetArg,
                                        HttpContextParameter);
                     }
                 }
@@ -396,7 +392,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             return mc.Member;
         }
 
-        private static async ValueTask ExecuteTask<T>(Task<T> task, HttpContext httpContext)
+        private static async Task ExecuteTask<T>(Task<T> task, HttpContext httpContext)
         {
             await httpContext.Response.WriteAsJsonAsync(await task);
         }
