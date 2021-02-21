@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             Assert.NotNull(userManager);
 
             const string userName = "admin";
-            const string password = "1qaz@WSX";
+            const string password = "[PLACEHOLDER]-1a";
             var user = new IdentityUser { UserName = userName };
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
             IdentityResultAssert.IsSuccess(await userManager.DeleteAsync(user));
