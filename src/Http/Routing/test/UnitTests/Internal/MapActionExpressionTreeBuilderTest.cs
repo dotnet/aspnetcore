@@ -601,6 +601,88 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(resultString, decodedResponseBody);
         }
 
+        public static IEnumerable<object[]> IntResult
+        {
+            get
+            {
+                int TestAction() => 42;
+                Task<int> TaskTestAction() => Task.FromResult(42);
+                ValueTask<int> ValueTaskTestAction() => ValueTask.FromResult(42);
+
+                static int StaticTestAction() => 42;
+                static Task<int> StaticTaskTestAction() => Task.FromResult(42);
+                static ValueTask<int> StaticValueTaskTestAction() => ValueTask.FromResult(42);
+
+                return new List<object[]>
+                {
+                    new object[] { (Func<int>)TestAction },
+                    new object[] { (Func<Task<int>>)TaskTestAction },
+                    new object[] { (Func<ValueTask<int>>)ValueTaskTestAction },
+                    new object[] { (Func<int>)StaticTestAction },
+                    new object[] { (Func<Task<int>>)StaticTaskTestAction },
+                    new object[] { (Func<ValueTask<int>>)StaticValueTaskTestAction },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(IntResult))]
+        public async Task RequestDelegateWritesIntReturnValue(Delegate @delegate)
+        {
+            var httpContext = new DefaultHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+
+            await requestDelegate(httpContext);
+
+            var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());          
+
+            Assert.Equal("42", responseBody);
+        }
+
+        public static IEnumerable<object[]> BoolResult
+        {
+            get
+            {
+                bool TestAction() => true;
+                Task<bool> TaskTestAction() => Task.FromResult(true);
+                ValueTask<bool> ValueTaskTestAction() => ValueTask.FromResult(true);
+
+                static bool StaticTestAction() => true;
+                static Task<bool> StaticTaskTestAction() => Task.FromResult(true);
+                static ValueTask<bool> StaticValueTaskTestAction() => ValueTask.FromResult(true);
+
+                return new List<object[]>
+                {
+                    new object[] { (Func<bool>)TestAction },
+                    new object[] { (Func<Task<bool>>)TaskTestAction },
+                    new object[] { (Func<ValueTask<bool>>)ValueTaskTestAction },
+                    new object[] { (Func<bool>)StaticTestAction },
+                    new object[] { (Func<Task<bool>>)StaticTaskTestAction },
+                    new object[] { (Func<ValueTask<bool>>)StaticValueTaskTestAction },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(BoolResult))]
+        public async Task RequestDelegateWritesBoolReturnValue(Delegate @delegate)
+        {
+            var httpContext = new DefaultHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+
+            await requestDelegate(httpContext);
+
+            var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+
+            Assert.Equal("true", responseBody);
+        }
+
         private class Todo
         {
             public int Id { get; set; }

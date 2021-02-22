@@ -236,7 +236,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
             {
                 body = Expression.Call(StringResultWriteResponseAsync, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
             }
-            else
+            else if (method.ReturnType.IsValueType)
+            {
+                var box = Expression.TypeAs(methodCall, typeof(object));
+                body = Expression.Call(JsonResultWriteResponseAsync, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
+            }
+            else 
             {
                 body = Expression.Call(JsonResultWriteResponseAsync, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
             }
