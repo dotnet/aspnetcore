@@ -6,7 +6,6 @@ const { DuplicatesPlugin } = require("inspectpack/plugin");
 module.exports = (env, args) => ({
     resolve: { 
         extensions: ['.ts', '.js'],
-
     },
     devtool: args.mode === 'development' ? 'source-map' : undefined,
     module: {

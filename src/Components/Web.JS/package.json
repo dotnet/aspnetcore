@@ -4,7 +4,10 @@
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
-  "sideEffects": false,
+  "sideEffects": [
+    "src/GlobalExports.ts",
+    "src/Platform/Mono/MonoPlatform.ts"
+  ],
   "scripts": {
     "preclean": "yarn install --mutex network",
     "clean": "node node_modules/rimraf/bin.js ./dist/Debug ./dist/Release",
