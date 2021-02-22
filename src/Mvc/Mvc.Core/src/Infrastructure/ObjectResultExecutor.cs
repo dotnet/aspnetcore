@@ -155,14 +155,15 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
             // then the one set on ObjectResult takes precedence over the Response object
             var responseContentType = context.HttpContext.Response.ContentType;
+            if (result.ContentTypes.Count == 0 && !string.IsNullOrEmpty(responseContentType))
+            {
+                result.ContentTypes.Add(responseContentType);
+            }
+            
             if (result.Value is ProblemDetails)
             {
                 result.ContentTypes.Add("application/problem+json");
                 result.ContentTypes.Add("application/problem+xml");
-            }
-            else if (result.ContentTypes.Count == 0 && !string.IsNullOrEmpty(responseContentType))
-            {
-                result.ContentTypes.Add(responseContentType);
             }
         }
 
