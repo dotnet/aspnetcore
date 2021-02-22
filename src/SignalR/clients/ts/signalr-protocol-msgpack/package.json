@@ -45,9 +45,7 @@
   ],
   "dependencies": {
     "@microsoft/signalr": "link:../signalr",
-    "msgpack5": "^5.1.0"
+    "@msgpack/msgpack": "^2.4.0"
   },
-  "devDependencies": {
-    "@types/msgpack5": "^3.4.1"
-  }
+  "devDependencies": {}
 }

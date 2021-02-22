@@ -6,8 +6,7 @@
   "main": "index.js",
   "dependencies": {
     "@microsoft/signalr": "link:../signalr",
-    "@microsoft/signalr-protocol-msgpack": "link:../signalr-protocol-msgpack",
-    "msgpack5": "^4.0.2"
+    "@microsoft/signalr-protocol-msgpack": "link:../signalr-protocol-msgpack"
   },
   "devDependencies": {
     "@types/debug": "0.0.30",

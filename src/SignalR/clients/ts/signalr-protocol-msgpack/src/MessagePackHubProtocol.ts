@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import * as msgpack5 from "msgpack5";
+import { encode, decode } from "@msgpack/msgpack";
 
 import { MessagePackOptions } from "./MessagePackOptions";
 
@@ -37,7 +37,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     /**
      *
-     * @param messagePackOptions MessagePack options passed to msgpack5
+     * @param messagePackOptions MessagePack options passed to @msgpack/msgpack
      */
     constructor(messagePackOptions?: MessagePackOptions) {
         if (messagePackOptions) {
@@ -106,9 +106,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
             throw new Error("Invalid payload.");
         }
 
-        const msgpack = msgpack5(this.messagePackOptions);
-        // To avoid using the Buffer type we cast to 'any'. msgpack5 works with Uint8Array's
-        const properties = msgpack.decode(input as any);
+        const properties = decode(input, this.messagePackOptions) as any;
         if (properties.length === 0 || !(properties instanceof Array)) {
             throw new Error("Invalid payload.");
         }
@@ -237,55 +235,51 @@ export class MessagePackHubProtocol implements IHubProtocol {
     }
 
     private writeInvocation(invocationMessage: InvocationMessage): ArrayBuffer {
-        const msgpack = msgpack5(this.messagePackOptions);
         let payload: any;
         if (invocationMessage.streamIds) {
-            payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
-            invocationMessage.target, invocationMessage.arguments, invocationMessage.streamIds]);
+            payload = encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
+            invocationMessage.target, invocationMessage.arguments, invocationMessage.streamIds], this.messagePackOptions);
         } else {
-            payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
-            invocationMessage.target, invocationMessage.arguments]);
+            payload = encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
+            invocationMessage.target, invocationMessage.arguments], this.messagePackOptions);
         }
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
     private writeStreamInvocation(streamInvocationMessage: StreamInvocationMessage): ArrayBuffer {
-        const msgpack = msgpack5(this.messagePackOptions);
         let payload: any;
         if (streamInvocationMessage.streamIds) {
-            payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
-            streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streamIds]);
+            payload = encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
+            streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streamIds], this.messagePackOptions);
         } else {
-            payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
-            streamInvocationMessage.target, streamInvocationMessage.arguments]);
+            payload = encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
+            streamInvocationMessage.target, streamInvocationMessage.arguments], this.messagePackOptions);
         }
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
     private writeStreamItem(streamItemMessage: StreamItemMessage): ArrayBuffer {
-        const msgpack = msgpack5(this.messagePackOptions);
-        const payload = msgpack.encode([MessageType.StreamItem, streamItemMessage.headers || {}, streamItemMessage.invocationId,
-        streamItemMessage.item]);
+        const payload = encode([MessageType.StreamItem, streamItemMessage.headers || {}, streamItemMessage.invocationId,
+        streamItemMessage.item], this.messagePackOptions);
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
     private writeCompletion(completionMessage: CompletionMessage): ArrayBuffer {
-        const msgpack = msgpack5(this.messagePackOptions);
         const resultKind = completionMessage.error ? this.errorResult : completionMessage.result ? this.nonVoidResult : this.voidResult;
 
         let payload: any;
         switch (resultKind) {
             case this.errorResult:
-                payload = msgpack.encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.error]);
+                payload = encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.error], this.messagePackOptions);
                 break;
             case this.voidResult:
-                payload = msgpack.encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind]);
+                payload = encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind], this.messagePackOptions);
                 break;
             case this.nonVoidResult:
-                payload = msgpack.encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.result]);
+                payload = encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.result], this.messagePackOptions);
                 break;
         }
 
@@ -293,8 +287,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
     }
 
     private writeCancelInvocation(cancelInvocationMessage: CancelInvocationMessage): ArrayBuffer {
-        const msgpack = msgpack5(this.messagePackOptions);
-        const payload = msgpack.encode([MessageType.CancelInvocation, cancelInvocationMessage.headers || {}, cancelInvocationMessage.invocationId]);
+        const payload = encode([MessageType.CancelInvocation, cancelInvocationMessage.headers || {}, cancelInvocationMessage.invocationId], this.messagePackOptions);
 
         return BinaryMessageFormat.write(payload.slice());
     }

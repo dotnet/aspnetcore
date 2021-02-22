@@ -6,16 +6,7 @@ const { DuplicatesPlugin } = require("inspectpack/plugin");
 module.exports = (env, args) => ({
     resolve: { 
         extensions: ['.ts', '.js'],
-        fallback: {
-            "util": require.resolve("util/"),
-            "buffer": require.resolve("buffer/"),
-            "assert": require.resolve("assert/"),
-            "events": require.resolve("events/")
-          },
-          alias: {
-            inherits: path.resolve(__dirname, '../node_modules/inherits/'),
-            "safe-buffer":  path.resolve(__dirname, '../node_modules/safe-buffer/'),
-          }
+
     },
     devtool: args.mode === 'development' ? 'source-map' : undefined,
     module: {
@@ -58,10 +49,6 @@ module.exports = (env, args) => ({
         new webpack.DefinePlugin({
             'process.env.NODE_DEBUG': false,
             'Platform.isNode': false
-        }),
-        new webpack.ProvidePlugin({
-            Buffer: ['buffer', 'Buffer'],
-            process: path.resolve(path.join(__dirname, '../node_modules/process/browser.js'))
         }),
         new DuplicatesPlugin({
             emitErrors: false,
