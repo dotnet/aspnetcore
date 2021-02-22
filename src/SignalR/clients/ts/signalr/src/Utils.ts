@@ -158,10 +158,10 @@ export class SubjectSubscription<T> implements ISubscription<T> {
 
 /** @private */
 export class ConsoleLogger implements ILogger {
-    private readonly minimumLogLevel: LogLevel;
+    private readonly minLevel: LogLevel;
 
     // Public for testing purposes.
-    public outputConsole: {
+    public out: {
         error(message: any): void,
         warn(message: any): void,
         info(message: any): void,
@@ -169,26 +169,27 @@ export class ConsoleLogger implements ILogger {
     };
 
     constructor(minimumLogLevel: LogLevel) {
-        this.minimumLogLevel = minimumLogLevel;
-        this.outputConsole = console;
+        this.minLevel = minimumLogLevel;
+        this.out = console;
     }
 
     public log(logLevel: LogLevel, message: string): void {
-        if (logLevel >= this.minimumLogLevel) {
+        if (logLevel >= this.minLevel) {
+            const msg = `[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`;
             switch (logLevel) {
                 case LogLevel.Critical:
                 case LogLevel.Error:
-                    this.outputConsole.error(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.error(msg);
                     break;
                 case LogLevel.Warning:
-                    this.outputConsole.warn(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.warn(msg);
                     break;
                 case LogLevel.Information:
-                    this.outputConsole.info(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.info(msg);
                     break;
                 default:
                     // console.debug only goes to attached debuggers in Node, so we use console.log for Trace and Debug
-                    this.outputConsole.log(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.log(msg);
                     break;
             }
         }

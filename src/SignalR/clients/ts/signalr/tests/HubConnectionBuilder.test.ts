@@ -155,7 +155,7 @@ describe("HubConnectionBuilder", () => {
     describe("configureLogging", () => {
         function testLogLevels(logger: ILogger, minLevel: LogLevel) {
             const capturingConsole = new CapturingConsole();
-            (logger as ConsoleLogger).outputConsole = capturingConsole;
+            (logger as ConsoleLogger).out = capturingConsole;
 
             for (let level = LogLevel.Trace; level < LogLevel.None; level++) {
                 const message = `Message at LogLevel.${LogLevel[level]}`;
