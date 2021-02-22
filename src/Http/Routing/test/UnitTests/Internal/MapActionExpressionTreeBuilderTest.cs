@@ -558,24 +558,47 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(originalTodo.Name, deserializedResponseBody!.Name);
         }
 
-        [Fact]
-        public async Task RequestDelegateUsesCustomIResult()
+        public static IEnumerable<object[]> CustomResults
         {
-            var resultString = "Still not enough tests!";
+            get
+            {
+                var resultString = "Still not enough tests!";
 
-            CustomResult TestAction() => new(resultString!);
+                CustomResult TestAction() => new CustomResult(resultString);
+                Task<CustomResult> TaskTestAction() => Task.FromResult(new CustomResult(resultString));
+                ValueTask<CustomResult> ValueTaskTestAction() => ValueTask.FromResult(new CustomResult(resultString));
 
+                static CustomResult StaticTestAction() => new CustomResult("Still not enough tests!");
+                static Task<CustomResult> StaticTaskTestAction() => Task.FromResult(new CustomResult("Still not enough tests!"));
+                static ValueTask<CustomResult> StaticValueTaskTestAction() => ValueTask.FromResult(new CustomResult("Still not enough tests!"));
+
+                return new List<object[]>
+                {
+                    new object[] { (Func<CustomResult>)TestAction },
+                    new object[] { (Func<Task<CustomResult>>)TaskTestAction},
+                    new object[] { (Func<ValueTask<CustomResult>>)ValueTaskTestAction},
+                    new object[] { (Func<CustomResult>)StaticTestAction},
+                    new object[] { (Func<Task<CustomResult>>)StaticTaskTestAction},
+                    new object[] { (Func<ValueTask<CustomResult>>)StaticValueTaskTestAction},
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CustomResults))]
+        public async Task RequestDelegateUsesCustomIResult(Delegate @delegate)
+        {
             var httpContext = new DefaultHttpContext();
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Func<CustomResult>)TestAction);
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 
             var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
 
-            Assert.Equal(resultString, decodedResponseBody);
+            Assert.Equal("Still not enough tests!", decodedResponseBody);
         }
 
         private class Todo
