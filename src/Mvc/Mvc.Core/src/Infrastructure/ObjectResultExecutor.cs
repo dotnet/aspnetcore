@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 result.ContentTypes.Add("application/problem+json");
                 result.ContentTypes.Add("application/problem+xml");
             }
-            else if (!string.IsNullOrEmpty(responseContentType))
+            else if (result.ContentTypes.Count == 0 && !string.IsNullOrEmpty(responseContentType))
             {
                 result.ContentTypes.Add(responseContentType);
             }
