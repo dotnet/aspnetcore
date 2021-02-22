@@ -4,15 +4,16 @@
 #nullable disable warnings
 
 using System;
-using System.Runtime.ExceptionServices;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components.LegacyRouteMatching;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -162,7 +163,6 @@ namespace Microsoft.AspNetCore.Components.Routing
                 _assemblies.Clear();
                 _assemblies.UnionWith(assembliesSet);
             }
-
         }
 
         internal virtual void Refresh(bool isNavigationIntercepted)

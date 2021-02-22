@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             var runtime = ".NET";
             var runtimeVersion = RuntimeInformation.FrameworkDescription;
 
-            UserAgentHeader = ConstructUserAgent(typeof(Constants).Assembly.GetName().Version, assemblyVersion?.InformationalVersion, GetOS(), runtime, runtimeVersion);
+            UserAgentHeader = ConstructUserAgent(typeof(Constants).Assembly.GetName().Version!, assemblyVersion.InformationalVersion, GetOS(), runtime, runtimeVersion);
         }
 
         private static string GetOS()

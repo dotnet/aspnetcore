@@ -48,27 +48,19 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             var diagnosticSource = appBuilder.ApplicationServices.GetRequiredService<DiagnosticSource>();
             var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, logger, diagnosticSource, applicationStoppingToken);
 
-            // Everything we proxy is hardcoded to target http://localhost because:
-            // - the requests are always from the local machine (we're not accepting remote
-            //   requests that go directly to the Angular CLI middleware server)
-            // - given that, there's no reason to use https, and we couldn't even if we
-            //   wanted to, because in general the Angular CLI server has no certificate
-            var targetUriTask = angularCliServerInfoTask.ContinueWith(
-                task => new UriBuilder("http", "localhost", task.Result.Port).Uri);
-
             SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, () =>
             {
                 // On each request, we create a separate startup task with its own timeout. That way, even if
                 // the first request times out, subsequent requests could still work.
                 var timeout = spaBuilder.Options.StartupTimeout;
-                return targetUriTask.WithTimeout(timeout,
+                return angularCliServerInfoTask.WithTimeout(timeout,
                     $"The Angular CLI process did not start listening for requests " +
                     $"within the timeout period of {timeout.TotalSeconds} seconds. " +
                     $"Check the log output for error information.");
             });
         }
 
-        private static async Task<AngularCliServerInfo> StartAngularCliServerAsync(
+        private static async Task<Uri> StartAngularCliServerAsync(
             string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, ILogger logger, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
         {
             if (portNumber == default(int))
@@ -99,13 +91,12 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             }
 
             var uri = new Uri(openBrowserLine.Groups[1].Value);
-            var serverInfo = new AngularCliServerInfo { Port = uri.Port };
 
             // Even after the Angular CLI claims to be listening for requests, there's a short
             // period where it will give an error if you make a request too quickly
             await WaitForAngularCliServerToAcceptRequests(uri);
 
-            return serverInfo;
+            return uri;
         }
 
         private static async Task WaitForAngularCliServerToAcceptRequests(Uri cliServerUri)
@@ -145,11 +136,6 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                     }
                 }
             }
-        }
-
-        class AngularCliServerInfo
-        {
-            public int Port { get; set; }
         }
     }
 }

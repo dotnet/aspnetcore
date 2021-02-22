@@ -351,9 +351,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var res = await stream.ReadAsync(buffer, 0, buffer.Length);
                     Assert.Equal(0, res);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    throw ex;
+                    throw;
                 }
 
                 await body.StopAsync();

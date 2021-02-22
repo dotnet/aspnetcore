@@ -8,11 +8,11 @@ import { RenderQueue } from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, Logger } from './Platform/Logging/Logger';
 import { CircuitDescriptor } from './Platform/Circuits/CircuitManager';
-import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
+import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
-import { discoverComponents, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { discoverComponents, discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { InputFile } from './InputFile';
 
 let renderingFailed = false;
@@ -34,7 +34,9 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   logger.log(LogLevel.Information, 'Starting up blazor server-side application.');
 
   const components = discoverComponents(document, 'server') as ServerComponentDescriptor[];
-  const circuit = new CircuitDescriptor(components);
+  const appState = discoverPersistedState(document);
+  const circuit = new CircuitDescriptor(components, appState || '');
+
 
   const initialConnection = await initializeConnection(options, logger, circuit);
   const circuitStarted = await circuit.startCircuit(initialConnection);

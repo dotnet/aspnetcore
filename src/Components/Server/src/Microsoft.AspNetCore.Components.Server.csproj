@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Components.</Description>
@@ -25,6 +25,7 @@
     <Reference Include="Microsoft.Extensions.Logging" />
 
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
 
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
     <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
@@ -88,6 +89,8 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" />
   </ItemGroup>
 
   <PropertyGroup>

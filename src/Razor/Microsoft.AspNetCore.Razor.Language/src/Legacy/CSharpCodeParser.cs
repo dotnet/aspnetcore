@@ -1227,8 +1227,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (lookupStrings == null ||
                 lookupStrings.Any(string.IsNullOrWhiteSpace) ||
                 lookupStrings.Length != 2 ||
-                text.StartsWith("'") ||
-                text.EndsWith("'"))
+                text.StartsWith("'", StringComparison.Ordinal) ||
+                text.EndsWith("'", StringComparison.Ordinal))
             {
                 errors.Add(
                     RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(

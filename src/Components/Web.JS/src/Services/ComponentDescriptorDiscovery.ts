@@ -26,6 +26,35 @@ function discoverServerComponents(document: Document): ServerComponentDescriptor
   return discoveredComponents.sort((a, b): number => a.sequence - b.sequence);
 }
 
+const blazorStateCommentRegularExpression = /^\s*Blazor-Component-State:(?<state>[a-zA-Z0-9\+\/=]+)$/;
+
+export function discoverPersistedState(node: Node): string | null | undefined {
+  if (node.nodeType === Node.COMMENT_NODE) {
+    const content = node.textContent || '';
+    const parsedState = blazorStateCommentRegularExpression.exec(content);
+    const value = parsedState && parsedState.groups && parsedState.groups['state'];
+    if(value){
+      node.parentNode?.removeChild(node);
+    }
+    return value;
+  }
+
+  if (!node.hasChildNodes()) {
+    return;
+  }
+
+  const nodes = node.childNodes;
+  for (let index = 0; index < nodes.length; index++) {
+    const candidate = nodes[index];
+    const result = discoverPersistedState(candidate);
+    if(result){
+      return result;
+    }
+  }
+
+  return;
+}
+
 function discoverWebAssemblyComponents(document: Document): WebAssemblyComponentDescriptor[] {
   const componentComments = resolveComponentComments(document, 'webassembly') as WebAssemblyComponentDescriptor[];
   const discoveredComponents: WebAssemblyComponentDescriptor[] = [];
@@ -95,7 +124,7 @@ function resolveComponentComments(node: Node, type: 'webassembly' | 'server'): C
   return result;
 }
 
-const blazorCommentRegularExpression = /\W*Blazor:[^{]*(?<descriptor>.*)$/;
+const blazorCommentRegularExpression = /^\s*Blazor:[^{]*(?<descriptor>.*)$/;
 
 function getComponentComment(commentNodeIterator: ComponentCommentIterator, type: 'webassembly' | 'server'): ComponentComment | undefined {
   const candidateStart = commentNodeIterator.currentElement;

@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
