@@ -1,6 +1,6 @@
 # API Baselines
 
-This document contains information regarding API baseline files and how to work with them. For documentation on how these files works, consult:
+This document contains information regarding API baseline files and how to work with them. For additional details on how these files works, consult:
 -	https://github.com/dotnet/roslyn-analyzers/blob/master/src/PublicApiAnalyzers/PublicApiAnalyzers.Help.md
 -	https://github.com/dotnet/roslyn-analyzers/blob/master/src/PublicApiAnalyzers/Microsoft.CodeAnalysis.PublicApiAnalyzers.md
 
