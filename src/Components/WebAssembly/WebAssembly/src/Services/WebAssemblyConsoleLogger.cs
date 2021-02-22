@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                             _jsRuntime.InvokeUnmarshalled<string, object>("Blazor._internal.dotNetCriticalError", formattedMessage);
                             break;
                         default: // invalid enum values
-                            Debug.Assert(logLevel != LogLevel.None, "This method is never be called with LogLevel.None.");
+                            Debug.Assert(logLevel != LogLevel.None, "This method is never called with LogLevel.None.");
                             throw new ArgumentOutOfRangeException(nameof(logLevel));
                     }
                 }
