@@ -529,21 +529,44 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(httpContext.RequestAborted, cancellationTokenArgument);
         }
 
-        [Fact]
-        public async Task RequestDelegateWritesComplexReturnValueAsJsonResponseBody()
+        public static IEnumerable<object[]> ComplexResult
         {
-            Todo originalTodo = new()
+            get
             {
-                Name = "Write even more tests!"
-            };
+                Todo originalTodo = new()
+                {
+                    Name = "Write even more tests!"
+                };
 
-            Todo TestAction() => originalTodo;
+                Todo TestAction() => originalTodo;
+                Task<Todo> TaskTestAction() => Task.FromResult(originalTodo);
+                ValueTask<Todo> ValueTaskTestAction() => ValueTask.FromResult(originalTodo);
 
+                static Todo StaticTestAction() => new Todo { Name = "Write even more tests!" };
+                static Task<Todo> StaticTaskTestAction() => Task.FromResult(new Todo { Name = "Write even more tests!" });
+                static ValueTask<Todo> StaticValueTaskTestAction() => ValueTask.FromResult(new Todo { Name = "Write even more tests!" });
+
+                return new List<object[]>
+                {
+                    new object[] { (Func<Todo>)TestAction },
+                    new object[] { (Func<Task<Todo>>)TaskTestAction},
+                    new object[] { (Func<ValueTask<Todo>>)ValueTaskTestAction},
+                    new object[] { (Func<Todo>)StaticTestAction},
+                    new object[] { (Func<Task<Todo>>)StaticTaskTestAction},
+                    new object[] { (Func<ValueTask<Todo>>)StaticValueTaskTestAction},
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ComplexResult))]
+        public async Task RequestDelegateWritesComplexReturnValueAsJsonResponseBody(Delegate @delegate)
+        {
             var httpContext = new DefaultHttpContext();
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Func<Todo>)TestAction);
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 
@@ -555,7 +578,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             });
 
             Assert.NotNull(deserializedResponseBody);
-            Assert.Equal(originalTodo.Name, deserializedResponseBody!.Name);
+            Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
         }
 
         [Fact]
