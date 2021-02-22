@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -102,7 +102,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                             _jsRuntime.InvokeUnmarshalled<string, object>("Blazor._internal.dotNetCriticalError", formattedMessage);
                             break;
                         default: // invalid enum values
-                            throw new ArgumentException(nameof(logLevel));
+                            Debug.Assert(logLevel != LogLevel.None, "This method is never be called with LogLevel.None.");
+                            throw new ArgumentOutOfRangeException(nameof(logLevel));
                     }
                 }
                 finally
