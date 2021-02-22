@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             return ExecuteAwaited(task, httpContext);
         }
 
-        private static async ValueTask ExecuteTaskResult<T>(Task<T> task, HttpContext httpContext) where T : IResult
+        private static async Task ExecuteTaskResult<T>(Task<T> task, HttpContext httpContext) where T : IResult
         {
             await (await task).ExecuteAsync(httpContext);
         }
