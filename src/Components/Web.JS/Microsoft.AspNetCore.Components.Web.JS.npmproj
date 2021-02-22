@@ -42,6 +42,7 @@
   <Target Name="GetTargetFramework" />
   <Target Name="GetCopyToPublishDirectoryItems" />
   <Target Name="GetTargetPath" />
+  <Target Name="_CollectWatchItems" />
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
