@@ -202,6 +202,8 @@ try {
 
     # Retrieve the set of changed files compared to main
     Write-Host "Checking for changes to API baseline files $targetBranch...$sourceBranch"
+    git remote -v
+    git branch
 
     $changedFilesFromTarget = git --no-pager diff $targetBranch...$sourceBranch --ignore-space-change --name-only --diff-filter=ar
     $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
