@@ -147,6 +147,8 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Server" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebView.Headless" ProjectPath="$(RepoRoot)src\Components\WebView\Headless\src\Microsoft.AspNetCore.Components.WebView.Headless.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebView" ProjectPath="$(RepoRoot)src\Components\WebView\Hosting\src\Microsoft.AspNetCore.Components.WebView.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Web" ProjectPath="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileProviders.Embedded" ProjectPath="$(RepoRoot)src\FileProviders\Embedded\src\Microsoft.Extensions.FileProviders.Embedded.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Configuration.KeyPerFile" ProjectPath="$(RepoRoot)src\Configuration.KeyPerFile\src\Microsoft.Extensions.Configuration.KeyPerFile.csproj" />

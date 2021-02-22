@@ -1,0 +1,4 @@
+﻿Microsoft.AspNetCore.Components.WebView.Hosting.WebViewHostBuilder
+Microsoft.AspNetCore.Components.WebView.Hosting.WebViewHostBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.AspNetCore.Components.WebView.Hosting.WebViewHostBuilder.WebViewHostBuilder() -> void
+static Microsoft.AspNetCore.Components.WebView.Hosting.WebViewHostBuilder.CreateDefault(string![]? args = null) -> Microsoft.AspNetCore.Components.WebView.Hosting.WebViewHostBuilder!
