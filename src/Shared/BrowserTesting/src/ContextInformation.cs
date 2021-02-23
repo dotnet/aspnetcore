@@ -65,6 +65,15 @@ namespace Microsoft.AspNetCore.BrowserTesting
                 _harPath = browserContextOptions.RecordHar.Path;
             }
 
+            if (browserContextOptions?.RecordVideo?.Dir != null)
+            {
+                var uploadDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+                if (!string.IsNullOrEmpty(uploadDir))
+                {
+                    browserContextOptions.RecordVideo.Dir = uploadDir;
+                }
+            }
+
             return browserContextOptions;
         }
     }
