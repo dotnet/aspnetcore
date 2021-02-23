@@ -1574,7 +1574,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Browse
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{722E5A66-D84A-4689-AA87-7197FF5D7070}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WasmLinkerTest", "src\Components\WebAssembly\testassets\WasmLinkerTest\WasmLinkerTest.csproj", "{3B375FFC-1E38-453E-A26D-A510CCD3339E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WasmLinkerTest", "src\Components\WebAssembly\testassets\WasmLinkerTest\WasmLinkerTest.csproj", "{3B375FFC-1E38-453E-A26D-A510CCD3339E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapActionSample", "src\Http\Routing\samples\MapActionSample\MapActionSample.csproj", "{8F510BAA-FA6B-4648-8F98-28DF5C69DBB2}"
 EndProject
@@ -1582,25 +1582,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{7128
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HostedBlazorWebassemblyApp", "HostedBlazorWebassemblyApp", "{B4226BE2-DCB7-40C5-93F2-94C9BD6F4394}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HostedBlazorWebassemblyApp.Client", "src\Components\WebAssembly\Samples\HostedBlazorWebassemblyApp\Client\HostedBlazorWebassemblyApp.Client.csproj", "{8F6F73F7-0DDA-4AA3-9887-2FB0141786AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedBlazorWebassemblyApp.Client", "src\Components\WebAssembly\Samples\HostedBlazorWebassemblyApp\Client\HostedBlazorWebassemblyApp.Client.csproj", "{8F6F73F7-0DDA-4AA3-9887-2FB0141786AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HostedBlazorWebassemblyApp.Server", "src\Components\WebAssembly\Samples\HostedBlazorWebassemblyApp\Server\HostedBlazorWebassemblyApp.Server.csproj", "{1A5582DD-06F4-4427-BFDC-B021A84A01BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedBlazorWebassemblyApp.Server", "src\Components\WebAssembly\Samples\HostedBlazorWebassemblyApp\Server\HostedBlazorWebassemblyApp.Server.csproj", "{1A5582DD-06F4-4427-BFDC-B021A84A01BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HostedBlazorWebassemblyApp.Shared", "src\Components\WebAssembly\Samples\HostedBlazorWebassemblyApp\Shared\HostedBlazorWebassemblyApp.Shared.csproj", "{E18EF144-9C2C-4366-B54C-09ACF7692A4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedBlazorWebassemblyApp.Shared", "src\Components\WebAssembly\Samples\HostedBlazorWebassemblyApp\Shared\HostedBlazorWebassemblyApp.Shared.csproj", "{E18EF144-9C2C-4366-B54C-09ACF7692A4F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebView", "WebView", "{DDECDC13-D488-4257-BFBD-9DC668E580BE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Headless", "Headless", "{A95597AD-E9EF-451B-AB84-E97D83C0F897}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebView.Headless", "src\Components\WebView\Headless\src\Microsoft.AspNetCore.Components.WebView.Headless.csproj", "{59A3C129-0A59-4C9D-A841-227F655A49B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebView.Headless", "src\Components\WebView\Headless\src\Microsoft.AspNetCore.Components.WebView.Headless.csproj", "{59A3C129-0A59-4C9D-A841-227F655A49B6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosting", "Hosting", "{C0C49345-5908-48BE-8F82-7A8A62C00088}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebView", "src\Components\WebView\Hosting\src\Microsoft.AspNetCore.Components.WebView.csproj", "{ED278AA3-5CBC-4609-A578-2C19BA756C40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebView", "src\Components\WebView\Hosting\src\Microsoft.AspNetCore.Components.WebView.csproj", "{ED278AA3-5CBC-4609-A578-2C19BA756C40}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{D71E7638-80CA-46B7-91E1-4E1F502808A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorHeadlessSample", "src\Components\WebView\Samples\BlazorHeadlessSample\BlazorHeadlessSample.csproj", "{B1B97932-1452-4A73-8122-4F0799C96322}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorHeadlessSample", "src\Components\WebView\Samples\BlazorHeadlessSample\BlazorHeadlessSample.csproj", "{B1B97932-1452-4A73-8122-4F0799C96322}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -7481,6 +7481,18 @@ Global
 		{B739074E-6652-4F5B-B37E-775DC2245FEC}.Release|x64.Build.0 = Release|Any CPU
 		{B739074E-6652-4F5B-B37E-775DC2245FEC}.Release|x86.ActiveCfg = Release|Any CPU
 		{B739074E-6652-4F5B-B37E-775DC2245FEC}.Release|x86.Build.0 = Release|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|x64.Build.0 = Debug|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|x86.Build.0 = Debug|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|x64.ActiveCfg = Release|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|x64.Build.0 = Release|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|x86.ActiveCfg = Release|Any CPU
+		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|x86.Build.0 = Release|Any CPU
 		{8F510BAA-FA6B-4648-8F98-28DF5C69DBB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8F510BAA-FA6B-4648-8F98-28DF5C69DBB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F510BAA-FA6B-4648-8F98-28DF5C69DBB2}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -7505,18 +7517,6 @@ Global
 		{8F6F73F7-0DDA-4AA3-9887-2FB0141786AC}.Release|x64.Build.0 = Release|Any CPU
 		{8F6F73F7-0DDA-4AA3-9887-2FB0141786AC}.Release|x86.ActiveCfg = Release|Any CPU
 		{8F6F73F7-0DDA-4AA3-9887-2FB0141786AC}.Release|x86.Build.0 = Release|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|x64.Build.0 = Debug|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Debug|x86.Build.0 = Debug|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|x64.ActiveCfg = Release|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|x64.Build.0 = Release|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|x86.ActiveCfg = Release|Any CPU
-		{3B375FFC-1E38-453E-A26D-A510CCD3339E}.Release|x86.Build.0 = Release|Any CPU
 		{1A5582DD-06F4-4427-BFDC-B021A84A01BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1A5582DD-06F4-4427-BFDC-B021A84A01BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A5582DD-06F4-4427-BFDC-B021A84A01BC}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -8354,8 +8354,8 @@ Global
 		{8F33439F-5532-45D6-8A44-20EF9104AA9D} = {5F0044F2-4C66-46A8-BD79-075F001AA034}
 		{B739074E-6652-4F5B-B37E-775DC2245FEC} = {8F33439F-5532-45D6-8A44-20EF9104AA9D}
 		{722E5A66-D84A-4689-AA87-7197FF5D7070} = {54C42F57-5447-4C21-9812-4AF665567566}
-		{8F510BAA-FA6B-4648-8F98-28DF5C69DBB2} = {722E5A66-D84A-4689-AA87-7197FF5D7070}
 		{3B375FFC-1E38-453E-A26D-A510CCD3339E} = {7D2B0799-A634-42AC-AE77-5D167BA51389}
+		{8F510BAA-FA6B-4648-8F98-28DF5C69DBB2} = {722E5A66-D84A-4689-AA87-7197FF5D7070}
 		{71287382-95EF-490D-A285-87196E29E88A} = {562D5067-8CD8-4F19-BCBB-873204932C61}
 		{B4226BE2-DCB7-40C5-93F2-94C9BD6F4394} = {71287382-95EF-490D-A285-87196E29E88A}
 		{8F6F73F7-0DDA-4AA3-9887-2FB0141786AC} = {B4226BE2-DCB7-40C5-93F2-94C9BD6F4394}

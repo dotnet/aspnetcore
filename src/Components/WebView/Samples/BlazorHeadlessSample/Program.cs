@@ -1,14 +1,12 @@
-
+using Microsoft.AspNetCore.Components.WebView.Headless;
 using Microsoft.AspNetCore.Components.WebView.Hosting;
 
 var builder = WebViewHostBuilder.CreateDefault();
 
 var host = builder.Build();
 
-var renderClient = new ConsoleRenderClient();
+var renderPort = new ConsoleWindow();
 
-host.AttachRenderClient(renderClient);
+host.AttachRenderClient(renderPort);
 
-renderClient.AddComponent<App>("#app");
-
-host.StartAsync()
+renderPort.AddComponent<BlazorServerApp.App>("#app");

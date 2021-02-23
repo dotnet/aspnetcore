@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Hosting
     {
         public IServiceCollection Services { get; } = new ServiceCollection();
 
-        public static WebViewHostBuilder CreateDefault(string[]? args = null)
+        public static WebViewHostBuilder CreateDefault(string[] args = null)
         {
             return new WebViewHostBuilder();
         }

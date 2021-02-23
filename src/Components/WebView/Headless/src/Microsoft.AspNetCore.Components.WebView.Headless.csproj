@@ -5,8 +5,8 @@
     <Description>Test host for Blazor desktop applications.</Description>
     <IsShippingPackage>false</IsShippingPackage>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Nullable>enable</Nullable>
+    <!-- TODO: REMOVE -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,13 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Sample blazor headless application.</Description>
     <IsShippingPackage>false</IsShippingPackage>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Nullable>enable</Nullable>
+    <!-- TODO: REMOVE -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Samples\BlazorServerApp\BlazorServerApp.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebView.Headless" />

@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build desktop applications with WebView and Blazor.</Description>
     <IsShippingPackage>true</IsShippingPackage>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Nullable>enable</Nullable>
+    <!-- TODO: REMOVE -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
