@@ -5,8 +5,8 @@
   "description": "",
   "main": "index.js",
   "sideEffects": [
-    "src/GlobalExports.ts",
-    "src/Platform/Mono/MonoPlatform.ts"
+    "GlobalExports.*",
+    "MonoPlatform.*"
   ],
   "scripts": {
     "preclean": "yarn install --mutex network",
