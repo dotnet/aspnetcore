@@ -193,19 +193,15 @@ try {
 
     $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
     if (-not ($targetBranch.StartsWith('refs/heads/'))) {
-        $targetBranch = refs/heads$targetBranch
-    }
-    $sourceBranch = $env:SYSTEM_PULLREQUEST_SOURCEBRANCH
-    if (-not ($sourceBranch.StartsWith('refs/heads/'))) {
-        $sourceBranch = refs/heads$sourceBranch
+        $targetBranch = $targetBranch.Replace('refs/heads/','')
     }
 
     # Retrieve the set of changed files compared to main
-    Write-Host "Checking for changes to API baseline files $targetBranch...$sourceBranch"
+    Write-Host "Checking for changes to API baseline files $targetBranch"
     git remote -v
     git branch
 
-    $changedFilesFromTarget = git --no-pager diff $targetBranch...$sourceBranch --ignore-space-change --name-only --diff-filter=ar
+    $changedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only --diff-filter=ar
     $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
 
     if ($changedFilesFromTarget) {
