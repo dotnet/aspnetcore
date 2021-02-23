@@ -24,4 +24,3 @@ Microsoft.Extensions.DependencyInjection.SqlServerCachingServicesExtensions
 ~Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.SystemClock.set -> void
 ~Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.TableName.get -> string
 ~Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.TableName.set -> void
-~static Microsoft.Extensions.DependencyInjection.SqlServerCachingServicesExtensions.AddDistributedSqlServerCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions> setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
