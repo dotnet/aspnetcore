@@ -52,8 +52,12 @@ namespace Microsoft.AspNetCore.Hosting
             var diagnosticListenerActivityCreationEnabled = (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext));
             var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
-            context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
-            context.HasDiagnosticListener = hasDiagnosticListener;
+
+            if (loggingEnabled || diagnosticListenerActivityCreationEnabled || _activitySource.HasListeners())
+            {
+                context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
+                context.HasDiagnosticListener = hasDiagnosticListener;
+            }
 
             if (diagnosticListenerEnabled)
             {
@@ -246,18 +250,16 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasActivityStartDiagnosticListener)
+        private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
         {
-            hasActivityStartDiagnosticListener = false;
-            if (diagnosticListenerActivityCreationEnabled)
+            var activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server);
+            if (activity is null && (loggingEnabled || diagnosticListenerActivityCreationEnabled))
             {
-                if (_diagnosticListener.IsEnabled(ActivityStartKey))
-                {
-                    hasActivityStartDiagnosticListener = true;
-                }
+                activity = new Activity(ActivityName);
             }
-            // Short-circuit to avoid doing an expensive header lookup
-            if (!(diagnosticListenerActivityCreationEnabled || _activitySource.HasListeners() || loggingEnabled))
+            hasDiagnosticListener = false;
+
+            if (activity is null)
             {
                 return null;
             }
@@ -266,14 +268,6 @@ namespace Microsoft.AspNetCore.Hosting
             if (!headers.TryGetValue(HeaderNames.TraceParent, out var requestId))
             {
                 headers.TryGetValue(HeaderNames.RequestId, out requestId);
-            }
-
-            var activity = _activitySource.StartActivity(ActivityName, ActivityKind.Server, requestId);
-            bool ActivityStarted = true;
-            if (activity is null)
-            {
-                ActivityStarted = false;
-                activity = new Activity(ActivityName);
             }
 
             if (!StringValues.IsNullOrEmpty(requestId))
@@ -303,19 +297,16 @@ namespace Microsoft.AspNetCore.Hosting
                 }
             }
 
-            if (diagnosticListenerActivityCreationEnabled)
-            {
-                _diagnosticListener.OnActivityImport(activity, httpContext);
-            }
+            _diagnosticListener.OnActivityImport(activity, httpContext);
 
-            if (!ActivityStarted)
+            if (_diagnosticListener.IsEnabled(ActivityStartKey))
+            {
+                hasDiagnosticListener = true;
+                StartActivity(activity, httpContext);
+            }
+            else
             {
                 activity.Start();
-            }
-            
-            if (hasActivityStartDiagnosticListener)
-            {
-                _diagnosticListener.Write(ActivityStartKey, httpContext);
             }
 
             return activity;
@@ -329,6 +320,14 @@ namespace Microsoft.AspNetCore.Hosting
                 StopActivity(activity, httpContext);
             }
             activity.Stop();
+        }
+
+        // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
+        private Activity StartActivity(Activity activity, HttpContext httpContext)
+        {
+            activity.Start();
+            _diagnosticListener.Write(ActivityStartKey, httpContext);
+            return activity;
         }
 
         private void StopActivity(Activity activity, HttpContext httpContext)
