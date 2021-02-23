@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Threading;
@@ -206,14 +205,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 await BindAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
-                // Do not log stack trace for known errors https://github.com/dotnet/aspnetcore/issues/29801
-                if (ex is not IOException && ex.InnerException is not AddressInUseException)
-                {
-                    Trace.LogCritical(0, ex, "Unable to start Kestrel.");
-                }
-
+                // Don't log the error https://github.com/dotnet/aspnetcore/issues/29801
                 Dispose();
                 throw;
             }
