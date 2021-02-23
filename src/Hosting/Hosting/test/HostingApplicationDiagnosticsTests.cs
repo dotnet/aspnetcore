@@ -478,9 +478,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 onActivityImport: (activity, context) =>
                 {
                     onActivityImportCalled = true;
-                    // Review: Breaking change
-                    // Since we fire OnActivityImport after Activity.Start(), it will no longer be not null
-                    //Assert.Null(Activity.Current);
+                    Assert.Null(Activity.Current);
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", activity.OperationName);
                     Assert.NotNull(context);
                     Assert.IsAssignableFrom<HttpContext>(context);
