@@ -136,29 +136,29 @@ export function createLogger(logger?: ILogger | LogLevel) {
 
 /** @private */
 export class SubjectSubscription<T> implements ISubscription<T> {
-    private subject: Subject<T>;
-    private observer: IStreamSubscriber<T>;
+    private _subject: Subject<T>;
+    private _observer: IStreamSubscriber<T>;
 
     constructor(subject: Subject<T>, observer: IStreamSubscriber<T>) {
-        this.subject = subject;
-        this.observer = observer;
+        this._subject = subject;
+        this._observer = observer;
     }
 
     public dispose(): void {
-        const index: number = this.subject.observers.indexOf(this.observer);
+        const index: number = this._subject.observers.indexOf(this._observer);
         if (index > -1) {
-            this.subject.observers.splice(index, 1);
+            this._subject.observers.splice(index, 1);
         }
 
-        if (this.subject.observers.length === 0 && this.subject.cancelCallback) {
-            this.subject.cancelCallback().catch((_) => { });
+        if (this._subject.observers.length === 0 && this._subject.cancelCallback) {
+            this._subject.cancelCallback().catch((_) => { });
         }
     }
 }
 
 /** @private */
 export class ConsoleLogger implements ILogger {
-    private readonly minLevel: LogLevel;
+    private readonly _minLevel: LogLevel;
 
     // Public for testing purposes.
     public out: {
@@ -169,12 +169,12 @@ export class ConsoleLogger implements ILogger {
     };
 
     constructor(minimumLogLevel: LogLevel) {
-        this.minLevel = minimumLogLevel;
+        this._minLevel = minimumLogLevel;
         this.out = console;
     }
 
     public log(logLevel: LogLevel, message: string): void {
-        if (logLevel >= this.minLevel) {
+        if (logLevel >= this._minLevel) {
             const msg = `[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`;
             switch (logLevel) {
                 case LogLevel.Critical:

@@ -29,11 +29,11 @@ export class MessagePackHubProtocol implements IHubProtocol {
     /** The TransferFormat of the protocol. */
     public readonly transferFormat: TransferFormat = TransferFormat.Binary;
 
-    private readonly errorResult = 1;
-    private readonly voidResult = 2;
-    private readonly nonVoidResult = 3;
+    private readonly _errorResult = 1;
+    private readonly _voidResult = 2;
+    private readonly _nonVoidResult = 3;
 
-    private readonly messagePackOptions?: any;
+    private readonly _messagePackOptions?: any;
 
     /**
      *
@@ -41,7 +41,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
      */
     constructor(messagePackOptions?: MessagePackOptions) {
         if (messagePackOptions) {
-            this.messagePackOptions = {
+            this._messagePackOptions = {
                 ...messagePackOptions,
                 compatibilityMode: false,
             };
@@ -67,7 +67,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
         const hubMessages = [];
         for (const message of messages) {
-            const parsedMessage = this.parseMessage(message, logger);
+            const parsedMessage = this._parseMessage(message, logger);
             // Can be null for an unknown message. Unknown message is logged in parseMessage
             if (parsedMessage) {
                 hubMessages.push(parsedMessage);
@@ -85,28 +85,28 @@ export class MessagePackHubProtocol implements IHubProtocol {
     public writeMessage(message: HubMessage): ArrayBuffer {
         switch (message.type) {
             case MessageType.Invocation:
-                return this.writeInvocation(message as InvocationMessage);
+                return this._writeInvocation(message as InvocationMessage);
             case MessageType.StreamInvocation:
-                return this.writeStreamInvocation(message as StreamInvocationMessage);
+                return this._writeStreamInvocation(message as StreamInvocationMessage);
             case MessageType.StreamItem:
-                return this.writeStreamItem(message as StreamItemMessage);
+                return this._writeStreamItem(message as StreamItemMessage);
             case MessageType.Completion:
-                return this.writeCompletion(message as CompletionMessage);
+                return this._writeCompletion(message as CompletionMessage);
             case MessageType.Ping:
                 return BinaryMessageFormat.write(SERIALIZED_PING_MESSAGE);
             case MessageType.CancelInvocation:
-                return this.writeCancelInvocation(message as CancelInvocationMessage);
+                return this._writeCancelInvocation(message as CancelInvocationMessage);
             default:
                 throw new Error("Invalid message type.");
         }
     }
 
-    private parseMessage(input: Uint8Array, logger: ILogger): HubMessage | null {
+    private _parseMessage(input: Uint8Array, logger: ILogger): HubMessage | null {
         if (input.length === 0) {
             throw new Error("Invalid payload.");
         }
 
-        const properties = decode(input, this.messagePackOptions) as any;
+        const properties = decode(input, this._messagePackOptions) as any;
         if (properties.length === 0 || !(properties instanceof Array)) {
             throw new Error("Invalid payload.");
         }
@@ -115,15 +115,15 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
         switch (messageType) {
             case MessageType.Invocation:
-                return this.createInvocationMessage(this.readHeaders(properties), properties);
+                return this._createInvocationMessage(this._readHeaders(properties), properties);
             case MessageType.StreamItem:
-                return this.createStreamItemMessage(this.readHeaders(properties), properties);
+                return this._createStreamItemMessage(this._readHeaders(properties), properties);
             case MessageType.Completion:
-                return this.createCompletionMessage(this.readHeaders(properties), properties);
+                return this._createCompletionMessage(this._readHeaders(properties), properties);
             case MessageType.Ping:
-                return this.createPingMessage(properties);
+                return this._createPingMessage(properties);
             case MessageType.Close:
-                return this.createCloseMessage(properties);
+                return this._createCloseMessage(properties);
             default:
                 // Future protocol changes can add message types, old clients can ignore them
                 logger.log(LogLevel.Information, "Unknown message type '" + messageType + "' ignored.");
@@ -131,7 +131,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
         }
     }
 
-    private createCloseMessage(properties: any[]): HubMessage {
+    private _createCloseMessage(properties: any[]): HubMessage {
         // check minimum length to allow protocol to add items to the end of objects in future releases
         if (properties.length < 2) {
             throw new Error("Invalid payload for Close message.");
@@ -145,7 +145,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
         } as HubMessage;
     }
 
-    private createPingMessage(properties: any[]): HubMessage {
+    private _createPingMessage(properties: any[]): HubMessage {
         // check minimum length to allow protocol to add items to the end of objects in future releases
         if (properties.length < 1) {
             throw new Error("Invalid payload for Ping message.");
@@ -157,7 +157,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
         } as HubMessage;
     }
 
-    private createInvocationMessage(headers: MessageHeaders, properties: any[]): InvocationMessage {
+    private _createInvocationMessage(headers: MessageHeaders, properties: any[]): InvocationMessage {
         // check minimum length to allow protocol to add items to the end of objects in future releases
         if (properties.length < 5) {
             throw new Error("Invalid payload for Invocation message.");
@@ -185,7 +185,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     }
 
-    private createStreamItemMessage(headers: MessageHeaders, properties: any[]): StreamItemMessage {
+    private _createStreamItemMessage(headers: MessageHeaders, properties: any[]): StreamItemMessage {
         // check minimum length to allow protocol to add items to the end of objects in future releases
         if (properties.length < 4) {
             throw new Error("Invalid payload for StreamItem message.");
@@ -199,7 +199,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
         } as StreamItemMessage;
     }
 
-    private createCompletionMessage(headers: MessageHeaders, properties: any[]): CompletionMessage {
+    private _createCompletionMessage(headers: MessageHeaders, properties: any[]): CompletionMessage {
         // check minimum length to allow protocol to add items to the end of objects in future releases
         if (properties.length < 4) {
             throw new Error("Invalid payload for Completion message.");
@@ -207,7 +207,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
         const resultKind = properties[3];
 
-        if (resultKind !== this.voidResult && properties.length < 5) {
+        if (resultKind !== this._voidResult && properties.length < 5) {
             throw new Error("Invalid payload for Completion message.");
         }
 
@@ -215,10 +215,10 @@ export class MessagePackHubProtocol implements IHubProtocol {
         let result: any;
 
         switch (resultKind) {
-            case this.errorResult:
+            case this._errorResult:
                 error = properties[4];
                 break;
-            case this.nonVoidResult:
+            case this._nonVoidResult:
                 result = properties[4];
                 break;
         }
@@ -234,65 +234,65 @@ export class MessagePackHubProtocol implements IHubProtocol {
         return completionMessage;
     }
 
-    private writeInvocation(invocationMessage: InvocationMessage): ArrayBuffer {
+    private _writeInvocation(invocationMessage: InvocationMessage): ArrayBuffer {
         let payload: any;
         if (invocationMessage.streamIds) {
             payload = encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
-            invocationMessage.target, invocationMessage.arguments, invocationMessage.streamIds], this.messagePackOptions);
+            invocationMessage.target, invocationMessage.arguments, invocationMessage.streamIds], this._messagePackOptions);
         } else {
             payload = encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
-            invocationMessage.target, invocationMessage.arguments], this.messagePackOptions);
+            invocationMessage.target, invocationMessage.arguments], this._messagePackOptions);
         }
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
-    private writeStreamInvocation(streamInvocationMessage: StreamInvocationMessage): ArrayBuffer {
+    private _writeStreamInvocation(streamInvocationMessage: StreamInvocationMessage): ArrayBuffer {
         let payload: any;
         if (streamInvocationMessage.streamIds) {
             payload = encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
-            streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streamIds], this.messagePackOptions);
+            streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streamIds], this._messagePackOptions);
         } else {
             payload = encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
-            streamInvocationMessage.target, streamInvocationMessage.arguments], this.messagePackOptions);
+            streamInvocationMessage.target, streamInvocationMessage.arguments], this._messagePackOptions);
         }
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
-    private writeStreamItem(streamItemMessage: StreamItemMessage): ArrayBuffer {
+    private _writeStreamItem(streamItemMessage: StreamItemMessage): ArrayBuffer {
         const payload = encode([MessageType.StreamItem, streamItemMessage.headers || {}, streamItemMessage.invocationId,
-        streamItemMessage.item], this.messagePackOptions);
+        streamItemMessage.item], this._messagePackOptions);
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
-    private writeCompletion(completionMessage: CompletionMessage): ArrayBuffer {
-        const resultKind = completionMessage.error ? this.errorResult : completionMessage.result ? this.nonVoidResult : this.voidResult;
+    private _writeCompletion(completionMessage: CompletionMessage): ArrayBuffer {
+        const resultKind = completionMessage.error ? this._errorResult : completionMessage.result ? this._nonVoidResult : this._voidResult;
 
         let payload: any;
         switch (resultKind) {
-            case this.errorResult:
-                payload = encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.error], this.messagePackOptions);
+            case this._errorResult:
+                payload = encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.error], this._messagePackOptions);
                 break;
-            case this.voidResult:
-                payload = encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind], this.messagePackOptions);
+            case this._voidResult:
+                payload = encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind], this._messagePackOptions);
                 break;
-            case this.nonVoidResult:
-                payload = encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.result], this.messagePackOptions);
+            case this._nonVoidResult:
+                payload = encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.result], this._messagePackOptions);
                 break;
         }
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
-    private writeCancelInvocation(cancelInvocationMessage: CancelInvocationMessage): ArrayBuffer {
-        const payload = encode([MessageType.CancelInvocation, cancelInvocationMessage.headers || {}, cancelInvocationMessage.invocationId], this.messagePackOptions);
+    private _writeCancelInvocation(cancelInvocationMessage: CancelInvocationMessage): ArrayBuffer {
+        const payload = encode([MessageType.CancelInvocation, cancelInvocationMessage.headers || {}, cancelInvocationMessage.invocationId], this._messagePackOptions);
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
-    private readHeaders(properties: any): MessageHeaders {
+    private _readHeaders(properties: any): MessageHeaders {
         const headers: MessageHeaders = properties[1] as MessageHeaders;
         if (typeof headers !== "object") {
             throw new Error("Invalid headers.");

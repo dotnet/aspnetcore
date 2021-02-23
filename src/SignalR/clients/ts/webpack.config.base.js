@@ -92,7 +92,9 @@ module.exports = function (modulePath, browserBaseName, options) {
                   ecma: 2019,
                   compress: {},
                   mangle: {
-
+                    properties: {
+                        regex: /^_/
+                    }
                   },
                   module: true,
                   format: {

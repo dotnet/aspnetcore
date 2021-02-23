@@ -1,5 +1,6 @@
 {
     "extends": "tslint:recommended",
+    "rulesDirectory": ["./common/node_modules/tslint-consistent-codestyle/rules"],
     "rules": {
         "max-line-length": { "options": [300] },
         "member-ordering": false,
@@ -9,6 +10,10 @@
         "no-floating-promises": true,
         "no-empty": false,
         "no-bitwise": false,
-        "no-console": false
+        "no-console": false,
+        "naming-convention": [
+            true,
+            {"type": "member", "modifiers": "private", "leadingUnderscore": "require"}
+          ]
     }
 }

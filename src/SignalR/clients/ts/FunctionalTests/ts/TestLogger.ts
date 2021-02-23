@@ -33,7 +33,7 @@ export class TestLog {
 
 export class TestLogger implements ILogger {
     public static instance: TestLogger = new TestLogger();
-    private static consoleLogger: ConsoleLogger = new ConsoleLogger(LogLevel.Trace);
+    private static _consoleLogger: ConsoleLogger = new ConsoleLogger(LogLevel.Trace);
 
     public currentLog: TestLog = new TestLog();
 
@@ -41,7 +41,7 @@ export class TestLogger implements ILogger {
         this.currentLog.addMessage(new Date(), logLevel, message);
 
         // Also write to browser console
-        TestLogger.consoleLogger.log(logLevel, message);
+        TestLogger._consoleLogger.log(logLevel, message);
     }
 
     public static saveLogsAndReset(): TestLog {

@@ -47,22 +47,22 @@ class CapturingConsole {
     public messages: any[] = [];
 
     public error(message: any) {
-        this.messages.push(CapturingConsole.stripPrefix(message));
+        this.messages.push(CapturingConsole._stripPrefix(message));
     }
 
     public warn(message: any) {
-        this.messages.push(CapturingConsole.stripPrefix(message));
+        this.messages.push(CapturingConsole._stripPrefix(message));
     }
 
     public info(message: any) {
-        this.messages.push(CapturingConsole.stripPrefix(message));
+        this.messages.push(CapturingConsole._stripPrefix(message));
     }
 
     public log(message: any) {
-        this.messages.push(CapturingConsole.stripPrefix(message));
+        this.messages.push(CapturingConsole._stripPrefix(message));
     }
 
-    private static stripPrefix(input: any): any {
+    private static _stripPrefix(input: any): any {
         if (typeof input === "string") {
             input = input.replace(/\[.*\]\s+/, "");
         }
