@@ -5,6 +5,7 @@
     <IsPackable>false</IsPackable>
     <IsBuildable>false</IsBuildable>
     <IsTestProject>true</IsTestProject>
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
