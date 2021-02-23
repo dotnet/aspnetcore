@@ -192,7 +192,7 @@ try {
     }
 
     $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
-    if (-not ($targetBranch.StartsWith('refs/heads/'))) {
+    if ($targetBranch.StartsWith('refs/heads/')) {
         $targetBranch = $targetBranch.Replace('refs/heads/','')
     }
 
