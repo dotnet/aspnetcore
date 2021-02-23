@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var exception = Assert.Throws<FormatException>(() => StartDummyApplication(server));
 
                 Assert.Contains("Invalid url", exception.Message);
-                Assert.Equal(1, testLogger.CriticalErrorsLogged);
+                Assert.Equal(0, testLogger.CriticalErrorsLogged);
             }
         }
 
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(
                     $"A path base can only be configured using {nameof(IApplicationBuilder)}.UsePathBase().",
                     exception.Message);
-                Assert.Equal(1, testLogger.CriticalErrorsLogged);
+                Assert.Equal(0, testLogger.CriticalErrorsLogged);
             }
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(
                     CoreStrings.FormatMaxRequestBufferSmallerThanRequestLineBuffer(maxRequestBufferSize, maxRequestLineSize),
                     exception.Message);
-                Assert.Equal(1, testLogger.CriticalErrorsLogged);
+                Assert.Equal(0, testLogger.CriticalErrorsLogged);
             }
         }
 
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(
                     CoreStrings.FormatMaxRequestBufferSmallerThanRequestHeaderBuffer(maxRequestBufferSize, maxRequestHeadersTotalSize),
                     exception.Message);
-                Assert.Equal(1, testLogger.CriticalErrorsLogged);
+                Assert.Equal(0, testLogger.CriticalErrorsLogged);
             }
         }
 
