@@ -10,6 +10,7 @@ import { Subject } from "./Subject";
 
 // Version token that will be replaced by the prepack command
 /** The version of the SignalR client. */
+
 export const VERSION: string = "0.0.0-DEV_BUILD";
 /** @private */
 export class Arg {

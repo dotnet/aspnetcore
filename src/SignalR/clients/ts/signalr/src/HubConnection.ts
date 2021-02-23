@@ -30,7 +30,7 @@ export enum HubConnectionState {
 /** Represents a connection to a SignalR Hub. */
 export class HubConnection {
     private readonly _cachedPingMessage: string | ArrayBuffer;
-    // tslint:disable-next-line:naming-convention
+    // Needs to not start with _ for tests
     private readonly connection: IConnection;
     private readonly _logger: ILogger;
     private readonly _reconnectPolicy?: IRetryPolicy;

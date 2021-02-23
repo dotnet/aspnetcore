@@ -218,7 +218,7 @@ describe("MessagePackHubProtocol", () => {
         expect(new Uint8Array(buffer)).toEqual(payload);
     });
 
-    it("will preserve double precision if forceFloat64 is set", () => {
+    it("will preserve double precision", () => {
         const invocation = {
             arguments: [Number(0.005)],
             headers: {},
@@ -228,7 +228,7 @@ describe("MessagePackHubProtocol", () => {
             type: MessageType.Invocation,
         } as InvocationMessage;
 
-        const protocol = new MessagePackHubProtocol({ forceFloat64: true });
+        const protocol = new MessagePackHubProtocol({ });
         const parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation), NullLogger.instance);
         expect(parsedMessages[0]).toEqual({
             arguments: [0.005],

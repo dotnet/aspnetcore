@@ -51,13 +51,13 @@
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.31",
     "@types/tough-cookie": "^4.0.0",
-    "process": "^0.11.10",
+    "process": "^0.11.10"
+  },
+  "dependencies": {
     "eventsource": "^1.0.7",
     "node-fetch": "^2.6.1",
     "abort-controller": "^3.0.0",
     "fetch-cookie": "^0.11.0",
     "ws": "^7.4.3"
-  },
-  "dependencies": {
   }
 }
