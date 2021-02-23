@@ -55,7 +55,13 @@ namespace Microsoft.AspNetCore.BrowserTesting
             if (browserContextOptions?.RecordHar?.Path != null)
             {
                 var identifier = Guid.NewGuid().ToString("N");
-                browserContextOptions.RecordHar.Path = Path.Combine(browserContextOptions.RecordHar.Path, $"{identifier}.har");
+                var harDirectory = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+                if (string.IsNullOrEmpty(harDirectory))
+                {
+                    harDirectory = browserContextOptions.RecordHar.Path;
+                }
+                
+                browserContextOptions.RecordHar.Path = Path.Combine(harDirectory, $"{identifier}.har");
                 _harPath = browserContextOptions.RecordHar.Path;
             }
 
