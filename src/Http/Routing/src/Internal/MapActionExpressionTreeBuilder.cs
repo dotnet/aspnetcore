@@ -23,7 +23,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
     {
         private static readonly MethodInfo ChangeTypeMethodInfo = GetMethodInfo<Func<object, Type, object>>((value, type) => Convert.ChangeType(value, type, CultureInfo.InvariantCulture));
         private static readonly MethodInfo ExecuteTaskOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteTaskOfStringMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteValueTaskOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskOfStringMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteTaskResultOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteValueResultTaskOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo GetRequiredServiceMethodInfo = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
@@ -195,10 +197,20 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     else
                     {
                         // ExecuteTask<T>(action(..), httpContext);
-                        body = Expression.Call(
-                                           ExecuteTaskOfTMethodInfo.MakeGenericMethod(typeArg),
-                                           methodCall,
-                                           HttpContextParameter);
+                        if (typeArg == typeof(string))
+                        {
+                            body = Expression.Call(
+                                             ExecuteTaskOfStringMethodInfo,
+                                             methodCall,
+                                             HttpContextParameter);
+                        }
+                        else
+                        {
+                            body = Expression.Call(
+                                             ExecuteTaskOfTMethodInfo.MakeGenericMethod(typeArg),
+                                             methodCall,
+                                             HttpContextParameter);
+                        }
                     }
                 }
                 else if (method.ReturnType.IsGenericType &&
@@ -216,10 +228,20 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     else
                     {
                         // ExecuteTask<T>(action(..), httpContext);
-                        body = Expression.Call(
+                        if (typeArg == typeof(string))
+                        {
+                            body = Expression.Call(
+                                       ExecuteValueTaskOfStringMethodInfo,
+                                       methodCall,
+                                       HttpContextParameter);
+                        }
+                        else
+                        {
+                            body = Expression.Call(
                                        ExecuteValueTaskOfTMethodInfo.MakeGenericMethod(typeArg),
                                        methodCall,
                                        HttpContextParameter);
+                        }
                     }
                 }
                 else
@@ -392,9 +414,34 @@ namespace Microsoft.AspNetCore.Routing.Internal
             return mc.Member;
         }
 
-        private static async Task ExecuteTask<T>(Task<T> task, HttpContext httpContext)
+        private static Task ExecuteTask<T>(Task<T> task, HttpContext httpContext)
         {
-            await httpContext.Response.WriteAsJsonAsync(await task);
+            static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext)
+            {
+                await httpContext.Response.WriteAsJsonAsync(await task);
+            }
+
+            if (task.IsCompletedSuccessfully)
+            {
+                return httpContext.Response.WriteAsJsonAsync(task.GetAwaiter().GetResult());
+            }
+
+            return ExecuteAwaited(task, httpContext);
+        }
+
+        private static Task ExecuteTaskOfString(Task<string> task, HttpContext httpContext)
+        {
+            static async Task ExecuteAwaited(Task<string> task, HttpContext httpContext)
+            {
+                await httpContext.Response.WriteAsync(await task);
+            }
+
+            if (task.IsCompletedSuccessfully)
+            {
+                return httpContext.Response.WriteAsync(task.GetAwaiter().GetResult());
+            }
+
+            return ExecuteAwaited(task, httpContext);
         }
 
         private static Task ExecuteValueTask<T>(ValueTask<T> task, HttpContext httpContext)
@@ -407,6 +454,21 @@ namespace Microsoft.AspNetCore.Routing.Internal
             if (task.IsCompletedSuccessfully)
             {
                 return httpContext.Response.WriteAsJsonAsync(task.GetAwaiter().GetResult());
+            }
+
+            return ExecuteAwaited(task, httpContext);
+        }
+
+        private static Task ExecuteValueTaskOfString(ValueTask<string> task, HttpContext httpContext)
+        {
+            static async Task ExecuteAwaited(ValueTask<string> task, HttpContext httpContext)
+            {
+                await httpContext.Response.WriteAsync(await task);
+            }
+
+            if (task.IsCompletedSuccessfully)
+            {
+                return httpContext.Response.WriteAsync(task.GetAwaiter().GetResult());
             }
 
             return ExecuteAwaited(task, httpContext);

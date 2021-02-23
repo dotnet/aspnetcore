@@ -624,6 +624,49 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal("Still not enough tests!", decodedResponseBody);
         }
 
+        public static IEnumerable<object[]> StringResult
+        {
+            get
+            {
+                var test = "String Test";
+
+                string TestAction() => test;
+                Task<string> TaskTestAction() => Task.FromResult(test);
+                ValueTask<string> ValueTaskTestAction() => ValueTask.FromResult(test);
+
+                static string StaticTestAction() => "String Test";
+                static Task<string> StaticTaskTestAction() => Task.FromResult("String Test");
+                static ValueTask<string> StaticValueTaskTestAction() => ValueTask.FromResult("String Test");
+
+                return new List<object[]>
+                {
+                    new object[] { (Func<string>)TestAction },
+                    new object[] { (Func<Task<string>>)TaskTestAction },
+                    new object[] { (Func<ValueTask<string>>)ValueTaskTestAction },
+                    new object[] { (Func<string>)StaticTestAction },
+                    new object[] { (Func<Task<string>>)StaticTaskTestAction },
+                    new object[] { (Func<ValueTask<string>>)StaticValueTaskTestAction },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(StringResult))]
+        public async Task RequestDelegateWritesStringReturnValueAsJsonResponseBody(Delegate @delegate)
+        {
+            var httpContext = new DefaultHttpContext();
+            var responseBodyStream = new MemoryStream();
+            httpContext.Response.Body = responseBodyStream;
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+
+            await requestDelegate(httpContext);
+
+            var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+
+            Assert.Equal("String Test", responseBody);
+        }
+
         private class Todo
         {
             public int Id { get; set; }
