@@ -319,7 +319,10 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 StopActivity(activity, httpContext);
             }
-            activity.Stop();
+            else
+            {
+                activity.Stop();
+            }
         }
 
         // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
@@ -339,6 +342,7 @@ namespace Microsoft.AspNetCore.Hosting
                 activity.SetEndTime(DateTime.UtcNow);
             }
             _diagnosticListener.Write(ActivityStopKey, httpContext);
+            activity.Stop();    // Resets Activity.Current (we want this after the Write)
         }
     }
 }
