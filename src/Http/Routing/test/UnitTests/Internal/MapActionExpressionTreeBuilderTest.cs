@@ -637,7 +637,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             await requestDelegate(httpContext);
 
-            var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());          
+            var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
 
             Assert.Equal("42", responseBody);
         }
