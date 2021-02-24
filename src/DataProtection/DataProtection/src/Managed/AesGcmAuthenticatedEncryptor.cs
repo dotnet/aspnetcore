@@ -41,9 +41,9 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
         private readonly int _derivedkeySizeInBytes;
         private readonly IManagedGenRandom _genRandom;
 
-        public AesGcmAuthenticatedEncryptor(Secret keyDerivationKey, int derivedKeySizeInBytes, IManagedGenRandom? genRandom = null)
+        public AesGcmAuthenticatedEncryptor(ISecret keyDerivationKey, int derivedKeySizeInBytes, IManagedGenRandom? genRandom = null)
         {
-            _keyDerivationKey = keyDerivationKey;
+            _keyDerivationKey = new Secret(keyDerivationKey);
             _derivedkeySizeInBytes = derivedKeySizeInBytes;
 
             switch (_derivedkeySizeInBytes)
