@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.DataProtection.SP800_108;
 
 namespace Microsoft.AspNetCore.DataProtection.Managed
 {
-    // An encryptor uses AesGcm to do encryption
+    // An encryptor that uses AesGcm to do encryption
     internal unsafe sealed class AesGcmAuthenticatedEncryptor : IOptimizedAuthenticatedEncryptor, IDisposable
     {
         // Having a key modifier ensures with overwhelming probability that no two encryption operations
