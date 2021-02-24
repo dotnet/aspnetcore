@@ -153,65 +153,62 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                 // Allocate a buffer to hold the key modifier, nonce, encrypted data, and tag.
                 // In GCM, the encrypted output will be the same length as the plaintext input.
                 var retVal = new byte[checked(preBufferSize + KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Count + TAG_SIZE_IN_BYTES + postBufferSize)];
-                fixed (byte* pbRetVal = retVal)
+                int keyModifierOffset; // position in ciphertext.Array where key modifier begins
+                int nonceOffset; // position in ciphertext.Array where key modifier ends / nonce begins
+                int encryptedDataOffset; // position in ciphertext.Array where nonce ends / encryptedData begins
+                int tagOffset; // position in ciphertext.Array where encrypted data ends
+
+                checked
                 {
-                    int keyModifierOffset; // position in ciphertext.Array where key modifier begins
-                    int nonceOffset; // position in ciphertext.Array where key modifier ends / nonce begins
-                    int encryptedDataOffset; // position in ciphertext.Array where nonce ends / encryptedData begins
-                    int tagOffset; // position in ciphertext.Array where encrypted data ends
+                    keyModifierOffset = plaintext.Offset + (int)preBufferSize;
+                    nonceOffset = keyModifierOffset + KEY_MODIFIER_SIZE_IN_BYTES;
+                    encryptedDataOffset = nonceOffset + NONCE_SIZE_IN_BYTES;
+                    tagOffset = encryptedDataOffset + plaintext.Count;
+                }
 
-                    checked
+                // Randomly generate the key modifier and nonce
+                var keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
+                var nonceBytes = _genRandom.GenRandom(NONCE_SIZE_IN_BYTES);
+
+                Buffer.BlockCopy(keyModifier, 0, retVal, (int)preBufferSize, keyModifier.Length);
+                Buffer.BlockCopy(nonceBytes, 0, retVal, (int)preBufferSize + keyModifier.Length, nonceBytes.Length);
+
+                // At this point, retVal := { preBuffer | keyModifier | nonce | _____ | _____ | postBuffer }
+
+                // Use the KDF to generate a new symmetric block cipher key
+                // We'll need a temporary buffer to hold the symmetric encryption subkey
+                var decryptedKdk = new byte[_keyDerivationKey.Length];
+                var derivedKey = new byte[_derivedkeySizeInBytes];
+                fixed (byte* __unused__1 = decryptedKdk)
+                fixed (byte* __unused__2 = derivedKey)
+                {
+                    try
                     {
-                        keyModifierOffset = plaintext.Offset + (int)preBufferSize;
-                        nonceOffset = keyModifierOffset + KEY_MODIFIER_SIZE_IN_BYTES;
-                        encryptedDataOffset = nonceOffset + NONCE_SIZE_IN_BYTES;
-                        tagOffset = encryptedDataOffset + plaintext.Count;
+                        _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
+                        ManagedSP800_108_CTR_HMACSHA512.DeriveKeysWithContextHeader(
+                            kdk: decryptedKdk,
+                            label: additionalAuthenticatedData,
+                            contextHeader: _contextHeader,
+                            context: keyModifier,
+                            prfFactory: _kdkPrfFactory,
+                            output: new ArraySegment<byte>(derivedKey));
+
+                        // do gcm
+                        var nonce = new Span<byte>(retVal, nonceOffset, NONCE_SIZE_IN_BYTES);
+                        var tag = new Span<byte>(retVal, tagOffset, TAG_SIZE_IN_BYTES);
+                        var encrypted = new Span<byte>(retVal, encryptedDataOffset, plaintext.Count);
+                        using var aes = new AesGcm(derivedKey);
+                        aes.Encrypt(nonce, plaintext, encrypted, tag);
+
+                        // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
+                        // And we're done!
+                        return retVal;
                     }
-
-                    // Randomly generate the key modifier and nonce
-                    var keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
-                    var nonceBytes = _genRandom.GenRandom(NONCE_SIZE_IN_BYTES);
-
-                    Buffer.BlockCopy(keyModifier, 0, retVal, (int)preBufferSize, keyModifier.Length);
-                    Buffer.BlockCopy(nonceBytes, 0, retVal, (int)preBufferSize + keyModifier.Length, nonceBytes.Length);
-
-                    // At this point, retVal := { preBuffer | keyModifier | nonce | _____ | _____ | postBuffer }
-
-                    // Use the KDF to generate a new symmetric block cipher key
-                    // We'll need a temporary buffer to hold the symmetric encryption subkey
-                    var decryptedKdk = new byte[_keyDerivationKey.Length];
-                    var derivedKey = new byte[_derivedkeySizeInBytes];
-                    fixed (byte* __unused__1 = decryptedKdk)
-                    fixed (byte* __unused__2 = derivedKey)
+                    finally
                     {
-                        try
-                        {
-                            _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
-                            ManagedSP800_108_CTR_HMACSHA512.DeriveKeysWithContextHeader(
-                                kdk: decryptedKdk,
-                                label: additionalAuthenticatedData,
-                                contextHeader: _contextHeader,
-                                context: keyModifier,
-                                prfFactory: _kdkPrfFactory,
-                                output: new ArraySegment<byte>(derivedKey));
-
-                            // do gcm
-                            var nonce = new Span<byte>(retVal, nonceOffset, NONCE_SIZE_IN_BYTES);
-                            var tag = new Span<byte>(retVal, tagOffset, TAG_SIZE_IN_BYTES);
-                            var encrypted = new Span<byte>(retVal, encryptedDataOffset, plaintext.Count);
-                            using var aes = new AesGcm(derivedKey);
-                            aes.Encrypt(nonce, plaintext, encrypted, tag);
-
-                            // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
-                            // And we're done!
-                            return retVal;
-                        }
-                        finally
-                        {
-                            // delete since these contain secret material
-                            Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
-                            Array.Clear(derivedKey, 0, derivedKey.Length);
-                        }
+                        // delete since these contain secret material
+                        Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
+                        Array.Clear(derivedKey, 0, derivedKey.Length);
                     }
                 }
             }
