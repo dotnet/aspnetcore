@@ -5,6 +5,7 @@
     <IsPackable>false</IsPackable>
     <IsBuildable>false</IsBuildable>
     <IsTestProject>true</IsTestProject>
+    <!-- Npm tests don't run on Helix currently, so we need to set this to false to still run the tests on non-Helix -->
     <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
