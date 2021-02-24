@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
     // going to the IV. This means that we'll only hit the 2^-32 probability limit after 2^96 encryption
     // operations, which will realistically never happen. (At the absurd rate of one encryption operation
     // per nanosecond, it would still take 180 times the age of the universe to hit 2^96 operations.)
-    internal unsafe sealed class GcmAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
+    internal unsafe sealed class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
     {
         // Having a key modifier ensures with overwhelming probability that no two encryption operations
         // will ever derive the same (encryption subkey, MAC subkey) pair. This limits an attacker's
@@ -38,12 +37,12 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         private readonly BCryptAlgorithmHandle _symmetricAlgorithmHandle;
         private readonly uint _symmetricAlgorithmSubkeyLengthInBytes;
 
-        public GcmAuthenticatedEncryptor(Secret keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, IBCryptGenRandom? genRandom = null)
+        public CngGcmAuthenticatedEncryptor(Secret keyDerivationKey, BCryptAlgorithmHandle symmetricAlgorithmHandle, uint symmetricAlgorithmKeySizeInBytes, IBCryptGenRandom? genRandom = null)
         {
             // Is the key size appropriate?
             AlgorithmAssert.IsAllowableSymmetricAlgorithmKeySize(checked(symmetricAlgorithmKeySizeInBytes * 8));
             CryptoUtil.Assert(symmetricAlgorithmHandle.GetCipherBlockLength() == 128 / 8, "GCM requires a block cipher algorithm with a 128-bit block size.");
-            
+
             _genRandom = genRandom ?? BCryptGenRandomImpl.Instance;
             _sp800_108_ctr_hmac_provider = SP800_108_CTR_HMACSHA512Util.CreateProvider(keyDerivationKey);
             _symmetricAlgorithmHandle = symmetricAlgorithmHandle;
@@ -151,7 +150,6 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                         cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
 
                     // Perform the decryption operation
-
                     using (var decryptionSubkeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricDecryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
                     {
                         byte dummy;
