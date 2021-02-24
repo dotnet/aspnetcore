@@ -47,8 +47,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <FrameworkListFileName>FrameworkList.xml</FrameworkListFileName>
     <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
 
-    <!-- Runtime extensions transport paths -->
-    <RuntimeExtensionsReferenceDirectory>$(PkgMicrosoft_AspNetCore_Internal_Transport)\ref\$(TargetFramework)\</RuntimeExtensionsReferenceDirectory>
+    <!-- Runtime transport path i.e. location of runtime ref/ assemblies that are not in Microsoft.NETCore.App.Ref. -->
+    <RuntimeTransportReferenceDirectory>$(PkgMicrosoft_AspNetCore_Internal_Transport)\ref\$(TargetFramework)\</RuntimeTransportReferenceDirectory>
 
     <!-- Package overrides and platform manifest metadata. -->
     <PackageOverridesFileName>PackageOverrides.txt</PackageOverridesFileName>
@@ -114,38 +114,38 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           BeforeTargets="_GetPackageFiles"
           DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
     <ItemGroup>
-      <_AvailableExtensionsRefAssemblies Include="$(RuntimeExtensionsReferenceDirectory)*.dll" />
+      <_AvailableRuntimeRefAssemblies Include="$(RuntimeTransportReferenceDirectory)*.dll" />
     </ItemGroup>
 
-    <JoinItems Left="@(ReferencePathWithRefAssemblies)" Right="@(_AvailableExtensionsRefAssemblies)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
-      <Output TaskParameter="JoinResult" ItemName="_ReferencedExtensionsRefAssemblies" />
+    <JoinItems Left="@(ReferencePathWithRefAssemblies)" Right="@(_AvailableRuntimeRefAssemblies)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_ReferencedRuntimeRefAssemblies" />
     </JoinItems>
 
-    <JoinItems Left="@(_ReferencedExtensionsRefAssemblies)" Right="@(ExternalAspNetCoreAppReference)" LeftKey="Filename" RightKey="Identity" ItemSpecToUse="Left">
-      <Output TaskParameter="JoinResult" ItemName="_SelectedExtensionsRefs" />
+    <JoinItems Left="@(_ReferencedRuntimeRefAssemblies)" Right="@(ExternalAspNetCoreAppReference)" LeftKey="Filename" RightKey="Identity" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_SelectedRuntimeRefs" />
     </JoinItems>
 
-    <JoinItems Left="@(ReferencePathWithRefAssemblies)" Right="@(_SelectedExtensionsRefs)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
-      <Output TaskParameter="JoinResult" ItemName="_SelectedExtensionsRefAssemblies" />
+    <JoinItems Left="@(ReferencePathWithRefAssemblies)" Right="@(_SelectedRuntimeRefs)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_SelectedRuntimeRefAssemblies" />
     </JoinItems>
 
     <ItemGroup>
-      <!-- Exclude transitive external dependencies that are not directly referenced by projects in AspNetCore or Extensions -->
+      <!-- Exclude transitive external dependencies that are not directly referenced by projects in AspNetCore or Runtime -->
       <AspNetCoreReferenceAssemblyPath
           Include="@(ReferencePathWithRefAssemblies)"
           Exclude="
-            @(_ReferencedExtensionsRefAssemblies);
+            @(_ReferencedRuntimeRefAssemblies);
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App.Ref'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'System.Security.Cryptography.Pkcs'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'System.Drawing.Common'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.Win32.SystemEvents'));" />
 
       <AspNetCoreReferenceAssemblyPath
-          Include="@(_SelectedExtensionsRefAssemblies->'$(RuntimeExtensionsReferenceDirectory)%(FileName)%(Extension)')" />
+          Include="@(_SelectedRuntimeRefAssemblies->'$(RuntimeTransportReferenceDirectory)%(FileName)%(Extension)')" />
 
       <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->'%(RootDir)%(Directory)%(FileName).xml')"
           Condition="Exists('%(RootDir)%(Directory)%(FileName).xml')" />
-      <AspNetCoreReferenceDocXml Include="@(_SelectedExtensionsRefAssemblies->'$(RuntimeExtensionsReferenceDirectory)%(FileName).xml')" />
+      <AspNetCoreReferenceDocXml Include="@(_SelectedRuntimeRefAssemblies->'$(RuntimeTransportReferenceDirectory)%(FileName).xml')" />
       <!-- Grab remaining .xml files from packages -->
       <AspNetCoreReferenceDocXml
           Include="@(AspNetCoreReferenceAssemblyPath->WithMetadataValue('ExternallyResolved', 'true')->'%(RootDir)%(Directory)%(Filename).xml')"
@@ -164,15 +164,15 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Inputs="$(MSBuildAllProjects)"
           Outputs="$(ReferencePackageOverridesPath">
     <ItemGroup>
-      <!-- Use package version for non-Extensions references. -->
+      <!-- Use package version for non-Runtime references. -->
       <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')"
-          Condition="!Exists('$(RuntimeExtensionsReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND
+          Condition="!Exists('$(RuntimeTransportReferenceDirectory)%(AspNetCoreReferenceAssemblyPath.NuGetPackageId).dll') AND
             '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND
             '%(AspNetCoreReferenceAssemblyPath.NuGetPackageId)' != 'Microsoft.AspNetCore.Internal.Transport' AND
             '%(AspNetCoreReferenceAssemblyPath.NuGetSourceType)' == 'Package' " />
 
-      <!-- Use NETCore.App.Runtime version for Extensions references. -->
-      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsRefAssemblies->'%(FileName)|$(MicrosoftNETCoreAppRuntimeVersion)')" />
+      <!-- Use NETCore.App.Runtime version for Runtime references. -->
+      <_AspNetCoreAppPackageOverrides Include="@(_SelectedRuntimeRefAssemblies->'%(FileName)|$(MicrosoftNETCoreAppRuntimeVersion)')" />
 
       <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(FileName)|$(ReferencePackSharedFxVersion)')"
           Condition=" '%(AspNetCoreReferenceAssemblyPath.ReferenceSourceTarget)' == 'ProjectReference' " />
