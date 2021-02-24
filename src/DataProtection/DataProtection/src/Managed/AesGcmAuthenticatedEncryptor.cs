@@ -18,11 +18,13 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
         // Having a key modifier ensures with overwhelming probability that no two encryption operations
         // will ever derive the same (encryption subkey, MAC subkey) pair. This limits an attacker's
         // ability to mount a key-dependent chosen ciphertext attack. See also the class-level comment
-        // for how this is used to overcome GCM's IV limitations.
+        //  on CngGcmAuthenticatedEncryptor for how this is used to overcome GCM's IV limitations.
         private const int KEY_MODIFIER_SIZE_IN_BYTES = 128 / 8;
 
         private const int NONCE_SIZE_IN_BYTES = 96 / 8; // GCM has a fixed 96-bit IV
         private const int TAG_SIZE_IN_BYTES = 128 / 8; // we're hardcoding a 128-bit authentication tag size
+
+        // See CngGcmAuthenticatedEncryptor.CreateContextHeader for how these were precomputed
 
         // 128 "00-01-00-00-00-10-00-00-00-0C-00-00-00-10-00-00-00-10-95-7C-50-FF-69-2E-38-8B-9A-D5-C7-68-9E-4B-9E-2B"
         private static readonly byte[] AES_128_GCM_Header = new byte[] { 0x00, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, 0x95, 0x7C, 0x50, 0xFF, 0x69, 0x2E, 0x38, 0x8B, 0x9A, 0xD5, 0xC7, 0x68, 0x9E, 0x4B, 0x9E, 0x2B };
@@ -58,7 +60,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                     _contextHeader = AES_256_GCM_Header;
                     break;
                 default:
-                    throw Error.CryptCommon_GenericError(); // should never happen
+                    throw throw CryptoUtil.Fail("Unexpected AES key size in bytes only support 16, 24, 32."); // should never happen
             }
 
             _genRandom = genRandom ?? ManagedGenRandomImpl.Instance;
