@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         private static readonly MethodInfo ChangeTypeMethodInfo = GetMethodInfo<Func<object, Type, object>>((value, type) => Convert.ChangeType(value, type, CultureInfo.InvariantCulture));
         private static readonly MethodInfo ExecuteTaskOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteTaskOfStringMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueTaskOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteValueTaskOfStringMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteTaskResultOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteValueResultTaskOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -71,28 +72,31 @@ namespace Microsoft.AspNetCore.Routing.Internal
             // This argument represents the deserialized body returned from IHttpRequestReader
             // when the method has a FromBody attribute declared
 
-            var args = new List<Expression>();
+            var methodParameters = method.GetParameters();
+            var args = new List<Expression>(methodParameters.Length);
 
-            foreach (var parameter in method.GetParameters())
+            foreach (var parameter in methodParameters)
             {
                 Expression paramterExpression = Expression.Default(parameter.ParameterType);
 
-                if (parameter.GetCustomAttributes().OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
+                var parameterCustomAttributes = parameter.GetCustomAttributes();
+
+                if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
                 {
                     var routeValuesProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
                     paramterExpression = BindParamenter(routeValuesProperty, parameter, routeAttribute.Name);
                 }
-                else if (parameter.GetCustomAttributes().OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
+                else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
                 {
                     var queryProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
                     paramterExpression = BindParamenter(queryProperty, parameter, queryAttribute.Name);
                 }
-                else if (parameter.GetCustomAttributes().OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
+                else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
                 {
                     var headersProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
                     paramterExpression = BindParamenter(headersProperty, parameter, headerAttribute.Name);
                 }
-                else if (parameter.GetCustomAttributes().OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
+                else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
                 {
                     if (consumeBodyDirectly)
                     {
@@ -109,7 +113,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     bodyType = parameter.ParameterType;
                     paramterExpression = Expression.Convert(DeserializedBodyArg, bodyType);
                 }
-                else if (parameter.GetCustomAttributes().OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)
+                else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)
                 {
                     if (consumeBodyDirectly)
                     {
@@ -125,27 +129,24 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 {
                     paramterExpression = Expression.Call(GetRequiredServiceMethodInfo.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
                 }
-                else
+                else if (parameter.ParameterType == typeof(IFormCollection))
                 {
-                    if (parameter.ParameterType == typeof(IFormCollection))
+                    if (consumeBodyDirectly)
                     {
-                        if (consumeBodyDirectly)
-                        {
-                            ThrowCannotReadBodyDirectlyAndAsForm();
-                        }
+                        ThrowCannotReadBodyDirectlyAndAsForm();
+                    }
 
-                        consumeBodyAsForm = true;
+                    consumeBodyAsForm = true;
 
-                        paramterExpression = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
-                    }
-                    else if (parameter.ParameterType == typeof(HttpContext))
-                    {
-                        paramterExpression = HttpContextParameter;
-                    }
-                    else if (parameter.ParameterType == typeof(CancellationToken))
-                    {
-                        paramterExpression = RequestAbortedExpr;
-                    }
+                    paramterExpression = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
+                }
+                else if (parameter.ParameterType == typeof(HttpContext))
+                {
+                    paramterExpression = HttpContextParameter;
+                }
+                else if (parameter.ParameterType == typeof(CancellationToken))
+                {
+                    paramterExpression = RequestAbortedExpr;
                 }
 
                 args.Add(paramterExpression);
@@ -181,6 +182,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 if (method.ReturnType == typeof(Task))
                 {
                     body = methodCall;
+                }
+                else if (method.ReturnType == typeof(ValueTask))
+                {
+                    body = Expression.Call(
+                                        ExecuteValueTaskMethodInfo,
+                                        methodCall);
                 }
                 else if (method.ReturnType.IsGenericType &&
                          method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
@@ -263,7 +270,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 var box = Expression.TypeAs(methodCall, typeof(object));
                 body = Expression.Call(JsonResultWriteResponseAsync, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
             }
-            else 
+            else
             {
                 body = Expression.Call(JsonResultWriteResponseAsync, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
             }
@@ -294,7 +301,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     {
                         try
                         {
-                            bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType!);
+                            bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType!, httpContext.RequestAborted);
                         }
                         catch (IOException ex)
                         {
@@ -324,7 +331,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     // so the within the method it's cached
                     try
                     {
-                        await httpContext.Request.ReadFormAsync();
+                        await httpContext.Request.ReadFormAsync(httpContext.RequestAborted);
                     }
                     catch (IOException ex)
                     {
@@ -398,10 +405,20 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 expr = Expression.Convert(expr, parameter.ParameterType);
             }
 
+            Expression defaultExpression;
+            if (parameter.HasDefaultValue)
+            {
+                defaultExpression = Expression.Constant(parameter.DefaultValue);
+            }
+            else
+            {
+                defaultExpression = Expression.Default(parameter.ParameterType);
+            }
+
             // property[key] == null ? default : (ParameterType){Type}.Parse(property[key]);
             expr = Expression.Condition(
                 Expression.Equal(valueArg, Expression.Constant(null)),
-                Expression.Default(parameter.ParameterType),
+                defaultExpression,
                 expr);
 
             return expr;
@@ -423,12 +440,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext)
             {
-                await httpContext.Response.WriteAsJsonAsync(await task);
+                await httpContext.Response.WriteAsJsonAsync(await task, httpContext.RequestAborted);
             }
 
             if (task.IsCompletedSuccessfully)
             {
-                return httpContext.Response.WriteAsJsonAsync(task.GetAwaiter().GetResult());
+                return httpContext.Response.WriteAsJsonAsync(task.GetAwaiter().GetResult(), httpContext.RequestAborted);
             }
 
             return ExecuteAwaited(task, httpContext);
@@ -438,27 +455,42 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             static async Task ExecuteAwaited(Task<string> task, HttpContext httpContext)
             {
-                await httpContext.Response.WriteAsync(await task);
+                await httpContext.Response.WriteAsync(await task, httpContext.RequestAborted);
             }
 
             if (task.IsCompletedSuccessfully)
             {
-                return httpContext.Response.WriteAsync(task.GetAwaiter().GetResult());
+                return httpContext.Response.WriteAsync(task.GetAwaiter().GetResult(), httpContext.RequestAborted);
             }
 
             return ExecuteAwaited(task, httpContext);
         }
 
-        private static Task ExecuteValueTask<T>(ValueTask<T> task, HttpContext httpContext)
+        private static Task ExecuteValueTask(ValueTask task)
         {
-            static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
+            static async Task ExecuteAwaited(ValueTask task)
             {
-                await httpContext.Response.WriteAsJsonAsync(await task);
+                await task;
             }
 
             if (task.IsCompletedSuccessfully)
             {
-                return httpContext.Response.WriteAsJsonAsync(task.GetAwaiter().GetResult());
+                task.GetAwaiter().GetResult();
+            }
+
+            return ExecuteAwaited(task);
+        }
+
+        private static Task ExecuteValueTaskOfT<T>(ValueTask<T> task, HttpContext httpContext)
+        {
+            static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
+            {
+                await httpContext.Response.WriteAsJsonAsync(await task, httpContext.RequestAborted);
+            }
+
+            if (task.IsCompletedSuccessfully)
+            {
+                return httpContext.Response.WriteAsJsonAsync(task.GetAwaiter().GetResult(), httpContext.RequestAborted);
             }
 
             return ExecuteAwaited(task, httpContext);
@@ -468,12 +500,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             static async Task ExecuteAwaited(ValueTask<string> task, HttpContext httpContext)
             {
-                await httpContext.Response.WriteAsync(await task);
+                await httpContext.Response.WriteAsync(await task, httpContext.RequestAborted);
             }
 
             if (task.IsCompletedSuccessfully)
             {
-                return httpContext.Response.WriteAsync(task.GetAwaiter().GetResult());
+                return httpContext.Response.WriteAsync(task.GetAwaiter().GetResult(), httpContext.RequestAborted);
             }
 
             return ExecuteAwaited(task, httpContext);

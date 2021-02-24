@@ -24,44 +24,185 @@ namespace Microsoft.AspNetCore.Routing.Internal
 {
     public class MapActionExpressionTreeBuilderTest
     {
-        [Fact]
-        public async Task RequestDelegateInvokesAction()
+         public static IEnumerable<object[]> NoResult
         {
-            var invoked = false;
-
-            void TestAction()
+            get
             {
-                invoked = true;
+                void TestAction(HttpContext httpContext)
+                {
+                    MarkAsInvoked(httpContext);
+                }
+
+                Task TaskTestAction(HttpContext httpContext)
+                {
+                    MarkAsInvoked(httpContext);
+                    return Task.CompletedTask;
+                }
+
+                ValueTask ValueTaskTestAction(HttpContext httpContext)
+                {
+                    MarkAsInvoked(httpContext);
+                    return ValueTask.CompletedTask;
+                }
+
+                void StaticTestAction(HttpContext httpContext)
+                {
+                    MarkAsInvoked(httpContext);
+                }
+
+                Task StaticTaskTestAction(HttpContext httpContext)
+                {
+                    MarkAsInvoked(httpContext);
+                    return Task.CompletedTask;
+                }
+
+                ValueTask StaticValueTaskTestAction(HttpContext httpContext)
+                {
+                    MarkAsInvoked(httpContext);
+                    return ValueTask.CompletedTask;
+                }
+
+                void MarkAsInvoked(HttpContext httpContext)
+                {
+                    httpContext.Items.Add("invoked", true);
+                }
+
+                return new List<object[]>
+                {
+                    new object[] { (Action<HttpContext>)TestAction },
+                    new object[] { (Func<HttpContext, Task>)TaskTestAction },
+                    new object[] { (Func<HttpContext, ValueTask>)ValueTaskTestAction },
+                    new object[] { (Action<HttpContext>)StaticTestAction },
+                    new object[] { (Func<HttpContext, Task>)StaticTaskTestAction },
+                    new object[] { (Func<HttpContext, ValueTask>)StaticValueTaskTestAction },
+                };
             }
-
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action)TestAction);
-
-            await requestDelegate(null!);
-
-            Assert.True(invoked);
         }
 
-        [Fact]
-        public async Task RequestDelegatePopulatesFromRouteParameterBasedOnParameterName()
+        [Theory]
+        [MemberData(nameof(NoResult))]
+        public async Task RequestDelegateInvokesAction(Delegate @delegate)
+        {
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+
+            await requestDelegate(httpContext);
+
+            Assert.True(httpContext.Items["invoked"] as bool?);
+        }
+
+        public static IEnumerable<object[]> FromRouteResult
+        {
+            get
+            {
+                void TestAction(HttpContext httpContext, [FromRoute] int value)
+                {
+                    StoreInput(httpContext, value);
+                };
+
+                Task TaskTestAction(HttpContext httpContext, [FromRoute] int value)
+                {
+                    StoreInput(httpContext, value);
+                    return Task.CompletedTask;
+                }
+
+                ValueTask ValueTaskTestAction(HttpContext httpContext, [FromRoute] int value)
+                {
+                    StoreInput(httpContext, value);
+                    return ValueTask.CompletedTask;
+                }
+
+                
+
+                return new List<object[]>
+                {
+                    new object[] { (Action<HttpContext, int>)TestAction },
+                    new object[] { (Func<HttpContext, int, Task>)TaskTestAction },
+                    new object[] { (Func<HttpContext, int, ValueTask>)ValueTaskTestAction },
+                };
+            }
+        }
+        private static void StoreInput(HttpContext httpContext, object value)
+        {
+            httpContext.Items.Add("input", value);
+        }
+
+        [Theory]
+        [MemberData(nameof(FromRouteResult))]
+        public async Task RequestDelegatePopulatesFromRouteParameterBasedOnParameterName(Delegate @delegate)
         {
             const string paramName = "value";
             const int originalRouteParam = 42;
 
-            int? deserializedRouteParam = null;
-
-            void TestAction([FromRoute] int value)
-            {
-                deserializedRouteParam = value;
-            }
-
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(originalRouteParam, deserializedRouteParam);
+            Assert.Equal(originalRouteParam, httpContext.Items["value"] as int?);
+        }
+
+        public static IEnumerable<object[]> FromRouteOptionalResult
+        {
+            get
+            {
+                return new List<object[]>
+                {
+                    new object[] { (Action<HttpContext, int>)TestAction },
+                    new object[] { (Func<HttpContext, int, Task>)TaskTestAction },
+                    new object[] { (Func<HttpContext, int, ValueTask>)ValueTaskTestAction }
+                };
+            }
+        }
+
+        private static void TestAction(HttpContext httpContext, [FromRoute] int value = 42)
+        {
+            StoreInput(httpContext, value);
+        }
+
+        private static Task TaskTestAction(HttpContext httpContext, [FromRoute] int value = 42)
+        {
+            StoreInput(httpContext, value);
+            return Task.CompletedTask;
+        }
+
+        private static ValueTask ValueTaskTestAction(HttpContext httpContext, [FromRoute] int value = 42)
+        {
+            StoreInput(httpContext, value);
+            return ValueTask.CompletedTask;
+        }
+
+        [Theory]
+        [MemberData(nameof(FromRouteOptionalResult))]
+        public async Task RequestDelegatePopulatesFromRouteOptionalParameter(Delegate @delegate)
+        {
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(42, httpContext.Items["value"] as int?);
+        }
+
+        [Theory]
+        [MemberData(nameof(FromRouteOptionalResult))]
+        public async Task RequestDelegatePopulatesFromRouteOptionalParameterBasedOnParameterName(Delegate @delegate)
+        {
+            const string paramName = "value";
+            const int originalRouteParam = 420;
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Items.Add("expected", originalRouteParam);
+
+            httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
+
+            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+
+            await requestDelegate(httpContext);
         }
 
         [Fact]
