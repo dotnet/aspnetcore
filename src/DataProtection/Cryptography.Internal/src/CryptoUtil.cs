@@ -77,13 +77,10 @@ namespace Microsoft.AspNetCore.Cryptography
         public static bool TimeConstantBuffersAreEqual(byte* bufA, byte* bufB, uint count)
         {
 #if NETCOREAPP
-            unsafe
-            {
-                var byteCount = Convert.ToInt32(count);
-                var bytesA = new ReadOnlySpan<byte>(bufA, byteCount);
-                var bytesB = new ReadOnlySpan<byte>(bufB, byteCount);
-                return CryptographicOperations.FixedTimeEquals(bytesA, bytesB);
-            }
+            var byteCount = Convert.ToInt32(count);
+            var bytesA = new ReadOnlySpan<byte>(bufA, byteCount);
+            var bytesB = new ReadOnlySpan<byte>(bufB, byteCount);
+            return CryptographicOperations.FixedTimeEquals(bytesA, bytesB);
 #else
             bool areEqual = true;
             for (uint i = 0; i < count; i++)
