@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                     _contextHeader = AES_256_GCM_Header;
                     break;
                 default:
-                    throw throw CryptoUtil.Fail("Unexpected AES key size in bytes only support 16, 24, 32."); // should never happen
+                    throw CryptoUtil.Fail("Unexpected AES key size in bytes only support 16, 24, 32."); // should never happen
             }
 
             _genRandom = genRandom ?? ManagedGenRandomImpl.Instance;
