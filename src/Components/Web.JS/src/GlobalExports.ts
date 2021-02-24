@@ -7,7 +7,7 @@ import { InputFile } from './InputFile';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { Platform } from '@microsoft/signalr/dist/esm/Utils';
+import { Platform } from './Platform/Platform';
 import { Pointer, System_String, System_Array, System_Object } from './Platform/Platform';
 
 interface IBlazor {

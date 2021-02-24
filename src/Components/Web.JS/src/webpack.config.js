@@ -17,7 +17,7 @@ module.exports = (env, args) => ({
     },
     output: { path: path.join(__dirname, '/..', '/dist', args.mode == 'development' ? '/Debug' : '/Release'), filename: '[name].js' },
     performance: {
-        maxAssetSize: 276000,
+        maxAssetSize: 122880,
     },
     optimization: {
         sideEffects: true,
