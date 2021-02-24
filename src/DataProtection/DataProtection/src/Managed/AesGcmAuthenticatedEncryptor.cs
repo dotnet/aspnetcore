@@ -121,15 +121,12 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                             output: new ArraySegment<byte>(derivedKey));
 
                         // Perform the decryption operation
-                        unsafe
-                        {
-                            var nonce = new Span<byte>(ciphertext.Array, nonceOffset, NONCE_SIZE_IN_BYTES);
-                            var tag = new Span<byte>(ciphertext.Array, tagOffset, TAG_SIZE_IN_BYTES);
-                            var encrypted = new Span<byte>(ciphertext.Array, encryptedDataOffset, plaintextBytes);
-                            using var aes = new AesGcm(derivedKey);
-                            aes.Decrypt(nonce, encrypted, tag, plaintext);
-                            return plaintext;
-                        }
+                        var nonce = new Span<byte>(ciphertext.Array, nonceOffset, NONCE_SIZE_IN_BYTES);
+                        var tag = new Span<byte>(ciphertext.Array, tagOffset, TAG_SIZE_IN_BYTES);
+                        var encrypted = new Span<byte>(ciphertext.Array, encryptedDataOffset, plaintextBytes);
+                        using var aes = new AesGcm(derivedKey);
+                        aes.Decrypt(nonce, encrypted, tag, plaintext);
+                        return plaintext;
                     }
                     finally
                     {
