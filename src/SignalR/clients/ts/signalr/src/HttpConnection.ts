@@ -48,7 +48,8 @@ export class HttpConnection implements IConnection {
     private readonly _httpClient: HttpClient;
     private readonly _logger: ILogger;
     private readonly _options: IHttpConnectionOptions;
-    private _transport?: ITransport;
+    // Needs to not start with _ to be available for tests
+    private transport?: ITransport;
     private _startInternalPromise?: Promise<void>;
     private _stopPromise?: Promise<void>;
     private _stopPromiseResolver!: (value?: PromiseLike<void>) => void;
@@ -158,7 +159,7 @@ export class HttpConnection implements IConnection {
         }
 
         if (!this._sendQueue) {
-            this._sendQueue = new TransportSendQueue(this._transport!);
+            this._sendQueue = new TransportSendQueue(this.transport!);
         }
 
         // Transport will not be null if state is connected
@@ -203,15 +204,15 @@ export class HttpConnection implements IConnection {
         // The transport's onclose will trigger stopConnection which will run our onclose event.
         // The transport should always be set if currently connected. If it wasn't set, it's likely because
         // stop was called during start() and start() failed.
-        if (this._transport) {
+        if (this.transport) {
             try {
-                await this._transport.stop();
+                await this.transport.stop();
             } catch (e) {
                 this._logger.log(LogLevel.Error, `HttpConnection.transport.stop() threw error '${e}'.`);
                 this._stopConnection();
             }
 
-            this._transport = undefined;
+            this.transport = undefined;
         } else {
             this._logger.log(LogLevel.Debug, "HttpConnection.transport is undefined in HttpConnection.stop() because start() failed.");
             this._stopConnection();
@@ -228,7 +229,7 @@ export class HttpConnection implements IConnection {
             if (this._options.skipNegotiation) {
                 if (this._options.transport === HttpTransportType.WebSockets) {
                     // No need to add a connection ID in this case
-                    this._transport = this._constructTransport(HttpTransportType.WebSockets);
+                    this.transport = this._constructTransport(HttpTransportType.WebSockets);
                     // We should just call connect directly in this case.
                     // No fallback or negotiate in this case.
                     await this._startTransport(url, transferFormat);
@@ -276,7 +277,7 @@ export class HttpConnection implements IConnection {
                 await this._createTransport(url, this._options.transport, negotiateResponse, transferFormat);
             }
 
-            if (this._transport instanceof LongPollingTransport) {
+            if (this.transport instanceof LongPollingTransport) {
                 this.features.inherentKeepAlive = true;
             }
 
@@ -293,7 +294,7 @@ export class HttpConnection implements IConnection {
         } catch (e) {
             this._logger.log(LogLevel.Error, "Failed to start the connection: " + e);
             this._connectionState = ConnectionState.Disconnected;
-            this._transport = undefined;
+            this.transport = undefined;
             return Promise.reject(e);
         }
     }
@@ -348,7 +349,7 @@ export class HttpConnection implements IConnection {
         let connectUrl = this._createConnectUrl(url, negotiateResponse.connectionToken);
         if (this._isITransport(requestedTransport)) {
             this._logger.log(LogLevel.Debug, "Connection was provided an instance of ITransport, using that directly.");
-            this._transport = requestedTransport;
+            this.transport = requestedTransport;
             await this._startTransport(connectUrl, requestedTransferFormat);
 
             this.connectionId = negotiateResponse.connectionId;
@@ -364,7 +365,7 @@ export class HttpConnection implements IConnection {
                 // Store the error and continue, we don't want to cause a re-negotiate in these cases
                 transportExceptions.push(`${endpoint.transport} failed: ${transportOrError}`);
             } else if (this._isITransport(transportOrError)) {
-                this._transport = transportOrError;
+                this.transport = transportOrError;
                 if (!negotiate) {
                     try {
                         negotiate = await this._getNegotiationResponse(url);
@@ -417,9 +418,9 @@ export class HttpConnection implements IConnection {
     }
 
     private _startTransport(url: string, transferFormat: TransferFormat): Promise<void> {
-        this._transport!.onreceive = this.onreceive;
-        this._transport!.onclose = (e) => this._stopConnection(e);
-        return this._transport!.connect(url, transferFormat);
+        this.transport!.onreceive = this.onreceive;
+        this.transport!.onclose = (e) => this._stopConnection(e);
+        return this.transport!.connect(url, transferFormat);
     }
 
     private _resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): ITransport | Error {
@@ -461,7 +462,7 @@ export class HttpConnection implements IConnection {
     private _stopConnection(error?: Error): void {
         this._logger.log(LogLevel.Debug, `HttpConnection.stopConnection(${error}) called while in state ${this._connectionState}.`);
 
-        this._transport = undefined;
+        this.transport = undefined;
 
         // If we have a stopError, it takes precedence over the error from the transport
         error = this._stopError || error;

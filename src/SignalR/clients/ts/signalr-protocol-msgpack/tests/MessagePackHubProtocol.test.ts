@@ -239,10 +239,4 @@ describe("MessagePackHubProtocol", () => {
             type: 1,
         });
     });
-
-    it("will force compatibilityMode to false", () => {
-        const options: any = { compatibilityMode: true };
-        const protocol: any = new MessagePackHubProtocol(options);
-        expect(protocol.messagePackOptions.compatibilityMode).toBe(false);
-    });
 });
