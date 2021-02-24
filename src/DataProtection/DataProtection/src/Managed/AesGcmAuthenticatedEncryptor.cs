@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NETCOREAPP
 using System;
 using System.IO;
 using System.Security.Cryptography;
@@ -11,7 +12,6 @@ using Microsoft.AspNetCore.DataProtection.SP800_108;
 
 namespace Microsoft.AspNetCore.DataProtection.Managed
 {
-#if NETCOREAPP
     // An encryptor uses AesGcm to do encryption
     internal unsafe sealed class AesGcmAuthenticatedEncryptor : IOptimizedAuthenticatedEncryptor, IDisposable
     {
@@ -227,5 +227,5 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
             _keyDerivationKey.Dispose();
         }
     }
-#endif
 }
+#endif
