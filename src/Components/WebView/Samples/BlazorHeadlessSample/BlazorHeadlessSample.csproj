@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Sample blazor headless application.</Description>
     <IsShippingPackage>false</IsShippingPackage>
+    <OutputType>Exe</OutputType>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
     <!-- TODO: REMOVE -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
@@ -22,6 +23,10 @@
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>

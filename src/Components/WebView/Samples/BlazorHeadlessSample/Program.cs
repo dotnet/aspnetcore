@@ -1,12 +1,16 @@
+
+using System;
+using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.AspNetCore.Components.WebView.Headless;
-using Microsoft.AspNetCore.Components.WebView.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
-var builder = WebViewHostBuilder.CreateDefault();
+var services = new ServiceCollection();
+services.AddHeadlessWebView();
 
-var host = builder.Build();
+var provider = services.BuildServiceProvider();
 
-var renderPort = new ConsoleWindow();
+var consoleView = new HeadlessWebView(provider);
 
-host.AttachRenderClient(renderPort);
+consoleView.AddComponent<BlazorServerApp.App>("#selector");
 
-renderPort.AddComponent<BlazorServerApp.App>("#app");
+await consoleView.StartAsync();
