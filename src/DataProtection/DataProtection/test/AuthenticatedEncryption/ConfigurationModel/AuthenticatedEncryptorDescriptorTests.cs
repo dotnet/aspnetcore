@@ -88,9 +88,10 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             // Arrange
             var masterKey = Secret.Random(512 / 8);
-            var control = new AesGcmAuthenticatedEncryptor(
+            var control = new CngGcmAuthenticatedEncryptor(
                 keyDerivationKey: masterKey,
-                derivedKeySizeInBytes: (keyLengthInBits / 8));
+                symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_GCM,
+                symmetricAlgorithmKeySizeInBytes: (uint)(keyLengthInBits / 8));
             var test = CreateEncryptorInstanceFromDescriptor(CreateDescriptor(encryptionAlgorithm, ValidationAlgorithm.HMACSHA256 /* unused */, masterKey));
 
             // Act & assert - data round trips properly from control to test
