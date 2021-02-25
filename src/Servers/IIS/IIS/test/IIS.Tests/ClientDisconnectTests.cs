@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1817")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27400")]
         public async Task ReaderThrowsResetExceptionOnInvalidBody()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();

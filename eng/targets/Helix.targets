@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
-    <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
+    <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) || exit /b 1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TestDependsOnAspNetRuntime)' == 'true' ">
@@ -39,11 +39,6 @@
         $(RepoRoot)eng\common\pipeline-logging-functions.*;
         $(RepoRoot)eng\common\tools.*">
       <TargetPath>eng\common\%(Filename)%(Extension)</TargetPath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </ContentWithTargetPath>
-    <ContentWithTargetPath Include="$(RepoRoot)eng\common\dotnet-install-scripts\*">
-      <TargetPath>eng\common\dotnet-install-scripts\%(Filename)%(Extension)</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </ContentWithTargetPath>
@@ -97,6 +92,7 @@
     <PropertyGroup>
       <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="$(HelixTargetQueue.StartsWith('%28Alpine.')) AND '$(SkipHelixAlpine)' == 'true'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="$(SkipHelixQueues.Contains('$(HelixTargetQueue)'))">false</BuildHelixPayload>
     </PropertyGroup>
   </Target>
@@ -165,9 +161,10 @@
         <!--
           When the targeting pack builds, it has exactly the same version as the shared framework. Passing
           SharedFxVersion because that's needed even when the targeting pack isn't building.
+          Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
         -->
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppInternalPackageVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppInternalPackageVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreBrowserDebugHostTransportVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreBrowserDebugHostTransportVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
         <Command Condition="$(HelixCommand) != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>

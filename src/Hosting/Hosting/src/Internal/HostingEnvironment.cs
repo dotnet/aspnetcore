@@ -11,14 +11,14 @@ namespace Microsoft.AspNetCore.Hosting
     {
         public string EnvironmentName { get; set; } = Extensions.Hosting.Environments.Production;
 
-        public string ApplicationName { get; set; }
+        public string ApplicationName { get; set; } = default!;
 
-        public string WebRootPath { get; set; }
+        public string WebRootPath { get; set; } = default!;
 
-        public IFileProvider WebRootFileProvider { get; set; }
+        public IFileProvider WebRootFileProvider { get; set; } = default!;
 
-        public string ContentRootPath { get; set; }
+        public string ContentRootPath { get; set; } = default!;
 
-        public IFileProvider ContentRootFileProvider { get; set; }
+        public IFileProvider ContentRootFileProvider { get; set; } = default!;
     }
 }

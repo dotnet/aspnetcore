@@ -8,12 +8,20 @@ namespace Microsoft.Extensions.StackTrace.Sources
 {
     internal class StackFrameInfo
     {
-        public int LineNumber { get; set; }
+        public StackFrameInfo(int lineNumber, string? filePath, StackFrame? stackFrame, MethodDisplayInfo? methodDisplayInfo)
+        {
+            LineNumber = lineNumber;
+            FilePath = filePath;
+            StackFrame = stackFrame;
+            MethodDisplayInfo = methodDisplayInfo;
+        }
 
-        public string? FilePath { get; set; }
+        public int LineNumber { get; }
 
-        public StackFrame? StackFrame { get; set; }
+        public string? FilePath { get; }
 
-        public MethodDisplayInfo? MethodDisplayInfo { get; set; }
+        public StackFrame? StackFrame { get; }
+
+        public MethodDisplayInfo? MethodDisplayInfo { get; }
     }
 }

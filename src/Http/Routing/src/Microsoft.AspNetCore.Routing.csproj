@@ -7,7 +7,6 @@ Microsoft.AspNetCore.Routing.Route
 Microsoft.AspNetCore.Routing.RouteCollection</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;routing</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -25,6 +24,7 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

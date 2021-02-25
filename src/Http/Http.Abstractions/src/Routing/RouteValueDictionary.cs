@@ -478,7 +478,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <returns>Returns <c>true</c> if the value was added. Returns <c>false</c> if the key was already present.</returns>
-        public bool TryAdd(string key, object value)
+        public bool TryAdd(string key, object? value)
         {
             if (key == null)
             {

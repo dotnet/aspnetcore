@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -56,6 +57,54 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             // Assert
             Assert.True(component.Disposed);
         }
+
+        [Fact]
+        public async Task ReleaseViewComponentAsync_CallsDispose_OnTheInstance()
+        {
+            // Arrange
+            var context = new ViewComponentContext
+            {
+            };
+
+            var component = new ActivablePropertiesViewComponent();
+
+            var viewComponentActivator = new Mock<IViewComponentActivator>();
+            viewComponentActivator.Setup(vca => vca.ReleaseAsync(context, component))
+                .Callback<ViewComponentContext, object>((c, o) => (o as IDisposable)?.Dispose())
+                .Returns(default(ValueTask));
+
+            var factory = new DefaultViewComponentFactory(viewComponentActivator.Object);
+
+            // Act
+            await factory.ReleaseViewComponentAsync(context, component);
+
+            // Assert
+            Assert.True(component.Disposed);
+        }
+
+        [Fact]
+        public async Task ReleaseViewComponentAsync_CallsDisposeAsync_OnAsyncDisposableComponents()
+        {
+            // Arrange
+            var context = new ViewComponentContext
+            {
+            };
+
+            var component = new AsyncDisposableViewComponent();
+
+            var viewComponentActivator = new Mock<IViewComponentActivator>();
+            viewComponentActivator.Setup(vca => vca.ReleaseAsync(context, component))
+                .Callback<ViewComponentContext, object>((c, o) => (o as IAsyncDisposable)?.DisposeAsync())
+                .Returns(default(ValueTask));
+
+            var factory = new DefaultViewComponentFactory(viewComponentActivator.Object);
+
+            // Act
+            await factory.ReleaseViewComponentAsync(context, component);
+
+            // Assert
+            Assert.True(component.Disposed);
+        }
     }
 
     public class ActivablePropertiesViewComponent : IDisposable
@@ -68,6 +117,47 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         public void Dispose()
         {
             Disposed = true;
+        }
+
+        public string Invoke()
+        {
+            return "something";
+        }
+    }
+
+    public class AsyncDisposableViewComponent : IAsyncDisposable
+    {
+        [ViewComponentContext]
+        public ViewComponentContext Context { get; set; }
+
+        public bool Disposed { get; private set; }
+
+        public ValueTask DisposeAsync()
+        {
+            Disposed = true;
+            return default;
+        }
+
+        public string Invoke()
+        {
+            return "something";
+        }
+    }
+
+    public class SyncAndAsyncDisposableViewComponent : IDisposable, IAsyncDisposable
+    {
+        [ViewComponentContext]
+        public ViewComponentContext Context { get; set; }
+
+        public bool AsyncDisposed { get; private set; }
+        public bool SyncDisposed { get; private set; }
+
+        public void Dispose() => SyncDisposed = true;
+
+        public ValueTask DisposeAsync()
+        {
+            AsyncDisposed = true;
+            return default;
         }
 
         public string Invoke()

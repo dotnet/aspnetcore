@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
@@ -32,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             IModelValidatorProvider validatorProvider,
             ValidatorCache validatorCache,
             IModelMetadataProvider metadataProvider,
-            ValidationStateDictionary validationState)
+            ValidationStateDictionary? validationState)
         {
             var visitor = new ValidationVisitor(
                 actionContext,

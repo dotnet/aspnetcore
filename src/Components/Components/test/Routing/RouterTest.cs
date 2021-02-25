@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
                 onNavigateInvoked += 1;
-                if (args.Path.EndsWith("jan"))
+                if (args.Path.EndsWith("jan", StringComparison.Ordinal))
                 {
                     await Task.Delay(Timeout.Infinite, args.CancellationToken);
                     throw new Exception("This is an uncaught exception.");
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             var triggerCancel = new TaskCompletionSource();
             Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
-                if (args.Path.EndsWith("jan"))
+                if (args.Path.EndsWith("jan", StringComparison.Ordinal))
                 {
                     var tcs = new TaskCompletionSource();
                     await triggerCancel.Task;
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             // Arrange
             Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
-                if (args.Path.EndsWith("jan"))
+                if (args.Path.EndsWith("jan", StringComparison.Ordinal))
                 {
                     await Task.Delay(Timeout.Infinite, args.CancellationToken);
                 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 if (endPosition != -1)
                 {
                     entity = content.Substring(position, endPosition - position + 1);
-                    if (entity.StartsWith("&#"))
+                    if (entity.StartsWith("&#", StringComparison.Ordinal))
                     {
                         // Extract the codepoint and map it to an entity.
 

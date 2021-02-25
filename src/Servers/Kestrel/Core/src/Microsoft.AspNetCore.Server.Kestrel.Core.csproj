@@ -10,6 +10,7 @@
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
     <IsPackable>false</IsPackable>
     <DefineConstants>$(DefineConstants);KESTREL</DefineConstants>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         private ILogger _logger;
         private StringValues _header;
         private CertificateForwardingOptions _options;
-        private X509Certificate2 _certificate;
+        private X509Certificate2? _certificate;
 
         public CertificateForwardingFeature(ILogger logger, StringValues header, CertificateForwardingOptions options)
         {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             _header = header;
         }
 
-        public X509Certificate2 ClientCertificate
+        public X509Certificate2? ClientCertificate
         {
             get
             {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             set => _certificate = value;
         }
 
-        public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken)
+        public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
             => Task.FromResult(ClientCertificate);
     }
 }

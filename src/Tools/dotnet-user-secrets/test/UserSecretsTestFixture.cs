@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
@@ -35,7 +36,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
         private const string ProjectTemplate = @"<Project ToolsVersion=""15.0"" Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net5.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     {0}
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
@@ -60,7 +61,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
 
             File.WriteAllText(
                 Path.Combine(projectPath.FullName, "TestProject.csproj"),
-                string.Format(ProjectTemplate, prop));
+                string.Format(CultureInfo.InvariantCulture, ProjectTemplate, prop));
 
             var id = userSecretsId;
             _disposables.Push(() =>

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
             CreateMemory(
                 uv,
-                Thread.CurrentThread.ManagedThreadId,
+                Environment.CurrentManagedThreadId,
                 uv.loop_size());
 
             _uv.loop_init(this);

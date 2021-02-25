@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Identity
     public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
     {
         /// <summary>
-        /// Creates a new instance of <see cref="UserValidator{TUser}"/>/
+        /// Creates a new instance of <see cref="UserValidator{TUser}"/>.
         /// </summary>
         /// <param name="errors">The <see cref="IdentityErrorDescriber"/> used to provider error messages.</param>
         public UserValidator(IdentityErrorDescriber errors = null)

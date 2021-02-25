@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -136,7 +137,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Assert.Same(expectedAuthenticatedEncryptor, testEncryptorFactory.CreateEncryptorInstance(newKey));
 
             // Finally, was the correct element stored in the repository?
-            string expectedXml = string.Format(@"
+            string expectedXml = string.Format(
+                CultureInfo.InvariantCulture,
+                @"
                 <key id='3d6d01fd-c0e7-44ae-82dd-013b996b4093' version='1' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
                   {1}
                   {2}
@@ -233,7 +236,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
             // Was the correct element stored in escrow?
             // This should not have gone through the encryptor.
-            string expectedEscrowXml = string.Format(@"
+            string expectedEscrowXml = string.Format(
+              CultureInfo.InvariantCulture,
+                @"
                 <key id='3d6d01fd-c0e7-44ae-82dd-013b996b4093' version='1' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
                   {1}
                   {2}
@@ -255,7 +260,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
             // Finally, was the correct element stored in the repository?
             // This should have gone through the encryptor (which we set to be the null encryptor in this test)
-            string expectedRepositoryXml = String.Format(@"
+            string expectedRepositoryXml = String.Format(
+              CultureInfo.InvariantCulture,
+              @"
                 <key id='3d6d01fd-c0e7-44ae-82dd-013b996b4093' version='1' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
                   {2}
                   {3}
@@ -696,7 +703,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Assert.False(secondCancellationToken.IsCancellationRequested);
 
             // Was the correct element stored in the repository?
-            var expectedRepositoryXml = string.Format(@"
+            var expectedRepositoryXml = string.Format(
+              CultureInfo.InvariantCulture,
+              @"
                 <revocation version='1'>
                   {0}
                   <key id='a11f35fc-1fed-4bd4-b727-056a63b70932' />

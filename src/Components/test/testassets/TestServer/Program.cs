@@ -15,7 +15,7 @@ namespace TestServer
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var createIndividualHosts = new Dictionary<string, (IHost host, string basePath)>
             {
@@ -25,6 +25,7 @@ namespace TestServer
                 ["Prerendering (Server-side)"] = (BuildWebHost<PrerenderedStartup>(CreateAdditionalArgs(args)), "/prerendered"),
                 ["Client-side with fallback"] = (BuildWebHost<StartupWithMapFallbackToClientSideBlazor>(CreateAdditionalArgs(args)), "/fallback"),
                 ["Multiple components (Server-side)"] = (BuildWebHost<MultipleComponents>(CreateAdditionalArgs(args)), "/multiple-components"),
+                ["Save state"] = (BuildWebHost<SaveState>(CreateAdditionalArgs(args)), "/save-state"),
                 ["Globalization + Localization (Server-side)"] = (BuildWebHost<InternationalizationStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Server-side blazor"] = (BuildWebHost<ServerStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Hosted client-side blazor"] = (BuildWebHost<ClientStartup>(CreateAdditionalArgs(args)), "/subdir"),
@@ -33,7 +34,7 @@ namespace TestServer
 
             var mainHost = BuildWebHost(args);
 
-            Task.WhenAll(createIndividualHosts.Select(s => s.Value.host.StartAsync())).GetAwaiter().GetResult();
+            await Task.WhenAll(createIndividualHosts.Select(s => s.Value.host.StartAsync()));
 
             var testAppInfo = mainHost.Services.GetRequiredService<TestAppInfo>();
             testAppInfo.Scenarios = createIndividualHosts
@@ -41,7 +42,7 @@ namespace TestServer
                 kvp => kvp.Value.host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.FirstOrDefault()
                     .Replace("127.0.0.1", "localhost") + kvp.Value.basePath);
 
-            mainHost.Run();
+            await mainHost.RunAsync();
         }
 
         private static (IHost host, string basePath) CreateDevServerHost(string[] args)

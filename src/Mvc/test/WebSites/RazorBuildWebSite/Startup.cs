@@ -17,8 +17,7 @@ namespace RazorBuildWebSite
             services.AddSingleton(fileProvider);
 
             services.AddMvc()
-                .AddRazorRuntimeCompilation(options => options.FileProviders.Add(fileProvider))
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddRazorRuntimeCompilation(options => options.FileProviders.Add(fileProvider));
         }
 
         public void Configure(IApplicationBuilder app)

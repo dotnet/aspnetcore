@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
                 }
                 else if (index == 0)
                 {
-                    Debug.Assert(index == 0);
                     return ((TNode)_node);
                 }
                 else

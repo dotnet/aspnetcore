@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Xunit;
 
@@ -252,7 +253,7 @@ namespace Microsoft.Net.Http.Headers
         public void Dates_AddDateParameterThenUseProperty_ParametersEntryIsOverwritten()
         {
             string validDateString = "\"Tue, 15 Nov 1994 08:12:31 GMT\"";
-            DateTimeOffset validDate = DateTimeOffset.Parse("Tue, 15 Nov 1994 08:12:31 GMT");
+            DateTimeOffset validDate = DateTimeOffset.Parse("Tue, 15 Nov 1994 08:12:31 GMT", CultureInfo.InvariantCulture);
 
             var contentDisposition = new ContentDispositionHeaderValue("inline");
 

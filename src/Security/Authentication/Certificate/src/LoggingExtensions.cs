@@ -8,10 +8,10 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception> _noCertificate;
-        private static Action<ILogger, Exception> _notHttps;
-        private static Action<ILogger, string, string, Exception> _certRejected;
-        private static Action<ILogger, string, string, Exception> _certFailedValidation;
+        private static Action<ILogger, Exception?> _noCertificate;
+        private static Action<ILogger, Exception?> _notHttps;
+        private static Action<ILogger, string, string, Exception?> _certRejected;
+        private static Action<ILogger, string, string, Exception?> _certFailedValidation;
 
         static LoggingExtensions()
         {

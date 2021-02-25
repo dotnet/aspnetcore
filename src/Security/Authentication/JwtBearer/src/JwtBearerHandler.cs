@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
     /// </summary>
     public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     {
-        private OpenIdConnectConfiguration _configuration;
+        private OpenIdConnectConfiguration? _configuration;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JwtBearerHandler"/>.
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// </summary>
         protected new JwtBearerEvents Events
         {
-            get => (JwtBearerEvents)base.Events;
+            get => (JwtBearerEvents)base.Events!;
             set => base.Events = value;
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// <returns></returns>
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            string token = null;
+            string? token = null;
             try
             {
                 // Give application opportunity to find from a different location, adjust, or reject token
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                         ?? _configuration.SigningKeys;
                 }
 
-                List<Exception> validationFailures = null;
+                List<Exception>? validationFailures = null;
                 SecurityToken validatedToken;
                 foreach (var validator in Options.SecurityTokenValidators)
                 {
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                         }
 
                         tokenValidatedContext.Success();
-                        return tokenValidatedContext.Result;
+                        return tokenValidatedContext.Result!;
                     }
                 }
 

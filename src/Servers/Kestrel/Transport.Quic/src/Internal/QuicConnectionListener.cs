@@ -8,7 +8,6 @@ using System.Net.Quic;
 using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -27,6 +26,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint)
         {
+            if (options.Alpn == null)
+            {
+                throw new InvalidOperationException("QuicTransportOptions.Alpn must be configured with a value.");
+            }
+
             _log = log;
             _context = new QuicTransportContext(_log, options);
             EndPoint = endpoint;
@@ -40,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             quicListenerOptions.CertificateFilePath = options.CertificateFilePath;
             quicListenerOptions.PrivateKeyFilePath = options.PrivateKeyFilePath;
             quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
+            quicListenerOptions.IdleTimeout = TimeSpan.FromMinutes(2);
 
             _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
             _listener.Start();
@@ -47,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         public EndPoint EndPoint { get; set; }
 
-        public async ValueTask<MultiplexedConnectionContext> AcceptAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        public async ValueTask<MultiplexedConnectionContext?> AcceptAsync(IFeatureCollection? features = null, CancellationToken cancellationToken = default)
         {
             try
             {

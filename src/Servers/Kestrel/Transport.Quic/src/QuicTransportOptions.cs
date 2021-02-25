@@ -7,6 +7,9 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
 {
+    /// <summary>
+    /// Options for Quic based connections.
+    /// </summary>
     public class QuicTransportOptions
     {
         /// <summary>
@@ -22,22 +25,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
         /// <summary>
         /// The Application Layer Protocol Negotiation string.
         /// </summary>
-        public string Alpn { get; set; }
+        public string? Alpn { get; set; }
 
         /// <summary>
         /// The certificate that MsQuic will use.
         /// </summary>
-        public X509Certificate2 Certificate { get; set; }
+        public X509Certificate2? Certificate { get; set; }
 
         /// <summary>
         /// Optional path to certificate file to configure the security configuration.
         /// </summary>
-        public string CertificateFilePath { get; set; }
+        public string? CertificateFilePath { get; set; }
 
         /// <summary>
         /// Optional path to private key file to configure the security configuration.
         /// </summary>
-        public string PrivateKeyFilePath { get; set; }
+        public string? PrivateKeyFilePath { get; set; }
 
         /// <summary>
         /// Sets the idle timeout for connections and streams.

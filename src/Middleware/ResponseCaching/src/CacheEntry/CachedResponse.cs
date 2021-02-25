@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         public int StatusCode { get; set; }
 
-        public IHeaderDictionary Headers { get; set; }
+        public IHeaderDictionary Headers { get; set; } = default!;
 
-        public CachedResponseBody Body { get; set; }
+        public CachedResponseBody Body { get; set; } = default!;
     }
 }

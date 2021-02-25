@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET  Foundation. All rights reserved.
+// Copyright (c) .NET  Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
             Assert.True(factory.CreateServerCalled);
             Assert.True(factory.CreateWebHostBuilderCalled);
-            Assert.True(factory.GetTestAssembliesCalled);
+            // GetTestAssemblies is not called when reading content roots from MvcAppManifest
+            Assert.False(factory.GetTestAssembliesCalled);
             Assert.True(factory.CreateHostBuilderCalled);
             Assert.False(factory.CreateHostCalled);
         }
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
-            Assert.True(factory.GetTestAssembliesCalled);
+            Assert.False(factory.GetTestAssembliesCalled);
             Assert.True(factory.CreateHostBuilderCalled);
             Assert.True(factory.CreateHostCalled);
             Assert.False(factory.CreateServerCalled);
@@ -64,6 +65,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
         }
 
+        [Fact]
+        public void TestingInfrastructure_GenericHost_HostShouldStopBeforeDispose()
+        {
+            // Act
+            using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
+            var callbackCalled = false;
+
+            var lifetimeService = (IHostApplicationLifetime) factory.Services.GetService(typeof(IHostApplicationLifetime));
+            lifetimeService.ApplicationStopped.Register(() => { callbackCalled = true; });
+            factory.Dispose();
+
+            // Assert
+            Assert.True(callbackCalled);
+        }
+
         private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
         {
             public bool GetTestAssembliesCalled { get; private set; }
@@ -72,6 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             public bool CreateServerCalled { get; private set; }
             public bool CreateHostCalled { get; private set; }
             public IList<string> ConfigureWebHostCalled { get; private set; } = new List<string>();
+            public bool DisposeHostCalled { get; private set; }
 
             protected override void ConfigureWebHost(IWebHostBuilder builder)
             {

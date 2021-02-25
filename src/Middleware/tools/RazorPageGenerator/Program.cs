@@ -205,12 +205,12 @@ Examples:
                 var startIndex = 0;
                 while (startIndex < cshtmlContent.Length)
                 {
-                    startIndex = cshtmlContent.IndexOf(startMatch, startIndex);
+                    startIndex = cshtmlContent.IndexOf(startMatch, startIndex, StringComparison.Ordinal);
                     if (startIndex == -1)
                     {
                         break;
                     }
-                    var endIndex = cshtmlContent.IndexOf(endMatch, startIndex);
+                    var endIndex = cshtmlContent.IndexOf(endMatch, startIndex, StringComparison.Ordinal);
                     if (endIndex == -1)
                     {
                         throw new InvalidOperationException($"Invalid include file format in {_source.PhysicalPath}. Usage example: <%$ include: ErrorPage.js %>");

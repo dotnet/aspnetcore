@@ -1,16 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-
-    <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
-    <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
     <TestGroupName>Mvc.FunctionalTests</TestGroupName>
     <!-- The test asset projects this depends on are not strong-named. -->
     <SignAssembly>false</SignAssembly>
-    <!-- https://github.com/dotnet/aspnetcore/issues/10423 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,14 +13,6 @@
     <EmbeddedResource Include="compiler\resources\**\*" />
     <None Remove="compiler\resources\TagHelpersWebSite.Home.GlobbingTagHelpers.html" />
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- For testing the testing infrastructure only -->
-    <WebApplicationFactoryContentRootAttribute Include="BasicWebSite" AssemblyName="BasicWebsite" ContentRootPath="../../../../WebSites/BasicWebSite" ContentRootTest="BasicWebSite.csproj" Priority="-1" />
-    <!-- For testing the testing infrastructure only. This attribute is
-     incorrect by design to ensure that the infrastructure falls back. -->
-    <WebApplicationFactoryContentRootAttribute Include="FiltersWebSite" AssemblyName="FiltersWebSite" ContentRootPath="/../WebSites/FiltersWebSite" ContentRootTest="Incorrect.csproj" Priority="-1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,4 +47,5 @@
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
   </ItemGroup>
+
 </Project>

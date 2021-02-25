@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     public class AttributeRouteInfo
     {
         /// <summary>
-        /// The route template. May be null if the action has no attribute routes.
+        /// The route template. May be <see langword="null" /> if the action has no attribute routes.
         /// </summary>
         public string? Template { get; set; }
 

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 if (sb.Length > 0)
                 {
-                    sb.Append("/");
+                    sb.Append('/');
                 }
 
                 WriteString(sb, segment);
@@ -25,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private static void WriteString(StringBuilder sb, RoutePatternPathSegment segment)
         {
-            for (int i = 0; i < segment.Parts.Count; i++)
+            for (var i = 0; i < segment.Parts.Count; i++)
             {
                 WriteString(sb, segment.Parts[i]);
             }
@@ -35,31 +37,31 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             if (part.IsParameter && part is RoutePatternParameterPart parameterPart)
             {
-                sb.Append("{");
+                sb.Append('{');
                 if (parameterPart.IsCatchAll)
                 {
-                    sb.Append("*");
+                    sb.Append('*');
                     if (!parameterPart.EncodeSlashes)
                     {
-                        sb.Append("*");
+                        sb.Append('*');
                     }
                 }
                 sb.Append(parameterPart.Name);
                 foreach (var item in parameterPart.ParameterPolicies)
                 {
-                    sb.Append(":");
+                    sb.Append(':');
                     sb.Append(item.Content);
                 }
                 if (parameterPart.Default != null)
                 {
-                    sb.Append("=");
+                    sb.Append('=');
                     sb.Append(parameterPart.Default);
                 }
                 if (parameterPart.IsOptional)
                 {
-                    sb.Append("?");
+                    sb.Append('?');
                 }
-                sb.Append("}");
+                sb.Append('}');
             }
             else if (part is RoutePatternLiteralPart literalPart)
             {

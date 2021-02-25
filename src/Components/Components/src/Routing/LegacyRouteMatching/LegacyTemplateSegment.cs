@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
 
                 // Set the IsOptional flag to true if any type constraints
                 // for this parameter are designated as optional.
-                IsOptional = tokens.Skip(1).Any(token => token.EndsWith("?"));
+                IsOptional = tokens.Skip(1).Any(token => token.EndsWith('?'));
 
                 Value = tokens[0];
                 Constraints = tokens.Skip(1)

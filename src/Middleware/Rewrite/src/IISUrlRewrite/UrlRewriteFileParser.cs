@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
 {
     internal class UrlRewriteFileParser
     {
-        private InputParser _inputParser;
+        private InputParser _inputParser = default!;
 
         /// <summary>
         /// Parse an IIS rewrite section into a list of <see cref="IISUrlRewriteRule"/>s.
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
             return result;
         }
 
-        private void ParseRules(XElement rules, IList<IISUrlRewriteRule> result, bool global)
+        private void ParseRules(XElement? rules, IList<IISUrlRewriteRule> result, bool global)
         {
             if (rules == null)
             {
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
             builder.AddUrlMatch(parsedInputString, ignoreCase, negate, patternSyntax);
         }
 
-        private void ParseConditions(XElement conditions, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
+        private void ParseConditions(XElement? conditions, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
         {
             if (conditions == null)
             {
@@ -159,12 +159,12 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
                         }
                         case MatchType.IsDirectory:
                         {
-                            condition = new Condition { Input = _inputParser.ParseInputString(parsedInputString, builder.UriMatchPart), Match = new IsDirectoryMatch(negate) };
+                            condition = new Condition(_inputParser.ParseInputString(parsedInputString, builder.UriMatchPart), new IsDirectoryMatch(negate));
                             break;
                         }
                         case MatchType.IsFile:
                         {
-                            condition = new Condition { Input = _inputParser.ParseInputString(parsedInputString, builder.UriMatchPart), Match = new IsFileMatch(negate) };
+                            condition = new Condition(_inputParser.ParseInputString(parsedInputString, builder.UriMatchPart), new IsFileMatch(negate));
                             break;
                         }
                         default:
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
                     {
                         throw new FormatException("Match does not have an associated pattern attribute in condition");
                     }
-                    condition = new Condition { Input = _inputParser.ParseInputString(parsedInputString, builder.UriMatchPart), Match = new ExactMatch(ignoreCase, parsedPatternString, negate) };
+                    condition = new Condition(_inputParser.ParseInputString(parsedInputString, builder.UriMatchPart), new ExactMatch(ignoreCase, parsedPatternString, negate));
                     break;
                 default:
                     throw new FormatException("Unrecognized pattern syntax");
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
                     var url = string.Empty;
                     if (urlAction.Attribute(RewriteTags.Url) != null)
                     {
-                        url = urlAction.Attribute(RewriteTags.Url).Value;
+                        url = urlAction.Attribute(RewriteTags.Url)!.Value;
                         if (string.IsNullOrEmpty(url))
                         {
                             throw new InvalidUrlRewriteFormatException(urlAction, "Url attribute cannot contain an empty string");

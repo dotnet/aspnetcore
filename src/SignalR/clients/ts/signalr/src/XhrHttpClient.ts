@@ -6,11 +6,11 @@ import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 
 export class XhrHttpClient extends HttpClient {
-    private readonly logger: ILogger;
+    private readonly _logger: ILogger;
 
     public constructor(logger: ILogger) {
         super();
-        this.logger = logger;
+        this._logger = logger;
     }
 
     /** @inheritDoc */
@@ -72,12 +72,12 @@ export class XhrHttpClient extends HttpClient {
             };
 
             xhr.onerror = () => {
-                this.logger.log(LogLevel.Warning, `Error from HTTP request. ${xhr.status}: ${xhr.statusText}.`);
+                this._logger.log(LogLevel.Warning, `Error from HTTP request. ${xhr.status}: ${xhr.statusText}.`);
                 reject(new HttpError(xhr.statusText, xhr.status));
             };
 
             xhr.ontimeout = () => {
-                this.logger.log(LogLevel.Warning, `Timeout from HTTP request.`);
+                this._logger.log(LogLevel.Warning, `Timeout from HTTP request.`);
                 reject(new TimeoutError());
             };
 

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     internal sealed class SocketSender : SocketSenderReceiverBase
     {
-        private List<ArraySegment<byte>> _bufferList;
+        private List<ArraySegment<byte>>? _bufferList;
 
         public SocketSender(Socket socket, PipeScheduler scheduler) : base(socket, scheduler)
         {

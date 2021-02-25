@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="invocationId">The ID of the invocation that is being completed.</param>
         /// <param name="error">The error that occurred during the invocation.</param>
         /// <returns>The constructed <see cref="CompletionMessage"/>.</returns>
-        public static CompletionMessage WithError(string invocationId, string error)
+        public static CompletionMessage WithError(string invocationId, string? error)
             => new CompletionMessage(invocationId, error, result: null, hasResult: false);
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="invocationId">The ID of the invocation that is being completed.</param>
         /// <param name="payload">The result from the invocation.</param>
         /// <returns>The constructed <see cref="CompletionMessage"/>.</returns>
-        public static CompletionMessage WithResult(string invocationId, object payload)
+        public static CompletionMessage WithResult(string invocationId, object? payload)
             => new CompletionMessage(invocationId, error: null, result: payload, hasResult: true);
 
         /// <summary>

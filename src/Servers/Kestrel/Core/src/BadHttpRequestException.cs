@@ -8,7 +8,10 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    [Obsolete("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException")]
+    /// <summary>
+    /// An exception thrown when a malformed http request has been received.
+    /// </summary>
+    [Obsolete("Moved to Microsoft.AspNetCore.Http.BadHttpRequestException. See https://aka.ms/badhttprequestexception for details.")] // Never remove.
     public sealed class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpRequestException
     {
         internal BadHttpRequestException(string message, int statusCode, RequestRejectionReason reason)

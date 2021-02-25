@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -27,22 +28,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                Log = new MockTrace(),
-                HttpParser = new HttpParser<Http1ParsingHandler>()
-            };
+            var serviceContext = TestContextFactory.CreateServiceContext(
+                serverOptions: new KestrelServerOptions(),
+                httpParser: new HttpParser<Http1ParsingHandler>(),
+                dateHeaderValueManager: new DateHeaderValueManager(),
+                log: new MockTrace());
 
-            var http1Connection = new Http1Connection(new HttpConnectionContext
-            {
-                ServiceContext = serviceContext,
-                ConnectionFeatures = new FeatureCollection(),
-                MemoryPool = _memoryPool,
-                Transport = pair.Transport,
-                TimeoutControl = new TimeoutControl(timeoutHandler: null)
-            });
+            var connectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: serviceContext,
+                connectionContext: null,
+                transport: pair.Transport,
+                memoryPool: _memoryPool,
+                connectionFeatures: new FeatureCollection(),
+                timeoutControl: new TimeoutControl(timeoutHandler: null));
+
+            var http1Connection = new Http1Connection(connectionContext);
 
             http1Connection.Reset();
 
