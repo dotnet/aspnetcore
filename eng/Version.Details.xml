@@ -177,9 +177,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>12ec2197ed3999c98f49c006a27ee761282df168</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Internal.Transport" Version="6.0.0-preview.3.21123.15">
+    <Dependency Name="Microsoft.AspNetCore.Internal.Transport" Version="6.0.0-preview.3.21125.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>87a7159be8ca598838ae014bcd11bff5c7d779c5</Sha>
+      <Sha>12ec2197ed3999c98f49c006a27ee761282df168</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="6.0.0-preview.3.21125.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
