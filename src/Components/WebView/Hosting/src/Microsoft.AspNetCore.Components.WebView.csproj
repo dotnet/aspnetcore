@@ -10,10 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
-    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
