@@ -79,6 +79,8 @@ namespace Templates.Test
                     EnsureBrowserAvailable(browserKind);
                 }
             }
+            
+            Assert.True(0 == 1, "Fail to get logs");
         }
 
         private async Task<IPage> NavigateToPage(IBrowserContext browser, string listeningUri)
