@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -13,7 +12,6 @@ namespace Microsoft.AspNetCore.DataProtection
         private const string OldNamespace = "Microsoft.AspNet.DataProtection";
         private const string CurrentNamespace = "Microsoft.AspNetCore.DataProtection";
         private readonly ILogger _logger;
-        private static readonly Regex _versionPattern = new Regex(@",\s?Version=[0-9]+(\.[0-9]+){0,3}", RegexOptions.Compiled, TimeSpan.FromSeconds(2));
 
         public TypeForwardingActivator(IServiceProvider services)
             : this(services, NullLoggerFactory.Instance)
@@ -64,6 +62,26 @@ namespace Microsoft.AspNetCore.DataProtection
         }
 
         protected string RemoveVersionFromAssemblyName(string forwardedTypeName)
-            => _versionPattern.Replace(forwardedTypeName, "");
+        {
+            // Type, Assembly, Version={Version}, Culture={Culture}, PublicKeyToken={Token}
+
+            var versionStartIndex = forwardedTypeName.IndexOf("Version=", StringComparison.Ordinal);
+
+            if (versionStartIndex == -1)
+            {
+                // No version?
+                return forwardedTypeName;
+            }
+
+            var versionEndIndex = forwardedTypeName.IndexOf(',', versionStartIndex + "Version=".Length);
+
+            if (versionEndIndex == -1)
+            {
+                // No end index?
+                return forwardedTypeName;
+            }
+
+            return forwardedTypeName.Substring(0, versionStartIndex) + forwardedTypeName.Substring(versionEndIndex + 1);
+        }
     }
 }
