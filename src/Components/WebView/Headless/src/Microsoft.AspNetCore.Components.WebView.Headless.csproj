@@ -20,4 +20,9 @@
     <Reference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Document\" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" />
+  </ItemGroup>
+
 </Project>

@@ -3,56 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
-using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.WebView.Headless
 {
-    public static class HeadlessWebViewServiceCollectionExtensions
-    {
-        public static IServiceCollection AddHeadlessWebView(this IServiceCollection services)
-        {
-            services.AddBlazorWebView();
-            services.AddScoped<HeadlessHost>();
-            services.AddScoped<IJSRuntime, HeadlessJSRuntime>();
-            services.AddScoped<INavigationInterception, HeadlessNavigationInterception>();
-            services.AddScoped<NavigationManager, HeadlessNavigationManager>();
-
-            return services;
-        }
-    }
-
-    public class InteractionOptions
-    {
-        public List<InteractionType> Interactions { get; } = Enum.GetValues<InteractionType>().ToList();
-    }
-
-    public enum InteractionType
-    {
-        Exit,
-        Navigate
-    }
-
-    public record Interaction(InteractionType Kind, string Description);
-
-    public record ExitInteraction() : Interaction(InteractionType.Exit, "Stops the application.");
-
-    public record NavigateToUrlInteraction(string Url, bool Intercepted) : Interaction(InteractionType.Navigate, "Navigate to the given url.");
-
     public class HeadlessWebView : IDisposable
     {
+        private bool _initialized;
         private readonly IServiceProvider _provider;
         private readonly List<RootComponent> _registeredComponents = new();
         private IServiceScope _scope;
-        private HeadlessHost _host;
+        private IWebViewHost _host;
         private Dispatcher _dispatcher;
-        private HeadlessRenderer _renderer;
+        private WebViewRenderer _renderer;
+
+        private Queue<Task> _componentChangeTasks = new();
 
         public HeadlessWebView(IServiceProvider provider)
         {
@@ -61,74 +28,51 @@ namespace Microsoft.AspNetCore.Components.WebView.Headless
 
         public void AddComponent<TComponent>(string selector) where TComponent : IComponent
         {
+            if (!_initialized)
+            {
+                throw new InvalidOperationException("Not initialized.");
+            }
+
             _registeredComponents.Add(new RootComponent(typeof(TComponent), selector));
+            _componentChangeTasks.Enqueue(RenderRootComponent(selector));
+
+            async Task RenderRootComponent(string selector)
+            {
+                await _dispatcher.InvokeAsync(async () =>
+                {
+                    await _renderer.RenderRootComponentAsync(typeof(TComponent), selector);
+                });
+            }
         }
 
-        public async Task StartAsync(
-            Action<object> displayData,
-            Func<InteractionOptions, Interaction> selectInteractionOption)
+        public void RemoveRootComponent(string selector)
         {
+            _componentChangeTasks.Enqueue(RemoveRootComponent(selector));
+            async Task RemoveRootComponent(string selector)
+            {
+                await _dispatcher.InvokeAsync(async () =>
+                {
+                    await _renderer.RemoveRootComponentAsync(selector);
+                });
+            }
+
+        }
+
+        public void Initialize(string baseUrl, string currentUrl)
+        {
+            if (_initialized)
+            {
+                throw new InvalidOperationException("Already initialized.");
+            }
+
             _scope = _provider.CreateScope();
             var services = _scope.ServiceProvider;
-            _host = services.GetRequiredService<HeadlessHost>();
-            var baseUrl = _host.BaseUrl;
-            var url = _host.CurrentUrl;
-
-            var jsRuntime = (HeadlessJSRuntime)services.GetRequiredService<IJSRuntime>();
-            var manager = (HeadlessNavigationManager)services.GetRequiredService<NavigationManager>();
-
-            var navigationInterception = (HeadlessNavigationInterception)services.GetRequiredService<INavigationInterception>();
-            await navigationInterception.EnableNavigationInterceptionAsync();
+            _host = services.GetRequiredService<IWebViewHost>();
 
             _dispatcher = Dispatcher.CreateDefault();
-            _renderer = ActivatorUtilities.CreateInstance<HeadlessRenderer>(services, _dispatcher);
+            _renderer = ActivatorUtilities.CreateInstance<WebViewRenderer>(services, _dispatcher);
 
-            // Initial render
-            try
-            {
-                await _renderer.Dispatcher.InvokeAsync(async () =>
-                {
-                    foreach (var (component, selector) in _registeredComponents)
-                    {
-                        await _renderer.RenderRootComponentAsync(component, selector);
-                    }
-                    displayData(_host.GetHtml());
-                });
-                await StartEventLoop(selectInteractionOption);
-            }
-            catch (Exception ex)
-            {
-                displayData(ex);
-            }
-        }
-
-        private Task StartEventLoop(
-            Action<object> displayData,
-            Func<InteractionOptions, Interaction> selectInteractionOption)
-        {
-            _host.BatchCompleted += (_,successOrError,error) => {
-                if (successOrError) {
-                    displayData(_host.GetHtml());
-                } else {
-                    displayData(error);
-                }
-            };
-
-            do
-            {
-                var interaction = selectInteractionOption(new InteractionOptions());
-                switch (interaction.Kind)
-                {
-                    case InteractionType.Exit:
-                        return Task.CompletedTask;
-                    case InteractionType.Navigate:
-                        var (url, intercepted) = (NavigateToUrlInteraction)interaction;
-                        _host.UpdateLocation(url, intercepted);
-                        break;
-                    default:
-                        break;
-                }
-            } while (true);
+            _initialized = true;
         }
 
         public void Dispose()
@@ -137,173 +81,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Headless
         }
 
         private record RootComponent(Type ComponentType, string Selector);
-    }
-
-    internal class HeadlessRenderer : Renderer
-    {
-        private Dispatcher _dispatcher;
-        private HeadlessHost _host;
-
-        public HeadlessRenderer(
-            IServiceProvider serviceProvider,
-            Dispatcher dispatcher,
-            HeadlessHost host,
-            ILoggerFactory loggerFactory) :
-            base(serviceProvider, loggerFactory)
-        {
-            _dispatcher = dispatcher;
-            _host = host;
-        }
-
-        public override Dispatcher Dispatcher => _dispatcher;
-
-        protected override void HandleException(Exception exception)
-        {
-            _host.NotifyUnhandledException(exception);
-        }
-
-        protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
-        {
-            return _host.ApplyRenderBatch(renderBatch);
-        }
-
-        internal async Task RenderRootComponentAsync(Type componentType, string selector)
-        {
-            var component = InstantiateComponent(componentType);
-            var componentId = AssignRootComponentId(component);
-
-            await _host.AttachToDocumentAsync(componentId, selector);
-
-            await RenderRootComponentAsync(componentId);
-        }
-    }
-
-    internal class HeadlessJSRuntime : JSRuntime
-    {
-        private readonly HeadlessHost _host;
-
-        public HeadlessJSRuntime(HeadlessHost host)
-        {
-            _host = host;
-        }
-
-        protected override void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
-        {
-            _host.BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
-        }
-
-        protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
-        {
-            if (!invocationResult.Success)
-            {
-                string errorMessage;
-
-                errorMessage = $"There was an exception invoking '{invocationInfo.MethodIdentifier}'";
-                if (invocationInfo.AssemblyName != null)
-                {
-                    errorMessage += $" on assembly '{invocationInfo.AssemblyName}'";
-                }
-
-                EndInvokeDotNetCore(invocationInfo.CallId, success: false, errorMessage);
-            }
-            else
-            {
-                EndInvokeDotNetCore(invocationInfo.CallId, success: true, invocationResult.Result);
-            }
-
-            void EndInvokeDotNetCore(string callId, bool success, object resultOrError)
-            {
-                _host.EndInvokeDotNet(JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptions));
-            }
-        }
-    }
-
-    internal class HeadlessNavigationInterception : INavigationInterception
-    {
-        public Task EnableNavigationInterceptionAsync()
-        {
-            // NO:OP
-            return Task.CompletedTask;
-        }
-    }
-
-    internal class HeadlessNavigationManager : NavigationManager
-    {
-        private readonly HeadlessHost _host;
-
-        public HeadlessNavigationManager(HeadlessHost host)
-        {
-            _host = host;
-            _host.LocationUpdated += LocationUpdated;
-            Initialize(_host.BaseUrl, _host.CurrentUrl);
-        }
-
-        protected override void NavigateToCore(string uri, bool forceLoad)
-        {
-            _host.Navigate(uri, forceLoad);
-        }
-
-        public void LocationUpdated(string newUrl, bool intercepted)
-        {
-            Uri = newUrl;
-            NotifyLocationChanged(intercepted);
-        }
-    }
-
-    internal class HeadlessHost
-    {
-        public int _batchNumber = 1;
-        private readonly HeadlessDocument _headlessDocument = new();
-
-        public event Action<string, bool> LocationUpdated;
-        public event Action<int, bool, string> BatchCompleted;
-
-        public string BaseUrl { get; set; } = "https://localhost:5001/";
-        public string CurrentUrl { get; set; } = "https://localhost:5001/";
-
-        internal Task ApplyRenderBatch(RenderBatch renderBatch)
-        {
-            _headlessDocument.ApplyChanges(renderBatch);
-            BatchCompleted(1, true, null);
-            return Task.CompletedTask;
-        }
-
-        internal void UpdateLocation(string newUrl, bool intercepted)
-        {
-            LocationUpdated?.Invoke(newUrl, intercepted);
-        }
-
-        internal Task AttachToDocumentAsync(int componentId, string selector)
-        {
-            _headlessDocument.AddRootComponent(componentId, selector);
-
-            return Task.CompletedTask;
-        }
-
-        internal void Navigate(string uri, bool forceLoad)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void EndInvokeDotNet(string v)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void NotifyUnhandledException(Exception exception)
-        {
-            Console.WriteLine(exception);
-        }
-
-        internal string GetHtml()
-        {
-            return _headlessDocument.GetHtml();
-        }
     }
 
     internal class HeadlessDocument
