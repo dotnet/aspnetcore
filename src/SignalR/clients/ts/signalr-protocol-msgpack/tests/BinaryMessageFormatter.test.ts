@@ -10,7 +10,7 @@ describe("Binary Message Formatter", () => {
         [[0x01, 0xff], [ new Uint8Array([0xff])] as Uint8Array[]],
         [[0x01, 0xff,
           0x01, 0x7f], [ new Uint8Array([0xff]), new Uint8Array([0x7f])] as Uint8Array[]],
-    ] as Array<[number[], Uint8Array[]]>).forEach(([payload, expectedMessages]) => {
+    ] as [number[], Uint8Array[]][]).forEach(([payload, expectedMessages]) => {
         it(`should parse '${payload}' correctly`, () => {
             const messages = BinaryMessageFormat.parse(new Uint8Array(payload).buffer);
             expect(messages).toEqual(expectedMessages);
@@ -27,7 +27,7 @@ describe("Binary Message Formatter", () => {
         [[0x80, 0x80, 0x80, 0x80, 0x80], "Messages bigger than 2GB are not supported."],
         [[0x02, 0x00], "Incomplete message."],
         [[0xff, 0xff, 0xff, 0xff, 0x07], "Incomplete message."],
-    ] as Array<[number[], string]>).forEach(([payload, expectedError]) => {
+    ] as [number[], string][]).forEach(([payload, expectedError]) => {
         it(`should fail to parse '${payload}'`, () => {
             expect(() => BinaryMessageFormat.parse(new Uint8Array(payload).buffer)).toThrow(expectedError);
         });
@@ -36,7 +36,7 @@ describe("Binary Message Formatter", () => {
     ([
         [[], [0x00]],
         [[0x20], [0x01, 0x20]],
-    ] as Array<[number[], number[]]>).forEach(([input, expectedPayload]) => {
+    ] as [number[], number[]][]).forEach(([input, expectedPayload]) => {
         it(`should write '${input}'`, () => {
             const actual = new Uint8Array(BinaryMessageFormat.write(new Uint8Array(input)));
             const expected = new Uint8Array(expectedPayload);

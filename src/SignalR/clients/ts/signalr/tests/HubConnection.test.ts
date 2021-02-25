@@ -1368,15 +1368,15 @@ class TestProtocol implements IHubProtocol {
 class TestObserver implements IStreamSubscriber<any> {
     public readonly closed: boolean = false;
     public itemsReceived: any[];
-    private itemsSource: PromiseSource<any[]>;
+    private _itemsSource: PromiseSource<any[]>;
 
     get completed(): Promise<any[]> {
-        return this.itemsSource.promise;
+        return this._itemsSource.promise;
     }
 
     constructor() {
         this.itemsReceived = [];
-        this.itemsSource = new PromiseSource<any[]>();
+        this._itemsSource = new PromiseSource<any[]>();
     }
 
     public next(value: any) {
@@ -1384,11 +1384,11 @@ class TestObserver implements IStreamSubscriber<any> {
     }
 
     public error(err: any) {
-        this.itemsSource.reject(new Error(err));
+        this._itemsSource.reject(new Error(err));
     }
 
     public complete() {
-        this.itemsSource.resolve(this.itemsReceived);
+        this._itemsSource.resolve(this.itemsReceived);
     }
 }
 

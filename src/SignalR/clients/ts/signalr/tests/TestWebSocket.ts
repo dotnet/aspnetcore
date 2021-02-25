@@ -17,7 +17,7 @@ export class TestWebSocket {
 
     public static webSocketSet: PromiseSource;
     public static webSocket: TestWebSocket;
-    public receivedData: Array<(string | ArrayBuffer | Blob | ArrayBufferView)>;
+    public receivedData: (string | ArrayBuffer | Blob | ArrayBufferView)[];
 
     // tslint:disable-next-line:variable-name
     private _onopen?: (this: WebSocket, evt: Event) => any;
