@@ -191,16 +191,25 @@ try {
         }
     }
 
-    Write-Host "Checking for changes to API baseline files"
+    $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
+    if ($targetBranch.StartsWith('refs/heads/')) {
+        $targetBranch = $targetBranch.Replace('refs/heads/','')
+    }
 
     # Retrieve the set of changed files compared to main
-    $commitSha = git rev-parse HEAD
-    $changedFilesFromMain = git --no-pager diff origin/main...$commitSha --ignore-space-change --name-only --diff-filter=ar
+    Write-Host "Checking for changes to API baseline files $targetBranch"
+
+    $changedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only --diff-filter=ar
     $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
 
-    if ($changedFilesFromMain) {
-        foreach ($file in $changedFilesFromMain) {
+    if ($changedFilesFromTarget) {
+        foreach ($file in $changedFilesFromTarget) {
+            # Check for changes in Shipped in all branches
             if ($file -like '*PublicAPI.Shipped.txt') {
+                $changedAPIBaselines.Add($file)
+            }
+            # Check for changes in Unshipped in servicing branches
+            if ($targetBranch -like 'release*' -and $file -like '*PublicAPI.Unshipped.txt') {
                 $changedAPIBaselines.Add($file)
             }
         }
