@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Components.WebView.Headless
+namespace Microsoft.AspNetCore.Components.WebView
 {
     public class WebViewRenderer : Renderer
     {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Headless
             return _host.ApplyRenderBatch(renderBatch);
         }
 
-        internal async Task RenderRootComponentAsync(Type componentType, string selector)
+        public async Task RenderRootComponentAsync(Type componentType, string selector)
         {
             if (_componentIdBySelector.ContainsKey(selector))
             {
@@ -46,12 +46,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Headless
             var componentId = AssignRootComponentId(component);
 
             _componentIdBySelector.Add(selector, componentId);
-            await _host.AttachToDocumentAsync(componentId, selector);
+            _host.AttachToDocument(componentId, selector);
 
             await RenderRootComponentAsync(componentId);
         }
 
-        internal async Task RemoveRootComponentAsync(string selector)
+        public async Task RemoveRootComponentAsync(string selector)
         {
             if (!_componentIdBySelector.TryGetValue(selector, out var componentId))
             {
@@ -59,8 +59,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Headless
             }
 
             // TODO: The renderer needs an API to do trigger the disposal of the component tree.
+            await Task.CompletedTask;
 
-            await _host.DetachFromDocumentAsync(componentId);
+            _host.DetachFromDocument(componentId);
         }
     }
 }

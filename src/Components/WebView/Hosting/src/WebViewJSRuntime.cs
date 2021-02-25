@@ -2,14 +2,15 @@ using System.Text.Json;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 
-namespace Microsoft.AspNetCore.Components.WebView.Headless
+namespace Microsoft.AspNetCore.Components.WebView
 {
     internal class WebViewJSRuntime : JSRuntime
     {
-        private readonly IWebViewHost _host;
+        private readonly WebViewHost _host;
 
-        public WebViewJSRuntime(IWebViewHost host)
+        public WebViewJSRuntime(WebViewHost host)
         {
+            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(new WebElementReferenceContext(this)));
             _host = host;
         }
 
