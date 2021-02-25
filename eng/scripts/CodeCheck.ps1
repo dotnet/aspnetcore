@@ -192,36 +192,39 @@ try {
     }
 
     $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
-    if ($targetBranch.StartsWith('refs/heads/')) {
-        $targetBranch = $targetBranch.Replace('refs/heads/','')
-    }
 
-    # Retrieve the set of changed files compared to main
-    Write-Host "Checking for changes to API baseline files $targetBranch"
+    if (![string]::IsNullOrEmpty($targetBranch)) {
+        if ($targetBranch.StartsWith('refs/heads/')) {
+            $targetBranch = $targetBranch.Replace('refs/heads/','')
+        }
 
-    $changedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only --diff-filter=ar
-    $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
+        # Retrieve the set of changed files compared to main
+        Write-Host "Checking for changes to API baseline files $targetBranch"
 
-    if ($changedFilesFromTarget) {
-        foreach ($file in $changedFilesFromTarget) {
-            # Check for changes in Shipped in all branches
-            if ($file -like '*PublicAPI.Shipped.txt') {
-                $changedAPIBaselines.Add($file)
-            }
-            # Check for changes in Unshipped in servicing branches
-            if ($targetBranch -like 'release*' -and $file -like '*PublicAPI.Unshipped.txt') {
-                $changedAPIBaselines.Add($file)
+        $changedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only --diff-filter=ar
+        $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
+
+        if ($changedFilesFromTarget) {
+            foreach ($file in $changedFilesFromTarget) {
+                # Check for changes in Shipped in all branches
+                if ($file -like '*PublicAPI.Shipped.txt') {
+                    $changedAPIBaselines.Add($file)
+                }
+                # Check for changes in Unshipped in servicing branches
+                if ($targetBranch -like 'release*' -and $file -like '*PublicAPI.Unshipped.txt') {
+                    $changedAPIBaselines.Add($file)
+                }
             }
         }
-    }
 
-    Write-Host "Found changes in $($changedAPIBaselines.count) API baseline files"
+        Write-Host "Found changes in $($changedAPIBaselines.count) API baseline files"
 
-    if ($changedAPIBaselines.count -gt 0) {
-        LogError "Detected modification to baseline API files. PublicAPI.Shipped.txt files should only be updated after a major release. See /docs/APIBaselines.md for more information."
-        LogError "Modified API baseline files:"
-        foreach ($file in $changedAPIBaselines) {
-            LogError $file
+        if ($changedAPIBaselines.count -gt 0) {
+            LogError "Detected modification to baseline API files. PublicAPI.Shipped.txt files should only be updated after a major release. See /docs/APIBaselines.md for more information."
+            LogError "Modified API baseline files:"
+            foreach ($file in $changedAPIBaselines) {
+                LogError $file
+            }
         }
     }
 }
