@@ -10,6 +10,7 @@ Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;dataprotection</PackageTags>
     <Nullable>enable</Nullable>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

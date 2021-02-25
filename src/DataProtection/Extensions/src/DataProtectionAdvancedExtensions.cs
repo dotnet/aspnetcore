@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
@@ -10,6 +11,38 @@ namespace Microsoft.AspNetCore.DataProtection
     /// </summary>
     public static class DataProtectionAdvancedExtensions
     {
+#if NETCOREAPP
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="protector"></param>
+        /// <param name="plaintext"></param>
+        /// <returns></returns>
+        public static Span<byte> Protect(this IDataProtector protector, ReadOnlySpan<byte> plaintext)
+        {
+            if (protector is ISpanDataProtector sp)
+            {
+                return sp.Protect(plaintext);
+            }
+            return protector.Protect(plaintext.ToArray());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="protector"></param>
+        /// <param name="protectedData"></param>
+        /// <returns></returns>
+        public static Span<byte> Unprotect(this IDataProtector protector, ReadOnlySpan<byte> protectedData)
+        {
+            if (protector is ISpanDataProtector sp)
+            {
+                return sp.Unprotect(protectedData);
+            }
+            return protector.Unprotect(protectedData.ToArray());
+        }
+#endif
+
         /// <summary>
         /// Cryptographically protects a piece of plaintext data, expiring the data after
         /// the specified amount of time has elapsed.

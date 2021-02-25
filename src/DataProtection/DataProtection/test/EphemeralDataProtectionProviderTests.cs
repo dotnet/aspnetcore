@@ -29,6 +29,21 @@ namespace Microsoft.AspNetCore.DataProtection
         }
 
         [Fact]
+        public void CanProtectUnprotectWithSpans()
+        {
+            // Arrange
+            var dataProtector1 = new EphemeralDataProtectionProvider().CreateProtector("purpose");
+            var sp = dataProtector1 as ISpanDataProtector;
+
+            byte[] bytes = Encoding.UTF8.GetBytes("Hello there!");
+
+            // Act & assert
+            var results = sp.Unprotect(sp.Protect(bytes.AsSpan()));
+
+            Assert.Equal("Hello there!", Encoding.UTF8.GetString(results));
+        }
+
+        [Fact]
         public void SingleProvider_DifferentPurpose_DoesNotRoundTripData()
         {
             // Arrange

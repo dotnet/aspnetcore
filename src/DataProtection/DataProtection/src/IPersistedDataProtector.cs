@@ -33,4 +33,30 @@ namespace Microsoft.AspNetCore.DataProtection
         /// </remarks>
         byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked);
     }
+
+#if NETCOREAPP
+    /// <summary>
+    /// Span enabled version of <see cref="IPersistedDataProtector"/>.
+    /// </summary>
+    public interface ISpanPersistedDataProtector : IPersistedDataProtector
+    {
+        /// <summary>
+        /// Span enabled version of <see cref="IPersistedDataProtector.DangerousUnprotect(byte[], bool, out bool, out bool)"/>.
+        /// </summary>
+        /// <param name="protectedData">The protected data to unprotect.</param>
+        /// <param name="ignoreRevocationErrors">'true' if the payload should be unprotected even
+        /// if the cryptographic key used to protect it has been revoked (due to potential compromise),
+        /// 'false' if revocation should fail the unprotect operation.</param>
+        /// <param name="requiresMigration">'true' if the data should be reprotected before being
+        /// persisted back to long-term storage, 'false' otherwise. Migration might be requested
+        /// when the default protection key has changed, for instance.</param>
+        /// <param name="wasRevoked">'true' if the cryptographic key used to protect this payload
+        /// has been revoked, 'false' otherwise. Payloads whose keys have been revoked should be
+        /// treated as suspect unless the application has separate assurance that the payload
+        /// has not been tampered with.</param>
+        /// <returns>The plaintext form of the protected data.</returns>
+        Span<byte> DangerousUnprotect(ReadOnlySpan<byte> protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked);
+    }
+#endif
+
 }

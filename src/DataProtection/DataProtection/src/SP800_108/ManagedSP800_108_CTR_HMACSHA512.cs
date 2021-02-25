@@ -62,5 +62,54 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
             Buffer.BlockCopy(context.Array!, context.Offset, combinedContext, contextHeader.Length, context.Count);
             DeriveKeys(kdk, label, new ArraySegment<byte>(combinedContext), prfFactory, output);
         }
+
+#if NETCOREAPP
+        public static void DeriveKeysWithContextHeader(Memory<byte> kdk, ReadOnlySpan<byte> label, ReadOnlySpan<byte> contextHeader, ReadOnlySpan<byte> context, Func<Memory<byte>, HashAlgorithm> prfFactory, Span<byte> output)
+        {
+            // make copies so we can mutate these local vars
+            var outputOffset = 0;
+            var outputCount = output.Length;
+
+            using (var prf = prfFactory(kdk))
+            {
+                // See SP800-108, Sec. 5.1 for the format of the input to the PRF routine.
+                var prfInput = new byte[checked(sizeof(uint) /* [i]_2 */ + label.Length + 1 /* 0x00 */ + context.Length + contextHeader.Length + sizeof(uint) /* [K]_2 */)];
+
+                // Copy [L]_2 to prfInput since it's stable over all iterations
+                uint outputSizeInBits = (uint)checked((int)outputCount * 8);
+                prfInput[prfInput.Length - 4] = (byte)(outputSizeInBits >> 24);
+                prfInput[prfInput.Length - 3] = (byte)(outputSizeInBits >> 16);
+                prfInput[prfInput.Length - 2] = (byte)(outputSizeInBits >> 8);
+                prfInput[prfInput.Length - 1] = (byte)(outputSizeInBits);
+
+                // Copy label and context to prfInput since they're stable over all iterations
+                label.CopyTo(prfInput.AsSpan().Slice(sizeof(uint)));
+                contextHeader.CopyTo(prfInput.AsSpan().Slice(sizeof(int) + label.Length + 1));
+                context.CopyTo(prfInput.AsSpan().Slice(sizeof(int) + label.Length + 1 + contextHeader.Length));
+                //Buffer.BlockCopy(context.Array!, context.Offset, prfInput, sizeof(int) + label.Count + 1, context.Count);
+
+                var prfOutputSizeInBytes = prf.GetDigestSizeInBytes();
+                for (uint i = 1; outputCount > 0; i++)
+                {
+                    // Copy [i]_2 to prfInput since it mutates with each iteration
+                    prfInput[0] = (byte)(i >> 24);
+                    prfInput[1] = (byte)(i >> 16);
+                    prfInput[2] = (byte)(i >> 8);
+                    prfInput[3] = (byte)(i);
+
+                    // Run the PRF
+                    var prfOutput = prf.ComputeHash(prfInput);
+                    CryptoUtil.Assert(prfOutputSizeInBytes == prfOutput.Length, "prfOutputSizeInBytes == prfOutput.Length");
+                    var numBytesToCopyThisIteration = Math.Min(prfOutputSizeInBytes, outputCount);
+                    prfOutput.AsSpan().Slice(0, numBytesToCopyThisIteration).CopyTo(output.Slice(outputOffset));
+                    Array.Clear(prfOutput, 0, prfOutput.Length); // contains key material, so delete it
+
+                    // adjust offsets
+                    outputOffset += numBytesToCopyThisIteration;
+                    outputCount -= numBytesToCopyThisIteration;
+                }
+            }
+        }
+#endif
     }
 }

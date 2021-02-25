@@ -14,8 +14,233 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
+#if NETCOREAPP
+    internal unsafe sealed class KeyRingBasedDataProtector : ISpanDataProtector, IPersistedDataProtector
+    {
+        public Span<byte> Protect(ReadOnlySpan<byte> plaintext)
+        {
+            if (plaintext == null)
+            {
+                throw new ArgumentNullException(nameof(plaintext));
+            }
+
+            try
+            {
+                // Perform the encryption operation using the current default encryptor.
+                var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
+                var defaultKeyId = currentKeyRing.DefaultKeyId;
+                var defaultEncryptorInstance = currentKeyRing.DefaultAuthenticatedEncryptor;
+                CryptoUtil.Assert(defaultEncryptorInstance != null, "defaultEncryptorInstance != null");
+
+                if (_logger.IsDebugLevelEnabled())
+                {
+                    _logger.PerformingProtectOperationToKeyWithPurposes(defaultKeyId, JoinPurposesForLog(Purposes));
+                }
+
+                // We'll need to apply the default key id to the template if it hasn't already been applied.
+                // If the default key id has been updated since the last call to Protect, also write back the updated template.
+                var aad = _aadTemplate.GetAadForKey(defaultKeyId, isProtecting: true);
+
+                Span<byte> retVal;
+                var optimizedEncryptor = defaultEncryptorInstance as ISpanAuthenticatedEncryptor;
+                var magicHeaderAndKeyOffset = sizeof(uint) + sizeof(Guid);
+                if (optimizedEncryptor != null)
+                {
+                    retVal = new byte[magicHeaderAndKeyOffset + plaintext.Length];
+                    optimizedEncryptor.Encrypt(retVal.Slice(magicHeaderAndKeyOffset), plaintext, aad);
+                }
+                else
+                {
+                    // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
+                    retVal = defaultEncryptorInstance.Encrypt(
+                        plaintext: new ArraySegment<byte>(plaintext.ToArray()),
+                        additionalAuthenticatedData: new ArraySegment<byte>(aad),
+                        preBufferSize: (uint)(sizeof(uint) + sizeof(Guid)),
+                        postBufferSize: 0).AsSpan();
+                }
+
+                CryptoUtil.Assert(retVal != null && retVal.Length >= sizeof(uint) + sizeof(Guid), "retVal != null && retVal.Length >= sizeof(uint) + sizeof(Guid)");
+
+                // At this point: retVal := { 000..000 || encryptorSpecificProtectedPayload },
+                // where 000..000 is a placeholder for our magic header and key id.
+
+                // Write out the magic header and key id
+                fixed (byte* pbRetVal = retVal)
+                {
+                    WriteBigEndianInteger(pbRetVal, MAGIC_HEADER_V0);
+                    Write32bitAlignedGuid(&pbRetVal[sizeof(uint)], defaultKeyId);
+                }
+
+                // At this point, retVal := { magicHeader || keyId || encryptorSpecificProtectedPayload }
+                // And we're done!
+                return retVal;
+            }
+            catch (Exception ex) when (ex.RequiresHomogenization())
+            {
+                // homogenize all errors to CryptographicException
+                throw Error.Common_EncryptionFailed(ex);
+            }
+        }
+
+        public Span<byte> Unprotect(ReadOnlySpan<byte> protectedData)
+        {
+            if (protectedData == null)
+            {
+                throw new ArgumentNullException(nameof(protectedData));
+            }
+
+            // Argument checking will be done by the callee
+            return DangerousUnprotect(protectedData,
+                ignoreRevocationErrors: false,
+                requiresMigration: out bool _,
+                wasRevoked: out bool __);
+        }
+
+        public Span<byte> DangerousUnprotect(ReadOnlySpan<byte> protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
+        {
+            // argument & state checking
+            if (protectedData == null)
+            {
+                throw new ArgumentNullException(nameof(protectedData));
+            }
+
+            UnprotectStatus status;
+            var retVal = UnprotectSpanCore(protectedData, ignoreRevocationErrors, status: out status);
+            requiresMigration = (status != UnprotectStatus.Ok);
+            wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
+            return retVal;
+        }
+
+        private Span<byte> UnprotectSpanCore(ReadOnlySpan<byte> protectedData, bool allowOperationsOnRevokedKeys, out UnprotectStatus status)
+        {
+            Debug.Assert(protectedData != null);
+
+            try
+            {
+                // argument & state checking
+                if (protectedData.Length < sizeof(uint) /* magic header */ + sizeof(Guid) /* key id */)
+                {
+                    // payload must contain at least the magic header and key id
+                    throw Error.ProtectionProvider_BadMagicHeader();
+                }
+
+                // Need to check that protectedData := { magicHeader || keyId || encryptorSpecificProtectedPayload }
+
+                // Parse the payload version number and key id.
+                uint magicHeaderFromPayload;
+                Guid keyIdFromPayload;
+                fixed (byte* pbInput = protectedData)
+                {
+                    magicHeaderFromPayload = ReadBigEndian32BitInteger(pbInput);
+                    keyIdFromPayload = Read32bitAlignedGuid(&pbInput[sizeof(uint)]);
+                }
+
+                // Are the magic header and version information correct?
+                int payloadVersion;
+                if (!TryGetVersionFromMagicHeader(magicHeaderFromPayload, out payloadVersion))
+                {
+                    throw Error.ProtectionProvider_BadMagicHeader();
+                }
+                else if (payloadVersion != 0)
+                {
+                    throw Error.ProtectionProvider_BadVersion();
+                }
+
+                if (_logger.IsDebugLevelEnabled())
+                {
+                    _logger.PerformingUnprotectOperationToKeyWithPurposes(keyIdFromPayload, JoinPurposesForLog(Purposes));
+                }
+
+                // Find the correct encryptor in the keyring.
+                bool keyWasRevoked;
+                var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
+                var requestedEncryptor = currentKeyRing.GetAuthenticatedEncryptorByKeyId(keyIdFromPayload, out keyWasRevoked);
+                if (requestedEncryptor == null)
+                {
+                    if (_keyRingProvider is KeyRingProvider provider && provider.InAutoRefreshWindow())
+                    {
+                        currentKeyRing = provider.RefreshCurrentKeyRing();
+                        requestedEncryptor = currentKeyRing.GetAuthenticatedEncryptorByKeyId(keyIdFromPayload, out keyWasRevoked);
+                    }
+
+                    if (requestedEncryptor == null)
+                    {
+                        if (_logger.IsTraceLevelEnabled())
+                        {
+                            _logger.KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(keyIdFromPayload);
+                        }
+                        throw Error.Common_KeyNotFound(keyIdFromPayload);
+                    }
+                }
+
+                // Do we need to notify the caller that they should reprotect the data?
+                status = UnprotectStatus.Ok;
+                if (keyIdFromPayload != currentKeyRing.DefaultKeyId)
+                {
+                    status = UnprotectStatus.DefaultEncryptionKeyChanged;
+                }
+
+                // Do we need to notify the caller that this key was revoked?
+                if (keyWasRevoked)
+                {
+                    if (allowOperationsOnRevokedKeys)
+                    {
+                        if (_logger.IsDebugLevelEnabled())
+                        {
+                            _logger.KeyWasRevokedCallerRequestedUnprotectOperationProceedRegardless(keyIdFromPayload);
+                        }
+                        status = UnprotectStatus.DecryptionKeyWasRevoked;
+                    }
+                    else
+                    {
+                        if (_logger.IsDebugLevelEnabled())
+                        {
+                            _logger.KeyWasRevokedUnprotectOperationCannotProceed(keyIdFromPayload);
+                        }
+                        throw Error.Common_KeyRevoked(keyIdFromPayload);
+                    }
+                }
+
+                var spanEncryptor = requestedEncryptor as ISpanAuthenticatedEncryptor;
+                if (spanEncryptor != null)
+                {
+                    // Perform the decryption operation.
+                    var ciphertext = protectedData.Slice(sizeof(uint) + sizeof(Guid), protectedData.Length - (sizeof(uint) + sizeof(Guid))); // chop off magic header + encryptor id
+                    var additionalAuthenticatedData = new ArraySegment<byte>(_aadTemplate.GetAadForKey(keyIdFromPayload, isProtecting: false));
+
+                    // At this point, cipherText := { encryptorSpecificPayload },
+                    // so all that's left is to invoke the decryption routine directly.
+                    var retVal = spanEncryptor.Decrypt(ciphertext, additionalAuthenticatedData);
+                    if (retVal == null)
+                    {
+                        CryptoUtil.Fail("IAuthenticatedEncryptor.Decrypt returned null.");
+                    }
+                    return retVal;
+                }
+                else
+                {
+                    // Perform the decryption operation.
+                    ArraySegment<byte> ciphertext = new ArraySegment<byte>(protectedData.ToArray(), sizeof(uint) + sizeof(Guid), protectedData.Length - (sizeof(uint) + sizeof(Guid))); // chop off magic header + encryptor id
+                    ArraySegment<byte> additionalAuthenticatedData = new ArraySegment<byte>(_aadTemplate.GetAadForKey(keyIdFromPayload, isProtecting: false));
+
+                    // At this point, cipherText := { encryptorSpecificPayload },
+                    // so all that's left is to invoke the decryption routine directly.
+                    return requestedEncryptor.Decrypt(ciphertext, additionalAuthenticatedData)
+                        ?? CryptoUtil.Fail<byte[]>("IAuthenticatedEncryptor.Decrypt returned null.");
+                }
+            }
+            catch (Exception ex) when (ex.RequiresHomogenization())
+            {
+                // homogenize all failures to CryptographicException
+                throw Error.DecryptionFailed(ex);
+            }
+        }
+
+
+#else
     internal unsafe sealed class KeyRingBasedDataProtector : IDataProtector, IPersistedDataProtector
     {
+#endif
         // This magic header identifies a v0 protected data blob. It's the high 28 bits of the SHA1 hash of
         // "Microsoft.AspNet.DataProtection.KeyManagement.KeyRingBasedDataProtector" [US-ASCII], big-endian.
         // The last nibble reserved for version information. There's also the nice property that "F0 C9"
@@ -95,7 +320,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             {
                 throw new ArgumentNullException(nameof(plaintext));
             }
-
+#if NETCOREAPP
+            return Protect(plaintext.AsSpan()).ToArray();
+#else
             try
             {
                 // Perform the encryption operation using the current default encryptor.
@@ -140,6 +367,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 // homogenize all errors to CryptographicException
                 throw Error.Common_EncryptionFailed(ex);
             }
+#endif
         }
 
         // Helper function to read a GUID from a 32-bit alignment; useful on architectures where unaligned reads
