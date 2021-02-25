@@ -35,6 +35,9 @@ const defaultNegotiateResponse: INegotiateResponse = {
     negotiateVersion: 1,
 };
 
+function ServerSentEventsNotAllowed() { throw new Error("Don't allow ServerSentEvents."); }
+function WebSocketNotAllowed() { throw new Error("Don't allow Websockets."); }
+
 registerUnhandledRejectionHandler();
 
 describe("HttpConnection", () => {
@@ -233,8 +236,8 @@ describe("HttpConnection", () => {
         await VerifyLogger.run(async (loggerImpl) => {
             let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
-                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
-                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                EventSource: ServerSentEventsNotAllowed,
+                WebSocket: WebSocketNotAllowed,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", () =>  {
@@ -264,8 +267,8 @@ describe("HttpConnection", () => {
         await VerifyLogger.run(async (loggerImpl) => {
             let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
-                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
-                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                EventSource: ServerSentEventsNotAllowed,
+                WebSocket: WebSocketNotAllowed,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", () =>  {

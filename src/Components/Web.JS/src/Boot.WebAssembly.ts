@@ -1,5 +1,5 @@
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import './GlobalExports';
+import { Blazor } from './GlobalExports';
 import * as Environment from './Environment';
 import { monoPlatform } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
@@ -15,6 +15,7 @@ import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAtt
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { WasmInputFile } from './WasmInputFile';
 
+declare var Module: EmscriptenModule;
 let started = false;
 
 async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
@@ -35,15 +36,15 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   });
 
-  window['Blazor']._internal.InputFile = WasmInputFile;
+  Blazor._internal.InputFile = WasmInputFile;
 
   // Configure JS interop
-  window['Blazor']._internal.invokeJSFromDotNet = invokeJSFromDotNet;
+  Blazor._internal.invokeJSFromDotNet = invokeJSFromDotNet;
 
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);
-  window['Blazor'].platform = platform;
-  window['Blazor']._internal.renderBatch = (browserRendererId: number, batchAddress: Pointer) => {
+  Blazor.platform = platform;
+  Blazor._internal.renderBatch = (browserRendererId: number, batchAddress: Pointer) => {
     // We're going to read directly from the .NET memory heap, so indicate to the platform
     // that we don't want anything to modify the memory contents during this time. Currently this
     // is only guaranteed by the fact that .NET code doesn't run during this time, but in the
@@ -58,12 +59,12 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   };
 
   // Configure navigation via JS Interop
-  const getBaseUri = window['Blazor']._internal.navigationManager.getBaseURI;
-  const getLocationHref = window['Blazor']._internal.navigationManager.getLocationHref;
-  window['Blazor']._internal.navigationManager.getUnmarshalledBaseURI = () => BINDING.js_string_to_mono_string(getBaseUri());
-  window['Blazor']._internal.navigationManager.getUnmarshalledLocationHref = () => BINDING.js_string_to_mono_string(getLocationHref());
+  const getBaseUri = Blazor._internal.navigationManager.getBaseURI;
+  const getLocationHref = Blazor._internal.navigationManager.getLocationHref;
+  Blazor._internal.navigationManager.getUnmarshalledBaseURI = () => BINDING.js_string_to_mono_string(getBaseUri());
+  Blazor._internal.navigationManager.getUnmarshalledLocationHref = () => BINDING.js_string_to_mono_string(getLocationHref());
 
-  window['Blazor']._internal.navigationManager.listenForNavigationEvents(async (uri: string, intercepted: boolean): Promise<void> => {
+  Blazor._internal.navigationManager.listenForNavigationEvents(async (uri: string, intercepted: boolean): Promise<void> => {
     await DotNet.invokeMethodAsync(
       'Microsoft.AspNetCore.Components.WebAssembly',
       'NotifyLocationChanged',
@@ -82,7 +83,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   // the document.
   const discoveredComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
   const componentAttacher = new WebAssemblyComponentAttacher(discoveredComponents);
-  window['Blazor']._internal.registeredComponents = {
+  Blazor._internal.registeredComponents = {
     getRegisteredComponentsCount: () => componentAttacher.getCount(),
     getId: (index) => componentAttacher.getId(index),
     getAssembly: (id) => BINDING.js_string_to_mono_string(componentAttacher.getAssembly(id)),
@@ -91,9 +92,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     getParameterValues: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterValues(id) || ''),
   };
 
-  window['Blazor']._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
+  Blazor._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
 
-  window['Blazor']._internal.attachRootComponentToElement = (selector, componentId, rendererId) => {
+  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
@@ -148,7 +149,7 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
   }
 }
 
-window['Blazor'].start = boot;
+Blazor.start = boot;
 if (shouldAutoStart()) {
   boot().catch(error => {
     if (typeof Module !== 'undefined' && Module.printErr) {

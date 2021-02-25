@@ -1,6 +1,6 @@
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import './GlobalExports';
-import * as signalR from '@microsoft/signalr';
+import { Blazor } from './GlobalExports';
+import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { showErrorNotification } from './BootErrors';
 import { shouldAutoStart } from './BootCommon';
@@ -27,11 +27,11 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   // Establish options to be used
   const options = resolveOptions(userOptions);
   const logger = new ConsoleLogger(options.logLevel);
-  window['Blazor'].defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
-  window['Blazor']._internal.InputFile = InputFile;
+  Blazor.defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
+  Blazor._internal.InputFile = InputFile;
 
-  options.reconnectionHandler = options.reconnectionHandler || window['Blazor'].defaultReconnectionHandler;
-  logger.log(LogLevel.Information, 'Starting up blazor server-side application.');
+  options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
+  logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
   const components = discoverComponents(document, 'server') as ServerComponentDescriptor[];
   const appState = discoverPersistedState(document);
@@ -45,7 +45,7 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
     return;
   }
 
-  const reconnect = async (existingConnection?: signalR.HubConnection): Promise<boolean> => {
+  const reconnect = async (existingConnection?: HubConnection): Promise<boolean> => {
     if (renderingFailed) {
       // We can't reconnect after a failure, so exit early.
       return false;
@@ -72,20 +72,20 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
     }
   };
 
-  window['Blazor'].disconnect = cleanup;
+  Blazor.disconnect = cleanup;
 
   window.addEventListener('unload', cleanup, { capture: false, once: true });
 
-  window['Blazor'].reconnect = reconnect;
+  Blazor.reconnect = reconnect;
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 }
 
-async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<signalR.HubConnection> {
+async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {
   const hubProtocol = new MessagePackHubProtocol();
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
-  const connectionBuilder = new signalR.HubConnectionBuilder()
+  const connectionBuilder = new HubConnectionBuilder()
     .withUrl('_blazor')
     .withHubProtocol(hubProtocol);
 
@@ -98,7 +98,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   });
 
   // Configure navigation via SignalR
-  window['Blazor']._internal.navigationManager.listenForNavigationEvents((uri: string, intercepted: boolean): Promise<void> => {
+  Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, intercepted: boolean): Promise<void> => {
     return connection.send('OnLocationChanged', uri, intercepted);
   });
 
@@ -119,7 +119,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
     showErrorNotification();
   });
 
-  window['Blazor']._internal.forceCloseConnection = () => connection.stop();
+  Blazor._internal.forceCloseConnection = () => connection.stop();
 
   try {
     await connection.start();
@@ -139,7 +139,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   return connection;
 }
 
-function unhandledError(connection: signalR.HubConnection, err: Error, logger: Logger): void {
+function unhandledError(connection: HubConnection, err: Error, logger: Logger): void {
   logger.log(LogLevel.Error, err);
 
   // Disconnect on errors.
@@ -150,7 +150,7 @@ function unhandledError(connection: signalR.HubConnection, err: Error, logger: L
   }
 }
 
-window['Blazor'].start = boot;
+Blazor.start = boot;
 
 if (shouldAutoStart()) {
   boot();
