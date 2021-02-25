@@ -16,22 +16,44 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
 
         private readonly RequestQueueMode _mode;
-        private readonly UrlGroup _urlGroup;
         private readonly ILogger _logger;
         private bool _disposed;
 
-        internal RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, ILogger logger)
+        internal RequestQueue(string requestQueueName, string urlPrefix, ILogger logger, bool receiver)
+            : this(urlGroup: null!, requestQueueName, RequestQueueMode.Attach, logger, receiver)
+        {
+            try
+            {
+                UrlGroup = new UrlGroup(this, UrlPrefix.Create(urlPrefix), logger);
+            }
+            catch
+            {
+                Dispose();
+                throw;
+            }
+        }
+
+        internal RequestQueue(UrlGroup urlGroup, string? requestQueueName, RequestQueueMode mode, ILogger logger)
+            : this(urlGroup, requestQueueName, mode, logger, false)
+        { }
+
+        private RequestQueue(UrlGroup urlGroup, string? requestQueueName, RequestQueueMode mode, ILogger logger, bool receiver)
         {
             _mode = mode;
-            _urlGroup = urlGroup;
+            UrlGroup = urlGroup;
             _logger = logger;
 
             var flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
             Created = true;
+
             if (_mode == RequestQueueMode.Attach)
             {
                 flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
                 Created = false;
+                if (receiver)
+                {
+                    flags |= HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.Delegation;
+                }
             }
 
             var statusCode = HttpApi.HttpCreateRequestQueue(
@@ -54,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         out requestQueueHandle);
             }
 
-            if (flags == HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
+            if (flags.HasFlag(HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting) && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
             {
                 throw new HttpSysException((int)statusCode, $"Failed to attach to the given request queue '{requestQueueName}', the queue could not be found.");
             }
@@ -83,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (!Created)
             {
-                _logger.LogInformation("Attached to an existing request queue '{requestQueueName}', some options do not apply.", requestQueueName);
+                _logger.LogInformation(LoggerEventIds.AttachedToQueue, "Attached to an existing request queue '{requestQueueName}', some options do not apply.", requestQueueName);
             }
         }
 
@@ -94,6 +116,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal SafeHandle Handle { get; }
         internal ThreadPoolBoundHandle BoundHandle { get; }
+
+        internal UrlGroup UrlGroup { get; }
 
         internal unsafe void AttachToUrlGroup()
         {
@@ -108,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             var infoptr = new IntPtr(&info);
 
-            _urlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
+            UrlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
                 infoptr, (uint)BindingInfoSize);
         }
 
@@ -128,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             var infoptr = new IntPtr(&info);
 
-            _urlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
+            UrlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
                 infoptr, (uint)BindingInfoSize, throwOnError: false);
         }
 

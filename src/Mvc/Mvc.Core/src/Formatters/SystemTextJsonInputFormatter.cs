@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -17,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class SystemTextJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
+        private readonly JsonOptions _jsonOptions;
         private readonly ILogger<SystemTextJsonInputFormatter> _logger;
 
         /// <summary>
@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             ILogger<SystemTextJsonInputFormatter> logger)
         {
             SerializerOptions = options.JsonSerializerOptions;
+            _jsonOptions = options;
             _logger = logger;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             var httpContext = context.HttpContext;
-            var inputStream = GetInputStream(httpContext, encoding);
+            var (inputStream, usesTranscodingStream) = GetInputStream(httpContext, encoding);
 
             object model;
             try
@@ -78,9 +79,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 var path = jsonException.Path;
 
-                var formatterException = new InputFormatterException(jsonException.Message, jsonException);
+                var modelStateException = WrapExceptionForModelState(jsonException);
 
-                context.ModelState.TryAddModelError(path, formatterException, context.Metadata);
+                context.ModelState.TryAddModelError(path, modelStateException, context.Metadata);
 
                 Log.JsonInputException(_logger, jsonException);
 
@@ -98,9 +99,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             finally
             {
-                if (inputStream is TranscodingReadStream transcoding)
+                if (usesTranscodingStream)
                 {
-                    await transcoding.DisposeAsync();
+                    await inputStream.DisposeAsync();
                 }
             }
 
@@ -119,14 +120,28 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
         }
 
-        private Stream GetInputStream(HttpContext httpContext, Encoding encoding)
+        private Exception WrapExceptionForModelState(JsonException jsonException)
+        {
+            if (!_jsonOptions.AllowInputFormatterExceptionMessages)
+            {
+                // This app is not opted-in to System.Text.Json messages, return the original exception.
+                return jsonException;
+            }
+
+            // InputFormatterException specifies that the message is safe to return to a client, it will
+            // be added to model state.
+            return new InputFormatterException(jsonException.Message, jsonException);
+        }
+
+        private (Stream inputStream, bool usesTranscodingStream) GetInputStream(HttpContext httpContext, Encoding encoding)
         {
             if (encoding.CodePage == Encoding.UTF8.CodePage)
             {
-                return httpContext.Request.Body;
+                return (httpContext.Request.Body, false);
             }
 
-            return new TranscodingReadStream(httpContext.Request.Body, encoding);
+            var inputStream = Encoding.CreateTranscodingStream(httpContext.Request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+            return (inputStream, true);
         }
 
         private static class Log

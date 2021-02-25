@@ -85,18 +85,23 @@ namespace Microsoft.AspNetCore.Builder
         public bool FallBackToParentUICultures { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets a value that determines if <see cref="CultureInfo.CurrentUICulture" /> is applied to the response <c>Content-Language</c> header.
+        /// </summary>
+        public bool ApplyCurrentCultureToResponseHeaders { get; set; }
+
+        /// <summary>
         /// The cultures supported by the application. The <see cref="RequestLocalizationMiddleware"/> will only set
         /// the current request culture to an entry in this list.
         /// Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </summary>
-        public IList<CultureInfo> SupportedCultures { get; set; } = new List<CultureInfo> { CultureInfo.CurrentCulture };
+        public IList<CultureInfo>? SupportedCultures { get; set; } = new List<CultureInfo> { CultureInfo.CurrentCulture };
 
         /// <summary>
         /// The UI cultures supported by the application. The <see cref="RequestLocalizationMiddleware"/> will only set
         /// the current request culture to an entry in this list.
         /// Defaults to <see cref="CultureInfo.CurrentUICulture"/>.
         /// </summary>
-        public IList<CultureInfo> SupportedUICultures { get; set; } = new List<CultureInfo> { CultureInfo.CurrentUICulture };
+        public IList<CultureInfo>? SupportedUICultures { get; set; } = new List<CultureInfo> { CultureInfo.CurrentUICulture };
 
         /// <summary>
         /// An ordered list of providers used to determine a request's culture information. The first provider that
@@ -117,7 +122,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>The <see cref="RequestLocalizationOptions"/>.</returns>
         public RequestLocalizationOptions AddSupportedCultures(params string[] cultures)
         {
-            var supportedCultures = new List<CultureInfo>();
+            var supportedCultures = new List<CultureInfo>(cultures.Length);
 
             foreach (var culture in cultures)
             {
@@ -135,7 +140,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>The <see cref="RequestLocalizationOptions"/>.</returns>
         public RequestLocalizationOptions AddSupportedUICultures(params string[] uiCultures)
         {
-            var supportedUICultures = new List<CultureInfo>();
+            var supportedUICultures = new List<CultureInfo>(uiCultures.Length);
             foreach (var culture in uiCultures)
             {
                 supportedUICultures.Add(new CultureInfo(culture));

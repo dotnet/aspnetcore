@@ -14,27 +14,38 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         // them even though we might still receive incoming events from JS.
 
         private static int _nextId;
-        private static Dictionary<int, WebAssemblyRenderer> _renderers = new Dictionary<int, WebAssemblyRenderer>();
+        private static Dictionary<int, WebAssemblyRenderer>? _renderers;
+
+        static RendererRegistry()
+        {
+            if (OperatingSystem.IsBrowser())
+            {
+                _renderers = new Dictionary<int, WebAssemblyRenderer>();
+            }
+        }
 
         internal static WebAssemblyRenderer Find(int rendererId)
         {
-            return _renderers.ContainsKey(rendererId)
-                ? _renderers[rendererId]
-                : throw new ArgumentException($"There is no renderer with ID {rendererId}.");
+            if (_renderers != null && _renderers.TryGetValue(rendererId, out var renderer))
+            {
+                return renderer;
+            }
+
+            throw new ArgumentException($"There is no renderer with ID {rendererId}.");
         }
 
         public static int Add(WebAssemblyRenderer renderer)
         {
             var id = _nextId++;
-            _renderers.Add(id, renderer);
+            _renderers?.Add(id, renderer);
             return id;
         }
 
         public static bool TryRemove(int rendererId)
         {
-            if (_renderers.ContainsKey(rendererId))
+            if (_renderers != null && _renderers.ContainsKey(rendererId))
             {
-                _renderers.Remove(rendererId);
+                _renderers?.Remove(rendererId);
                 return true;
             }
             else

@@ -24,6 +24,9 @@ namespace Microsoft.AspNetCore.Hosting
         private const string DeprecatedDiagnosticsEndRequestKey = "Microsoft.AspNetCore.Hosting.EndRequest";
         private const string DiagnosticsUnhandledExceptionKey = "Microsoft.AspNetCore.Hosting.UnhandledException";
 
+        private const string ActivitySourceName = "Microsoft.AspNetCore.Hosting";
+        private static readonly ActivitySource _activitySource = new ActivitySource(ActivitySourceName);
+
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger _logger;
 
@@ -46,11 +49,13 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             var diagnosticListenerEnabled = _diagnosticListener.IsEnabled();
+            var diagnosticListenerActivityCreationEnabled = (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext));
             var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
-            if (loggingEnabled || (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext)))
+
+            if (loggingEnabled || diagnosticListenerActivityCreationEnabled || _activitySource.HasListeners())
             {
-                context.Activity = StartActivity(httpContext, out var hasDiagnosticListener);
+                context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
                 context.HasDiagnosticListener = hasDiagnosticListener;
             }
 
@@ -69,7 +74,7 @@ namespace Microsoft.AspNetCore.Hosting
                 // Scope may be relevant for a different level of logging, so we always create it
                 // see: https://github.com/aspnet/Hosting/pull/944
                 // Scope can be null if logging is not on.
-                context.Scope = _logger.RequestScope(httpContext, context.Activity);
+                context.Scope = _logger.RequestScope(httpContext);
 
                 if (_logger.IsEnabled(LogLevel.Information))
                 {
@@ -79,26 +84,26 @@ namespace Microsoft.AspNetCore.Hosting
                     }
 
                     // Non-inline
-                    LogRequestStarting(httpContext);
+                    LogRequestStarting(context);
                 }
             }
             context.StartTimestamp = startTimestamp;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void RequestEnd(HttpContext httpContext, Exception exception, HostingApplication.Context context)
+        public void RequestEnd(HttpContext httpContext, Exception? exception, HostingApplication.Context context)
         {
             // Local cache items resolved multiple items, in order of use so they are primed in cpu pipeline when used
             var startTimestamp = context.StartTimestamp;
             long currentTimestamp = 0;
 
-            // If startTimestamp was 0, then Information logging wasn't enabled at for this request (and calcuated time will be wildly wrong)
+            // If startTimestamp was 0, then Information logging wasn't enabled at for this request (and calculated time will be wildly wrong)
             // Is used as proxy to reduce calls to virtual: _logger.IsEnabled(LogLevel.Information)
             if (startTimestamp != 0)
             {
                 currentTimestamp = Stopwatch.GetTimestamp();
                 // Non-inline
-                LogRequestFinished(httpContext, startTimestamp, currentTimestamp);
+                LogRequestFinished(context, startTimestamp, currentTimestamp);
             }
 
             if (_diagnosticListener.IsEnabled())
@@ -110,7 +115,7 @@ namespace Microsoft.AspNetCore.Hosting
 
                 if (exception == null)
                 {
-                    // No exception was thrown, request was sucessful
+                    // No exception was thrown, request was successful
                     if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsEndRequestKey))
                     {
                         // Diagnostics is enabled for EndRequest, but it may not be for BeginRequest
@@ -168,30 +173,34 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void LogRequestStarting(HttpContext httpContext)
+        private void LogRequestStarting(HostingApplication.Context context)
         {
             // IsEnabled is checked in the caller, so if we are here just log
+            var startLog = new HostingRequestStartingLog(context.HttpContext!);
+            context.StartLog = startLog;
+
             _logger.Log(
                 logLevel: LogLevel.Information,
                 eventId: LoggerEventIds.RequestStarting,
-                state: new HostingRequestStartingLog(httpContext),
+                state: startLog,
                 exception: null,
                 formatter: HostingRequestStartingLog.Callback);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void LogRequestFinished(HttpContext httpContext, long startTimestamp, long currentTimestamp)
+        private void LogRequestFinished(HostingApplication.Context context, long startTimestamp, long currentTimestamp)
         {
             // IsEnabled isn't checked in the caller, startTimestamp > 0 is used as a fast proxy check
-            // but that may be because diagnostics are enabled, which also uses startTimestamp, so check here
-            if (_logger.IsEnabled(LogLevel.Information))
+            // but that may be because diagnostics are enabled, which also uses startTimestamp,
+            // so check if we logged the start event
+            if (context.StartLog != null)
             {
                 var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
 
                 _logger.Log(
                     logLevel: LogLevel.Information,
                     eventId: LoggerEventIds.RequestFinished,
-                    state: new HostingRequestFinishedLog(httpContext, elapsed),
+                    state: new HostingRequestFinishedLog(context, elapsed),
                     exception: null,
                     formatter: HostingRequestFinishedLog.Callback);
             }
@@ -241,10 +250,19 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity StartActivity(HttpContext httpContext, out bool hasDiagnosticListener)
+        private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
         {
-            var activity = new Activity(ActivityName);
+            var activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server);
+            if (activity is null && (loggingEnabled || diagnosticListenerActivityCreationEnabled))
+            {
+                activity = new Activity(ActivityName);
+            }
             hasDiagnosticListener = false;
+
+            if (activity is null)
+            {
+                return null;
+            }
 
             var headers = httpContext.Request.Headers;
             if (!headers.TryGetValue(HeaderNames.TraceParent, out var requestId))
@@ -262,7 +280,11 @@ namespace Microsoft.AspNetCore.Hosting
 
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                string[] baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
+                var baggage = headers.GetCommaSeparatedValues(HeaderNames.Baggage);
+                if (baggage.Length == 0)
+                {
+                    baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
+                }
 
                 // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
                 // An order could be important if baggage has two items with the same key (that is allowed by the contract)
@@ -314,7 +336,7 @@ namespace Microsoft.AspNetCore.Hosting
         private void StopActivity(Activity activity, HttpContext httpContext)
         {
             // Stop sets the end time if it was unset, but we want it set before we issue the write
-            // so we do it now.   
+            // so we do it now.
             if (activity.Duration == TimeSpan.Zero)
             {
                 activity.SetEndTime(DateTime.UtcNow);

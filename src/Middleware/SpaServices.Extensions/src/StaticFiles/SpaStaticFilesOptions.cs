@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +18,6 @@ namespace Microsoft.AspNetCore.SpaServices.StaticFiles
         /// <see cref="SpaStaticFilesExtensions.UseSpaStaticFiles(Builder.IApplicationBuilder)"/>
         /// middleware will not serve any static files.
         /// </summary>
-        public string RootPath { get; set; }
+        public string RootPath { get; set; } = default!;
     }
 }

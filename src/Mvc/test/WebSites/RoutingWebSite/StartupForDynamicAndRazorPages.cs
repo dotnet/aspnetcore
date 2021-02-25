@@ -17,10 +17,9 @@ namespace RoutingWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddMvc();
 
-            services.AddSingleton<Transformer>();
+            services.AddTransient<Transformer>();
 
             // Used by some controllers defined in this project.
             services.Configure<RouteOptions>(options => options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer));

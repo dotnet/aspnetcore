@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
@@ -1779,7 +1780,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             public override IdentityError DuplicateEmail(string email)
             {
-                return new IdentityError { Code = Code, Description = string.Format(FormatError, email) };
+                return new IdentityError { Code = Code, Description = string.Format(CultureInfo.InvariantCulture, FormatError, email) };
             }
         }
 

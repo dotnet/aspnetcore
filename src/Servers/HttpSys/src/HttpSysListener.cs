@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -32,6 +33,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // 0.5 seconds per request.  Respond with a 400 Bad Request.
         private const int UnknownHeaderLimit = 1000;
 
+        internal MemoryPool<byte> MemoryPool { get; } = SlabMemoryPoolFactory.Create();
+
         private volatile State _state; // m_State is set only within lock blocks, but often read outside locks.
 
         private ServerSession _serverSession;
@@ -61,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             Options = options;
 
-            Logger = LogHelper.CreateLogger(loggerFactory, typeof(HttpSysListener));
+            Logger = loggerFactory.CreateLogger<HttpSysListener>();
 
             _state = State.Stopped;
             _internalLock = new object();
@@ -89,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _requestQueue?.Dispose();
                 _urlGroup?.Dispose();
                 _serverSession?.Dispose();
-                LogHelper.LogException(Logger, ".Ctor", exception);
+                Logger.LogError(LoggerEventIds.HttpSysListenerCtorError, exception, ".Ctor");
                 throw;
             }
         }
@@ -132,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             CheckDisposed();
 
-            LogHelper.LogInfo(Logger, "Start");
+            Logger.LogTrace(LoggerEventIds.ListenerStarting, "Starting the listener.");
 
             // Make sure there are no race conditions between Start/Stop/Abort/Close/Dispose.
             // Start needs to setup all resources. Abort/Stop must not interfere while Start is
@@ -174,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // Make sure the HttpListener instance can't be used if Start() failed.
                     _state = State.Disposed;
                     DisposeInternal();
-                    LogHelper.LogException(Logger, "Start", exception);
+                    Logger.LogError(LoggerEventIds.ListenerStartError, exception, "Start");
                     throw;
                 }
             }
@@ -192,6 +195,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
+                    Logger.LogTrace(LoggerEventIds.ListenerStopping, "Stopping the listener.");
+
                     // If this instance created the queue then remove the URL prefixes before shutting down.
                     if (_requestQueue.Created)
                     {
@@ -205,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception exception)
             {
-                LogHelper.LogException(Logger, "Stop", exception);
+                Logger.LogError(LoggerEventIds.ListenerStopError, exception, "Stop");
                 throw;
             }
         }
@@ -233,14 +238,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         return;
                     }
-                    LogHelper.LogInfo(Logger, "Dispose");
+                    Logger.LogTrace(LoggerEventIds.ListenerDisposing, "Disposing the listener.");
 
                     Stop();
                     DisposeInternal();
                 }
                 catch (Exception exception)
                 {
-                    LogHelper.LogException(Logger, "Dispose", exception);
+                    Logger.LogError(LoggerEventIds.ListenerDisposeError, exception, "Dispose");
                     throw;
                 }
                 finally
@@ -272,76 +277,58 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// Accept a request from the incoming request queue.
         /// </summary>
-        public Task<RequestContext> AcceptAsync()
+        internal ValueTask<RequestContext> AcceptAsync(AsyncAcceptContext acceptContext)
         {
-            AsyncAcceptContext asyncResult = null;
+            CheckDisposed();
+            Debug.Assert(_state != State.Stopped, "Listener has been stopped.");
+
+            return acceptContext.AcceptAsync();
+        }
+
+        internal bool ValidateRequest(NativeRequestContext requestMemory)
+        {
             try
             {
-                CheckDisposed();
-                Debug.Assert(_state != State.Stopped, "Listener has been stopped.");
-                // prepare the ListenerAsyncResult object (this will have it's own
-                // event that the user can wait on for IO completion - which means we
-                // need to signal it when IO completes)
-                asyncResult = new AsyncAcceptContext(this);
-                uint statusCode = asyncResult.QueueBeginGetContext();
-                if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                    statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+                // Block potential DOS attacks
+                if (requestMemory.UnknownHeaderCount > UnknownHeaderLimit)
                 {
-                    // some other bad error, possible(?) return values are:
-                    // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
-                    asyncResult.Dispose();
-                    throw new HttpSysException((int)statusCode);
+                    SendError(requestMemory.RequestId, StatusCodes.Status400BadRequest, authChallenges: null);
+                    return false;
+                }
+
+                if (!Options.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
+                {
+                    SendError(requestMemory.RequestId, StatusCodes.Status401Unauthorized,
+                        AuthenticationManager.GenerateChallenges(Options.Authentication.Schemes));
+                    return false;
                 }
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                LogHelper.LogException(Logger, "GetContextAsync", exception);
-                throw;
-            }
-
-            return asyncResult.Task;
-        }
-
-        internal unsafe bool ValidateRequest(NativeRequestContext requestMemory)
-        {
-            // Block potential DOS attacks
-            if (requestMemory.UnknownHeaderCount > UnknownHeaderLimit)
-            {
-                SendError(requestMemory.RequestId, StatusCodes.Status400BadRequest, authChallenges: null);
+                Logger.LogError(LoggerEventIds.RequestValidationFailed, ex, "Error validating request {RequestId}", requestMemory.RequestId);
                 return false;
             }
+
             return true;
         }
 
-        internal unsafe bool ValidateAuth(NativeRequestContext requestMemory)
-        {
-            if (!Options.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
-            {
-                SendError(requestMemory.RequestId, StatusCodes.Status401Unauthorized,
-                    AuthenticationManager.GenerateChallenges(Options.Authentication.Schemes));
-                return false;
-            }
-            return true;
-        }
-
-        internal unsafe void SendError(ulong requestId, int httpStatusCode, IList<string> authChallenges = null)
+        internal unsafe void SendError(ulong requestId, int httpStatusCode, IList<string>? authChallenges = null)
         {
             HttpApiTypes.HTTP_RESPONSE_V2 httpResponse = new HttpApiTypes.HTTP_RESPONSE_V2();
             httpResponse.Response_V1.Version = new HttpApiTypes.HTTP_VERSION();
             httpResponse.Response_V1.Version.MajorVersion = (ushort)1;
             httpResponse.Response_V1.Version.MinorVersion = (ushort)1;
 
-            List<GCHandle> pinnedHeaders = null;
+            List<GCHandle>? pinnedHeaders = null;
             GCHandle gcHandle;
             try
             {
                 // Copied from the multi-value headers section of SerializeHeaders
                 if (authChallenges != null && authChallenges.Count > 0)
                 {
-                    pinnedHeaders = new List<GCHandle>();
+                    pinnedHeaders = new List<GCHandle>(authChallenges.Count + 3);
 
-                    HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
-                    knownHeaderInfo = new HttpApiTypes.HTTP_RESPONSE_INFO[1];
+                    HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = new HttpApiTypes.HTTP_RESPONSE_INFO[1];
                     gcHandle = GCHandle.Alloc(knownHeaderInfo, GCHandleType.Pinned);
                     pinnedHeaders.Add(gcHandle);
                     httpResponse.pResponseInfo = (HttpApiTypes.HTTP_RESPONSE_INFO*)gcHandle.AddrOfPinnedObject();
@@ -381,10 +368,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
 
                 httpResponse.Response_V1.StatusCode = (ushort)httpStatusCode;
-                string statusDescription = HttpReasonPhrase.Get(httpStatusCode);
+                string? statusDescription = HttpReasonPhrase.Get(httpStatusCode);
                 uint dataWritten = 0;
                 uint statusCode;
-                byte[] byteReason = HeaderEncoding.GetBytes(statusDescription);
+                byte[] byteReason = statusDescription != null ? HeaderEncoding.GetBytes(statusDescription) : Array.Empty<byte>();
                 fixed (byte* pReason = byteReason)
                 {
                     httpResponse.Response_V1.pReason = (byte*)pReason;

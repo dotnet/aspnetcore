@@ -55,7 +55,7 @@ extern "C" {
 #define HTTP_INITIALIZE_SERVER          0x00000001
 #define HTTP_INITIALIZE_CONFIG          0x00000002
 
-#if _WIN32_WINNT <= 0x0501 
+#if _WIN32_WINNT <= 0x0501
 #define BUILD_IIS_FOR_XP 1
 #endif
 
@@ -582,7 +582,7 @@ typedef enum _HTTP_LOGGING_ROLLOVER_TYPE
 //      log file rollovers happen by GMT time.
 //
 // HTTP_LOGGING_FLAG_USE_UTF8_CONVERSION - When set the unicode fields
-//      will be converted to UTF8 multibytes when writting to the log
+//      will be converted to UTF8 multibytes when writing to the log
 //      files. When this flag is not present, the local code page
 //      conversion happens.
 //
@@ -1736,10 +1736,10 @@ typedef enum _HTTP_RESPONSE_INFO_TYPE
     HttpResponseInfoTypeMultipleKnownHeaders,
     HttpResponseInfoTypeAuthenticationProperty,
     HttpResponseInfoTypeQoSProperty
-    
+
 #if _WIN32_WINNT >= _WIN32_WINNT_WIN7 ||  BUILD_IIS_FOR_XP
     ,HttpResponseInfoTypeChannelBind
-#endif    
+#endif
 
 } HTTP_RESPONSE_INFO_TYPE, PHTTP_RESPONSE_INFO_TYPE;
 

@@ -1,0 +1,35 @@
+#nullable enable
+Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions
+Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions.AzureBlobLoggerOptions() -> void
+Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions
+Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions.AzureFileLoggerOptions() -> void
+Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions.FileSizeLimit.get -> int?
+Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions.FileSizeLimit.set -> void
+Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions.RetainedFileCountLimit.get -> int?
+Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions.RetainedFileCountLimit.set -> void
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions.BackgroundQueueSize.get -> int?
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions.BackgroundQueueSize.set -> void
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions.BatchSize.get -> int?
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions.BatchSize.set -> void
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions.BatchingLoggerOptions() -> void
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions.FlushPeriod.get -> System.TimeSpan
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions.FlushPeriod.set -> void
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions.IncludeScopes.get -> bool
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions.IncludeScopes.set -> void
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions.IsEnabled.get -> bool
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerOptions.IsEnabled.set -> void
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerProvider
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerProvider.Dispose() -> void
+Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerProvider.IsEnabled.get -> bool
+Microsoft.Extensions.Logging.AzureAppServices.BlobLoggerProvider
+Microsoft.Extensions.Logging.AzureAppServices.FileLoggerProvider
+Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions
+~Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions.BlobName.get -> string
+~Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions.BlobName.set -> void
+~Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions.FileName.get -> string
+~Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions.FileName.set -> void
+~Microsoft.Extensions.Logging.AzureAppServices.BatchingLoggerProvider.CreateLogger(string categoryName) -> Microsoft.Extensions.Logging.ILogger
+~Microsoft.Extensions.Logging.AzureAppServices.BlobLoggerProvider.BlobLoggerProvider(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions> options) -> void
+~Microsoft.Extensions.Logging.AzureAppServices.FileLoggerProvider.FileLoggerProvider(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions> options) -> void
+~static Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions.AddAzureWebAppDiagnostics(this Microsoft.Extensions.Logging.ILoggingBuilder builder) -> Microsoft.Extensions.Logging.ILoggingBuilder

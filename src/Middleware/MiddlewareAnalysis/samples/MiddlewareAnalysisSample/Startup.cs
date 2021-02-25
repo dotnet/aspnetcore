@@ -1,10 +1,12 @@
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DiagnosticAdapter;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace MiddlewareAnaysisSample
@@ -79,20 +81,23 @@ namespace MiddlewareAnaysisSample
             // Note there's always a default 404 middleware at the end of the pipeline.
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .ConfigureLogging((_, factory) =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    factory.AddConsole();
-                    factory.AddFilter("Console", level => level >= LogLevel.Debug);
-                })
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+                    webHostBuilder
+                    .ConfigureLogging((_, factory) =>
+                    {
+                        factory.AddConsole();
+                        factory.AddFilter("Console", level => level >= LogLevel.Debug);
+                    })
+                    .UseKestrel()
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+                }).Build();
 
-            host.Run();
+            return host.RunAsync();
         }
 
         public class TestDiagnosticListener

@@ -1,14 +1,5 @@
 <Project>
-  <PropertyGroup>
-    <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
-    <BuildNative Condition="'$(BuildNative)' == ''">true</BuildNative>
-    <BuildManaged Condition="'$(BuildManaged)' == ''">true</BuildManaged>
-    <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
-    <BuildJava Condition="'$(BuildJava)' == ''">true</BuildJava>
-  </PropertyGroup>
+  <Import Project="Common.props" />
 
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
@@ -30,20 +21,23 @@
                       $(RepoRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
                       $(RepoRoot)src\Tools\Tests.Common\TestProjects\**\*.csproj;
                       $(RepoRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
+                      $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
+                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
+                      $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.csproj;
+                      " />
+
+    <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
+    <ProjectToExclude Include="
                       $(RepoRoot)src\submodules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\WebAssembly\Build\testassets\**\*.csproj;
-                      $(RepoRoot)src\ProjectTemplates\ComponentsWebAssembly.ProjectTemplates\content\**\*.csproj;
-                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
-                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
+                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;
                       " />
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
     <ProjectToExclude Include="
-                      $(RepoRoot)src\Components\benchmarkapps\**\*.csproj;
+                      $(RepoRoot)src\Components\benchmarkapps\BlazingPizza.Server\**\*.csproj;
                       $(RepoRoot)src\Mvc\benchmarkapps\**\*.csproj;
                       $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
@@ -51,7 +45,7 @@
   </ItemGroup>
 
   <Choose>
-    <!-- Project selection can be overridden on the command line by passing in -projects -->
+    <!-- Project selection can be overridden on the command line by passing in -projects. -->
     <When Condition="'$(ProjectToBuild)' != ''">
       <ItemGroup>
         <ProjectToBuild Include="$(ProjectToBuild)" Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
@@ -60,7 +54,7 @@
       </ItemGroup>
     </When>
     <Otherwise>
-      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' ">
+      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')  ">
         <!-- Build the ANCM custom action -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=Win32" />
@@ -74,6 +68,10 @@
         <!-- Build the targeting pack installers -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x86" />
+        <!-- This really shouldn't be here, but instead of harvesting from the intermediate/output directories, the targetting pack installer logic
+        harvests from a zip of the reference assemblies. Producing it in each leg ends up with multiple targeting packs
+        getting produced and the BAR will reject the build. Centralize building the targeting pack in the x86/x64 leg. -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=arm64" />
 
         <!-- Build the SharedFramework installers -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
@@ -87,6 +85,14 @@
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
       </ItemGroup>
 
+      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'arm64' ">
+        <!-- We don't build the bundle here because we'd have to bundle the x86 installer which gets built in a different leg.
+        Instead we only provide the ARM64 MSI-->
+
+        <!-- Build the SharedFramework wixlib -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
+      </ItemGroup>
+
       <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND '$(TargetRuntimeIdentifier)' == 'linux-x64'">
         <ProjectToBuild Condition=" '$(LinuxInstallerType)' == 'deb' "
                         Include="$(RepoRoot)src\Installers\Debian\**\*.*proj" />
@@ -94,21 +100,20 @@
                         Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
       </ItemGroup>
 
-      <ItemGroup>
-        <NativeProjects Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') "
-                        Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)">
-          <!-- Required to prevent triggering double-builds. See src\Servers\IIS\ResolveIisReferences.targets for details. -->
-          <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x64'">Platform=x64</AdditionalProperties>
-          <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</AdditionalProperties>
-        </NativeProjects>
+      <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') ">
+        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=x64" />
+        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=Win32" />
+      </ItemGroup>
 
-        <ProjectToBuild Condition=" '$(BuildNative)' == 'true'" Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
-        <ProjectToExclude Condition=" '$(BuildNative)' != 'true'" Include="@(NativeProjects)" />
+      <ItemGroup>
+        <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
 
         <NodeJsProjects Include="
                           $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;
                           $(RepoRoot)src\SignalR\**\*.npmproj;
                           $(RepoRoot)src\Middleware\**\*.npmproj;
+                          $(RepoRoot)src\JSInterop\**\*.npmproj;
                           "
                         RestoreInParallel="false"
                         Exclude="@(ProjectToExclude)" />
@@ -122,6 +127,13 @@
         <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
 
+        <!-- These interop test projects can only be restored and built after the shared framework is built -->
+        <InteropProjects Include="$(RepoRoot)src\Grpc\**\*.csproj"
+                      Exclude="@(ProjectToExclude)" />
+
+        <ProjectToBuild Condition=" '$(BuildInteropProjects)' == 'true'" Include="@(InteropProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToExclude Condition=" '$(BuildInteropProjects)' != 'true'" Include="@(InteropProjects)" />
+
         <!--
           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
           the entire pattern will silently fail to evaluate correctly.
@@ -131,13 +143,15 @@
                           $(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj;
                           $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
                           $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
+                          $(RepoRoot)src\Caching\**\*.*proj;
                           $(RepoRoot)src\DefaultBuilder\**\*.*proj;
                           $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
                           $(RepoRoot)src\DataProtection\**\*.*proj;
                           $(RepoRoot)src\Antiforgery\**\*.*proj;
                           $(RepoRoot)src\Hosting\**\*.*proj;
                           $(RepoRoot)src\Http\**\*.*proj;
-                          $(RepoRoot)src\Html\**\*.*proj;
+                          $(RepoRoot)src\HttpClientFactory\**\*.*proj;
+                          $(RepoRoot)src\Html.Abstractions\*.*proj;
                           $(RepoRoot)src\Identity\**\*.*proj;
                           $(RepoRoot)src\Servers\**\*.csproj;
                           $(RepoRoot)src\Security\**\*.*proj;
@@ -145,6 +159,7 @@
                           $(RepoRoot)src\SiteExtensions\LoggingAggregate\test\**\*.csproj;
                           $(RepoRoot)src\Shared\**\*.*proj;
                           $(RepoRoot)src\Tools\**\*.*proj;
+                          $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
                           $(RepoRoot)src\Middleware\**\*.csproj;
                           $(RepoRoot)src\Razor\**\*.*proj;
                           $(RepoRoot)src\Mvc\**\*.*proj;
@@ -153,6 +168,14 @@
                           $(RepoRoot)src\SignalR\**\*.csproj;
                           $(RepoRoot)src\Components\**\*.csproj;
                           $(RepoRoot)src\Analyzers\**\*.csproj;
+                          $(RepoRoot)src\FileProviders\**\*.csproj;
+                          $(RepoRoot)src\Configuration.KeyPerFile\**\*.csproj;
+                          $(RepoRoot)src\Localization\**\*.csproj;
+                          $(RepoRoot)src\ObjectPool\**\*.csproj;
+                          $(RepoRoot)src\JSInterop\**\*.csproj;
+                          $(RepoRoot)src\WebEncoders\**\*.csproj;
+                          $(RepoRoot)src\HealthChecks\**\*.csproj;
+                          $(RepoRoot)src\Testing\**\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\*\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
                           "
@@ -164,24 +187,35 @@
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
         <DotNetProjects Include="
+                          $(RepoRoot)src\Caching\**\src\*.csproj;
                           $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
                           $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
                           $(RepoRoot)src\DataProtection\**\src\*.csproj;
                           $(RepoRoot)src\Antiforgery\**\src\*.csproj;
                           $(RepoRoot)src\Hosting\**\src\*.csproj;
                           $(RepoRoot)src\Http\**\src\*.csproj;
-                          $(RepoRoot)src\Html\**\src\*.csproj;
+                          $(RepoRoot)src\HttpClientFactory\**\src\*.csproj;
+                          $(RepoRoot)src\Html.Abstractions\src\*.csproj;
                           $(RepoRoot)src\Identity\**\src\*.csproj;
                           $(RepoRoot)src\Servers\**\src\*.csproj;
                           $(RepoRoot)src\Security\**\src\*.csproj;
                           $(RepoRoot)src\SiteExtensions\**\src\*.csproj;
                           $(RepoRoot)src\Tools\**\src\*.csproj;
+                          $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
                           $(RepoRoot)src\Middleware\**\src\*.csproj;
                           $(RepoRoot)src\Razor\**\src\*.csproj;
                           $(RepoRoot)src\Mvc\**\src\*.csproj;
                           $(RepoRoot)src\Azure\**\src\*.csproj;
                           $(RepoRoot)src\SignalR\**\src\*.csproj;
                           $(RepoRoot)src\Components\**\src\*.csproj;
+                          $(RepoRoot)src\FileProviders\**\src\*.csproj;
+                          $(RepoRoot)src\Configuration.KeyPerFile\**\src\*.csproj;
+                          $(RepoRoot)src\Localization\**\src\*.csproj;
+                          $(RepoRoot)src\ObjectPool\**\src\*.csproj;
+                          $(RepoRoot)src\JSInterop\**\src\*.csproj;
+                          $(RepoRoot)src\WebEncoders\**\src\*.csproj;
+                          $(RepoRoot)src\HealthChecks\**\src\*.csproj;
+                          $(RepoRoot)src\Testing\**\src\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);

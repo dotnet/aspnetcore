@@ -11,9 +11,14 @@ namespace Microsoft.AspNetCore.Authentication
     public interface IAuthenticationRequestHandler : IAuthenticationHandler
     {
         /// <summary>
-        /// Returns true if request processing should stop.
+        /// Gets a value that determines if the request should stop being processed.
+        /// <para>
+        /// This feature is supported by the Authentication middleware
+        /// which does not invoke any subsequent <see cref="IAuthenticationHandler"/> or middleware configured in the request pipeline
+        /// if the handler returns <see langword="true" />.
+        /// </para>
         /// </summary>
-        /// <returns><code>true</code> if request processing should stop.</returns>
+        /// <returns><see langword="true" /> if request processing should stop.</returns>
         Task<bool> HandleRequestAsync();
     }
 

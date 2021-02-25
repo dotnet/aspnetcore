@@ -29,20 +29,35 @@
     <Content Include="thm.xml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x86">
-      <Name>SharedFrameworkLib</Name>
-      <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-    </ProjectReference>
-    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x64">
-      <Name>SharedFrameworkLib</Name>
-      <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-    </ProjectReference>
-  </ItemGroup>
+  <Choose>
+    <When Condition="'$(Platform)' == 'arm64'">
+      <ItemGroup>
+        <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=arm64">
+          <Name>SharedFrameworkLib</Name>
+          <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
+          <Private>True</Private>
+          <DoNotHarvest>True</DoNotHarvest>
+        </ProjectReference>
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x86">
+          <Name>SharedFrameworkLib</Name>
+          <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
+          <Private>True</Private>
+          <DoNotHarvest>True</DoNotHarvest>
+        </ProjectReference>
+        <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x64">
+          <Name>SharedFrameworkLib</Name>
+          <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
+          <Private>True</Private>
+          <DoNotHarvest>True</DoNotHarvest>
+        </ProjectReference>
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
@@ -60,7 +75,7 @@
 
     <!-- Registration -->
     <BundleRegManufacturer>Microsoft</BundleRegManufacturer>
-    <BundleRegFamily>.NET Core</BundleRegFamily>
+    <BundleRegFamily>.NET</BundleRegFamily>
 
     <DefineConstants>$(DefineConstants);BundleNameShort=$(BundleNameShort)</DefineConstants>
     <DefineConstants>$(DefineConstants);BundleName=$(BundleName)</DefineConstants>

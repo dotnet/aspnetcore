@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
@@ -18,6 +19,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal partial class HttpProtocol : IHttpRequestFeature,
+                                          IHttpRequestBodyDetectionFeature,
                                           IHttpResponseFeature,
                                           IHttpResponseBodyFeature,
                                           IRequestBodyPipeFeature,
@@ -37,8 +39,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         string IHttpRequestFeature.Protocol
         {
-            get => HttpVersion;
-            set => HttpVersion = value;
+            get => _httpProtocol ??= HttpVersion;
+            set => _httpProtocol = value;
         }
 
         string IHttpRequestFeature.Scheme
@@ -73,19 +75,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         string IHttpRequestFeature.Path
         {
-            get => Path;
+            get => Path!;
             set => Path = value;
         }
 
         string IHttpRequestFeature.QueryString
         {
-            get => QueryString;
+            get => QueryString!;
             set => QueryString = value;
         }
 
         string IHttpRequestFeature.RawTarget
         {
-            get => RawTarget;
+            get => RawTarget!;
             set => RawTarget = value;
         }
 
@@ -121,6 +123,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        bool IHttpRequestBodyDetectionFeature.CanHaveBody => _bodyControl!.CanHaveBody;
+
         bool IHttpRequestTrailersFeature.Available => RequestTrailersAvailable;
 
         IHeaderDictionary IHttpRequestTrailersFeature.Trailers
@@ -141,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set => StatusCode = value;
         }
 
-        string IHttpResponseFeature.ReasonPhrase
+        string? IHttpResponseFeature.ReasonPhrase
         {
             get => ReasonPhrase;
             set => ReasonPhrase = value;
@@ -163,13 +167,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         bool IHttpUpgradeFeature.IsUpgradableRequest => IsUpgradableRequest;
 
-        IPAddress IHttpConnectionFeature.RemoteIpAddress
+        IPAddress? IHttpConnectionFeature.RemoteIpAddress
         {
             get => RemoteIpAddress;
             set => RemoteIpAddress = value;
         }
 
-        IPAddress IHttpConnectionFeature.LocalIpAddress
+        IPAddress? IHttpConnectionFeature.LocalIpAddress
         {
             get => LocalIpAddress;
             set => LocalIpAddress = value;
@@ -237,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         PipeWriter IHttpResponseBodyFeature.Writer => ResponseBodyPipeWriter;
 
-        Endpoint IEndpointFeature.Endpoint
+        Endpoint? IEndpointFeature.Endpoint
         {
             get => _endpoint;
             set => _endpoint = value;
@@ -260,6 +264,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected void ResetHttp2Features()
         {
             _currentIHttp2StreamIdFeature = this;
+            _currentIHttpResponseTrailersFeature = this;
+            _currentIHttpResetFeature = this;
+        }
+
+        protected void ResetHttp3Features()
+        {
             _currentIHttpResponseTrailersFeature = this;
             _currentIHttpResetFeature = this;
         }
@@ -293,6 +303,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             IsUpgraded = true;
 
+            KestrelEventSource.Log.RequestUpgradedStart(this);
+
             ConnectionFeatures.Get<IDecrementConcurrentConnectionCountFeature>()?.ReleaseConnection();
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;
@@ -301,7 +313,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             await FlushAsync();
 
-            return _bodyControl.Upgrade();
+            return _bodyControl!.Upgrade();
         }
 
         void IHttpRequestLifetimeFeature.Abort()

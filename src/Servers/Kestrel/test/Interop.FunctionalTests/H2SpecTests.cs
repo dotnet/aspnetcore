@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,23 +22,26 @@ namespace Interop.FunctionalTests
     {
         [ConditionalTheory]
         [MemberData(nameof(H2SpecTestCases))]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2225", FlakyOn.Helix.All)]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
-            var hostBuilder = new WebHostBuilder()
-                .UseKestrel(options =>
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(IPAddress.Loopback, 0, listenOptions =>
-                    {
-                        listenOptions.Protocols = HttpProtocols.Http2;
-                        if (testCase.Https)
+                    webHostBuilder
+                        .UseKestrel(options =>
                         {
-                            listenOptions.UseHttps(TestResources.GetTestCertificate());
-                        }
-                    });
+                            options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                            {
+                                listenOptions.Protocols = HttpProtocols.Http2;
+                                if (testCase.Https)
+                                {
+                                    listenOptions.UseHttps(TestResources.GetTestCertificate());
+                                }
+                            });
+                        })
+                    .Configure(ConfigureHelloWorld);
                 })
-                .ConfigureServices(AddTestLogging)
-                .Configure(ConfigureHelloWorld);
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
@@ -54,16 +58,16 @@ namespace Interop.FunctionalTests
             get
             {
                 var dataset = new TheoryData<H2SpecTestCase>();
-                var toSkip = new string[] { /*"http2/5.1/8"*/ };
+                var toSkip = new string[] { "http2/6.9.1/2" };
 
-                var supportsAlpn = Utilities.CurrentPlatformSupportsAlpn();
+                var supportsAlpn = Utilities.CurrentPlatformSupportsHTTP2OverTls();
 
                 foreach (var testcase in H2SpecCommands.EnumerateTestCases())
                 {
                     string skip = null;
                     if (toSkip.Contains(testcase.Item1))
                     {
-                        skip = "https://github.com/aspnet/KestrelHttpServer/issues/2154";
+                        skip = "https://github.com/dotnet/aspnetcore/issues/30373";
                     }
 
                     dataset.Add(new H2SpecTestCase
@@ -74,7 +78,7 @@ namespace Interop.FunctionalTests
                         Skip = skip,
                     });
 
-                    // https://github.com/aspnet/AspNetCore/issues/11301 We should use Skip but it's broken at the moment.
+                    // https://github.com/dotnet/aspnetcore/issues/11301 We should use Skip but it's broken at the moment.
                     if (supportsAlpn)
                     {
                         dataset.Add(new H2SpecTestCase

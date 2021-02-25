@@ -1,0 +1,8 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\..\\..\\AspNetCore.sln",
+    "projects" : [
+      "src\\Servers\\Kestrel\\stress\\HttpStress.csproj"
+    ]
+  }
+}

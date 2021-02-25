@@ -9,7 +9,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener
@@ -121,6 +123,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var response = await responseTask;
                 Assert.Equal(string.Empty, response);
             }
+        }
+
+        [ConditionalFact]
+        public void Server_RegisterUnavailablePrefix_ThrowsActionableHttpSysException()
+        {
+            using var server1 = Utilities.CreateHttpServer(out var address1);
+
+            var options = new HttpSysOptions();
+            options.UrlPrefixes.Add(address1);
+            using var listener = new HttpSysListener(options, new LoggerFactory());
+
+            var exception = Assert.Throws<HttpSysException>(() => listener.Start());
+
+            Assert.Equal((int)UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS, exception.ErrorCode);
+            Assert.Contains($"The prefix '{address1}' is already registered.", exception.Message);
         }
 
         [ConditionalFact]

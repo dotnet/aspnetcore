@@ -1270,7 +1270,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             public string Property { get; set; }
 
-            [ModelBinder(typeof(ComplexTypeModelBinder))]
+            [ModelBinder(typeof(ComplexObjectModelBinder))]
             public string BinderType { get; set; }
 
             [FromRoute]
@@ -1307,7 +1307,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // Assert
             var bindingInfo = property.BindingInfo;
-            Assert.Same(typeof(ComplexTypeModelBinder), bindingInfo.BinderType);
+            Assert.Same(typeof(ComplexObjectModelBinder), bindingInfo.BinderType);
         }
 
         [Fact]

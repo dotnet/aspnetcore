@@ -10,23 +10,23 @@ namespace Microsoft.AspNetCore.Antiforgery
     {
         public bool HaveDeserializedCookieToken { get; set; }
 
-        public AntiforgeryToken CookieToken { get; set; }
+        public AntiforgeryToken? CookieToken { get; set; }
 
         public bool HaveDeserializedRequestToken { get; set; }
 
-        public AntiforgeryToken RequestToken { get; set; }
+        public AntiforgeryToken? RequestToken { get; set; }
 
         public bool HaveGeneratedNewCookieToken { get; set; }
 
         // After HaveGeneratedNewCookieToken is true, remains null if CookieToken is valid.
-        public AntiforgeryToken NewCookieToken { get; set; }
+        public AntiforgeryToken? NewCookieToken { get; set; }
 
         // After HaveGeneratedNewCookieToken is true, remains null if CookieToken is valid.
-        public string NewCookieTokenString { get; set; }
+        public string? NewCookieTokenString { get; set; }
 
-        public AntiforgeryToken NewRequestToken { get; set; }
+        public AntiforgeryToken? NewRequestToken { get; set; }
 
-        public string NewRequestTokenString { get; set; }
+        public string? NewRequestTokenString { get; set; }
 
         // Always false if NewCookieToken is null. Never store null cookie token or re-store cookie token from request.
         public bool HaveStoredNewCookieToken { get; set; }

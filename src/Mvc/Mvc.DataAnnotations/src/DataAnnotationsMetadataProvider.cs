@@ -183,15 +183,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
             // IsEnum et cetera
             var underlyingType = Nullable.GetUnderlyingType(context.Key.ModelType) ?? context.Key.ModelType;
-            var underlyingTypeInfo = underlyingType.GetTypeInfo();
 
-            if (underlyingTypeInfo.IsEnum)
+            if (underlyingType.IsEnum)
             {
                 // IsEnum
                 displayMetadata.IsEnum = true;
 
                 // IsFlagsEnum
-                displayMetadata.IsFlagsEnum = underlyingTypeInfo.IsDefined(typeof(FlagsAttribute), inherit: false);
+                displayMetadata.IsFlagsEnum = underlyingType.IsDefined(typeof(FlagsAttribute), inherit: false);
 
                 // EnumDisplayNamesAndValues and EnumNamesAndValues
                 //
@@ -369,9 +368,9 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                     var property = context.Key.PropertyInfo;
                     if (property is null)
                     {
-                        // PropertyInfo was unavailable on ModelIdentity prior to 3.1. 
+                        // PropertyInfo was unavailable on ModelIdentity prior to 3.1.
                         // Making a cogent argument about the nullability of the property requires inspecting the declared type,
-                        // since looking at the runtime type may result in false positives: https://github.com/aspnet/AspNetCore/issues/14812
+                        // since looking at the runtime type may result in false positives: https://github.com/dotnet/aspnetcore/issues/14812
                         // The only way we could arrive here is if the ModelMetadata was constructed using the non-default provider.
                         // We'll cursorily examine the attributes on the property, but not the ContainerType to make a decision about it's nullability.
 
@@ -498,7 +497,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // See: https://github.com/dotnet/roslyn/blob/master/docs/features/nullable-reference-types.md#annotations
             if (nullableAttribute.GetType().GetField(NullableFlagsFieldName) is FieldInfo field &&
                 field.GetValue(nullableAttribute) is byte[] flags &&
-                flags.Length >= 0 &&
+                flags.Length > 0 &&
                 flags[0] == 1) // First element is the property/parameter type.
             {
                 isNullable = true;

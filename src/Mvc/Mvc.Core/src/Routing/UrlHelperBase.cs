@@ -1,9 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -12,14 +15,21 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
+    /// <summary>
+    /// An abstraction for <see cref="IUrlHelper" />.
+    /// </summary>
     public abstract class UrlHelperBase : IUrlHelper
     {
         // Perf: Share the StringBuilder object across multiple calls of GenerateURL for this UrlHelper
-        private StringBuilder _stringBuilder;
+        private StringBuilder? _stringBuilder;
 
         // Perf: Reuse the RouteValueDictionary across multiple calls of Action for this UrlHelper
         private readonly RouteValueDictionary _routeValueDictionary;
 
+        /// <summary>
+        /// Initializes an instance of a <see cref="UrlHelperBase"/>
+        /// </summary>
+        /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
         protected UrlHelperBase(ActionContext actionContext)
         {
             if (actionContext == null)
@@ -41,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public ActionContext ActionContext { get; }
 
         /// <inheritdoc />
-        public virtual bool IsLocalUrl(string url)
+        public virtual bool IsLocalUrl([NotNullWhen(true)] string? url)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -60,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // url doesn't start with "//" or "/\"
                 if (url[1] != '/' && url[1] != '\\')
                 {
-                    return true;
+                    return !HasControlCharacter(url.AsSpan(1));
                 }
 
                 return false;
@@ -78,17 +88,32 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // url doesn't start with "~//" or "~/\"
                 if (url[2] != '/' && url[2] != '\\')
                 {
-                    return true;
+                    return !HasControlCharacter(url.AsSpan(2));
                 }
 
                 return false;
             }
 
             return false;
+
+            static bool HasControlCharacter(ReadOnlySpan<char> readOnlySpan)
+            {
+                // URLs may not contain ASCII control characters.
+                for (var i = 0; i < readOnlySpan.Length; i++)
+                {
+                    if (char.IsControl(readOnlySpan[i]))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
 
         /// <inheritdoc />
-        public virtual string Content(string contentPath)
+        [return: NotNullIfNotNull("contentPath")]
+        public virtual string? Content(string? contentPath)
         {
             if (string.IsNullOrEmpty(contentPath))
             {
@@ -99,14 +124,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 var segment = new PathString(contentPath.Substring(1));
                 var applicationPath = ActionContext.HttpContext.Request.PathBase;
 
-                return applicationPath.Add(segment).Value;
+                var path = applicationPath.Add(segment);
+                Debug.Assert(path.HasValue);
+                return path.Value;
             }
 
             return contentPath;
         }
 
         /// <inheritdoc />
-        public virtual string Link(string routeName, object values)
+        public virtual string? Link(string? routeName, object? values)
         {
             return RouteUrl(new UrlRouteContext()
             {
@@ -118,12 +145,17 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         /// <inheritdoc />
-        public abstract string Action(UrlActionContext actionContext);
+        public abstract string? Action(UrlActionContext actionContext);
 
         /// <inheritdoc />
-        public abstract string RouteUrl(UrlRouteContext routeContext);
+        public abstract string? RouteUrl(UrlRouteContext routeContext);
 
-        protected RouteValueDictionary GetValuesDictionary(object values)
+        /// <summary>
+        /// Gets a <see cref="RouteValueDictionary"/> using the specified values.
+        /// </summary>
+        /// <param name="values">The values to use.</param>
+        /// <returns>A <see cref="RouteValueDictionary"/> with the specified values.</returns>
+        protected RouteValueDictionary GetValuesDictionary(object? values)
         {
             // Perf: RouteValueDictionary can be cast to IDictionary<string, object>, but it is
             // special cased to avoid allocating boxed Enumerator.
@@ -152,7 +184,15 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return new RouteValueDictionary(values);
         }
 
-        protected string GenerateUrl(string protocol, string host, string virtualPath, string fragment)
+        /// <summary>
+        /// Generate a url using the specified values.
+        /// </summary>
+        /// <param name="protocol">The protocol.</param>
+        /// <param name="host">The host.</param>
+        /// <param name="virtualPath">The virtual path.</param>
+        /// <param name="fragment">The fragment.</param>
+        /// <returns>The generated url</returns>
+        protected string? GenerateUrl(string? protocol, string? host, string? virtualPath, string? fragment)
         {
             if (virtualPath == null)
             {
@@ -186,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     protocol = string.IsNullOrEmpty(protocol) ? "http" : protocol;
                     builder.Append(protocol);
 
-                    builder.Append("://");
+                    builder.Append(Uri.SchemeDelimiter);
 
                     host = string.IsNullOrEmpty(host) ? ActionContext.HttpContext.Request.Host.Value : host;
                     builder.Append(host);
@@ -213,7 +253,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// An absolute URI if the <paramref name="protocol"/> or <paramref name="host"/> is specified, otherwise generates a
         /// URI with an absolute path.
         /// </returns>
-        protected string GenerateUrl(string protocol, string host, string path)
+        protected string? GenerateUrl(string? protocol, string? host, string? path)
         {
             // This method is similar to GenerateUrl, but it's used for EndpointRouting. It ignores pathbase and fragment
             // because those have already been incorporated.
@@ -248,7 +288,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     protocol = string.IsNullOrEmpty(protocol) ? "http" : protocol;
                     builder.Append(protocol);
 
-                    builder.Append("://");
+                    builder.Append(Uri.SchemeDelimiter);
 
                     host = string.IsNullOrEmpty(host) ? ActionContext.HttpContext.Request.Host.Value : host;
                     builder.Append(host);
@@ -265,12 +305,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         internal static void NormalizeRouteValuesForAction(
-            string action,
-            string controller,
+            string? action,
+            string? controller,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues)
+            RouteValueDictionary? ambientValues)
         {
-            object obj = null;
+            object? obj = null;
             if (action == null)
             {
                 if (!values.ContainsKey("action") &&
@@ -299,13 +339,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         internal static void NormalizeRouteValuesForPage(
-            ActionContext context,
-            string page,
-            string handler,
+            ActionContext? context,
+            string? page,
+            string? handler,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues)
+            RouteValueDictionary? ambientValues)
         {
-            object value = null;
+            object? value = null;
             if (string.IsNullOrEmpty(page))
             {
                 if (!values.ContainsKey("page") &&
@@ -334,14 +374,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
         }
 
-        private static object CalculatePageName(ActionContext context, RouteValueDictionary ambientValues, string pageName)
+        private static object CalculatePageName(ActionContext? context, RouteValueDictionary? ambientValues, string pageName)
         {
             Debug.Assert(pageName.Length > 0);
             // Paths not qualified with a leading slash are treated as relative to the current page.
             if (pageName[0] != '/')
             {
                 // OK now we should get the best 'normalized' version of the page route value that we can.
-                string currentPagePath;
+                string? currentPagePath;
                 if (context != null)
                 {
                     currentPagePath = NormalizedRouteValue.GetNormalizedRouteValue(context, "page");
@@ -374,19 +414,19 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         // for unit testing
-        internal static void AppendPathAndFragment(StringBuilder builder, PathString pathBase, string virtualPath, string fragment)
+        internal static void AppendPathAndFragment(StringBuilder builder, PathString pathBase, string virtualPath, string? fragment)
         {
             if (!pathBase.HasValue)
             {
                 if (virtualPath.Length == 0)
                 {
-                    builder.Append("/");
+                    builder.Append('/');
                 }
                 else
                 {
-                    if (!virtualPath.StartsWith("/", StringComparison.Ordinal))
+                    if (!virtualPath.StartsWith('/'))
                     {
-                        builder.Append("/");
+                        builder.Append('/');
                     }
 
                     builder.Append(virtualPath);
@@ -409,7 +449,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
                     if (!virtualPath.StartsWith("/", StringComparison.Ordinal))
                     {
-                        builder.Append("/");
+                        builder.Append('/');
                     }
 
                     builder.Append(virtualPath);
@@ -418,16 +458,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             if (!string.IsNullOrEmpty(fragment))
             {
-                builder.Append("#").Append(fragment);
+                builder.Append('#').Append(fragment);
             }
         }
 
         private bool TryFastGenerateUrl(
-            string protocol,
-            string host,
+            string? protocol,
+            string? host,
             string virtualPath,
-            string fragment,
-            out string url)
+            string? fragment,
+            [NotNullWhen(true)] out string? url)
         {
             var pathBase = ActionContext.HttpContext.Request.PathBase;
             url = null;

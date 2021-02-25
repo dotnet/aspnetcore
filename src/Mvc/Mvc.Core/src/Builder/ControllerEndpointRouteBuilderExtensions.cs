@@ -1,14 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
@@ -213,7 +213,9 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
+            var dataSource = GetOrCreateDataSource(endpoints);
+            dataSource.CreateInertEndpoints = true;
+            RegisterInCache(endpoints.ServiceProvider, dataSource);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
@@ -222,6 +224,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
+                b.Metadata.Add(new ControllerEndpointDataSourceIdMetadata(dataSource.DataSourceId));
             });
             return builder;
         }
@@ -289,7 +292,9 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
+            var dataSource = GetOrCreateDataSource(endpoints);
+            dataSource.CreateInertEndpoints = true;
+            RegisterInCache(endpoints.ServiceProvider, dataSource);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
@@ -298,6 +303,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
+                b.Metadata.Add(new ControllerEndpointDataSourceIdMetadata(dataSource.DataSourceId));
             });
             return builder;
         }
@@ -357,7 +363,9 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
+            var dataSource = GetOrCreateDataSource(endpoints);
+            dataSource.CreateInertEndpoints = true;
+            RegisterInCache(endpoints.ServiceProvider, dataSource);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
@@ -366,6 +374,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
+                b.Metadata.Add(new ControllerEndpointDataSourceIdMetadata(dataSource.DataSourceId));
             });
             return builder;
         }
@@ -435,7 +444,9 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
+            var dataSource = GetOrCreateDataSource(endpoints);
+            dataSource.CreateInertEndpoints = true;
+            RegisterInCache(endpoints.ServiceProvider, dataSource);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
@@ -444,6 +455,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
+                b.Metadata.Add(new ControllerEndpointDataSourceIdMetadata(dataSource.DataSourceId));
             });
             return builder;
         }
@@ -473,21 +485,82 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(endpoints));
             }
 
+            MapDynamicControllerRoute<TTransformer>(endpoints, pattern, state: null);
+        }
+
+        /// <summary>
+        /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will
+        /// attempt to select a controller action using the route values produced by <typeparamref name="TTransformer"/>.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The URL pattern of the route.</param>
+        /// <param name="state">A state object to provide to the <typeparamref name="TTransformer" /> instance.</param>
+        /// <typeparam name="TTransformer">The type of a <see cref="DynamicRouteValueTransformer"/>.</typeparam>
+        /// <remarks>
+        /// <para>
+        /// This method allows the registration of a <see cref="RouteEndpoint"/> and <see cref="DynamicRouteValueTransformer"/>
+        /// that combine to dynamically select a controller action using custom logic.
+        /// </para>
+        /// <para>
+        /// The instance of <typeparamref name="TTransformer"/> will be retrieved from the dependency injection container.
+        /// Register <typeparamref name="TTransformer"/> as transient in <c>ConfigureServices</c>. Using the transient lifetime
+        /// is required when using <paramref name="state" />.
+        /// </para>
+        /// </remarks>
+        public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object state)
+            where TTransformer : DynamicRouteValueTransformer
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
             EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
+            var controllerDataSource = GetOrCreateDataSource(endpoints);
+            RegisterInCache(endpoints.ServiceProvider, controllerDataSource);
 
-            endpoints.Map(
-                pattern, 
-                context =>
-                {
-                    throw new InvalidOperationException("This endpoint is not expected to be executed directly.");
-                })
-                .Add(b =>
-                {
-                    b.Metadata.Add(new DynamicControllerRouteValueTransformerMetadata(typeof(TTransformer)));
-                });
+            // The data source is just used to share the common order with conventionally routed actions.
+            controllerDataSource.AddDynamicControllerEndpoint(endpoints, pattern, typeof(TTransformer), state);
+        }
+
+        /// <summary>
+        /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will
+        /// attempt to select a controller action using the route values produced by <typeparamref name="TTransformer"/>.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The URL pattern of the route.</param>
+        /// <param name="state">A state object to provide to the <typeparamref name="TTransformer" /> instance.</param>
+        /// <param name="order">The matching order for the dynamic route.</param>
+        /// <typeparam name="TTransformer">The type of a <see cref="DynamicRouteValueTransformer"/>.</typeparam>
+        /// <remarks>
+        /// <para>
+        /// This method allows the registration of a <see cref="RouteEndpoint"/> and <see cref="DynamicRouteValueTransformer"/>
+        /// that combine to dynamically select a controller action using custom logic.
+        /// </para>
+        /// <para>
+        /// The instance of <typeparamref name="TTransformer"/> will be retrieved from the dependency injection container.
+        /// Register <typeparamref name="TTransformer"/> as transient in <c>ConfigureServices</c>. Using the transient lifetime
+        /// is required when using <paramref name="state" />.
+        /// </para>
+        /// </remarks>
+        public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object state, int order)
+            where TTransformer : DynamicRouteValueTransformer
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            EnsureControllerServices(endpoints);
+
+            // Called for side-effect to make sure that the data source is registered.
+            var controllerDataSource = GetOrCreateDataSource(endpoints);
+            RegisterInCache(endpoints.ServiceProvider, controllerDataSource);
+
+            // The data source is just used to share the common order with conventionally routed actions.
+            controllerDataSource.AddDynamicControllerEndpoint(endpoints, pattern, typeof(TTransformer), state, order);
         }
 
         private static DynamicControllerMetadata CreateDynamicControllerMetadata(string action, string controller, string area)
@@ -517,11 +590,19 @@ namespace Microsoft.AspNetCore.Builder
             var dataSource = endpoints.DataSources.OfType<ControllerActionEndpointDataSource>().FirstOrDefault();
             if (dataSource == null)
             {
-                dataSource = endpoints.ServiceProvider.GetRequiredService<ControllerActionEndpointDataSource>();
+                var orderProvider = endpoints.ServiceProvider.GetRequiredService<OrderedEndpointsSequenceProviderCache>();
+                var factory = endpoints.ServiceProvider.GetRequiredService<ControllerActionEndpointDataSourceFactory>();
+                dataSource = factory.Create(orderProvider.GetOrCreateOrderedEndpointsSequenceProvider(endpoints));
                 endpoints.DataSources.Add(dataSource);
             }
 
             return dataSource;
+        }
+
+        private static void RegisterInCache(IServiceProvider serviceProvider, ControllerActionEndpointDataSource dataSource)
+        {
+            var cache = serviceProvider.GetRequiredService<DynamicControllerEndpointSelectorCache>();
+            cache.AddDataSource(dataSource);
         }
     }
 }

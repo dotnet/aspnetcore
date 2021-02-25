@@ -9,6 +9,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR
 {
+    /// <summary>
+    /// Class to configure the <see cref="HubOptions"/>.
+    /// </summary>
     public class HubOptionsSetup : IConfigureOptions<HubOptions>
     {
         internal static TimeSpan DefaultHandshakeTimeout => TimeSpan.FromSeconds(15);
@@ -23,6 +26,10 @@ namespace Microsoft.AspNetCore.SignalR
 
         private readonly List<string> _defaultProtocols = new List<string>();
 
+        /// <summary>
+        /// Constructs the <see cref="HubOptionsSetup"/> with a list of protocols added to Dependency Injection.
+        /// </summary>
+        /// <param name="protocols">The list of <see cref="IHubProtocol"/>s that are from Dependency Injection.</param>
         public HubOptionsSetup(IEnumerable<IHubProtocol> protocols)
         {
             foreach (var hubProtocol in protocols)
@@ -35,6 +42,10 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
+        /// <summary>
+        /// Configures the default values of the <see cref="HubOptions"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="HubOptions"/> to configure.</param>
         public void Configure(HubOptions options)
         {
             if (options.KeepAliveInterval == null)
@@ -56,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             if (options.SupportedProtocols == null)
             {
-                options.SupportedProtocols = new List<string>();
+                options.SupportedProtocols = new List<string>(_defaultProtocols.Count);
             }
 
             if (options.StreamBufferCapacity == null)

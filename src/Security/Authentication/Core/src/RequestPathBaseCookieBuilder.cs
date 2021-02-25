@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,8 +14,12 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets an optional value that is appended to the request path base.
         /// </summary>
-        protected virtual string AdditionalPath { get; }
+        protected virtual string? AdditionalPath { get; }
 
+        /// <summary>
+        /// Configures <see cref="CookieOptions.Path"/> if not explicitly configured.
+        /// </summary>
+        /// <inheritdoc />
         public override CookieOptions Build(HttpContext context, DateTimeOffset expiresFrom)
         {
             // check if the user has overridden the default value of path. If so, use that instead of our default value.

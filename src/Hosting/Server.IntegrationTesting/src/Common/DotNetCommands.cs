@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
             else if (!string.IsNullOrEmpty(dotnetRoot))
             {
-                if (dotnetRoot.EndsWith("x64"))
+                if (dotnetRoot.EndsWith("x64", StringComparison.Ordinal))
                 {
                     // DOTNET_ROOT has x64 appended to the path, which we append again in GetDotNetInstallDir
                     result = dotnetRoot[0..^3];
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             var dotnetDir = DotNetHome;
             var archSpecificDir = Path.Combine(dotnetDir, arch.ToString());
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Directory.Exists(archSpecificDir))
+            if (OperatingSystem.IsWindows() && Directory.Exists(archSpecificDir))
             {
                 dotnetDir = archSpecificDir;
             }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             var dotnetFile = "dotnet";
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 dotnetFile += ".exe";
             }

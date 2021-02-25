@@ -17,7 +17,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly LibuvTransportContext _baseTransportContext;
 
         public LibuvTransportFactory(
+#pragma warning disable CS0618
             IOptions<LibuvTransportOptions> options,
+#pragma warning restore CS0618
             IHostApplicationLifetime applicationLifetime,
             ILoggerFactory loggerFactory)
         {
@@ -37,7 +39,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv");
             var trace = new LibuvTrace(logger);
 
+#pragma warning disable CS0618
             var threadCount = options.Value.ThreadCount;
+#pragma warning restore CS0618
 
             if (threadCount <= 0)
             {

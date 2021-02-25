@@ -7,6 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!--
+      Ensure files dependent projects expect exist and are up-to-date. Batching in Npm.Common.targets might skip
+      build when (say) Debug output files are missing. webpack.config.js always capitalizes the directory name.
+    -->
+    <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.server.js" />
+    <BuildOutputFiles Condition=" '$(Configuration)' != 'Debug' " Include="dist\Release\blazor.server.js" />
+    <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.webassembly.js" />
+    <BuildOutputFiles Condition=" '$(Configuration)' != 'Debug' " Include="dist\Release\blazor.webassembly.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="..\..\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false" />
     <ProjectReference
       Include="..\..\SignalR\clients\ts\signalr\signalr.npmproj"
       ReferenceOutputAssemblies="false"
@@ -25,6 +42,7 @@
   <Target Name="GetTargetFramework" />
   <Target Name="GetCopyToPublishDirectoryItems" />
   <Target Name="GetTargetPath" />
+  <Target Name="_CollectWatchItems" />
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 

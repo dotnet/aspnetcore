@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
@@ -133,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             string filePath)
         {
             var sourceSpan = razorDiagnostic.Span;
-            var message = razorDiagnostic.GetMessage();
+            var message = razorDiagnostic.GetMessage(CultureInfo.CurrentCulture);
             return new DiagnosticMessage(
                 message: message,
                 formattedMessage: razorDiagnostic.ToString(),

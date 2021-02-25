@@ -27,17 +27,17 @@ using System.Collections;
 using System.Collections.Generic;
 {extraUsings}
 
+#nullable enable
+
 namespace {namespaceName}
 {{
     internal partial class {className} : IFeatureCollection
     {{{Each(features, feature => $@"
-        private static readonly Type {feature.Name}Type = typeof({feature.Name});")}
-{Each(features, feature => $@"
-        private object _current{feature.Name};")}
+        private object? _current{feature.Name};")}
 
         private int _featureRevision;
 
-        private List<KeyValuePair<Type, object>> MaybeExtra;
+        private List<KeyValuePair<Type, object>>? MaybeExtra;
 
         private void FastReset()
         {{{Each(implementedFeatures, feature => $@"
@@ -54,7 +54,7 @@ namespace {namespaceName}
             _featureRevision++;
         }}
 
-        private object ExtraFeatureGet(Type key)
+        private object? ExtraFeatureGet(Type key)
         {{
             if (MaybeExtra == null)
             {{
@@ -71,34 +71,51 @@ namespace {namespaceName}
             return null;
         }}
 
-        private void ExtraFeatureSet(Type key, object value)
+        private void ExtraFeatureSet(Type key, object? value)
         {{
-            if (MaybeExtra == null)
+            if (value == null)
             {{
-                MaybeExtra = new List<KeyValuePair<Type, object>>(2);
-            }}
-
-            for (var i = 0; i < MaybeExtra.Count; i++)
-            {{
-                if (MaybeExtra[i].Key == key)
+                if (MaybeExtra == null)
                 {{
-                    MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
                     return;
                 }}
+                for (var i = 0; i < MaybeExtra.Count; i++)
+                {{
+                    if (MaybeExtra[i].Key == key)
+                    {{
+                        MaybeExtra.RemoveAt(i);
+                        return;
+                    }}
+                }}
             }}
-            MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+            else
+            {{
+                if (MaybeExtra == null)
+                {{
+                    MaybeExtra = new List<KeyValuePair<Type, object>>(2);
+                }}
+                for (var i = 0; i < MaybeExtra.Count; i++)
+                {{
+                    if (MaybeExtra[i].Key == key)
+                    {{
+                        MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
+                        return;
+                    }}
+                }}
+                MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+            }}
         }}
 
         bool IFeatureCollection.IsReadOnly => false;
 
         int IFeatureCollection.Revision => _featureRevision;
 
-        object IFeatureCollection.this[Type key]
+        object? IFeatureCollection.this[Type key]
         {{
             get
             {{
-                object feature = null;{Each(features, feature => $@"
-                {(feature.Index != 0 ? "else " : "")}if (key == {feature.Name}Type)
+                object? feature = null;{Each(features, feature => $@"
+                {(feature.Index != 0 ? "else " : "")}if (key == typeof({feature.Name}))
                 {{
                     feature = _current{feature.Name};
                 }}")}
@@ -114,7 +131,7 @@ namespace {namespaceName}
             {{
                 _featureRevision++;
 {Each(features, feature => $@"
-                {(feature.Index != 0 ? "else " : "")}if (key == {feature.Name}Type)
+                {(feature.Index != 0 ? "else " : "")}if (key == typeof({feature.Name}))
                 {{
                     _current{feature.Name} = value;
                 }}")}
@@ -125,16 +142,16 @@ namespace {namespaceName}
             }}
         }}
 
-        TFeature IFeatureCollection.Get<TFeature>()
+        TFeature? IFeatureCollection.Get<TFeature>() where TFeature : default
         {{
-            TFeature feature = default;{Each(features, feature => $@"
+            TFeature? feature = default;{Each(features, feature => $@"
             {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
             {{
-                feature = (TFeature)_current{feature.Name};
+                feature = (TFeature?)_current{feature.Name};
             }}")}
             else if (MaybeExtra != null)
             {{
-                feature = (TFeature)(ExtraFeatureGet(typeof(TFeature)));
+                feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
             }}{(string.IsNullOrEmpty(fallbackFeatures) ? "" : $@"
 
             if (feature == null)
@@ -145,7 +162,7 @@ namespace {namespaceName}
             return feature;
         }}
 
-        void IFeatureCollection.Set<TFeature>(TFeature feature)
+        void IFeatureCollection.Set<TFeature>(TFeature? feature) where TFeature : default
         {{
             _featureRevision++;{Each(features, feature => $@"
             {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
@@ -162,7 +179,7 @@ namespace {namespaceName}
         {{{Each(features, feature => $@"
             if (_current{feature.Name} != null)
             {{
-                yield return new KeyValuePair<Type, object>({feature.Name}Type, _current{feature.Name});
+                yield return new KeyValuePair<Type, object>(typeof({feature.Name}), _current{feature.Name});
             }}")}
 
             if (MaybeExtra != null)

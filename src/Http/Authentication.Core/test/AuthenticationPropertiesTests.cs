@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -8,6 +8,33 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
 {
     public class AuthenticationPropertiesTests
     {
+        [Fact]
+        public void Clone_Copies()
+        {
+            var items = new Dictionary<string, string?>
+            {
+                ["foo"] = "bar",
+            };
+            var value = "value";
+            var parameters = new Dictionary<string, object?>
+            {
+                ["foo2"] = value,
+            };
+            var props = new AuthenticationProperties(items, parameters);
+            Assert.Same(items, props.Items);
+            Assert.Same(parameters, props.Parameters);
+            var copy = props.Clone();
+            Assert.NotSame(props.Items, copy.Items);
+            Assert.NotSame(props.Parameters, copy.Parameters);
+            // Objects in the dictionaries will still be the same
+            Assert.Equal(props.Items, copy.Items);
+            Assert.Equal(props.Parameters, copy.Parameters);
+            props.Items["change"] = "good";
+            props.Parameters["something"] = "bad";
+            Assert.NotEqual(props.Items, copy.Items);
+            Assert.NotEqual(props.Parameters, copy.Parameters);
+        }
+
         [Fact]
         public void DefaultConstructor_EmptyCollections()
         {
@@ -19,7 +46,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
         [Fact]
         public void ItemsConstructor_ReusesItemsDictionary()
         {
-            var items = new Dictionary<string, string>
+            var items = new Dictionary<string, string?>
             {
                 ["foo"] = "bar",
             };
@@ -31,11 +58,11 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
         [Fact]
         public void FullConstructor_ReusesDictionaries()
         {
-            var items = new Dictionary<string, string>
+            var items = new Dictionary<string, string?>
             {
                 ["foo"] = "bar",
             };
-            var parameters = new Dictionary<string, object>
+            var parameters = new Dictionary<string, object?>
             {
                 ["number"] = 1234,
                 ["list"] = new List<string> { "a", "b", "c" },
@@ -92,7 +119,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             Assert.Equal("foo bar", props.Parameters["foo"]);
             Assert.Equal(1, props.Parameters.Count);
 
-            props.SetParameter<string>("foo", null);
+            props.SetParameter<string?>("foo", null);
             Assert.Null(props.GetParameter<string>("foo"));
             Assert.Null(props.Parameters["foo"]);
             Assert.Equal(1, props.Parameters.Count);
@@ -129,7 +156,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             Assert.Same(list, props.Parameters["foo"]);
             Assert.Equal(1, props.Parameters.Count);
 
-            props.SetParameter<ICollection<string>>("foo", null);
+            props.SetParameter<ICollection<string>?>("foo", null);
             Assert.Null(props.GetParameter<ICollection<string>>("foo"));
             Assert.Null(props.Parameters["foo"]);
             Assert.Equal(1, props.Parameters.Count);

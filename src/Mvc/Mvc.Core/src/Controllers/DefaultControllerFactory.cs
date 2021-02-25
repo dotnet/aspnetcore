@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
@@ -82,6 +83,21 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             }
 
             _controllerActivator.Release(context, controller);
+        }
+
+        public ValueTask ReleaseControllerAsync(ControllerContext context, object controller)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (controller == null)
+            {
+                throw new ArgumentNullException(nameof(controller));
+            }
+
+            return _controllerActivator.ReleaseAsync(context, controller);
         }
     }
 }

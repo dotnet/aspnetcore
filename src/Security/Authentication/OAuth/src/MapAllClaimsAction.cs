@@ -13,15 +13,19 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
     /// </summary>
     public class MapAllClaimsAction : ClaimAction
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="MapAllClaimsAction"/>.
+        /// </summary>
         public MapAllClaimsAction() : base("All", ClaimValueTypes.String)
         {
         }
 
+        /// <inheritdoc />
         public override void Run(JsonElement userData, ClaimsIdentity identity, string issuer)
         {
             foreach (var pair in userData.EnumerateObject())
             {
-                var claimValue = pair.Value.ToString();
+                var claimValue = pair.Value.ToString()!;
 
                 // Avoid adding a claim if there's a duplicate name and value. This often happens in OIDC when claims are
                 // retrieved both from the id_token and from the user-info endpoint.

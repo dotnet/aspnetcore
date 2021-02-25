@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
@@ -124,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var path = "/Path";
             var queryString = "?query=string";
             var expectedAction = pathBase + path + queryString;
-            var expectedStartTag = string.Format("<form action=\"HtmlEncode[[{0}]]\" method=\"HtmlEncode[[post]]\">", expectedAction);
+            var expectedStartTag = string.Format(CultureInfo.InvariantCulture, "<form action=\"HtmlEncode[[{0}]]\" method=\"HtmlEncode[[post]]\">", expectedAction);
 
             // IUrlHelper should not be used in this scenario.
             var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);
@@ -172,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var queryString = "?query=string";
             var expectedAction = pathBase + path + queryString;
             var htmlAttributes = new { p1_name = "p1-value" };
-            var expectedStartTag = string.Format("<form action=\"HtmlEncode[[{0}]]\" method=\"HtmlEncode[[post]]\"{1}>",
+            var expectedStartTag = string.Format(CultureInfo.InvariantCulture, "<form action=\"HtmlEncode[[{0}]]\" method=\"HtmlEncode[[post]]\"{1}>",
                 expectedAction,
                 GetHtmlAttributesAsString(htmlAttributes));
 
@@ -225,6 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             // Arrange
             var expectedAction = "http://localhost/Hello/World";
             var expectedStartTag = string.Format(
+                CultureInfo.InvariantCulture,
                 "<form action=\"HtmlEncode[[{0}]]\" method=\"HtmlEncode[[{1}]]\"{2}>",
                 expectedAction,
                 method.ToString().ToLowerInvariant(),
@@ -273,6 +275,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             // Arrange
             var expectedAction = "http://localhost/Hello/World";
             var expectedStartTag = string.Format(
+                CultureInfo.InvariantCulture,
                 "<form action=\"HtmlEncode[[{0}]]\" method=\"HtmlEncode[[{1}]]\"{2}>",
                 expectedAction,
                 method.ToString().ToLowerInvariant(),
@@ -812,7 +815,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var dictionary = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
             return string.Join(
                 string.Empty,
-                dictionary.Select(keyValue => string.Format(" {0}=\"HtmlEncode[[{1}]]\"", keyValue.Key, keyValue.Value)));
+                dictionary.Select(keyValue => string.Format(CultureInfo.InvariantCulture, " {0}=\"HtmlEncode[[{1}]]\"", keyValue.Key, keyValue.Value)));
         }
     }
 }

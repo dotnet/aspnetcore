@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.SecretManager.Tools
 
         public static CommandLineOptions Parse(string[] args, IConsole console)
         {
-            var app = new CommandLineApplication()
+            var app = new CommandLineApplication(treatUnmatchedOptionsAsArguments: true)
             {
                 Out = console.Out,
                 Error = console.Error,
@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.SecretManager.Tools
             };
 
             app.HelpOption();
-            app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
+            app.VersionOptionFromAssemblyAttributes(typeof(Program).Assembly);
 
             var optionVerbose = app.VerboseOption();
 

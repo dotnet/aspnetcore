@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             return Task.CompletedTask;
         }
-        
+
         // Route values not supported
         [Fact]
         public override Task Match_SingleParameter_TrailingSlash()
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         // Route values not supported
         [Fact]
-        public override Task Match_SingleParameter_WierdNames()
+        public override Task Match_SingleParameter_WeirdNames()
         {
             return Task.CompletedTask;
         }
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         [InlineData(null, null, null, null)]
         public override Task Match_MultipleParameters(string template, string path, string[] keys, string[] values)
         {
-            GC.KeepAlive(new object [] { template, path, keys, values });
+            GC.KeepAlive(new object[] { template, path, keys, values });
             return Task.CompletedTask;
         }
 

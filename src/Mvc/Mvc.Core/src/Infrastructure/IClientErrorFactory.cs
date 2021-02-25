@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
@@ -15,6 +17,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
         /// <param name="clientError">The <see cref="IClientErrorActionResult"/>.</param>
         /// <returns>The <see cref="IActionResult"/> that would be returned to the client.</returns>
-        IActionResult GetClientError(ActionContext actionContext, IClientErrorActionResult clientError);
+        IActionResult? GetClientError(ActionContext actionContext, IClientErrorActionResult clientError);
     }
 }

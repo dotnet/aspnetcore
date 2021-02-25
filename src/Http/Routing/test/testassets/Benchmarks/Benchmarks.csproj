@@ -8,6 +8,7 @@
 
    <!--These references are used when running locally-->
   <ItemGroup Condition="'$(UseP2PReferences)'=='true'">
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
@@ -18,9 +19,9 @@
   <ItemGroup Condition="'$(BenchmarksTargetFramework)'!=''">
     <KnownFrameworkReference
       Update="Microsoft.AspNetCore.App"
-      DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-      LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-      TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+      DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppVersion)"
+      LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppVersion)"
+      TargetingPackVersion="$(MicrosoftAspNetCoreAppVersion)" />
   </ItemGroup>
 
 </Project>

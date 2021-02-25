@@ -8,19 +8,20 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
 {
     internal static class RewriteMiddlewareLoggingExtensions
     {
-        private static readonly Action<ILogger, string, Exception> _requestContinueResults;
-        private static readonly Action<ILogger, string, int, Exception> _requestResponseComplete;
-        private static readonly Action<ILogger, string, Exception> _requestStopRules;
-        private static readonly Action<ILogger, string, Exception> _urlRewriteNotMatchedRule;
-        private static readonly Action<ILogger, string, Exception> _urlRewriteMatchedRule;
-        private static readonly Action<ILogger, Exception> _modRewriteNotMatchedRule;
-        private static readonly Action<ILogger, Exception> _modRewriteMatchedRule;
-        private static readonly Action<ILogger, Exception> _redirectedToHttps;
-        private static readonly Action<ILogger, Exception> _redirectedToWww;
-        private static readonly Action<ILogger, string, Exception> _redirectedRequest;
-        private static readonly Action<ILogger, string, Exception> _rewrittenRequest;
-        private static readonly Action<ILogger, string, Exception> _abortedRequest;
-        private static readonly Action<ILogger, string, Exception> _customResponse;
+        private static readonly Action<ILogger, string, Exception?> _requestContinueResults;
+        private static readonly Action<ILogger, string, int, Exception?> _requestResponseComplete;
+        private static readonly Action<ILogger, string, Exception?> _requestStopRules;
+        private static readonly Action<ILogger, string?, Exception?> _urlRewriteNotMatchedRule;
+        private static readonly Action<ILogger, string?, Exception?> _urlRewriteMatchedRule;
+        private static readonly Action<ILogger, Exception?> _modRewriteNotMatchedRule;
+        private static readonly Action<ILogger, Exception?> _modRewriteMatchedRule;
+        private static readonly Action<ILogger, Exception?> _redirectedToHttps;
+        private static readonly Action<ILogger, Exception?> _redirectedToWww;
+        private static readonly Action<ILogger, Exception?> _redirectedToNonWww;
+        private static readonly Action<ILogger, string, Exception?> _redirectedRequest;
+        private static readonly Action<ILogger, string, Exception?> _rewrittenRequest;
+        private static readonly Action<ILogger, string, Exception?> _abortedRequest;
+        private static readonly Action<ILogger, string, Exception?> _customResponse;
 
         static RewriteMiddlewareLoggingExtensions()
         {
@@ -39,12 +40,12 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
                             new EventId(3, "RequestStopRules"),
                             "Request is done applying rules. Url was rewritten to {rewrittenUrl}");
 
-            _urlRewriteNotMatchedRule = LoggerMessage.Define<string>(
+            _urlRewriteNotMatchedRule = LoggerMessage.Define<string?>(
                             LogLevel.Debug,
                             new EventId(4, "UrlRewriteNotMatchedRule"),
                             "Request did not match current rule '{Name}'.");
 
-            _urlRewriteMatchedRule = LoggerMessage.Define<string>(
+            _urlRewriteMatchedRule = LoggerMessage.Define<string?>(
                             LogLevel.Debug,
                             new EventId(5, "UrlRewriteMatchedRule"),
                             "Request matched current UrlRewriteRule '{Name}'.");
@@ -88,6 +89,11 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
                             LogLevel.Information,
                             new EventId(13, "RedirectedToWww"),
                             "Request redirected to www");
+
+            _redirectedToNonWww = LoggerMessage.Define(
+                            LogLevel.Information,
+                            new EventId(14, "RedirectedToNonWww"),
+                            "Request redirected to root domain from www subdomain");
         }
 
         public static void RewriteMiddlewareRequestContinueResults(this ILogger logger, string currentUrl)
@@ -105,12 +111,12 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
             _requestStopRules(logger, rewrittenUrl, null);
         }
 
-        public static void UrlRewriteNotMatchedRule(this ILogger logger, string name)
+        public static void UrlRewriteNotMatchedRule(this ILogger logger, string? name)
         {
             _urlRewriteNotMatchedRule(logger, name, null);
         }
 
-        public static void UrlRewriteMatchedRule(this ILogger logger, string name)
+        public static void UrlRewriteMatchedRule(this ILogger logger, string? name)
         {
             _urlRewriteMatchedRule(logger, name, null);
         }
@@ -133,6 +139,11 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
         public static void RedirectedToWww(this ILogger logger)
         {
             _redirectedToWww(logger, null);
+        }
+
+        public static void RedirectedToNonWww(this ILogger logger)
+        {
+            _redirectedToNonWww(logger, null);
         }
 
         public static void RedirectedRequest(this ILogger logger, string redirectedUrl)

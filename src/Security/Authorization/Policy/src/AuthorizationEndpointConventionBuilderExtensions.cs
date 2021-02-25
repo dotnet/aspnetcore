@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class AuthorizationEndpointConventionBuilderExtensions
     {
+        private static readonly IAllowAnonymous _allowAnonymousMetadata = new AllowAnonymousAttribute();
+
         /// <summary>
         /// Adds the default authorization policy to the endpoint(s).
         /// </summary>
@@ -76,6 +78,21 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             RequireAuthorizationCore(builder, authorizeData);
+            return builder;
+        }
+
+        /// <summary>
+        /// Allows anonymous access to the endpoint by adding <see cref="AllowAnonymousAttribute" /> to the endpoint metadata. This will bypass
+        /// all authorization checks for the endpoint including the default authorization policy and fallback authorization policy.
+        /// </summary>
+        /// <param name="builder">The endpoint convention builder.</param>
+        /// <returns>The original convention builder parameter.</returns>
+        public static TBuilder AllowAnonymous<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
+        {
+            builder.Add(endpointBuilder =>
+            {
+                endpointBuilder.Metadata.Add(_allowAnonymousMetadata);
+            });
             return builder;
         }
 

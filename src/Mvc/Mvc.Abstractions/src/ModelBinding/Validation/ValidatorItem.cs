@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
@@ -30,12 +30,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <summary>
         /// Gets the metadata associated with the <see cref="Validator"/>.
         /// </summary>
-        public object ValidatorMetadata { get; }
+        public object ValidatorMetadata { get; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="IModelValidator"/>.
         /// </summary>
-        public IModelValidator Validator { get; set; }
+        public IModelValidator? Validator { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether or not <see cref="Validator"/> can be reused across requests.

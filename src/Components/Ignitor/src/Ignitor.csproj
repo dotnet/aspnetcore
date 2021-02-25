@@ -1,14 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Intentionally targeting netcoreapp3.0 because we do not want to update the Benchmark client to use 3.1 -->
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-    <IsPackable>true</IsPackable>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>false</IsShippingPackage>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <!-- This package is not shipping, ignore API doc requirements -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <DefineConstants>$(DefineConstants);IGNITOR</DefineConstants>
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,12 +17,15 @@
     <Compile Include="..\..\Components\src\RenderTree\ArrayBuilderExtensions.cs" LinkBase="RenderTree" />
     <Compile Include="..\..\Components\src\RenderTree\ArrayBuilderSegment.cs" LinkBase="RenderTree" />
     <Compile Include="..\..\Components\src\RenderTree\ArrayRange.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\EventFieldInfo.cs" LinkBase="RenderTree" />
     <Compile Include="..\..\Components\src\RenderTree\RenderBatch.cs" LinkBase="RenderTree" />
     <Compile Include="..\..\Components\src\RenderTree\RenderTreeDiff.cs" LinkBase="RenderTree" />
     <Compile Include="..\..\Components\src\RenderTree\RenderTreeEdit.cs" LinkBase="RenderTree" />
     <Compile Include="..\..\Components\src\RenderTree\RenderTreeEditType.cs" LinkBase="RenderTree" />
     <Compile Include="..\..\Components\src\RenderTree\RenderTreeFrame.cs" LinkBase="RenderTree" />
     <Compile Include="..\..\Components\src\RenderTree\RenderTreeFrameType.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Web\src\WebEventDescriptor.cs" LinkBase="RenderTree" />
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

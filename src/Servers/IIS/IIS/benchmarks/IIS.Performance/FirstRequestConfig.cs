@@ -18,22 +18,22 @@ namespace BenchmarkDotNet.Attributes
     {
         public FirstRequestConfig()
         {
-            Add(ConsoleLogger.Default);
-            Add(MarkdownExporter.GitHub);
+            AddLogger(ConsoleLogger.Default);
+            AddExporter(MarkdownExporter.GitHub);
 
-            Add(MemoryDiagnoser.Default);
-            Add(StatisticColumn.OperationsPerSecond);
-            Add(DefaultColumnProviders.Instance);
+            AddDiagnoser(MemoryDiagnoser.Default);
+            AddColumn(StatisticColumn.OperationsPerSecond);
+            AddColumnProvider(DefaultColumnProviders.Instance);
 
-            Add(JitOptimizationsValidator.FailOnError);
+            AddValidator(JitOptimizationsValidator.FailOnError);
 
-            Add(Job.Core
-                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
-                .With(new GcMode { Server = true })
-                .WithTargetCount(10)
+            AddJob(Job.Default
+                .WithToolchain(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
+                .WithGcMode(new GcMode { Server = true })
+                .WithIterationCount(10)
                 .WithInvocationCount(1)
                 .WithUnrollFactor(1)
-                .With(RunStrategy.ColdStart));
+                .WithStrategy(RunStrategy.ColdStart));
         }
     }
 }

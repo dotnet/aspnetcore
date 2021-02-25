@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
             var transaction = await server.SendAsync(
                 "https://example.com/signin-oidc?error=itfailed&error_description=whyitfailed&error_uri=https://example.com/fail&state=protected_state",
-                ".AspNetCore.Correlation.OpenIdConnect.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.StartsWith("/error?FailureMessage=", transaction.Response.Headers.GetValues("Location").First());
         }

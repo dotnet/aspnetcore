@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix NoCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx,  ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp31)
+                .WithTfms(Tfm.Default)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -45,7 +46,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix HostCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Nginx)
-                .WithTfms(Tfm.NetCoreApp31)
+                .WithTfms(Tfm.Default)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -57,7 +58,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix AppCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys) // No pass-through compression for nginx
-                .WithTfms(Tfm.NetCoreApp31)
+                .WithTfms(Tfm.Default)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -69,7 +70,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix HostAndAppCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp31)
+                .WithTfms(Tfm.Default)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -169,7 +170,7 @@ namespace ServerComparison.FunctionalTests
             try
             {
                 Assert.Equal(HelloWorldBody, responseText);
-                Assert.Equal(HelloWorldBody.Length.ToString(), GetContentLength(response));
+                Assert.Equal(HelloWorldBody.Length.ToString(CultureInfo.InvariantCulture), GetContentLength(response));
                 Assert.Equal(0, response.Content.Headers.ContentEncoding.Count);
             }
             catch (XunitException)

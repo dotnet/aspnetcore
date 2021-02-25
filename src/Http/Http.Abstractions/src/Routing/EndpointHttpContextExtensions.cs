@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <returns>The <see cref="Endpoint"/>.</returns>
-        public static Endpoint GetEndpoint(this HttpContext context)
+        public static Endpoint? GetEndpoint(this HttpContext context)
         {
             if (context == null)
             {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="endpoint">The <see cref="Endpoint"/>.</param>
-        public static void SetEndpoint(this HttpContext context, Endpoint endpoint)
+        public static void SetEndpoint(this HttpContext context, Endpoint? endpoint)
         {
             if (context == null)
             {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Http
 
         private class EndpointFeature : IEndpointFeature
         {
-            public Endpoint Endpoint { get; set; }
+            public Endpoint? Endpoint { get; set; }
         }
     }
 }

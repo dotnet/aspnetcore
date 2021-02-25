@@ -16,17 +16,14 @@ namespace Microsoft.Net.Http.Headers
     /// </summary>
     public class StringWithQualityHeaderValueComparer : IComparer<StringWithQualityHeaderValue>
     {
-        private static readonly StringWithQualityHeaderValueComparer _qualityComparer =
-            new StringWithQualityHeaderValueComparer();
-
         private StringWithQualityHeaderValueComparer()
         {
         }
 
-        public static StringWithQualityHeaderValueComparer QualityComparer
-        {
-            get { return _qualityComparer; }
-        }
+        /// <summary>
+        /// Gets the default instance of <see cref="StringWithQualityHeaderValueComparer"/>.
+        /// </summary>
+        public static StringWithQualityHeaderValueComparer QualityComparer { get; } = new StringWithQualityHeaderValueComparer();
 
         /// <summary>
         /// Compares two <see cref="StringWithQualityHeaderValue"/> based on their quality value
@@ -40,8 +37,8 @@ namespace Microsoft.Net.Http.Headers
         /// <param name="stringWithQuality2">The second value to compare</param>
         /// <returns>The result of the comparison.</returns>
         public int Compare(
-            StringWithQualityHeaderValue stringWithQuality1,
-            StringWithQualityHeaderValue stringWithQuality2)
+            StringWithQualityHeaderValue? stringWithQuality1,
+            StringWithQualityHeaderValue? stringWithQuality2)
         {
             if (stringWithQuality1 == null)
             {

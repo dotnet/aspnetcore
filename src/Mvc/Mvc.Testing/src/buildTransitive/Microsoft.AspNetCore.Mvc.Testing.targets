@@ -1,0 +1,5 @@
+<Project>
+
+  <Import Project="..\Microsoft.AspNetCore.Mvc.Testing.targets" />
+
+</Project>

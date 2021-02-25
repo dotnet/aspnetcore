@@ -7,6 +7,7 @@
     <AssemblyName>InProcessWebSite</AssemblyName>
     <TestAssetOutputName>InProcessNewShimWebSite</TestAssetOutputName>
     <DefineConstants>FORWARDCOMPAT</DefineConstants>
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -52,9 +53,6 @@
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="4.5.1" >
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
     <Reference Include="xunit.assert" />

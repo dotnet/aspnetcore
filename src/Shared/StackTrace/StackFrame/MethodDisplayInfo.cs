@@ -1,23 +1,34 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+#nullable enable
+
 namespace Microsoft.Extensions.StackTrace.Sources
 {
     internal class MethodDisplayInfo
     {
-        public string DeclaringTypeName { get; set; }
+        public MethodDisplayInfo(string? declaringTypeName, string name, string? genericArguments, string? subMethod, IEnumerable<ParameterDisplayInfo> parameters)
+        {
+            DeclaringTypeName = declaringTypeName;
+            Name = name;
+            GenericArguments = genericArguments;
+            SubMethod = subMethod;
+            Parameters = parameters;
+        }
 
-        public string Name { get; set; }
+        public string? DeclaringTypeName { get; }
 
-        public string GenericArguments { get; set; }
+        public string Name { get; }
 
-        public string SubMethod { get; set; }
+        public string? GenericArguments { get; }
 
-        public IEnumerable<ParameterDisplayInfo> Parameters { get; set; }
+        public string? SubMethod { get; }
+
+        public IEnumerable<ParameterDisplayInfo> Parameters { get; }
 
         public override string ToString()
         {
@@ -33,7 +44,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             builder.Append(GenericArguments);
 
             builder.Append("(");
-            builder.Append(string.Join(", ", Parameters.Select(p => p.ToString())));
+            builder.AppendJoin(", ", Parameters.Select(p => p.ToString()));
             builder.Append(")");
 
             if (!string.IsNullOrEmpty(SubMethod))

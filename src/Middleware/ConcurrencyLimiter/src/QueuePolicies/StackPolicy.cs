@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
     internal class StackPolicy : IQueuePolicy
     {
         private readonly List<ResettableBooleanCompletionSource> _buffer;
-        public ResettableBooleanCompletionSource _cachedResettableTCS;
+        public ResettableBooleanCompletionSource? _cachedResettableTCS;
 
         private readonly int _maxQueueCapacity;
         private readonly int _maxConcurrentRequests;
@@ -20,8 +20,6 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         private int _queueLength;
 
         private readonly object _bufferLock = new Object();
-
-        private readonly static ValueTask<bool> _trueTask = new ValueTask<bool>(true);
 
         private int _freeServerSpots;
 
@@ -40,7 +38,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 if (_freeServerSpots > 0)
                 {
                     _freeServerSpots--;
-                    return _trueTask;
+                    return new ValueTask<bool>(true);
                 }
 
                 // if queue is full, cancel oldest request

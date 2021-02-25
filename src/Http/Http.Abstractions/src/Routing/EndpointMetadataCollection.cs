@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Http
         /// The most significant metadata of type <typeparamref name="T"/> or <c>null</c>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T GetMetadata<T>() where T : class
+        public T? GetMetadata<T>() where T : class
         {
             if (_cache.TryGetValue(typeof(T), out var obj))
             {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Http
             return GetMetadataSlow<T>();
         }
 
-        private T GetMetadataSlow<T>() where T : class
+        private T? GetMetadataSlow<T>() where T : class
         {
             var result = GetOrderedMetadataSlow<T>();
             var length = result.Length;
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Http
         private T[] GetOrderedMetadataSlow<T>() where T : class
         {
             // Perf: avoid allocations totally for the common case where there are no matching metadata.
-            List<T> matches = null;
+            List<T>? matches = null;
 
             var items = _items;
             for (var i = 0; i < items.Length; i++)
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Enumerates the elements of an <see cref="EndpointMetadataCollection"/>.
         /// </summary>
-        public struct Enumerator : IEnumerator<object>
+        public struct Enumerator : IEnumerator<object?>
         {
             // Intentionally not readonly to prevent defensive struct copies
             private object[] _items;
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Http
             /// <summary>
             /// Gets the element at the current position of the enumerator
             /// </summary>
-            public object Current { get; private set; }
+            public object? Current { get; private set; }
 
             /// <summary>
             /// Releases all resources used by the <see cref="Enumerator"/>.

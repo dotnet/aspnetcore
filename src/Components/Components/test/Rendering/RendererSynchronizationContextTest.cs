@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Rendering
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             Thread capturedThread = null;
 
             var e = new ManualResetEventSlim();
-            
+
             // Act
             context.Post((_) =>
             {
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public void Post_RunsAynchronously_WhenNotBusy_Exception()
+        public void Post_RunsAsynchronously_WhenNotBusy_Exception()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
@@ -762,6 +763,34 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // Assert
             Assert.Equal(TaskStatus.Canceled, task.Status);
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        }
+
+        [Fact]
+        public async Task InvokeAsync_SyncWorkInAsyncTaskIsCompletedFirst()
+        {
+            // Simplified version of ServerComponentRenderingTest.CanDispatchAsyncWorkToSyncContext
+            var expected = "First Second Third Fourth Fifth";
+            var context = new RendererSynchronizationContext();
+            string actual;
+
+            // Act
+            await Task.Yield();
+            actual = "First";
+
+            var invokeTask = context.InvokeAsync(async () =>
+            {
+                // When the sync context is idle, queued work items start synchronously
+                actual += " Second";
+                await Task.Delay(250);
+                actual += " Fourth";
+            });
+
+            actual += " Third";
+            await invokeTask;
+            actual += " Fifth";
+
+            // Assert
+            Assert.Equal(expected, actual);
         }
     }
 }

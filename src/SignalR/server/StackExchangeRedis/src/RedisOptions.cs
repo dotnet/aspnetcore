@@ -26,11 +26,11 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         /// <summary>
         /// Gets or sets the Redis connection factory.
         /// </summary>
-        public Func<TextWriter, Task<IConnectionMultiplexer>> ConnectionFactory { get; set; }
+        public Func<TextWriter, Task<IConnectionMultiplexer>>? ConnectionFactory { get; set; }
 
         internal async Task<IConnectionMultiplexer> ConnectAsync(TextWriter log)
         {
-            // Factory is publically settable. Assigning to a local variable before null check for thread safety.
+            // Factory is publicly settable. Assigning to a local variable before null check for thread safety.
             var factory = ConnectionFactory;
             if (factory == null)
             {

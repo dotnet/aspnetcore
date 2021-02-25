@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Components.Rendering
+﻿@using Microsoft.AspNetCore.Components.Rendering
 <div id="test-selector">
     Select test:
     <select id="test-selector-select" @bind=SelectedComponentTypeName>
@@ -13,6 +13,7 @@
         <option value="BasicTestApp.ComponentRefComponent">Component ref component</option>
         <option value="BasicTestApp.ConcurrentRenderParent">Concurrent rendering</option>
         <option value="BasicTestApp.ConfigurationComponent">Configuration</option>
+        <option value="BasicTestApp.ContentEditable">Content-editable</option>
         <option value="BasicTestApp.CounterComponent">Counter</option>
         <option value="BasicTestApp.CounterComponentUsingChild">Counter using child component</option>
         <option value="BasicTestApp.CounterComponentWrapper">Counter wrapped in parent</option>
@@ -20,20 +21,26 @@
         <option value="BasicTestApp.DataDashComponent">data-* attribute rendering</option>
         <option value="BasicTestApp.DispatchingComponent">Dispatching to sync context</option>
         <option value="BasicTestApp.DuplicateAttributesComponent">Duplicate attributes</option>
+        <option value="BasicTestApp.DynamicComponentRendering">DynamicComponent rendering</option>
+        <option value="BasicTestApp.ElementFocusComponent">Element focus component</option>
         <option value="BasicTestApp.ElementRefComponent">Element ref component</option>
         <option value="BasicTestApp.ErrorComponent">Error throwing</option>
         <option value="BasicTestApp.EventBubblingComponent">Event bubbling</option>
         <option value="BasicTestApp.EventCallbackTest.EventCallbackCases">EventCallback</option>
-        <option value="BasicTestApp.EventCasesComponent">Event cases</option>
+        <option value="BasicTestApp.EventCustomArgsComponent">Event custom arguments</option>
         <option value="BasicTestApp.EventDisablingComponent">Event disabling</option>
+        <option value="BasicTestApp.EventDuringBatchRendering">Event during batch rendering</option>
         <option value="BasicTestApp.EventPreventDefaultComponent">Event preventDefault</option>
         <option value="BasicTestApp.ExternalContentPackage">External content package</option>
         <option value="BasicTestApp.FocusEventComponent">Focus events</option>
+        <option value="BasicTestApp.FormsTest.InputFocusComponent">Input Focus</option>
         <option value="BasicTestApp.FormsTest.NotifyPropertyChangedValidationComponent">INotifyPropertyChanged validation</option>
         <option value="BasicTestApp.FormsTest.SimpleValidationComponent">Simple validation</option>
         <option value="BasicTestApp.FormsTest.SimpleValidationComponentUsingExperimentalValidator">Simple validation using experimental validator</option>
         <option value="BasicTestApp.FormsTest.TypicalValidationComponent">Typical validation</option>
         <option value="BasicTestApp.FormsTest.TypicalValidationComponentUsingExperimentalValidator">Typical validation using experimental validator</option>
+        <option value="BasicTestApp.FormsTest.InputFileComponent">Input file</option>
+        <option value="BasicTestApp.NavigateOnSubmit">Navigate to submit</option>
         <option value="BasicTestApp.GlobalizationBindCases">Globalization Bind Cases</option>
         <option value="BasicTestApp.GracefulTermination">Graceful Termination</option>
         <option value="BasicTestApp.HierarchicalImportsTest.Subdir.ComponentUsingImports">Imports statement</option>
@@ -62,20 +69,30 @@
         <option value="BasicTestApp.NavigationFailureComponent">Navigation failure</option>
         <option value="BasicTestApp.ParentChildComponent">Parent component with child</option>
         <option value="BasicTestApp.PropertiesChangedHandlerParent">Parent component that changes parameters on child</option>
+        <option value="@GetTestServerProjectComponent("Components.TestServer.ProtectedBrowserStorageUsageComponent")">Protected browser storage usage</option>
+        <option value="@GetTestServerProjectComponent("Components.TestServer.ProtectedBrowserStorageInjectionComponent")">Protected browser storage injection</option>
         <option value="BasicTestApp.RazorTemplates">Razor Templates</option>
         <option value="BasicTestApp.Reconnection.ReconnectionComponent">Reconnection server-side blazor</option>
         <option value="BasicTestApp.RedTextComponent">Red text</option>
         <option value="BasicTestApp.ReliabilityComponent">Server reliability component</option>
         <option value="BasicTestApp.RenderFragmentToggler">Render fragment renderer</option>
+        <option value="BasicTestApp.RenderAttributesBeforeConnectedCallback">Render attributes before ConnectedCallback</option>
         <option value="BasicTestApp.ReorderingFocusComponent">Reordering focus retention</option>
         <option value="BasicTestApp.RouterTest.NavigationManagerComponent">NavigationManager Test</option>
         <option value="BasicTestApp.RouterTest.TestRouter">Router</option>
+        <option value="BasicTestApp.RouterTest.TestRouterWithOnNavigate">Router with OnNavigate</option>
+        <option value="BasicTestApp.RouterTest.TestRouterWithLazyAssembly">Router with dynamic assembly</option>
         <option value="BasicTestApp.RouterTest.TestRouterWithAdditionalAssembly">Router with additional assembly</option>
+        <option value="BasicTestApp.SelectVariantsComponent">Select with component options</option>
+        <option value="BasicTestApp.SignalRClientComponent">SignalR client</option>
         <option value="BasicTestApp.StringComparisonComponent">StringComparison</option>
         <option value="BasicTestApp.SvgComponent">SVG</option>
         <option value="BasicTestApp.SvgWithChildComponent">SVG with child component</option>
         <option value="BasicTestApp.TextOnlyComponent">Plain text</option>
+        <option value="BasicTestApp.ToggleEventComponent">Toggle Event</option>
         <option value="BasicTestApp.TouchEventComponent">Touch events</option>
+        <option value="BasicTestApp.VirtualizationComponent">Virtualization</option>
+        <option value="BasicTestApp.VirtualizationDataChanges">Virtualization data changes</option>
     </select>
 
     <span id="runtime-info"><code><tt>@System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription</tt></code></span>
@@ -95,7 +112,7 @@
     string SelectedComponentTypeName { get; set; } = "none";
 
     Type SelectedComponentType
-        => SelectedComponentTypeName == "none" ? null : Type.GetType(SelectedComponentTypeName);
+        => SelectedComponentTypeName == "none" ? null : Type.GetType(SelectedComponentTypeName, throwOnError: true);
 
     void RenderSelectedComponent(RenderTreeBuilder builder)
     {
@@ -104,5 +121,14 @@
             builder.OpenComponent(0, SelectedComponentType);
             builder.CloseComponent();
         }
+    }
+
+    static string GetTestServerProjectComponent(string componentName)
+    {
+        var serverAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => f.GetName().Name == "Components.TestServer");
+        // If the server project isn't loaded return the component name as-is. Calculating the SelectedComponentType property will result in an error.
+        return serverAssembly is null ?
+            componentName :
+            serverAssembly.GetType(componentName, throwOnError: true).AssemblyQualifiedName;
     }
 }

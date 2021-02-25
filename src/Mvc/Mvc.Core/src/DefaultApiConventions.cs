@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
@@ -6,9 +6,16 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 namespace Microsoft.AspNetCore.Mvc
 {
+    /// <summary>
+    /// Default api conventions.
+    /// </summary>
     public static class DefaultApiConventions
     {
         #region GET
+        /// <summary>
+        /// Get convention.
+        /// </summary>
+        /// <param name="id"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
@@ -18,6 +25,10 @@ namespace Microsoft.AspNetCore.Mvc
             [ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)]
             object id) { }
 
+        /// <summary>
+        /// Find convention.
+        /// </summary>
+        /// <param name="id"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
@@ -29,6 +40,10 @@ namespace Microsoft.AspNetCore.Mvc
         { }
         #endregion
 
+        /// <summary>
+        /// Post convention.
+        /// </summary>
+        /// <param name="model"></param>
         #region POST
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -39,6 +54,10 @@ namespace Microsoft.AspNetCore.Mvc
             [ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)]
             object model) { }
 
+        /// <summary>
+        /// Create convention.
+        /// </summary>
+        /// <param name="model"></param>
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesDefaultResponseType]
@@ -51,6 +70,11 @@ namespace Microsoft.AspNetCore.Mvc
         #endregion
 
         #region PUT
+        /// <summary>
+        /// Put convention.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -65,6 +89,11 @@ namespace Microsoft.AspNetCore.Mvc
             [ApiConventionTypeMatch(ApiConventionTypeMatchBehavior.Any)]
             object model) { }
 
+        /// <summary>
+        /// Edit convention.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -80,6 +109,11 @@ namespace Microsoft.AspNetCore.Mvc
             object model)
         { }
 
+        /// <summary>
+        /// Update convention.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -97,6 +131,10 @@ namespace Microsoft.AspNetCore.Mvc
         #endregion
 
         #region DELETE
+        /// <summary>
+        /// Delete convention.
+        /// </summary>
+        /// <param name="id"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

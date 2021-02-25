@@ -2,23 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { AbortError } from "./Errors";
+import { FetchHttpClient } from "./FetchHttpClient";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger } from "./ILogger";
-import { NodeHttpClient } from "./NodeHttpClient";
+import { Platform } from "./Utils";
 import { XhrHttpClient } from "./XhrHttpClient";
 
 /** Default implementation of {@link @microsoft/signalr.HttpClient}. */
 export class DefaultHttpClient extends HttpClient {
-    private readonly httpClient: HttpClient;
+    private readonly _httpClient: HttpClient;
 
     /** Creates a new instance of the {@link @microsoft/signalr.DefaultHttpClient}, using the provided {@link @microsoft/signalr.ILogger} to log messages. */
     public constructor(logger: ILogger) {
         super();
 
-        if (typeof XMLHttpRequest !== "undefined") {
-            this.httpClient = new XhrHttpClient(logger);
+        if (typeof fetch !== "undefined" || Platform.isNode) {
+            this._httpClient = new FetchHttpClient(logger);
+        } else if (typeof XMLHttpRequest !== "undefined") {
+            this._httpClient = new XhrHttpClient(logger);
         } else {
-            this.httpClient = new NodeHttpClient(logger);
+            throw new Error("No usable HttpClient found.");
         }
     }
 
@@ -36,10 +39,10 @@ export class DefaultHttpClient extends HttpClient {
             return Promise.reject(new Error("No url defined."));
         }
 
-        return this.httpClient.send(request);
+        return this._httpClient.send(request);
     }
 
     public getCookieString(url: string): string {
-        return this.httpClient.getCookieString(url);
+        return this._httpClient.getCookieString(url);
     }
 }

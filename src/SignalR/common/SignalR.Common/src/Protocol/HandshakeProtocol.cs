@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -26,28 +27,28 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const string TypePropertyName = "type";
         private static JsonEncodedText TypePropertyNameBytes = JsonEncodedText.Encode(TypePropertyName);
 
-        private static ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>> _messageCache = new ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>>();
+        private static readonly ReadOnlyMemory<byte> _successHandshakeData;
 
-        public static ReadOnlySpan<byte> GetSuccessfulHandshake(IHubProtocol protocol)
+        static HandshakeProtocol()
         {
-            ReadOnlyMemory<byte> result;
-            if (!_messageCache.TryGetValue(protocol, out result))
+            var memoryBufferWriter = MemoryBufferWriter.Get();
+            try
             {
-                var memoryBufferWriter = MemoryBufferWriter.Get();
-                try
-                {
-                    WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
-                    result = memoryBufferWriter.ToArray();
-                    _messageCache.TryAdd(protocol, result);
-                }
-                finally
-                {
-                    MemoryBufferWriter.Return(memoryBufferWriter);
-                }
+                WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
+                _successHandshakeData = memoryBufferWriter.ToArray();
             }
-
-            return result.Span;
+            finally
+            {
+                MemoryBufferWriter.Return(memoryBufferWriter);
+            }
         }
+
+        /// <summary>
+        /// Gets the bytes of a successful handshake message.
+        /// </summary>
+        /// <param name="protocol">The protocol being used for the connection.</param>
+        /// <returns>The bytes of a successful handshake message.</returns>
+        public static ReadOnlySpan<byte> GetSuccessfulHandshake(IHubProtocol protocol) => _successHandshakeData.Span;
 
         /// <summary>
         /// Writes the serialized representation of a <see cref="HandshakeRequestMessage"/> to the specified writer.
@@ -114,7 +115,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="buffer">The serialized representation of the message.</param>
         /// <param name="responseMessage">When this method returns, contains the parsed message.</param>
         /// <returns>A value that is <c>true</c> if the <see cref="HandshakeResponseMessage"/> was successfully parsed; otherwise, <c>false</c>.</returns>
-        public static bool TryParseResponseMessage(ref ReadOnlySequence<byte> buffer, out HandshakeResponseMessage responseMessage)
+        public static bool TryParseResponseMessage(ref ReadOnlySequence<byte> buffer, [NotNullWhen(true)] out HandshakeResponseMessage? responseMessage)
         {
             if (!TextMessageParser.TryParseMessage(ref buffer, out var payload))
             {
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             reader.CheckRead();
             reader.EnsureObjectStart();
 
-            string error = null;
+            string? error = null;
 
             while (reader.CheckRead())
             {
@@ -168,7 +169,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="buffer">The serialized representation of the message.</param>
         /// <param name="requestMessage">When this method returns, contains the parsed message.</param>
         /// <returns>A value that is <c>true</c> if the <see cref="HandshakeRequestMessage"/> was successfully parsed; otherwise, <c>false</c>.</returns>
-        public static bool TryParseRequestMessage(ref ReadOnlySequence<byte> buffer, out HandshakeRequestMessage requestMessage)
+        public static bool TryParseRequestMessage(ref ReadOnlySequence<byte> buffer, [NotNullWhen(true)] out HandshakeRequestMessage? requestMessage)
         {
             if (!TextMessageParser.TryParseMessage(ref buffer, out var payload))
             {
@@ -181,7 +182,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             reader.CheckRead();
             reader.EnsureObjectStart();
 
-            string protocol = null;
+            string? protocol = null;
             int? protocolVersion = null;
 
             while (reader.CheckRead())

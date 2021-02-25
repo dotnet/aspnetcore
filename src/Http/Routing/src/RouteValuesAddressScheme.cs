@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing
 
             var state = State;
 
-            IList<OutboundMatchResult> matchResults = null;
+            IList<OutboundMatchResult>? matchResults = null;
             if (string.IsNullOrEmpty(address.RouteName))
             {
                 matchResults = state.AllMatchesLinkGenerationTree.GetMatches(
@@ -141,8 +141,8 @@ namespace Microsoft.AspNetCore.Routing
 
         private OutboundRouteEntry CreateOutboundRouteEntry(
             RouteEndpoint endpoint,
-            IReadOnlyDictionary<string, object> requiredValues,
-            string routeName)
+            IReadOnlyDictionary<string, object?> requiredValues,
+            string? routeName)
         {
             var entry = new OutboundRouteEntry()
             {

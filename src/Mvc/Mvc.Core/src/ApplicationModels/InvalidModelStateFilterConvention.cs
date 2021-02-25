@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     {
         private readonly ModelStateInvalidFilterFactory _filterFactory = new ModelStateInvalidFilterFactory();
 
+        /// <inheritdoc />
         public void Apply(ActionModel action)
         {
             if (action == null)
@@ -30,6 +31,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             action.Filters.Add(_filterFactory);
         }
 
+        /// <summary>
+        /// Called to determine whether the action should apply.
+        /// </summary>
+        /// <param name="action">The action in question.</param>
+        /// <returns><see langword="true"/> if the action should apply.</returns>
         protected virtual bool ShouldApply(ActionModel action) => true;
     }
 }

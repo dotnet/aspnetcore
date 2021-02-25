@@ -4,15 +4,17 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
     /// <summary>
-    /// Writes to the <see cref="Stream"/> using the supplied <see cref="Encoding"/>.
+    /// Writes to the HTTP response <see cref="Stream"/> using the supplied <see cref="System.Text.Encoding"/>.
     /// It does not write the BOM and also does not close the stream.
     /// </summary>
     public class HttpResponseStreamWriter : TextWriter
@@ -32,16 +34,35 @@ namespace Microsoft.AspNetCore.WebUtilities
         private int _charBufferCount;
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpResponseStreamWriter"/>.
+        /// </summary>
+        /// <param name="stream">The HTTP response <see cref="Stream"/>.</param>
+        /// <param name="encoding">The character encoding to use.</param>
         public HttpResponseStreamWriter(Stream stream, Encoding encoding)
             : this(stream, encoding, DefaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpResponseStreamWriter"/>.
+        /// </summary>
+        /// <param name="stream">The HTTP response <see cref="Stream"/>.</param>
+        /// <param name="encoding">The character encoding to use.</param>
+        /// <param name="bufferSize">The minimum buffer size.</param>
         public HttpResponseStreamWriter(Stream stream, Encoding encoding, int bufferSize)
             : this(stream, encoding, bufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="HttpResponseStreamWriter"/>.
+        /// </summary>
+        /// <param name="stream">The HTTP response <see cref="Stream"/>.</param>
+        /// <param name="encoding">The character encoding to use.</param>
+        /// <param name="bufferSize">The minimum buffer size.</param>
+        /// <param name="bytePool">The byte array pool.</param>
+        /// <param name="charPool">The char array pool.</param>
         public HttpResponseStreamWriter(
             Stream stream,
             Encoding encoding,
@@ -86,8 +107,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
         public override Encoding Encoding { get; }
 
+        /// <inheritdoc/>
         public override void Write(char value)
         {
             if (_disposed)
@@ -104,6 +127,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             _charBufferCount++;
         }
 
+        /// <inheritdoc/>
         public override void Write(char[] values, int index, int count)
         {
             if (_disposed)
@@ -127,7 +151,31 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public override void Write(string value)
+        /// <inheritdoc/>
+        public override void Write(ReadOnlySpan<char> value)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
+            }
+
+            var remaining = value.Length;
+            while (remaining > 0)
+            {
+                if (_charBufferCount == _charBufferSize)
+                {
+                    FlushInternal(flushEncoder: false);
+                }
+
+                var written = CopyToCharBuffer(value);
+
+                remaining -= written;
+                value = value.Slice(written);
+            };
+        }
+
+        /// <inheritdoc/>
+        public override void Write(string? value)
         {
             if (_disposed)
             {
@@ -152,6 +200,19 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
+        public override void WriteLine(ReadOnlySpan<char> value)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
+            }
+
+            Write(value);
+            Write(NewLine);
+        }
+
+        /// <inheritdoc/>
         public override Task WriteAsync(char value)
         {
             if (_disposed)
@@ -182,6 +243,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             _charBufferCount++;
         }
 
+        /// <inheritdoc/>
         public override Task WriteAsync(char[] values, int index, int count)
         {
             if (_disposed)
@@ -223,21 +285,21 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public override Task WriteAsync(string value)
+        /// <inheritdoc/>
+        public override Task WriteAsync(string? value)
         {
             if (_disposed)
             {
                 return GetObjectDisposedTask();
             }
 
-            var count = value?.Length ?? 0;
-            if (count == 0)
+            if (string.IsNullOrEmpty(value))
             {
                 return Task.CompletedTask;
             }
 
             var remaining = _charBufferSize - _charBufferCount;
-            if (remaining >= count)
+            if (remaining >= value.Length)
             {
                 // Enough room in buffer, no need to go async
                 CopyToCharBuffer(value);
@@ -268,9 +330,100 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc/>
+        [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
+        public override Task WriteAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
+        {
+            if (_disposed)
+            {
+                return GetObjectDisposedTask();
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Task.FromCanceled(cancellationToken);
+            }
+
+            if (value.IsEmpty)
+            {
+                return Task.CompletedTask;
+            }
+
+            var remaining = _charBufferSize - _charBufferCount;
+            if (remaining >= value.Length)
+            {
+                // Enough room in buffer, no need to go async
+                CopyToCharBuffer(value.Span);
+                return Task.CompletedTask;
+            }
+            else
+            {
+                return WriteAsyncAwaited(value);
+            }
+        }
+
+        private async Task WriteAsyncAwaited(ReadOnlyMemory<char> value)
+        {
+            Debug.Assert(value.Length > 0);
+            Debug.Assert(_charBufferSize - _charBufferCount < value.Length);
+
+            var remaining = value.Length;
+            while (remaining > 0)
+            {
+                if (_charBufferCount == _charBufferSize)
+                {
+                    await FlushInternalAsync(flushEncoder: false);
+                }
+
+                var written = CopyToCharBuffer(value.Span);
+
+                remaining -= written;
+                value = value.Slice(written);
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Task WriteLineAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
+        {
+            if (_disposed)
+            {
+                return GetObjectDisposedTask();
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Task.FromCanceled(cancellationToken);
+            }
+
+            if (value.IsEmpty && NewLine.Length == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            var remaining = _charBufferSize - _charBufferCount;
+            if (remaining >= value.Length + NewLine.Length)
+            {
+                // Enough room in buffer, no need to go async
+                CopyToCharBuffer(value.Span);
+                CopyToCharBuffer(NewLine);
+                return Task.CompletedTask;
+            }
+            else
+            {
+                return WriteLineAsyncAwaited(value);
+            }
+        }
+
+        private async Task WriteLineAsyncAwaited(ReadOnlyMemory<char> value)
+        {
+            await WriteAsync(value);
+            await WriteAsync(NewLine);
+        }
+
         // We want to flush the stream when Flush/FlushAsync is explicitly
         // called by the user (example: from a Razor view).
 
+        /// <inheritdoc/>
         public override void Flush()
         {
             if (_disposed)
@@ -281,6 +434,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             FlushInternal(flushEncoder: true);
         }
 
+        /// <inheritdoc/>
         public override Task FlushAsync()
         {
             if (_disposed)
@@ -291,6 +445,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return FlushInternalAsync(flushEncoder: true);
         }
 
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             if (disposing && !_disposed)
@@ -310,6 +465,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             base.Dispose(disposing);
         }
 
+        /// <inheritdoc/>
         public override async ValueTask DisposeAsync()
         {
             if (!_disposed)
@@ -421,6 +577,19 @@ namespace Microsoft.AspNetCore.WebUtilities
             _charBufferCount += remaining;
             index += remaining;
             count -= remaining;
+        }
+
+        private int CopyToCharBuffer(ReadOnlySpan<char> value)
+        {
+            var remaining = Math.Min(_charBufferSize - _charBufferCount, value.Length);
+
+            var source = value.Slice(0, remaining);
+            var destination = new Span<char>(_charBuffer, _charBufferCount, remaining);
+            source.CopyTo(destination);
+
+            _charBufferCount += remaining;
+
+            return remaining;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="include">Names of parameters to include in binding.</param>
         public BindAttribute(params string[] include)
         {
-            var items = new List<string>();
+            var items = new List<string>(include.Length);
             foreach (var item in include)
             {
                 items.AddRange(SplitString(item));
@@ -56,30 +57,27 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 if (Include != null && Include.Length > 0)
                 {
-                    if (_propertyFilter == null)
-                    {
-                        _propertyFilter = (m) => Include.Contains(m.PropertyName, StringComparer.Ordinal);
-                    }
-
+                    _propertyFilter ??= PropertyFilter;
                     return _propertyFilter;
                 }
                 else
                 {
                     return _default;
                 }
+
+                bool PropertyFilter(ModelMetadata modelMetadata)
+                {
+                    if (modelMetadata.MetadataKind == ModelMetadataKind.Parameter)
+                    {
+                        return Include.Contains(modelMetadata.ParameterName, StringComparer.Ordinal);
+                    }
+
+                    return Include.Contains(modelMetadata.PropertyName, StringComparer.Ordinal);
+                }
             }
         }
 
         private static IEnumerable<string> SplitString(string original)
-        {
-            if (string.IsNullOrEmpty(original))
-            {
-                return Array.Empty<string>();
-            }
-
-            var split = original.Split(',').Select(piece => piece.Trim()).Where(piece => !string.IsNullOrEmpty(piece));
-
-            return split;
-        }
+            => original?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
     }
 }

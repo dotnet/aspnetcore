@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             // Assert
             Assert.Equal(new long[] { 2, 3, 4 }, renderIds);
-            Assert.True(task.Wait(3000), "One or more render batches werent acknowledged");
+            Assert.True(task.Wait(3000), "One or more render batches weren't acknowledged");
 
             await task;
         }
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 exceptions.Add(e);
             };
 
-            // Receive the ack for the intial batch
+            // Receive the ack for the initial batch
             _ = renderer.OnRenderCompletedAsync(2, null);
             // Receive the ack for the second batch
             _ = renderer.OnRenderCompletedAsync(3, null);
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 exceptions.Add(e);
             };
 
-            // Receive the ack for the intial batch
+            // Receive the ack for the initial batch
             _ = renderer.OnRenderCompletedAsync(2, null);
             // Receive the ack for the second batch
             _ = renderer.OnRenderCompletedAsync(2, null);
@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         private class TestRemoteRenderer : RemoteRenderer
         {
             public TestRemoteRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, CircuitOptions options, CircuitClientProxy client, ILogger logger)
-                : base(serviceProvider, loggerFactory, options, client, logger)
+                : base(serviceProvider, loggerFactory, options, client, logger, null)
             {
             }
 

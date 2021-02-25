@@ -15,14 +15,17 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
+    /// <summary>
+    /// Supports processing and binding parameter values in a route template.
+    /// </summary>
     public class TemplateBinder
     {
         private readonly UrlEncoder _urlEncoder;
         private readonly ObjectPool<UriBuildingContext> _pool;
 
         private readonly (string parameterName, IRouteConstraint constraint)[] _constraints;
-        private readonly RouteValueDictionary _defaults;
-        private readonly KeyValuePair<string, object>[] _filters;
+        private readonly RouteValueDictionary? _defaults;
+        private readonly KeyValuePair<string, object?>[] _filters;
         private readonly (string parameterName, IOutboundParameterTransformer transformer)[] _parameterTransformers;
         private readonly RoutePattern _pattern;
         private readonly string[] _requiredKeys;
@@ -30,7 +33,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         // A pre-allocated template for the 'known' route values that this template binder uses.
         //
         // We always make a copy of this and operate on the copy, so that we don't mutate shared state.
-        private readonly KeyValuePair<string, object>[] _slots;
+        private readonly KeyValuePair<string, object?>[] _slots;
 
         /// <summary>
         /// Creates a new instance of <see cref="TemplateBinder"/>.
@@ -44,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             ObjectPool<UriBuildingContext> pool,
             RouteTemplate template,
             RouteValueDictionary defaults)
-            : this(urlEncoder, pool, template?.ToRoutePattern(), defaults, requiredKeys: null, parameterPolicies: null)
+            : this(urlEncoder, pool, template?.ToRoutePattern()!, defaults, requiredKeys: null, parameterPolicies: null)
         {
         }
 
@@ -63,9 +66,9 @@ namespace Microsoft.AspNetCore.Routing.Template
             UrlEncoder urlEncoder,
             ObjectPool<UriBuildingContext> pool,
             RoutePattern pattern,
-            RouteValueDictionary defaults,
-            IEnumerable<string> requiredKeys,
-            IEnumerable<(string parameterName, IParameterPolicy policy)> parameterPolicies)
+            RouteValueDictionary? defaults,
+            IEnumerable<string>? requiredKeys,
+            IEnumerable<(string parameterName, IParameterPolicy policy)>? parameterPolicies)
         {
             if (urlEncoder == null)
             {
@@ -159,12 +162,17 @@ namespace Microsoft.AspNetCore.Routing.Template
             _slots = AssignSlots(_pattern, _filters);
         }
 
-        // Step 1: Get the list of values we're going to try to use to match and generate this URI
-        public TemplateValuesResult GetValues(RouteValueDictionary ambientValues, RouteValueDictionary values)
+        /// <summary>
+        /// Generates the parameter values in the route.
+        /// </summary>
+        /// <param name="ambientValues">The values associated with the current request.</param>
+        /// <param name="values">The route values to process.</param>
+        /// <returns>A <see cref="TemplateValuesResult"/> instance. Can be null.</returns>
+        public TemplateValuesResult? GetValues(RouteValueDictionary? ambientValues, RouteValueDictionary values)
         {
             // Make a new copy of the slots array, we'll use this as 'scratch' space
             // and then the RVD will take ownership of it.
-            var slots = new KeyValuePair<string, object>[_slots.Length];
+            var slots = new KeyValuePair<string, object?>[_slots.Length];
             Array.Copy(_slots, 0, slots, 0, slots.Length);
 
             // Keeping track of the number of 'values' we've processed can be used to avoid doing
@@ -184,7 +192,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                     // with null values, we use the null-object-pattern to track 'explicit null', which means that
                     // null means omitted.
                     value = IsRoutePartNonEmpty(value) ? value : SentinullValue.Instance;
-                    slots[i] = new KeyValuePair<string, object>(key, value);
+                    slots[i] = new KeyValuePair<string, object?>(key, value);
 
                     // Track the count of processed values - this allows a fast path later.
                     valueProcessedCount++;
@@ -266,7 +274,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 var hasExplicitValue = value != null;
 
                 var hasAmbientValue = false;
-                var ambientValue = (object)null;
+                var ambientValue = (object?)null;
 
                 var parameter = parameters[i];
 
@@ -318,7 +326,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                         (RoutePartsEqual(requiredValue, ambientValue) || RoutePattern.IsRequiredValueAny(requiredValue)))
                     {
                         // Treat this an an explicit value to *force it*.
-                        slots[i] = new KeyValuePair<string, object>(key, ambientValue);
+                        slots[i] = new KeyValuePair<string, object?>(key, ambientValue);
                         hasExplicitValue = true;
                         value = ambientValue;
                     }
@@ -331,7 +339,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 }
                 else if (copyAmbientValues && hasAmbientValue)
                 {
-                    slots[i] = new KeyValuePair<string, object>(key, ambientValue);
+                    slots[i] = new KeyValuePair<string, object?>(key, ambientValue);
                 }
                 else if (parameter.IsOptional || parameter.IsCatchAll)
                 {
@@ -344,7 +352,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
                     // Add the default value only if there isn't already a new value for it and
                     // only if it actually has a default value.
-                    slots[i] = new KeyValuePair<string, object>(key, defaultValue);
+                    slots[i] = new KeyValuePair<string, object?>(key, defaultValue);
                 }
                 else
                 {
@@ -392,7 +400,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 // the dictionary.
                 foreach (var kvp in values)
                 {
-                    if (!_defaults.ContainsKey(kvp.Key))
+                    if (!_defaults!.ContainsKey(kvp.Key))
                     {
 #if RVD_TryAdd
                         acceptedValues.TryAdd(kvp.Key, kvp.Value);
@@ -424,11 +432,15 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         // Step 1.5: Process constraints
-        //
-        // Processes the constraints **if** they were passed in to the TemplateBinder constructor.
-        // Returns true on success
-        // Returns false + sets the name/constraint for logging on failure.
-        public bool TryProcessConstraints(HttpContext httpContext, RouteValueDictionary combinedValues, out string parameterName, out IRouteConstraint constraint)
+        /// <summary>
+        /// Processes the constraints **if** they were passed in to the TemplateBinder constructor.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+        /// <param name="combinedValues">A dictionary that contains the parameters for the route.</param>
+        /// <param name="parameterName">The name of the parameter.</param>
+        /// <param name="constraint">The constraint object.</param>
+        /// <returns><see langword="true"/> if constraints were processed succesfully and false otherwise.</returns>
+        public bool TryProcessConstraints(HttpContext? httpContext, RouteValueDictionary combinedValues, out string? parameterName, out IRouteConstraint? constraint)
         {
             var constraints = _constraints;
             for (var i = 0; i < constraints.Length; i++)
@@ -447,7 +459,12 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         // Step 2: If the route is a match generate the appropriate URI
-        public string BindValues(RouteValueDictionary acceptedValues)
+        /// <summary>
+        /// Returns a string representation of the URI associated with the route.
+        /// </summary>
+        /// <param name="acceptedValues">A dictionary that contains the parameters for the route.</param>
+        /// <returns>The string representation of the route.</returns>
+        public string? BindValues(RouteValueDictionary acceptedValues)
         {
             var context = _pool.Get();
 
@@ -464,7 +481,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         // Step 2: If the route is a match generate the appropriate URI
         internal bool TryBindValues(
             RouteValueDictionary acceptedValues,
-            LinkOptions options,
+            LinkOptions? options,
             LinkOptions globalOptions,
             out (PathString path, QueryString query) result)
         {
@@ -519,7 +536,6 @@ namespace Microsoft.AspNetCore.Routing.Template
                 for (var j = 0; j < partsCount; j++)
                 {
                     var part = parts[j];
-
                     if (part is RoutePatternLiteralPart literalPart)
                     {
                         if (!context.Accept(literalPart.Content))
@@ -569,8 +585,10 @@ namespace Microsoft.AspNetCore.Routing.Template
                             // for format, so we remove '.' and generate 5.
                             if (!context.Accept(converted, parameterPart.EncodeSlashes))
                             {
-                                if (j != 0 && parameterPart.IsOptional && (separatorPart = parts[j - 1] as RoutePatternSeparatorPart) != null)
+                                RoutePatternSeparatorPart? nullablePart;
+                                if (j != 0 && parameterPart.IsOptional && (nullablePart = parts[j - 1] as RoutePatternSeparatorPart) != null)
                                 {
+                                    separatorPart = nullablePart;
                                     context.Remove(separatorPart.Content);
                                 }
                                 else
@@ -612,7 +630,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             return true;
         }
 
-        private bool AddQueryKeyValueToContext(UriBuildingContext context, string key, object value, bool wroteFirst)
+        private bool AddQueryKeyValueToContext(UriBuildingContext context, string key, object? value, bool wroteFirst)
         {
             var converted = Convert.ToString(value, CultureInfo.InvariantCulture);
             if (!string.IsNullOrEmpty(converted))
@@ -638,7 +656,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="a">An object to compare.</param>
         /// <param name="b">An object to compare.</param>
         /// <returns>True if the object are equal, otherwise false.</returns>
-        public static bool RoutePartsEqual(object a, object b)
+        public static bool RoutePartsEqual(object? a, object? b)
         {
             var sa = a as string ?? (ReferenceEquals(SentinullValue.Instance, a) ? string.Empty : null);
             var sb = b as string ?? (ReferenceEquals(SentinullValue.Instance, b) ? string.Empty : null);
@@ -670,7 +688,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsRoutePartNonEmpty(object part)
+        private static bool IsRoutePartNonEmpty(object? part)
         {
             if (part == null)
             {
@@ -691,7 +709,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         private void CopyNonParameterAmbientValues(
-            RouteValueDictionary ambientValues,
+            RouteValueDictionary? ambientValues,
             RouteValueDictionary acceptedValues,
             RouteValueDictionary combinedValues)
         {
@@ -713,18 +731,18 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
-        private static KeyValuePair<string, object>[] AssignSlots(RoutePattern pattern, KeyValuePair<string, object>[] filters)
+        private static KeyValuePair<string, object?>[] AssignSlots(RoutePattern pattern, KeyValuePair<string, object?>[] filters)
         {
-            var slots = new KeyValuePair<string, object>[pattern.Parameters.Count + filters.Length];
+            var slots = new KeyValuePair<string, object?>[pattern.Parameters.Count + filters.Length];
 
             for (var i = 0; i < pattern.Parameters.Count; i++)
             {
-                slots[i] = new KeyValuePair<string, object>(pattern.Parameters[i].Name, null);
+                slots[i] = new KeyValuePair<string, object?>(pattern.Parameters[i].Name, null);
             }
 
             for (var i = 0; i < filters.Length; i++)
             {
-                slots[i + pattern.Parameters.Count] = new KeyValuePair<string, object>(filters[i].Key, null);
+                slots[i + pattern.Parameters.Count] = new KeyValuePair<string, object?>(filters[i].Key, null);
             }
 
             return slots;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             _parameterTransformer = parameterTransformer;
         }
 
+        /// <inheritdoc />
         public void Apply(ActionModel action)
         {
             if (ShouldApply(action))
@@ -37,6 +38,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
+        /// <summary>
+        /// Called to determine whether an action should apply.
+        /// </summary>
+        /// <param name="action">The <see cref="ActionModel"/>.</param>
+        /// <returns><see langword="true"/> if the the action should apply.</returns>
         protected virtual bool ShouldApply(ActionModel action) => true;
     }
 }

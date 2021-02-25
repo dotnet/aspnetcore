@@ -606,7 +606,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                     Assert.True(task3Success.IsCompleted);
                     Assert.False(task3Success.IsCanceled);
-                    Assert.False(task3Success.IsFaulted);;
+                    Assert.False(task3Success.IsFaulted);
                 }
             });
         }
@@ -746,15 +746,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var connectionFeatures = new FeatureCollection();
             connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
 
-            var http1Connection = new Http1Connection(new HttpConnectionContext
-            {
-                ServiceContext = serviceContext,
-                ConnectionContext = Mock.Of<ConnectionContext>(),
-                ConnectionFeatures = connectionFeatures,
-                MemoryPool = _memoryPool,
-                TimeoutControl = Mock.Of<ITimeoutControl>(),
-                Transport = pair.Transport
-            });
+            var connectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: serviceContext,
+                connectionContext: Mock.Of<ConnectionContext>(),
+                transport: pair.Transport,
+                memoryPool: _memoryPool,
+                connectionFeatures: connectionFeatures,
+                timeoutControl: Mock.Of<ITimeoutControl>());
+
+            var http1Connection = new Http1Connection(connectionContext);
 
             if (cts != null)
             {

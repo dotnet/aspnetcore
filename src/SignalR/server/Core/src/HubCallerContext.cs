@@ -21,17 +21,17 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets the user identifier.
         /// </summary>
-        public abstract string UserIdentifier { get; }
+        public abstract string? UserIdentifier { get; }
 
         /// <summary>
         /// Gets the user.
         /// </summary>
-        public abstract ClaimsPrincipal User { get; }
+        public abstract ClaimsPrincipal? User { get; }
 
         /// <summary>
         /// Gets a key/value collection that can be used to share data within the scope of this connection.
         /// </summary>
-        public abstract IDictionary<object, object> Items { get; }
+        public abstract IDictionary<object, object?> Items { get; }
 
         /// <summary>
         /// Gets the collection of HTTP features available on the connection.

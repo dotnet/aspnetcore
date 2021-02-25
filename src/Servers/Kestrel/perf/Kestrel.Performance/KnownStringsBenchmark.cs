@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return GetKnownMethod(data);
         }
 
-        private int GetKnownMethod(Span<byte> data)
+        private int GetKnownMethod(ReadOnlySpan<byte> data)
         {
             int len = 0;
             HttpMethod method;
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             int len = 0;
             HttpVersion version;
-            Span<byte> data = _version;
+            ReadOnlySpan<byte> data = _version;
             for (int i = 0; i < loops; i++)
             {
                 data.GetKnownVersion(out version, out var length);

@@ -136,6 +136,9 @@
   <data name="AntiforgeryToken_TokensSwapped" xml:space="preserve">
     <value>Validation of the provided antiforgery token failed. The cookie token and the request token were swapped.</value>
   </data>
+  <data name="AntiforgeryToken_UnableToReadRequest" xml:space="preserve">
+    <value>Unable to read the antiforgery request token from the posted form.</value>
+  </data>
   <data name="AntiforgeryToken_UsernameMismatch" xml:space="preserve">
     <value>The provided antiforgery token was meant for user "{0}", but the current user is "{1}".</value>
   </data>

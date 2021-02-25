@@ -7,8 +7,10 @@ module.exports = env => baseConfig(__dirname, "signalr", {
     target: env && env.platform ?  env.platform : undefined,
     platformDist: env && env.platform ?  env.platform : undefined,
     externals: [
-        "websocket",
+        "ws",
         "eventsource",
-        "request"
+        "node-fetch",
+        "abort-controller",
+        "fetch-cookie",
     ]
 });

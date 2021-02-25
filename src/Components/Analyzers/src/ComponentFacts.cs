@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
 
             return property.GetAttributes().Any(a =>
             {
-                return a.AttributeClass == symbols.ParameterAttribute || a.AttributeClass == symbols.CascadingParameterAttribute;
+                return SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.ParameterAttribute) || SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.CascadingParameterAttribute);
             });
         }
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 throw new ArgumentNullException(nameof(property));
             }
 
-            return property.GetAttributes().Any(a => a.AttributeClass == symbols.ParameterAttribute);
+            return property.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.ParameterAttribute));
         }
 
         public static bool IsParameterWithCaptureUnmatchedValues(ComponentSymbols symbols, IPropertySymbol property)
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 throw new ArgumentNullException(nameof(property));
             }
 
-            var attribute = property.GetAttributes().FirstOrDefault(a => a.AttributeClass == symbols.ParameterAttribute);
+            var attribute = property.GetAttributes().FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.ParameterAttribute));
             if (attribute == null)
             {
                 return false;
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 throw new ArgumentNullException(nameof(property));
             }
 
-            return property.GetAttributes().Any(a => a.AttributeClass == symbols.CascadingParameterAttribute);
+            return property.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.CascadingParameterAttribute));
         }
 
         public static bool IsComponent(ComponentSymbols symbols, Compilation compilation, INamedTypeSymbol type)

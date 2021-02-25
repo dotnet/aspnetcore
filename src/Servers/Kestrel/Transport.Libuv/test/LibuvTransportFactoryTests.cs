@@ -18,7 +18,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         [InlineData(-1337)]
         public void StartWithNonPositiveThreadCountThrows(int threadCount)
         {
+#pragma warning disable CS0618
             var options = new LibuvTransportOptions { ThreadCount = threadCount };
+#pragma warning restore CS0618
 
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
                 new LibuvTransportFactory(Options.Create(options), new LifetimeNotImplemented(), Mock.Of<ILoggerFactory>()));
@@ -30,7 +32,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public void LoggerCategoryNameIsLibuvTransportNamespace()
         {
             var mockLoggerFactory = new Mock<ILoggerFactory>();
+#pragma warning disable CS0618
             new LibuvTransportFactory(Options.Create<LibuvTransportOptions>(new LibuvTransportOptions()), new LifetimeNotImplemented(), mockLoggerFactory.Object);
+#pragma warning restore CS0618
             mockLoggerFactory.Verify(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv"));
         }
     }

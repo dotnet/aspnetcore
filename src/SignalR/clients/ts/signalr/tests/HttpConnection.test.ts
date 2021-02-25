@@ -5,8 +5,10 @@ import { HttpResponse } from "../src/HttpClient";
 import { HttpConnection, INegotiateResponse, TransportSendQueue } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
+import { getUserAgentHeader } from "../src/Utils";
 
 import { HttpError } from "../src/Errors";
+import { ILogger, LogLevel } from "../src/ILogger";
 import { NullLogger } from "../src/Loggers";
 import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
 
@@ -32,6 +34,9 @@ const defaultNegotiateResponse: INegotiateResponse = {
     connectionToken: defaultConnectionToken,
     negotiateVersion: 1,
 };
+
+function ServerSentEventsNotAllowed() { throw new Error("Don't allow ServerSentEvents."); }
+function WebSocketNotAllowed() { throw new Error("Don't allow Websockets."); }
 
 registerUnhandledRejectionHandler();
 
@@ -191,9 +196,9 @@ describe("HttpConnection", () => {
             const connection = new HttpConnection("http://tempuri.org", options);
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("Unexpected status code returned from negotiate 999");
+                .toThrow("Unexpected status code returned from negotiate '999'");
         },
-        "Failed to start the connection: Error: Unexpected status code returned from negotiate 999");
+        "Failed to start the connection: Error: Unexpected status code returned from negotiate '999'");
     });
 
     it("all transport failure errors get aggregated", async () => {
@@ -231,8 +236,8 @@ describe("HttpConnection", () => {
         await VerifyLogger.run(async (loggerImpl) => {
             let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
-                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
-                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                EventSource: ServerSentEventsNotAllowed,
+                WebSocket: WebSocketNotAllowed,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", () =>  {
@@ -262,8 +267,8 @@ describe("HttpConnection", () => {
         await VerifyLogger.run(async (loggerImpl) => {
             let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
-                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
-                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                EventSource: ServerSentEventsNotAllowed,
+                WebSocket: WebSocketNotAllowed,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", () =>  {
@@ -366,7 +371,7 @@ describe("HttpConnection", () => {
                     ...commonOptions,
                     httpClient: new TestHttpClient()
                         .on("POST", (r) => {
-                            negotiateUrl.resolve(r.url);
+                            negotiateUrl.resolve(r.url || "");
                             throw new HttpError("We don't care how this turns out", 500);
                         })
                         .on("GET", () => {
@@ -590,7 +595,7 @@ describe("HttpConnection", () => {
                         firstPoll = false;
                         return "";
                     }
-                    return new HttpResponse(204, "No Content", "");
+                    return new HttpResponse(200);
                 })
                 .on("DELETE", () => new HttpResponse(202));
 
@@ -605,7 +610,7 @@ describe("HttpConnection", () => {
             try {
                 await connection.start(TransferFormat.Text);
 
-                expect(httpClient.sentRequests.length).toBe(4);
+                expect(httpClient.sentRequests.length).toBeGreaterThanOrEqual(4);
                 expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate?negotiateVersion=1");
                 expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate?negotiateVersion=1");
                 expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
@@ -1083,7 +1088,6 @@ describe("HttpConnection", () => {
             let negotiateCount: number = 0;
             let getCount: number = 0;
             let connection: HttpConnection;
-            let connectionId: string | undefined;
             const options: IHttpConnectionOptions = {
                 WebSocket: TestWebSocket,
                 ...commonOptions,
@@ -1097,8 +1101,7 @@ describe("HttpConnection", () => {
                         if (getCount === 1) {
                             return new HttpResponse(200);
                         }
-                        connectionId = connection.connectionId;
-                        return new HttpResponse(204);
+                        return new HttpResponse(200);
                     })
                     .on("DELETE", () => new HttpResponse(202)),
 
@@ -1119,9 +1122,108 @@ describe("HttpConnection", () => {
             } catch { }
 
             expect(negotiateCount).toEqual(2);
-            expect(connectionId).toEqual("2");
+            expect(connection.connectionId).toEqual("2");
+
+            await connection.stop();
         },
         "Failed to start the transport 'WebSockets': Error: There was an error with the transport.");
+    });
+
+    it("user agent header set on negotiate", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let userAgentValue: string = "";
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", (r) => {
+                        userAgentValue = r.headers![`User-Agent`];
+                        return new HttpResponse(200, "", "{\"error\":\"nope\"}");
+                    }),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            try {
+                await connection.start(TransferFormat.Text);
+            } catch {
+            } finally {
+                await connection.stop();
+            }
+
+            const [, value] = getUserAgentHeader();
+            expect(userAgentValue).toEqual(value);
+        }, "Failed to start the connection: Error: nope");
+    });
+
+    it("overwrites library headers with user headers on negotiate", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const headers = { "User-Agent": "Custom Agent", "X-HEADER": "VALUE" };
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                headers,
+                httpClient: new TestHttpClient()
+                    .on("POST", (r) => {
+                        expect(r.headers).toEqual(headers);
+                        return new HttpResponse(200, "", "{\"error\":\"nope\"}");
+                    }),
+                logger,
+            };
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            try {
+                await connection.start(TransferFormat.Text);
+            } catch {
+            } finally {
+                await connection.stop();
+            }
+        }, "Failed to start the connection: Error: nope");
+    });
+
+    it("logMessageContent displays correctly with binary data", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransport = { transport: "LongPolling", transferFormats: ["Text", "Binary"] };
+
+            let sentMessage = "";
+            const captureLogger: ILogger = {
+                log: (logLevel: LogLevel, message: string) => {
+                    if (logLevel === LogLevel.Trace && message.search("data of length") > 0) {
+                        sentMessage = message;
+                    }
+
+                    logger.log(logLevel, message);
+                },
+            };
+
+            let httpClientGetCount = 0;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ connectionId: "42", availableTransports: [availableTransport] }))
+                    .on("GET", () => {
+                        httpClientGetCount++;
+                        if (httpClientGetCount === 1) {
+                            // First long polling request must succeed so start completes
+                            return "";
+                        }
+                        return Promise.resolve();
+                    })
+                    .on("DELETE", () => new HttpResponse(202)),
+                logMessageContent: true,
+                logger: captureLogger,
+                transport: HttpTransportType.LongPolling,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            connection.onreceive = () => null;
+            try {
+                await connection.start(TransferFormat.Binary);
+                await connection.send(new Uint8Array([0x68, 0x69, 0x20, 0x3a, 0x29]));
+            } finally {
+                await connection.stop();
+            }
+
+            expect(sentMessage).toBe("(LongPolling transport) sending data. Binary data of length 5. Content: '0x68 0x69 0x20 0x3a 0x29'.");
+        });
     });
 
     it("send after restarting connection works", async () => {
@@ -1424,7 +1526,7 @@ describe("TransportSendQueue", () => {
 
         const queue = new TransportSendQueue(transport);
 
-        const first = queue.send(new Uint8Array([4, 5, 6]));
+        const first = queue.send(new Uint8Array([4, 5, 6]).buffer);
         // This should allow first to enter transport.send
         promiseSource1.resolve();
         // Wait until we're inside transport.send
@@ -1439,8 +1541,8 @@ describe("TransportSendQueue", () => {
         await Promise.all([first, second, third]);
 
         expect(sendMock.mock.calls.length).toBe(2);
-        expect(sendMock.mock.calls[0][0]).toEqual(new Uint8Array([4, 5, 6]));
-        expect(sendMock.mock.calls[1][0]).toEqual(new Uint8Array([7, 8, 10, 12, 14]));
+        expect(sendMock.mock.calls[0][0]).toEqual(new Uint8Array([4, 5, 6]).buffer);
+        expect(sendMock.mock.calls[1][0]).toEqual(new Uint8Array([7, 8, 10, 12, 14]).buffer);
 
         await queue.stop();
     });

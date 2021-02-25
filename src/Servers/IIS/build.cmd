@@ -1,3 +1,3 @@
 @ECHO OFF
 SET RepoRoot=%~dp0..\..\..
-%RepoRoot%\build.cmd -BuildNative -projects %~dp0**\*.csproj %* 
+%RepoRoot%\eng\build.cmd -projects %~dp0**\*.csproj /p:SkipIISNewHandlerTests=true /p:SkipIISNewShimTests=true %*

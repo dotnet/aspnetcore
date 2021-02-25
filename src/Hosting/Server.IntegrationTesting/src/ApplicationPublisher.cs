@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                                  // avoids triggering builds of dependencies of the test app which could cause issues like https://github.com/dotnet/arcade/issues/2941
                                  + $" --no-dependencies"
                                  + $" /p:TargetArchitecture={deploymentParameters.RuntimeArchitecture}"
-                                 + " --no-restore";
+                                 + (deploymentParameters.RestoreDependencies ? "" : " --no-restore");
 
                 if (deploymentParameters.ApplicationType == ApplicationType.Standalone)
                 {
@@ -79,8 +79,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 //    https://stackoverflow.com/a/37983587/102052
                 //
                 // 2. If "dotnet publish" does hang indefinitely for some reason, tests should fail fast with an error message.
-                const int timeoutMinutes = 5;
-                if (hostProcess.WaitForExit(milliseconds: timeoutMinutes * 60 * 1000))
+                var timeout = deploymentParameters.PublishTimeout ?? TimeSpan.FromMinutes(5);
+
+                if (hostProcess.WaitForExit(milliseconds: (int)timeout.TotalMilliseconds))
                 {
                     if (hostProcess.ExitCode != 0)
                     {
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
                 else
                 {
-                    var message = $"{DotnetCommandName} publish failed to exit after {timeoutMinutes} minutes";
+                    var message = $"{DotnetCommandName} publish failed to exit after {timeout.TotalMinutes} minutes";
                     logger.LogError(message);
                     throw new Exception(message);
                 }
@@ -105,15 +106,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private static string GetRuntimeIdentifier(DeploymentParameters deploymentParameters)
         {
             var architecture = deploymentParameters.RuntimeArchitecture;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 return "win-" + architecture;
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (OperatingSystem.IsLinux())
             {
                 return "linux-" + architecture;
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (OperatingSystem.IsMacOS())
             {
                 return "osx-" + architecture;
             }

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests.Fakes
 
         internal GenericWebHostBuilderWrapper(HostBuilder hostBuilder)
         {
-            _builder = new GenericWebHostBuilder(hostBuilder);
+            _builder = new GenericWebHostBuilder(hostBuilder, new WebHostBuilderOptions());
             _hostBuilder = hostBuilder;
         }
 
@@ -71,6 +71,12 @@ namespace Microsoft.AspNetCore.Hosting.Tests.Fakes
         public IWebHostBuilder UseStartup(Type startupType)
         {
             _builder.UseStartup(startupType);
+            return this;
+        }
+
+        public IWebHostBuilder UseStartup<TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
+        {
+            _builder.UseStartup(startupFactory);
             return this;
         }
     }

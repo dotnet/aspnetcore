@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// </remarks>
         public static readonly object RequiredValueAny = new RequiredValueAnySentinal();
 
-        internal static bool IsRequiredValueAny(object value)
+        internal static bool IsRequiredValueAny(object? value)
         {
             return object.ReferenceEquals(RequiredValueAny, value);
         }
@@ -35,10 +35,10 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         private const string SeparatorString = "/";
 
         internal RoutePattern(
-            string rawText,
-            IReadOnlyDictionary<string, object> defaults,
+            string? rawText,
+            IReadOnlyDictionary<string, object?> defaults,
             IReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>> parameterPolicies,
-            IReadOnlyDictionary<string, object> requiredValues,
+            IReadOnlyDictionary<string, object?> requiredValues,
             IReadOnlyList<RoutePatternParameterPart> parameters,
             IReadOnlyList<RoutePatternPathSegment> pathSegments)
         {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// Gets the set of default values for the route pattern.
         /// The keys of <see cref="Defaults"/> are the route parameter names.
         /// </summary>
-        public IReadOnlyDictionary<string, object> Defaults { get; }
+        public IReadOnlyDictionary<string, object?> Defaults { get; }
 
         /// <summary>
         /// Gets the set of parameter policy references for the route pattern.
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// </example>
         /// </para>
         /// </remarks>
-        public IReadOnlyDictionary<string, object> RequiredValues { get; }
+        public IReadOnlyDictionary<string, object?> RequiredValues { get; }
 
         /// <summary>
         /// Gets the precedence value of the route pattern for URL matching.
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// <summary>
         /// Gets the raw text supplied when parsing the route pattern. May be null.
         /// </summary>
-        public string RawText { get; }
+        public string? RawText { get; }
 
         /// <summary>
         /// Gets the list of route parameters.
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// </summary>
         /// <param name="name">The name of the parameter to match.</param>
         /// <returns>The matching parameter or <c>null</c> if no parameter matches the given name.</returns>
-        public RoutePatternParameterPart GetParameter(string name)
+        public RoutePatternParameterPart? GetParameter(string name)
         {
             if (name == null)
             {

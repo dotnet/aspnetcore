@@ -32,13 +32,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private static bool IsHubMethod(MethodInfo methodInfo)
         {
-            var baseDefinition = methodInfo.GetBaseDefinition().DeclaringType;
+            var baseDefinition = methodInfo.GetBaseDefinition().DeclaringType!;
             if (typeof(object) == baseDefinition || methodInfo.IsSpecialName)
             {
                 return false;
             }
 
-            var baseType = baseDefinition.GetTypeInfo().IsGenericType ? baseDefinition.GetGenericTypeDefinition() : baseDefinition;
+            var baseType = baseDefinition.IsGenericType ? baseDefinition.GetGenericTypeDefinition() : baseDefinition;
             return typeof(Hub) != baseType;
         }
     }

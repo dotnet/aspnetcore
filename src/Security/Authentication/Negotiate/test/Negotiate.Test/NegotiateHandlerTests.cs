@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
@@ -207,6 +208,28 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             await NtlmStage1And2Auth(server, testConnection);
         }
 
+        [Fact]
+        public async Task RBACClaimsRetrievedFromCacheAfterKerberosCompleted()
+        {
+            var claimsCache = new MemoryCache(new MemoryCacheOptions());
+            claimsCache.Set("name", new string[] { "CN=Domain Admins,CN=Users,DC=domain,DC=net" });
+            NegotiateOptions negotiateOptions = null;
+            using var host = await CreateHostAsync(options =>
+                {
+                    options.EnableLdap(ldapSettings =>
+                    {
+                        ldapSettings.Domain = "domain.NET";
+                        ldapSettings.ClaimsCache = claimsCache;
+                        ldapSettings.EnableLdapClaimResolution = false; // This disables binding to the LDAP connection on startup
+                    });
+                    negotiateOptions = options;
+                });
+            var server = host.GetTestServer();
+            var testConnection = new TestConnection();
+            negotiateOptions.EnableLdap(_ => { }); // Forcefully re-enable ldap claims resolution to trigger RBAC claims retrieval from cache
+            await AuthenticateAndRetrieveRBACClaims(server, testConnection);
+        }
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -301,7 +324,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var testConnection = new TestConnection();
 
             var ex = await Assert.ThrowsAsync<Exception>(() => SendAsync(server, "/404", testConnection, "Negotiate OtherError"));
-            Assert.Equal("A test other error occured", ex.Message);
+            Assert.Equal("A test other error occurred", ex.Message);
+        }
+        private static async Task AuthenticateAndRetrieveRBACClaims(TestServer server, TestConnection testConnection)
+        {
+            var result = await SendAsync(server, "/AuthenticateAndRetrieveRBACClaims", testConnection, "Negotiate ClientKerberosBlob");
+            Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
+            Assert.Equal("Negotiate ServerKerberosBlob", result.Response.Headers[HeaderNames.WWWAuthenticate]);
         }
 
         // Single Stage
@@ -404,6 +433,24 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
                 var name = context.User.Identity.Name;
                 Assert.False(string.IsNullOrEmpty(name), "name");
+                await context.Response.WriteAsync(name);
+            });
+
+            builder.Map("/AuthenticateAndRetrieveRBACClaims", async context =>
+            {
+                if (!context.User.Identity.IsAuthenticated)
+                {
+                    await context.ChallengeAsync();
+                    return;
+                }
+
+                Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
+                var name = context.User.Identity.Name;
+                Assert.False(string.IsNullOrEmpty(name), "name");
+                Assert.Contains(
+                    context.User.Claims,
+                    claim => claim.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+                        && claim.Value == "CN=Domain Admins,CN=Users,DC=domain,DC=net");
                 await context.Response.WriteAsync(name);
             });
 
@@ -552,15 +599,15 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         return "ServerKerberosBlob2";
                     case "CredentialError":
                         errorType = BlobErrorType.CredentialError;
-                        ex = new Exception("A test credential error occured");
+                        ex = new Exception("A test credential error occurred");
                         return null;
                     case "ClientError":
                         errorType = BlobErrorType.ClientError;
-                        ex = new Exception("A test client error occured");
+                        ex = new Exception("A test client error occurred");
                         return null;
                     case "OtherError":
                         errorType = BlobErrorType.Other;
-                        ex = new Exception("A test other error occured");
+                        ex = new Exception("A test other error occurred");
                         return null;
                     default:
                         errorType = BlobErrorType.Other;

@@ -11,41 +11,35 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature, IThreadPoolWorkItem
+    internal abstract class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature
     {
-        private List<(Action<object> handler, object state)> _heartbeatHandlers;
+        private List<(Action<object> handler, object state)>? _heartbeatHandlers;
         private readonly object _heartbeatLock = new object();
 
-        private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
+        private Stack<KeyValuePair<Func<object, Task>, object>>? _onCompleted;
         private bool _completed;
 
         private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
-        private readonly TaskCompletionSource<object> _completionTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly long _id;
-        private readonly ServiceContext _serviceContext;
-        private readonly ConnectionDelegate _connectionDelegate;
+        private readonly TaskCompletionSource _completionTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        protected readonly long _id;
+        protected readonly ServiceContext _serviceContext;
+        protected readonly TransportConnectionManager _transportConnectionManager;
 
         public KestrelConnection(long id,
                                  ServiceContext serviceContext,
-                                 ConnectionDelegate connectionDelegate,
-                                 ConnectionContext connectionContext,
+                                 TransportConnectionManager transportConnectionManager,
                                  IKestrelTrace logger)
         {
             _id = id;
             _serviceContext = serviceContext;
-            _connectionDelegate = connectionDelegate;
+            _transportConnectionManager = transportConnectionManager;
             Logger = logger;
-            TransportConnection = connectionContext;
 
-            connectionContext.Features.Set<IConnectionHeartbeatFeature>(this);
-            connectionContext.Features.Set<IConnectionCompleteFeature>(this);
-            connectionContext.Features.Set<IConnectionLifetimeNotificationFeature>(this);
             ConnectionClosedRequested = _connectionClosingCts.Token;
         }
 
-        private IKestrelTrace Logger { get; }
+        protected IKestrelTrace Logger { get; }
 
-        public ConnectionContext TransportConnection { get; set; }
         public CancellationToken ConnectionClosedRequested { get; set; }
         public Task ExecutionTask => _completionTcs.Task;
 
@@ -64,6 +58,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 }
             }
         }
+
+        public abstract BaseConnectionContext TransportConnection { get; }
 
         public void OnHeartbeat(Action<object> action, object state)
         {
@@ -124,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "An error occured running an IConnectionCompleteFeature.OnCompleted callback.");
+                    Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
                 }
             }
 
@@ -139,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "An error occured running an IConnectionCompleteFeature.OnCompleted callback.");
+                Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
             }
 
             while (onCompleted.TryPop(out var entry))
@@ -150,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "An error occured running an IConnectionCompleteFeature.OnCompleted callback.");
+                    Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
                 }
             }
         }
@@ -170,54 +166,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Complete()
         {
-            _completionTcs.TrySetResult(null);
+            _completionTcs.TrySetResult();
 
             _connectionClosingCts.Dispose();
         }
 
-        void IThreadPoolWorkItem.Execute()
-        {
-            _ = ExecuteAsync();
-        }
-
-        internal async Task ExecuteAsync()
-        {
-            var connectionContext = TransportConnection;
-
-            try
-            {
-                Logger.ConnectionStart(connectionContext.ConnectionId);
-                KestrelEventSource.Log.ConnectionStart(connectionContext);
-
-                using (BeginConnectionScope(connectionContext))
-                {
-                    try
-                    {
-                        await _connectionDelegate(connectionContext);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(0, ex, "Unhandled exception while processing {ConnectionId}.", connectionContext.ConnectionId);
-                    }
-                }
-            }
-            finally
-            {
-                await FireOnCompletedAsync();
-
-                Logger.ConnectionStop(connectionContext.ConnectionId);
-                KestrelEventSource.Log.ConnectionStop(connectionContext);
-
-                // Dispose the transport connection, this needs to happen before removing it from the
-                // connection manager so that we only signal completion of this connection after the transport
-                // is properly torn down.
-                await TransportConnection.DisposeAsync();
-
-                _serviceContext.ConnectionManager.RemoveConnection(_id);
-            }
-        }
-
-        private IDisposable BeginConnectionScope(ConnectionContext connectionContext)
+        protected IDisposable? BeginConnectionScope(BaseConnectionContext connectionContext)
         {
             if (Logger.IsEnabled(LogLevel.Critical))
             {

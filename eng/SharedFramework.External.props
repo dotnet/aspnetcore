@@ -5,68 +5,43 @@
 
 -->
 <Project>
-
-  <!-- For the targeting pack, always use packages with PatchVersion=0 -->
-  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref' OR '$(IsReferenceAssemblyProject)' == 'true' ">
-    <SystemIOPipelinesPackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlPackageVersion>
-    <MicrosoftWin32SystemEventsPackageVersion>$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsPackageVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsPackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>$(SystemDiagnosticsEventLogPackageVersion.Split('.')[0]).$(SystemDiagnosticsEventLogPackageVersion.Split('.')[1]).0</SystemDiagnosticsEventLogPackageVersion>
-    <SystemDrawingCommonPackageVersion>$(SystemDrawingCommonPackageVersion.Split('.')[0]).$(SystemDrawingCommonPackageVersion.Split('.')[1]).0</SystemDrawingCommonPackageVersion>
-    <SystemSecurityCryptographyPkcsPackageVersion>$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyPkcsPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyPkcsPackageVersion>
-    <SystemSecurityPermissionsPackageVersion>$(SystemSecurityPermissionsPackageVersion.Split('.')[0]).$(SystemSecurityPermissionsPackageVersion.Split('.')[1]).0</SystemSecurityPermissionsPackageVersion>
-    <SystemWindowsExtensionsPackageVersion>$(SystemWindowsExtensionsPackageVersion.Split('.')[0]).$(SystemWindowsExtensionsPackageVersion.Split('.')[1]).0</SystemWindowsExtensionsPackageVersion>
-  </PropertyGroup>
-
-
   <ItemGroup>
-    <!-- Dependencies from aspnet/Extensions -->
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Abstractions"                    Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Memory"                          Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Abstractions"              Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Binder"                    Version="$(MicrosoftExtensionsConfigurationBinderPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.CommandLine"               Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"      Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.FileExtensions"            Version="$(MicrosoftExtensionsConfigurationFileExtensionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Ini"                       Version="$(MicrosoftExtensionsConfigurationIniPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Json"                      Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.KeyPerFile"                Version="$(MicrosoftExtensionsConfigurationKeyPerFilePackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.UserSecrets"               Version="$(MicrosoftExtensionsConfigurationUserSecretsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Xml"                       Version="$(MicrosoftExtensionsConfigurationXmlPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration"                           Version="$(MicrosoftExtensionsConfigurationPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyInjection"                     Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions"   Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Diagnostics.HealthChecks"                Version="$(MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion)"  />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Abstractions"              Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Composite"                 Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Embedded"                  Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Physical"                  Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileSystemGlobbing"                      Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Hosting.Abstractions"                    Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Hosting"                                 Version="$(MicrosoftExtensionsHostingPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Http"                                    Version="$(MicrosoftExtensionsHttpPackageVersion)"  />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Localization.Abstractions"               Version="$(MicrosoftExtensionsLocalizationAbstractionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Localization"                            Version="$(MicrosoftExtensionsLocalizationPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Abstractions"                    Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Configuration"                   Version="$(MicrosoftExtensionsLoggingConfigurationPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Console"                         Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Debug"                           Version="$(MicrosoftExtensionsLoggingDebugPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.EventSource"                     Version="$(MicrosoftExtensionsLoggingEventSourcePackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.EventLog"                        Version="$(MicrosoftExtensionsLoggingEventLogPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.TraceSource"                     Version="$(MicrosoftExtensionsLoggingTraceSourcePackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging"                                 Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.ObjectPool"                              Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.ConfigurationExtensions"         Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.DataAnnotations"                 Version="$(MicrosoftExtensionsOptionsDataAnnotationsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options"                                 Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.WebEncoders"                             Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="Microsoft.JSInterop"                                          Version="$(MicrosoftJSInteropPackageVersion)" />
-
-    <!-- Dependencies from dotnet/corefx -->
-    <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
+    <!-- Dependencies from dotnet/runtime -->
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Abstractions"                    Version="$(MicrosoftExtensionsCachingAbstractionsVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Memory"                          Version="$(MicrosoftExtensionsCachingMemoryVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Abstractions"              Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Binder"                    Version="$(MicrosoftExtensionsConfigurationBinderVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.CommandLine"               Version="$(MicrosoftExtensionsConfigurationCommandLineVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"      Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.FileExtensions"            Version="$(MicrosoftExtensionsConfigurationFileExtensionsVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Ini"                       Version="$(MicrosoftExtensionsConfigurationIniVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Json"                      Version="$(MicrosoftExtensionsConfigurationJsonVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.UserSecrets"               Version="$(MicrosoftExtensionsConfigurationUserSecretsVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Xml"                       Version="$(MicrosoftExtensionsConfigurationXmlVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration"                           Version="$(MicrosoftExtensionsConfigurationVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyInjection"                     Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Abstractions"              Version="$(MicrosoftExtensionsFileProvidersAbstractionsVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Composite"                 Version="$(MicrosoftExtensionsFileProvidersCompositeVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Physical"                  Version="$(MicrosoftExtensionsFileProvidersPhysicalVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileSystemGlobbing"                      Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Hosting.Abstractions"                    Version="$(MicrosoftExtensionsHostingAbstractionsVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Hosting"                                 Version="$(MicrosoftExtensionsHostingVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Http"                                    Version="$(MicrosoftExtensionsHttpVersion)"  />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Abstractions"                    Version="$(MicrosoftExtensionsLoggingAbstractionsVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Configuration"                   Version="$(MicrosoftExtensionsLoggingConfigurationVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Console"                         Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Debug"                           Version="$(MicrosoftExtensionsLoggingDebugVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.EventSource"                     Version="$(MicrosoftExtensionsLoggingEventSourceVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.EventLog"                        Version="$(MicrosoftExtensionsLoggingEventLogVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.TraceSource"                     Version="$(MicrosoftExtensionsLoggingTraceSourceVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging"                                 Version="$(MicrosoftExtensionsLoggingVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.ConfigurationExtensions"         Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.DataAnnotations"                 Version="$(MicrosoftExtensionsOptionsDataAnnotationsVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options"                                 Version="$(MicrosoftExtensionsOptionsVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesVersion)" />
+    <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesVersion)" />
+    <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlVersion)" />
 
     <!--
       Transitive dependencies of other assemblies in the shared framework. These are listed separately and should not be included directly
@@ -77,12 +52,16 @@
 
       If these are needed as direct dependencies, it is okay to change them to ExternalAspNetCoreAppReference and move up into sections above.
     -->
-    <_TransitiveExternalAspNetCoreAppReference Include="Microsoft.Win32.SystemEvents"                       Version="$(MicrosoftWin32SystemEventsPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Drawing.Common"                              Version="$(SystemDrawingCommonPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Windows.Extensions"                          Version="$(SystemWindowsExtensionsPackageVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="Microsoft.Win32.SystemEvents"                       Version="$(MicrosoftWin32SystemEventsVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Drawing.Common"                              Version="$(SystemDrawingCommonVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsVersion)" />
+    <!--
+      Seems arbitrary that the following packages have their ref/ assemblies in our targeting pack but the above
+      three do not. This is likely about our public APIs i.e. external compilation requirements.
+    -->
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Windows.Extensions"                          Version="$(SystemWindowsExtensionsVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsServicingBuild)' == 'true' ">

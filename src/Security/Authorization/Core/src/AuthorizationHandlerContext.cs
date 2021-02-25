@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authorization
         public AuthorizationHandlerContext(
             IEnumerable<IAuthorizationRequirement> requirements,
             ClaimsPrincipal user,
-            object resource)
+            object? resource)
         {
             if (requirements == null)
             {
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// The optional resource to evaluate the <see cref="AuthorizationHandlerContext.Requirements"/> against.
         /// </summary>
-        public virtual object Resource { get; }
+        public virtual object? Resource { get; }
 
         /// <summary>
         /// Gets the requirements that have not yet been marked as succeeded.

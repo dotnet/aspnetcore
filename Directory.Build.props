@@ -1,26 +1,38 @@
 ﻿<Project>
+  <Import Project="eng\Common.props" />
+
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
-    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dotnet/aspnetcore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Default</AnalysisMode>
   </PropertyGroup>
 
   <!-- Defines project type conventions. -->
   <PropertyGroup>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
-    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
-    <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
-    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
-
-    <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf'))">true</IsBenchmarkProject>
+    <IsBenchmarkProject Condition=" $(MSBuildProjectName.EndsWith('.Performance')) OR
+        $(RepoRelativeProjectDir.Contains('perf')) OR
+        $(RepoRelativeProjectDir.Contains('benchmarkapps')) ">true</IsBenchmarkProject>
     <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
-    <IsUnitTestProject>false</IsUnitTestProject>
-    <IsUnitTestProject Condition="'$(IsSpecificationTestProject)' != 'true' and ( $(MSBuildProjectName.EndsWith('Tests')) or $(MSBuildProjectName.EndsWith('.Test')) or $(MSBuildProjectName.EndsWith('.FunctionalTest')) )">true</IsUnitTestProject>
-    <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
-    <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
+    <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' ">false</IsUnitTestProject>
+    <IsUnitTestProject Condition=" '$(IsSpecificationTestProject)' != 'true' AND
+        ( $(MSBuildProjectName.EndsWith('Tests')) OR
+          $(MSBuildProjectName.EndsWith('.Test')) OR
+          $(MSBuildProjectName.EndsWith('.FunctionalTest')) ) ">true</IsUnitTestProject>
+    <IsTestAssetProject Condition=" $(RepoRelativeProjectDir.Contains('testassets')) ">true</IsTestAssetProject>
+    <IsSampleProject Condition=" $(RepoRelativeProjectDir.ToUpperInvariant().Contains('SAMPLE')) ">true</IsSampleProject>
     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
-    <IsShipping Condition="'$(IsSampleProject)' == 'true' or '$(IsTestAssetProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or '$(IsUnitTestProject)' == 'true'">false</IsShipping>
+    <IsShipping Condition=" '$(IsSampleProject)' == 'true' OR
+        '$(IsTestAssetProject)' == 'true' OR
+        '$(IsBenchmarkProject)' == 'true' OR
+        '$(IsUnitTestProject)' == 'true'">false</IsShipping>
 
     <!--
       Following logic mimics core-setup approach as well as
@@ -30,11 +42,50 @@
     -->
     <IsStableBuild>false</IsStableBuild>
     <IsStableBuild Condition=" '$(DotNetFinalVersionKind)' == 'release' ">true</IsStableBuild>
+
+    <!-- Workaround issue with ComponentsAnalyzer throwing for interfaces -->
+    <DisableImplicitComponentsAnalyzers>true</DisableImplicitComponentsAnalyzers>
   </PropertyGroup>
 
-  <Import Project="eng\FlakyTests.BeforeArcade.props" />
+  <!-- Disable logging of some task parameters or metadata to reduce binlog size.
+       Reenable logging of any particular item by changing the value of the property below to 'false'
+       The format is as follows:
+       DisableLogTaskParameter_[task name]_[parameter name] - Disable logging of a particular parameter
+       DisableLogTaskParameterItemMetadata_[task name]_[parameter name] - Disable logging of item metadata of the parameter
+  -->
+  <PropertyGroup>
+    <TrimTaskParameters Condition=" '$(TrimTaskParameters)' == '' ">true</TrimTaskParameters>
+    <!-- ItemsToHash is used for incremental building and hashes input properties to a file
+         This is not generally useful for day-to-day build debugging. -->
+    <DisableLogTaskParameter_Hash_ItemsToHash>$(TrimTaskParameters)</DisableLogTaskParameter_Hash_ItemsToHash>
+
+    <!-- JoinItems takes input ItemGroups. The output ItemGroup is logged. -->
+    <DisableLogTaskParameter_JoinItems_Right>$(TrimTaskParameters)</DisableLogTaskParameter_JoinItems_Right>
+    <DisableLogTaskParameter_JoinItems_Left>$(TrimTaskParameters)</DisableLogTaskParameter_JoinItems_Left>
+
+    <!-- ConvertToAbsolutePaths - The output parameter (AbsolutePaths) is interesting
+         while the input Path is not generally useful. The output itemgroup's metadata
+         is not altered by the task. -->
+    <DisableLogTaskParameter_ConvertToAbsolutePath_Paths>$(TrimTaskParameters)</DisableLogTaskParameter_ConvertToAbsolutePath_Paths>
+    <DisableLogTaskParameterItemMetadata_ConvertToAbsolutePath_Paths>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_ConvertToAbsolutePath_Paths>
+
+    <!-- The standard msbuild Copy task does not use Metadata and thus the input/outputs
+         item metadata is not relevant -->
+     <DisableLogTaskParameterItemMetadata_Copy_SourceFiles>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_Copy_SourceFiles>
+     <DisableLogTaskParameterItemMetadata_Copy_DestinationFiles>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_Copy_DestinationFiles>
+
+     <!-- Reference metadata for GenerateDepsFile, Csc, RAR, etc. are sometimes useful, but extraordinarily large
+          when building against a shared framework where the number of input assemblies is very large.
+          Avoid logging these by default. -->
+     <DisableLogTaskParameterItemMetadata_GenerateDepsFile_ReferenceAssemblies>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_GenerateDepsFile_ReferenceAssemblies>
+     <DisableLogTaskParameterItemMetadata_GenerateDepsFile_ReferencePaths>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_GenerateDepsFile_ReferencePaths>
+     <DisableLogTaskParameterItemMetadata_ResolveAssemblyReference_Assemblies>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_ResolveAssemblyReference_Assemblies>
+     <DisableLogTaskParameterItemMetadata_Csc_References>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_Csc_References>
+  </PropertyGroup>
+
+  <Import Project="eng\QuarantinedTests.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="eng\FlakyTests.AfterArcade.props" />
+  <Import Project="eng\QuarantinedTests.AfterArcade.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
@@ -50,15 +101,17 @@
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
     <IncludeSymbols>true</IncludeSymbols>
-
-    <DefaultNetCoreTargetFramework>netcoreapp3.1</DefaultNetCoreTargetFramework>
+    <DefaultNetFxTargetFramework>net461</DefaultNetFxTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->
   <PropertyGroup>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- Don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
+    <!-- Ensure API docs are available. -->
+    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
+
+    <!-- For local builds, don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
+    <WarningsNotAsErrors Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
+
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
   </PropertyGroup>
@@ -84,31 +137,23 @@
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
-    <!-- Produce targeting pack installers/packages once per major.minor except in extraordinary cases i.e. 3.1.10. -->
+    <!-- This is used to produce targeting pack installers/packages once per major.minor. -->
     <IsTargetingPackBuilding Condition=" '$(DotNetBuildFromSource)' == 'true' ">false</IsTargetingPackBuilding>
     <IsTargetingPackBuilding
-        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '10' ">false</IsTargetingPackBuilding>
+        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
     <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
 
     <!--
-      Archives and installers using this prefix are intended for internal-use only.
+      Archives and installers using this prefix are intended for internal use only.
       For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks
       into their own installers.
     -->
     <InternalInstallerBaseName>$(RuntimeInstallerBaseName)-internal</InternalInstallerBaseName>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(DisablePubternalApiCheck)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsTestAssetProject)' != 'true'">
-    <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" IsImplicitlyDefined="true" />
-  </ItemGroup>
-
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
   <PropertyGroup>
-    <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win</TargetOsName>
-    <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</TargetOsName>
-    <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux</TargetOsName>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
-    <TargetRuntimeIdentifier>$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
+    <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
 
     <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework. -->
     <SupportedRuntimeIdentifiers>
@@ -117,7 +162,9 @@
       win-arm;
       win-arm64;
       osx-x64;
+      osx-arm64;
       linux-musl-x64;
+      linux-musl-arm;
       linux-musl-arm64;
       linux-x64;
       linux-arm;
@@ -160,8 +207,9 @@
     <DeterministicSourcePaths Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">false</DeterministicSourcePaths>
     <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
     <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
+    <_MvcTestingTasksAssembly>$(ArtifactsBinDir)\Microsoft.AspNetCore.Mvc.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.Tasks.dll</_MvcTestingTasksAssembly>
     <!-- IIS native projects can only be built on Windows for x86 and x64. -->
-    <BuildIisNativeProjects Condition="'$(BuildNative)' == 'true' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')">true</BuildIisNativeProjects>
+    <BuildIisNativeProjects Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') ">true</BuildIisNativeProjects>
     <!-- This property is shared by several projects to layout the AspNetCore.App targeting pack for installers -->
     <TargetingPackLayoutRoot>$(ArtifactsObjDir)TargetingPack.Layout\$(Configuration)\</TargetingPackLayoutRoot>
     <!-- This property is shared by several projects to layout the AspNetCore.App shared framework for installers -->
@@ -174,6 +222,7 @@
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.props" />
+  <Import Project="artifacts\bin\GenerateFiles\Directory.Build.props" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\SharedFramework.Local.props" />
@@ -182,5 +231,7 @@
   <Import Project="eng\targets\CSharp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
+  <Import Project="eng\targets\Java.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
+  <Import Project="eng\targets\Helix.props" Condition="'$(IsTestProject)' == 'true'" />
 
 </Project>

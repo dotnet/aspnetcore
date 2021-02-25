@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
         private uv_async_cb _onPost;
 
         private readonly object _postLock = new object();
-        private TaskCompletionSource<object> _onPostTcs = new TaskCompletionSource<object>();
+        private TaskCompletionSource _onPostTcs = new TaskCompletionSource();
         private bool _completedOnPostTcs;
 
         private bool _stopLoop;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
                 {
                     if (_completedOnPostTcs)
                     {
-                        _onPostTcs = new TaskCompletionSource<object>();
+                        _onPostTcs = new TaskCompletionSource();
                         _completedOnPostTcs = false;
                     }
 
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
                             // when the code attempts to call uv_async_send after awaiting
                             // OnPostTask. Task.Run so the run loop doesn't block either.
                             var onPostTcs = _onPostTcs;
-                            Task.Run(() => onPostTcs.TrySetResult(null));
+                            Task.Run(() => onPostTcs.TrySetResult());
                         }
                     }
                 }

@@ -1,17 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <RazorLangVersion>3.0</RazorLangVersion>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
-    <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
     <!-- Must be defined before ReferenceFromSource.props is imported -->
     <AdditionalRunArguments>--pathbase /subdir</AdditionalRunArguments>
 
     <!-- Resx generation on Resources.resx only -->
     <GenerateResxSource>false</GenerateResxSource>
 
-    <FixupWebAssemblyHttpHandlerReference>true</FixupWebAssemblyHttpHandlerReference>
+    <!-- Project supports more than one language -->
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,15 +18,23 @@
     <Reference Include="System.Net.Http.Json" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
+    <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
+    <ProjectReference Include="..\LazyTestContentPackage\LazyTestContentPackage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Update="Resources.resx" GenerateSource="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
+    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.dll" />
   </ItemGroup>
 
 </Project>

@@ -21,6 +21,7 @@
     },
     "Company.WebApplication1": {
       "commandName": "Project",
+      "dotnetRunMessages": "true",
       "launchBrowser": true,
       //#if(NoHttps)
       "applicationUrl": "http://localhost:5000",

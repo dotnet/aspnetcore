@@ -97,10 +97,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         /// <inheritdoc />
         public override int Order => -1000 - 999;
 
+        /// <summary>
+        /// The <see cref="IUrlHelperFactory"/>.
+        /// </summary>
         protected IUrlHelperFactory UrlHelperFactory { get; }
 
+        /// <summary>
+        /// The <see cref="HtmlEncoder"/>.
+        /// </summary>
         protected HtmlEncoder HtmlEncoder { get; }
 
+        /// <summary>
+        /// The <see cref="ViewContext"/>.
+        /// </summary>
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }
@@ -276,7 +285,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                         nameof(IUrlHelper.Content),
                         "removeTagHelper",
                         typeof(UrlResolutionTagHelper).FullName,
-                        typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly.GetName().Name));
+                        typeof(UrlResolutionTagHelper).Assembly.GetName().Name));
             }
 
             resolvedUrl = new EncodeFirstSegmentContent(

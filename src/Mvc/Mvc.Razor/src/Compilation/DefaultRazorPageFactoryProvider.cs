@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             if (viewType != null)
             {
                 var newExpression = Expression.New(viewType);
-                var pathProperty = viewType.GetTypeInfo().GetProperty(nameof(IRazorPage.Path));
+                var pathProperty = viewType.GetProperty(nameof(IRazorPage.Path));
 
                 // Generate: page.Path = relativePath;
                 // Use the normalized path specified from the result.

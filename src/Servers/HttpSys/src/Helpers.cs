@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.CompilerServices;
+using System.Globalization;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -13,42 +11,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         internal static readonly byte[] ChunkTerminator = new byte[] { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
         internal static readonly byte[] CRLF = new byte[] { (byte)'\r', (byte)'\n' };
-
-        internal static ConfiguredTaskAwaitable SupressContext(this Task task)
-        {
-            return task.ConfigureAwait(continueOnCapturedContext: false);
-        }
-
-        internal static ConfiguredTaskAwaitable<T> SupressContext<T>(this Task<T> task)
-        {
-            return task.ConfigureAwait(continueOnCapturedContext: false);
-        }
-
-        internal static IAsyncResult ToIAsyncResult(this Task task, AsyncCallback callback, object state)
-        {
-            var tcs = new TaskCompletionSource<int>(state);
-            task.ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    tcs.TrySetException(t.Exception.InnerExceptions);
-                }
-                else if (t.IsCanceled)
-                {
-                    tcs.TrySetCanceled();
-                }
-                else
-                {
-                    tcs.TrySetResult(0);
-                }
-
-                if (callback != null)
-                {
-                    callback(tcs.Task);
-                }
-            }, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
-            return tcs.Task;
-        }
 
         internal static ArraySegment<byte> GetChunkHeader(long size)
         {
@@ -58,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             // Greater than 2gb, perf is no longer our concern
-            return new ArraySegment<byte>(Encoding.ASCII.GetBytes(size.ToString("X") + "\r\n"));
+            return new ArraySegment<byte>(Encoding.ASCII.GetBytes(size.ToString("X", CultureInfo.InvariantCulture) + "\r\n"));
         }
 
         /// <summary>

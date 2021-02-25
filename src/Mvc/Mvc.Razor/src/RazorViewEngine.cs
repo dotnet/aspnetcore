@@ -27,6 +27,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// </remarks>
     public class RazorViewEngine : IRazorViewEngine
     {
+        /// <summary>
+        /// The view extension
+        /// </summary>
         public static readonly string ViewExtension = ".cshtml";
 
         private const string AreaKey = "area";
@@ -481,6 +484,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
 
             var view = new RazorView(this, _pageActivator, viewStarts, page, _htmlEncoder, _diagnosticListener);
+            if (view is IAsyncDisposable)
+            {
+                throw new InvalidOperationException(Resources.FormatAsyncDisposableViewsNotSupported(typeof(IAsyncDisposable).FullName));
+            }
+
             return ViewEngineResult.Found(viewName, view);
         }
 

@@ -13,9 +13,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// Creates a new <see cref="AuthenticatedContext"/>.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="scheme"></param>
-        /// <param name="options"></param>
+        /// <inheritdoc />
         public AuthenticatedContext(
             HttpContext context,
             AuthenticationScheme scheme,

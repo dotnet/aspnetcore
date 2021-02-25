@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Routing
         /// </param>
         /// <returns><c>true</c> if the URL parameter contains a valid value; otherwise, <c>false</c>.</returns>
         bool Match(
-            HttpContext httpContext,
-            IRouter route,
+            HttpContext? httpContext,
+            IRouter? route,
             string routeKey,
             RouteValueDictionary values,
             RouteDirection routeDirection);

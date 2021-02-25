@@ -2,16 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpClient } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { NullLogger } from "./Loggers";
 import { IStreamSubscriber, ISubscription } from "./Stream";
 import { Subject } from "./Subject";
 
+// Version token that will be replaced by the prepack command
+/** The version of the SignalR client. */
+
+export const VERSION: string = "0.0.0-DEV_BUILD";
 /** @private */
 export class Arg {
     public static isRequired(val: any, name: string): void {
         if (val === null || val === undefined) {
             throw new Error(`The '${name}' argument is required.`);
+        }
+    }
+    public static isNotEmpty(val: string, name: string): void {
+        if (!val || val.match(/^\s*$/)) {
+            throw new Error(`The '${name}' argument should not be empty.`);
         }
     }
 
@@ -25,7 +35,6 @@ export class Arg {
 
 /** @private */
 export class Platform {
-
     public static get isBrowser(): boolean {
         return typeof window === "object";
     }
@@ -81,8 +90,9 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 }
 
 /** @private */
-export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
-    let headers;
+export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined,
+                                  content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean, defaultHeaders: MessageHeaders): Promise<void> {
+    let headers = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
         if (token) {
@@ -92,13 +102,17 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
         }
     }
 
+    const [name, value] = getUserAgentHeader();
+    headers[name] = value;
+
     logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, logMessageContent)}.`);
 
     const responseType = isArrayBuffer(content) ? "arraybuffer" : "text";
     const response = await httpClient.post(url, {
         content,
-        headers,
+        headers: { ...headers, ...defaultHeaders},
         responseType,
+        withCredentials,
     });
 
     logger.log(LogLevel.Trace, `(${transportName} transport) request complete. Response status: ${response.statusCode}.`);
@@ -114,7 +128,7 @@ export function createLogger(logger?: ILogger | LogLevel) {
         return NullLogger.instance;
     }
 
-    if ((logger as ILogger).log) {
+    if ((logger as ILogger).log !== undefined) {
         return logger as ILogger;
     }
 
@@ -123,32 +137,32 @@ export function createLogger(logger?: ILogger | LogLevel) {
 
 /** @private */
 export class SubjectSubscription<T> implements ISubscription<T> {
-    private subject: Subject<T>;
-    private observer: IStreamSubscriber<T>;
+    private _subject: Subject<T>;
+    private _observer: IStreamSubscriber<T>;
 
     constructor(subject: Subject<T>, observer: IStreamSubscriber<T>) {
-        this.subject = subject;
-        this.observer = observer;
+        this._subject = subject;
+        this._observer = observer;
     }
 
     public dispose(): void {
-        const index: number = this.subject.observers.indexOf(this.observer);
+        const index: number = this._subject.observers.indexOf(this._observer);
         if (index > -1) {
-            this.subject.observers.splice(index, 1);
+            this._subject.observers.splice(index, 1);
         }
 
-        if (this.subject.observers.length === 0 && this.subject.cancelCallback) {
-            this.subject.cancelCallback().catch((_) => { });
+        if (this._subject.observers.length === 0 && this._subject.cancelCallback) {
+            this._subject.cancelCallback().catch((_) => { });
         }
     }
 }
 
 /** @private */
 export class ConsoleLogger implements ILogger {
-    private readonly minimumLogLevel: LogLevel;
+    private readonly _minLevel: LogLevel;
 
     // Public for testing purposes.
-    public outputConsole: {
+    public out: {
         error(message: any): void,
         warn(message: any): void,
         info(message: any): void,
@@ -156,28 +170,97 @@ export class ConsoleLogger implements ILogger {
     };
 
     constructor(minimumLogLevel: LogLevel) {
-        this.minimumLogLevel = minimumLogLevel;
-        this.outputConsole = console;
+        this._minLevel = minimumLogLevel;
+        this.out = console;
     }
 
     public log(logLevel: LogLevel, message: string): void {
-        if (logLevel >= this.minimumLogLevel) {
+        if (logLevel >= this._minLevel) {
+            const msg = `[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`;
             switch (logLevel) {
                 case LogLevel.Critical:
                 case LogLevel.Error:
-                    this.outputConsole.error(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.error(msg);
                     break;
                 case LogLevel.Warning:
-                    this.outputConsole.warn(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.warn(msg);
                     break;
                 case LogLevel.Information:
-                    this.outputConsole.info(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.info(msg);
                     break;
                 default:
                     // console.debug only goes to attached debuggers in Node, so we use console.log for Trace and Debug
-                    this.outputConsole.log(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.log(msg);
                     break;
             }
         }
+    }
+}
+
+/** @private */
+export function getUserAgentHeader(): [string, string] {
+    let userAgentHeaderName = "X-SignalR-User-Agent";
+    if (Platform.isNode) {
+        userAgentHeaderName = "User-Agent";
+    }
+    return [ userAgentHeaderName, constructUserAgent(VERSION, getOsName(), getRuntime(), getRuntimeVersion()) ];
+}
+
+/** @private */
+export function constructUserAgent(version: string, os: string, runtime: string, runtimeVersion: string | undefined): string {
+    // Microsoft SignalR/[Version] ([Detailed Version]; [Operating System]; [Runtime]; [Runtime Version])
+    let userAgent: string = "Microsoft SignalR/";
+
+    const majorAndMinor = version.split(".");
+    userAgent += `${majorAndMinor[0]}.${majorAndMinor[1]}`;
+    userAgent += ` (${version}; `;
+
+    if (os && os !== "") {
+        userAgent += `${os}; `;
+    } else {
+        userAgent += "Unknown OS; ";
+    }
+
+    userAgent += `${runtime}`;
+
+    if (runtimeVersion) {
+        userAgent += `; ${runtimeVersion}`;
+    } else {
+        userAgent += "; Unknown Runtime Version";
+    }
+
+    userAgent += ")";
+    return userAgent;
+}
+
+ /*#__PURE__*/ function getOsName(): string {
+    if (Platform.isNode) {
+        switch (process.platform) {
+            case "win32":
+                return "Windows NT";
+            case "darwin":
+                return "macOS";
+            case "linux":
+                return "Linux";
+            default:
+                return process.platform;
+        }
+    } else {
+        return "";
+    }
+}
+
+ /*#__PURE__*/ function getRuntimeVersion(): string | undefined {
+    if (Platform.isNode) {
+        return process.versions.node;
+    }
+    return undefined;
+}
+
+function getRuntime(): string {
+    if (Platform.isNode) {
+        return "NodeJS";
+    } else {
+        return "Browser";
     }
 }

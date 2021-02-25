@@ -52,12 +52,20 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         MemberInfo ICommonModel.MemberInfo => PropertyInfo;
 
+        /// <inheritdoc/>
         public new IDictionary<object, object> Properties => base.Properties;
 
+        /// <inheritdoc/>
         public new IReadOnlyList<object> Attributes => base.Attributes;
 
+        /// <summary>
+        /// The <see cref="PropertyInfo"/>.
+        /// </summary>
         public PropertyInfo PropertyInfo { get; }
 
+        /// <summary>
+        /// The name of the property.
+        /// </summary>
         public string PropertyName
         {
             get => Name;

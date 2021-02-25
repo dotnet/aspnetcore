@@ -18,13 +18,24 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Condition="'$(OutputType)' == 'package'">
+    <!-- Set package version for SharedFx & TargetingPack wixproj's -->
+    <!-- Everything built in those projects _except_ the final package & MSI are shipping assets. -->
+    <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
+    <_GeneratedPackageVersion
+        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
+    <!-- Insert PackageVersion into OutputName for SharedFx & TargetingPack -->
+    <OutputName Condition="'$(OutputNamePrefix)' != '' AND '$(OutputNameSuffix)' != ''">$(OutputNamePrefix)$(_GeneratedPackageVersion)$(OutputNameSuffix)</OutputName>
+
     <EmbedCab Condition="'$(EmbedCab)' == ''">yes</EmbedCab>
-    <Cabinet Condition="'$(Cabinet)' == ''">$(OutputName.Replace('-', '_')).cab</Cabinet>
     <InstallDir>$(ProductName)</InstallDir>
 
     <DefineConstants Condition="'$(Configuration)' == 'Debug'">$(DefineConstants);Debug</DefineConstants>
     <DefineConstants>$(DefineConstants);EmbedCab=$(EmbedCab)</DefineConstants>
-    <DefineConstants>$(DefineConstants);Cabinet=$(Cabinet)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(OutputType)' == 'package' AND '$(Cabinet)' == '' ">
+    <Cabinet>$(OutputName.Replace('-', '_')).cab</Cabinet>
+    <Cabinet Condition=" '$(EmbedCab)' != 'yes' ">$(OutputName.Replace('_win', '')).cab</Cabinet>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -32,6 +43,8 @@
     <Cultures Condition=" '$(Cultures)' == '' ">$(Culture)</Cultures>
     <InstallerPlatform>$(Platform)</InstallerPlatform>
     <OutDir Condition=" '$(OutDir)' == '' ">$(OutputPath)</OutDir>
+
+    <DefineConstants>$(DefineConstants);Cabinet=$(Cabinet)</DefineConstants>
     <DefineConstants>$(DefineConstants);BinPath=$(OutputPath)$(Culture)\</DefineConstants>
     <DefineConstants>$(WixVariables);$(DefineConstants)</DefineConstants>
   </PropertyGroup>
@@ -39,5 +52,8 @@
   <Import Project="$(NuGetRestoreTargets)" />
   <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.targets" />
   <Import Project="$(WixTargetsPath)" Condition="'$(WixTargetsPath)' != '' " />
-  <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.targets" Condition="'$(DisableMicroBuild)' != 'true' AND '$(MicroBuildPluginDirectory)' != ''" />
+  <!-- Don't import the Microbuild signing targets when post build sign is enabled. They override the
+       standard Wix targets for signing, and call ESRP directly (rather than through SignTool). So without this,
+       ASPNetCore will sign even when PostbuildSign == true -->
+  <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.targets" Condition="'$(DisableMicroBuild)' != 'true' AND '$(MicroBuildPluginDirectory)' != '' AND '$(PostBuildSign)' != 'true'" />
 </Project>

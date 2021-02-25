@@ -1,14 +1,14 @@
 ﻿@using System.Security.Principal
 @*#if (IndividualB2CAuth)
-@using Microsoft.AspNetCore.Authentication.AzureADB2C.UI
 @using Microsoft.Extensions.Options
-@inject IOptionsMonitor<AzureADB2COptions> AzureADB2COptions
+@using Microsoft.Identity.Web
+@inject IOptions<MicrosoftIdentityOptions> AzureADB2COptions
 
 @{
-    var options = AzureADB2COptions.Get(AzureADB2CDefaults.AuthenticationScheme);
+var options = AzureADB2COptions.Value;
 }
 
-#endif *@
+    #endif *@
 
 <ul class="navbar-nav">
 @*#if (IndividualB2CAuth)
@@ -17,7 +17,7 @@
         @if (!string.IsNullOrEmpty(options.EditProfilePolicyId))
         {
             <li class="nav-item">
-                <a class="nav-link text-dark" asp-area="AzureADB2C" asp-controller="Account" asp-action="EditProfile">
+                <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="EditProfile">
                     <span class="text-dark">Hello @User.Identity.Name!</span>
                 </a>
             </li>
@@ -29,13 +29,13 @@
             </li>
         }
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="AzureADB2C" asp-controller="Account" asp-action="SignOut">Sign out</a>
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
         </li>
 }
 else
 {
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="AzureADB2C" asp-controller="Account" asp-action="SignIn">Sign in</a>
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
         </li>
 }
 #else
@@ -45,13 +45,13 @@ else
             <span class="navbar-text text-dark">Hello @User.Identity.Name!</span>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="AzureAD" asp-controller="Account" asp-action="SignOut">Sign out</a>
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
         </li>
 }
 else
 {
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="AzureAD" asp-controller="Account" asp-action="SignIn">Sign in</a>
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
         </li>
 }
 #endif *@

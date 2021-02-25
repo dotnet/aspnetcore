@@ -1,14 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
+using System;
 
 namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
 {
     /// <summary>
     /// Constants for different Azure Active Directory authentication components.
     /// </summary>
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     public static class AzureADDefaults
-    {        
+    {
         /// <summary>
         /// The scheme name for Open ID Connect when using
         /// <see cref="AzureADAuthenticationBuilderExtensions.AddAzureAD(AuthenticationBuilder, System.Action{AzureADOptions})"/>.

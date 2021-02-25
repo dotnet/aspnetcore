@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Internal
                 throw new InvalidDataException($"Expected '{propertyName}' to be of type {JsonTokenType.String}.");
             }
 
-            return reader.GetString();
+            return reader.GetString()!;
         }
 
         public static int? ReadAsInt32(this ref Utf8JsonReader reader, string propertyName)

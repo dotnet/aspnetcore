@@ -3,8 +3,15 @@
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// Interface for a router that supports appending new routes.
+    /// </summary>
     public interface IRouteCollection : IRouter
     {
+        /// <summary>
+        /// Appends the collection of routes defined in <paramref name="router"/>.
+        /// </summary>
+        /// <param name="router">A <see cref="IRouter"/> instance.</param>
         void Add(IRouter router);
     }
 }

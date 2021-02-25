@@ -93,6 +93,10 @@ namespace Microsoft.AspNetCore.Authentication
             return new HandleRequestResult() { Skipped = true };
         }
 
+        /// <summary>
+        /// Indicates that there were no results produced during authentication.
+        /// </summary>
+        /// <returns>The result.</returns>
         public new static HandleRequestResult NoResult()
         {
             return new HandleRequestResult() { None = true };

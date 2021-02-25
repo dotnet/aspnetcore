@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
@@ -11,10 +12,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
     {
         internal sealed class WebSocketWriteOperation : AsyncWriteOperationBase
         {
-
-            private static readonly NativeMethods.PFN_WEBSOCKET_ASYNC_COMPLETION WriteCallback = (httpContext, completionInfo, completionContext) =>
+            [UnmanagedCallersOnly]
+            private static NativeMethods.REQUEST_NOTIFICATION_STATUS WriteCallback(IntPtr httpContext, IntPtr completionInfo, IntPtr completionContext)
             {
-                var context = (WebSocketWriteOperation)GCHandle.FromIntPtr(completionContext).Target;
+                var context = (WebSocketWriteOperation)GCHandle.FromIntPtr(completionContext).Target!;
 
                 NativeMethods.HttpGetCompletionInfo(completionInfo, out var cbBytes, out var hr);
 
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 continuation.Invoke();
 
                 return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
-            };
+            }
 
             private readonly WebSocketsAsyncIOEngine _engine;
             private GCHandle _thisHandle;
@@ -32,10 +33,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 _engine = engine;
             }
 
-            protected override unsafe int WriteChunks(IntPtr requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected)
+            protected override unsafe int WriteChunks(NativeSafeHandle requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected)
             {
                 _thisHandle = GCHandle.Alloc(this);
-                return NativeMethods.HttpWebsocketsWriteBytes(requestHandler, dataChunks, chunkCount, WriteCallback, (IntPtr)_thisHandle, out completionExpected);
+                return NativeMethods.HttpWebsocketsWriteBytes(requestHandler, dataChunks, chunkCount, &WriteCallback, (IntPtr)_thisHandle, out completionExpected);
             }
 
             protected override void ResetOperation()

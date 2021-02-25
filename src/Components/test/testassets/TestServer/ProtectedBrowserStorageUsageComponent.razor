@@ -1,0 +1,56 @@
+﻿@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedLocalStorage ProtectedLocalStore
+@inject ProtectedSessionStorage ProtectedSessionStore
+
+<a target="_blank" href="" id="new-tab">New tab (needed for tests)</a>
+
+<fieldset>
+    @if (localCount.HasValue)
+    {
+        <p>Local count: <strong id="local-count">@localCount</strong></p>
+        <button @onclick="@IncrementLocalCount" id="increment-local">Increment</button>
+    }
+</fieldset>
+
+<fieldset>
+    @if (sessionCount.HasValue)
+    {
+        <p>Session count: <strong id="session-count">@sessionCount</strong></p>
+        <button @onclick="@IncrementSessionCount" id="increment-session">Increment</button>
+    }
+</fieldset>
+
+@code {
+    int? localCount;
+    int? sessionCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLocalCount();
+        await LoadSessionCount();
+    }
+
+    private async Task LoadLocalCount()
+    {
+        var localResult = await ProtectedLocalStore.GetAsync<int>("localCount");
+        localCount = localResult.Success ? localResult.Value : 0;
+    }
+
+    private async Task LoadSessionCount()
+    {
+        var sessionResult = await ProtectedSessionStore.GetAsync<int>("sessionCount");
+        sessionCount = sessionResult.Success ? sessionResult.Value : 0;
+    }
+
+    private async Task IncrementLocalCount()
+    {
+        await ProtectedLocalStore.SetAsync("localCount", localCount + 1);
+        await LoadLocalCount();
+    }
+
+    private async Task IncrementSessionCount()
+    {
+        await ProtectedSessionStore.SetAsync("sessionCount", sessionCount + 1);
+        await LoadSessionCount();
+    }
+}

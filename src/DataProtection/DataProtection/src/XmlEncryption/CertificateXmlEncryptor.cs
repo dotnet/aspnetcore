@@ -56,10 +56,11 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             _certFactory = () => certificate;
         }
 
-        internal CertificateXmlEncryptor(ILoggerFactory loggerFactory, IInternalCertificateXmlEncryptor encryptor)
+        internal CertificateXmlEncryptor(ILoggerFactory loggerFactory, IInternalCertificateXmlEncryptor? encryptor)
         {
             _encryptor = encryptor ?? this;
             _logger = loggerFactory.CreateLogger<CertificateXmlEncryptor>();
+            _certFactory = default!; // Set by calling ctors
         }
 
         /// <summary>
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             // doesn't handle encrypting the root element all that well.
             var xmlDocument = new XmlDocument();
             xmlDocument.Load(new XElement("root", plaintextElement).CreateReader());
-            var elementToEncrypt = (XmlElement)xmlDocument.DocumentElement.FirstChild;
+            var elementToEncrypt = (XmlElement)xmlDocument.DocumentElement!.FirstChild!;
 
             // Perform the encryption and update the document in-place.
             var encryptedXml = new EncryptedXml(xmlDocument);
@@ -101,7 +102,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             EncryptedXml.ReplaceElement(elementToEncrypt, encryptedData, content: false);
 
             // Strip the <root /> element back off and convert the XmlDocument to an XElement.
-            return XElement.Load(xmlDocument.DocumentElement.FirstChild.CreateNavigator().ReadSubtree());
+            return XElement.Load(xmlDocument.DocumentElement.FirstChild!.CreateNavigator()!.ReadSubtree());
         }
 
         private Func<X509Certificate2> CreateCertFactory(string thumbprint, ICertificateResolver resolver)

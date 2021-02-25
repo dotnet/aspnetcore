@@ -81,31 +81,6 @@ fi
 
 PackageSources=()
 
-# Ensure dotnet3-internal and dotnet3-internal-transport are in the packageSources if the public dotnet3 feeds are present
-grep -i "<add key=\"dotnet3\"" $ConfigFile
-
-if [ "$?" == "0" ]; then
-    grep -i "<add key=\"dotnet3-internal\">" $ConfigFile
-    if [ "$?" != "0" ]; then
-        echo "Adding dotnet3-internal to the packageSources."
-        PackageSourcesNodeFooter="</packageSources>"
-        PackageSourceTemplate="${TB}<add key=\"dotnet3-internal\" value=\"https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal/nuget/v2\" />"
-
-        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
-    fi
-    PackageSources+=('dotnet3-internal')
-
-    grep -i "<add key=\"dotnet3-internal-transport\"" $ConfigFile
-    if [ "$?" != "0" ]; then
-        echo "Adding dotnet3-internal-transport to the packageSources."
-        PackageSourcesNodeFooter="</packageSources>"
-        PackageSourceTemplate="${TB}<add key=\"dotnet3-internal-transport\" value=\"https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-transport/nuget/v2\" />"
-
-        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
-    fi
-    PackageSources+=('dotnet3-internal-transport')
-fi
-
 # Ensure dotnet3.1-internal and dotnet3.1-internal-transport are in the packageSources if the public dotnet3.1 feeds are present
 grep -i "<add key=\"dotnet3.1\"" $ConfigFile
 if [ "$?" == "0" ]; then
@@ -128,6 +103,30 @@ if [ "$?" == "0" ]; then
         sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
     fi
     PackageSources+=('dotnet3.1-internal-transport')
+fi
+
+# Ensure dotnet5-internal and dotnet5-internal-transport are in the packageSources if the public dotnet5 feeds are present
+grep -i "<add key=\"dotnet5\"" $ConfigFile
+if [ "$?" == "0" ]; then
+    grep -i "<add key=\"dotnet5-internal\"" $ConfigFile
+    if [ "$?" != "0" ]; then
+        echo "Adding dotnet5-internal to the packageSources."
+        PackageSourcesNodeFooter="</packageSources>"
+        PackageSourceTemplate="${TB}<add key=\"dotnet5-internal\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal/nuget/v2\" />"
+
+        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+    fi
+    PackageSources+=('dotnet5-internal')
+
+    grep -i "<add key=\"dotnet5-internal-transport\">" $ConfigFile
+    if [ "$?" != "0" ]; then
+        echo "Adding dotnet5-internal-transport to the packageSources."
+        PackageSourcesNodeFooter="</packageSources>"
+        PackageSourceTemplate="${TB}<add key=\"dotnet5-internal-transport\" value=\"https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal-transport/nuget/v2\" />"
+
+        sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourceTemplate${NL}$PackageSourcesNodeFooter|" $ConfigFile
+    fi
+    PackageSources+=('dotnet5-internal-transport')
 fi
 
 # I want things split line by line

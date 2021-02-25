@@ -12,11 +12,12 @@ export class TestWebSocket {
     public protocol: string;
     public readyState: number = 1;
     public url: string;
+    public options?: any;
     public closed: boolean = false;
 
     public static webSocketSet: PromiseSource;
     public static webSocket: TestWebSocket;
-    public receivedData: Array<(string | ArrayBuffer | Blob | ArrayBufferView)>;
+    public receivedData: (string | ArrayBuffer | Blob | ArrayBufferView)[];
 
     // tslint:disable-next-line:variable-name
     private _onopen?: (this: WebSocket, evt: Event) => any;
@@ -79,10 +80,11 @@ export class TestWebSocket {
         throw new Error("Method not implemented.");
     }
 
-    constructor(url: string, protocols?: string | string[]) {
+    constructor(url: string, protocols?: string | string[], options?: any) {
         this.url = url;
         this.protocol = protocols ? (typeof protocols === "string" ? protocols : protocols[0]) : "";
         this.receivedData = [];
+        this.options = options;
 
         TestWebSocket.webSocket = this;
 
@@ -101,7 +103,12 @@ export class TestWebSocket {
     public static readonly OPEN: number = 4;
 }
 
-export class TestEvent {
+export class TestEvent implements Event {
+    public composed: boolean = false;
+    public composedPath(): EventTarget[];
+    public composedPath(): any[] {
+        throw new Error("Method not implemented.");
+    }
     public bubbles: boolean = false;
     public cancelBubble: boolean = false;
     public cancelable: boolean = false;
@@ -179,7 +186,12 @@ export class TestErrorEvent {
     public NONE: number = 0;
 }
 
-export class TestCloseEvent {
+export class TestCloseEvent implements Event {
+    public composed: boolean = false;
+    public composedPath(): EventTarget[];
+    public composedPath(): any[] {
+        throw new Error("Method not implemented.");
+    }
     public code: number = 0;
     public reason: string = "";
     public wasClean: boolean = false;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,11 +8,13 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -28,21 +30,28 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                })
-                .Configure(app =>
-                {
-                    app.UseHttpsRedirection();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        return context.Response.WriteAsync("Hello world");
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseHttpsRedirection();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -71,26 +80,33 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                    services.Configure<HttpsRedirectionOptions>(options =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        options.RedirectStatusCode = statusCode;
-                        options.HttpsPort = httpsPort;
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseHttpsRedirection();
-                    app.Run(context =>
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                        services.Configure<HttpsRedirectionOptions>(options =>
+                        {
+                            options.RedirectStatusCode = statusCode;
+                            options.HttpsPort = httpsPort;
+                        });
+                    })
+                    .Configure(app =>
                     {
-                        return context.Response.WriteAsync("Hello world");
+                        app.UseHttpsRedirection();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -120,26 +136,33 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                    services.AddHttpsRedirection(options =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        options.RedirectStatusCode = statusCode;
-                        options.HttpsPort = httpsPort;
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseHttpsRedirection();
-                    app.Run(context =>
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                        services.AddHttpsRedirection(options =>
+                        {
+                            options.RedirectStatusCode = statusCode;
+                            options.HttpsPort = httpsPort;
+                        });
+                    })
+                    .Configure(app =>
                     {
-                        return context.Response.WriteAsync("Hello world");
+                        app.UseHttpsRedirection();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -169,33 +192,38 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task SetHttpsPortEnvironmentVariableAndServerFeature_ReturnsCorrectStatusCodeOnResponse(
             int? optionsHttpsPort, string configHttpsPort, string serverAddressFeatureUrl, string expectedUrl)
         {
-            var builder = new WebHostBuilder()
-               .ConfigureServices(services =>
-               {
-                   services.AddHttpsRedirection(options =>
-                   {
-                       options.HttpsPort = optionsHttpsPort;
-                   });
-               })
-               .Configure(app =>
-               {
-                   app.UseHttpsRedirection();
-                   app.Run(context =>
-                   {
-                       return context.Response.WriteAsync("Hello world");
-                   });
-               });
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddHttpsRedirection(options =>
+                        {
+                            options.HttpsPort = optionsHttpsPort;
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseHttpsRedirection();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
+                    });
 
-            builder.UseSetting("HTTPS_PORT", configHttpsPort);
+                    webHostBuilder.UseSetting("HTTPS_PORT", configHttpsPort);
+                }).Build();
 
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-
-            var server = new TestServer(builder, featureCollection);
+            var server = host.GetTestServer();
+            server.Features.Set<IServerAddressesFeature>(new ServerAddressesFeature());
             if (serverAddressFeatureUrl != null)
             {
                 server.Features.Get<IServerAddressesFeature>().Addresses.Add(serverAddressFeatureUrl);
             }
+
+            await host.StartAsync();
 
             var client = server.CreateClient();
 
@@ -213,25 +241,30 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                })
-               .Configure(app =>
-               {
-                   app.UseHttpsRedirection();
-                   app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    })
+                   .Configure(app =>
                    {
-                       return context.Response.WriteAsync("Hello world");
+                       app.UseHttpsRedirection();
+                       app.Run(context =>
+                       {
+                           return context.Response.WriteAsync("Hello world");
+                       });
                    });
-               });
+                }).Build();
 
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-            var server = new TestServer(builder, featureCollection);
+            var server = host.GetTestServer();
+            server.Features.Set<IServerAddressesFeature>(new ServerAddressesFeature());
 
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://localhost:5050");
+            await host.StartAsync();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -253,47 +286,38 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         }
 
         [Fact]
-        public async Task SetServerAddressesFeature_MultipleHttpsAddresses_LogsAndFailsToRedirect()
+        public async Task SetServerAddressesFeature_MultipleHttpsAddresses_Throws()
         {
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
-                TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                })
-               .Configure(app =>
-               {
-                   app.UseHttpsRedirection();
-                   app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                   .Configure(app =>
                    {
-                       return context.Response.WriteAsync("Hello world");
+                       app.UseHttpsRedirection();
+                       app.Run(context =>
+                       {
+                           return context.Response.WriteAsync("Hello world");
+                       });
                    });
-               });
+                }).Build();
 
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-            var server = new TestServer(builder, featureCollection);
+            var server = host.GetTestServer();
+            server.Features.Set<IServerAddressesFeature>(new ServerAddressesFeature());
 
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://localhost:5050");
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://localhost:5051");
+
+            await host.StartAsync();
 
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
 
-            var response = await client.SendAsync(request);
-            Assert.Equal(200, (int)response.StatusCode);
-
-            var logMessages = sink.Writes.ToList();
-
-            Assert.Single(logMessages);
-            var message = logMessages.First();
-            Assert.Equal(LogLevel.Warning, message.LogLevel);
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
             Assert.Equal("Cannot determine the https port from IServerAddressesFeature, multiple values were found. " +
-                "Please set the desired port explicitly on HttpsRedirectionOptions.HttpsPort.", message.State.ToString());
+                "Set the desired port explicitly on HttpsRedirectionOptions.HttpsPort.", ex.Message);
         }
 
         [Fact]
@@ -303,26 +327,31 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                })
-               .Configure(app =>
-               {
-                   app.UseHttpsRedirection();
-                   app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    })
+                   .Configure(app =>
                    {
-                       return context.Response.WriteAsync("Hello world");
+                       app.UseHttpsRedirection();
+                       app.Run(context =>
+                       {
+                           return context.Response.WriteAsync("Hello world");
+                       });
                    });
-               });
+                }).Build();
 
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-            var server = new TestServer(builder, featureCollection);
-
+            var server = host.GetTestServer();
+            server.Features.Set<IServerAddressesFeature>(new ServerAddressesFeature());
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://localhost:5050");
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://example.com:5050");
+
+            await host.StartAsync();
 
             var client = server.CreateClient();
 
@@ -351,21 +380,28 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                })
-                .Configure(app =>
-                {
-                    app.UseHttpsRedirection();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        return context.Response.WriteAsync("Hello world");
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseHttpsRedirection();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, "");
             var response = await client.SendAsync(request);
@@ -386,23 +422,29 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                })
-                .Configure(app =>
-                {
-                    app.UseHttpsRedirection();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        return context.Response.WriteAsync("Hello world");
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseHttpsRedirection();
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("Hello world");
+                        });
                     });
-                });
+                }).Build();
 
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IServerAddressesFeature>(null);
-            var server = new TestServer(builder, featureCollection);
+            var server = host.GetTestServer();
+            server.Features.Set<IServerAddressesFeature>(null);
+
+            await host.StartAsync();
 
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, "");

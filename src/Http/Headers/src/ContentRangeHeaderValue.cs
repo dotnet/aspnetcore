@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
@@ -9,21 +10,27 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Represents a <c>Content-Range</c> response HTTP header.
+    /// </summary>
     public class ContentRangeHeaderValue
     {
         private static readonly HttpHeaderParser<ContentRangeHeaderValue> Parser
             = new GenericHeaderParser<ContentRangeHeaderValue>(false, GetContentRangeLength);
 
         private StringSegment _unit;
-        private long? _from;
-        private long? _to;
-        private long? _length;
 
         private ContentRangeHeaderValue()
         {
             // Used by the parser to create a new instance of this type.
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ContentRangeHeaderValue"/>.
+        /// </summary>
+        /// <param name="from">The start of the range.</param>
+        /// <param name="to">The end of the range.</param>
+        /// <param name="length">The total size of the document in bytes.</param>
         public ContentRangeHeaderValue(long from, long to, long length)
         {
             // Scenario: "Content-Range: bytes 12-34/5678"
@@ -41,12 +48,16 @@ namespace Microsoft.Net.Http.Headers
                 throw new ArgumentOutOfRangeException(nameof(from));
             }
 
-            _from = from;
-            _to = to;
-            _length = length;
+            From = from;
+            To = to;
+            Length = length;
             _unit = HeaderUtilities.BytesUnit;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ContentRangeHeaderValue"/>.
+        /// </summary>
+        /// <param name="length">The total size of the document in bytes.</param>
         public ContentRangeHeaderValue(long length)
         {
             // Scenario: "Content-Range: bytes */1234"
@@ -56,10 +67,15 @@ namespace Microsoft.Net.Http.Headers
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            _length = length;
+            Length = length;
             _unit = HeaderUtilities.BytesUnit;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ContentRangeHeaderValue"/>.
+        /// </summary>
+        /// <param name="from">The start of the range.</param>
+        /// <param name="to">The end of the range.</param>
         public ContentRangeHeaderValue(long from, long to)
         {
             // Scenario: "Content-Range: bytes 12-34/*"
@@ -73,11 +89,15 @@ namespace Microsoft.Net.Http.Headers
                 throw new ArgumentOutOfRangeException(nameof(@from));
             }
 
-            _from = from;
-            _to = to;
+            From = from;
+            To = to;
             _unit = HeaderUtilities.BytesUnit;
         }
 
+        /// <summary>
+        /// Gets or sets the unit in which ranges are specified.
+        /// </summary>
+        /// <value>Defaults to <c>bytes</c>.</value>
         public StringSegment Unit
         {
             get { return _unit; }
@@ -88,32 +108,42 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public long? From
-        {
-            get { return _from; }
-        }
+        /// <summary>
+        /// Gets the start of the range.
+        /// </summary>
+        public long? From { get; private set; }
 
-        public long? To
-        {
-            get { return _to; }
-        }
+        /// <summary>
+        /// Gets the end of the range.
+        /// </summary>
+        public long? To { get; private set; }
 
-        public long? Length
-        {
-            get { return _length; }
-        }
+        /// <summary>
+        /// Gets the total size of the document.
+        /// </summary>
+        [NotNullIfNotNull(nameof(Length))]
+        public long? Length { get; private set; }
 
+        /// <summary>
+        /// Gets a value that determines if <see cref="Length"/> has been specified.
+        /// </summary>
+        [MemberNotNullWhen(true, nameof(Length))]
         public bool HasLength // e.g. "Content-Range: bytes 12-34/*"
         {
-            get { return _length != null; }
+            get { return Length != null; }
         }
 
+        /// <summary>
+        /// Gets a value that determines if <see cref="From"/> and <see cref="To"/> have been specified.
+        /// </summary>
+        [MemberNotNullWhen(true, nameof(From), nameof(To))]
         public bool HasRange // e.g. "Content-Range: bytes */1234"
         {
-            get { return _from != null; }
+            get { return From != null && To != null; }
         }
 
-        public override bool Equals(object obj)
+        /// <inheritdoc/>
+        public override bool Equals(object? obj)
         {
             var other = obj as ContentRangeHeaderValue;
 
@@ -122,38 +152,40 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            return ((_from == other._from) && (_to == other._to) && (_length == other._length) &&
-                StringSegment.Equals(_unit, other._unit, StringComparison.OrdinalIgnoreCase));
+            return ((From == other.From) && (To == other.To) && (Length == other.Length) &&
+                StringSegment.Equals(Unit, other.Unit, StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
-            var result = StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_unit);
+            var result = StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(Unit);
 
             if (HasRange)
             {
-                result = result ^ _from.GetHashCode() ^ _to.GetHashCode();
+                result = result ^ From.GetHashCode() ^ To.GetHashCode();
             }
 
             if (HasLength)
             {
-                result = result ^ _length.GetHashCode();
+                result = result ^ Length.GetHashCode();
             }
 
             return result;
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append(_unit.AsSpan());
+            sb.Append(Unit.AsSpan());
             sb.Append(' ');
 
             if (HasRange)
             {
-                sb.Append(_from.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(From.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
                 sb.Append('-');
-                sb.Append(_to.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(To.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
             }
             else
             {
@@ -163,7 +195,7 @@ namespace Microsoft.Net.Http.Headers
             sb.Append('/');
             if (HasLength)
             {
-                sb.Append(_length.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(Length.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
             }
             else
             {
@@ -173,19 +205,30 @@ namespace Microsoft.Net.Http.Headers
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Parses <paramref name="input"/> as a <see cref="ContentRangeHeaderValue"/> value.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static ContentRangeHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return Parser.ParseValue(input, ref index);
+            return Parser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out ContentRangeHeaderValue parsedValue)
+        /// <summary>
+        /// Attempts to parse the specified <paramref name="input"/> as a <see cref="ContentRangeHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <param name="parsedValue">The parsed value.</param>
+        /// <returns><see langword="true"/> if input is a valid <see cref="ContentRangeHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out ContentRangeHeaderValue parsedValue)
         {
             var index = 0;
-            return Parser.TryParseValue(input, ref index, out parsedValue);
+            return Parser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        private static int GetContentRangeLength(StringSegment input, int startIndex, out ContentRangeHeaderValue parsedValue)
+        private static int GetContentRangeLength(StringSegment input, int startIndex, out ContentRangeHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -351,7 +394,7 @@ namespace Microsoft.Net.Http.Headers
             int toLength,
             int lengthStartIndex,
             int lengthLength,
-            out ContentRangeHeaderValue parsedValue)
+            [NotNullWhen(true)]out ContentRangeHeaderValue? parsedValue)
         {
             parsedValue = null;
 
@@ -391,13 +434,13 @@ namespace Microsoft.Net.Http.Headers
 
             if (fromLength > 0)
             {
-                result._from = from;
-                result._to = to;
+                result.From = from;
+                result.To = to;
             }
 
             if (lengthLength > 0)
             {
-                result._length = length;
+                result.Length = length;
             }
 
             parsedValue = result;

@@ -7,15 +7,22 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Extension methods for enabling <see cref="ForwardedHeadersMiddleware"/>.
+    /// </summary>
     public static class ForwardedHeadersExtensions
     {
         private const string ForwardedHeadersAdded = "ForwardedHeadersAdded";
 
         /// <summary>
-        /// Forwards proxied headers onto current request
+        /// Applies forwarded headers to their matching fields on the current request.
+        /// <para>
+        /// By convention, HTTP proxies forward information from the client in well-known HTTP headers.
+        /// The <see cref="ForwardedHeadersMiddleware"/> reads these headers and fills in the associated fields on HttpContext.
+        /// </para>
         /// </summary>
-        /// <param name="builder"></param>
-        /// <returns></returns>
+        /// <param name="builder">The <see cref="IApplicationBuilder" />.</param>
+        /// <returns>A reference to <paramref name="builder" /> after the operation has completed.</returns>
         public static IApplicationBuilder UseForwardedHeaders(this IApplicationBuilder builder)
         {
             if (builder == null)
@@ -35,11 +42,15 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Forwards proxied headers onto current request
+        /// Applies forwarded headers to their matching fields on the current request.
+        /// <para>
+        /// By convention, HTTP proxies forward information from the client in well-known HTTP headers.
+        /// The <see cref="ForwardedHeadersMiddleware"/> reads these headers and fills in the associated fields on HttpContext.
+        /// </para>
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="builder">The <see cref="IApplicationBuilder" />.</param>
         /// <param name="options">Enables the different forwarding options.</param>
-        /// <returns></returns>
+        /// <returns>A reference to <paramref name="builder" /> after the operation has completed.</returns>
         public static IApplicationBuilder UseForwardedHeaders(this IApplicationBuilder builder, ForwardedHeadersOptions options)
         {
             if (builder == null)

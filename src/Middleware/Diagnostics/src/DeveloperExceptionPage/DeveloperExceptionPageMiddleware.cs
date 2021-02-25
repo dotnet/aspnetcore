@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
             _fileProvider = _options.FileProvider ?? hostingEnvironment.ContentRootFileProvider;
             _diagnosticSource = diagnosticSource;
-            _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _options.SourceCodeLineCount);
+            _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _logger, _options.SourceCodeLineCount);
             _exceptionHandler = DisplayException;
 
             foreach (var filter in filters.Reverse())
@@ -163,10 +163,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             HttpContext context,
             ICompilationException compilationException)
         {
-            var model = new CompilationErrorPageModel
-            {
-                Options = _options,
-            };
+            var model = new CompilationErrorPageModel(_options);
 
             var errorPage = new CompilationErrorPage
             {
@@ -186,11 +183,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 }
 
                 var stackFrames = new List<StackFrameSourceCodeInfo>();
-                var exceptionDetails = new ExceptionDetails
-                {
-                    StackFrames = stackFrames,
-                    ErrorMessage = compilationFailure.FailureSummary,
-                };
+                var exceptionDetails = new ExceptionDetails(compilationFailure.FailureSummary!, stackFrames);
                 model.ErrorDetails.Add(exceptionDetails);
                 model.CompiledContent.Add(compilationFailure.CompiledContent);
 
@@ -235,7 +228,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             var endpoint = context.Features.Get<IEndpointFeature>()?.Endpoint;
 
-            EndpointModel endpointModel = null;
+            EndpointModel? endpointModel = null;
             if (endpoint != null)
             {
                 endpointModel = new EndpointModel();

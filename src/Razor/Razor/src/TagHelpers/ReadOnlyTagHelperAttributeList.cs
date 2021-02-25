@@ -12,8 +12,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     /// </summary>
     public abstract class ReadOnlyTagHelperAttributeList : ReadOnlyCollection<TagHelperAttribute>
     {
-        private static readonly IReadOnlyList<TagHelperAttribute> EmptyList = new TagHelperAttribute[0];
-
         /// <summary>
         /// Instantiates a new instance of <see cref="ReadOnlyTagHelperAttributeList"/> with an empty
         /// collection.
@@ -146,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                     matchedAttributes.Add(attribute);
                 }
             }
-            attributes = matchedAttributes ?? EmptyList;
+            attributes = matchedAttributes ?? (IReadOnlyList<TagHelperAttribute>)Array.Empty<TagHelperAttribute>();
 
             return matchedAttributes != null;
         }

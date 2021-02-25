@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.DataProtection
         /// </summary>
         internal static readonly SimpleActivator DefaultWithoutServices = new SimpleActivator(null);
 
-        private readonly IServiceProvider _services;
+        private readonly IServiceProvider? _services;
 
-        public SimpleActivator(IServiceProvider services)
+        public SimpleActivator(IServiceProvider? services)
         {
             _services = services;
         }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.DataProtection
         public virtual object CreateInstance(Type expectedBaseType, string implementationTypeName)
         {
             // Would the assignment even work?
-            var implementationType = Type.GetType(implementationTypeName, throwOnError: true);
+            var implementationType = Type.GetType(implementationTypeName, throwOnError: true)!;
             expectedBaseType.AssertIsAssignableFrom(implementationType);
 
             // If no IServiceProvider was specified, prefer .ctor() [if it exists]
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 var ctorParameterless = implementationType.GetConstructor(Type.EmptyTypes);
                 if (ctorParameterless != null)
                 {
-                    return Activator.CreateInstance(implementationType);
+                    return Activator.CreateInstance(implementationType)!;
                 }
             }
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             // Finally, prefer .ctor() as an ultimate fallback.
             // This will throw if the ctor cannot be called.
-            return Activator.CreateInstance(implementationType);
+            return Activator.CreateInstance(implementationType)!;
         }
     }
 }

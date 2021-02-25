@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -56,6 +56,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         [HtmlAttributeNotBound]
         public ITagHelperComponentPropertyActivator PropertyActivator { get; set; }
 
+        /// <summary>
+        /// The <see cref="ViewContext"/>.
+        /// </summary>
         [ViewContext]
         [HtmlAttributeNotBound]
         public ViewContext ViewContext { get; set; }

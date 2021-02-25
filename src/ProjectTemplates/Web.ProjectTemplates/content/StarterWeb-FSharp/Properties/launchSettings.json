@@ -1,12 +1,12 @@
 ﻿{
   "iisSettings": {
-    //#if (WindowsAuth) 
-    "windowsAuthentication": true, 
-    "anonymousAuthentication": false, 
-    //#else 
-    "windowsAuthentication": false, 
-    "anonymousAuthentication": true, 
-    //#endif 
+    //#if (WindowsAuth)
+    "windowsAuthentication": true,
+    "anonymousAuthentication": false,
+    //#else
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    //#endif
     "iisExpress": {
       "applicationUrl": "http://localhost:8080",
       //#if(NoHttps)
@@ -26,6 +26,7 @@
     },
     "Company.WebApplication1": {
       "commandName": "Project",
+      "dotnetRunMessages": "true",
       "launchBrowser": true,
       //#if(NoHttps)
       "applicationUrl": "http://localhost:5000",

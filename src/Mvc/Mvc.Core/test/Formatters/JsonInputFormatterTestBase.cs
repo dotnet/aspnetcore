@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Moq;
@@ -107,6 +108,28 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.False(result.HasError);
             var stringValue = Assert.IsType<string>(result.Model);
             Assert.Equal("abcd", stringValue);
+        }
+
+        [Fact]
+        public async Task JsonFormatterReadsNonUtf8Content()
+        {
+            // Arrange
+            var content = "☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☚☛☜☝☞☟☠☡☢☣☤☥☦☧☨☩☪☫☬☮☯☰☱☲☳☴☵☶☷☸";
+            var formatter = GetInputFormatter();
+
+            var contentBytes = Encoding.Unicode.GetBytes($"\"{content}\"");
+            var httpContext = GetHttpContext(contentBytes, "application/json;charset=utf-16");
+
+            var formatterContext = CreateInputFormatterContext(typeof(string), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.False(result.HasError);
+            var stringValue = Assert.IsType<string>(result.Model);
+            Assert.Equal(content, stringValue);
+            Assert.True(httpContext.Request.Body.CanRead, "Verify that the request stream hasn't been disposed");
         }
 
         [Fact]
@@ -474,8 +497,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var content = "{\"name\": \"Test\"}";
             var contentBytes = Encoding.UTF8.GetBytes(content);
             var httpContext = GetHttpContext(contentBytes);
-            var testBufferedReadStream = new Mock<FileBufferingReadStream>(httpContext.Request.Body, 1024) { CallBase = true };
-            httpContext.Request.Body = testBufferedReadStream.Object;
+            var testBufferedReadStream = new VerifyDisposeFileBufferingReadStream(httpContext.Request.Body, 1024);
+            httpContext.Request.Body = testBufferedReadStream;
 
             var formatterContext = CreateInputFormatterContext(typeof(ComplexModel), httpContext);
 
@@ -485,8 +508,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Assert
             var userModel = Assert.IsType<ComplexModel>(result.Model);
             Assert.Equal("Test", userModel.Name);
-
-            testBufferedReadStream.Verify(v => v.DisposeAsync(), Times.Never());
+            Assert.False(testBufferedReadStream.Disposed);
         }
 
         [Fact]
@@ -552,7 +574,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         internal abstract string ReadAsync_ComplexPoco_Expected { get; }
 
-        protected abstract TextInputFormatter GetInputFormatter();
+        protected abstract TextInputFormatter GetInputFormatter(bool allowInputFormatterExceptionMessages = true);
 
         protected static HttpContext GetHttpContext(
             byte[] contentBytes,
@@ -611,6 +633,26 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             public decimal Age { get; set; }
 
             public byte Small { get; set; }
+        }
+
+        private class VerifyDisposeFileBufferingReadStream : FileBufferingReadStream
+        {
+            public bool Disposed { get; private set; }
+            public VerifyDisposeFileBufferingReadStream(Stream inner, int memoryThreshold) : base(inner, memoryThreshold)
+            {
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                Disposed = true;
+                base.Dispose(disposing);
+            }
+
+            public override ValueTask DisposeAsync()
+            {
+                Disposed = true;
+                return base.DisposeAsync();
+            }
         }
     }
 }

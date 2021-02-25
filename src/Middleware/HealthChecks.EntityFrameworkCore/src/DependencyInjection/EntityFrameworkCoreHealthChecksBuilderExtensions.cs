@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +13,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// <see cref="IHealthChecksBuilder"/> extension methods for Entity Framework Core.
+    /// </summary>
     public static class EntityFrameworkCoreHealthChecksBuilderExtensions
     {
         /// <summary>
@@ -52,10 +55,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         public static IHealthChecksBuilder AddDbContextCheck<TContext>(
             this IHealthChecksBuilder builder,
-            string name  = null,
+            string? name  = null,
             HealthStatus? failureStatus = default,
-            IEnumerable<string> tags = default,
-            Func<TContext, CancellationToken, Task<bool>> customTestQuery = default)
+            IEnumerable<string>? tags = default,
+            Func<TContext, CancellationToken, Task<bool>>? customTestQuery = default)
             where TContext : DbContext
         {
             if (builder == null)
@@ -73,7 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 builder.Services.Configure<DbContextHealthCheckOptions<TContext>>(name, options => options.CustomTestQuery = customTestQuery);
             }
 
-            return builder.AddCheck<DbContextHealthCheck<TContext>>(name, failureStatus, tags);
+            return builder.AddCheck<DbContextHealthCheck<TContext>>(name, failureStatus, tags ?? Enumerable.Empty<string>());
         }
     }
 }

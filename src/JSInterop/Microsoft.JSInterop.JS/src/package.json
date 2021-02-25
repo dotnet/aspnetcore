@@ -1,0 +1,33 @@
+{
+  "name": "@microsoft/dotnet-js-interop",
+  "version": "5.0.0-dev",
+  "description": "Provides abstractions and features for interop between .NET and JavaScript code.",
+  "main": "dist/Microsoft.JSInterop.js",
+  "types": "dist/Microsoft.JSInterop.d.ts",
+  "type": "module",
+  "scripts": {
+    "preclean": "yarn install --mutex network",
+    "clean": "node node_modules/rimraf/bin.js ./dist",
+    "build": "npm run clean && npm run build:esm",
+    "build:lint": "node node_modules/tslint/bin/tslint -p ./tsconfig.json",
+    "build:esm": "node node_modules/typescript/bin/tsc --project ./tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dotnet/extensions.git"
+  },
+  "author": "Microsoft",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/dotnet/aspnetcore/issues"
+  },
+  "homepage": "https://github.com/dotnet/aspnetcore/tree/main/src/JSInterop",
+  "files": [
+    "dist/**"
+  ],
+  "devDependencies": {
+    "rimraf": "^3.0.2",
+    "tslint": "^6.1.3",
+    "typescript": "^4.2.2"
+  }
+}

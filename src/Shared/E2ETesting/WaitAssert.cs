@@ -5,8 +5,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using OpenQA.Selenium;
+using OpenQA.Selenium.DevTools;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
 
@@ -22,6 +25,9 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public static void Equal<T>(this IWebDriver driver, T expected, Func<T> actual)
             => WaitAssertCore(driver, () => Assert.Equal(expected, actual()));
+
+        public static void NotEqual<T>(this IWebDriver driver, T expected, Func<T> actual)
+            => WaitAssertCore(driver, () => Assert.NotEqual(expected, actual()));
 
         public static void True(this IWebDriver driver, Func<bool> actual)
             => WaitAssertCore(driver, () => Assert.True(actual()));
@@ -114,7 +120,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
                 var fileId = $"{Guid.NewGuid():N}.png";
                 var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
-                var errors = driver.GetBrowserLogs(LogLevel.All);
+                var errors = driver.GetBrowserLogs(LogLevel.All).Select(c => c.ToString()).ToList();
 
                 TakeScreenShot(driver, screenShotPath);
                 var exceptionInfo = lastException != null ? ExceptionDispatchInfo.Capture(lastException) :

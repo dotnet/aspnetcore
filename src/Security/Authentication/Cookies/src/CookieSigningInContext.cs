@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             AuthenticationScheme scheme,
             CookieAuthenticationOptions options,
             ClaimsPrincipal principal,
-            AuthenticationProperties properties,
+            AuthenticationProperties? properties,
             CookieOptions cookieOptions)
             : base(context, scheme, options, properties)
         {

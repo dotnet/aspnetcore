@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,14 +15,14 @@ namespace Microsoft.AspNetCore.ResponseCaching
         // Internal for testing
         internal static int BodySegmentSize { get; set; } = 81920;
 
-        internal static IAsyncResult ToIAsyncResult(Task task, AsyncCallback callback, object state)
+        internal static IAsyncResult ToIAsyncResult(Task task, AsyncCallback? callback, object? state)
         {
             var tcs = new TaskCompletionSource<int>(state);
             task.ContinueWith(t =>
             {
                 if (t.IsFaulted)
                 {
-                    tcs.TrySetException(t.Exception.InnerExceptions);
+                    tcs.TrySetException(t.Exception!.InnerExceptions);
                 }
                 else if (t.IsCanceled)
                 {

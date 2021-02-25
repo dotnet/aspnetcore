@@ -9,34 +9,32 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
     /// <summary>
-    /// This default implementation of the ICookieAuthenticationEvents may be used if the 
-    /// application only needs to override a few of the interface methods. This may be used as a base class
-    /// or may be instantiated directly.
+    /// Allows subscribing to events raised during cookie authentication.
     /// </summary>
     public class CookieAuthenticationEvents
     {
         /// <summary>
-        /// A delegate assigned to this property will be invoked when the related method is called.
+        /// Invoked to validate the principal.
         /// </summary>
         public Func<CookieValidatePrincipalContext, Task> OnValidatePrincipal { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// A delegate assigned to this property will be invoked when the related method is called.
+        /// Invoked on signing in.
         /// </summary>
         public Func<CookieSigningInContext, Task> OnSigningIn { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// A delegate assigned to this property will be invoked when the related method is called.
+        /// Invoked after sign in has completed.
         /// </summary>
         public Func<CookieSignedInContext, Task> OnSignedIn { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// A delegate assigned to this property will be invoked when the related method is called.
+        /// Invoked on signing out.
         /// </summary>
         public Func<CookieSigningOutContext, Task> OnSigningOut { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// A delegate assigned to this property will be invoked when the related method is called.
+        /// Invoked when the client needs to be redirected to the sign in url.
         /// </summary>
         public Func<RedirectContext<CookieAuthenticationOptions>, Task> OnRedirectToLogin { get; set; } = context =>
         {
@@ -53,7 +51,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         };
 
         /// <summary>
-        /// A delegate assigned to this property will be invoked when the related method is called.
+        /// Invoked when the client needs to be redirected to the access denied url.
         /// </summary>
         public Func<RedirectContext<CookieAuthenticationOptions>, Task> OnRedirectToAccessDenied { get; set; } = context =>
         {
@@ -70,7 +68,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         };
 
         /// <summary>
-        /// A delegate assigned to this property will be invoked when the related method is called.
+        /// Invoked when the client is to be redirected to logout.
         /// </summary>
         public Func<RedirectContext<CookieAuthenticationOptions>, Task> OnRedirectToLogout { get; set; } = context =>
         {
@@ -86,7 +84,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         };
 
         /// <summary>
-        /// A delegate assigned to this property will be invoked when the related method is called.
+        /// Invoked when the client is to be redirected after logout.
         /// </summary>
         public Func<RedirectContext<CookieAuthenticationOptions>, Task> OnRedirectToReturnUrl { get; set; } = context =>
         {
@@ -103,57 +101,56 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         private static bool IsAjaxRequest(HttpRequest request)
         {
-            return string.Equals(request.Query["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal) ||
-                string.Equals(request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal);
-        }		
+            return string.Equals(request.Query[HeaderNames.XRequestedWith], "XMLHttpRequest", StringComparison.Ordinal) ||
+                string.Equals(request.Headers[HeaderNames.XRequestedWith], "XMLHttpRequest", StringComparison.Ordinal);
+        }
 
         /// <summary>
-        /// Implements the interface method by invoking the related delegate method.
+        /// Invoked to validate the prinicipal.
         /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
+        /// <param name="context">The <see cref="CookieValidatePrincipalContext"/>.</param>
         public virtual Task ValidatePrincipal(CookieValidatePrincipalContext context) => OnValidatePrincipal(context);
 
         /// <summary>
-        /// Implements the interface method by invoking the related delegate method.
+        /// Invoked during sign in.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">The <see cref="CookieSigningInContext"/>.</param>
         public virtual Task SigningIn(CookieSigningInContext context) => OnSigningIn(context);
 
         /// <summary>
-        /// Implements the interface method by invoking the related delegate method.
+        /// Invoked after sign in has completed.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">The <see cref="CookieSignedInContext"/>.</param>
         public virtual Task SignedIn(CookieSignedInContext context) => OnSignedIn(context);
 
         /// <summary>
-        /// Implements the interface method by invoking the related delegate method.
+        /// Invoked on sign out.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">The <see cref="CookieSigningOutContext"/>.</param>
         public virtual Task SigningOut(CookieSigningOutContext context) => OnSigningOut(context);
 
         /// <summary>
-        /// Implements the interface method by invoking the related delegate method.
+        /// Invoked when the client is being redirected to the log out url.
         /// </summary>
-        /// <param name="context">Contains information about the event</param>
+        /// <param name="context">The <see cref="RedirectContext{TOptions}"/>.</param>
         public virtual Task RedirectToLogout(RedirectContext<CookieAuthenticationOptions> context) => OnRedirectToLogout(context);
 
         /// <summary>
-        /// Implements the interface method by invoking the related delegate method.
+        /// Invoked when the client is being redirected to the log in url.
         /// </summary>
-        /// <param name="context">Contains information about the event</param>
+        /// <param name="context">The <see cref="RedirectContext{TOptions}"/>.</param>
         public virtual Task RedirectToLogin(RedirectContext<CookieAuthenticationOptions> context) => OnRedirectToLogin(context);
 
         /// <summary>
-        /// Implements the interface method by invoking the related delegate method.
+        /// Invoked when the client is being redirected after log out.
         /// </summary>
-        /// <param name="context">Contains information about the event</param>
+        /// <param name="context">The <see cref="RedirectContext{TOptions}"/>.</param>
         public virtual Task RedirectToReturnUrl(RedirectContext<CookieAuthenticationOptions> context) => OnRedirectToReturnUrl(context);
 
         /// <summary>
-        /// Implements the interface method by invoking the related delegate method.
+        /// Invoked when the client is being redirected to the access denied url.
         /// </summary>
-        /// <param name="context">Contains information about the event</param>
+        /// <param name="context">The <see cref="RedirectContext{TOptions}"/>.</param>
         public virtual Task RedirectToAccessDenied(RedirectContext<CookieAuthenticationOptions> context) => OnRedirectToAccessDenied(context);
     }
 }

@@ -9,7 +9,9 @@ namespace Wasm.Performance.TestApp
     {
         public static void Send(IJSRuntime jsRuntime, string name)
         {
-            ((IJSInProcessRuntime)jsRuntime).Invoke<object>(
+            // jsRuntime will be null if we're in an environment without any
+            // JS runtime, e.g., the console runner
+            ((IJSInProcessRuntime)jsRuntime)?.Invoke<object>(
                 "receiveBenchmarkEvent",
                 name);
         }

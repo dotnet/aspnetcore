@@ -22,11 +22,34 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     /// </summary>
     public class HtmlHelper : IHtmlHelper, IViewContextAware
     {
+        /// <summary>
+        /// CSS class name for input validation.
+        /// </summary>
         public static readonly string ValidationInputCssClassName = "input-validation-error";
+
+        /// <summary>
+        /// CSS class name for valid input validation.
+        /// </summary>
         public static readonly string ValidationInputValidCssClassName = "input-validation-valid";
+
+        /// <summary>
+        /// CSS class name for field validation error.
+        /// </summary>
         public static readonly string ValidationMessageCssClassName = "field-validation-error";
+
+        /// <summary>
+        /// CSS class name for valid field validation.
+        /// </summary>
         public static readonly string ValidationMessageValidCssClassName = "field-validation-valid";
+
+        /// <summary>
+        /// CSS class name for validation summary errors.
+        /// </summary>
         public static readonly string ValidationSummaryCssClassName = "validation-summary-errors";
+
+        /// <summary>
+        /// CSS class name for valid validation summary.
+        /// </summary>
         public static readonly string ValidationSummaryValidCssClassName = "validation-summary-valid";
 
         private readonly IHtmlGenerator _htmlGenerator;
@@ -178,6 +201,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return dictionary;
         }
 
+        /// <summary>
+        /// Sets the <see cref="ViewContext"/>.
+        /// </summary>
+        /// <param name="viewContext">The context to use.</param>
         public virtual void Contextualize(ViewContext viewContext)
         {
             if (viewContext == null)
@@ -483,6 +510,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return RenderPartialCoreAsync(partialViewName, model, viewData, ViewContext.Writer);
         }
 
+        /// <summary>
+        /// Generate a display.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="htmlFieldName">The name of the html field.</param>
+        /// <param name="templateName">The name of the template.</param>
+        /// <param name="additionalViewData">The additional view data.</param>
+        /// <returns><see cref="IHtmlContent"/>.</returns>
         protected virtual IHtmlContent GenerateDisplay(
             ModelExplorer modelExplorer,
             string htmlFieldName,
@@ -503,6 +538,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return templateBuilder.Build();
         }
 
+        /// <summary>
+        /// Render a partial view.
+        /// </summary>
+        /// <param name="partialViewName">The name of the partial view.</param>
+        /// <param name="model">The model.</param>
+        /// <param name="viewData">The view data.</param>
+        /// <param name="writer">The <see cref="TextWriter"/>.</param>
+        /// <returns>The <see cref="Task"/>.</returns>
         protected virtual async Task RenderPartialCoreAsync(
             string partialViewName,
             object model,
@@ -708,6 +751,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return new MvcForm(ViewContext, _htmlEncoder);
         }
 
+        /// <summary>
+        /// Generate a check box.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="isChecked">Whether the box should be checked.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns></returns>
         protected virtual IHtmlContent GenerateCheckBox(
             ModelExplorer modelExplorer,
             string expression,
@@ -721,8 +775,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 isChecked,
                 htmlAttributes);
 
+            if (checkbox == null)
+            {
+                return HtmlString.Empty;
+            }
+
+            if (ViewContext.CheckBoxHiddenInputRenderMode == CheckBoxHiddenInputRenderMode.None)
+            {
+                return checkbox;
+            }
+
             var hiddenForCheckbox = _htmlGenerator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, expression);
-            if (checkbox == null || hiddenForCheckbox == null)
+            if (hiddenForCheckbox == null)
             {
                 return HtmlString.Empty;
             }
@@ -736,7 +800,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 hiddenForCheckbox.MergeAttribute("name", name);
             }
 
-            if (ViewContext.FormContext.CanRenderAtEndOfForm)
+            if (ViewContext.CheckBoxHiddenInputRenderMode == CheckBoxHiddenInputRenderMode.EndOfForm && ViewContext.FormContext.CanRenderAtEndOfForm)
             {
                 ViewContext.FormContext.EndOfFormContent.Add(hiddenForCheckbox);
                 return checkbox;
@@ -747,6 +811,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .AppendHtml(hiddenForCheckbox);
         }
 
+        /// <summary>
+        /// Generate display name.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="expression">The expression.</param>
+        /// <returns>The display name.</returns>
         protected virtual string GenerateDisplayName(ModelExplorer modelExplorer, string expression)
         {
             if (modelExplorer == null)
@@ -775,11 +845,28 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return resolvedDisplayName ?? string.Empty;
         }
 
+        /// <summary>
+        /// Generate display text.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <returns>The text.</returns>
         protected virtual string GenerateDisplayText(ModelExplorer modelExplorer)
         {
             return modelExplorer.GetSimpleDisplayText() ?? string.Empty;
         }
 
+        /// <summary>
+        /// Generate a drop down.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="selectList">The select list.</param>
+        /// <param name="optionLabel">The option lable.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>The <see cref="IHtmlContent"/>.</returns>
         protected IHtmlContent GenerateDropDown(
             ModelExplorer modelExplorer,
             string expression,
@@ -803,6 +890,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Generate editor.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="htmlFieldName">The name of the html field.</param>
+        /// <param name="templateName">The name of the template</param>
+        /// <param name="additionalViewData">Additional view data.</param>
+        /// <returns>The <see cref="IHtmlContent"/>.</returns>
         protected virtual IHtmlContent GenerateEditor(
             ModelExplorer modelExplorer,
             string htmlFieldName,
@@ -938,6 +1033,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return CreateForm();
         }
 
+        /// <summary>
+        /// Generate a hidden.
+        /// </summary>
+        /// <param name="modelExplorer"></param>
+        /// <param name="expression"></param>
+        /// <param name="value"></param>
+        /// <param name="useViewData"></param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>The <see cref="IHtmlContent"/>.</returns>
         protected virtual IHtmlContent GenerateHidden(
             ModelExplorer modelExplorer,
             string expression,
@@ -960,6 +1067,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Generate an id.
+        /// </summary>
+        /// <param name="expression">The expresion.</param>
+        /// <returns>The id.</returns>
         protected virtual string GenerateId(string expression)
         {
             var fullName = NameAndIdProvider.GetFullHtmlFieldName(ViewContext, expression);
@@ -967,6 +1079,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return GenerateIdFromName(fullName);
         }
 
+        /// <summary>
+        /// Generate a label.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="expression">The expresion.</param>
+        /// <param name="labelText">The label text.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>The <see cref="IHtmlContent"/>.</returns>
         protected virtual IHtmlContent GenerateLabel(
             ModelExplorer modelExplorer,
             string expression,
@@ -1011,6 +1134,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Generate a list box.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="selectList">An enumeration of <see cref="SelectListItem"/>.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>The <see cref="IHtmlContent"/>.</returns>
         protected IHtmlContent GenerateListBox(
             ModelExplorer modelExplorer,
             string expression,
@@ -1033,12 +1167,28 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Geneate a name.
+        /// </summary>
+        /// <param name="expression">The expression.</param>
+        /// <returns>The name.</returns>
         protected virtual string GenerateName(string expression)
         {
             var fullName = NameAndIdProvider.GetFullHtmlFieldName(ViewContext, expression);
             return fullName;
         }
 
+        /// <summary>
+        /// Generate a password.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="value">The password value.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>The <see cref="IHtmlContent"/>.</returns>
         protected virtual IHtmlContent GeneratePassword(
             ModelExplorer modelExplorer,
             string expression,
@@ -1059,6 +1209,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Generate a radio button.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="isChecked">If the radio button is checked.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>The <see cref="IHtmlContent"/>.</returns>
         protected virtual IHtmlContent GenerateRadioButton(
             ModelExplorer modelExplorer,
             string expression,
@@ -1081,6 +1243,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Generate a text area.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="rows">The number of rows.</param>
+        /// <param name="columns">The number of columns.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>The <see cref="IHtmlContent"/>.</returns>
         protected virtual IHtmlContent GenerateTextArea(
             ModelExplorer modelExplorer,
             string expression,
@@ -1103,6 +1277,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Generates a text box.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>The <see cref="IHtmlContent"/>.</returns>
         protected virtual IHtmlContent GenerateTextBox(
             ModelExplorer modelExplorer,
             string expression,
@@ -1125,6 +1311,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Generate a validation message.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="message">The validation message.</param>
+        /// <param name="tag">The tag.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>The <see cref="IHtmlContent"/>.</returns>
         protected virtual IHtmlContent GenerateValidationMessage(
             ModelExplorer modelExplorer,
             string expression,
@@ -1147,6 +1345,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Generate a validation summary.
+        /// </summary>
+        /// <param name="excludePropertyErrors">Whether to exclude property errors.</param>
+        /// <param name="message">The validation message.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <param name="tag">The tag.</param>
+        /// <returns>The <see cref="IHtmlContent"/>.</returns>
         protected virtual IHtmlContent GenerateValidationSummary(
             bool excludePropertyErrors,
             string message,
@@ -1167,6 +1376,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
+        /// <summary>
+        /// Generate a value.
+        /// </summary>
+        /// <param name="expression">The expression.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="useViewData">Whether to use view data.</param>
+        /// <returns>The value.</returns>
         protected virtual string GenerateValue(string expression, object value, string format, bool useViewData)
         {
             var fullName = NameAndIdProvider.GetFullHtmlFieldName(ViewContext, expression);

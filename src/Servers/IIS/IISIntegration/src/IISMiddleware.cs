@@ -17,6 +17,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
+    /// <summary>
+    /// The middleware that enables IIS Out-Of-Process to work.
+    /// </summary>
     public class IISMiddleware
     {
         private const string MSAspNetCoreClientCert = "MS-ASPNETCORE-CLIENTCERT";
@@ -34,6 +37,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly bool _isWebsocketsSupported;
 
+        /// <summary>
+        /// The middleware that enables IIS Out-Of-Process to work.
+        /// </summary>
+        /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory" />.</param>
+        /// <param name="options">The configuration for this middleware.</param>
+        /// <param name="pairingToken">A token used to coordinate with the ASP.NET Core Module.</param>
+        /// <param name="authentication">The <see cref="IAuthenticationSchemeProvider"/>.</param>
+        /// <param name="applicationLifetime">The <see cref="IHostApplicationLifetime"/>.</param>
         // Can't break public API, so creating a second constructor to propagate the isWebsocketsSupported flag.
         public IISMiddleware(RequestDelegate next,
             ILoggerFactory loggerFactory,
@@ -45,6 +57,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
         }
 
+        /// <summary>
+        /// The middleware that enables IIS Out-Of-Process to work.
+        /// </summary>
+        /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory" />.</param>
+        /// <param name="options">The configuration for this middleware.</param>
+        /// <param name="pairingToken">A token used to coordinate with the ASP.NET Core Module.</param>
+        /// <param name="isWebsocketsSupported">Whether websockets are supported by IIS.</param>
+        /// <param name="authentication">The <see cref="IAuthenticationSchemeProvider"/>.</param>
+        /// <param name="applicationLifetime">The <see cref="IHostApplicationLifetime"/>.</param>
         public IISMiddleware(RequestDelegate next,
             ILoggerFactory loggerFactory,
             IOptions<IISOptions> options,
@@ -88,6 +110,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _isWebsocketsSupported = isWebsocketsSupported;
         }
 
+        /// <summary>
+        /// Invoke the middleware.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
         public async Task Invoke(HttpContext httpContext)
         {
             if (!string.Equals(_pairingToken, httpContext.Request.Headers[MSAspNetCoreToken], StringComparison.Ordinal))
@@ -151,13 +178,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             // The feature must be removed on a per request basis as the Upgrade feature exists per request.
             if (!_isWebsocketsSupported)
             {
-                httpContext.Features.Set<IHttpUpgradeFeature>(null);
+                httpContext.Features.Set<IHttpUpgradeFeature?>(null);
             }
 
             await _next(httpContext);
         }
 
-        private WindowsPrincipal GetUser(HttpContext context)
+        private WindowsPrincipal? GetUser(HttpContext context)
         {
             var tokenHeader = context.Request.Headers[MSAspNetCoreWinAuthToken];
 
@@ -186,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             // https://github.com/aspnet/Logging/issues/543#issuecomment-321907828
             if (context.User is WindowsPrincipal)
             {
-                context.User = null;
+                context.User = null!;
             }
             return Task.CompletedTask;
         }

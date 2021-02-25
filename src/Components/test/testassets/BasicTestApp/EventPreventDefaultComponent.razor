@@ -1,14 +1,10 @@
-<h3>Prevent default</h3>
+﻿<h3>Prevent default</h3>
 
 <p>
     Currently we don't call <code>preventDefault</code> by default on DOM events in most cases.
     The one exception is for form submit events: in that case, if you have a C# onsubmit handler,
     you almost certainly don't really want to perform a server-side post, especially given that
     it would occur <em>before</em> an async event handler.
-</p>
-<p>
-    Later, it's likely that we'll add a syntax for controlling whether any given event handler
-    triggers a synchronous <code>preventDefault</code> before the event handler runs.
 </p>
 
 <h2>Form with onsubmit handler</h2>

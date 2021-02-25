@@ -153,4 +153,7 @@
   <data name="InvalidActionDescriptorModelType" xml:space="preserve">
     <value>The model type for '{0}' is of type '{1}' which is not assignable to its declared model type '{2}'.</value>
   </data>
+  <data name="StateShouldBeNullForRouteValueTransformers" xml:space="preserve">
+    <value>Transformer '{0}' was retrieved from dependency injection with a state value. State can only be specified when the dynamic route is mapped using MapDynamicPageRoute's state argument together with transient lifetime transformer. Ensure that '{0}' doesn't set its own state and that the transformer is registered with a transient lifetime in dependency injection.</value>
+  </data>
 </root>

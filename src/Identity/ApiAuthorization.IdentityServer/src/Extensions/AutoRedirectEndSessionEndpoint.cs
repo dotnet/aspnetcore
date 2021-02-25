@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using IdentityServer4.Configuration;
 using IdentityServer4.Endpoints.Results;
+using IdentityServer4.Extensions;
 using IdentityServer4.Hosting;
 using IdentityServer4.Services;
 using IdentityServer4.Validation;
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             var result = await _requestvalidator.ValidateAsync(parameters, user);
             if (result.IsError)
             {
-                _logger.LogError($"Error ending session {result.Error}");
+                _logger.LogError(LoggerEventIds.EndingSessionFailed, "Error ending session {Error}", result.Error);
                 return new RedirectResult(_identityServerOptions.Value.UserInteraction.ErrorUrl);
             }
 

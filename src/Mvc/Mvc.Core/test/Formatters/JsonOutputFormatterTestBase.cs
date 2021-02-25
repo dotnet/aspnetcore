@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var formatter = GetOutputFormatter();
             var expectedContent = "\"" + content + "\"";
-            var mediaType = MediaTypeHeaderValue.Parse(string.Format("application/json; charset={0}", encodingAsString));
+            var mediaType = MediaTypeHeaderValue.Parse(string.Format(CultureInfo.InvariantCulture, "application/json; charset={0}", encodingAsString));
             var encoding = CreateOrGetSupportedEncoding(formatter, encodingAsString, isDefaultEncoding);
 
 
@@ -108,6 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Assert
             var actualContent = encoding.GetString(body.ToArray());
             Assert.Equal(expectedContent, actualContent, StringComparer.OrdinalIgnoreCase);
+            Assert.True(body.CanWrite, "Response body should not be disposed.");
         }
 
         [Fact]

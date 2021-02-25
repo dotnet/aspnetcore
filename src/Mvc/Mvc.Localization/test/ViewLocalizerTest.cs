@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
         public void ViewLocalizer_WithCulture_ReturnsLocalizedHtmlString()
         {
             // Arrange
-            var stringLocalizer = new TestStringLocalizer();
+            var stringLocalizer = new TestStringLocalizer(new CultureInfo("fr"));
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
             var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
@@ -280,9 +280,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             viewLocalizer.Contextualize(viewContext);
 
             // Act
-#pragma warning disable CS0618 // Type or member is obsolete
-            var actualLocalizedString = viewLocalizer.WithCulture(new CultureInfo("fr"))["John"];
-#pragma warning restore CS0618 // Type or member is obsolete
+            var actualLocalizedString = htmlLocalizer["John"];
 
             // Assert
             Assert.Equal("Bonjour John", actualLocalizedString.Value);

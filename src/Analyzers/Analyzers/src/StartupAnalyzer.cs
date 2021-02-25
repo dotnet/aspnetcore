@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Analyzers
                 {
                     var analysis = builder.Build();
                     new UseMvcAnalyzer(analysis).AnalyzeSymbol(context);
-                    new BuildServiceProviderValidator(analysis).AnalyzeSymbol(context);
+                    new BuildServiceProviderAnalyzer(analysis).AnalyzeSymbol(context);
                     new UseAuthorizationAnalyzer(analysis).AnalyzeSymbol(context);
                 });
 

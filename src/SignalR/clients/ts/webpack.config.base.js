@@ -3,6 +3,8 @@
 
 const path = require("path");
 const webpack = require("./common/node_modules/webpack");
+const TerserJsPlugin = require("./common/node_modules/terser-webpack-plugin");
+const { DuplicatesPlugin } = require("./common/node_modules/inspectpack/plugin");
 
 module.exports = function (modulePath, browserBaseName, options) {
     const pkg = require(path.resolve(modulePath, "package.json"));
@@ -13,9 +15,7 @@ module.exports = function (modulePath, browserBaseName, options) {
         entry: path.resolve(modulePath, "src", "browser-index.ts"),
         mode: "none",
         node: {
-            global: true,
-            process: false,
-            Buffer: false,
+            global: true
         },
         target: options.target,
         resolveLoader: {
@@ -41,7 +41,6 @@ module.exports = function (modulePath, browserBaseName, options) {
         resolve: {
             extensions: [".ts", ".js"],
             alias: {
-                "./NodeHttpClient": path.resolve(__dirname, "signalr/src/EmptyNodeHttpClient.ts"),
                 ...options.alias,
             }
         },
@@ -74,10 +73,45 @@ module.exports = function (modulePath, browserBaseName, options) {
                     return `webpack://${pkg.umd_name}/${resourcePath}`;
                 }
             }),
-            // ES6 Promise uses this module in certain circumstances but we don't need it.
-            new webpack.IgnorePlugin(/vertx/),
-            new webpack.IgnorePlugin(/eventsource/),
+            new DuplicatesPlugin({
+                emitErrors: false,
+                emitHandler: undefined,
+                ignoredPackages: undefined,
+                verbose: false
+            })
         ],
+        optimization: {
+          sideEffects: true,
+          concatenateModules: true,
+          providedExports: true,
+          usedExports: true,
+          innerGraph: true,
+          minimize: true,
+          minimizer: [new TerserJsPlugin({        
+              terserOptions: {
+                  ecma: 2019,
+                  compress: {},
+                  mangle: {
+                    properties: {
+                        regex: /^_/
+                    }
+                  },
+                  module: true,
+                  format: {
+                      ecma: 2019
+                  },
+                  toplevel: false,
+                  keep_classnames: false,
+                  keep_fnames: false,
+            }
+          })]
+        },
+        stats: {
+            warnings: true,
+            errors: true,
+            performance: true,
+            optimizationBailout: true
+        },
         externals: options.externals,
     };
 }

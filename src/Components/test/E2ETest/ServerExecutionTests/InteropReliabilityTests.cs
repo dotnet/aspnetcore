@@ -19,7 +19,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    [Flaky("https://github.com/dotnet/aspnetcore/issues/19666", FlakyOn.All)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
     public class InteropReliabilityTests : IgnitorTest<ServerStartup>
     {
         public InteropReliabilityTests(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
@@ -30,8 +30,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         protected async override Task InitializeAsync()
         {
             var rootUri = ServerFixture.RootUri;
-            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir")), "Couldn't connect to the app");
-            Assert.Single(Batches);
+            await ConnectAutomaticallyAndWait(new Uri(rootUri, "/subdir"));
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
             Assert.Equal(2, Batches.Count);
@@ -215,6 +214,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19410")]
         public async Task ContinuesWorkingAfterInvalidAsyncReturnCallback()
         {
             // Arrange
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             {
                 BrowserRendererId = 0,
                 EventHandlerId = 6,
-                EventArgsType = "mouse",
+                EventName = "click",
             };
 
             await Client.ExpectCircuitError(async () =>
@@ -478,7 +478,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             {
                 BrowserRendererId = 0,
                 EventHandlerId = 1,
-                EventArgsType = "mouse",
+                EventName = "click",
             };
 
             await Client.ExpectCircuitError(async () =>

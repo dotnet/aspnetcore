@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <summary>
         /// Creates a new instance of GzipCompressionProvider with options.
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="options">The options for this instance.</param>
         public GzipCompressionProvider(IOptions<GzipCompressionProviderOptions> options)
         {
             if (options == null)

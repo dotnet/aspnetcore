@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="name">The name of the authenticationScheme.</param>
         /// <returns>The scheme or null if not found.</returns>
-        Task<AuthenticationScheme> GetSchemeAsync(string name);
+        Task<AuthenticationScheme?> GetSchemeAsync(string name);
 
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Otherwise, this will fallback to <see cref="AuthenticationOptions.DefaultScheme"/>.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.</returns>
-        Task<AuthenticationScheme> GetDefaultAuthenticateSchemeAsync();
+        Task<AuthenticationScheme?> GetDefaultAuthenticateSchemeAsync();
 
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Otherwise, this will fallback to <see cref="AuthenticationOptions.DefaultScheme"/>.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
-        Task<AuthenticationScheme> GetDefaultChallengeSchemeAsync();
+        Task<AuthenticationScheme?> GetDefaultChallengeSchemeAsync();
 
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Otherwise, this will fallback to <see cref="GetDefaultChallengeSchemeAsync"/> .
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
-        Task<AuthenticationScheme> GetDefaultForbidSchemeAsync();
+        Task<AuthenticationScheme?> GetDefaultForbidSchemeAsync();
 
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Otherwise, this will fallback to <see cref="AuthenticationOptions.DefaultScheme"/>.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.</returns>
-        Task<AuthenticationScheme> GetDefaultSignInSchemeAsync();
+        Task<AuthenticationScheme?> GetDefaultSignInSchemeAsync();
 
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.
@@ -63,13 +63,30 @@ namespace Microsoft.AspNetCore.Authentication
         /// Otherwise, this will fallback to <see cref="GetDefaultSignInSchemeAsync"/> .
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
-        Task<AuthenticationScheme> GetDefaultSignOutSchemeAsync();
+        Task<AuthenticationScheme?> GetDefaultSignOutSchemeAsync();
 
         /// <summary>
         /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
         /// </summary>
         /// <param name="scheme">The scheme.</param>
         void AddScheme(AuthenticationScheme scheme);
+
+        /// <summary>
+        /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
+        /// </summary>
+        /// <param name="scheme">The scheme.</param>
+        /// <returns>true if the scheme was added successfully.</returns>
+        bool TryAddScheme(AuthenticationScheme scheme)
+        {
+            try
+            {
+                AddScheme(scheme);
+                return true;
+            }
+            catch {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Removes a scheme, preventing it from being used by <see cref="IAuthenticationService"/>.

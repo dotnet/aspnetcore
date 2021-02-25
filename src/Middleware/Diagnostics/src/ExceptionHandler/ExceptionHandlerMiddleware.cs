@@ -14,6 +14,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
+    /// <summary>
+    /// A middleware for handling exceptions in the application.
+    /// </summary>
     public class ExceptionHandlerMiddleware
     {
         private readonly RequestDelegate _next;
@@ -22,6 +25,13 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly Func<object, Task> _clearCacheHeadersDelegate;
         private readonly DiagnosticListener _diagnosticListener;
 
+        /// <summary>
+        /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
+        /// </summary>
+        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+        /// <param name="options">The options for configuring the middleware.</param>
+        /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
         public ExceptionHandlerMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,
@@ -46,6 +56,10 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
         }
 
+        /// <summary>
+        /// Executes the middleware.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
         public Task Invoke(HttpContext context)
         {
             ExceptionDispatchInfo edi;
@@ -69,7 +83,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
             static async Task Awaited(ExceptionHandlerMiddleware middleware, HttpContext context, Task task)
             {
-                ExceptionDispatchInfo edi = null;
+                ExceptionDispatchInfo? edi = null;
                 try
                 {
                     await task;
@@ -109,22 +123,26 @@ namespace Microsoft.AspNetCore.Diagnostics
                 var exceptionHandlerFeature = new ExceptionHandlerFeature()
                 {
                     Error = edi.SourceException,
-                    Path = originalPath.Value,
+                    Path = originalPath.Value!,
                 };
                 context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
                 context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
-                context.Response.StatusCode = 500;
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
-                await _options.ExceptionHandler(context);
+                await _options.ExceptionHandler!(context);
 
-                if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
+                if (context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
                 {
-                    _diagnosticListener.Write("Microsoft.AspNetCore.Diagnostics.HandledException", new { httpContext = context, exception = edi.SourceException });
+                    if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
+                    {
+                        _diagnosticListener.Write("Microsoft.AspNetCore.Diagnostics.HandledException", new { httpContext = context, exception = edi.SourceException });
+                    }
+
+                    return;
                 }
 
-                // TODO: Optional re-throw? We'll re-throw the original exception by default if the error handler throws.
-                return;
+                _logger.ErrorHandlerNotFound();
             }
             catch (Exception ex2)
             {
@@ -153,7 +171,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         private static Task ClearCacheHeaders(object state)
         {
             var headers = ((HttpResponse)state).Headers;
-            headers[HeaderNames.CacheControl] = "no-cache";
+            headers[HeaderNames.CacheControl] = "no-cache,no-store";
             headers[HeaderNames.Pragma] = "no-cache";
             headers[HeaderNames.Expires] = "-1";
             headers.Remove(HeaderNames.ETag);

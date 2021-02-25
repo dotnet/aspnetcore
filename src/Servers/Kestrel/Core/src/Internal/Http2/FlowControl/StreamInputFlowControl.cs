@@ -10,11 +10,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         private readonly InputFlowControl _connectionLevelFlowControl;
         private readonly InputFlowControl _streamLevelFlowControl;
 
-        private readonly int _streamId;
+        private int StreamId => _stream.StreamId;
+        private readonly Http2Stream _stream;
         private readonly Http2FrameWriter _frameWriter;
 
         public StreamInputFlowControl(
-            int streamId,
+            Http2Stream stream,
             Http2FrameWriter frameWriter,
             InputFlowControl connectionLevelFlowControl,
             uint initialWindowSize,
@@ -22,9 +23,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         {
             _connectionLevelFlowControl = connectionLevelFlowControl;
             _streamLevelFlowControl = new InputFlowControl(initialWindowSize, minWindowSizeIncrement);
-
-            _streamId = streamId;
+            _stream = stream;
             _frameWriter = frameWriter;
+        }
+
+        public void Reset()
+        {
+            _streamLevelFlowControl.Reset();
         }
 
         public void Advance(int bytes)
@@ -52,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             if (streamWindowUpdateSize > 0)
             {
                 // Writing with the FrameWriter should only fail if given a canceled token, so just fire and forget.
-                _ = _frameWriter.WriteWindowUpdateAsync(_streamId, streamWindowUpdateSize);
+                _ = _frameWriter.WriteWindowUpdateAsync(StreamId, streamWindowUpdateSize);
             }
 
             UpdateConnectionWindow(bytes);

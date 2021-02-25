@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Http
     public class FormFileCollection : List<IFormFile>, IFormFileCollection
     {
         /// <inheritdoc />
-        public IFormFile this[string name] => GetFile(name);
+        public IFormFile? this[string name] => GetFile(name);
 
         /// <inheritdoc />
-        public IFormFile GetFile(string name)
+        public IFormFile? GetFile(string name)
         {
             foreach (var file in this)
             {

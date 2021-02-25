@@ -2,10 +2,6 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 
-  <PropertyGroup>
-    <MicrosoftAspNetCoreAppPackageVersion>$(PackageVersion)</MicrosoftAspNetCoreAppPackageVersion>
-  </PropertyGroup>
-
   <Import Project="..\Sdk\SiteExtension.targets" />
 
   <PropertyGroup>

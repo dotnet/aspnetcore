@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     /// </summary>
     public abstract class ParameterModelBase : IBindingModel
     {
+        /// <summary>
+        /// Initializes a new instance of a <see cref="ParameterModelBase"/>.
+        /// </summary>
+        /// <param name="parameterType">The type.</param>
+        /// <param name="attributes">The attributes.</param>
         protected ParameterModelBase(
             Type parameterType,
             IReadOnlyList<object> attributes)
@@ -25,6 +30,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Properties = new Dictionary<object, object>();
         }
 
+        /// <summary>
+        /// Copy constructor.
+        /// </summary>
+        /// <param name="other">The other instance to copy</param>
         protected ParameterModelBase(ParameterModelBase other)
         {
             if (other == null)
@@ -39,14 +48,29 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Properties = new Dictionary<object, object>(other.Properties);
         }
 
+        /// <summary>
+        /// The attributes.
+        /// </summary>
         public IReadOnlyList<object> Attributes { get; }
 
+        /// <summary>
+        /// The properties.
+        /// </summary>
         public IDictionary<object, object> Properties { get; }
 
+        /// <summary>
+        /// The type.
+        /// </summary>
         public Type ParameterType { get; }
 
+        /// <summary>
+        /// The name.
+        /// </summary>
         public string Name { get; protected set;  }
 
+        /// <summary>
+        /// The <see cref="BindingInfo"/>.
+        /// </summary>
         public BindingInfo BindingInfo { get; set; }
     }
 }

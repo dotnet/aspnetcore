@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using Microsoft.AspNetCore.Routing;
@@ -8,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 {
     internal class DynamicControllerRouteValueTransformerMetadata : IDynamicEndpointMetadata
     {
-        public DynamicControllerRouteValueTransformerMetadata(Type selectorType)
+        public DynamicControllerRouteValueTransformerMetadata(Type selectorType, object state)
         {
             if (selectorType == null)
             {
@@ -23,10 +25,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             SelectorType = selectorType;
+            State = state;
         }
 
         public bool IsDynamic => true;
 
         public Type SelectorType { get; }
+
+        public object State { get; }
     }
 }

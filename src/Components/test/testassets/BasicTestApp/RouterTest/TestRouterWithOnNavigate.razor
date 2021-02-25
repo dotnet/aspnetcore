@@ -1,0 +1,79 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+
+@using System.Threading
+
+<button @onclick="TriggerRerender" id="trigger-rerender">Trigger Rerender</button>
+
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" OnNavigateAsync="@OnNavigateAsync" PreferExactMatches="true">
+    <Navigating>
+        <div style="padding: 20px;background-color:blue;color:white;" id="loading-banner">
+            <p>Loading the requested page...</p>
+        </div>
+    </Navigating>
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(RouterTestLayout)">
+            <div id="test-info">Oops, that component wasn't found!</div>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code {
+    private Dictionary<string, Func<NavigationContext, Task>> preNavigateTasks = new Dictionary<string, Func<NavigationContext, Task>>()
+    {
+        { "LongPage1", new Func<NavigationContext, Task>(TestLoadingPageShows) },
+        { "LongPage2", new Func<NavigationContext, Task>(TestOnNavCancel) },
+        { "Other", new Func<NavigationContext, Task>(TestOnNavException) },
+        { "WithLazyAssembly", new Func<NavigationContext, Task>(TestOnNavException) },
+        { "WithParameters/name/Abc", new Func<NavigationContext, Task>(TestRefreshHandling) }
+    };
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Console.WriteLine("Render triggered...");
+    }
+
+    private async Task OnNavigateAsync(NavigationContext args)
+    {
+        Console.WriteLine($"Running OnNavigate for {args.Path}...");
+        Func<NavigationContext, Task> task;
+        if (preNavigateTasks.TryGetValue(args.Path, out task))
+        {
+            await task.Invoke(args);
+        }
+    }
+
+    public static async Task TestLoadingPageShows(NavigationContext args)
+    {
+        await Task.Delay(2000);
+    }
+
+    public static async Task TestOnNavCancel(NavigationContext args)
+    {
+        await Task.Delay(2000, args.CancellationToken);
+        Console.WriteLine("I'm not happening...");
+    }
+
+    public static async Task TestOnNavException(NavigationContext args)
+    {
+        await Task.CompletedTask;
+        throw new Exception("This is an uncaught exception.");
+    }
+
+    public static Task TestOnNavSyncException(NavigationContext args)
+    {
+        throw new Exception("This is an uncaught exception.");
+    }
+
+    public static async Task TestRefreshHandling(NavigationContext args)
+    {
+        await Task.Delay(Timeout.Infinite, args.CancellationToken);
+    }
+
+    private void TriggerRerender()
+    {
+        Console.WriteLine("Nothing to see here, just an even to trigger a re-render...");
+    }
+}

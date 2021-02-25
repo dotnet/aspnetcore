@@ -42,7 +42,10 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             else
             {
-                result = new ObjectResult(problemDetails);
+                result = new ObjectResult(problemDetails)
+                {
+                    StatusCode = problemDetails.Status,
+                };
             }
             result.ContentTypes.Add("application/problem+json");
             result.ContentTypes.Add("application/problem+xml");

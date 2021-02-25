@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.SpaServices
                 // Try to clarify the common scenario where someone runs an application in
                 // Production environment without first publishing the whole application
                 // or at least building the SPA.
-                var hostEnvironment = (IWebHostEnvironment)context.RequestServices.GetService(typeof(IWebHostEnvironment));
+                var hostEnvironment = (IWebHostEnvironment?)context.RequestServices.GetService(typeof(IWebHostEnvironment));
                 if (hostEnvironment != null && hostEnvironment.IsProduction())
                 {
                     message += "Your application is running in Production mode, so make sure it has " +

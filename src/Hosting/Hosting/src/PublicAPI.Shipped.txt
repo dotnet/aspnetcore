@@ -1,0 +1,63 @@
+#nullable enable
+Microsoft.AspNetCore.Hosting.Builder.ApplicationBuilderFactory
+Microsoft.AspNetCore.Hosting.Builder.ApplicationBuilderFactory.ApplicationBuilderFactory(System.IServiceProvider! serviceProvider) -> void
+Microsoft.AspNetCore.Hosting.Builder.ApplicationBuilderFactory.CreateBuilder(Microsoft.AspNetCore.Http.Features.IFeatureCollection! serverFeatures) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+Microsoft.AspNetCore.Hosting.Builder.IApplicationBuilderFactory
+Microsoft.AspNetCore.Hosting.DelegateStartup
+Microsoft.AspNetCore.Hosting.DelegateStartup.DelegateStartup(Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<Microsoft.Extensions.DependencyInjection.IServiceCollection!>! factory, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configureApp) -> void
+Microsoft.AspNetCore.Hosting.Server.Features.ServerAddressesFeature
+Microsoft.AspNetCore.Hosting.Server.Features.ServerAddressesFeature.Addresses.get -> System.Collections.Generic.ICollection<string!>!
+Microsoft.AspNetCore.Hosting.Server.Features.ServerAddressesFeature.PreferHostingUrls.get -> bool
+Microsoft.AspNetCore.Hosting.Server.Features.ServerAddressesFeature.PreferHostingUrls.set -> void
+Microsoft.AspNetCore.Hosting.Server.Features.ServerAddressesFeature.ServerAddressesFeature() -> void
+Microsoft.AspNetCore.Hosting.StartupBase
+Microsoft.AspNetCore.Hosting.StartupBase.StartupBase() -> void
+Microsoft.AspNetCore.Hosting.StartupBase<TBuilder>
+Microsoft.AspNetCore.Hosting.StaticWebAssets.StaticWebAssetsLoader
+Microsoft.AspNetCore.Hosting.StaticWebAssets.StaticWebAssetsLoader.StaticWebAssetsLoader() -> void
+Microsoft.AspNetCore.Hosting.WebHostBuilder
+Microsoft.AspNetCore.Hosting.WebHostBuilder.Build() -> Microsoft.AspNetCore.Hosting.IWebHost!
+Microsoft.AspNetCore.Hosting.WebHostBuilder.ConfigureAppConfiguration(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.Extensions.Configuration.IConfigurationBuilder!>! configureDelegate) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Hosting.WebHostBuilder.ConfigureServices(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.Extensions.DependencyInjection.IServiceCollection!>! configureServices) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Hosting.WebHostBuilder.ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>! configureServices) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Hosting.WebHostBuilder.GetSetting(string! key) -> string!
+Microsoft.AspNetCore.Hosting.WebHostBuilder.UseSetting(string! key, string? value) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Hosting.WebHostBuilder.WebHostBuilder() -> void
+Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions
+Microsoft.AspNetCore.Hosting.WebHostExtensions
+Microsoft.AspNetCore.Http.DefaultHttpContextFactory
+Microsoft.AspNetCore.Http.DefaultHttpContextFactory.Create(Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection) -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Http.DefaultHttpContextFactory.DefaultHttpContextFactory(System.IServiceProvider! serviceProvider) -> void
+Microsoft.AspNetCore.Http.DefaultHttpContextFactory.Dispose(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
+Microsoft.Extensions.Hosting.GenericHostWebHostBuilderExtensions
+Microsoft.Extensions.Hosting.WebHostBuilderOptions
+Microsoft.Extensions.Hosting.WebHostBuilderOptions.SuppressEnvironmentConfiguration.get -> bool
+Microsoft.Extensions.Hosting.WebHostBuilderOptions.SuppressEnvironmentConfiguration.set -> void
+Microsoft.Extensions.Hosting.WebHostBuilderOptions.WebHostBuilderOptions() -> void
+override Microsoft.AspNetCore.Hosting.DelegateStartup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> void
+static Microsoft.AspNetCore.Hosting.StaticWebAssets.StaticWebAssetsLoader.UseStaticWebAssets(Microsoft.AspNetCore.Hosting.IWebHostEnvironment! environment, Microsoft.Extensions.Configuration.IConfiguration! configuration) -> void
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.Configure(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configureApp) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.Configure(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configureApp) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.ConfigureAppConfiguration(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.Extensions.Configuration.IConfigurationBuilder!>! configureDelegate) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.ConfigureLogging(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.Extensions.Logging.ILoggingBuilder!>! configureLogging) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.ConfigureLogging(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.Extensions.Logging.ILoggingBuilder!>! configureLogging) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.UseDefaultServiceProvider(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.Extensions.DependencyInjection.ServiceProviderOptions!>! configure) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.UseDefaultServiceProvider(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.Extensions.DependencyInjection.ServiceProviderOptions!>! configure) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.UseStartup(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Type! startupType) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.UseStartup<TStartup>(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.UseStartup<TStartup>(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Func<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, TStartup!>! startupFactory) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.UseStaticWebAssets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostExtensions.Run(this Microsoft.AspNetCore.Hosting.IWebHost! host) -> void
+static Microsoft.AspNetCore.Hosting.WebHostExtensions.RunAsync(this Microsoft.AspNetCore.Hosting.IWebHost! host, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Hosting.WebHostExtensions.StopAsync(this Microsoft.AspNetCore.Hosting.IWebHost! host, System.TimeSpan timeout) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Hosting.WebHostExtensions.WaitForShutdown(this Microsoft.AspNetCore.Hosting.IWebHost! host) -> void
+static Microsoft.AspNetCore.Hosting.WebHostExtensions.WaitForShutdownAsync(this Microsoft.AspNetCore.Hosting.IWebHost! host, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Hosting.StartupBase<TBuilder>.ConfigureContainer(TBuilder builder) -> void
+~Microsoft.AspNetCore.Hosting.Builder.IApplicationBuilderFactory.CreateBuilder(Microsoft.AspNetCore.Http.Features.IFeatureCollection serverFeatures) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
+~Microsoft.AspNetCore.Hosting.StartupBase<TBuilder>.StartupBase(Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<TBuilder> factory) -> void
+~abstract Microsoft.AspNetCore.Hosting.StartupBase.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> void
+~override Microsoft.AspNetCore.Hosting.StartupBase<TBuilder>.CreateServiceProvider(Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> System.IServiceProvider
+~static Microsoft.Extensions.Hosting.GenericHostWebHostBuilderExtensions.ConfigureWebHost(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder> configure) -> Microsoft.Extensions.Hosting.IHostBuilder
+~static Microsoft.Extensions.Hosting.GenericHostWebHostBuilderExtensions.ConfigureWebHost(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder> configure, System.Action<Microsoft.Extensions.Hosting.WebHostBuilderOptions> configureWebHostBuilder) -> Microsoft.Extensions.Hosting.IHostBuilder
+~virtual Microsoft.AspNetCore.Hosting.StartupBase.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> void
+~virtual Microsoft.AspNetCore.Hosting.StartupBase.CreateServiceProvider(Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> System.IServiceProvider

@@ -86,6 +86,53 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             provider.GetBinder(context);
         }
 
+        [Fact]
+        public void CalculateAllowEmptyBody_EmptyBodyBehaviorIsDefaultValue_UsesMvcOptions()
+        {
+            // Arrange
+            var options = new MvcOptions { AllowEmptyInputInBodyModelBinding = true };
+
+            // Act
+            var allowEmpty = BodyModelBinderProvider.CalculateAllowEmptyBody(EmptyBodyBehavior.Default, options);
+
+            // Assert
+            Assert.True(allowEmpty);
+        }
+
+        [Fact]
+        public void CalculateAllowEmptyBody_EmptyBodyBehaviorIsDefaultValue_DefaultsToFalseWhenOptionsIsUnavailable()
+        {
+            // Act
+            var allowEmpty = BodyModelBinderProvider.CalculateAllowEmptyBody(EmptyBodyBehavior.Default, options: null);
+
+            // Assert
+            Assert.False(allowEmpty);
+        }
+
+        [Fact]
+        public void CalculateAllowEmptyBody_EmptyBodyBehaviorIsAllow()
+        {
+            // Act
+            var allowEmpty = BodyModelBinderProvider.CalculateAllowEmptyBody(EmptyBodyBehavior.Allow, options: new MvcOptions());
+
+            // Assert
+            Assert.True(allowEmpty);
+        }
+
+        [Fact]
+        public void CalculateAllowEmptyBody_EmptyBodyBehaviorIsDisallowed()
+        {
+            // Arrange
+            // MvcOptions.AllowEmptyInputInBodyModelBinding should be ignored if EmptyBodyBehavior disallows it
+            var options = new MvcOptions { AllowEmptyInputInBodyModelBinding = true };
+
+            // Act
+            var allowEmpty = BodyModelBinderProvider.CalculateAllowEmptyBody(EmptyBodyBehavior.Disallow, options);
+
+            // Assert
+            Assert.False(allowEmpty);
+        }
+
         private static BodyModelBinderProvider CreateProvider(params IInputFormatter[] formatters)
         {
             var sink = new TestSink();

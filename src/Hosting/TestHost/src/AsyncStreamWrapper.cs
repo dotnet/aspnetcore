@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.TestHost
 {
     internal class AsyncStreamWrapper : Stream
     {
-        private Stream _inner;
-        private Func<bool> _allowSynchronousIO;
+        private readonly Stream _inner;
+        private readonly Func<bool> _allowSynchronousIO;
 
         internal AsyncStreamWrapper(Stream inner, Func<bool> allowSynchronousIO)
         {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.TestHost
             return _inner.ReadAsync(buffer, cancellationToken);
         }
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return _inner.BeginRead(buffer, offset, count, callback, state);
         }
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.TestHost
             _inner.Write(buffer, offset, count);
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return _inner.BeginWrite(buffer, offset, count, callback, state);
         }
