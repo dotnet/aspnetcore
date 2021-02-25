@@ -15,6 +15,7 @@ param(
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
 $env:DOTNET_MULTILEVEL_LOOKUP = 0
 $env:PLAYWRIGHT_BROWSERS_PATH = "$currentDirectory\ms-playwright"
+$env:InstallPlaywright = "$InstallPlaywright"
 
 $currentDirectory = Get-Location
 $envPath = "$env:PATH;$env:HELIX_CORRELATION_PAYLOAD\node\bin"
@@ -80,15 +81,15 @@ if ([string]::IsNullOrEmpty($FeedCred)) {
     InstallDotnetSDKAndRuntime "https://dotnetclimsrc.blob.core.windows.net/dotnet" $FeedCred
 }
 
-Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources /p:InstallPlaywright=$InstallPlaywright"
-dotnet restore RunTests\RunTests.csproj --ignore-failed-sources /p:InstallPlaywright=$InstallPlaywright
+Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
+dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
 
 if ($LastExitCode -ne 0) {
     exit $LastExitCode
 }
 
-Write-Host "Running tests: dotnet run --no-restore /p:InstallPlaywright=$InstallPlaywright --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout"
-dotnet run --no-restore /p:InstallPlaywright=$InstallPlaywright --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout
+Write-Host "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout"
+dotnet run --no-restore --project RunTests\RunTests.csproj -- --target $Target --runtime $AspRuntimeVersion --queue $Queue --arch $Arch --quarantined $Quarantined --ef $EF --helixTimeout $HelixTimeout
 
 Write-Host "Finished running tests: exit_code=$LastExitCode"
 exit $LastExitCode
