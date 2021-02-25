@@ -1,8 +1,7 @@
 <Project>
 
   <Target Name="EnsureBaselineIsUpdated"
-          Condition=" '$(ValidateBasline)' == 'true' AND
-              '$(IsServicingBuild)' == 'true' AND
+          Condition=" '$(IsServicingBuild)' == 'true' AND
               '$(AspNetCoreBaselineVersion)' != '$(PreviousAspNetCoreReleaseVersion)' AND
               '$(MSBuildProjectName)' != 'BaselineGenerator' AND
               '$(MSBuildProjectName)' != 'RepoTasks' "
