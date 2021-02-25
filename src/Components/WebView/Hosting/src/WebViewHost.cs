@@ -40,13 +40,6 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         public abstract void ApplyRenderBatchCore(RenderBatch renderBatch);
 
-        // This is called externally by the WebView when the url changes from external sources
-        // (For example a new URL is applied to the control)
-        public void UpdateLocation(string newUrl, bool intercepted)
-        {
-            LocationUpdated?.Invoke(newUrl, intercepted);
-        }
-
         // This is called by the navigation manager and needs to be forwarded to the WebView
         // It might trigger the WebView to change the location of the URL and cause a LocationUpdated event.
         public abstract void Navigate(string uri, bool forceLoad);

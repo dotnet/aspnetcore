@@ -4,7 +4,7 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
-    public static class BlazorWebViewServiceCollectionExtensions
+    public static class ComponentsWebViewServiceCollectionExtensions
     {
         public static IServiceCollection AddBlazorWebView(this IServiceCollection services)
         {

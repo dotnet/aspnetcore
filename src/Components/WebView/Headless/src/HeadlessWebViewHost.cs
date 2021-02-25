@@ -45,11 +45,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Headless
             OnRenderBatch(renderBatch);
         }
 
-        public override void UpdateLocation(string newUrl, bool intercepted)
-        {
-            OnUpdateLocation(newUrl, intercepted);
-        }
-
         public override void Navigate(string uri, bool forceLoad)
         {
             OnNavigate(uri, forceLoad);
