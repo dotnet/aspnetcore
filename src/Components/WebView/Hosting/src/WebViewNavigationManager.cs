@@ -9,12 +9,12 @@ namespace Microsoft.AspNetCore.Components.WebView
             _host = host;
         }
 
-        internal void Init(string baseUrl, string initialUrl)
+        public void Init(string baseUrl, string initialUrl)
         {
             Initialize(baseUrl, initialUrl);
         }
 
-        internal void LocationUpdated(string newUrl, bool intercepted)
+        public void LocationUpdated(string newUrl, bool intercepted)
         {
             Uri = newUrl;
             NotifyLocationChanged(intercepted);

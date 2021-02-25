@@ -40,11 +40,11 @@ namespace Microsoft.AspNetCore.Components.WebView
             _webViewHost = webViewHost;
         }
 
-        public Task BeginInvokeDotNet(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public async Task BeginInvokeDotNet(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
             try
             {
-                return _dispatcher.InvokeAsync(() => DotNetDispatcher.BeginInvokeDotNet(
+                await _dispatcher.InvokeAsync(() => DotNetDispatcher.BeginInvokeDotNet(
                     _jsRuntime,
                     new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId),
                     argsJson));
@@ -56,15 +56,15 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
-        public Task EndInvokeJS(long asyncHandle, bool succeeded, string arguments)
+        public Task EndInvokeJS(long asyncHandle, bool succeeded, string argumentsOrError)
         {
             if (succeeded)
             {
-                return _dispatcher.InvokeAsync(() => DotNetDispatcher.EndInvokeJS(_jsRuntime, arguments));
+                return _dispatcher.InvokeAsync(() => DotNetDispatcher.EndInvokeJS(_jsRuntime, argumentsOrError));
             }
             else
             {
-                _webViewHost.NotifyUnhandledException(new InvalidOperationException(arguments));
+                _webViewHost.NotifyUnhandledException(new InvalidOperationException(argumentsOrError));
                 return Task.CompletedTask;
             }
         }

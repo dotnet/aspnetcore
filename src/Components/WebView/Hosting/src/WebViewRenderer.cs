@@ -8,9 +8,9 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     public class WebViewRenderer : Renderer
     {
-        private Dictionary<string, int> _componentIdBySelector = new();
-        private Dispatcher _dispatcher;
-        private WebViewHost _host;
+        private readonly Dictionary<string, int> _componentIdBySelector = new();
+        private readonly Dispatcher _dispatcher;
+        private readonly WebViewHost _host;
 
         public WebViewRenderer(
             IServiceProvider serviceProvider,
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             return _host.ApplyRenderBatch(renderBatch);
         }
 
-        public async Task RenderRootComponentAsync(Type componentType, string selector)
+        public async Task AddRootComponentAsync(Type componentType, string selector, ParameterView parameters)
         {
             if (_componentIdBySelector.ContainsKey(selector))
             {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             _componentIdBySelector.Add(selector, componentId);
             _host.AttachToDocument(componentId, selector);
 
-            await RenderRootComponentAsync(componentId);
+            await RenderRootComponentAsync(componentId, parameters);
         }
 
         public async Task RemoveRootComponentAsync(string selector)

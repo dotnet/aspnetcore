@@ -27,21 +27,21 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         // This API is synchronous because bindings are synchronous in XAML, so we'll have to deal
         // with errors separately.
-        public void AddComponent<TComponent>(string selector) where TComponent : IComponent
+        public void AddComponent(Type componentType, string selector, ParameterView parameters)
         {
             if (!_initialized)
             {
                 throw new InvalidOperationException("Not initialized.");
             }
 
-            _registeredComponents.Add(new RootComponent(typeof(TComponent), selector));
+            _registeredComponents.Add(new RootComponent(componentType, selector));
             _componentChangeTasks.Enqueue(RenderRootComponent(selector));
 
             async Task RenderRootComponent(string selector)
             {
                 await _dispatcher.InvokeAsync(async () =>
                 {
-                    await _renderer.RenderRootComponentAsync(typeof(TComponent), selector);
+                    await _renderer.AddRootComponentAsync(componentType, selector, parameters);
                 });
             }
         }

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Headless
 
         // This is triggered when the browser updates the location as a result of the
         // user clicking a link or similar.
-        public event Action<string, bool> OnUpdateLocation;
+        // public event Action<string, bool> OnUpdateLocation; // Re-enable once used
 
         // This is triggered when a component triggers a navigation programatically
         public event Action<string, bool> OnNavigate;

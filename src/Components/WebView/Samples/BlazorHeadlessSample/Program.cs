@@ -1,4 +1,5 @@
 using System;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebView.Headless;
 using Microsoft.AspNetCore.Components.WebView.Headless.Document;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,4 +21,4 @@ consoleView.Host.OnRenderBatch += (batch) =>
 };
 consoleView.Host.OnAttachComponent += (id, selector) => document.AddRootComponent(id, selector);
 
-consoleView.AddComponent<BlazorServerApp.App>("#selector");
+consoleView.AddComponent(typeof(BlazorHeadlessSample.App), "#selector", ParameterView.Empty);
