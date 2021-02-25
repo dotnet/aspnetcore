@@ -13,7 +13,6 @@ When creating a new implementation (i.e. src) project, it's necessary to manuall
 
 See [Steps for adding and updating APIs](#steps-for-adding-and-updating-apis) for steps on how to add APIs to the Unshipped.txt files
 
-
 ## PublicAPI.Shipped.txt
 
 This file contains APIs that were released in the last major version. This file should only be modified after a major release by the build team and should never be modified otherwise.
@@ -52,7 +51,7 @@ Microsoft.AspNetCore.DataProtection.Infrastructure.IApplicationDiscriminator.Dis
 
 ### Steps for adding and updating APIs
 
-1. Update AspNetCore.sln and relevant `*.slnf` file to include the new project
+1. Update AspNetCore.sln and relevant `*.slnf` file to include the new project if needed
 1. `{directory containing relevant *.slnf}\startvs.cmd`
 1. F6 *or whatever your favourite build gesture is*
 1. Click on a RS0016 (or whatever) error
