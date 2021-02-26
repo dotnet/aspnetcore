@@ -356,34 +356,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void CanRenderSvgWithCorrectNamespace()
-        {
-            var appElement = Browser.MountTestComponent<SvgComponent>();
-
-            var svgElement = appElement.FindElement(By.XPath("//*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']"));
-            Assert.NotNull(svgElement);
-
-            var svgCircleElement = appElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
-            Assert.NotNull(svgCircleElement);
-            Assert.Equal("10", svgCircleElement.GetAttribute("r"));
-
-            appElement.FindElement(By.TagName("button")).Click();
-            Browser.Equal("20", () => svgCircleElement.GetAttribute("r"));
-        }
-
-        [Fact]
-        public void CanRenderSvgChildComponentWithCorrectNamespace()
-        {
-            var appElement = Browser.MountTestComponent<SvgWithChildComponent>();
-
-            var svgElement = appElement.FindElement(By.XPath("//*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']"));
-            Assert.NotNull(svgElement);
-
-            var svgCircleElement = appElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
-            Assert.NotNull(svgCircleElement);
-        }
-
-        [Fact]
         public void LogicalElementInsertionWorksHierarchically()
         {
             var appElement = Browser.MountTestComponent<LogicalElementInsertionCases>();
