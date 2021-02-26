@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.NotNull(svgCircleElement);
         }
 
-        [Fact(Skip="https://github.com/dotnet/aspnetcore/issues/18271")]
+        [Fact(Skip="Skipped because functionality is not supported. See https://github.com/dotnet/aspnetcore/issues/18271.")]
         public void CanRenderVariablesInForeignObject()
         {
             var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 e => Assert.Equal("thestringbar", e.Text));
         }
 
-        [Fact(Skip="https://github.com/dotnet/aspnetcore/issues/18271")]
+        [Fact(Skip="Skipped because functionality is not supported. See https://github.com/dotnet/aspnetcore/issues/18271.")]
         public void CanRenderSvgWithLink()
         {
             var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("SVG", currentScenario.Text);
         }
 
-        [Fact(Skip="https://github.com/dotnet/aspnetcore/issues/18271")]
+        [Fact(Skip="Skipped because functionality is not supported. See https://github.com/dotnet/aspnetcore/issues/18271.")]
         public void CanRenderSvgWithTwoWayBinding()
         {
             var appElement = Browser.MountTestComponent<SvgComponent>();
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("15", valueElement.Text);
         }
 
-        [Fact(Skip="https://github.com/dotnet/aspnetcore/issues/18271")]
+        [Fact(Skip="Skipped because functionality is not supported. See https://github.com/dotnet/aspnetcore/issues/18271.")]
         public void CanRenderSvgRenderFragment()
         {
             var appElement = Browser.MountTestComponent<SvgComponent>();
