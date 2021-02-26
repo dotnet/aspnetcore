@@ -6,6 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
+    // This class is a coordinator for a given WebView.
+    // Handles the setup of the specific webview interop transport bus, and other browser concerns like
+    // handling events for serving content, dealing with page refreshes, browser crashes, etc.
     public abstract class WebViewManager
     {
         private bool _started;
@@ -15,8 +18,8 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         private Dispatcher _dispatcher;
         private WebViewRenderer _renderer;
-        private WebViewBrowser _webViewBrowser;
-        private WebViewHost _webViewHost;
+        private WebViewBrowserProxy _webViewBrowser;
+        private WebViewClient _webViewHost;
         private Queue<Task> _componentChangeTasks = new();
 
         public WebViewManager(IServiceProvider provider)
@@ -81,8 +84,8 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             _dispatcher = services.GetService<Dispatcher>();
             _renderer = services.GetRequiredService<WebViewRenderer>();
-            _webViewBrowser = services.GetRequiredService<WebViewBrowser>();
-            _webViewHost = services.GetRequiredService<WebViewHost>();
+            _webViewBrowser = services.GetRequiredService<WebViewBrowserProxy>();
+            _webViewHost = services.GetRequiredService<WebViewClient>();
             _webViewHost.MessageDispatcher = SendMessage;
 
             _started = true;

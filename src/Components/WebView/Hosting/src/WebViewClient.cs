@@ -20,9 +20,12 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     // These are all the messages .NET needs to know how to dispatch to JS
     // TODO: Proper serialization, error handling, etc.
-    internal class WebViewHost
+
+    // Handles comunication between the component abstractions (Renderer, NavigationManager, JSInterop, etc.)
+    // and the underlying transport channel
+    internal class WebViewClient
     {
-        public WebViewHost(Dispatcher dispatcher)
+        public WebViewClient(Dispatcher dispatcher)
         {
             _dispatcher = dispatcher;
         }

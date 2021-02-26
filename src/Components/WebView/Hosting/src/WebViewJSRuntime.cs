@@ -6,9 +6,9 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     internal class WebViewJSRuntime : JSRuntime
     {
-        private readonly WebViewHost _host;
+        private readonly WebViewClient _host;
 
-        public WebViewJSRuntime(WebViewHost host)
+        public WebViewJSRuntime(WebViewClient host)
         {
             JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(new WebElementReferenceContext(this)));
             _host = host;

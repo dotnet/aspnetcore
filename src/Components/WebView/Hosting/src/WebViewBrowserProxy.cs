@@ -19,20 +19,23 @@ using Microsoft.JSInterop.Infrastructure;
 namespace Microsoft.AspNetCore.Components.WebView
 {
     // These are all the messages .NET Host needs to know how to receive from JS
-    internal class WebViewBrowser
+
+    // This class is a "Proxy" or "front-controller" for the incoming messages from the Browser via the transport channel.
+    // It receives messages on OnMessageReceived, interprets the payload and dispatches them to the appropriate method
+    internal class WebViewBrowserProxy
     {
         private readonly Dispatcher _dispatcher;
         private readonly JSRuntime _jsRuntime;
         private readonly WebViewRenderer _renderer;
         private readonly WebViewNavigationManager _navigationManager;
-        private readonly WebViewHost _webViewHost;
+        private readonly WebViewClient _webViewHost;
 
-        public WebViewBrowser(
+        public WebViewBrowserProxy(
             Dispatcher dispatcher,
             JSRuntime jsRuntime,
             WebViewRenderer renderer,
             NavigationManager navigationManager,
-            WebViewHost webViewHost)
+            WebViewClient webViewHost)
         {
             _dispatcher = dispatcher;
             _jsRuntime = jsRuntime;
@@ -50,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.WebView
                 case "Initialize":
                     break;
                 case "BeginInvokeDotNet":
-                    BeginInvokeDotNet((string)args[0], (string)args[1], (string)args[2], (long)args[3], (string)args[4]);
+                    _ = BeginInvokeDotNet((string)args[0], (string)args[1], (string)args[2], (long)args[3], (string)args[4]);
                     break;
                 case "EndInvokeJS":
                     EndInvokeJS((long)args[0], (bool)args[1], (string)args[2]);
@@ -98,16 +101,16 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
-        public Task EndInvokeJS(long asyncHandle, bool succeeded, string argumentsOrError)
+        public void EndInvokeJS(long asyncHandle, bool succeeded, string argumentsOrError)
         {
             if (succeeded)
             {
-                return _dispatcher.InvokeAsync(() => DotNetDispatcher.EndInvokeJS(_jsRuntime, argumentsOrError));
+                // EndInvokeJS doesn't throw
+                _ = _dispatcher.InvokeAsync(() => DotNetDispatcher.EndInvokeJS(_jsRuntime, argumentsOrError));
             }
             else
             {
                 _webViewHost.NotifyUnhandledException(new InvalidOperationException(argumentsOrError));
-                return Task.CompletedTask;
             }
         }
 

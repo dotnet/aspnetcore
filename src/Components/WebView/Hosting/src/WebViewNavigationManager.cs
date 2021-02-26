@@ -2,9 +2,9 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     internal class WebViewNavigationManager : NavigationManager
     {
-        private readonly WebViewHost _host;
+        private readonly WebViewClient _host;
 
-        public WebViewNavigationManager(WebViewHost host)
+        public WebViewNavigationManager(WebViewClient host)
         {
             _host = host;
         }

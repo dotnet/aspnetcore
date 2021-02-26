@@ -10,12 +10,12 @@ namespace Microsoft.AspNetCore.Components.WebView
     {
         private readonly Dictionary<string, int> _componentIdBySelector = new();
         private readonly Dispatcher _dispatcher;
-        private readonly WebViewHost _host;
+        private readonly WebViewClient _host;
 
         public WebViewRenderer(
             IServiceProvider serviceProvider,
             Dispatcher dispatcher,
-            WebViewHost host,
+            WebViewClient host,
             ILoggerFactory loggerFactory) :
             base(serviceProvider, loggerFactory)
         {
