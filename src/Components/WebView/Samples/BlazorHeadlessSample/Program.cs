@@ -11,7 +11,7 @@ var provider = services.BuildServiceProvider();
 
 var document = new HeadlessDocument();
 
-var consoleView = new HeadlessWebView(provider);
+var consoleView = new HeadlessWebViewManager(provider);
 consoleView.Initialize("https://localhost:5001/", "https://localhost:5001/");
 
 //consoleView.Host.OnRenderBatch += (batch) =>

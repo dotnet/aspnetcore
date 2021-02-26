@@ -29,6 +29,10 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         protected IServiceProvider Provider => _provider;
 
+        protected string BaseUrl { get; set; }
+
+        protected string StartUrl { get; set; }
+
         // This API is synchronous because bindings are synchronous in XAML, so we'll have to deal
         // with errors separately.
         public void AddComponent(Type componentType, string selector, ParameterView parameters)
@@ -80,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             _scope = Provider.CreateScope();
             var services = _scope.ServiceProvider;
             var webViewNavigationManager = (WebViewNavigationManager)services.GetRequiredService<NavigationManager>();
-            webViewNavigationManager.Init(BaseUrl, CurrentUrl);
+            webViewNavigationManager.Init(BaseUrl, StartUrl);
 
             _dispatcher = services.GetService<Dispatcher>();
             _renderer = services.GetRequiredService<WebViewRenderer>();
@@ -94,11 +98,6 @@ namespace Microsoft.AspNetCore.Components.WebView
         protected void MessageReceived(string message) => _webViewBrowser.OnMessageReceived(message);
 
         protected abstract void SendMessage(string message);
-
-        public void Dispose()
-        {
-            _scope.Dispose();
-        }
 
         private record RootComponent(Type ComponentType, string Selector);
     }
