@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(originalRouteParam, httpContext.Items["value"] as int?);
+            Assert.Equal(originalRouteParam, httpContext.Items["input"] as int?);
         }
 
         public static IEnumerable<object[]> FromRouteOptionalResult
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(42, httpContext.Items["value"] as int?);
+            Assert.Equal(42, httpContext.Items["input"] as int?);
         }
 
         [Theory]
@@ -193,16 +193,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
         public async Task RequestDelegatePopulatesFromRouteOptionalParameterBasedOnParameterName(Delegate @delegate)
         {
             const string paramName = "value";
-            const int originalRouteParam = 420;
+            const int originalRouteParam = 47;
 
             var httpContext = new DefaultHttpContext();
-            httpContext.Items.Add("expected", originalRouteParam);
 
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
             var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
+
+            Assert.Equal(47, httpContext.Items["input"] as int?);
         }
 
         [Fact]
