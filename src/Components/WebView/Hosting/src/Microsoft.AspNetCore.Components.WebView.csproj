@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebView.Test" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" LinkBase="Shared" />

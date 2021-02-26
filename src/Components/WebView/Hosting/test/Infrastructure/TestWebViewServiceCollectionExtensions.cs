@@ -1,11 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.AspNetCore.Components.WebView.Headless
+namespace Microsoft.AspNetCore.Components.WebView
 {
-    public static class HeadlessWebViewServiceCollectionExtensions
+    public static class TestWebViewServiceCollectionExtensions
     {
-        public static IServiceCollection AddHeadlessWebView(this IServiceCollection services)
+        public static IServiceCollection AddTestBlazorWebView(this IServiceCollection services)
         {
             services.AddBlazorWebView();
             services.TryAddSingleton(Dispatcher.CreateDefault());

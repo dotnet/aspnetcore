@@ -5,9 +5,9 @@ using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.RenderTree;
 
-namespace Microsoft.AspNetCore.Components.WebView.Headless.Document
+namespace Microsoft.AspNetCore.Components.WebView.Document
 {
-    public class HeadlessDocument
+    public class TestDocument
     {
         private const string SelectValuePropname = "_blazorSelectValue";
 
@@ -450,7 +450,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Headless.Document
             return builder.ToString();
         }
 
-        private void Render(HeadlessNode node, StringBuilder builder)
+        private void Render(TestNode node, StringBuilder builder)
         {
             if (node is TextNode t)
             {

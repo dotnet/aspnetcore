@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNetCore.Components.WebView.Headless.Document
+namespace Microsoft.AspNetCore.Components.WebView.Document
 {
     internal class ComponentNode : ContainerNode
     {

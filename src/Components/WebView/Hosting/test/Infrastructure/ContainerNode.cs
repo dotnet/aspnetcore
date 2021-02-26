@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Components.WebView.Headless.Document
+namespace Microsoft.AspNetCore.Components.WebView.Document
 {
-    internal class ContainerNode : HeadlessNode
+    internal class ContainerNode : TestNode
     {
-        public List<HeadlessNode> Children { get; } = new();
+        public List<TestNode> Children { get; } = new();
 
         internal void RemoveLogicalChild(int childIndex)
         {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Headless.Document
             return containerElement;
         }
 
-        internal void InsertLogicalChild(HeadlessNode child, int childIndex)
+        internal void InsertLogicalChild(TestNode child, int childIndex)
         {
             if (child is LogicalContainerNode comment && comment.Children.Count > 0)
             {

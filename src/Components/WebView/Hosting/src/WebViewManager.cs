@@ -33,6 +33,9 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         protected string StartUrl { get; set; }
 
+        // For testing purposes only
+        internal IServiceScope GetCurrentScope() => _scope;
+
         // This API is synchronous because bindings are synchronous in XAML, so we'll have to deal
         // with errors separately.
         public void AddComponent(Type componentType, string selector, ParameterView parameters)

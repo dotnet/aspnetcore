@@ -1,6 +1,6 @@
-﻿namespace Microsoft.AspNetCore.Components.WebView.Headless.Document
+﻿namespace Microsoft.AspNetCore.Components.WebView.Document
 {
-    internal class TextNode : HeadlessNode
+    internal class TextNode : TestNode
     {
         public TextNode(string textContent)
         {

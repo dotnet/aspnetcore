@@ -1,6 +1,6 @@
-﻿namespace Microsoft.AspNetCore.Components.WebView.Headless.Document
+﻿namespace Microsoft.AspNetCore.Components.WebView.Document
 {
-    internal class MarkupNode : HeadlessNode
+    internal class MarkupNode : TestNode
     {
         public MarkupNode(string markupContent)
         {

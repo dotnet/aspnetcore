@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Components.WebView.Headless
+namespace Microsoft.AspNetCore.Components.WebView
 {
-    public class HeadlessWebViewManager : WebViewManager
+    public class TestWebViewManager : WebViewManager
     {
-        public HeadlessWebViewManager(IServiceProvider provider) : base(provider)
+        public TestWebViewManager(IServiceProvider provider) : base(provider)
         {
         }
 
@@ -22,6 +22,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Headless
         public void IncomingMessage(string message)
         {
             MessageReceived(message);
+        }
+
+        internal void SetUrls(string baseUrl, string initialUrl)
+        {
+            BaseUrl = baseUrl;
+            StartUrl = initialUrl;
         }
     }
 }
