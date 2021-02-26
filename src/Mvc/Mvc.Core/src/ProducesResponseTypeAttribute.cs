@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
         public ProducesResponseTypeAttribute(int statusCode)
             : this(typeof(void), statusCode)
         {
-            SetByDefault = true;
+            IsResponseTypeSetByDefault = true;
         }
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
-            SetByDefault = false;
+            IsResponseTypeSetByDefault = false;
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// default in the constructor
         /// </summary>
         /// <value></value>
-        internal bool SetByDefault { get; }
+        internal bool IsResponseTypeSetByDefault { get; }
 
         /// <inheritdoc />
         void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes)
