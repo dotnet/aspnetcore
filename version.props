@@ -3,6 +3,8 @@
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>27</AspNetCorePatchVersion>
+    <ValidateBaseline>false</ValidateBaseline>
+
     <PreReleaseLabel>servicing</PreReleaseLabel>
     <PreReleaseBrandingLabel>Servicing</PreReleaseBrandingLabel>
     <BuildNumber Condition="'$(BuildNumber)' == '' OR '$(UsingLocalBuildNumber)' == 'true'">t000</BuildNumber>
