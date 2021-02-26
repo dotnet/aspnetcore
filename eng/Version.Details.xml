@@ -177,9 +177,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>12ec2197ed3999c98f49c006a27ee761282df168</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Internal.Transport" Version="6.0.0-preview.2.21106.9">
+    <Dependency Name="Microsoft.AspNetCore.Internal.Transport" Version="6.0.0-preview.3.21125.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>afd1d33db716e185c6ef77af569db5cfc3ef183a</Sha>
+      <Sha>12ec2197ed3999c98f49c006a27ee761282df168</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="6.0.0-preview.3.21125.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -230,11 +230,6 @@
       <Sha>12ec2197ed3999c98f49c006a27ee761282df168</Sha>
     </Dependency>
     <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="6.0.0-preview.3.21125.3">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>12ec2197ed3999c98f49c006a27ee761282df168</Sha>
-    </Dependency>
-    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. -->
-    <Dependency Name="System.Security.AccessControl" Version="6.0.0-preview.3.21125.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>12ec2197ed3999c98f49c006a27ee761282df168</Sha>
     </Dependency>

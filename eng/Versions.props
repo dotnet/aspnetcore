@@ -107,7 +107,7 @@
     <MicrosoftExtensionsOptionsDataAnnotationsVersion>6.0.0-preview.3.21125.3</MicrosoftExtensionsOptionsDataAnnotationsVersion>
     <MicrosoftExtensionsOptionsVersion>6.0.0-preview.3.21125.3</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>6.0.0-preview.3.21125.3</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftExtensionsInternalTransportVersion>6.0.0-preview.2.21106.9</MicrosoftExtensionsInternalTransportVersion>
+    <MicrosoftAspNetCoreInternalTransportVersion>6.0.0-preview.3.21125.3</MicrosoftAspNetCoreInternalTransportVersion>
     <SystemComponentModelAnnotationsVersion>6.0.0-preview.3.21125.3</SystemComponentModelAnnotationsVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-preview.3.21125.3</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>6.0.0-preview.3.21125.3</SystemDiagnosticsEventLogVersion>
@@ -119,8 +119,6 @@
     <SystemReflectionMetadataVersion>6.0.0-preview.3.21125.3</SystemReflectionMetadataVersion>
     <SystemResourcesExtensionsVersion>6.0.0-preview.3.21125.3</SystemResourcesExtensionsVersion>
     <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0-preview.3.21125.3</SystemRuntimeCompilerServicesUnsafeVersion>
-    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. -->
-    <SystemSecurityAccessControlVersion>6.0.0-preview.3.21125.3</SystemSecurityAccessControlVersion>
     <SystemSecurityCryptographyCngVersion>6.0.0-preview.3.21125.3</SystemSecurityCryptographyCngVersion>
     <SystemSecurityCryptographyPkcsVersion>6.0.0-preview.3.21125.3</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>6.0.0-preview.3.21125.3</SystemSecurityCryptographyXmlVersion>
@@ -160,36 +158,6 @@
       All Runtime.$rid packages should have the same version.
     -->
     <MicrosoftNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimewinx64Version)</MicrosoftNETCoreAppRuntimeVersion>
-  </PropertyGroup>
-  <!--
-    We ship ref/ assemblies for runtime packages in our targeting targeting pack. When servicing that targeting pack,
-    these assemblies must not change. Must also compile our assemblies against the initial ref/ assemblies for runtime
-    packages. But, need to test against the latest implementation assemblies and ship them in our shared framework.
-    Upshot is we need Major.Minor.0 runtime packages for compilation and the targeting pack and Major.Minor.Latest
-    runtime packages for everything else. This is not an issue for assemblies available in Microsoft.NETCore.App.Ref or
-    Microsoft.Extensions.Internal.Transport because it is next to impossible we would service those packages.
-
-    System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. Because
-    it's a transitive reference, we reship the ref/ assembly in Microsoft.AspNetCore.App.Ref. dotnet/runtime ships
-    the implementation assemblies in Microsoft.NETCore.App.Runtime.* packages.
-
-    If testing this configuration prior to servicing, update the versions of dependencies too. E.g. change
-    `$(SystemSecurityPrincipalWindowsV0PackageVersion)` if you change `$(SystemSecurityAccessControlV0PackageVersion)`
-    because System.Security.AccessControl will otherwise be loadable. This should not be necessary in servicing.
-  -->
-  <PropertyGroup Condition=" '$(IsServicingBuild)' == 'true' ">
-    <MicrosoftWin32RegistryV0Version>$(MicrosoftWin32RegistryVersion.Split('.')[0]).$(MicrosoftWin32RegistryVersion.Split('.')[1]).0</MicrosoftWin32RegistryV0Version>
-    <MicrosoftWin32SystemEventsV0Version>$(MicrosoftWin32SystemEventsVersion.Split('.')[0]).$(MicrosoftWin32SystemEventsVersion.Split('.')[1]).0</MicrosoftWin32SystemEventsV0Version>
-    <SystemDiagnosticsEventLogV0Version>$(SystemDiagnosticsEventLogVersion.Split('.')[0]).$(SystemDiagnosticsEventLogVersion.Split('.')[1]).0</SystemDiagnosticsEventLogV0Version>
-    <SystemDrawingCommonV0Version>$(SystemDrawingCommonVersion.Split('.')[0]).$(SystemDrawingCommonVersion.Split('.')[1]).0</SystemDrawingCommonV0Version>
-    <SystemIOPipelinesV0Version>$(SystemIOPipelinesVersion.Split('.')[0]).$(SystemIOPipelinesVersion.Split('.')[1]).0</SystemIOPipelinesV0Version>
-    <SystemSecurityAccessControlV0Version>$(SystemSecurityAccessControlVersion.Split('.')[0]).$(SystemSecurityAccessControlVersion.Split('.')[1]).0</SystemSecurityAccessControlV0Version>
-    <SystemSecurityCryptographyCngV0Version>$(SystemSecurityCryptographyCngVersion.Split('.')[0]).$(SystemSecurityCryptographyCngVersion.Split('.')[1]).0</SystemSecurityCryptographyCngV0Version>
-    <SystemSecurityCryptographyPkcsV0Version>$(SystemSecurityCryptographyPkcsVersion.Split('.')[0]).$(SystemSecurityCryptographyPkcsVersion.Split('.')[1]).0</SystemSecurityCryptographyPkcsV0Version>
-    <SystemSecurityCryptographyXmlV0Version>$(SystemSecurityCryptographyXmlVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlV0Version>
-    <SystemSecurityPermissionsV0Version>$(SystemSecurityPermissionsVersion.Split('.')[0]).$(SystemSecurityPermissionsVersion.Split('.')[1]).0</SystemSecurityPermissionsV0Version>
-    <SystemSecurityPrincipalWindowsV0Version>$(SystemSecurityPrincipalWindowsVersion.Split('.')[0]).$(SystemSecurityPrincipalWindowsVersion.Split('.')[1]).0</SystemSecurityPrincipalWindowsV0Version>
-    <SystemWindowsExtensionsV0Version>$(SystemWindowsExtensionsVersion.Split('.')[0]).$(SystemWindowsExtensionsVersion.Split('.')[1]).0</SystemWindowsExtensionsV0Version>
   </PropertyGroup>
   <PropertyGroup Label="Manual">
     <!-- Packages from dotnet/roslyn -->
