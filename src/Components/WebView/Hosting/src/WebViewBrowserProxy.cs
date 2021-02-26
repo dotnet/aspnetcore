@@ -32,13 +32,13 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         public WebViewBrowserProxy(
             Dispatcher dispatcher,
-            JSRuntime jsRuntime,
+            IJSRuntime jsRuntime,
             WebViewRenderer renderer,
             NavigationManager navigationManager,
             WebViewClient webViewHost)
         {
             _dispatcher = dispatcher;
-            _jsRuntime = jsRuntime;
+            _jsRuntime = (JSRuntime)jsRuntime;
             _renderer = renderer;
             _navigationManager = (WebViewNavigationManager)navigationManager;
             _webViewHost = webViewHost;
@@ -70,7 +70,8 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
-        (string type, object[] args) Deserialize(string message)
+        // Internal for test only
+        static internal (string type, object[] args) Deserialize(string message)
         {
             var payload = message.Split(":");
             return payload[0] switch
