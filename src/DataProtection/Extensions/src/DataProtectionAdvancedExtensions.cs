@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.DataProtection
     public static class DataProtectionAdvancedExtensions
     {
 #if NETCOREAPP
+    /*
         /// <summary>
         /// 
         /// </summary>
@@ -41,6 +42,7 @@ namespace Microsoft.AspNetCore.DataProtection
             }
             return protector.Unprotect(protectedData.ToArray());
         }
+        */
 #endif
 
         /// <summary>
