@@ -28,12 +28,10 @@
   <PropertyGroup>
     <!--
       Projects should only use the latest package references when:
-        * not building internally
         * preparing a new major or minor release (i.e. a non-servicing builds)
         * when a project is a test or sample project
         * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
     -->
-    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(InternalBuild)' != 'true'  ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' == 'true' AND ( '$(IsServicingBuild)' != 'true' OR '$(IsPackable)' == 'true' ) ">true</UseLatestPackageReferences>
