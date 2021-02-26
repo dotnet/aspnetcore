@@ -103,7 +103,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                             break;
                         default: // invalid enum values
                             Debug.Assert(logLevel != LogLevel.None, "This method is never called with LogLevel.None.");
-                            throw new ArgumentOutOfRangeException(nameof(logLevel));
+                            _jsRuntime.InvokeVoid("console.log", formattedMessage);
+                            break;
                     }
                 }
                 finally
