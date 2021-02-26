@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="key">The key used to persist the state.</param>
         /// <param name="value">The persisted state.</param>
         /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-        public bool TryRedeemPersistedState(string key, [MaybeNullWhen(false)] out byte[]? value)
+        public bool TryTakePersistedState(string key, [MaybeNullWhen(false)] out byte[]? value)
         {
             if (key is null)
             {
@@ -153,16 +153,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="key">The key used to persist the instance.</param>
         /// <param name="instance">The persisted instance.</param>
         /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-        public bool TryRedeemFromJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, [MaybeNullWhen(false)] out TValue? instance)
+        public bool TryTakeAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, [MaybeNullWhen(false)] out TValue? instance)
         {
             if (key is null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (TryRedeemPersistedState(key, out var data))
+            if (TryTakePersistedState(key, out var data))
             {
-                instance = JsonSerializer.Deserialize<TValue>(data)!;
+                instance = JsonSerializer.Deserialize<TValue>(data, JsonSerializerOptionsProvider.Options)!;
                 return true;
             }
             else

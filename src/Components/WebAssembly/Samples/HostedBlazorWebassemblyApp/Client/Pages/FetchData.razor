@@ -1,5 +1,5 @@
 ﻿@page "/fetchdata"
-@using System.Text.Json
+@implements IDisposable
 @using HostedBlazorWebassemblyApp.Shared
 @inject IWeatherForecastService WeatherForecastService
 @inject ComponentApplicationState ApplicationState
@@ -42,11 +42,20 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        ApplicationState.OnPersisting += PersistForecasts;
+        forecasts = !ApplicationState.TryTakeAsJson<WeatherForecast[]>("fetchdata", out var restored) ?
+            await WeatherForecastService.GetForecastAsync(DateTime.Now) :
+            restored!;
+    }
 
-        if (!ApplicationState.TryRedeemFromJson<WeatherForecast []>("fetchdata", out var forecasts))
-        {
-            forecasts = await WeatherForecastService.GetForecastAsync(DateTime.Now);
-            ApplicationState.PersistAsJson("fetchdata", forecasts);
-        }
+    private Task PersistForecasts()
+    {
+        ApplicationState.PersistAsJson("fetchdata", forecasts);
+        return Task.CompletedTask;
+    }
+
+    void IDisposable.Dispose()
+    {
+        ApplicationState.OnPersisting -= PersistForecasts;
     }
 }

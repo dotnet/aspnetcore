@@ -11,6 +11,8 @@ namespace BasicTestApp
     {
         private readonly ComponentApplicationState _componentApplicationState;
 
+        private ServiceState _state = new();
+
         public PreserveStateService(ComponentApplicationState componentApplicationState)
         {
             _componentApplicationState = componentApplicationState;
@@ -18,31 +20,36 @@ namespace BasicTestApp
             TryRestoreState();
         }
 
-        public Guid Guid { get; private set; }
+        public Guid Guid => _state.TheState;
 
         private void TryRestoreState()
         {
-            if (_componentApplicationState.TryRedeemFromJson<Guid>("Service", out var guid))
+            if (_componentApplicationState.TryTakeAsJson<ServiceState>("Service", out var state))
             {
-                Guid = guid;
+                _state = state;
             }
             else
             {
-                Guid = Guid.NewGuid();
+                _state = new ServiceState { TheState = Guid.NewGuid() };
             }
         }
 
-        public void NewState() => Guid = Guid.NewGuid();
+        public void NewState() => _state = new ServiceState { TheState = Guid.NewGuid() };
 
         private Task PersistState()
         {
-            _componentApplicationState.PersistAsJson("Service", Guid);
+            _componentApplicationState.PersistAsJson("Service", _state);
             return Task.CompletedTask;
         }
 
         public void Dispose()
         {
             _componentApplicationState.OnPersisting -= PersistState;
+        }
+
+        private class ServiceState
+        {
+            public Guid TheState { get; set; }
         }
     }
 }
