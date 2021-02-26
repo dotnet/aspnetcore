@@ -15,11 +15,12 @@ namespace Microsoft.AspNetCore.Mvc
     {
         /// <summary>
         /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
-        /// </summary>       
+        /// </summary>
         /// <param name="statusCode">The HTTP response status code.</param>
         public ProducesResponseTypeAttribute(int statusCode)
             : this(typeof(void), statusCode)
         {
+            SetByDefault = true;
         }
 
         /// <summary>
@@ -31,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
+            SetByDefault = false;
         }
 
         /// <summary>
@@ -42,6 +44,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the HTTP status code of the response.
         /// </summary>
         public int StatusCode { get; set; }
+
+        internal bool SetByDefault { get; private set; }
 
         /// <inheritdoc />
         void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes)
