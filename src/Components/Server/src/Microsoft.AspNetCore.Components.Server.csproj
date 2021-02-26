@@ -29,13 +29,7 @@
 
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
     <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
-    <ProjectReference
-      Include="..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
-      ReferenceOutputAssemblies="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework"
-      Private="false"
-      Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
+    <ProjectReference Include="..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" ReferenceOutputAssemblies="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework" Private="false" Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -47,13 +41,14 @@
     <_FileProviderTaskAssembly>$(ArtifactsDir)bin\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task\$(Configuration)\netstandard2.0\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll</_FileProviderTaskAssembly>
   </PropertyGroup>
 
-  <UsingTask
-    AssemblyFile="$(_FileProviderTaskAssembly)"
-    TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
+  <UsingTask AssemblyFile="$(_FileProviderTaskAssembly)" TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Circuits" />
+    <Compile Remove="C:\work\AspNetCore4\src\Components\Shared\src\RenderBatchWriter.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" LinkBase="Circuits" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilderMemoryStream.cs" LinkBase="Circuits" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentParametersTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
@@ -96,15 +91,12 @@
   <PropertyGroup>
     <BlazorServerJSFilename>blazor.server.js</BlazorServerJSFilename>
     <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
-    <BlazorServerJSFile
-        Condition=" '$(Configuration)' == 'Debug' ">..\..\Web.JS\dist\Debug\$(BlazorServerJSFilename)</BlazorServerJSFile>
-    <BlazorServerJSFile
-        Condition=" '$(Configuration)' != 'Debug' ">..\..\Web.JS\dist\Release\$(BlazorServerJSFilename)</BlazorServerJSFile>
+    <BlazorServerJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\Web.JS\dist\Debug\$(BlazorServerJSFilename)</BlazorServerJSFile>
+    <BlazorServerJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\Web.JS\dist\Release\$(BlazorServerJSFilename)</BlazorServerJSFile>
   </PropertyGroup>
 
   <!-- blazor.server.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. Fall back if not. -->
-  <Target Name="_CheckBlazorServerJSPath" AfterTargets="ResolveProjectReferences"
-      Condition=" !EXISTS('$(BlazorServerJSFile)') ">
+  <Target Name="_CheckBlazorServerJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorServerJSFile)') ">
     <Warning Text="'$(BlazorServerJSFile)' does not exist. Falling back to checked-in copy." />
     <PropertyGroup>
       <BlazorServerJSFile>..\..\Web.JS\dist\Release\$(BlazorServerJSFilename)</BlazorServerJSFile>
@@ -114,8 +106,7 @@
   <Target Name="_AddEmbeddedBlazor" AfterTargets="_CheckBlazorServerJSPath">
     <ItemGroup>
       <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/$(BlazorServerJSFilename)" />
-      <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/$(BlazorServerJSFilename).map"
-          Condition="Exists('$(BlazorServerJSFile).map')" />
+      <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/$(BlazorServerJSFilename).map" Condition="Exists('$(BlazorServerJSFile).map')" />
     </ItemGroup>
   </Target>
 </Project>

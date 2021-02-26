@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -18,7 +19,7 @@ using Microsoft.JSInterop.Infrastructure;
 namespace Microsoft.AspNetCore.Components.WebView
 {
     // These are all the messages .NET Host needs to know how to receive from JS
-    public class WebViewBrowser
+    internal class WebViewBrowser
     {
         private readonly Dispatcher _dispatcher;
         private readonly JSRuntime _jsRuntime;
@@ -38,6 +39,47 @@ namespace Microsoft.AspNetCore.Components.WebView
             _renderer = renderer;
             _navigationManager = (WebViewNavigationManager)navigationManager;
             _webViewHost = webViewHost;
+        }
+
+        // TODO: Proper error handling, reporting etc.
+        internal void OnMessageReceived(string message)
+        {
+            var (type, args) = Deserialize(message);
+            switch (type)
+            {
+                case "Initialize":
+                    break;
+                case "BeginInvokeDotNet":
+                    BeginInvokeDotNet((string)args[0], (string)args[1], (string)args[2], (long)args[3], (string)args[4]);
+                    break;
+                case "EndInvokeJS":
+                    EndInvokeJS((long)args[0], (bool)args[1], (string)args[2]);
+                    break;
+                case "DispatchBrowserEvent":
+                    DispatchBrowserEvent((string)args[0], (string)args[1]);
+                    break;
+                case "OnRenderCompleted":
+                    break;
+                case "OnLocationChanged":
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown message.");
+            }
+        }
+
+        (string type, object[] args) Deserialize(string message)
+        {
+            var payload = message.Split(":");
+            return payload[0] switch
+            {
+                "Initialize" => ("Initialize", new object[] { payload[1], payload[2] }),
+                "BeginInvokeDotNet" => ("BeginInvokeDotNet", new object[] { payload[1], payload[2], payload[3], long.Parse(payload[4], CultureInfo.InvariantCulture), payload[5] }),
+                "EndInvokeJS" => ("EndInvokeJS", new object[] { long.Parse(payload[1],CultureInfo.InvariantCulture), bool.Parse(payload[2]), payload[3] }),
+                "DispatchBrowserEvent" => ("DispatchBrowserEvent", new object[] { payload[1], payload[2] }),
+                "OnRenderCompleted" => ("OnRenderCompleted", new object[] { payload[1] }),
+                "OnLocationChanged" => ("OnLocationChanged", new object[] { payload[1], bool.Parse(payload[2]) }),
+                _ => throw new InvalidOperationException("Unknown message")
+            };
         }
 
         public async Task BeginInvokeDotNet(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
@@ -69,23 +111,36 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
-        public async Task DispatchBrowserEvent(string eventDescriptor, string eventArgs)
+        public void DispatchBrowserEvent(string eventDescriptor, string eventArgs)
         {
-            var webEventData = WebEventData.Parse(_renderer, eventDescriptor, eventArgs);
-
+            WebEventData webEventData = null;
             try
             {
-                await _dispatcher.InvokeAsync(() =>
-                {
-                    return _renderer.DispatchEventAsync(
-                        webEventData.EventHandlerId,
-                        webEventData.EventFieldInfo,
-                        webEventData.EventArgs);
-                });
+                webEventData = WebEventData.Parse(_renderer, eventDescriptor, eventArgs);
             }
             catch (Exception ex)
             {
                 _webViewHost.NotifyUnhandledException(ex);
+                throw;
+            }
+            _ = DispatchWithErrorHandling();
+
+            async Task DispatchWithErrorHandling()
+            {
+                try
+                {
+                    await _dispatcher.InvokeAsync(() =>
+                    {
+                        return _renderer.DispatchEventAsync(
+                            webEventData.EventHandlerId,
+                            webEventData.EventFieldInfo,
+                            webEventData.EventArgs);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _webViewHost.NotifyUnhandledException(ex);
+                }
             }
         }
 

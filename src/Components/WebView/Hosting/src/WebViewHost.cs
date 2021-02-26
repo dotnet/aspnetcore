@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.JSInterop;
@@ -18,9 +19,18 @@ using Microsoft.JSInterop;
 namespace Microsoft.AspNetCore.Components.WebView
 {
     // These are all the messages .NET needs to know how to dispatch to JS
-    public abstract class WebViewHost
+    // TODO: Proper serialization, error handling, etc.
+    internal class WebViewHost
     {
+        public WebViewHost(Dispatcher dispatcher)
+        {
+            _dispatcher = dispatcher;
+        }
+        public Action<string> MessageDispatcher { get; set; }
+
         private Queue<TaskCompletionSource> _pendingAcks = new Queue<TaskCompletionSource>();
+
+        private readonly Dispatcher _dispatcher;
 
         public Task ApplyRenderBatch(RenderBatch renderBatch)
         {
@@ -38,20 +48,43 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
-        public abstract void ApplyRenderBatchCore(RenderBatch renderBatch);
+        public void ApplyRenderBatchCore(RenderBatch renderBatch)
+        {
+            var arrayBuilder = new ArrayBuilder<byte>(2048);
+            using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);
+            using (var renderBatchWriter = new RenderBatchWriter(memoryStream, false))
+            {
+                renderBatchWriter.Write(in renderBatch);
+            }
+            var message = Serialize("RenderBatch", Convert.ToBase64String(arrayBuilder.Buffer, 0, arrayBuilder.Count));
+            DispatchMessageWithErrorHandling(message);
+        }
 
         // This is called by the navigation manager and needs to be forwarded to the WebView
         // It might trigger the WebView to change the location of the URL and cause a LocationUpdated event.
-        public abstract void Navigate(string uri, bool forceLoad);
+        public void Navigate(string uri, bool forceLoad)
+        {
+            DispatchMessageWithErrorHandling(Serialize("Navigate", uri, forceLoad));
+        }
 
+        // TODO: Make these APIs async if we want the renderer to be able to deal with errors.
         // Called from Renderer to attach a new component ID to a given selector.
-        public abstract void AttachToDocument(int componentId, string selector);
+        public void AttachToDocument(int componentId, string selector)
+        {
+            DispatchMessageWithErrorHandling(Serialize("AttachToDocument", componentId, selector));
+        }
 
         // Called from the WebView to detach a root component from the document.
-        public abstract void DetachFromDocument(int componentId);
+        public void DetachFromDocument(int componentId)
+        {
+            DispatchMessageWithErrorHandling(Serialize("DetachFromDocument", componentId));
+        }
 
         // Interop calls emitted by the JSRuntime
-        public abstract void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId);
+        public void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            DispatchMessageWithErrorHandling(Serialize("DetachFromDocument", taskId, identifier, argsJson, resultType, targetInstanceId));
+        }
 
         // TODO: We need to think about this, the invocation result contains the triplet [callId, successOrError, resultOrError]
         // serialized as JSON with the options provided by the JSRuntime. The host can't operate on the "unserialized"
@@ -60,8 +93,42 @@ namespace Microsoft.AspNetCore.Components.WebView
         // The strongest limitation we can find on a platform is that we might only be able to communicate with the host via "strings" (post-message)
         // and in that situation we can define a separator within the string like (callId,success,resultOrError) that the
         // side running in the browser can parse for processing.
-        public abstract void EndInvokeDotNet(string callId, bool success, string invocationResultOrError);
+        public void EndInvokeDotNet(string callId, bool success, string invocationResultOrError)
+        {
+            DispatchMessageWithErrorHandling(Serialize(callId, success, invocationResultOrError));
+        }
 
-        public abstract void NotifyUnhandledException(Exception exception);
+        public void NotifyUnhandledException(Exception exception)
+        {
+            // TODO: Handle errors
+        }
+
+        private void DispatchMessageWithErrorHandling(string message)
+        {
+            NotifyErrors(_dispatcher.InvokeAsync(() => MessageDispatcher(message)));
+        }
+
+        private void NotifyErrors(Task task)
+        {
+            _ = AwaitAndNotify();
+
+            async Task AwaitAndNotify()
+            {
+                try
+                {
+                    await task;
+                }
+                catch (Exception ex)
+                {
+                    NotifyUnhandledException(ex);
+                }
+            }
+        }
+
+        // TODO, avoid using params
+        private string Serialize(params object [] parameters)
+        {
+            return string.Join(':', parameters.Select(p => p.ToString()));
+        }
     }
 }

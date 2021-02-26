@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView
@@ -9,9 +10,12 @@ namespace Microsoft.AspNetCore.Components.WebView
         public static IServiceCollection AddBlazorWebView(this IServiceCollection services)
         {
             services.AddLogging();
-            services.AddScoped<IJSRuntime, WebViewJSRuntime>();
-            services.AddScoped<INavigationInterception, WebViewNavigationInterception>();
-            services.AddScoped<NavigationManager, WebViewNavigationManager>();
+            services.TryAddScoped<IJSRuntime, WebViewJSRuntime>();
+            services.TryAddScoped<INavigationInterception, WebViewNavigationInterception>();
+            services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
+            services.TryAddScoped<WebViewRenderer>();
+            services.TryAddScoped<WebViewHost>();
+            services.TryAddScoped<WebViewBrowser>();
 
             return services;
         }

@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.JSInterop;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.Components.WebView.Headless
 {
@@ -9,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Headless
         public static IServiceCollection AddHeadlessWebView(this IServiceCollection services)
         {
             services.AddBlazorWebView();
-            services.AddScoped<WebViewHost, HeadlessWebViewHost>();
+            services.TryAddSingleton(Dispatcher.CreateDefault());
 
             return services;
         }

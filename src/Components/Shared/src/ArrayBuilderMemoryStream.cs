@@ -8,7 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 
+#if BLAZOR_WEBVIEW
+namespace Microsoft.AspNetCore.Components.WebView
+#else
 namespace Microsoft.AspNetCore.Components.Server.Circuits
+#endif
 {
     /// <summary>
     /// Writeable memory stream backed by a an <see cref="ArrayBuilder{T}"/>.

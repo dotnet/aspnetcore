@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build desktop applications with WebView and Blazor.</Description>
     <IsShippingPackage>true</IsShippingPackage>
+    <DefineConstants>$(DefineConstants);BLAZOR_WEBVIEW</DefineConstants>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
     <!-- TODO: REMOVE -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
@@ -14,6 +15,9 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilderMemoryStream.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
-    public class WebViewRenderer : Renderer
+    internal class WebViewRenderer : Renderer
     {
         private readonly Dictionary<string, int> _componentIdBySelector = new();
         private readonly Dispatcher _dispatcher;

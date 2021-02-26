@@ -14,11 +14,11 @@ var document = new HeadlessDocument();
 var consoleView = new HeadlessWebView(provider);
 consoleView.Initialize("https://localhost:5001/", "https://localhost:5001/");
 
-consoleView.Host.OnRenderBatch += (batch) =>
-{
-    document.ApplyChanges(batch);
-    Console.WriteLine(document.GetHtml());
-};
-consoleView.Host.OnAttachComponent += (id, selector) => document.AddRootComponent(id, selector);
+//consoleView.Host.OnRenderBatch += (batch) =>
+//{
+//    document.ApplyChanges(batch);
+//    Console.WriteLine(document.GetHtml());
+//};
+//consoleView.Host.OnAttachComponent += (id, selector) => document.AddRootComponent(id, selector);
 
 consoleView.AddComponent(typeof(BlazorHeadlessSample.App), "#selector", ParameterView.Empty);

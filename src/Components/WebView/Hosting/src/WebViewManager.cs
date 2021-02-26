@@ -6,16 +6,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
-    public class WebViewManager
+    public abstract class WebViewManager
     {
-        private bool _initialized;
+        private bool _started;
         private readonly IServiceProvider _provider;
         private readonly List<RootComponent> _registeredComponents = new();
         private IServiceScope _scope;
 
         private Dispatcher _dispatcher;
         private WebViewRenderer _renderer;
-
+        private WebViewBrowser _webViewBrowser;
+        private WebViewHost _webViewHost;
         private Queue<Task> _componentChangeTasks = new();
 
         public WebViewManager(IServiceProvider provider)
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         // with errors separately.
         public void AddComponent(Type componentType, string selector, ParameterView parameters)
         {
-            if (!_initialized)
+            if (!_started)
             {
                 throw new InvalidOperationException("Not initialized.");
             }
@@ -66,9 +67,9 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
-        public virtual void Initialize(string baseUrl, string currentUrl)
+        public virtual void Start()
         {
-            if (_initialized)
+            if (_started)
             {
                 throw new InvalidOperationException("Already initialized.");
             }
@@ -76,13 +77,20 @@ namespace Microsoft.AspNetCore.Components.WebView
             _scope = Provider.CreateScope();
             var services = _scope.ServiceProvider;
             var webViewNavigationManager = (WebViewNavigationManager)services.GetRequiredService<NavigationManager>();
-            webViewNavigationManager.Init(baseUrl, currentUrl);
+            webViewNavigationManager.Init(BaseUrl, CurrentUrl);
 
-            _dispatcher = Dispatcher.CreateDefault();
-            _renderer = ActivatorUtilities.CreateInstance<WebViewRenderer>(services, _dispatcher);
+            _dispatcher = services.GetService<Dispatcher>();
+            _renderer = services.GetRequiredService<WebViewRenderer>();
+            _webViewBrowser = services.GetRequiredService<WebViewBrowser>();
+            _webViewHost = services.GetRequiredService<WebViewHost>();
+            _webViewHost.MessageDispatcher = SendMessage;
 
-            _initialized = true;
+            _started = true;
         }
+
+        protected void MessageReceived(string message) => _webViewBrowser.OnMessageReceived(message);
+
+        protected abstract void SendMessage(string message);
 
         public void Dispose()
         {
