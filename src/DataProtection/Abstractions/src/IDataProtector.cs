@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.DataProtection
     /// <summary>
     /// An interface that can provide data protection services using spans.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
     public interface ISpanDataProtector : IDataProtectionProvider
     {
         /// <summary>

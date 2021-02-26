@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.DataProtection
     /// <summary>
     /// Span enabled version of <see cref="IPersistedDataProtector"/>.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
     public interface ISpanPersistedDataProtector : IPersistedDataProtector
     {
         /// <summary>

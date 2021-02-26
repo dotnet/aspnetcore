@@ -11,7 +11,6 @@
     <SuppressNullableAttributesImport>true</SuppressNullableAttributesImport>
     <Nullable>annotations</Nullable>
     <Nullable Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">enable</Nullable>
-    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
