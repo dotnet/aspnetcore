@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Components
 
             if (TryRedeemPersistedState(key, out var data))
             {
-                instance = JsonSerializer.Deserialize<TValue>(data)!;
+                instance = JsonSerializer.Deserialize<TValue>(data, JsonSerializerOptionsProvider.Options)!;
                 return true;
             }
             else
