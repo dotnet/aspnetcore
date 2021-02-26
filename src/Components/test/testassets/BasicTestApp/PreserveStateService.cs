@@ -24,7 +24,7 @@ namespace BasicTestApp
 
         private void TryRestoreState()
         {
-            if (_componentApplicationState.TryRedeemFromJson<ServiceState>("Service", out var state))
+            if (_componentApplicationState.TryTakeAsJson<ServiceState>("Service", out var state))
             {
                 _state = state;
             }

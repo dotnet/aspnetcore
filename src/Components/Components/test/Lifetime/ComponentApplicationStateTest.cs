@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components
             applicationState.InitializeExistingState(existingState);
 
             // Assert
-            Assert.True(applicationState.TryRedeemPersistedState("MyState", out var existing));
+            Assert.True(applicationState.TryTakePersistedState("MyState", out var existing));
             Assert.Equal(new byte[] { 1, 2, 3, 4 }, existing);
         }
 
@@ -59,9 +59,9 @@ namespace Microsoft.AspNetCore.Components
             applicationState.InitializeExistingState(existingState);
 
             // Assert
-            Assert.True(applicationState.TryRedeemPersistedState("MyState", out var existing));
+            Assert.True(applicationState.TryTakePersistedState("MyState", out var existing));
             Assert.Equal(new byte[] { 1, 2, 3, 4 }, existing);
-            Assert.False(applicationState.TryRedeemPersistedState("MyState", out var gone));
+            Assert.False(applicationState.TryTakePersistedState("MyState", out var gone));
         }
 
         [Fact]
@@ -137,11 +137,11 @@ namespace Microsoft.AspNetCore.Components
             applicationState.InitializeExistingState(existingState);
 
             // Act
-            Assert.True(applicationState.TryRedeemFromJson<byte []>("MyState", out var stored));
+            Assert.True(applicationState.TryTakeAsJson<byte []>("MyState", out var stored));
 
             // Assert
             Assert.Equal(myState, stored);
-            Assert.False(applicationState.TryRedeemFromJson<byte[]>("MyState", out _));
+            Assert.False(applicationState.TryTakeAsJson<byte[]>("MyState", out _));
         }
 
         [Fact]
@@ -155,11 +155,11 @@ namespace Microsoft.AspNetCore.Components
             applicationState.InitializeExistingState(existingState);
 
             // Act
-            Assert.True(applicationState.TryRedeemFromJson<byte[]>("MyState", out var stored));
+            Assert.True(applicationState.TryTakeAsJson<byte[]>("MyState", out var stored));
 
             // Assert
             Assert.Null(stored);
-            Assert.False(applicationState.TryRedeemFromJson<byte[]>("MyState", out _));
+            Assert.False(applicationState.TryTakeAsJson<byte[]>("MyState", out _));
         }
     }
 }

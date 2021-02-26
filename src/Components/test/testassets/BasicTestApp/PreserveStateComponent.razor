@@ -43,7 +43,7 @@
 
     protected override void OnInitialized()
     {
-        if (AppState.TryRedeemPersistedState(State, out var preserved))
+        if (AppState.TryTakePersistedState(State, out var preserved))
         {
             _state = Encoding.UTF8.GetString(preserved);
             _restored = true;
@@ -63,7 +63,7 @@
 
     public void DisplayExtraState()
     {
-        if (AppState.TryRedeemPersistedState(ExtraState, out var extraState))
+        if (AppState.TryTakePersistedState(ExtraState, out var extraState))
         {
             _extraStateAvailable = true;
             _extraState = Encoding.UTF8.GetString(extraState);

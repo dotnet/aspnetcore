@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components
             await lifetime.RestoreStateAsync(store);
 
             // Assert
-            Assert.True(lifetime.State.TryRedeemPersistedState("MyState", out var retrieved));
+            Assert.True(lifetime.State.TryTakePersistedState("MyState", out var retrieved));
             Assert.Empty(state);
             Assert.Equal(data, retrieved);
         }
