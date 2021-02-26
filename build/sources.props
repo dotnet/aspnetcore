@@ -19,9 +19,5 @@
       https://pkgs.dev.azure.com/azure-public/vside/_packaging/vssdk/nuget/v3/index.json;
       https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json;
     </RestoreSources>
-    <RestoreSources Condition=" '$(InternalBuild)' == 'true'">
-      $(RestoreSources);
-      https://dotnetfeedmsrc.blob.core.windows.net/orchestrated-release-2-1/20210212-02/final/index.json;
-    </RestoreSources>
   </PropertyGroup>
 </Project>
