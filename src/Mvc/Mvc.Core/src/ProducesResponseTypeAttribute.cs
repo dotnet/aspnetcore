@@ -45,7 +45,17 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public int StatusCode { get; set; }
 
-        internal bool SetByDefault { get; private set; }
+        /// <summary>
+        /// Used to distinguish a `Type` set by default in the constructor versus
+        /// one provided by the user.
+        ///
+        /// When <see langword="false"/>, then <see cref="Type"/> is set by user.
+        ///
+        /// When <see langword="true"/>, then <see cref="Type"/> is set by by
+        /// default in the constructor
+        /// </summary>
+        /// <value></value>
+        internal bool SetByDefault { get; }
 
         /// <inheritdoc />
         void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes)

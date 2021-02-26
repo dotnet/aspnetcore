@@ -101,7 +101,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                     if (apiResponseType.Type == typeof(void))
                     {
-                        var setByDefault = metadataAttribute is ProducesResponseTypeAttribute attribute && attribute.SetByDefault;
+                        // Determine whether or not the type was provided by the user. If so, favor it over the default
+                        // error type.
+                        var setByDefault = metadataAttribute is ProducesResponseTypeAttribute { SetByDefault: true };
                         if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
                         {
                             // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
