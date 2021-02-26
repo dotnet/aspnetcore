@@ -41,12 +41,10 @@
 
     <!--
       Projects should only use the project references instead of baseline package references when:
-        * not building internally
         * preparing a new major or minor release (i.e. a non-servicing builds)
         * when a project is a test or sample project
       We don't use project references between components in servicing builds between compontents to preserve the baseline as much as possible.
     -->
-    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(InternalBuild)' != 'true'  ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
