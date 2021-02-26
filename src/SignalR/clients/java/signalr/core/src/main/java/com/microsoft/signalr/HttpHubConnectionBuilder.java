@@ -69,7 +69,7 @@ public class HttpHubConnectionBuilder {
 
     /**
      * Indicates to the {@link HubConnection} that it should skip the negotiate process.
-     * Note: This option only works with the {@link TransportEnum.WEBSOCKETS} transport selected via {@link HttpHubConnectionBuilder.withTransport},
+     * Note: This option only works with the {@link TransportEnum#WEBSOCKETS} transport selected via {@link #withTransport(TransportEnum) withTransport},
      * additionally the Azure SignalR Service requires the negotiate step so this will fail when using the Azure SignalR Service.
      *
      * @param skipNegotiate Boolean indicating if the {@link HubConnection} should skip the negotiate step.
