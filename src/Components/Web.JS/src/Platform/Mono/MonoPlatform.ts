@@ -5,6 +5,9 @@ import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResour
 import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock } from '../Platform';
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
+import { Blazor } from '../../GlobalExports';
+
+declare var Module: EmscriptenModule;
 
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
@@ -297,13 +300,13 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     assembliesBeingLoaded.forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
     pdbsBeingLoaded.forEach(r => addResourceAsAssembly(r, r.name));
 
-    window['Blazor']._internal.dotNetCriticalError = (message: System_String) => {
+    Blazor._internal.dotNetCriticalError = (message: System_String) => {
       module.printErr(BINDING.conv_string(message) || '(null)');
     };
 
     // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application
     // startup sequence to load satellite assemblies for the application's culture.
-    window['Blazor']._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray: System_Array<System_String>): System_Object => {
+    Blazor._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray: System_Array<System_String>): System_Object => {
       const culturesToLoad = BINDING.mono_array_to_js_array<System_String, string>(culturesToLoadDotNetArray);
       const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
       const applicationCulture = resourceLoader.startOptions.applicationCulture || (navigator.languages && navigator.languages[0]);
@@ -318,7 +321,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         return BINDING.js_to_mono_obj(
           resourcePromises.then(resourcesToLoad => {
             if (resourcesToLoad.length) {
-              window['Blazor']._internal.readSatelliteAssemblies = () => {
+              Blazor._internal.readSatelliteAssemblies = () => {
                 const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
                 for (var i = 0; i < resourcesToLoad.length; i++) {
                   BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
@@ -337,7 +340,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       assemblies?: (ArrayBuffer | null)[],
       pdbs?: (ArrayBuffer | null)[]
     } = {};
-    window['Blazor']._internal.getLazyAssemblies = (assembliesToLoadDotNetArray: System_Array<System_String>): System_Object => {
+    Blazor._internal.getLazyAssemblies = (assembliesToLoadDotNetArray: System_Array<System_String>): System_Object => {
       const assembliesToLoad = BINDING.mono_array_to_js_array<System_String, string>(assembliesToLoadDotNetArray);
       const lazyAssemblies = resourceLoader.bootConfig.resources.lazyAssembly;
 
@@ -373,7 +376,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
           lazyResources["assemblies"] = values[0];
           lazyResources["pdbs"] = values[1];
           if (lazyResources["assemblies"].length) {
-            window['Blazor']._internal.readLazyAssemblies = () => {
+            Blazor._internal.readLazyAssemblies = () => {
               const { assemblies } = lazyResources;
               if (!assemblies) {
                 return BINDING.mono_obj_array_new(0);
@@ -386,7 +389,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
               return assemblyBytes;
             };
 
-            window['Blazor']._internal.readLazyPdbs = () => {
+            Blazor._internal.readLazyPdbs = () => {
               const { assemblies, pdbs } = lazyResources;
               if (!assemblies) {
                 return BINDING.mono_obj_array_new(0);

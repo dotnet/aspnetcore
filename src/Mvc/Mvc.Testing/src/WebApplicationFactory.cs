@@ -190,10 +190,10 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         {
             var data = JsonSerializer.Deserialize<IDictionary<string, string>>(File.ReadAllBytes(file));
             var key = typeof(TEntryPoint).Assembly.GetName().FullName;
-            
+
             if (!data.TryGetValue(key, out var contentRoot))
             {
-               throw new KeyNotFoundException($"Could not find content root for project '{key}' in test manifest file '{file}'");
+                throw new KeyNotFoundException($"Could not find content root for project '{key}' in test manifest file '{file}'");
             }
 
             return (contentRoot == "~") ? AppContext.BaseDirectory : contentRoot;

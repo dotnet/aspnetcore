@@ -8,6 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;weblistener;httpsys</PackageTags>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
 
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
     <NoWarn>$(NoWarn);CA1416</NoWarn>

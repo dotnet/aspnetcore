@@ -5,6 +5,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Description>Authentication and authorization support for Blazor applications.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Trimmable>true</Trimmable>
   </PropertyGroup>
 
   <ItemGroup>

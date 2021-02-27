@@ -24,6 +24,9 @@ namespace Microsoft.AspNetCore.Hosting
         private const string DeprecatedDiagnosticsEndRequestKey = "Microsoft.AspNetCore.Hosting.EndRequest";
         private const string DiagnosticsUnhandledExceptionKey = "Microsoft.AspNetCore.Hosting.UnhandledException";
 
+        private const string ActivitySourceName = "Microsoft.AspNetCore.Hosting";
+        private static readonly ActivitySource _activitySource = new ActivitySource(ActivitySourceName);
+
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger _logger;
 
@@ -46,11 +49,13 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             var diagnosticListenerEnabled = _diagnosticListener.IsEnabled();
+            var diagnosticListenerActivityCreationEnabled = (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext));
             var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
-            if (loggingEnabled || (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext)))
+
+            if (loggingEnabled || diagnosticListenerActivityCreationEnabled || _activitySource.HasListeners())
             {
-                context.Activity = StartActivity(httpContext, out var hasDiagnosticListener);
+                context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
                 context.HasDiagnosticListener = hasDiagnosticListener;
             }
 
@@ -245,10 +250,19 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity StartActivity(HttpContext httpContext, out bool hasDiagnosticListener)
+        private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
         {
-            var activity = new Activity(ActivityName);
+            var activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server);
+            if (activity is null && (loggingEnabled || diagnosticListenerActivityCreationEnabled))
+            {
+                activity = new Activity(ActivityName);
+            }
             hasDiagnosticListener = false;
+
+            if (activity is null)
+            {
+                return null;
+            }
 
             var headers = httpContext.Request.Headers;
             if (!headers.TryGetValue(HeaderNames.TraceParent, out var requestId))

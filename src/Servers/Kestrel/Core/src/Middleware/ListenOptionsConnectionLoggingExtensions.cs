@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,7 +35,12 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerName == null ? loggerFactory.CreateLogger<LoggingConnectionMiddleware>() : loggerFactory.CreateLogger(loggerName);
+
             listenOptions.Use(next => new LoggingConnectionMiddleware(next, logger).OnConnectionAsync);
+
+            IMultiplexedConnectionBuilder multiplexedConnectionBuilder = listenOptions;
+            multiplexedConnectionBuilder.Use(next => new LoggingMultiplexedConnectionMiddleware(next, logger).OnConnectionAsync);
+
             return listenOptions;
         }
     }

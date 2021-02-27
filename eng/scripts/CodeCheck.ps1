@@ -131,7 +131,7 @@ try {
 
     foreach ($unexpectedVar in $versionVars) {
         LogError `
-            "Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. See https://github.com/dotnet/aspnetcore/blob/master/docs/ReferenceResolution.md for instructions on how to add a new dependency." `
+            "Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. See https://github.com/dotnet/aspnetcore/blob/main/docs/ReferenceResolution.md for instructions on how to add a new dependency." `
             -filepath "$repoRoot\eng\Versions.props"
     }
 
@@ -188,6 +188,43 @@ try {
             $filePath = Resolve-Path "${repoRoot}/${file}"
             LogError "Generated code is not up to date in $file. You might need to regenerate the reference assemblies or project list (see docs/ReferenceAssemblies.md and docs/ReferenceResolution.md)" -filepath $filePath
             & git --no-pager diff --ignore-space-change $filePath
+        }
+    }
+
+    $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
+
+    if (![string]::IsNullOrEmpty($targetBranch)) {
+        if ($targetBranch.StartsWith('refs/heads/')) {
+            $targetBranch = $targetBranch.Replace('refs/heads/','')
+        }
+
+        # Retrieve the set of changed files compared to main
+        Write-Host "Checking for changes to API baseline files $targetBranch"
+
+        $changedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only --diff-filter=ar
+        $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
+
+        if ($changedFilesFromTarget) {
+            foreach ($file in $changedFilesFromTarget) {
+                # Check for changes in Shipped in all branches
+                if ($file -like '*PublicAPI.Shipped.txt') {
+                    $changedAPIBaselines.Add($file)
+                }
+                # Check for changes in Unshipped in servicing branches
+                if ($targetBranch -like 'release*' -and $file -like '*PublicAPI.Unshipped.txt') {
+                    $changedAPIBaselines.Add($file)
+                }
+            }
+        }
+
+        Write-Host "Found changes in $($changedAPIBaselines.count) API baseline files"
+
+        if ($changedAPIBaselines.count -gt 0) {
+            LogError "Detected modification to baseline API files. PublicAPI.Shipped.txt files should only be updated after a major release. See /docs/APIBaselines.md for more information."
+            LogError "Modified API baseline files:"
+            foreach ($file in $changedAPIBaselines) {
+                LogError $file
+            }
         }
     }
 }

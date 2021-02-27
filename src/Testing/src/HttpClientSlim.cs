@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Testing
                 var status = GetStatus(response);
                 new HttpResponseMessage(status).EnsureSuccessStatusCode();
 
-                var body = response.Substring(response.IndexOf("\r\n\r\n") + 4);
+                var body = response.Substring(response.IndexOf("\r\n\r\n", StringComparison.Ordinal) + 4);
                 return body;
             }
         }

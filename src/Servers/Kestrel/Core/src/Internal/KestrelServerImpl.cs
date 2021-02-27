@@ -205,9 +205,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 await BindAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
-                Trace.LogCritical(0, ex, "Unable to start Kestrel.");
+                // Don't log the error https://github.com/dotnet/aspnetcore/issues/29801
                 Dispose();
                 throw;
             }

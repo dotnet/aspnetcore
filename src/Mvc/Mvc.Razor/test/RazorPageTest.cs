@@ -480,7 +480,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         [Fact]
-        public async Task IgnoreSection_ThrowsIfSectionIsNotFound()
+        public async Task IgnoreSection_DoesNotThrowIfSectionIsNotFound()
         {
             // Arrange
             var context = CreateViewContext(viewPath: "/Views/TestPath/Test.cshtml");
@@ -496,10 +496,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             };
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => page.ExecuteAsync());
-            var message = $"The layout page '/Views/Shared/_Layout.cshtml' cannot find the section 'bar'" +
-                " in the content page '/Views/TestPath/Test.cshtml'.";
-            Assert.Equal(message, ex.Message);
+            await page.ExecuteAsync();
+            // Nothing to assert, just getting here is validation enough.
         }
 
         [Fact]

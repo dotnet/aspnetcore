@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     Assert.Equal("Disabled", responseText);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Logger.LogError($"Certificate is invalid. Issuer name: {cert?.Issuer}");
                 using (var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine))
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     }
                     store.Close();
                 }
-                throw ex;
+                throw;
             }
         }
     }

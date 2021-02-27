@@ -40,15 +40,24 @@ namespace Microsoft.CodeAnalysis.Razor
             var types = new List<INamedTypeSymbol>();
             var visitor = new ComponentTypeVisitor(symbols, types);
 
-            // Visit the primary output of this compilation, as well as all references.
-            visitor.Visit(compilation.Assembly);
-            foreach (var reference in compilation.References)
+            var targetReference = context.Items.GetTargetMetadataReference();
+            if (targetReference is not null)
             {
-                // We ignore .netmodules here - there really isn't a case where they are used by user code
-                // even though the Roslyn APIs all support them.
-                if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                if (compilation.GetAssemblyOrModuleSymbol(targetReference) is IAssemblySymbol targetAssembly)
                 {
-                    visitor.Visit(assembly);
+                    visitor.Visit(targetAssembly.GlobalNamespace);
+                }
+
+            }
+            else
+            {
+                visitor.Visit(compilation.Assembly.GlobalNamespace);
+                foreach (var reference in compilation.References)
+                {
+                    if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                    {
+                        visitor.Visit(assembly.GlobalNamespace);
+                    }
                 }
             }
 
@@ -115,12 +124,19 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 builder.Metadata[ComponentMetadata.Component.GenericTypedKey] = bool.TrueString;
 
+                var cascadeGenericTypeAttributes = type
+                    .GetAttributes()
+                    .Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.CascadingTypeParameterAttribute))
+                    .Select(attribute => attribute.ConstructorArguments.FirstOrDefault().Value as string)
+                    .ToList();
+
                 for (var i = 0; i < type.TypeArguments.Length; i++)
                 {
                     var typeParameter = type.TypeArguments[i] as ITypeParameterSymbol;
                     if (typeParameter != null)
                     {
-                        CreateTypeParameterProperty(builder, typeParameter);
+                        var cascade = cascadeGenericTypeAttributes.Contains(typeParameter.Name, StringComparer.Ordinal);
+                        CreateTypeParameterProperty(builder, typeParameter, cascade);
                     }
                 }
             }
@@ -234,7 +250,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private void CreateTypeParameterProperty(TagHelperDescriptorBuilder builder, ITypeSymbol typeParameter)
+        private void CreateTypeParameterProperty(TagHelperDescriptorBuilder builder, ITypeSymbol typeParameter, bool cascade)
         {
             builder.BindAttribute(pb =>
             {
@@ -244,6 +260,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 pb.SetPropertyName(typeParameter.Name);
 
                 pb.Metadata[ComponentMetadata.Component.TypeParameterKey] = bool.TrueString;
+                pb.Metadata[ComponentMetadata.Component.TypeParameterIsCascadingKey] = cascade.ToString();
 
                 pb.Documentation = string.Format(CultureInfo.InvariantCulture, ComponentResources.ComponentTypeParameter_Documentation, typeParameter.Name, builder.Name);
             });
@@ -509,6 +526,12 @@ namespace Microsoft.CodeAnalysis.Razor
                     return null;
                 }
 
+                symbols.CascadingTypeParameterAttribute = compilation.GetTypeByMetadataName(ComponentsApi.CascadingTypeParameterAttribute.MetadataName);
+                if (symbols.CascadingTypeParameterAttribute == null)
+                {
+                    // No definition for [CascadingTypeParameter]. For back-compat, just don't activate this feature.
+                }
+
                 return symbols;
             }
 
@@ -529,6 +552,8 @@ namespace Microsoft.CodeAnalysis.Razor
             public INamedTypeSymbol EventCallback { get; private set; }
 
             public INamedTypeSymbol EventCallbackOfT { get; private set; }
+
+            public INamedTypeSymbol CascadingTypeParameterAttribute { get; private set; }
         }
 
         private class ComponentTypeVisitor : SymbolVisitor

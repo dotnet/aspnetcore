@@ -1,10 +1,10 @@
 # Users referenced in this file will automatically be requested as reviewers for PRs that modify the given paths.
 # See https://help.github.com/articles/about-code-owners/
 
-/global.json                                                                      @aspnet/build
-/.azure/                                                                          @aspnet/build
-/.config/                                                                         @aspnet/build
-/eng/                                                                             @aspnet/build
+/global.json                                                                      @dotnet/aspnet-build
+/.azure/                                                                          @dotnet/aspnet-build
+/.config/                                                                         @dotnet/aspnet-build
+/eng/                                                                             @dotnet/aspnet-build
 /eng/common/                                                                      @dotnet-maestro-bot
 /eng/Versions.props                                                               @dotnet-maestro-bot @dougbu
 /eng/Version.Details.xml                                                          @dotnet-maestro-bot @dougbu
@@ -28,7 +28,7 @@
 /src/Middleware/HttpsPolicy/**/PublicAPI.*Shipped.txt                             @dotnet/aspnet-api-review @jkotalik
 /src/Middleware/Rewrite/                                                          @jkotalik
 /src/Middleware/Rewrite/**/PublicAPI.*Shipped.txt                                 @dotnet/aspnet-api-review @jkotalik
-/src/Mvc/                                                                         @pranavkm @javiercn 
+/src/Mvc/                                                                         @pranavkm @javiercn
 /src/Mvc/**/PublicAPI.*Shipped.txt                                                @dotnet/aspnet-api-review @pranavkm @javiercn
 /src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/        @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng

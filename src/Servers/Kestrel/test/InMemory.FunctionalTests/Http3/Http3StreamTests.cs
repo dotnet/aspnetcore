@@ -277,7 +277,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
             };
-            await InitializeConnectionAsync(_noopApplication);
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
 

@@ -33,6 +33,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task CreateRequestStream_RequestCompleted_Disposed()
+        {
+            var appCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            await InitializeConnectionAsync(async context =>
+            {
+                var buffer = new byte[16 * 1024];
+                var received = 0;
+
+                while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    await context.Response.Body.WriteAsync(buffer, 0, received);
+                }
+
+                await appCompletedTcs.Task;
+            });
+
+            await CreateControlStream();
+            await GetInboundControlStream();
+
+            var requestStream = await CreateRequestStream();
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            };
+
+            await requestStream.SendHeadersAsync(headers);
+            await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: true);
+
+            Assert.False(requestStream.Disposed);
+
+            appCompletedTcs.SetResult();
+            await requestStream.ExpectHeadersAsync();
+            var responseData = await requestStream.ExpectDataAsync();
+            Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
+
+            Assert.True(requestStream.Disposed);
+        }
+
+        [Fact]
         public async Task GracefulServerShutdownSendsGoawayClosesConnection()
         {
             await InitializeConnectionAsync(_echoApplication);

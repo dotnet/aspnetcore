@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         [Fact]
-        public void GetDescriptors_ActionWithMultipleHttpMethods_SingleHttpMethodMetadata()
+        public void GetDescriptors_ActionWithMultipleHttpMethods_LastHttpMethodMetadata()
         {
             // Arrange & Act
             var descriptors = GetDescriptors(
@@ -329,9 +329,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     var httpMethodAttribute = Assert.Single(descriptor.EndpointMetadata.OfType<HttpMethodAttribute>());
                     Assert.Equal(httpMethod, httpMethodAttribute.HttpMethods.Single(), ignoreCase: true);
 
-                    var httpMethodMetadata = Assert.Single(descriptor.EndpointMetadata.OfType<IHttpMethodMetadata>());
-                    Assert.Equal(httpMethod, httpMethodMetadata.HttpMethods.Single(), ignoreCase: true);
-                    Assert.False(httpMethodMetadata.AcceptCorsPreflight);
+                    var lastHttpMethodMetadata = descriptor.EndpointMetadata.OfType<IHttpMethodMetadata>().Last();
+                    Assert.Equal(httpMethod, lastHttpMethodMetadata.HttpMethods.Single(), ignoreCase: true);
+                    Assert.False(lastHttpMethodMetadata.AcceptCorsPreflight);
                 };
             }
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -38,16 +38,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var types = new List<INamedTypeSymbol>();
             var visitor = new ViewComponentTypeVisitor(vcAttribute, nonVCAttribute, types);
 
-            // We always visit the global namespace.
-            visitor.Visit(compilation.Assembly.GlobalNamespace);
-
-            foreach (var reference in compilation.References)
+            var targetReference = context.Items.GetTargetMetadataReference();
+            if (targetReference is not null)
             {
-                if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
+                if (compilation.GetAssemblyOrModuleSymbol(targetReference) is IAssemblySymbol targetAssembly && IsTagHelperAssembly(targetAssembly))
                 {
-                    if (IsTagHelperAssembly(assembly))
+                    visitor.Visit(targetAssembly.GlobalNamespace);
+                }
+            }
+            else
+            {
+                visitor.Visit(compilation.Assembly.GlobalNamespace);
+                foreach (var reference in compilation.References)
+                {
+                    if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
                     {
-                        visitor.Visit(assembly.GlobalNamespace);
+                        if (IsTagHelperAssembly(assembly))
+                        {
+                            visitor.Visit(assembly.GlobalNamespace);
+                        }
                     }
                 }
             }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -23,14 +24,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static bool SupportsGoAway = true;
 
         private ResponseState _responseState;
-        private string _reasonPhrase;
-        private ResponseBody _nativeStream;
+        private string? _reasonPhrase;
+        private ResponseBody? _nativeStream;
         private AuthenticationSchemes _authChallenges;
         private TimeSpan? _cacheTtl;
         private long _expectedBodyLength;
         private BoundaryType _boundaryType;
         private HttpApiTypes.HTTP_RESPONSE_V2 _nativeResponse;
-        private HeaderCollection _trailers;
+        private HeaderCollection? _trailers;
 
         internal Response(RequestContext requestContext)
         {
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public string ReasonPhrase
+        public string? ReasonPhrase
         {
             get { return _reasonPhrase; }
             set
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private string GetReasonPhrase(int statusCode)
         {
-            string reasonPhrase = ReasonPhrase;
+            string? reasonPhrase = ReasonPhrase;
             if (string.IsNullOrWhiteSpace(reasonPhrase))
             {
                 // If the user hasn't set this then it is generated on the fly if possible.
@@ -237,6 +238,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        [MemberNotNull(nameof(_nativeStream))]
         private void EnsureResponseStream()
         {
             if (_nativeStream == null)
@@ -275,8 +277,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // What would we loose by bypassing HttpSendHttpResponse?
         //
         // TODO: Consider using the HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA flag for most/all responses rather than just Opaque.
-        internal unsafe uint SendHeaders(HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks,
-            ResponseStreamAsyncResult asyncResult,
+        internal unsafe uint SendHeaders(HttpApiTypes.HTTP_DATA_CHUNK[]? dataChunks,
+            ResponseStreamAsyncResult? asyncResult,
             HttpApiTypes.HTTP_FLAGS flags,
             bool isOpaqueUpgrade)
         {
@@ -287,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             uint statusCode;
             uint bytesSent;
-            List<GCHandle> pinnedHeaders = SerializeHeaders(isOpaqueUpgrade);
+            List<GCHandle>? pinnedHeaders = SerializeHeaders(isOpaqueUpgrade);
             try
             {
                 if (dataChunks != null)
@@ -336,7 +338,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                                 &bytesSent,
                                 IntPtr.Zero,
                                 0,
-                                asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped,
+                                asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped!,
                                 IntPtr.Zero);
 
                         // GoAway is only supported on later versions. Retry.
@@ -354,7 +356,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                                     &bytesSent,
                                     IntPtr.Zero,
                                     0,
-                                    asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped,
+                                    asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped!,
                                     IntPtr.Zero);
 
                             // Succeeded without GoAway, disable them.
@@ -483,11 +485,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return string.Equals(knownValue, input?.Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
-        private unsafe List<GCHandle> SerializeHeaders(bool isOpaqueUpgrade)
+        private unsafe List<GCHandle>? SerializeHeaders(bool isOpaqueUpgrade)
         {
             Headers.IsReadOnly = true; // Prohibit further modifications.
-            HttpApiTypes.HTTP_UNKNOWN_HEADER[] unknownHeaders = null;
-            HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
+            HttpApiTypes.HTTP_UNKNOWN_HEADER[]? unknownHeaders = null;
+            HttpApiTypes.HTTP_RESPONSE_INFO[]? knownHeaderInfo = null;
             List<GCHandle> pinnedHeaders;
             GCHandle gcHandle;
 
@@ -498,7 +500,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string headerName;
             string headerValue;
             int lookup;
-            byte[] bytes = null;
+            byte[]? bytes = null;
             pinnedHeaders = new List<GCHandle>();
 
             int numUnknownHeaders = 0;
@@ -632,7 +634,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return pinnedHeaders;
         }
 
-        private static void FreePinnedHeaders(List<GCHandle> pinnedHeaders)
+        private static void FreePinnedHeaders(List<GCHandle>? pinnedHeaders)
         {
             if (pinnedHeaders != null)
             {

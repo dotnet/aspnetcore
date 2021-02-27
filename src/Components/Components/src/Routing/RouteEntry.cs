@@ -4,17 +4,17 @@
 #nullable disable warnings
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
     [DebuggerDisplay("Handler = {Handler}, Template = {Template}")]
     internal class RouteEntry
     {
-        public RouteEntry(RouteTemplate template, Type handler, string[] unusedRouteParameterNames)
+        public RouteEntry(RouteTemplate template, [DynamicallyAccessedMembers(Component)] Type handler, string[] unusedRouteParameterNames)
         {
             Template = template;
             UnusedRouteParameterNames = unusedRouteParameterNames;
@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public string[] UnusedRouteParameterNames { get; }
 
+        [DynamicallyAccessedMembers(Component)]
         public Type Handler { get; }
 
         internal void Match(RouteContext context)

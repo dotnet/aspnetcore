@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -20,7 +21,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using Wasm.Authentication.Server;
 using Wasm.Authentication.Server.Data;
 using Xunit;
@@ -60,6 +60,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             Navigate("/", noReload: true);
+            Browser.Manage().Window.Size = new Size(1024, 800);
             EnsureDatabaseCreated(_serverFixture.Host.Services);
             WaitUntilLoaded();
         }
@@ -384,7 +385,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(By.Name("Input.Email")).SendKeys(userName);
             Browser.Exists(By.Name("Input.Password")).SendKeys(password);
             Browser.Exists(By.Name("Input.ConfirmPassword")).SendKeys(password);
-            Browser.Exists(By.Id("registerSubmit")).Click();
+            Browser.Click(By.Id("registerSubmit"));
 
             // We will be redirected to the RegisterConfirmation
             Browser.Contains("/Identity/Account/RegisterConfirmation", () => Browser.Url);

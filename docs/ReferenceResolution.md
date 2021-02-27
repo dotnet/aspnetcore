@@ -111,7 +111,7 @@ Once `darc` is installed and set-up, it can be used to modify the subscriptions 
 Subscriptions are objects that define the ecosystem repos we are listening for updates to, the frequency we are looking for updates, and more.
 
 ```bash
-darc get-subscriptions --target-branch master --target-repo aspnetcore$ --regex
+darc get-subscriptions --target-branch main --target-repo aspnetcore$ --regex
 ```
 
 **Disable/enable a subscription**

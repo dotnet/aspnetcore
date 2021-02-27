@@ -7,11 +7,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
-    <RazorCompileOnBuild>false</RazorCompileOnBuild>
-    <RazorCompileOnPublish>false</RazorCompileOnPublish>
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
-    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <RazorTargetName>Microsoft.AspNetCore.Identity.UI.Views.V4</RazorTargetName>
 
     <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
     <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
@@ -21,9 +19,7 @@
       _UpdatedIdentityUIStaticWebAssets
     </GetCurrentProjectStaticWebAssetsDependsOn>
 
-    <IdentityUIFrameworkVersion Condition="'$(IdentityUIFrameworkVersion)' == ''">Bootstrap4</IdentityUIFrameworkVersion>
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
-
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,103 +43,12 @@
     <SuppressBaselineReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
-  <ItemGroup>
-    <UIFrameworkVersionMoniker Include="V4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="build\" />
-  </ItemGroup>
-
-  <!-- Source build doesn't build this package -->
-  <Target Name="BuildRazorViews" DependsOnTargets="Compile" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <Message Text="Building razor views assemblies" Importance="High" />
-    <MSbuild Projects="$(MSBuildThisFile)"
-             Targets="BuildForUI"
-             Properties="
-             BuildProjectReferences=false;
-             RazorCompileOnBuild=true;
-             UIFrameworkVersion=%(UIFrameworkVersionMoniker.Identity);
-             IntermediateOutputPath=$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\;" />
-
-    <Copy
-      SourceFiles="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).dll"
-      DestinationFolder="$(OutDir)"
-      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-      Retries="$(CopyRetryCount)"
-      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)">
-
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-      <Output TaskParameter="DestinationFiles" ItemName="_RazorAssembly"/>
-
-    </Copy>
-
-    <Copy
-      SourceFiles="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).pdb"
-      DestinationFolder="$(OutDir)"
-      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-      Retries="$(CopyRetryCount)"
-      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)">
-
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
-    </Copy>
-
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; %(_RazorAssembly.FullPath)" />
-
-  </Target>
-
-  <PropertyGroup>
-    <RazorTargetName>Microsoft.AspNetCore.Identity.UI.Views.$(UIFrameworkVersion)</RazorTargetName>
-  </PropertyGroup>
-
-  <Target Name="SetupRazorInputs">
+  <Target Name="SetupRazorInputs" BeforeTargets="ResolveRazorGenerateInputs">
     <ItemGroup>
-      <_RazorGenerate Include="Areas\Identity\Pages\$(UIFrameworkVersion)\**\*.cshtml" />
+      <_RazorGenerate Include="Areas\Identity\Pages\V4\**\*.cshtml" />
 
       <RazorGenerate Include="@(_RazorGenerate)" Link="Areas\Identity\Pages\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
-  </Target>
-
-  <Target Name="BuildForUI" DependsOnTargets="SetupRazorInputs;RazorCompile" />
-
-<Target Name="_GetRazorDlls" BeforeTargets="GetCopyToOutputDirectoryItems">
-
-    <ItemGroup>
-      <_GeneratedRazorViews Include="$(TargetDir)$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).dll" />
-      <_GeneratedRazorViews Include="$(TargetDir)$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).pdb" />
-
-      <AllItemsFullPathWithTargetPath Include="%(_GeneratedRazorViews.FullPath)">
-        <TargetPath>%(FileName)%(Extension)</TargetPath>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </AllItemsFullPathWithTargetPath>
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_AddRazorDlls" BeforeTargets="BuiltProjectOutputGroup">
-    <ItemGroup>
-      <BuiltProjectOutputGroupOutput Include="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).dll" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_AddRazorPdbs" BeforeTargets="DebugSymbolsProjectOutputGroup">
-    <ItemGroup>
-      <DebugSymbolsProjectOutputGroupOutput Include="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).pdb" />
-    </ItemGroup>
-  </Target>
-
-  <!-- Source build doesn't build this package -->
-  <Target Name="VerifyBuildOutputs" AfterTargets="BuildRazorViews" Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <ItemGroup>
-      <ExpectedOutputFile Include="$(TargetDir)Microsoft.AspNetCore.Identity.UI.Views.V4.dll" />
-    </ItemGroup>
-
-    <Error Text="Unable to find precompiled view file %(ExpectedOutputFile.Identity)" Condition="!Exists('%(ExpectedOutputFile.Identity)')" />
   </Target>
 
   <Target Name="_UpdatedIdentityUIStaticWebAssets">
@@ -153,7 +58,7 @@
 
       <_V4Content Include="wwwroot\V4\**" />
 
-      <StaticWebAsset Include="@(_V4Content->'%(FullPath)')" Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap4'">
+      <StaticWebAsset Include="@(_V4Content->'%(FullPath)')">
         <SourceType></SourceType>
         <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
         <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)wwwroot/V4'))</ContentRoot>

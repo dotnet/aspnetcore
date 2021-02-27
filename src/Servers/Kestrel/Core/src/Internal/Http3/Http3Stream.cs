@@ -417,6 +417,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 finally
                 {
+                    await _context.StreamContext.DisposeAsync();
+
                     _http3Connection.RemoveStream(_streamIdFeature.StreamId);
                 }
             }

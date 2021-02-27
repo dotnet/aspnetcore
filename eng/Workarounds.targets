@@ -21,13 +21,6 @@
       '$(GenerateRazorAssemblyInfo)' == 'true'" />
   </ItemGroup>
 
-  <!-- Workaround https://github.com/dotnet/aspnetcore/issues/7503. This chains GenerateSourceLinkFile before razor component targets run. -->
-  <!-- Workaround https://github.com/dotnet/source-build/issues/1112. Source link is currently disabled in source build so do not apply this worksaround. -->
-  <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
-          Name="_EnsureSourceLinkHappensBeforeRazorComponentGeneration"
-          BeforeTargets="PrepareForRazorComponentGenerate"
-          DependsOnTargets="GenerateSourceLinkFile" />
-
   <!-- Workaround https://github.com/dotnet/source-build/issues/1112. Source link is currently disabled in source build so define this dummy target which is required for pack. -->
   <Import Condition="'$(DotNetBuildFromSource)' == 'true'" Project="WorkaroundsImported.targets" />
 

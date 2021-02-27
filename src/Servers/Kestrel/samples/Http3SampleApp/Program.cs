@@ -42,6 +42,7 @@ namespace Http3SampleApp
                             {
                                 httpsOptions.ServerCertificate = cert;
                             });
+                            listenOptions.UseConnectionLogging();
                             listenOptions.Protocols = HttpProtocols.Http3;
                         });
                     })
