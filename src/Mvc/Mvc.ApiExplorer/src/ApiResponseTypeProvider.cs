@@ -101,9 +101,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                     if (apiResponseType.Type == typeof(void))
                     {
-                        // Determine whether or not the type was provided by the user. If so, favor it over the default
-                        // error type.
-                        var setByDefault = metadataAttribute is ProducesResponseTypeAttribute { IsResponseTypeSetByDefault: true };
                         if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
                         {
                             // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
@@ -112,9 +109,15 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                             // from the return type.
                             apiResponseType.Type = type;
                         }
-                        else if (setByDefault && ((IsClientError(statusCode) || apiResponseType.IsDefaultResponse)))
+                        else if (IsClientError(statusCode))
                         {
-                            // Use the default error type for "default" responses or 4xx client errors if no response type is specified.
+                            // Determine whether or not the type was provided by the user. If so, favor it over the default
+                            // error type for 4xx client errors if no response type is specified..
+                            var setByDefault = metadataAttribute is ProducesResponseTypeAttribute { IsResponseTypeSetByDefault: true };
+                            apiResponseType.Type = setByDefault ? defaultErrorType : apiResponseType.Type;
+                        }
+                        else if (apiResponseType.IsDefaultResponse)
+                        {
                             apiResponseType.Type = defaultErrorType;
                         }
                     }
