@@ -49,7 +49,7 @@
     <RazorCompile Include="$(GeneratedInternalAspNetCoreAttributeFile)" />
   </ItemGroup>
 
-  <Target Name="VerifyBuildOutputs" AfterTargets="Build">
+  <Target Name="VerifyBuildOutputs" AfterTargets="Build" Condition="'$(IsPackageInThisPatch)' == 'true'">
     <PropertyGroup>
       <ExpectedOutputFile>$(OutputPath)$(RazorTargetName).dll</ExpectedOutputFile>
     </PropertyGroup>
