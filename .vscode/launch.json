@@ -6,7 +6,7 @@
     "type": "coreclr",
     "preLaunchTask": "MvcSandbox-build",
     "request": "launch",
-    "program": "${workspaceFolder}/artifacts/bin/MvcSandbox/Debug/net6.0/MvcSandbox.dll",
+    "program": "${workspaceFolder}/artifacts/bin/MvcSandbox/Debug/${env:TARGET}/MvcSandbox.dll",
     "args": [],
     "cwd": "${workspaceFolder}",
     "stopAtEntry": false,

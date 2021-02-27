@@ -53,7 +53,7 @@ Visual Studio 2019 (16.8) is required to build the repo locally. If you don't ha
 > You can do so by running the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` command
 > in PowerShell. For more information on execution policies, you can read the [execution policy docs](https://docs.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy).
 
-The  [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.json](/eng/scripts/vs.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
+The [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.json](/eng/scripts/vs.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
 
 > :bulb: The `InstallVisualStudio.ps1` script mentioned above reads from the `vs.json` file to determine what components to install.
 
@@ -94,6 +94,14 @@ The build should find any JDK 11 or newer installation on the machine as long as
 #### Chrome
 
 This repo contains a Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>.
+
+#### Visual Studio Code Extension
+
+Following extension are recommanded for Visual Studio Code in order to work with ASP.NET Core repository.
+
+- [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
+
+- [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
 
 #### WiX (Optional)
 
@@ -155,9 +163,9 @@ Studio because those projects are not listed in AspNetCore.sln.
 This will download the required tools and restore all projects inside the repository. At that point, you should be able
 to open the .sln file or one of the project specific .slnf files to work on the projects you care about.
 
-   > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master
-   > branch, we regularly update the versions of .NET Core SDK required to build the repo.
-   > You will need to restart Visual Studio every time we update the .NET Core SDK.
+> :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master
+> branch, we regularly update the versions of .NET Core SDK required to build the repo.
+> You will need to restart Visual Studio every time we update the .NET Core SDK.
 
 > :bulb: Rerunning the above command or, perhaps, the quicker `.\build.cmd -noBuildNative -noBuildManaged` may be
 > necessary after switching branches, especially if the `$(DefaultNetCoreTargetFramework)` value changes.
@@ -195,6 +203,8 @@ These principles guide how we create and manage .slnf files:
 Before opening the project in Visual Studio Code, you will need to make sure that you have built the project.
 You can find more info on this in the "Building on command-line" section below.
 
+To open specific folder inside Visual studio code, you have to open it with `startvscode.cmd` file. Ths will setup neccessary environment variables and will open given directory in Visual Studio Code.
+
 Using Visual Studio Code with this repo requires setting environment variables on command line first.
 Use these command to launch VS Code with the right settings.
 
@@ -216,7 +226,7 @@ code .
 ```
 
 > :bulb: Note that if you are using the "Remote-WSL" extension in VSCode, the environment is not supplied
-> to the process in WSL.  You can workaround this by explicitly setting the environment variables
+> to the process in WSL. You can workaround this by explicitly setting the environment variables
 > in `~/.vscode-server/server-env-setup`.
 > See <https://code.visualstudio.com/docs/remote/wsl#_advanced-environment-setup-script> for details.
 
@@ -310,11 +320,11 @@ Additional properties can be added as an argument in the form `/property:$name=$
 
 Common properties include:
 
-Property                 | Description
--------------------------|-------------------------------------------------------------------------------------------------------------
-Configuration            | `Debug` or `Release`. Default = `Debug`.
-TargetArchitecture       | The CPU architecture to build for (x64, x86, arm, arm64).
-TargetOsName             | The base runtime identifier to build for (win, linux, osx, linux-musl).
+| Property           | Description                                                             |
+| ------------------ | ----------------------------------------------------------------------- |
+| Configuration      | `Debug` or `Release`. Default = `Debug`.                                |
+| TargetArchitecture | The CPU architecture to build for (x64, x86, arm, arm64).               |
+| TargetOsName       | The base runtime identifier to build for (win, linux, osx, linux-musl). |
 
 ### Resx files
 
@@ -333,7 +343,7 @@ Building installers does not run as part of `build.cmd` run without parameters, 
 .\build.cmd -buildInstallers
 ```
 
-*Note*: Additional build steps listed above aren't necessary on Linux or macOS.
+_Note_: Additional build steps listed above aren't necessary on Linux or macOS.
 
 - Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 - Add a NuGet.Config to your project directory with the following content:
@@ -349,7 +359,7 @@ Building installers does not run as part of `build.cmd` run without parameters, 
   </configuration>
   ```
 
-  *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
+  _NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine._
 
 - Update the versions on `PackageReference` items in your .csproj project file to point to the version from your local build.
 

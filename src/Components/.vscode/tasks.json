@@ -28,6 +28,20 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "label": "BasicTestApp-build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/test/testassets/BasicTestApp/BasicTestApp.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }

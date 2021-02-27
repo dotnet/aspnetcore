@@ -34,6 +34,23 @@
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
+    },
+    {
+      "name": "BasicTestApp",
+      "type": "coreclr",
+      "preLaunchTask": "BasicTestApp-build",
+      "request": "launch",
+      "program": "${workspaceFolder}/../../artifacts/bin/BasicTestApp/Debug/${env:TARGET}/BasicTestApp.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
     }
   ]
 }
