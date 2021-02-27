@@ -66,22 +66,23 @@ namespace Microsoft.AspNetCore.DataProtection
             // Type, Assembly, Version={Version}, Culture={Culture}, PublicKeyToken={Token}
 
             var versionStartIndex = forwardedTypeName.IndexOf("Version=", StringComparison.Ordinal);
-
-            if (versionStartIndex == -1)
+            while (versionStartIndex != -1)
             {
-                // No version?
-                return forwardedTypeName;
+                var versionEndIndex = forwardedTypeName.IndexOf(',', versionStartIndex + "Version=".Length);
+
+                if (versionEndIndex == -1)
+                {
+                    // No end index?
+                    return forwardedTypeName;
+                }
+
+                forwardedTypeName = forwardedTypeName.Substring(0, versionStartIndex - 1) + forwardedTypeName.Substring(versionEndIndex + 1);
+                versionStartIndex = forwardedTypeName.IndexOf("Version=", StringComparison.Ordinal);
             }
 
-            var versionEndIndex = forwardedTypeName.IndexOf(',', versionStartIndex + "Version=".Length);
+            // No version left
+            return forwardedTypeName;
 
-            if (versionEndIndex == -1)
-            {
-                // No end index?
-                return forwardedTypeName;
-            }
-
-            return forwardedTypeName.Substring(0, versionStartIndex) + forwardedTypeName.Substring(versionEndIndex + 1);
         }
     }
 }
