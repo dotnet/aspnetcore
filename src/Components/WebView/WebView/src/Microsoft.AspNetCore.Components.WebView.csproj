@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <Description>Build desktop applications with WebView and Blazor.</Description>
+    <Description>Build desktop applications with Blazor and a webview.</Description>
     <IsShippingPackage>true</IsShippingPackage>
     <DefineConstants>$(DefineConstants);BLAZOR_WEBVIEW</DefineConstants>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
@@ -13,7 +13,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebView.Test" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" LinkBase="Shared" />
