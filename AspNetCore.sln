@@ -1596,9 +1596,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Compon
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platforms", "Platforms", "{8B196DE0-F585-43D6-BE72-6F15BB4EB5E5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Webview2", "Webview2", "{E371F86D-9A72-4E75-8775-9E868808975D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebView2", "WebView2", "{E371F86D-9A72-4E75-8775-9E868808975D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebView.Webview2", "src\Components\WebView\Platforms\Webview2\src\Microsoft.AspNetCore.Components.WebView.Webview2.csproj", "{2703CDC4-F187-4F85-AD12-D7E36AD509E1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebView.WebView2", "src\Components\WebView\Platforms\WebView2\src\Microsoft.AspNetCore.Components.WebView.WebView2.csproj", "{2703CDC4-F187-4F85-AD12-D7E36AD509E1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Wpf", "Wpf", "{5241CF68-66A0-4724-9BAA-36DB959A5B11}"
 EndProject

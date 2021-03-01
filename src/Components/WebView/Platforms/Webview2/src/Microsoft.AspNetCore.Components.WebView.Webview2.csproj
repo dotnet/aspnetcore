@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <Description>Build desktop applications with Blazor and Webview2.</Description>
+    <Description>Build desktop applications with Blazor and WebView2.</Description>
     <IsShippingPackage>false</IsShippingPackage>
     <!-- TODO: REMOVE -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>

@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <Description>Build WPF applications with Blazor and Webview2.</Description>
+    <Description>Build WPF applications with Blazor and WebView2.</Description>
     <IsShippingPackage>false</IsShippingPackage>
     <!-- TODO: REMOVE -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.WebView.Webview2" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebView.WebView2" />
   </ItemGroup>
 
 </Project>
