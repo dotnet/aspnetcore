@@ -2,15 +2,11 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     internal class WebViewNavigationManager : NavigationManager
     {
-        private readonly IpcSender _ipcSender;
+        private IpcSender _ipcSender;
 
-        public WebViewNavigationManager(IpcSender ipcSender)
+        public void AttachToWebView(IpcSender ipcSender, string baseUrl, string initialUrl)
         {
             _ipcSender = ipcSender;
-        }
-
-        public void Init(string baseUrl, string initialUrl)
-        {
             Initialize(baseUrl, initialUrl);
         }
 

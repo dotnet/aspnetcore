@@ -25,16 +25,15 @@ namespace Microsoft.AspNetCore.Components.WebView
     // and the underlying transport channel
     internal class IpcSender
     {
-        public IpcSender(Dispatcher dispatcher)
-        {
-            _dispatcher = dispatcher;
-        }
-
-        public Action<string> MessageDispatcher { get; set; }
-
+        private readonly Dispatcher _dispatcher;
+        private readonly Action<string> _messageDispatcher;
         private Queue<TaskCompletionSource> _pendingAcks = new Queue<TaskCompletionSource>();
 
-        private readonly Dispatcher _dispatcher;
+        public IpcSender(Dispatcher dispatcher, Action<string> messageDispatcher)
+        {
+            _dispatcher = dispatcher;
+            _messageDispatcher = messageDispatcher;
+        }
 
         public Task ApplyRenderBatch(RenderBatch renderBatch)
         {
@@ -109,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         private void DispatchMessageWithErrorHandling(string message)
         {
-            NotifyErrors(_dispatcher.InvokeAsync(() => MessageDispatcher(message)));
+            NotifyErrors(_dispatcher.InvokeAsync(() => _messageDispatcher(message)));
         }
 
         private void NotifyErrors(Task task)

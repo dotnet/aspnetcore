@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-
+using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
@@ -12,19 +13,24 @@ namespace Microsoft.AspNetCore.Components.WebView
     public abstract class WebViewManager
     {
         private bool _started;
-        private readonly IServiceProvider _provider;
-        private readonly List<RootComponent> _registeredComponents = new();
-        private IServiceScope _scope;
 
-        private Dispatcher _dispatcher;
+        private readonly IServiceProvider _provider;
+        private readonly Dispatcher _dispatcher;
+        private readonly IpcSender _ipcSender;
+
+        private readonly List<RootComponent> _registeredComponents = new();
+
+        // Per-page items (todo: consider factoring out into a single context object)
+        private IServiceScope _scope;
         private WebViewRenderer _renderer;
         private IpcReceiver _ipcReceiver;
-        private IpcSender _ipcSender;
         private Queue<Task> _componentChangeTasks = new();
 
-        public WebViewManager(IServiceProvider provider)
+        public WebViewManager(IServiceProvider provider, Dispatcher dispatcher)
         {
-            _provider = provider;
+            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+            _ipcSender = new IpcSender(_dispatcher, SendMessage);
         }
 
         protected IServiceProvider Provider => _provider;
@@ -86,14 +92,17 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             _scope = Provider.CreateScope();
             var services = _scope.ServiceProvider;
-            var webViewNavigationManager = (WebViewNavigationManager)services.GetRequiredService<NavigationManager>();
-            webViewNavigationManager.Init(BaseUrl, StartUrl);
 
-            _dispatcher = services.GetService<Dispatcher>();
-            _renderer = services.GetRequiredService<WebViewRenderer>();
-            _ipcReceiver = services.GetRequiredService<IpcReceiver>();
-            _ipcSender = services.GetRequiredService<IpcSender>();
-            _ipcSender.MessageDispatcher = SendMessage;
+            var webViewNavigationManager = (WebViewNavigationManager)services.GetRequiredService<NavigationManager>();
+            webViewNavigationManager.AttachToWebView(_ipcSender, BaseUrl, StartUrl);
+
+            var jsRuntime = (WebViewJSRuntime)services.GetRequiredService<IJSRuntime>();
+            jsRuntime.AttachToWebView(_ipcSender);
+
+            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+
+            _renderer = new WebViewRenderer(services, _dispatcher, _ipcSender, loggerFactory);
+            _ipcReceiver = new IpcReceiver(_dispatcher, jsRuntime, _renderer, webViewNavigationManager, _ipcSender);
 
             _started = true;
         }

@@ -13,10 +13,6 @@ namespace Microsoft.AspNetCore.Components.WebView
             services.TryAddScoped<IJSRuntime, WebViewJSRuntime>();
             services.TryAddScoped<INavigationInterception, WebViewNavigationInterception>();
             services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
-            services.TryAddScoped<WebViewRenderer>();
-            services.TryAddScoped<IpcSender>();
-            services.TryAddScoped<IpcReceiver>();
-
             return services;
         }
     }

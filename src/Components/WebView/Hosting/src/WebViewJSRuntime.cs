@@ -6,12 +6,18 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     internal class WebViewJSRuntime : JSRuntime
     {
-        private readonly IpcSender _ipcSender;
+        private IpcSender _ipcSender;
 
-        public WebViewJSRuntime(IpcSender host)
+        public WebViewJSRuntime()
         {
-            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(new WebElementReferenceContext(this)));
-            _ipcSender = host;
+            JsonSerializerOptions.Converters.Add(
+                new ElementReferenceJsonConverter(
+                    new WebElementReferenceContext(this)));
+        }
+
+        public void AttachToWebView(IpcSender ipcSender)
+        {
+            _ipcSender = ipcSender;
         }
 
         protected override void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)

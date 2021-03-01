@@ -28,20 +28,20 @@ namespace Microsoft.AspNetCore.Components.WebView
         private readonly JSRuntime _jsRuntime;
         private readonly WebViewRenderer _renderer;
         private readonly WebViewNavigationManager _navigationManager;
-        private readonly IpcSender _webViewHost;
+        private readonly IpcSender _ipcSender;
 
         public IpcReceiver(
             Dispatcher dispatcher,
             IJSRuntime jsRuntime,
             WebViewRenderer renderer,
             NavigationManager navigationManager,
-            IpcSender webViewHost)
+            IpcSender ipcSender)
         {
             _dispatcher = dispatcher;
             _jsRuntime = (JSRuntime)jsRuntime;
             _renderer = renderer;
             _navigationManager = (WebViewNavigationManager)navigationManager;
-            _webViewHost = webViewHost;
+            _ipcSender = ipcSender;
         }
 
         // TODO: Proper error handling, reporting etc.
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
             catch (Exception ex)
             {
-                _webViewHost.NotifyUnhandledException(ex);
+                _ipcSender.NotifyUnhandledException(ex);
                 throw;
             }
         }
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
             else
             {
-                _webViewHost.NotifyUnhandledException(new InvalidOperationException(argumentsOrError));
+                _ipcSender.NotifyUnhandledException(new InvalidOperationException(argumentsOrError));
             }
         }
 
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
             catch (Exception ex)
             {
-                _webViewHost.NotifyUnhandledException(ex);
+                _ipcSender.NotifyUnhandledException(ex);
                 throw;
             }
             _ = DispatchWithErrorHandling();
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Components.WebView
                 }
                 catch (Exception ex)
                 {
-                    _webViewHost.NotifyUnhandledException(ex);
+                    _ipcSender.NotifyUnhandledException(ex);
                 }
             }
         }
@@ -152,11 +152,11 @@ namespace Microsoft.AspNetCore.Components.WebView
         {
             try
             {
-                await _dispatcher.InvokeAsync(() => _webViewHost.RenderCompleted(errorMessageOrNull));
+                await _dispatcher.InvokeAsync(() => _ipcSender.RenderCompleted(errorMessageOrNull));
             }
             catch (Exception e)
             {
-                _webViewHost.NotifyUnhandledException(e);
+                _ipcSender.NotifyUnhandledException(e);
             }
         }
 
@@ -181,11 +181,11 @@ namespace Microsoft.AspNetCore.Components.WebView
             // and a failure means that an update to global state was partially applied.
             catch (LocationChangeException nex)
             {
-                _webViewHost.NotifyUnhandledException(nex);
+                _ipcSender.NotifyUnhandledException(nex);
             }
             catch (Exception ex)
             {
-                _webViewHost.NotifyUnhandledException(ex);
+                _ipcSender.NotifyUnhandledException(ex);
             }
         }
     }
