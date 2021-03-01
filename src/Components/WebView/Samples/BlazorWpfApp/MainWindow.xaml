@@ -11,6 +11,6 @@
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Background="CadetBlue">
             <Label>This is native WPF UI</Label>
         </StackPanel>
-        <blazor:BlazorWebView />
+        <blazor:BlazorWebView Services="{StaticResource services}" />
     </DockPanel>
 </Window>

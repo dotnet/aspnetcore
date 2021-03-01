@@ -17,6 +17,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             };
         }
 
+        public static readonly DependencyProperty ServicesProperty = DependencyProperty.Register(
+            nameof(Services),
+            typeof(IServiceProvider),
+            typeof(BlazorWebView));
+
+        public IServiceProvider Services
+        {
+            get => (IServiceProvider)GetValue(ServicesProperty);
+            set => SetValue(ServicesProperty, value);
+        }
+
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
