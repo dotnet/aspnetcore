@@ -37,7 +37,6 @@
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Server\\Wasm.Authentication.Server.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Shared\\Wasm.Authentication.Shared.csproj",
       "src\\Components\\WebAssembly\\testassets\\WasmLinkerTest\\WasmLinkerTest.csproj",
-      "src\\Components\\WebView\\Platforms\\WebView2\\src\\Microsoft.AspNetCore.Components.WebView.WebView2.csproj",
       "src\\Components\\WebView\\Platforms\\Wpf\\src\\Microsoft.AspNetCore.Components.WebView.Wpf.csproj",
       "src\\Components\\WebView\\Samples\\BlazorWpfApp\\BlazorWpfApp.csproj",
       "src\\Components\\WebView\\WebView\\src\\Microsoft.AspNetCore.Components.WebView.csproj",
