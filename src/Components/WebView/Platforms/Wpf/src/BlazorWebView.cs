@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         public void Dispose()
         {
             // TODO: Implement correct WPF disposal pattern
-            _webviewManager.Dispose();
-            _webview.Dispose();
+            _webviewManager?.Dispose();
+            _webview?.Dispose();
         }
     }
 }

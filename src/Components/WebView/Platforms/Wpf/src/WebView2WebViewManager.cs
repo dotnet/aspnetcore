@@ -11,6 +11,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             : base(services, WpfDispatcher.Instance, new Uri("http://0.0.0.0"))
         {
             _webview = webview ?? throw new ArgumentNullException(nameof(webview));
+
+            _webview.CoreWebView2.WebMessageReceived += (sender, eventArgs) =>
+                MessageReceived(new Uri(eventArgs.Source), eventArgs.TryGetWebMessageAsString());
         }
 
         protected override void LoadUri(Uri absoluteUri)
