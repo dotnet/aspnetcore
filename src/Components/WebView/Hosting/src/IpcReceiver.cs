@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             // Ignore other messages as they may be unrelated to Blazor WebView
             if (IpcCommon.TryDeserializeIncoming(message, out var messageType, out var args))
             {
-                if (messageType == IpcCommon.IncomingMessageType.Initialize)
+                if (messageType == IpcCommon.IncomingMessageType.AttachPage)
                 {
                     _manager.AttachToPage(args[0].GetString(), args[1].GetString());
                     return;

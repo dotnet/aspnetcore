@@ -30,9 +30,9 @@ namespace Microsoft.AspNetCore.Components.WebView
             MessageReceived(IpcCommon.Serialize(messageType, args));
         }
 
-        public void ReceiveInitializationMessage()
+        public void ReceiveAttachPageMessage()
         {
-            ReceiveIpcMessage(IpcCommon.IncomingMessageType.Initialize, "http://example/", "http://example/testStartUrl");
+            ReceiveIpcMessage(IpcCommon.IncomingMessageType.AttachPage, "http://example/", "http://example/testStartUrl");
         }
     }
 }

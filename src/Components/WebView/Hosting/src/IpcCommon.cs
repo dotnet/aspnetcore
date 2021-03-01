@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         public enum IncomingMessageType
         {
-            Initialize,
+            AttachPage,
             BeginInvokeDotNet,
             EndInvokeJS,
             DispatchBrowserEvent,

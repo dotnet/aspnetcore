@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             };
 
             // Act
-            webViewManager.ReceiveInitializationMessage();
+            webViewManager.ReceiveAttachPageMessage();
 
             // Assert
             Assert.True(didTriggerEvent);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             // Act
             Assert.Empty(webViewManager.SentIpcMessages);
-            webViewManager.ReceiveInitializationMessage();
+            webViewManager.ReceiveAttachPageMessage();
 
             // Assert
             Assert.Collection(webViewManager.SentIpcMessages,
