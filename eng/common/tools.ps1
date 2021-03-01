@@ -169,7 +169,7 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
     Set-Content -Path $sdkCacheFileTemp -Value $dotnetRoot
 
     try {
-      Rename-Item -Force -Path $sdkCacheFileTemp 'sdk.txt'
+      Move-Item -Force $sdkCacheFileTemp (Join-Path $ToolsetDir 'sdk.txt')
     } catch {
       # Somebody beat us
       Remove-Item -Path $sdkCacheFileTemp
