@@ -1,6 +1,9 @@
 using System;
+using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Wpf;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
@@ -34,9 +37,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         {
             base.OnApplyTemplate();
 
+            // TODO: Make content root configurable. Allow the developer to set the host page page.
+            var appDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            var wwwroot = Path.Combine(appDir, "wwwroot");
+            var fileProvider = new PhysicalFileProvider(Directory.Exists(wwwroot) ? wwwroot : appDir);
+
             // TODO: Can this be called more than once? We need the following only to happen once.
             _webview = (WebView2)GetTemplateChild(webViewTemplateChildName);
-            _webviewManager = new WebView2WebViewManager(_webview, Services);
+            _webviewManager = new WebView2WebViewManager(_webview, Services, fileProvider);
             _webviewManager.Navigate("/");
         }
 

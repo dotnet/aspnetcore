@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)-windows</TargetFramework>
@@ -9,6 +9,13 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebView.Wpf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Note: this will need to change to <Content> when we switch to the Razor SDK here -->
+    <None Update="wwwroot\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
