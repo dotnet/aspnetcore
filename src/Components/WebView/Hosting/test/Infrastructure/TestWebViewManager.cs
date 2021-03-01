@@ -5,10 +5,11 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     public class TestWebViewManager : WebViewManager
     {
+        private const string AppBaseUrl = "app://testhost/";
         private List<string> _sentIpcMessages = new();
 
         public TestWebViewManager(IServiceProvider provider)
-            : base(provider, Dispatcher.CreateDefault())
+            : base(provider, Dispatcher.CreateDefault(), AppBaseUrl)
         {
         }
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         internal void ReceiveIpcMessage(IpcCommon.IncomingMessageType messageType, params object[] args)
         {
             // Same serialization convention as used by blazor.webview.js
-            MessageReceived(IpcCommon.Serialize(messageType, args));
+            MessageReceived(AppBaseUrl + "page", IpcCommon.Serialize(messageType, args));
         }
 
         public void ReceiveAttachPageMessage()

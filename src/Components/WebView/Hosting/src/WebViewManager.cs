@@ -16,14 +16,27 @@ namespace Microsoft.AspNetCore.Components.WebView
         private readonly Dispatcher _dispatcher;
         private readonly IpcSender _ipcSender;
         private readonly IpcReceiver _ipcReceiver;
+        private readonly string _appBaseUrl;
 
         // Each time a web page connects, we establish a new per-page context
         private PageContext _currentPageContext;
 
-        public WebViewManager(IServiceProvider provider, Dispatcher dispatcher)
+        /// <summary>
+        /// Constructs an instance of <see cref="WebViewManager"/>.
+        /// </summary>
+        /// <param name="provider">The <see cref="IServiceProvider"/> for the application.</param>
+        /// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
+        /// <param name="appBaseUrl">The base URL for the application. Since this is a webview, the base URL is typically on a private origin such as http://0.0.0.0/ or app://example/</param>
+        public WebViewManager(IServiceProvider provider, Dispatcher dispatcher, string appBaseUrl)
         {
+            if (string.IsNullOrEmpty(appBaseUrl))
+            {
+                throw new ArgumentException($"'{nameof(appBaseUrl)}' cannot be null or empty.", nameof(appBaseUrl));
+            }
+
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+            _appBaseUrl = appBaseUrl;
             _ipcSender = new IpcSender(_dispatcher, SendMessage);
             _ipcReceiver = new IpcReceiver(this);
         }
@@ -92,8 +105,16 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// Notifies the <see cref="WebViewManager"/> about a message from JavaScript running within the web view.
         /// </summary>
         /// <param name="message">The message.</param>
-        protected void MessageReceived(string message)
+        protected void MessageReceived(string sourceUrl, string message)
         {
+            // TODO: Do we need to parse the URLs more robustly?
+            if (!sourceUrl.StartsWith(_appBaseUrl, StringComparison.Ordinal))
+            {
+                // It's important that we ignore messages from other origins, otherwise if the webview
+                // navigates to a remote location, it could send commands that execute locally
+                return;
+            }
+
             _ = _dispatcher.InvokeAsync(async () =>
             {
                 // TODO: Verify this produces the correct exception-surfacing behaviors.
