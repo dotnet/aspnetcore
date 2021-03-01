@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Components.WebView
+namespace Microsoft.AspNetCore.Components.WebView.Services
 {
     internal class WebViewRenderer : Renderer
     {

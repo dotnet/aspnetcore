@@ -2,7 +2,7 @@ using System.Text.Json;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 
-namespace Microsoft.AspNetCore.Components.WebView
+namespace Microsoft.AspNetCore.Components.WebView.Services
 {
     internal class WebViewJSRuntime : JSRuntime
     {

@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
 
-namespace Microsoft.AspNetCore.Components.WebView
+namespace Microsoft.AspNetCore.Components.WebView.Services
 {
     internal class WebViewNavigationInterception : INavigationInterception
     {

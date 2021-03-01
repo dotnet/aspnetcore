@@ -1,4 +1,4 @@
-namespace Microsoft.AspNetCore.Components.WebView
+namespace Microsoft.AspNetCore.Components.WebView.Services
 {
     internal class WebViewNavigationManager : NavigationManager
     {
