@@ -29,11 +29,17 @@ namespace Microsoft.AspNetCore.Components.WebView
         }
 
         /// <summary>
+        /// Notifies listeners that a page is attached to the webview. Handlers for this event
+        /// may add root components by calling <see cref="AddRootComponent(Type, string, ParameterView)"/>.
+        /// </summary>
+        public event EventHandler OnPageAttached;
+
+        /// <summary>
         /// Instructs the web view to navigate to the specified URL, bypassing any
         /// client-side routing.
         /// </summary>
-        /// <param name="absoluteUrl">The URL</param>
-        public abstract void Navigate(string absoluteUrl);
+        /// <param name="url">The URL, which may be absolute or relative to the application root.</param>
+        public abstract void Navigate(string url);
 
         /// <summary>
         /// Sends a message to JavaScript code running in the attached web view. This must
@@ -114,6 +120,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             var serviceScope = _provider.CreateScope();
             _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, baseUrl, startUrl);
+            OnPageAttached?.Invoke(this, null);
         }
 
         /// <summary>

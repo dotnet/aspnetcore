@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
@@ -9,22 +11,21 @@ namespace Microsoft.AspNetCore.Components.WebView
         {
         }
 
-        public event Action<string> OnSentMessage;
-
         protected override void SendMessage(string message)
         {
-            OnSentMessage?.Invoke(message);
+            throw new NotImplementedException();
         }
 
-        public void IncomingMessage(string message)
+        public override void Navigate(string absoluteUrl)
         {
-            MessageReceived(message);
+            throw new NotImplementedException();
         }
 
-        internal void SetUrls(string baseUrl, string initialUrl)
+        public void IncomingMessage(string messageType, params object[] args)
         {
-            BaseUrl = baseUrl;
-            StartUrl = initialUrl;
+            // Same serialization convention as used by blazor.webview.js
+            var serializedMessage = $"__bwv:{JsonSerializer.Serialize(new object[] { messageType }.Concat(args))}";
+            MessageReceived(serializedMessage);
         }
     }
 }

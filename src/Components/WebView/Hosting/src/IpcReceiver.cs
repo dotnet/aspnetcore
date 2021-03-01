@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop.Infrastructure;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebView
     // It receives messages on OnMessageReceived, interprets the payload and dispatches them to the appropriate method
     internal class IpcReceiver
     {
+        private const string _ipcMessagePrefix = "__bwv:";
         private readonly WebViewManager _manager;
 
         public IpcReceiver(WebViewManager manager)
@@ -32,14 +34,19 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         public async Task OnMessageReceivedAsync(PageContext pageContext, string message)
         {
-            // TODO: Don't assume that all possible messages are for us. Have some kind of
-            // magic prefix to distinguish from any other use of web messages unrelated to us.
-
-            var (type, args) = Deserialize(message);
-
-            if (string.Equals(type, "Initialize", StringComparison.Ordinal))
+            // We don't want to get confused by unrelated messages that the developer is sending
+            // over the same webview IPC channel, so ignore anything else
+            if (message == null || !message.StartsWith(_ipcMessagePrefix, StringComparison.Ordinal))
             {
-                _manager.AttachToPage((string)args[0], (string)args[1]);
+                return;
+            }
+
+            var payload = DeserializeIpcMessage(message);
+            var messageType = payload[0].GetString();
+
+            if (string.Equals(messageType, "Initialize", StringComparison.Ordinal))
+            {
+                _manager.AttachToPage(payload[1].GetString(), payload[2].GetString());
                 return;
             }
 
@@ -51,42 +58,32 @@ namespace Microsoft.AspNetCore.Components.WebView
                 throw new InvalidOperationException("Cannot receive IPC messages when no page is attached");
             }
 
-            switch (type)
+            switch (messageType)
             {
                 case "BeginInvokeDotNet":
-                    BeginInvokeDotNet(pageContext, (string)args[0], (string)args[1], (string)args[2], (long)args[3], (string)args[4]);
+                    BeginInvokeDotNet(pageContext, payload[1].GetString(), payload[2].GetString(), payload[3].GetString(), payload[4].GetInt64(), payload[5].GetString());
                     break;
                 case "EndInvokeJS":
-                    EndInvokeJS(pageContext, (long)args[0], (bool)args[1], (string)args[2]);
+                    EndInvokeJS(pageContext, payload[1].GetInt64(), payload[2].GetBoolean(), payload[3].GetString());
                     break;
                 case "DispatchBrowserEvent":
-                    await DispatchBrowserEventAsync(pageContext, (string)args[0], (string)args[1]);
+                    await DispatchBrowserEventAsync(pageContext, payload[1].GetString(), payload[2].GetString());
                     break;
                 case "OnRenderCompleted":
-                    OnRenderCompleted(pageContext, (long)args[0], (string)args[1]);
+                    OnRenderCompleted(pageContext, payload[1].GetInt64(), payload[2].GetString());
                     break;
                 case "OnLocationChanged":
-                    OnLocationChanged(pageContext, (string)args[0], (bool)args[1]);
+                    OnLocationChanged(pageContext, payload[1].GetString(), payload[2].GetBoolean());
                     break;
                 default:
-                    throw new InvalidOperationException($"Unknown message type '{type}'.");
+                    throw new InvalidOperationException($"Unknown message type '{messageType}'.");
             }
         }
 
-        // Internal for test only
-        static internal (string type, object[] args) Deserialize(string message)
+        private static JsonElement[] DeserializeIpcMessage(string message)
         {
-            var payload = message.Split(":");
-            return payload[0] switch
-            {
-                "Initialize" => ("Initialize", new object[] { payload[1], payload[2] }),
-                "BeginInvokeDotNet" => ("BeginInvokeDotNet", new object[] { payload[1], payload[2], payload[3], long.Parse(payload[4], CultureInfo.InvariantCulture), payload[5] }),
-                "EndInvokeJS" => ("EndInvokeJS", new object[] { long.Parse(payload[1],CultureInfo.InvariantCulture), bool.Parse(payload[2]), payload[3] }),
-                "DispatchBrowserEvent" => ("DispatchBrowserEvent", new object[] { payload[1], payload[2] }),
-                "OnRenderCompleted" => ("OnRenderCompleted", new object[] { payload[1] }),
-                "OnLocationChanged" => ("OnLocationChanged", new object[] { payload[1], bool.Parse(payload[2]) }),
-                _ => throw new InvalidOperationException("Unknown message")
-            };
+            var messageAfterPrefix = message.AsSpan(_ipcMessagePrefix.Length);
+            return (JsonElement[])JsonSerializer.Deserialize(messageAfterPrefix, typeof(JsonElement[]), JsonSerializerOptionsProvider.Options);
         }
 
         private void BeginInvokeDotNet(PageContext pageContext, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)

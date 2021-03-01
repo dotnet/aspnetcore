@@ -11,20 +11,26 @@ namespace Microsoft.AspNetCore.Components.WebView
     public class WebViewManagerTests
     {
         [Fact]
-        public void CanStart()
+        public void RaisesOnPageAttachedWhenPageAttaches()
         {
             // Arrange
             var provider = new ServiceCollection().AddTestBlazorWebView().BuildServiceProvider();
             var webViewManager = new TestWebViewManager(provider);
-            webViewManager.SetUrls("https://localhost:5001/", "https://localhost:5001/");
+            var didTriggerEvent = false;
+            webViewManager.OnPageAttached += (sender, eventArgs) =>
+            {
+                Assert.Same(webViewManager, sender);
+                didTriggerEvent = true;
+            };
 
             // Act
-            webViewManager.Start();
+            webViewManager.IncomingMessage("Initialize", "http://example/", "http://example/testStartUrl");
 
             // Assert
-            Assert.NotNull(webViewManager.GetCurrentScope());
+            Assert.True(didTriggerEvent);
         }
 
+        /*
         [Fact]
         public void CanRenderRootComponent()
         {
@@ -36,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             webViewManager.OnSentMessage += (message) => messages.Add(message);
             // Act
             webViewManager.Start();
-            webViewManager.AddComponent(typeof(MyComponent), "#app", default);
+            webViewManager.AddRootComponent(typeof(MyComponent), "#app", default);
 
             // Assert
             Assert.NotNull(webViewManager.GetCurrentScope());
@@ -44,6 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebView
                 (m) => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
                 (m) => AssertHelpers.IsRenderBatch(m));
         }
+        */
 
         private class MyComponent : IComponent
         {
