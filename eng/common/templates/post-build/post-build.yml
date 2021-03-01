@@ -128,7 +128,7 @@ stages:
     - job:
       displayName: Signing Validation
       dependsOn: setupMaestroVars
-      condition: eq( ${{ parameters.enableSigningValidation }}, 'true')
+      condition: and( eq( ${{ parameters.enableSigningValidation }}, 'true'), ne( variables['PostBuildSign'], 'true'))
       variables:
         - template: common-variables.yml
         - name: AzDOProjectName
