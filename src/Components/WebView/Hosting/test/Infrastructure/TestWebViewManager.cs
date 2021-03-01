@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
@@ -26,16 +24,15 @@ namespace Microsoft.AspNetCore.Components.WebView
             throw new NotImplementedException();
         }
 
-        public void ReceiveIpcMessage(string messageType, params object[] args)
+        internal void ReceiveIpcMessage(IpcCommon.IncomingMessageType messageType, params object[] args)
         {
             // Same serialization convention as used by blazor.webview.js
-            var serializedMessage = $"__bwv:{JsonSerializer.Serialize(new object[] { messageType }.Concat(args))}";
-            MessageReceived(serializedMessage);
+            MessageReceived(IpcCommon.Serialize(messageType, args));
         }
 
         public void ReceiveInitializationMessage()
         {
-            ReceiveIpcMessage("Initialize", "http://example/", "http://example/testStartUrl");
+            ReceiveIpcMessage(IpcCommon.IncomingMessageType.Initialize, "http://example/", "http://example/testStartUrl");
         }
     }
 }

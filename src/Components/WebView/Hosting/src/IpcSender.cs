@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.JSInterop;
@@ -41,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             {
                 renderBatchWriter.Write(in renderBatch);
             }
-            var message = Serialize("RenderBatch", Convert.ToBase64String(arrayBuilder.Buffer, 0, arrayBuilder.Count));
+            var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.RenderBatch, Convert.ToBase64String(arrayBuilder.Buffer, 0, arrayBuilder.Count));
             DispatchMessageWithErrorHandling(message);
         }
 
@@ -49,26 +48,26 @@ namespace Microsoft.AspNetCore.Components.WebView
         // It might trigger the WebView to change the location of the URL and cause a LocationUpdated event.
         public void Navigate(string uri, bool forceLoad)
         {
-            DispatchMessageWithErrorHandling(Serialize("Navigate", uri, forceLoad));
+            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Navigate, uri, forceLoad));
         }
 
         // TODO: Make these APIs async if we want the renderer to be able to deal with errors.
         // Called from Renderer to attach a new component ID to a given selector.
         public void AttachToDocument(int componentId, string selector)
         {
-            DispatchMessageWithErrorHandling(Serialize("AttachToDocument", componentId, selector));
+            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.AttachToDocument, componentId, selector));
         }
 
         // Called from the WebView to detach a root component from the document.
         public void DetachFromDocument(int componentId)
         {
-            DispatchMessageWithErrorHandling(Serialize("DetachFromDocument", componentId));
+            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.DetachFromDocument, componentId));
         }
 
         // Interop calls emitted by the JSRuntime
         public void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
         {
-            DispatchMessageWithErrorHandling(Serialize("DetachFromDocument", taskId, identifier, argsJson, resultType, targetInstanceId));
+            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.DetachFromDocument, taskId, identifier, argsJson, resultType, targetInstanceId));
         }
 
         // TODO: We need to think about this, the invocation result contains the triplet [callId, successOrError, resultOrError]
@@ -80,12 +79,13 @@ namespace Microsoft.AspNetCore.Components.WebView
         // side running in the browser can parse for processing.
         public void EndInvokeDotNet(string callId, bool success, string invocationResultOrError)
         {
-            DispatchMessageWithErrorHandling(Serialize(callId, success, invocationResultOrError));
+            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.EndInvokeDotNet, callId, success, invocationResultOrError));
         }
 
         public void NotifyUnhandledException(Exception exception)
         {
-            // TODO: Handle errors
+            var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.NotifyUnhandledException, exception.StackTrace);
+            _dispatcher.InvokeAsync(() => _messageDispatcher(message));
         }
 
         private void DispatchMessageWithErrorHandling(string message)
@@ -108,12 +108,6 @@ namespace Microsoft.AspNetCore.Components.WebView
                     NotifyUnhandledException(ex);
                 }
             }
-        }
-
-        // TODO, avoid using params
-        private string Serialize(params object [] parameters)
-        {
-            return string.Join(':', parameters.Select(p => p.ToString()));
         }
     }
 }

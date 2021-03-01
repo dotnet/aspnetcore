@@ -1,6 +1,4 @@
 using System;
-using System.Globalization;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop.Infrastructure;
@@ -24,7 +22,6 @@ namespace Microsoft.AspNetCore.Components.WebView
     // It receives messages on OnMessageReceived, interprets the payload and dispatches them to the appropriate method
     internal class IpcReceiver
     {
-        private const string _ipcMessagePrefix = "__bwv:";
         private readonly WebViewManager _manager;
 
         public IpcReceiver(WebViewManager manager)
@@ -34,56 +31,44 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         public async Task OnMessageReceivedAsync(PageContext pageContext, string message)
         {
-            // We don't want to get confused by unrelated messages that the developer is sending
-            // over the same webview IPC channel, so ignore anything else
-            if (message == null || !message.StartsWith(_ipcMessagePrefix, StringComparison.Ordinal))
+            // Ignore other messages as they may be unrelated to Blazor WebView
+            if (IpcCommon.TryDeserializeIncoming(message, out var messageType, out var args))
             {
-                return;
+                if (messageType == IpcCommon.IncomingMessageType.Initialize)
+                {
+                    _manager.AttachToPage(args[0].GetString(), args[1].GetString());
+                    return;
+                }
+
+                // For any other message, you have to have a page attached already
+                if (pageContext == null)
+                {
+                    // TODO: Should we just ignore these messages? Is there any way their delivery
+                    // might be delayed until after a page has detached?
+                    throw new InvalidOperationException("Cannot receive IPC messages when no page is attached");
+                }
+
+                switch (messageType)
+                {
+                    case IpcCommon.IncomingMessageType.BeginInvokeDotNet:
+                        BeginInvokeDotNet(pageContext, args[0].GetString(), args[1].GetString(), args[2].GetString(), args[3].GetInt64(), args[4].GetString());
+                        break;
+                    case IpcCommon.IncomingMessageType.EndInvokeJS:
+                        EndInvokeJS(pageContext, args[0].GetInt64(), args[1].GetBoolean(), args[2].GetString());
+                        break;
+                    case IpcCommon.IncomingMessageType.DispatchBrowserEvent:
+                        await DispatchBrowserEventAsync(pageContext, args[0].GetString(), args[1].GetString());
+                        break;
+                    case IpcCommon.IncomingMessageType.OnRenderCompleted:
+                        OnRenderCompleted(pageContext, args[0].GetInt64(), args[1].GetString());
+                        break;
+                    case IpcCommon.IncomingMessageType.OnLocationChanged:
+                        OnLocationChanged(pageContext, args[0].GetString(), args[1].GetBoolean());
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unknown message type '{messageType}'.");
+                }
             }
-
-            var payload = DeserializeIpcMessage(message);
-            var messageType = payload[0].GetString();
-
-            if (string.Equals(messageType, "Initialize", StringComparison.Ordinal))
-            {
-                _manager.AttachToPage(payload[1].GetString(), payload[2].GetString());
-                return;
-            }
-
-            // For any other message, you have to have a page attached already
-            if (pageContext == null)
-            {
-                // TODO: Should we just ignore these messages? Is there any way their delivery
-                // might be delayed until after a page has detached?
-                throw new InvalidOperationException("Cannot receive IPC messages when no page is attached");
-            }
-
-            switch (messageType)
-            {
-                case "BeginInvokeDotNet":
-                    BeginInvokeDotNet(pageContext, payload[1].GetString(), payload[2].GetString(), payload[3].GetString(), payload[4].GetInt64(), payload[5].GetString());
-                    break;
-                case "EndInvokeJS":
-                    EndInvokeJS(pageContext, payload[1].GetInt64(), payload[2].GetBoolean(), payload[3].GetString());
-                    break;
-                case "DispatchBrowserEvent":
-                    await DispatchBrowserEventAsync(pageContext, payload[1].GetString(), payload[2].GetString());
-                    break;
-                case "OnRenderCompleted":
-                    OnRenderCompleted(pageContext, payload[1].GetInt64(), payload[2].GetString());
-                    break;
-                case "OnLocationChanged":
-                    OnLocationChanged(pageContext, payload[1].GetString(), payload[2].GetBoolean());
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown message type '{messageType}'.");
-            }
-        }
-
-        private static JsonElement[] DeserializeIpcMessage(string message)
-        {
-            var messageAfterPrefix = message.AsSpan(_ipcMessagePrefix.Length);
-            return (JsonElement[])JsonSerializer.Deserialize(messageAfterPrefix, typeof(JsonElement[]), JsonSerializerOptionsProvider.Options);
         }
 
         private void BeginInvokeDotNet(PageContext pageContext, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
