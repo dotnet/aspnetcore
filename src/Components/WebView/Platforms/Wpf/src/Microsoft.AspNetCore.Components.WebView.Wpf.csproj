@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)-windows</TargetFramework>
     <Description>Build WPF applications with Blazor and WebView2.</Description>
     <IsShippingPackage>false</IsShippingPackage>
+    <UseWPF>true</UseWPF>
     <!-- TODO: REMOVE -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
