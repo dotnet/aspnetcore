@@ -24,33 +24,30 @@ namespace Microsoft.AspNetCore.Components.WebView
             };
 
             // Act
-            webViewManager.IncomingMessage("Initialize", "http://example/", "http://example/testStartUrl");
+            webViewManager.ReceiveInitializationMessage();
 
             // Assert
             Assert.True(didTriggerEvent);
         }
 
-        /*
         [Fact]
         public void CanRenderRootComponent()
         {
             // Arrange
             var provider = new ServiceCollection().AddTestBlazorWebView().BuildServiceProvider();
             var webViewManager = new TestWebViewManager(provider);
-            var messages = new List<string>();
-            webViewManager.SetUrls("https://localhost:5001/", "https://localhost:5001/");
-            webViewManager.OnSentMessage += (message) => messages.Add(message);
+            webViewManager.OnPageAttached += (sender, eventArgs) =>
+                webViewManager.AddRootComponent(typeof(MyComponent), "#app", ParameterView.Empty);
+
             // Act
-            webViewManager.Start();
-            webViewManager.AddRootComponent(typeof(MyComponent), "#app", default);
+            Assert.Empty(webViewManager.SentIpcMessages);
+            webViewManager.ReceiveInitializationMessage();
 
             // Assert
-            Assert.NotNull(webViewManager.GetCurrentScope());
-            Assert.Collection(messages,
-                (m) => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
-                (m) => AssertHelpers.IsRenderBatch(m));
+            Assert.Collection(webViewManager.SentIpcMessages,
+                m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
+                m => AssertHelpers.IsRenderBatch(m));
         }
-        */
 
         private class MyComponent : IComponent
         {
