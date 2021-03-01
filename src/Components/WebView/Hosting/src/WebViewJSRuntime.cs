@@ -6,17 +6,17 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     internal class WebViewJSRuntime : JSRuntime
     {
-        private readonly WebViewClient _host;
+        private readonly IpcSender _ipcSender;
 
-        public WebViewJSRuntime(WebViewClient host)
+        public WebViewJSRuntime(IpcSender host)
         {
             JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(new WebElementReferenceContext(this)));
-            _host = host;
+            _ipcSender = host;
         }
 
         protected override void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
         {
-            _host.BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
+            _ipcSender.BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
         }
 
         protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             void EndInvokeDotNetCore(string callId, bool success, object resultOrError)
             {
-                _host.EndInvokeDotNet(callId, success, JsonSerializer.Serialize(resultOrError, JsonSerializerOptions));
+                _ipcSender.EndInvokeDotNet(callId, success, JsonSerializer.Serialize(resultOrError, JsonSerializerOptions));
             }
         }
     }

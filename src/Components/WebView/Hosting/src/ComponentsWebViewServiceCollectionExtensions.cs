@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Components.WebView
             services.TryAddScoped<INavigationInterception, WebViewNavigationInterception>();
             services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
             services.TryAddScoped<WebViewRenderer>();
-            services.TryAddScoped<WebViewClient>();
-            services.TryAddScoped<WebViewBrowserProxy>();
+            services.TryAddScoped<IpcSender>();
+            services.TryAddScoped<IpcReceiver>();
 
             return services;
         }

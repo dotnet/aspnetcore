@@ -10,29 +10,29 @@ namespace Microsoft.AspNetCore.Components.WebView
     {
         private readonly Dictionary<string, int> _componentIdBySelector = new();
         private readonly Dispatcher _dispatcher;
-        private readonly WebViewClient _host;
+        private readonly IpcSender _ipcSender;
 
         public WebViewRenderer(
             IServiceProvider serviceProvider,
             Dispatcher dispatcher,
-            WebViewClient host,
+            IpcSender ipcSender,
             ILoggerFactory loggerFactory) :
             base(serviceProvider, loggerFactory)
         {
             _dispatcher = dispatcher;
-            _host = host;
+            _ipcSender = ipcSender;
         }
 
         public override Dispatcher Dispatcher => _dispatcher;
 
         protected override void HandleException(Exception exception)
         {
-            _host.NotifyUnhandledException(exception);
+            _ipcSender.NotifyUnhandledException(exception);
         }
 
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
         {
-            return _host.ApplyRenderBatch(renderBatch);
+            return _ipcSender.ApplyRenderBatch(renderBatch);
         }
 
         public async Task AddRootComponentAsync(Type componentType, string selector, ParameterView parameters)
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             var componentId = AssignRootComponentId(component);
 
             _componentIdBySelector.Add(selector, componentId);
-            _host.AttachToDocument(componentId, selector);
+            _ipcSender.AttachToDocument(componentId, selector);
 
             await RenderRootComponentAsync(componentId, parameters);
         }
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             // TODO: The renderer needs an API to do trigger the disposal of the component tree.
             await Task.CompletedTask;
 
-            _host.DetachFromDocument(componentId);
+            _ipcSender.DetachFromDocument(componentId);
         }
     }
 }

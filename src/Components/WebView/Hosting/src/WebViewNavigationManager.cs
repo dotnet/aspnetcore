@@ -2,11 +2,11 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     internal class WebViewNavigationManager : NavigationManager
     {
-        private readonly WebViewClient _host;
+        private readonly IpcSender _ipcSender;
 
-        public WebViewNavigationManager(WebViewClient host)
+        public WebViewNavigationManager(IpcSender ipcSender)
         {
-            _host = host;
+            _ipcSender = ipcSender;
         }
 
         public void Init(string baseUrl, string initialUrl)
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
-            _host.Navigate(uri, forceLoad);
+            _ipcSender.Navigate(uri, forceLoad);
         }
     }
 }

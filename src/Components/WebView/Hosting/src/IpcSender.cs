@@ -23,12 +23,13 @@ namespace Microsoft.AspNetCore.Components.WebView
 
     // Handles comunication between the component abstractions (Renderer, NavigationManager, JSInterop, etc.)
     // and the underlying transport channel
-    internal class WebViewClient
+    internal class IpcSender
     {
-        public WebViewClient(Dispatcher dispatcher)
+        public IpcSender(Dispatcher dispatcher)
         {
             _dispatcher = dispatcher;
         }
+
         public Action<string> MessageDispatcher { get; set; }
 
         private Queue<TaskCompletionSource> _pendingAcks = new Queue<TaskCompletionSource>();

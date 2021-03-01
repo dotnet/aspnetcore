@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         private Dispatcher _dispatcher;
         private WebViewRenderer _renderer;
-        private WebViewBrowserProxy _webViewBrowser;
-        private WebViewClient _webViewHost;
+        private IpcReceiver _ipcReceiver;
+        private IpcSender _ipcSender;
         private Queue<Task> _componentChangeTasks = new();
 
         public WebViewManager(IServiceProvider provider)
@@ -91,14 +91,14 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             _dispatcher = services.GetService<Dispatcher>();
             _renderer = services.GetRequiredService<WebViewRenderer>();
-            _webViewBrowser = services.GetRequiredService<WebViewBrowserProxy>();
-            _webViewHost = services.GetRequiredService<WebViewClient>();
-            _webViewHost.MessageDispatcher = SendMessage;
+            _ipcReceiver = services.GetRequiredService<IpcReceiver>();
+            _ipcSender = services.GetRequiredService<IpcSender>();
+            _ipcSender.MessageDispatcher = SendMessage;
 
             _started = true;
         }
 
-        protected void MessageReceived(string message) => _webViewBrowser.OnMessageReceived(message);
+        protected void MessageReceived(string message) => _ipcReceiver.OnMessageReceived(message);
 
         protected abstract void SendMessage(string message);
 

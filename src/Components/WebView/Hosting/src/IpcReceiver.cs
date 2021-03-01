@@ -22,20 +22,20 @@ namespace Microsoft.AspNetCore.Components.WebView
 
     // This class is a "Proxy" or "front-controller" for the incoming messages from the Browser via the transport channel.
     // It receives messages on OnMessageReceived, interprets the payload and dispatches them to the appropriate method
-    internal class WebViewBrowserProxy
+    internal class IpcReceiver
     {
         private readonly Dispatcher _dispatcher;
         private readonly JSRuntime _jsRuntime;
         private readonly WebViewRenderer _renderer;
         private readonly WebViewNavigationManager _navigationManager;
-        private readonly WebViewClient _webViewHost;
+        private readonly IpcSender _webViewHost;
 
-        public WebViewBrowserProxy(
+        public IpcReceiver(
             Dispatcher dispatcher,
             IJSRuntime jsRuntime,
             WebViewRenderer renderer,
             NavigationManager navigationManager,
-            WebViewClient webViewHost)
+            IpcSender webViewHost)
         {
             _dispatcher = dispatcher;
             _jsRuntime = (JSRuntime)jsRuntime;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         }
 
         // TODO: Proper error handling, reporting etc.
-        internal void OnMessageReceived(string message)
+        public void OnMessageReceived(string message)
         {
             var (type, args) = Deserialize(message);
             switch (type)
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             };
         }
 
-        public async Task BeginInvokeDotNet(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        private async Task BeginInvokeDotNet(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
-        public void EndInvokeJS(long asyncHandle, bool succeeded, string argumentsOrError)
+        private void EndInvokeJS(long asyncHandle, bool succeeded, string argumentsOrError)
         {
             if (succeeded)
             {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
-        public void DispatchBrowserEvent(string eventDescriptor, string eventArgs)
+        private void DispatchBrowserEvent(string eventDescriptor, string eventArgs)
         {
             WebEventData webEventData = null;
             try
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
-        public async ValueTask OnRenderCompleted(string errorMessageOrNull)
+        private async ValueTask OnRenderCompleted(string errorMessageOrNull)
         {
             try
             {
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
-        public async ValueTask OnLocationChanged(string uri, bool intercepted)
+        private async ValueTask OnLocationChanged(string uri, bool intercepted)
         {
             try
             {
