@@ -6,6 +6,11 @@ using Microsoft.Web.WebView2.Wpf;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
+    // TODO: If we want to make this shareable across WPF and WinForms, we'll need to do so on a shared-source
+    // basis. There can't be a single class for both, since the WebView2 classes have different identities on
+    // the two platforms. But we could share the sources and use #if pragmas for any small variations that
+    // exist between the two.
+
     internal class WebView2WebViewManager : WebViewManager
     {
         // Using an IP address means that WebView2 doesn't wait for any DNS resolution,
