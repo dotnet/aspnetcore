@@ -1,116 +1,127 @@
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
-    // This class is a coordinator for a given WebView.
-    // Handles the setup of the specific webview interop transport bus, and other browser concerns like
-    // handling events for serving content, dealing with page refreshes, browser crashes, etc.
-    public abstract class WebViewManager
+    /// <summary>
+    /// Manages activities within a web view that hosts Blazor components. Platform authors
+    /// should subclass this to wire up the abstract and protected methods to the APIs of
+    /// the platform's web view.
+    /// </summary>
+    public abstract class WebViewManager : IDisposable
     {
-        private bool _started;
-
+        // These services are not DI services, because their lifetime isn't limited to a single
+        // per-page-load scope. Instead, their lifetime matches the webview itself.
         private readonly IServiceProvider _provider;
         private readonly Dispatcher _dispatcher;
         private readonly IpcSender _ipcSender;
+        private readonly IpcReceiver _ipcReceiver;
 
-        private readonly List<RootComponent> _registeredComponents = new();
-
-        // Per-page items (todo: consider factoring out into a single context object)
-        private IServiceScope _scope;
-        private WebViewRenderer _renderer;
-        private IpcReceiver _ipcReceiver;
-        private Queue<Task> _componentChangeTasks = new();
+        // Each time a web page connects, we establish a new per-page context
+        private PageContext _currentPageContext;
 
         public WebViewManager(IServiceProvider provider, Dispatcher dispatcher)
         {
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             _ipcSender = new IpcSender(_dispatcher, SendMessage);
+            _ipcReceiver = new IpcReceiver(this);
         }
 
-        protected IServiceProvider Provider => _provider;
+        /// <summary>
+        /// Instructs the web view to navigate to the specified URL, bypassing any
+        /// client-side routing.
+        /// </summary>
+        /// <param name="absoluteUrl">The URL</param>
+        public abstract void Navigate(string absoluteUrl);
 
-        protected string BaseUrl { get; set; }
-
-        protected string StartUrl { get; set; }
-
-        // For testing purposes only
-        internal IServiceScope GetCurrentScope() => _scope;
-
-        // This API is synchronous because bindings are synchronous in XAML, so we'll have to deal
-        // with errors separately.
-        public void AddComponent(Type componentType, string selector, ParameterView parameters)
-        {
-            if (!_started)
-            {
-                throw new InvalidOperationException("Not initialized.");
-            }
-
-            _registeredComponents.Add(new RootComponent(componentType, selector));
-            _componentChangeTasks.Enqueue(RenderRootComponent(selector));
-
-            async Task RenderRootComponent(string selector)
-            {
-                await _dispatcher.InvokeAsync(async () =>
-                {
-                    await _renderer.AddRootComponentAsync(componentType, selector, parameters);
-                });
-            }
-        }
-
-        public void RemoveRootComponent(string selector)
-        {
-            for (var i = 0; i < _registeredComponents.Count; i++)
-            {
-                var registration = _registeredComponents[i];
-                if (registration.Selector == selector)
-                {
-                    _registeredComponents.RemoveAt(i);
-                    _componentChangeTasks.Enqueue(RemoveRootComponent(selector));
-                    async Task RemoveRootComponent(string selector)
-                    {
-                        await _dispatcher.InvokeAsync(async () =>
-                        {
-                            await _renderer.RemoveRootComponentAsync(selector);
-                        });
-                    }
-                }
-            }
-        }
-
-        public virtual void Start()
-        {
-            if (_started)
-            {
-                throw new InvalidOperationException("Already initialized.");
-            }
-
-            _scope = Provider.CreateScope();
-            var services = _scope.ServiceProvider;
-
-            var webViewNavigationManager = (WebViewNavigationManager)services.GetRequiredService<NavigationManager>();
-            webViewNavigationManager.AttachToWebView(_ipcSender, BaseUrl, StartUrl);
-
-            var jsRuntime = (WebViewJSRuntime)services.GetRequiredService<IJSRuntime>();
-            jsRuntime.AttachToWebView(_ipcSender);
-
-            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
-
-            _renderer = new WebViewRenderer(services, _dispatcher, _ipcSender, loggerFactory);
-            _ipcReceiver = new IpcReceiver(_dispatcher, jsRuntime, _renderer, webViewNavigationManager, _ipcSender);
-
-            _started = true;
-        }
-
-        protected void MessageReceived(string message) => _ipcReceiver.OnMessageReceived(message);
-
+        /// <summary>
+        /// Sends a message to JavaScript code running in the attached web view. This must
+        /// be forwarded to the Blazor JavaScript code.
+        /// </summary>
+        /// <param name="message">The message.</param>
         protected abstract void SendMessage(string message);
 
-        private record RootComponent(Type ComponentType, string Selector);
+        /// <summary>
+        /// Adds a root component to the attached page.
+        /// </summary>
+        /// <param name="componentType">The type of the root component. This must implement <see cref="IComponent"/>.</param>
+        /// <param name="selector">The CSS selector describing where in the page the component should be placed.</param>
+        /// <param name="parameters">Parameters for the component.</param>
+        public void AddRootComponent(Type componentType, string selector, ParameterView parameters)
+        {
+            _ = _dispatcher.InvokeAsync(async () =>
+            {
+                // TODO: Make sure any exceptions get surfaced
+
+                if (_currentPageContext == null)
+                {
+                    throw new InvalidOperationException("Cannot add components when no page is attached");
+                }
+
+                await _currentPageContext.Renderer.AddRootComponentAsync(componentType, selector, parameters);
+            });
+        }
+
+        /// <summary>
+        /// Removes a previously-attached root component from the current page.
+        /// </summary>
+        /// <param name="selector">The CSS selector describing where in the page the component was placed. This must exactly match the selector provided on an earlier call to <see cref="AddRootComponent(Type, string, ParameterView)"/>.</param>
+        public void RemoveRootComponent(string selector)
+        {
+            _ = _dispatcher.InvokeAsync(async () =>
+            {
+                // TODO: Make sure any exceptions get surfaced
+
+                if (_currentPageContext == null)
+                {
+                    throw new InvalidOperationException("Cannot remove components when no page is attached");
+                }
+
+                await _currentPageContext.Renderer.RemoveRootComponentAsync(selector);
+            });
+        }
+
+        /// <summary>
+        /// Notifies the <see cref="WebViewManager"/> about a message from JavaScript running within the web view.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        protected void MessageReceived(string message)
+        {
+            _ = _dispatcher.InvokeAsync(async () =>
+            {
+                // TODO: Verify this produces the correct exception-surfacing behaviors.
+                // For example, JS interop exceptions should flow back into JS, whereas
+                // renderer exceptions should be fatal.
+                try
+                {
+                    await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message);
+                }
+                catch (Exception ex)
+                {
+                    _ipcSender.NotifyUnhandledException(ex);
+                    throw;
+                }
+            });
+        }
+
+        internal void AttachToPage(string baseUrl, string startUrl)
+        {
+            // If there was some previous attached page, dispose all its resources. TODO: Are we happy
+            // with this pattern? The alternative would be requiring the platform author to notify us
+            // when the webview is navigating away so we could dispose more eagerly then.
+            _currentPageContext?.Dispose();
+
+            var serviceScope = _provider.CreateScope();
+            _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, baseUrl, startUrl);
+        }
+
+        /// <summary>
+        /// Disposes the <see cref="WebViewManager"/>.
+        /// </summary>
+        public void Dispose()
+        {
+            _currentPageContext?.Dispose();
+        }
     }
 }

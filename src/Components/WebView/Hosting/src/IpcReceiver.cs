@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 
 // Sync vs Async APIs for this.
@@ -24,49 +23,53 @@ namespace Microsoft.AspNetCore.Components.WebView
     // It receives messages on OnMessageReceived, interprets the payload and dispatches them to the appropriate method
     internal class IpcReceiver
     {
-        private readonly Dispatcher _dispatcher;
-        private readonly JSRuntime _jsRuntime;
-        private readonly WebViewRenderer _renderer;
-        private readonly WebViewNavigationManager _navigationManager;
-        private readonly IpcSender _ipcSender;
+        private readonly WebViewManager _manager;
 
-        public IpcReceiver(
-            Dispatcher dispatcher,
-            IJSRuntime jsRuntime,
-            WebViewRenderer renderer,
-            NavigationManager navigationManager,
-            IpcSender ipcSender)
+        public IpcReceiver(WebViewManager manager)
         {
-            _dispatcher = dispatcher;
-            _jsRuntime = (JSRuntime)jsRuntime;
-            _renderer = renderer;
-            _navigationManager = (WebViewNavigationManager)navigationManager;
-            _ipcSender = ipcSender;
+            _manager = manager;
         }
 
-        // TODO: Proper error handling, reporting etc.
-        public void OnMessageReceived(string message)
+        public async Task OnMessageReceivedAsync(PageContext pageContext, string message)
         {
+            // TODO: Don't assume that all possible messages are for us. Have some kind of
+            // magic prefix to distinguish from any other use of web messages unrelated to us.
+
             var (type, args) = Deserialize(message);
+
+            if (string.Equals(type, "Initialize", StringComparison.Ordinal))
+            {
+                _manager.AttachToPage((string)args[0], (string)args[1]);
+                return;
+            }
+
+            // For any other message, you have to have a page attached already
+            if (pageContext == null)
+            {
+                // TODO: Should we just ignore these messages? Is there any way their delivery
+                // might be delayed until after a page has detached?
+                throw new InvalidOperationException("Cannot receive IPC messages when no page is attached");
+            }
+
             switch (type)
             {
-                case "Initialize":
-                    break;
                 case "BeginInvokeDotNet":
-                    _ = BeginInvokeDotNet((string)args[0], (string)args[1], (string)args[2], (long)args[3], (string)args[4]);
+                    BeginInvokeDotNet(pageContext, (string)args[0], (string)args[1], (string)args[2], (long)args[3], (string)args[4]);
                     break;
                 case "EndInvokeJS":
-                    EndInvokeJS((long)args[0], (bool)args[1], (string)args[2]);
+                    EndInvokeJS(pageContext, (long)args[0], (bool)args[1], (string)args[2]);
                     break;
                 case "DispatchBrowserEvent":
-                    DispatchBrowserEvent((string)args[0], (string)args[1]);
+                    await DispatchBrowserEventAsync(pageContext, (string)args[0], (string)args[1]);
                     break;
                 case "OnRenderCompleted":
+                    OnRenderCompleted(pageContext, (long)args[0], (string)args[1]);
                     break;
                 case "OnLocationChanged":
+                    OnLocationChanged(pageContext, (string)args[0], (bool)args[1]);
                     break;
                 default:
-                    throw new InvalidOperationException("Unknown message.");
+                    throw new InvalidOperationException($"Unknown message type '{type}'.");
             }
         }
 
@@ -86,107 +89,49 @@ namespace Microsoft.AspNetCore.Components.WebView
             };
         }
 
-        private async Task BeginInvokeDotNet(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        private void BeginInvokeDotNet(PageContext pageContext, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
-            try
-            {
-                await _dispatcher.InvokeAsync(() => DotNetDispatcher.BeginInvokeDotNet(
-                    _jsRuntime,
-                    new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId),
-                    argsJson));
-            }
-            catch (Exception ex)
-            {
-                _ipcSender.NotifyUnhandledException(ex);
-                throw;
-            }
+            DotNetDispatcher.BeginInvokeDotNet(
+                pageContext.JSRuntime,
+                new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId),
+                argsJson);
         }
 
-        private void EndInvokeJS(long asyncHandle, bool succeeded, string argumentsOrError)
+        private void EndInvokeJS(PageContext pageContext, long asyncHandle, bool succeeded, string argumentsOrError)
         {
             if (succeeded)
             {
-                // EndInvokeJS doesn't throw
-                _ = _dispatcher.InvokeAsync(() => DotNetDispatcher.EndInvokeJS(_jsRuntime, argumentsOrError));
+                DotNetDispatcher.EndInvokeJS(pageContext.JSRuntime, argumentsOrError);
             }
             else
             {
-                _ipcSender.NotifyUnhandledException(new InvalidOperationException(argumentsOrError));
+                throw new InvalidOperationException(argumentsOrError);
             }
         }
 
-        private void DispatchBrowserEvent(string eventDescriptor, string eventArgs)
+        private Task DispatchBrowserEventAsync(PageContext pageContext, string eventDescriptor, string eventArgs)
         {
-            WebEventData webEventData = null;
-            try
-            {
-                webEventData = WebEventData.Parse(_renderer, eventDescriptor, eventArgs);
-            }
-            catch (Exception ex)
-            {
-                _ipcSender.NotifyUnhandledException(ex);
-                throw;
-            }
-            _ = DispatchWithErrorHandling();
-
-            async Task DispatchWithErrorHandling()
-            {
-                try
-                {
-                    await _dispatcher.InvokeAsync(() =>
-                    {
-                        return _renderer.DispatchEventAsync(
-                            webEventData.EventHandlerId,
-                            webEventData.EventFieldInfo,
-                            webEventData.EventArgs);
-                    });
-                }
-                catch (Exception ex)
-                {
-                    _ipcSender.NotifyUnhandledException(ex);
-                }
-            }
+            var renderer = pageContext.Renderer;
+            var webEventData = WebEventData.Parse(renderer, eventDescriptor, eventArgs);
+            return renderer.DispatchEventAsync(
+                webEventData.EventHandlerId,
+                webEventData.EventFieldInfo,
+                webEventData.EventArgs);
         }
 
-        private async ValueTask OnRenderCompleted(string errorMessageOrNull)
+        private void OnRenderCompleted(PageContext pageContext, long batchId, string errorMessageOrNull)
         {
-            try
+            if (errorMessageOrNull != null)
             {
-                await _dispatcher.InvokeAsync(() => _ipcSender.RenderCompleted(errorMessageOrNull));
+                throw new InvalidOperationException(errorMessageOrNull);
             }
-            catch (Exception e)
-            {
-                _ipcSender.NotifyUnhandledException(e);
-            }
+
+            pageContext.Renderer.NotifyRenderCompleted(batchId);
         }
 
-        private async ValueTask OnLocationChanged(string uri, bool intercepted)
+        private void OnLocationChanged(PageContext pageContext, string uri, bool intercepted)
         {
-            try
-            {
-                await _dispatcher.InvokeAsync(() =>
-                {
-                    _navigationManager.LocationUpdated(uri, intercepted);
-                });
-            }
-
-            // It's up to the NavigationManager implementation to validate the URI.
-            //
-            // Note that it's also possible that setting the URI could cause a failure in code that listens
-            // to NavigationManager.LocationChanged.
-            //
-            // In either case, a well-behaved client will not send invalid URIs, and we don't really
-            // want to continue processing with the circuit if setting the URI failed inside application
-            // code. The safest thing to do is consider it a critical failure since URI is global state,
-            // and a failure means that an update to global state was partially applied.
-            catch (LocationChangeException nex)
-            {
-                _ipcSender.NotifyUnhandledException(nex);
-            }
-            catch (Exception ex)
-            {
-                _ipcSender.NotifyUnhandledException(ex);
-            }
+            pageContext.NavigationManager.LocationUpdated(uri, intercepted);
         }
     }
 }

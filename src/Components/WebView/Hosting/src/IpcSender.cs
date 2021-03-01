@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -27,7 +26,6 @@ namespace Microsoft.AspNetCore.Components.WebView
     {
         private readonly Dispatcher _dispatcher;
         private readonly Action<string> _messageDispatcher;
-        private Queue<TaskCompletionSource> _pendingAcks = new Queue<TaskCompletionSource>();
 
         public IpcSender(Dispatcher dispatcher, Action<string> messageDispatcher)
         {
@@ -35,23 +33,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             _messageDispatcher = messageDispatcher;
         }
 
-        public Task ApplyRenderBatch(RenderBatch renderBatch)
-        {
-            var tcs = new TaskCompletionSource();
-            _pendingAcks.Enqueue(tcs);
-            ApplyRenderBatchCore(renderBatch);
-            return tcs.Task;
-        }
-
-        public void RenderCompleted(string errorMessageOrNull)
-        {
-            if (errorMessageOrNull == null)
-            {
-                _pendingAcks.Dequeue().SetResult();
-            }
-        }
-
-        public void ApplyRenderBatchCore(RenderBatch renderBatch)
+        public void ApplyRenderBatch(RenderBatch renderBatch)
         {
             var arrayBuilder = new ArrayBuilder<byte>(2048);
             using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);

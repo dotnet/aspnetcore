@@ -8,9 +8,11 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     internal class WebViewRenderer : Renderer
     {
+        private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
         private readonly Dictionary<string, int> _componentIdBySelector = new();
         private readonly Dispatcher _dispatcher;
         private readonly IpcSender _ipcSender;
+        private long nextRenderBatchId = 1;
 
         public WebViewRenderer(
             IServiceProvider serviceProvider,
@@ -32,7 +34,16 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
         {
-            return _ipcSender.ApplyRenderBatch(renderBatch);
+            var batchId = nextRenderBatchId++;
+            var tcs = new TaskCompletionSource();
+            _unacknowledgedRenderBatches.Enqueue(new UnacknowledgedRenderBatch
+            {
+                BatchId = batchId,
+                CompletionSource = tcs,
+            });
+
+            _ipcSender.ApplyRenderBatch(renderBatch);
+            return tcs.Task;
         }
 
         public async Task AddRootComponentAsync(Type componentType, string selector, ParameterView parameters)
@@ -62,6 +73,23 @@ namespace Microsoft.AspNetCore.Components.WebView
             await Task.CompletedTask;
 
             _ipcSender.DetachFromDocument(componentId);
+        }
+
+        public void NotifyRenderCompleted(long batchId)
+        {
+            var nextUnacknowledgedBatch = _unacknowledgedRenderBatches.Dequeue();
+            if (nextUnacknowledgedBatch.BatchId != batchId)
+            {
+                throw new InvalidOperationException($"Received unexpected acknowledgement for render batch {batchId} (next batch should be {nextUnacknowledgedBatch.BatchId})");
+            }
+
+            nextUnacknowledgedBatch.CompletionSource.SetResult();
+        }
+
+        record UnacknowledgedRenderBatch
+        {
+            public long BatchId { get; init; }
+            public TaskCompletionSource CompletionSource { get; init; }
         }
     }
 }
