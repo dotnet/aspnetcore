@@ -35,6 +35,14 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
+            var targetAssembly = context.Items.GetTargetAssembly();
+            if (targetAssembly != null && !SymbolEqualityComparer.Default.Equals(targetAssembly, renderTreeBuilder.ContainingAssembly))
+            {
+                // If a target assembly is provided, only provide splat tag helpers if we're inspecting the Microsoft.AspNetCore.Components assembly
+                // This allows the the descriptor provider to be repeatedly called with different values of GetTargetAssembly without producing duplicates.
+                return;
+            }
+
             context.Results.Add(CreateSplatTagHelper());
         }
 

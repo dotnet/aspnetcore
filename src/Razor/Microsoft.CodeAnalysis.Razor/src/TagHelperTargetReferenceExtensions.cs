@@ -11,19 +11,19 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         private static readonly object TargetAssemblyKey = new object();
 
-        public static MetadataReference? GetTargetMetadataReference(this ItemCollection items)
+        public static IAssemblySymbol? GetTargetAssembly(this ItemCollection items)
         {
-            if (items.Count == 0 || items[TargetAssemblyKey] is not MetadataReference reference)
+            if (items.Count == 0 || items[TargetAssemblyKey] is not IAssemblySymbol assembly)
             {
                 return null;
             }
 
-            return reference;
+            return assembly;
         }
 
-        public static void SetTargetMetadataReference(this ItemCollection items, MetadataReference reference)
+        public static void SetTargetAssembly(this ItemCollection items, IAssemblySymbol assembly)
         {
-            items[TargetAssemblyKey] = reference;
+            items[TargetAssemblyKey] = assembly;
         }
     }
 }

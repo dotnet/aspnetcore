@@ -34,6 +34,14 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
+            var targetAssembly = context.Items.GetTargetAssembly();
+            if (targetAssembly != null && !SymbolEqualityComparer.Default.Equals(targetAssembly, eventHandlerAttribute.ContainingAssembly))
+            {
+                // If a target assembly is provided, only provide event handler tag helpers if we're inspecting the Microsoft.AspNetCore.Components assembly
+                // This allows the the descriptor provider to be repeatedly called with different values of GetTargetAssembly without producing duplicates.
+                return;
+            }
+
             var eventHandlerData = GetEventHandlerData(context, compilation, eventHandlerAttribute);
 
             foreach (var tagHelper in CreateEventHandlerTagHelpers(eventHandlerData))
@@ -47,15 +55,10 @@ namespace Microsoft.CodeAnalysis.Razor
             var types = new List<INamedTypeSymbol>();
             var visitor = new EventHandlerDataVisitor(types);
 
-
-            var targetReference = context.Items.GetTargetMetadataReference();
-            if (targetReference is not null)
+            var targetAssembly = context.Items.GetTargetAssembly();
+            if (targetAssembly is not null)
             {
-                if (compilation.GetAssemblyOrModuleSymbol(targetReference) is IAssemblySymbol targetAssembly)
-                {
-                    visitor.Visit(targetAssembly.GlobalNamespace);
-                }
-
+                visitor.Visit(targetAssembly.GlobalNamespace);
             }
             else
             {
