@@ -9,6 +9,10 @@ namespace Microsoft.AspNetCore.Components.WebView
     /// <summary>
     /// Represents the services that are scoped to a single page load. Grouping them like this
     /// means we don't have to check that each of them are available individually.
+    ///
+    /// This has roughly the same role as a circuit in Blazor Server. One key difference is that,
+    /// for web views, the IPC channel is outside the page context, whereas in Blazor Servier,
+    /// the IPC channel is within the circuit.
     /// </summary>
     class PageContext : IDisposable
     {
