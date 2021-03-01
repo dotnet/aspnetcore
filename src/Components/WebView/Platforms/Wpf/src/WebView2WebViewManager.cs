@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         private readonly WebView2 _webview;
 
         public WebView2WebViewManager(WebView2 webview, IServiceProvider services)
-            : base(services, WpfDispatcher.Instance, "http://0.0.0.0")
+            : base(services, WpfDispatcher.Instance, new Uri("http://0.0.0.0"))
         {
             _webview = webview ?? throw new ArgumentNullException(nameof(webview));
         }
 
-        public override void Navigate(string url)
-            => _webview.Source = new Uri(url);
+        protected override void LoadUri(Uri absoluteUri)
+            => _webview.Source = absoluteUri;
 
         protected override void SendMessage(string message)
             => _webview.CoreWebView2.PostWebMessageAsString(message);

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         private readonly Dispatcher _dispatcher;
         private readonly IpcSender _ipcSender;
         private readonly IpcReceiver _ipcReceiver;
-        private readonly string _appBaseUrl;
+        private readonly Uri _appBaseUri;
 
         // Each time a web page connects, we establish a new per-page context
         private PageContext _currentPageContext;
@@ -26,17 +26,12 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// </summary>
         /// <param name="provider">The <see cref="IServiceProvider"/> for the application.</param>
         /// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
-        /// <param name="appBaseUrl">The base URL for the application. Since this is a webview, the base URL is typically on a private origin such as http://0.0.0.0/ or app://example/</param>
-        public WebViewManager(IServiceProvider provider, Dispatcher dispatcher, string appBaseUrl)
+        /// <param name="appBaseUri">The base URI for the application. Since this is a webview, the base URI is typically on a private origin such as http://0.0.0.0/ or app://example/</param>
+        public WebViewManager(IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri)
         {
-            if (string.IsNullOrEmpty(appBaseUrl))
-            {
-                throw new ArgumentException($"'{nameof(appBaseUrl)}' cannot be null or empty.", nameof(appBaseUrl));
-            }
-
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-            _appBaseUrl = appBaseUrl;
+            _appBaseUri = appBaseUri ?? throw new ArgumentNullException(nameof(appBaseUri));
             _ipcSender = new IpcSender(_dispatcher, SendMessage);
             _ipcReceiver = new IpcReceiver(this);
         }
@@ -48,11 +43,11 @@ namespace Microsoft.AspNetCore.Components.WebView
         public event EventHandler OnPageAttached;
 
         /// <summary>
-        /// Instructs the web view to navigate to the specified URL, bypassing any
+        /// Instructs the web view to navigate to the specified location, bypassing any
         /// client-side routing.
         /// </summary>
-        /// <param name="url">The URL, which may be absolute or relative to the application root.</param>
-        public abstract void Navigate(string url);
+        /// <param name="absoluteUri">The absolute URI.</param>
+        protected abstract void LoadUri(Uri absoluteUri);
 
         /// <summary>
         /// Sends a message to JavaScript code running in the attached web view. This must
@@ -60,6 +55,14 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// </summary>
         /// <param name="message">The message.</param>
         protected abstract void SendMessage(string message);
+
+        /// <summary>
+        /// Instructs the web view to navigate to the specified location, bypassing any
+        /// client-side routing.
+        /// </summary>
+        /// <param name="url">The URL, which may be absolute or relative to the application root.</param>
+        public void Navigate(string url)
+            => LoadUri(new Uri(_appBaseUri, url));
 
         /// <summary>
         /// Adds a root component to the attached page.
@@ -105,10 +108,9 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// Notifies the <see cref="WebViewManager"/> about a message from JavaScript running within the web view.
         /// </summary>
         /// <param name="message">The message.</param>
-        protected void MessageReceived(string sourceUrl, string message)
+        protected void MessageReceived(Uri sourceUri, string message)
         {
-            // TODO: Do we need to parse the URLs more robustly?
-            if (!sourceUrl.StartsWith(_appBaseUrl, StringComparison.Ordinal))
+            if (!_appBaseUri.IsBaseOf(sourceUri))
             {
                 // It's important that we ignore messages from other origins, otherwise if the webview
                 // navigates to a remote location, it could send commands that execute locally

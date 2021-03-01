@@ -5,11 +5,11 @@ namespace Microsoft.AspNetCore.Components.WebView
 {
     public class TestWebViewManager : WebViewManager
     {
-        private const string AppBaseUrl = "app://testhost/";
+        private static Uri AppBaseUri = new Uri("app://testhost/");
         private List<string> _sentIpcMessages = new();
 
         public TestWebViewManager(IServiceProvider provider)
-            : base(provider, Dispatcher.CreateDefault(), AppBaseUrl)
+            : base(provider, Dispatcher.CreateDefault(), AppBaseUri)
         {
         }
 
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             _sentIpcMessages.Add(message);
         }
 
-        public override void Navigate(string absoluteUrl)
+        protected override void LoadUri(Uri absoluteUri)
         {
             throw new NotImplementedException();
         }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         internal void ReceiveIpcMessage(IpcCommon.IncomingMessageType messageType, params object[] args)
         {
             // Same serialization convention as used by blazor.webview.js
-            MessageReceived(AppBaseUrl + "page", IpcCommon.Serialize(messageType, args));
+            MessageReceived(new Uri(AppBaseUri, "/page"), IpcCommon.Serialize(messageType, args));
         }
 
         public void ReceiveAttachPageMessage()
