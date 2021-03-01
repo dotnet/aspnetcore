@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             _webviewReadyTask = InitializeWebView2();
         }
 
-        protected override void LoadUri(Uri absoluteUri)
+        protected override void NavigateCore(Uri absoluteUri)
         {
             _ = WpfDispatcher.Instance.InvokeAsync(async () =>
             {

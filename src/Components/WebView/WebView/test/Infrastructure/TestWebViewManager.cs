@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             _sentIpcMessages.Add(message);
         }
 
-        protected override void LoadUri(Uri absoluteUri)
+        protected override void NavigateCore(Uri absoluteUri)
         {
             throw new NotImplementedException();
         }

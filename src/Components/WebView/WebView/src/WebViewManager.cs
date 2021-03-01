@@ -50,8 +50,16 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// Instructs the web view to navigate to the specified location, bypassing any
         /// client-side routing.
         /// </summary>
+        /// <param name="url">The URL, which may be absolute or relative to the application root.</param>
+        public void Navigate(string url)
+            => NavigateCore(new Uri(_appBaseUri, url));
+
+        /// <summary>
+        /// Instructs the web view to navigate to the specified location, bypassing any
+        /// client-side routing.
+        /// </summary>
         /// <param name="absoluteUri">The absolute URI.</param>
-        protected abstract void LoadUri(Uri absoluteUri);
+        protected abstract void NavigateCore(Uri absoluteUri);
 
         /// <summary>
         /// Sends a message to JavaScript code running in the attached web view. This must
@@ -59,14 +67,6 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// </summary>
         /// <param name="message">The message.</param>
         protected abstract void SendMessage(string message);
-
-        /// <summary>
-        /// Instructs the web view to navigate to the specified location, bypassing any
-        /// client-side routing.
-        /// </summary>
-        /// <param name="url">The URL, which may be absolute or relative to the application root.</param>
-        public void Navigate(string url)
-            => LoadUri(new Uri(_appBaseUri, url));
 
         /// <summary>
         /// Adds a root component to the attached page.
