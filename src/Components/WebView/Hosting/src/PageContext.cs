@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebView
     /// means we don't have to check that each of them are available individually.
     ///
     /// This has roughly the same role as a circuit in Blazor Server. One key difference is that,
-    /// for web views, the IPC channel is outside the page context, whereas in Blazor Servier,
+    /// for web views, the IPC channel is outside the page context, whereas in Blazor Server,
     /// the IPC channel is within the circuit.
     /// </summary>
     class PageContext : IDisposable
