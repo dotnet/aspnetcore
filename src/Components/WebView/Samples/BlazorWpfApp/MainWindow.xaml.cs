@@ -11,6 +11,7 @@ namespace BlazorWpfApp
         public MainWindow()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddBlazorWebView();
             Resources.Add("services", serviceCollection.BuildServiceProvider());
 
             InitializeComponent();

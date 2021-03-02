@@ -1,10 +1,10 @@
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.WebView.Services;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.WebView
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ComponentsWebViewServiceCollectionExtensions
     {

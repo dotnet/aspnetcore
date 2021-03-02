@@ -58,6 +58,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
                 }
             };
 
+            // The code inside blazor.webview.js is meant to be agnostic to specific webview technologies,
+            // so the following is an adaptor from blazor.webview.js conventions to WebView2 APIs
+            await _webview.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(@"
+                window.external = {
+                    sendMessage: message => {
+                        window.chrome.webview.postMessage(message);
+                    },
+                    receiveMessage: callback => {
+                        window.chrome.webview.addEventListener('message', e => callback(e.data));
+                    }
+                };
+            ").ConfigureAwait(true);
+
             _webview.CoreWebView2.WebMessageReceived += (sender, eventArgs)
                 => MessageReceived(new Uri(eventArgs.Source), eventArgs.TryGetWebMessageAsString());
         }
