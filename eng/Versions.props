@@ -10,7 +10,7 @@
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>14</AspNetCorePatchVersion>
     <ValidateBasline>false</ValidateBasline>
-    
+
     <PreReleasePreviewNumber>0</PreReleasePreviewNumber>
     <ComponentsWebAssemblyMajorVersion>3</ComponentsWebAssemblyMajorVersion>
     <ComponentsWebAssemblyMinorVersion>2</ComponentsWebAssemblyMinorVersion>
@@ -35,7 +35,7 @@
     <!-- TargetingPackVersionPrefix is used by projects, like .deb and .rpm, which use slightly different version formats. -->
     <TargetingPackVersionPrefix>$(VersionPrefix)</TargetingPackVersionPrefix>
     <!-- Targeting packs do not produce patch versions in servicing builds. No API changes are allowed in patches. -->
-    <TargetingPackVersionPrefix Condition="'$(IsTargetingPackBuilding)' != 'true'">$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).13</TargetingPackVersionPrefix>
+    <TargetingPackVersionPrefix Condition="'$(IsTargetingPackBuilding)' != 'true'">$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).14</TargetingPackVersionPrefix>
     <ExperimentalVersionPrefix>0.3.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
     <!-- ANCM versioning is intentionally 10 + AspNetCoreMajorVersion because earlier versions of ANCM shipped as 8.x. -->
     <AspNetCoreModuleVersionMajor>$([MSBuild]::Add(10, $(AspNetCoreMajorVersion)))</AspNetCoreModuleVersionMajor>
