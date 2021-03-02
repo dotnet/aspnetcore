@@ -266,9 +266,6 @@ public class HubConnection implements AutoCloseable {
                     Single<String> tokenProvider = negotiateResponse.getAccessToken() != null ? Single.just(negotiateResponse.getAccessToken()) : accessTokenProvider;
                     TransportEnum chosenTransport;
                     if (this.skipNegotiate) {
-                        if (this.transportEnum != TransportEnum.WEBSOCKETS) {
-                            throw new RuntimeException("Negotiation can only be skipped when using the WebSocket transport directly.");
-                        }
                         chosenTransport = this.transportEnum;
                     } else {
                         chosenTransport = negotiateResponse.getChosenTransport();
