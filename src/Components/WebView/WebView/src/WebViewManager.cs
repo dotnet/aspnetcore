@@ -41,6 +41,8 @@ namespace Microsoft.AspNetCore.Components.WebView
             _ipcReceiver = new IpcReceiver(this);
         }
 
+        public Dispatcher Dispatcher => _dispatcher;
+
         /// <summary>
         /// Notifies listeners that a page is attached to the webview. Handlers for this event
         /// may add root components by calling <see cref="AddRootComponentAsync(Type, string, ParameterView)"/>.

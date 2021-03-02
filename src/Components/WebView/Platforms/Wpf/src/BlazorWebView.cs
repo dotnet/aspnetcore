@@ -3,8 +3,9 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Web.WebView2.Wpf;
+using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         #endregion
 
         private const string webViewTemplateChildName = "WebView";
-        private WebView2 _webview;
+        private WebView2Control _webview;
         private WebView2WebViewManager _webviewManager;
 
         public BlazorWebView()
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
             Template = new ControlTemplate
             {
-                VisualTree = new FrameworkElementFactory(typeof(WebView2), webViewTemplateChildName)
+                VisualTree = new FrameworkElementFactory(typeof(WebView2Control), webViewTemplateChildName)
             };
         }
 
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             base.OnApplyTemplate();
 
             // TODO: Can this be called more than once? We need the following only to happen once.
-            _webview = (WebView2)GetTemplateChild(webViewTemplateChildName);
+            _webview = (WebView2Control)GetTemplateChild(webViewTemplateChildName);
 
             StartWebViewCoreIfPossible();
         }
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             var fileProvider = new PhysicalFileProvider(Directory.Exists(wwwroot) ? wwwroot : appDir);
 
             // TODO: Can this get called multiple times, such as from OnApplyTemplate or a property change? Do we need to handle this more efficiently?
-            _webviewManager = new WebView2WebViewManager(_webview, Services, fileProvider);
+            _webviewManager = new WebView2WebViewManager(new WpfWeb2ViewWrapper(_webview), Services, WpfDispatcher.Instance, fileProvider);
             _webviewManager.OnPageAttached += (sender, eventArgs) =>
             {
                 _webviewManager.AddRootComponentAsync(typeof(TemporaryFakeStuff.DemoComponent), "#app", ParameterView.Empty);

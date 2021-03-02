@@ -2,27 +2,21 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.Wpf;
 
-namespace Microsoft.AspNetCore.Components.WebView.Wpf
+namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
-    // TODO: If we want to make this shareable across WPF and WinForms, we'll need to do so on a shared-source
-    // basis. There can't be a single class for both, since the WebView2 classes have different identities on
-    // the two platforms. But we could share the sources and use #if pragmas for any small variations that
-    // exist between the two.
-
-    internal class WebView2WebViewManager : WebViewManager
+    public class WebView2WebViewManager : WebViewManager
     {
         // Using an IP address means that WebView2 doesn't wait for any DNS resolution,
         // making it substantially faster. Note that this isn't real HTTP traffic, since
         // we intercept all the requests within this origin.
         private const string AppOrigin = "https://0.0.0.0/";
 
-        private readonly WebView2 _webview;
+        private readonly IWebView2Wrapper _webview;
         private readonly Task _webviewReadyTask;
 
-        public WebView2WebViewManager(WebView2 webview, IServiceProvider services, IFileProvider fileProvider)
-            : base(services, WpfDispatcher.Instance, new Uri(AppOrigin), fileProvider)
+        public WebView2WebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider)
+            : base(services, dispatcher, new Uri(AppOrigin), fileProvider)
         {
             _webview = webview ?? throw new ArgumentNullException(nameof(webview));
 
@@ -34,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
         protected override void NavigateCore(Uri absoluteUri)
         {
-            _ = WpfDispatcher.Instance.InvokeAsync(async () =>
+            _ = Dispatcher.InvokeAsync(async () =>
             {
                 await _webviewReadyTask;
                 _webview.Source = absoluteUri;
