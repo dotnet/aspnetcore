@@ -2794,7 +2794,7 @@ class HubConnectionTest {
         try {
             hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
         } catch (Exception e) {
-            assertEquals("Negotiation can only be skipped when using the WebSocket transport directly.", e.getMessage());
+            assertEquals("Negotiation can only be skipped when using the WebSocket transport directly with '.withTransport(TransportEnum.WEBSOCKETS)' on the 'HubConnectionBuilder'.", e.getMessage());
         }
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertFalse(negotiateCalled.get());

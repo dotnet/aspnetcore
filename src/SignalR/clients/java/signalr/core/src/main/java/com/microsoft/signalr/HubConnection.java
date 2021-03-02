@@ -267,7 +267,7 @@ public class HubConnection implements AutoCloseable {
                     TransportEnum chosenTransport;
                     if (this.skipNegotiate) {
                         if (this.transportEnum != TransportEnum.WEBSOCKETS) {
-                            throw new RuntimeException("Negotiation can only be skipped when using the WebSocket transport directly.");
+                            throw new RuntimeException("Negotiation can only be skipped when using the WebSocket transport directly with '.withTransport(TransportEnum.WEBSOCKETS)' on the 'HubConnectionBuilder'.");
                         }
                         chosenTransport = this.transportEnum;
                     } else {
