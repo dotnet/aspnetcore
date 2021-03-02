@@ -12,6 +12,10 @@ export function sendAttachPage(baseUrl: string, startUrl: string) {
   send(OutgoingMessageType.AttachPage, baseUrl, startUrl);
 }
 
+export function dispatchBrowserEvent(descriptor: string, eventArgs: string) {
+  send(OutgoingMessageType.DispatchBrowserEvent, descriptor, eventArgs);
+}
+
 async function onReceivedMessage(data: string) {
   if (!data.startsWith(ipcMessagePrefix)) {
     return;
