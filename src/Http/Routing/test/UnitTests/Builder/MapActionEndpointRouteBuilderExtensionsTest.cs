@@ -4,7 +4,6 @@
 #nullable enable
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Routing;
@@ -220,6 +219,5 @@ namespace Microsoft.AspNetCore.Builder
                     (builder, action) => builder.Map(RoutePatternFactory.Parse("/"), action))
             },
         };
-
     }
 }
