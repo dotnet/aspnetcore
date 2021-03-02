@@ -7,7 +7,7 @@ module.exports = (env, args) => ({
     resolve: {
         extensions: ['.ts', '.js'],
     },
-    devtool: args.mode === 'development' ? 'source-map' : undefined,
+    devtool: false, // Source maps configured below
     module: {
         rules: [{ test: /\.ts?$/, loader: 'ts-loader' }]
     },
@@ -45,7 +45,7 @@ module.exports = (env, args) => ({
           }
         })]
     },
-    plugins: [
+    plugins: Array.prototype.concat.apply([
         new webpack.DefinePlugin({
             'process.env.NODE_DEBUG': false,
             'Platform.isNode': false
@@ -55,8 +55,19 @@ module.exports = (env, args) => ({
             emitHandler: undefined,
             ignoredPackages: undefined,
             verbose: false
-        })
-    ],
+        }),
+
+    ], args.mode !== 'development' ? [] : [
+        // In most cases we want to use external source map files
+        new webpack.SourceMapDevToolPlugin({
+            filename: '[name].js.map',
+            exclude: 'blazor.webview.js',
+        }),
+        // ... but for blazor.webview.js, it has to be internal, due to https://github.com/MicrosoftEdge/WebView2Feedback/issues/961
+        new webpack.SourceMapDevToolPlugin({
+            include: 'blazor.webview.js',
+        }),
+    ]),
     stats: {
         //all: true,
         warnings: true,

@@ -42,6 +42,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="..\..\..\Web.JS\dist\$(Configuration)\blazor.webview.js" Link="Resources\blazor.webview.js" />
+    <EmbeddedResource
+      Condition="Exists('..\..\..\Web.JS\dist\$(Configuration)\blazor.webview.js.map')"
+      Include="..\..\..\Web.JS\dist\$(Configuration)\blazor.webview.js.map"
+      Link="Resources\blazor.webview.js.map" />
   </ItemGroup>
 
 </Project>
