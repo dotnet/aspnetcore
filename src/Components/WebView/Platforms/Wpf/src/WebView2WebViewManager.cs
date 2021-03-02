@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         // Using an IP address means that WebView2 doesn't wait for any DNS resolution,
         // making it substantially faster. Note that this isn't real HTTP traffic, since
         // we intercept all the requests within this origin.
-        private const string AppOrigin = "http://0.0.0.0/";
+        private const string AppOrigin = "https://0.0.0.0/";
 
         private readonly WebView2 _webview;
         private readonly Task _webviewReadyTask;
