@@ -243,11 +243,11 @@ namespace Microsoft.AspNetCore.Builder
             int? routeOrder = null;
 
             // This can be null if the delegate is a dynamic method or compiled from an expression tree
-            if (attributes is { })
+            if (attributes is not null)
             {
                 foreach (var attribute in attributes)
                 {
-                    if (attribute is IRoutePatternMetadata patternMetadata && patternMetadata.RoutePattern is { })
+                    if (attribute is IRoutePatternMetadata patternMetadata && patternMetadata.RoutePattern is not null)
                     {
                         throw new InvalidOperationException($"'{attribute.GetType()}' implements {nameof(IRoutePatternMetadata)} which is not supported by this method.");
                     }

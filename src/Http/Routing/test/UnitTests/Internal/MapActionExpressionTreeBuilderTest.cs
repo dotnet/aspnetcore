@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 {
     public class MapActionExpressionTreeBuilderTest
     {
-         public static IEnumerable<object[]> NoResult
+        public static IEnumerable<object[]> NoResult
         {
             get
             {
@@ -112,8 +112,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     StoreInput(httpContext, value);
                     return ValueTask.CompletedTask;
                 }
-
-                
 
                 return new List<object[]>
                 {
