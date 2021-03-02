@@ -71,18 +71,12 @@ namespace Microsoft.AspNetCore.Components.WebView
         {
             // We're not trying to simulate everything a real webserver does. We don't need to
             // support querystring parameters, for example. It's enough to require an exact match.
-            const string frameworkPrefix = "_framework/";
-            if (relativePath.StartsWith(frameworkPrefix, StringComparison.Ordinal))
+            switch (relativePath)
             {
-                var pathWithinFramework = relativePath.Substring(frameworkPrefix.Length);
-                switch (pathWithinFramework)
-                {
-                    case "blazor.webview.js":
-                    case "blazor.webview.js.map":
-                        var assembly = typeof(StaticContentProvider).Assembly;
-                        content = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.Resources.{pathWithinFramework}");
-                        return content != null;
-                }
+                case "_framework/blazor.webview.js":
+                    var assembly = typeof(StaticContentProvider).Assembly;
+                    content = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.Resources.blazor.webview.js");
+                    return true;
             }
 
             content = default;
