@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// Specifies what HTTP methods an action supports.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public sealed class AcceptVerbsAttribute : Attribute, IHttpMethodMetadata, IActionHttpMethodProvider, IRouteTemplateProvider
+    public sealed class AcceptVerbsAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
     {
         private readonly List<string> _httpMethods;
 
@@ -45,9 +44,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets the HTTP methods the action supports.
         /// </summary>
         public IEnumerable<string> HttpMethods => _httpMethods;
-
-        IReadOnlyList<string> IHttpMethodMetadata.HttpMethods => _httpMethods;
-        bool IHttpMethodMetadata.AcceptCorsPreflight => false;
 
         /// <summary>
         /// The route template. May be null.

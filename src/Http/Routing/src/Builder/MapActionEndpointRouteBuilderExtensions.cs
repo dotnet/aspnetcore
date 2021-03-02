@@ -23,68 +23,6 @@ namespace Microsoft.AspNetCore.Builder
         private static readonly string[] DeleteVerb = new[] { "DELETE" };
 
         /// <summary>
-        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches the pattern specified via attributes.
-        /// </summary>
-        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
-        /// <param name="action">The delegate executed when the endpoint is matched.</param>
-        /// <returns>An <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MapActionEndpointConventionBuilder MapAction(
-            this IEndpointRouteBuilder endpoints,
-            Delegate action)
-        {
-            if (endpoints is null)
-            {
-                throw new ArgumentNullException(nameof(endpoints));
-            }
-
-            if (action is null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
-
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(action);
-
-            var routeAttributes = action.Method.GetCustomAttributes().OfType<IRoutePatternMetadata>();
-            var conventionBuilders = new List<IEndpointConventionBuilder>();
-
-            const int defaultOrder = 0;
-
-            foreach (var routeAttribute in routeAttributes)
-            {
-                if (routeAttribute.RoutePattern is not string pattern)
-                {
-                    continue;
-                }
-
-                var routeName = (routeAttribute as IRouteNameMetadata)?.RouteName;
-                var routeOrder = (routeAttribute as IRouteOrderMetadata)?.RouteOrder;
-
-                var conventionBuilder = endpoints.Map(pattern, requestDelegate);
-
-                conventionBuilder.Add(endpointBuilder =>
-                {
-                    foreach (var attribute in action.Method.GetCustomAttributes())
-                    {
-                        endpointBuilder.Metadata.Add(attribute);
-                    }
-
-                    endpointBuilder.DisplayName = routeName ?? pattern;
-
-                    ((RouteEndpointBuilder)endpointBuilder).Order = routeOrder ?? defaultOrder;
-                });
-
-                conventionBuilders.Add(conventionBuilder);
-            }
-
-            if (conventionBuilders.Count == 0)
-            {
-                throw new InvalidOperationException("Action must have a pattern. Is it missing a Route attribute?");
-            }
-
-            return new MapActionEndpointConventionBuilder(conventionBuilders);
-        }
-
-        /// <summary>
         /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
         /// for the specified pattern.
         /// </summary>
@@ -168,8 +106,8 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(httpMethods));
             }
 
-            var displayName = $"{pattern} HTTP: {string.Join(", ", httpMethods)}";
-            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), action, displayName);
+            var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), action);
+            builder.WithDisplayName($"{pattern} HTTP: {string.Join(", ", httpMethods)}");
             builder.WithMetadata(new HttpMethodMetadata(httpMethods));
             return builder;
         }
@@ -203,15 +141,6 @@ namespace Microsoft.AspNetCore.Builder
             RoutePattern pattern,
             Delegate action)
         {
-            return Map(endpoints, pattern, action, displayName: null);
-        }
-
-        private static MapActionEndpointConventionBuilder Map(
-            this IEndpointRouteBuilder endpoints,
-            RoutePattern pattern,
-            Delegate action,
-            string? displayName)
-        {
             if (endpoints is null)
             {
                 throw new ArgumentNullException(nameof(endpoints));
@@ -239,38 +168,15 @@ namespace Microsoft.AspNetCore.Builder
 
             // Add delegate attributes as metadata
             var attributes = action.Method.GetCustomAttributes();
-            string? routeName = null;
-            int? routeOrder = null;
 
             // This can be null if the delegate is a dynamic method or compiled from an expression tree
             if (attributes is not null)
             {
                 foreach (var attribute in attributes)
                 {
-                    if (attribute is IRoutePatternMetadata patternMetadata && patternMetadata.RoutePattern is not null)
-                    {
-                        throw new InvalidOperationException($"'{attribute.GetType()}' implements {nameof(IRoutePatternMetadata)} which is not supported by this method.");
-                    }
-                    if (attribute is IHttpMethodMetadata methodMetadata && methodMetadata.HttpMethods.Any())
-                    {
-                        throw new InvalidOperationException($"'{attribute.GetType()}' implements {nameof(IHttpMethodMetadata)} which is not supported by this method.");
-                    }
-
-                    if (attribute is IRouteNameMetadata nameMetadata && nameMetadata.RouteName is string name)
-                    {
-                        routeName = name;
-                    }
-                    if (attribute is IRouteOrderMetadata orderMetadata && orderMetadata.RouteOrder is int order)
-                    {
-                        routeOrder = order;
-                    }
-
                     builder.Metadata.Add(attribute);
                 }
             }
-
-            builder.DisplayName = routeName ?? displayName ?? builder.DisplayName;
-            builder.Order = routeOrder ?? defaultOrder;
 
             var dataSource = endpoints.DataSources.OfType<ModelEndpointDataSource>().FirstOrDefault();
             if (dataSource is null)
