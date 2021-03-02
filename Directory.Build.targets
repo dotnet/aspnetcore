@@ -57,8 +57,8 @@
   <PropertyGroup>
     <!-- When OnlyPackPlatformSpecificPackages is set, only produce packages for projects which set RuntimeIdentifier. -->
     <!-- Keep this below where we set "IsPackageInThisPatch" -->
-    <!-- Do not apply this logic to App.Ref, it's packability is determined by IsTargetingPackBuilding -->
-    <IsPackable Condition=" '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Ref' AND '$(OnlyPackPlatformSpecificPackages)' == 'true' AND '$(RuntimeIdentifier)' == '' ">false</IsPackable>
+    <!-- Do not apply this logic to App.Ref and App.Ref.Internal, it's packability is determined by IsTargetingPackBuilding -->
+    <IsPackable Condition=" '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Ref' AND '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Ref.Internal' AND '$(OnlyPackPlatformSpecificPackages)' == 'true' AND '$(RuntimeIdentifier)' == '' ">false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup>
