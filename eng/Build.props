@@ -95,6 +95,9 @@
         <!-- We don't build the bundle here because we'd have to bundle the x86 installer which gets built in a different leg.
         Instead we only provide the ARM64 MSI-->
 
+        <!-- Build the targeting pack installers -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=arm64" />
+
         <!-- Build the SharedFramework wixlib -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
       </ItemGroup>
