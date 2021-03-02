@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
@@ -8,8 +9,8 @@ namespace Microsoft.AspNetCore.Components.WebView
         private static Uri AppBaseUri = new Uri("app://testhost/");
         private List<string> _sentIpcMessages = new();
 
-        public TestWebViewManager(IServiceProvider provider)
-            : base(provider, Dispatcher.CreateDefault(), AppBaseUri)
+        public TestWebViewManager(IServiceProvider provider, IFileProvider fileProvider)
+            : base(provider, Dispatcher.CreateDefault(), AppBaseUri, fileProvider)
         {
         }
 

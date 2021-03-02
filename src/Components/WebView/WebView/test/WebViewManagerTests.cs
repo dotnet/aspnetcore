@@ -10,8 +10,9 @@ namespace Microsoft.AspNetCore.Components.WebView
         public void RaisesOnPageAttachedWhenPageAttaches()
         {
             // Arrange
-            var provider = new ServiceCollection().AddTestBlazorWebView().BuildServiceProvider();
-            var webViewManager = new TestWebViewManager(provider);
+            var services = new ServiceCollection().AddTestBlazorWebView().BuildServiceProvider();
+            var fileProvider = new TestFileProvider();
+            var webViewManager = new TestWebViewManager(services, fileProvider);
             var didTriggerEvent = false;
             webViewManager.OnPageAttached += (sender, eventArgs) =>
             {
@@ -30,8 +31,9 @@ namespace Microsoft.AspNetCore.Components.WebView
         public void CanRenderRootComponent()
         {
             // Arrange
-            var provider = new ServiceCollection().AddTestBlazorWebView().BuildServiceProvider();
-            var webViewManager = new TestWebViewManager(provider);
+            var services = new ServiceCollection().AddTestBlazorWebView().BuildServiceProvider();
+            var fileProvider = new TestFileProvider();
+            var webViewManager = new TestWebViewManager(services, fileProvider);
             webViewManager.OnPageAttached += (sender, eventArgs) =>
                 webViewManager.AddRootComponent(typeof(MyComponent), "#app", ParameterView.Empty);
 
