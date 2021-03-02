@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(11, "ReceivedDeleteRequestForUnsupportedTransport"), "Received DELETE request for unsupported transport: {TransportType}.");
 
             private static readonly Action<ILogger, Exception?> _terminatingConnection =
-                LoggerMessage.Define(LogLevel.Trace, new EventId(12, "TerminatingConection"), "Terminating Long Polling connection due to a DELETE request.");
+                LoggerMessage.Define(LogLevel.Trace, new EventId(12, "TerminatingConnection"), "Terminating Long Polling connection due to a DELETE request.");
 
             private static readonly Action<ILogger, string, Exception?> _connectionDisposedWhileWriteInProgress =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(13, "ConnectionDisposedWhileWriteInProgress"), "Connection {TransportConnectionId} was disposed while a write was in progress.");

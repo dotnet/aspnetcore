@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// <summary>
         /// Default timeout value for disconnecting idle connections.
         /// </summary>
-        public static TimeSpan DefaultDisconectTimeout = TimeSpan.FromSeconds(15);
+        public static TimeSpan DefaultDisconnectTimeout = TimeSpan.FromSeconds(15);
 
         /// <summary>
         /// Sets default values for options if they have not been set yet.
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         {
             if (options.DisconnectTimeout == null)
             {
-                options.DisconnectTimeout = DefaultDisconectTimeout;
+                options.DisconnectTimeout = DefaultDisconnectTimeout;
             }
         }
     }

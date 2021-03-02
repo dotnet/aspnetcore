@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
     {
         private static readonly SqliteConnection _connection;
 
-        // We create a conection here and open it as the in memory Db will delete the database
+        // We create a connection here and open it as the in memory Db will delete the database
         // as soon as there are no open connections to it.
         static WebAssemblyAuthenticationTests()
         {
