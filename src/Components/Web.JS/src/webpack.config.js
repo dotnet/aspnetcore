@@ -4,7 +4,7 @@ const TerserJsPlugin = require("terser-webpack-plugin");
 const { DuplicatesPlugin } = require("inspectpack/plugin");
 
 module.exports = (env, args) => ({
-    resolve: { 
+    resolve: {
         extensions: ['.ts', '.js'],
     },
     devtool: args.mode === 'development' ? 'source-map' : undefined,
@@ -12,8 +12,9 @@ module.exports = (env, args) => ({
         rules: [{ test: /\.ts?$/, loader: 'ts-loader' }]
     },
     entry: {
-        'blazor.webassembly': './Boot.WebAssembly.ts',
         'blazor.server': './Boot.Server.ts',
+        'blazor.webassembly': './Boot.WebAssembly.ts',
+        'blazor.webview': './Boot.WebView.ts',
     },
     output: { path: path.join(__dirname, '/..', '/dist', args.mode == 'development' ? '/Debug' : '/Release'), filename: '[name].js' },
     performance: {
@@ -26,10 +27,10 @@ module.exports = (env, args) => ({
         usedExports: true,
         innerGraph: true,
         minimize: true,
-        minimizer: [new TerserJsPlugin({        
+        minimizer: [new TerserJsPlugin({
             terserOptions: {
                 ecma: 2019,
-                compress: { 
+                compress: {
                     passes: 3
                 },
                 mangle: {
@@ -43,7 +44,7 @@ module.exports = (env, args) => ({
                 toplevel: true
           }
         })]
-    },    
+    },
     plugins: [
         new webpack.DefinePlugin({
             'process.env.NODE_DEBUG': false,
