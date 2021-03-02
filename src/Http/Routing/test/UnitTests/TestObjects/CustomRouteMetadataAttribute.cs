@@ -10,13 +10,13 @@ namespace Microsoft.AspNetCore.Routing.TestObjects
 {
     internal class CustomRouteMetadataAttribute : Attribute, IRoutePatternMetadata, IHttpMethodMetadata, IRouteNameMetadata, IRouteOrderMetadata
     {
-        public string Pattern { get; set; } = "/";
+        public string? Pattern { get; set; }
 
         public string? Name { get; set; }
 
         public int Order { get; set; } = 0;
 
-        public string[] Methods { get; set; } = new[] { "GET" };
+        public string[] Methods { get; set; } = Array.Empty<string>();
 
         string? IRoutePatternMetadata.RoutePattern => Pattern;
 

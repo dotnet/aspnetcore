@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -76,5 +77,188 @@ namespace Microsoft.AspNetCore.Builder
 
             return new MapActionEndpointConventionBuilder(conventionBuilders);
         }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static MapActionEndpointConventionBuilder MapGet(
+            this IEndpointRouteBuilder endpoints,
+            string pattern,
+            Delegate action)
+        {
+            return WrapConventionBuilder(
+                endpoints.MapGet(pattern, MapActionExpressionTreeBuilder.BuildRequestDelegate(action)),
+                pattern,
+                action);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP POST requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static IEndpointConventionBuilder MapPost(
+            this IEndpointRouteBuilder endpoints,
+            string pattern,
+            Delegate action)
+        {
+            return WrapConventionBuilder(
+                endpoints.MapPost(pattern, MapActionExpressionTreeBuilder.BuildRequestDelegate(action)),
+                pattern,
+                action);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP PUT requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that canaction be used to further customize the endpoint.</returns>
+        public static IEndpointConventionBuilder MapPut(
+            this IEndpointRouteBuilder endpoints,
+            string pattern,
+            Delegate action)
+        {
+            return WrapConventionBuilder(
+                endpoints.MapPut(pattern, MapActionExpressionTreeBuilder.BuildRequestDelegate(action)),
+                pattern,
+                action);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP DELETE requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static IEndpointConventionBuilder MapDelete(
+            this IEndpointRouteBuilder endpoints,
+            string pattern,
+            Delegate action)
+        {
+            return WrapConventionBuilder(
+                endpoints.MapDelete(pattern, MapActionExpressionTreeBuilder.BuildRequestDelegate(action)),
+                pattern,
+                action);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified HTTP methods and pattern.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <param name="httpMethods">HTTP methods that the endpoint will match.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static IEndpointConventionBuilder MapMethods(
+           this IEndpointRouteBuilder endpoints,
+           string pattern,
+           IEnumerable<string> httpMethods,
+           Delegate action)
+        {
+            return WrapConventionBuilder(
+                endpoints.MapMethods(pattern, httpMethods, MapActionExpressionTreeBuilder.BuildRequestDelegate(action)),
+                pattern,
+                action);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static IEndpointConventionBuilder Map(
+            this IEndpointRouteBuilder endpoints,
+            string pattern,
+            Delegate action)
+        {
+            return WrapConventionBuilder(
+                endpoints.Map(pattern, MapActionExpressionTreeBuilder.BuildRequestDelegate(action)),
+                pattern,
+                action);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The delegate executed when the endpoint is matched.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static IEndpointConventionBuilder Map(
+            this IEndpointRouteBuilder endpoints,
+            RoutePattern pattern,
+            Delegate action)
+        {
+            return WrapConventionBuilder(
+                endpoints.Map(pattern, MapActionExpressionTreeBuilder.BuildRequestDelegate(action)),
+                pattern.RawText,
+                action);
+        }
+
+        private static MapActionEndpointConventionBuilder WrapConventionBuilder(
+            IEndpointConventionBuilder endpointConventionBuilder,
+            string? pattern,
+            Delegate action)
+        {
+            var attributes = action.Method.GetCustomAttributes();
+            string? routeName = null;
+            int? routeOrder = null;
+
+            foreach (var attribute in attributes)
+            {
+                if (attribute is IRoutePatternMetadata patternMetadata && patternMetadata.RoutePattern is { })
+                {
+                    throw new InvalidOperationException($"'{attribute.GetType()}' implements {nameof(IRoutePatternMetadata)} which is not supported my this method.");
+                }
+                if (attribute is IHttpMethodMetadata methodMetadata && methodMetadata.HttpMethods.Any())
+                {
+                    throw new InvalidOperationException($"'{attribute.GetType()}' implements {nameof(IHttpMethodMetadata)} which is not supported my this method.");
+                }
+
+                if (attribute is IRouteNameMetadata nameMetadata && nameMetadata.RouteName is string name)
+                {
+                    routeName = name;
+                }
+                if (attribute is IRouteOrderMetadata orderMetadata && orderMetadata.RouteOrder is int order)
+                {
+                    routeOrder = order;
+                }
+            }
+
+            const int defaultOrder = 0;
+
+            endpointConventionBuilder.Add(endpointBuilder =>
+            {
+                foreach (var attribute in attributes)
+                {
+                    endpointBuilder.Metadata.Add(attribute);
+                }
+
+                endpointBuilder.DisplayName = routeName ?? pattern;
+
+                ((RouteEndpointBuilder)endpointBuilder).Order = routeOrder ?? defaultOrder;
+            });
+
+            return new MapActionEndpointConventionBuilder(endpointConventionBuilder);
+        }
+
     }
 }

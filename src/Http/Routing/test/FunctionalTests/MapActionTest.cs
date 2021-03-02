@@ -61,6 +61,47 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             Assert.Equal(42, echoedTodo?.Id);
         }
 
+        [Fact]
+        public async Task MapPost_FromBodyWorksWithJsonPayload()
+        {
+            Todo EchoTodo([FromRoute] int id, [FromBody] Todo todo) => todo with { Id = id };
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseRouting();
+                            app.UseEndpoints(b => b.MapPost("/EchoTodo/{id}", (Func<int, Todo, Todo>)EchoTodo));
+                        })
+                        .UseTestServer();
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddRouting();
+                })
+                .Build();
+
+            using var server = host.GetTestServer();
+            await host.StartAsync();
+            var client = server.CreateClient();
+
+            var todo = new Todo
+            {
+                Name = "Write tests!"
+            };
+
+            var response = await client.PostAsJsonAsync("/EchoTodo/42", todo);
+            response.EnsureSuccessStatusCode();
+
+            var echoedTodo = await response.Content.ReadFromJsonAsync<Todo>();
+
+            Assert.NotNull(echoedTodo);
+            Assert.Equal(todo.Name, echoedTodo?.Name);
+            Assert.Equal(42, echoedTodo?.Id);
+        }
+
         private record Todo
         {
             public int Id { get; set; }
