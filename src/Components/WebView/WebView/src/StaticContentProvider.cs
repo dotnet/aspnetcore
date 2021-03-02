@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
@@ -24,24 +25,34 @@ namespace Microsoft.AspNetCore.Components.WebView
             if (_appBaseUri.IsBaseOf(fileUri))
             {
                 var relativePath = _appBaseUri.MakeRelativeUri(fileUri).ToString();
-                if (relativePath.Equals(string.Empty, StringComparison.Ordinal) || relativePath.Equals("/", StringComparison.Ordinal))
+                if (relativePath.Equals(string.Empty, StringComparison.Ordinal))
                 {
-                    relativePath = "/index.html";
+                    relativePath = "index.html";
                 }
 
+                // Content in the file provider takes first priority
                 var fileInfo = _fileProvider.GetFileInfo(relativePath);
                 if (fileInfo.Exists)
                 {
-                    statusCode = 200;
-                    statusMessage = "OK";
                     content = fileInfo.CreateReadStream();
-                    headers = GetResponseHeaders(GetResponseContentTypeOrDefault(fileInfo.PhysicalPath));
                 }
                 else
                 {
+                    // If there's no match, fall back on serving embedded framework content
+                    TryGetFrameworkFile(relativePath, out content);
+                }
+
+                if (content != null)
+                {
+                    statusCode = 200;
+                    statusMessage = "OK";
+                    headers = GetResponseHeaders(GetResponseContentTypeOrDefault(relativePath));
+                }
+                else
+                {
+                    content = new MemoryStream(Encoding.UTF8.GetBytes($"There is no content at {relativePath}"));
                     statusCode = 404;
                     statusMessage = "Not found";
-                    content = new MemoryStream(Encoding.UTF8.GetBytes($"There is no content at {relativePath}"));
                     headers = GetResponseHeaders("text/plain");
                 }
 
@@ -52,6 +63,22 @@ namespace Microsoft.AspNetCore.Components.WebView
             statusCode = default;
             statusMessage = default;
             headers = default;
+            content = default;
+            return false;
+        }
+
+        private static bool TryGetFrameworkFile(string relativePath, out Stream content)
+        {
+            // We're not trying to simulate everything a real webserver does. We don't need to
+            // support querystring parameters, for example. It's enough to require an exact match.
+            switch (relativePath)
+            {
+                case "_framework/blazor.webview.js":
+                    var assembly = typeof(StaticContentProvider).Assembly;
+                    content = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.Resources.blazor.webview.js");
+                    return true;
+            }
+
             content = default;
             return false;
         }

@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         {
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
-            _appBaseUri = appBaseUri ?? throw new ArgumentNullException(nameof(appBaseUri));
+            _appBaseUri = EnsureTrailingSlash(appBaseUri ?? throw new ArgumentNullException(nameof(appBaseUri)));
             _staticContentProvider = new StaticContentProvider(fileProvider, appBaseUri);
             _ipcSender = new IpcSender(_dispatcher, SendMessage);
             _ipcReceiver = new IpcReceiver(this);
@@ -160,5 +160,8 @@ namespace Microsoft.AspNetCore.Components.WebView
         {
             _currentPageContext?.Dispose();
         }
+
+        private static Uri EnsureTrailingSlash(Uri uri)
+            => uri.AbsoluteUri.EndsWith('/') ? uri : new Uri(uri.AbsoluteUri + '/');
     }
 }

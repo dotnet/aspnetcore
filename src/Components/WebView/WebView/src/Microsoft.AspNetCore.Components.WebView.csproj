@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -30,6 +30,18 @@
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Logging" />
+
+    <ProjectReference
+      Include="..\..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false"
+      Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\Web.JS\dist\$(Configuration)\blazor.webview.js" Link="Resources\blazor.webview.js" />
   </ItemGroup>
 
 </Project>
