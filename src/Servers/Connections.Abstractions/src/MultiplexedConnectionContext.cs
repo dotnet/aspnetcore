@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Connections.Experimental
+namespace Microsoft.AspNetCore.Connections
 {
     /// <summary>
     /// Encapsulates all information about a multiplexed connection.

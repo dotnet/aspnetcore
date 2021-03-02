@@ -1358,7 +1358,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "http2cat", "src\Servers\Kes
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Transport.Quic", "Transport.Quic", "{EE9D0952-6060-4723-B329-94A2950A6762}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic", "src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.csproj", "{132D43A2-067A-4E24-A520-45B9F14DCB8E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic", "src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj", "{132D43A2-067A-4E24-A520-45B9F14DCB8E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Http3SampleApp", "src\Servers\Kestrel\samples\Http3SampleApp\Http3SampleApp.csproj", "{2EC4E939-513F-44CD-A956-498966EAC929}"
 EndProject

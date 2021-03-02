@@ -16,9 +16,24 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOpt
 Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Alpn.set -> void
 static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions!>! configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.IdleTimeout.get -> System.TimeSpan
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.IdleTimeout.set -> void
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxBidirectionalStreamCount.get -> ushort
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxBidirectionalStreamCount.set -> void
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxReadBufferSize.get -> long?
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxReadBufferSize.set -> void
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxUnidirectionalStreamCount.get -> ushort
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxUnidirectionalStreamCount.set -> void
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxWriteBufferSize.get -> long?
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.MaxWriteBufferSize.set -> void
+*REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.QuicTransportOptions() -> void
+*REMOVED*~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Alpn.get -> string
+*REMOVED*~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Alpn.set -> void
 *REMOVED*~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Certificate.get -> System.Security.Cryptography.X509Certificates.X509Certificate2
 *REMOVED*~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.Certificate.set -> void
 *REMOVED*~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.CertificateFilePath.get -> string
 *REMOVED*~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.CertificateFilePath.set -> void
 *REMOVED*~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.PrivateKeyFilePath.get -> string
 *REMOVED*~Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.PrivateKeyFilePath.set -> void
+*REMOVED*~static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions> configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder

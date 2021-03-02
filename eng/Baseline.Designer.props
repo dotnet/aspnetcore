@@ -526,11 +526,11 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor.Language' ">
     <BaselinePackageVersion>5.0.4</BaselinePackageVersion>
   </PropertyGroup>
-  <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic' ">
+  <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Transport.Quic-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Quic' ">
     <BaselinePackageVersion>5.0.4</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net5.0') ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Quic' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net5.0') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[5.0.4, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />

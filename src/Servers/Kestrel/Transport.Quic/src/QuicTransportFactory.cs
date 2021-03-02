@@ -7,13 +7,12 @@ using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
 {
     /// <summary>
     /// A factory for QUIC based connections.
