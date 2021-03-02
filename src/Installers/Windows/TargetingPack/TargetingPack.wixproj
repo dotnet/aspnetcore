@@ -21,6 +21,8 @@
     <NamespaceGuid>DDBB771F-963F-47D3-8510-9ABD04DBE1D1</NamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\TargetingPack\TargetingPackPackage.nuspec</ToolsetInstallerNuspecFile>
+    <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
+    <BundleVersion>$(TargetingPackVersionPrefix)</BundleVersion>
   </PropertyGroup>
 
   <ItemGroup>

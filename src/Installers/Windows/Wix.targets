@@ -4,7 +4,8 @@
     <!-- Actual upgrade code used in bundles to ensure upgrades withing a version band, e.g. 3.0.0.xxx -->
     <_FileRevisionVersion>$(VersionSuffixDateStamp)</_FileRevisionVersion>
     <_FileRevisionVersion Condition=" '$(_FileRevisionVersion)' == '' ">42424</_FileRevisionVersion>
-    <BundleVersion>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion).$(_FileRevisionVersion)</BundleVersion>
+    <BundleVersion Condition="'$(BundleVersion)' != ''" >$(BundleVersion).$(_FileRevisionVersion)</BundleVersion>
+    <BundleVersion Condition="'$(BundleVersion)' == ''" >$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion).$(_FileRevisionVersion)</BundleVersion>
     <!-- Used for generating stable upgrade codes for bundles -->
     <Version>$(BundleVersion)</Version>
 
