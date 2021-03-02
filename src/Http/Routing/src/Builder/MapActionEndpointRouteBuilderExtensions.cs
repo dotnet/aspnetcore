@@ -249,11 +249,11 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     if (attribute is IRoutePatternMetadata patternMetadata && patternMetadata.RoutePattern is { })
                     {
-                        throw new InvalidOperationException($"'{attribute.GetType()}' implements {nameof(IRoutePatternMetadata)} which is not supported my this method.");
+                        throw new InvalidOperationException($"'{attribute.GetType()}' implements {nameof(IRoutePatternMetadata)} which is not supported by this method.");
                     }
                     if (attribute is IHttpMethodMetadata methodMetadata && methodMetadata.HttpMethods.Any())
                     {
-                        throw new InvalidOperationException($"'{attribute.GetType()}' implements {nameof(IHttpMethodMetadata)} which is not supported my this method.");
+                        throw new InvalidOperationException($"'{attribute.GetType()}' implements {nameof(IHttpMethodMetadata)} which is not supported by this method.");
                     }
 
                     if (attribute is IRouteNameMetadata nameMetadata && nameMetadata.RouteName is string name)
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Builder
             builder.Order = routeOrder ?? defaultOrder;
 
             var dataSource = endpoints.DataSources.OfType<ModelEndpointDataSource>().FirstOrDefault();
-            if (dataSource == null)
+            if (dataSource is null)
             {
                 dataSource = new ModelEndpointDataSource();
                 endpoints.DataSources.Add(dataSource);
