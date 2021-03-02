@@ -16,7 +16,7 @@ export function dispatchBrowserEvent(descriptor: string, eventArgs: string) {
   send(OutgoingMessageType.DispatchBrowserEvent, descriptor, eventArgs);
 }
 
-async function onReceivedMessage(data: string) {
+function onReceivedMessage(data: string) {
   if (!data.startsWith(ipcMessagePrefix)) {
     return;
   }
@@ -30,7 +30,7 @@ async function onReceivedMessage(data: string) {
     case IncomingMessageType.RenderBatch:
       const batchId = parsed[1];
       try {
-        const batchData = await base64ToUInt8Array(parsed[2]);
+        const batchData = base64ToArrayBuffer(parsed[2]);
         renderBatch(0, new OutOfProcessRenderBatch(batchData));
         send(OutgoingMessageType.OnRenderCompleted, batchId, null);
       } catch (ex) {
@@ -50,13 +50,6 @@ function send(messageType: OutgoingMessageType, ...args: any[]) {
   windowExternal.sendMessage(serializedMessage);
 }
 
-async function base64ToUInt8Array(data: string): Promise<Uint8Array> {
-  const dataUrl = "data:application/octet-binary;base64," + data;
-  const response = await fetch(dataUrl);
-  const arrayBuffer = await response.arrayBuffer();
-  return new Uint8Array(arrayBuffer);
-}
-
 enum OutgoingMessageType {
   AttachPage = 'AttachPage',
   BeginInvokeDotNet = 'BeginInvokeDotNet',
@@ -73,4 +66,17 @@ enum IncomingMessageType {
   DetachFromDocument = 'DetachFromDocument',
   EndInvokeDotNet = 'EndInvokeDotNet',
   NotifyUnhandledException = 'NotifyUnhandledException',
+}
+
+// https://stackoverflow.com/a/21797381
+// TODO: If the data is large, consider switching over to the native decoder as in https://stackoverflow.com/a/54123275
+// But don't force it to be async all the time. Yielding execution leads to perceptible lag.
+function base64ToArrayBuffer(base64: string) {
+  const binaryString = atob(base64);
+  const length = binaryString.length;
+  const result = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+      result[i] = binaryString.charCodeAt(i);
+  }
+  return result;
 }
