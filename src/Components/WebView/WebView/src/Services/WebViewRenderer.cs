@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
                 CompletionSource = tcs,
             });
 
-            _ipcSender.ApplyRenderBatch(renderBatch);
+            _ipcSender.ApplyRenderBatch(batchId, renderBatch);
             return tcs.Task;
         }
 

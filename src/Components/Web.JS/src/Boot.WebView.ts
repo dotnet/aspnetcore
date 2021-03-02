@@ -12,6 +12,7 @@ async function boot(): Promise<void> {
   }
   started = true;
 
+  Ipc.startListener();
   Ipc.sendAttachPage(navigationManagerFunctions.getBaseURI(), navigationManagerFunctions.getLocationHref());
 }
 

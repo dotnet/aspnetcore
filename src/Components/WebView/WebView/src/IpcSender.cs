@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             _messageDispatcher = messageDispatcher;
         }
 
-        public void ApplyRenderBatch(RenderBatch renderBatch)
+        public void ApplyRenderBatch(long batchId, RenderBatch renderBatch)
         {
             var arrayBuilder = new ArrayBuilder<byte>(2048);
             using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             {
                 renderBatchWriter.Write(in renderBatch);
             }
-            var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.RenderBatch, Convert.ToBase64String(arrayBuilder.Buffer, 0, arrayBuilder.Count));
+            var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.RenderBatch, batchId, Convert.ToBase64String(arrayBuilder.Buffer, 0, arrayBuilder.Count));
             DispatchMessageWithErrorHandling(message);
         }
 

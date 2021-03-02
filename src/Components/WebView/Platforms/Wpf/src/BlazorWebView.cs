@@ -98,6 +98,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
             // TODO: Can this get called multiple times, such as from OnApplyTemplate or a property change? Do we need to handle this more efficiently?
             _webviewManager = new WebView2WebViewManager(_webview, Services, fileProvider);
+            _webviewManager.OnPageAttached += (sender, eventArgs) =>
+            {
+                _webviewManager.AddRootComponent(typeof(TemporaryFakeStuff.DemoComponent), "#app", ParameterView.Empty);
+            };
             _webviewManager.Navigate("/");
         }
 
@@ -114,6 +118,37 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             // TODO: Implement correct WPF disposal pattern
             _webviewManager?.Dispose();
             _webview?.Dispose();
+        }
+    }
+}
+
+// TODO: Replace with actual mechanism for setting a root component
+namespace TemporaryFakeStuff
+{
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.AspNetCore.Components.Rendering;
+
+    internal class DemoComponent : ComponentBase
+    {
+        int count;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "h1");
+            builder.AddContent(1, "Hello, world!");
+            builder.CloseElement();
+
+            builder.OpenElement(2, "p");
+            builder.AddContent(3, $"Current count: {count}");
+            builder.CloseElement();
+
+            builder.OpenElement(4, "button");
+            builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, () =>
+            {
+                count++;
+            }));
+            builder.AddContent(6, "Click me");
+            builder.CloseElement();
         }
     }
 }
