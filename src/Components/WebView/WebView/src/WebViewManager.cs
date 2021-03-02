@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         /// <summary>
         /// Notifies listeners that a page is attached to the webview. Handlers for this event
-        /// may add root components by calling <see cref="AddRootComponent(Type, string, ParameterView)"/>.
+        /// may add root components by calling <see cref="AddRootComponentAsync(Type, string, ParameterView)"/>.
         /// </summary>
         public event EventHandler OnPageAttached;
 
@@ -74,38 +75,28 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <param name="componentType">The type of the root component. This must implement <see cref="IComponent"/>.</param>
         /// <param name="selector">The CSS selector describing where in the page the component should be placed.</param>
         /// <param name="parameters">Parameters for the component.</param>
-        public void AddRootComponent(Type componentType, string selector, ParameterView parameters)
+        public Task AddRootComponentAsync(Type componentType, string selector, ParameterView parameters)
         {
-            _ = _dispatcher.InvokeAsync(async () =>
+            if (_currentPageContext == null)
             {
-                // TODO: Make sure any exceptions get surfaced
+                throw new InvalidOperationException("Cannot add components when no page is attached");
+            }
 
-                if (_currentPageContext == null)
-                {
-                    throw new InvalidOperationException("Cannot add components when no page is attached");
-                }
-
-                await _currentPageContext.Renderer.AddRootComponentAsync(componentType, selector, parameters);
-            });
+            return _currentPageContext.Renderer.AddRootComponentAsync(componentType, selector, parameters);
         }
 
         /// <summary>
         /// Removes a previously-attached root component from the current page.
         /// </summary>
-        /// <param name="selector">The CSS selector describing where in the page the component was placed. This must exactly match the selector provided on an earlier call to <see cref="AddRootComponent(Type, string, ParameterView)"/>.</param>
-        public void RemoveRootComponent(string selector)
+        /// <param name="selector">The CSS selector describing where in the page the component was placed. This must exactly match the selector provided on an earlier call to <see cref="AddRootComponentAsync(Type, string, ParameterView)"/>.</param>
+        public Task RemoveRootComponentAsync(string selector)
         {
-            _ = _dispatcher.InvokeAsync(async () =>
+            if (_currentPageContext == null)
             {
-                // TODO: Make sure any exceptions get surfaced
+                throw new InvalidOperationException("Cannot remove components when no page is attached");
+            }
 
-                if (_currentPageContext == null)
-                {
-                    throw new InvalidOperationException("Cannot remove components when no page is attached");
-                }
-
-                await _currentPageContext.Renderer.RemoveRootComponentAsync(selector);
-            });
+            return _currentPageContext.Renderer.RemoveRootComponentAsync(selector);
         }
 
         /// <summary>

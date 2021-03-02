@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             var fileProvider = new TestFileProvider();
             var webViewManager = new TestWebViewManager(services, fileProvider);
             webViewManager.OnPageAttached += (sender, eventArgs) =>
-                webViewManager.AddRootComponent(typeof(MyComponent), "#app", ParameterView.Empty);
+                webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
 
             // Act
             Assert.Empty(webViewManager.SentIpcMessages);

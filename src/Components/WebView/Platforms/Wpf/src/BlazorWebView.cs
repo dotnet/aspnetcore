@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             _webviewManager = new WebView2WebViewManager(_webview, Services, fileProvider);
             _webviewManager.OnPageAttached += (sender, eventArgs) =>
             {
-                _webviewManager.AddRootComponent(typeof(TemporaryFakeStuff.DemoComponent), "#app", ParameterView.Empty);
+                _webviewManager.AddRootComponentAsync(typeof(TemporaryFakeStuff.DemoComponent), "#app", ParameterView.Empty);
             };
             _webviewManager.Navigate("/");
         }
