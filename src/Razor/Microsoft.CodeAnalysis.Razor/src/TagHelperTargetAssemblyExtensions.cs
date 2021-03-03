@@ -7,23 +7,23 @@ using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    internal static class TagHelperTargetReferenceExtensions
+    internal static class TagHelperTargetAssemblyExtensions
     {
         private static readonly object TargetAssemblyKey = new object();
 
-        public static MetadataReference? GetTargetMetadataReference(this ItemCollection items)
+        public static IAssemblySymbol? GetTargetAssembly(this ItemCollection items)
         {
-            if (items.Count == 0 || items[TargetAssemblyKey] is not MetadataReference reference)
+            if (items.Count == 0 || items[TargetAssemblyKey] is not IAssemblySymbol symbol)
             {
                 return null;
             }
 
-            return reference;
+            return symbol;
         }
 
-        public static void SetTargetMetadataReference(this ItemCollection items, MetadataReference reference)
+        public static void SetTargetAssembly(this ItemCollection items, IAssemblySymbol symbol)
         {
-            items[TargetAssemblyKey] = reference;
+            items[TargetAssemblyKey] = symbol;
         }
     }
 }

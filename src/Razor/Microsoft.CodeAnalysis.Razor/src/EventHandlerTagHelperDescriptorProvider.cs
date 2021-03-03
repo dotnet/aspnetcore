@@ -47,15 +47,10 @@ namespace Microsoft.CodeAnalysis.Razor
             var types = new List<INamedTypeSymbol>();
             var visitor = new EventHandlerDataVisitor(types);
 
-
-            var targetReference = context.Items.GetTargetMetadataReference();
-            if (targetReference is not null)
+            var targetAssembly = context.Items.GetTargetAssembly();
+            if (targetAssembly is not null)
             {
-                if (compilation.GetAssemblyOrModuleSymbol(targetReference) is IAssemblySymbol targetAssembly)
-                {
-                    visitor.Visit(targetAssembly.GlobalNamespace);
-                }
-
+                visitor.Visit(targetAssembly.GlobalNamespace);
             }
             else
             {
