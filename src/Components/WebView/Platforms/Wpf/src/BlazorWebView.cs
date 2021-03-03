@@ -1,5 +1,8 @@
 using System;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,10 +21,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         //    ownerType: typeof(BlazorWebView),
         //    typeMetadata: new PropertyMetadata(OnHostPagePropertyChanged));
 
-        //public static readonly DependencyProperty RootComponentsProperty = DependencyProperty.Register(
-        //    name: nameof(RootComponents),
-        //    propertyType: typeof(ObservableCollection<RootComponent>),
-        //    ownerType: typeof(BlazorWebView));
+        public static readonly DependencyProperty RootComponentsProperty = DependencyProperty.Register(
+            name: nameof(RootComponents),
+            propertyType: typeof(ObservableCollection<RootComponent>),
+            ownerType: typeof(BlazorWebView));
 
         public static readonly DependencyProperty ServicesProperty = DependencyProperty.Register(
             name: nameof(Services),
@@ -36,8 +39,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
         public BlazorWebView()
         {
-            //SetValue(RootComponentsProperty, new ObservableCollection<RootComponent>());
-            //RootComponents.CollectionChanged += (_, ___) => StartWebViewCoreIfPossible();
+            SetValue(RootComponentsProperty, new ObservableCollection<RootComponent>());
+            RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
 
             Template = new ControlTemplate
             {
@@ -51,7 +54,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         //    set { SetValue(HostPageProperty, value); }
         //}
 
-        //public ObservableCollection<RootComponent> RootComponents => (ObservableCollection<RootComponent>)GetValue(RootComponentsProperty);
+        public ObservableCollection<RootComponent> RootComponents =>
+            (ObservableCollection<RootComponent>)GetValue(RootComponentsProperty);
 
         public IServiceProvider Services
         {
@@ -70,7 +74,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         private bool RequiredStartupPropertiesSet =>
             _webview != null &&
             //HostPage != null &&
-            //RootComponents.Any() &&
             Services != null;
 
         public override void OnApplyTemplate()
@@ -95,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
         private void StartWebViewCoreIfPossible()
         {
-            if (!RequiredStartupPropertiesSet)
+            if (!RequiredStartupPropertiesSet || _webviewManager != null)
             {
                 return;
             }
@@ -107,8 +110,36 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
             // TODO: Can this get called multiple times, such as from OnApplyTemplate or a property change? Do we need to handle this more efficiently?
             _webviewManager = new WebView2WebViewManager(new WpfWeb2ViewWrapper(_webview), Services, WpfDispatcher.Instance, fileProvider);
-            _webviewManager.AddRootComponentAsync(typeof(TemporaryFakeStuff.DemoComponent), "#app", ParameterView.Empty);
+            foreach (var rootComponent in RootComponents)
+            {
+                // Since the page isn't loaded yet, this will always complete synchronously
+                _ = rootComponent.AddToWebViewManagerAsync(_webviewManager);
+            }
             _webviewManager.Navigate("/");
+        }
+
+        private void HandleRootComponentsCollectionChanged(object sender, NotifyCollectionChangedEventArgs eventArgs)
+        {
+            // If we haven't initialized yet, this is a no-op
+            if (_webviewManager != null)
+            {
+                // Dispatch because this is going to be async, and we want to catch any errors
+                WpfDispatcher.Instance.InvokeAsync(async () =>
+                {
+                    var newItems = eventArgs.OldItems.Cast<RootComponent>();
+                    var oldItems = eventArgs.NewItems.Cast<RootComponent>();
+
+                    foreach (var item in newItems.Except(oldItems))
+                    {
+                        await item.AddToWebViewManagerAsync(_webviewManager);
+                    }
+
+                    foreach (var item in newItems.Except(oldItems))
+                    {
+                        await item.RemoveFromWebViewManagerAsync(_webviewManager);
+                    }
+                });
+            }
         }
 
         public void Dispose()
@@ -116,37 +147,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             // TODO: Implement correct WPF disposal pattern
             _webviewManager?.Dispose();
             _webview?.Dispose();
-        }
-    }
-}
-
-// TODO: Replace with actual mechanism for setting a root component
-namespace TemporaryFakeStuff
-{
-    using Microsoft.AspNetCore.Components;
-    using Microsoft.AspNetCore.Components.Rendering;
-
-    internal class DemoComponent : ComponentBase
-    {
-        int count;
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.OpenElement(0, "h1");
-            builder.AddContent(1, "Hello, world!");
-            builder.CloseElement();
-
-            builder.OpenElement(2, "p");
-            builder.AddContent(3, $"Current count: {count}");
-            builder.CloseElement();
-
-            builder.OpenElement(4, "button");
-            builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, () =>
-            {
-                count++;
-            }));
-            builder.AddContent(6, "Click me");
-            builder.CloseElement();
         }
     }
 }
