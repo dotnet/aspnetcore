@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             {
                 if (messageType == IpcCommon.IncomingMessageType.AttachPage)
                 {
-                    _manager.AttachToPage(args[0].GetString(), args[1].GetString());
+                    await _manager.AttachToPageAsync(args[0].GetString(), args[1].GetString());
                     return;
                 }
 

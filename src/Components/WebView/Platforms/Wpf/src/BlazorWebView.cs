@@ -85,6 +85,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             StartWebViewCoreIfPossible();
         }
 
+        protected override void OnInitialized(EventArgs e)
+        {
+            // Called when BeginInit/EndInit are used, such as when creating the control from XAML
+            base.OnInitialized(e);
+
+            StartWebViewCoreIfPossible();
+        }
+
         private void StartWebViewCoreIfPossible()
         {
             if (!RequiredStartupPropertiesSet)
@@ -99,19 +107,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
             // TODO: Can this get called multiple times, such as from OnApplyTemplate or a property change? Do we need to handle this more efficiently?
             _webviewManager = new WebView2WebViewManager(new WpfWeb2ViewWrapper(_webview), Services, WpfDispatcher.Instance, fileProvider);
-            _webviewManager.OnPageAttached += (sender, eventArgs) =>
-            {
-                _webviewManager.AddRootComponentAsync(typeof(TemporaryFakeStuff.DemoComponent), "#app", ParameterView.Empty);
-            };
+            _webviewManager.AddRootComponentAsync(typeof(TemporaryFakeStuff.DemoComponent), "#app", ParameterView.Empty);
             _webviewManager.Navigate("/");
-        }
-
-        protected override void OnInitialized(EventArgs e)
-        {
-            // Called when BeginInit/EndInit are used, such as when creating the control from XAML
-            base.OnInitialized(e);
-
-            StartWebViewCoreIfPossible();
         }
 
         public void Dispose()

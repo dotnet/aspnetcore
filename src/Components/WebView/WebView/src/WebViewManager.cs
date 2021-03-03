@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         private readonly IpcReceiver _ipcReceiver;
         private readonly Uri _appBaseUri;
         private readonly StaticContentProvider _staticContentProvider;
+        private readonly Dictionary<string, RootComponent> _rootComponentsBySelector = new();
 
         // Each time a web page connects, we establish a new per-page context
         private PageContext _currentPageContext;
@@ -41,13 +43,10 @@ namespace Microsoft.AspNetCore.Components.WebView
             _ipcReceiver = new IpcReceiver(this);
         }
 
-        public Dispatcher Dispatcher => _dispatcher;
-
         /// <summary>
-        /// Notifies listeners that a page is attached to the webview. Handlers for this event
-        /// may add root components by calling <see cref="AddRootComponentAsync(Type, string, ParameterView)"/>.
+        /// Gets the <see cref="Dispatcher"/> used by this <see cref="WebViewManager"/> instance.
         /// </summary>
-        public event EventHandler OnPageAttached;
+        public Dispatcher Dispatcher => _dispatcher;
 
         /// <summary>
         /// Instructs the web view to navigate to the specified location, bypassing any
@@ -79,12 +78,17 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <param name="parameters">Parameters for the component.</param>
         public Task AddRootComponentAsync(Type componentType, string selector, ParameterView parameters)
         {
-            if (_currentPageContext == null)
+            var rootComponent = new RootComponent { ComponentType = componentType, Parameters = parameters };
+            if (!_rootComponentsBySelector.TryAdd(selector, rootComponent))
             {
-                throw new InvalidOperationException("Cannot add components when no page is attached");
+                throw new InvalidOperationException($"There is already a root component with selector '{selector}'.");
             }
 
-            return _currentPageContext.Renderer.AddRootComponentAsync(componentType, selector, parameters);
+            // If the page is already attached, add the root component to it now. Otherwise we'll
+            // add it when the page attaches later.
+            return _currentPageContext != null
+                ? _currentPageContext.Renderer.AddRootComponentAsync(componentType, selector, parameters)
+                : Task.CompletedTask;
         }
 
         /// <summary>
@@ -93,12 +97,16 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <param name="selector">The CSS selector describing where in the page the component was placed. This must exactly match the selector provided on an earlier call to <see cref="AddRootComponentAsync(Type, string, ParameterView)"/>.</param>
         public Task RemoveRootComponentAsync(string selector)
         {
-            if (_currentPageContext == null)
+            if (!_rootComponentsBySelector.Remove(selector))
             {
-                throw new InvalidOperationException("Cannot remove components when no page is attached");
+                throw new InvalidOperationException($"There is no root component with selector '{selector}'.");
             }
 
-            return _currentPageContext.Renderer.RemoveRootComponentAsync(selector);
+            // If the page is already attached, remove the root component from it now. Otherwise it's
+            // enough to have updated the dictionary.
+            return _currentPageContext != null
+                ? _currentPageContext.Renderer.RemoveRootComponentAsync(selector)
+                : Task.CompletedTask;
         }
 
         /// <summary>
@@ -134,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         protected bool TryGetResponseContent(string uri, out int statusCode, out string statusMessage, out Stream content, out string headers)
             => _staticContentProvider.TryGetResponseContent(uri, out statusCode, out statusMessage, out content, out headers);
 
-        internal void AttachToPage(string baseUrl, string startUrl)
+        internal async Task AttachToPageAsync(string baseUrl, string startUrl)
         {
             // If there was some previous attached page, dispose all its resources. TODO: Are we happy
             // with this pattern? The alternative would be requiring the platform author to notify us
@@ -143,7 +151,15 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             var serviceScope = _provider.CreateScope();
             _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, baseUrl, startUrl);
-            OnPageAttached?.Invoke(this, null);
+
+            // Add any root components that were registered before the page attached
+            foreach (var (selector, rootComponent) in _rootComponentsBySelector)
+            {
+                await _currentPageContext.Renderer.AddRootComponentAsync(
+                    rootComponent.ComponentType,
+                    selector,
+                    rootComponent.Parameters);
+            }
         }
 
         /// <summary>
@@ -156,5 +172,11 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         private static Uri EnsureTrailingSlash(Uri uri)
             => uri.AbsoluteUri.EndsWith('/') ? uri : new Uri(uri.AbsoluteUri + '/');
+
+        record RootComponent
+        {
+            public Type ComponentType { get; init; }
+            public ParameterView Parameters { get; set; }
+        }
     }
 }
