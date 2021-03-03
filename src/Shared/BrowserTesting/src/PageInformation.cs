@@ -101,10 +101,13 @@ namespace Microsoft.AspNetCore.BrowserTesting
             {
                 _logger.Log(MapLogLevel(message.Type), logMessage);
             }
-            catch
+            catch (Exception e)
             {
-
-                throw;
+                // Logging after the test is finished should not cause the test to fail
+                if (!e.Message.Contains("Connection closed"))
+                {
+                    throw e;
+                }
             }
 
             BrowserConsoleLogs.Add(new LogEntry(messageText, message.Type));
