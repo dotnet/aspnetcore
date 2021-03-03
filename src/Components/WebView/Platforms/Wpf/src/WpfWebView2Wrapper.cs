@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             _webView2 = webView2 ?? throw new ArgumentNullException(nameof(webView2));
         }
 
-
         public CoreWebView2 CoreWebView2 => _webView2.CoreWebView2;
 
         public Uri Source
