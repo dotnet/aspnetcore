@@ -35,7 +35,7 @@ MAGENTA="\033[0;95m"
 
 . eng/common/tools.sh
 
-if [[ -z "${10:-}" ]]; then
+if [[ -z "${11:-}" ]]; then
     echo "InstallDotNet $DOTNET_ROOT $dotnet_sdk_version '' '' true"
     InstallDotNet $DOTNET_ROOT $dotnet_sdk_version "" "" true || {
       exit_code=$?
