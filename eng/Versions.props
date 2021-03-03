@@ -10,7 +10,7 @@
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>14</AspNetCorePatchVersion>
     <ValidateBasline>false</ValidateBasline>
-    
+
     <PreReleasePreviewNumber>0</PreReleasePreviewNumber>
     <ComponentsWebAssemblyMajorVersion>3</ComponentsWebAssemblyMajorVersion>
     <ComponentsWebAssemblyMinorVersion>2</ComponentsWebAssemblyMinorVersion>

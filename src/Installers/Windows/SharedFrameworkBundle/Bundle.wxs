@@ -93,6 +93,8 @@
             <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86"/>
             <?elseif $(var.Platform)=x64?>
             <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x64"/>
+            <?elseif $(var.Platform)=arm64?>
+            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_arm64"/>
             <?endif?>
         </Chain>
     </Bundle>

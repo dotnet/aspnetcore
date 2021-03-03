@@ -84,7 +84,8 @@
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
-    <!-- Produce targeting pack installers/packages once per major.minor except in extraordinary cases i.e. 3.1.10. -->
+    <!-- Produce targeting pack installers/packages once per major.minor except in extraordinary cases i.e. 3.1.14 win-arm64. -->
+    <IsTargetingPackBuilding Condition=" '$(AspNetCorePatchVersion)' == '14' AND '$(TargetArchitecture)' == 'arm64' AND $([MSBuild]::IsOSPlatform('Windows')) ">true</IsTargetingPackBuilding>
     <IsTargetingPackBuilding Condition=" '$(DotNetBuildFromSource)' == 'true' ">false</IsTargetingPackBuilding>
     <IsTargetingPackBuilding
         Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '10' ">false</IsTargetingPackBuilding>
