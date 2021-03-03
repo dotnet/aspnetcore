@@ -101,13 +101,9 @@ namespace Microsoft.AspNetCore.BrowserTesting
             {
                 _logger.Log(MapLogLevel(message.Type), logMessage);
             }
-            catch (Exception ex)
+            catch (PlaywrightSharpException)
             {
                 // Logging after the test is finished should not cause the test to fail
-                if (!ex.Message.Contains("Connection closed"))
-                {
-                    throw;
-                }
             }
 
             BrowserConsoleLogs.Add(new LogEntry(messageText, message.Type));
