@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
@@ -46,6 +45,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             {
                 VisualTree = new FrameworkElementFactory(typeof(WebView2Control), webViewTemplateChildName)
             };
+
+            // TODO: Implement correct WPF disposal pattern, if this isn't already it
+            Unloaded += (sender, eventArgs) => Dispose();
+            Application.Current.Exit += HandleApplicationExiting;
         }
 
         public string HostPage
@@ -140,9 +143,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             }
         }
 
+        private void HandleApplicationExiting(object sender, ExitEventArgs e)
+        {
+            Dispose();
+        }
+
         public void Dispose()
         {
-            // TODO: Implement correct WPF disposal pattern
+            Application.Current.Exit -= HandleApplicationExiting;
             _webviewManager?.Dispose();
             _webview?.Dispose();
         }

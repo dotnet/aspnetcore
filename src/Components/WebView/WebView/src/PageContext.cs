@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         public void Dispose()
         {
+            Renderer.Dispose();
             _serviceScope.Dispose();
         }
     }
