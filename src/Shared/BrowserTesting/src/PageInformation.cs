@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
                 // Logging after the test is finished should not cause the test to fail
                 if (!ex.Message.Contains("Connection closed"))
                 {
-                    throw ex;
+                    throw;
                 }
             }
 
