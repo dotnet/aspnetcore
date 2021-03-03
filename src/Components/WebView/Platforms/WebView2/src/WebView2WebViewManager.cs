@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         private readonly IWebView2Wrapper _webview;
         private readonly Task _webviewReadyTask;
 
-        public WebView2WebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider)
-            : base(services, dispatcher, new Uri(AppOrigin), fileProvider)
+        public WebView2WebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, string hostPageRelativePath)
+            : base(services, dispatcher, new Uri(AppOrigin), fileProvider, hostPageRelativePath)
         {
             _webview = webview ?? throw new ArgumentNullException(nameof(webview));
 
@@ -46,7 +46,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
             _webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
             _webview.CoreWebView2.WebResourceRequested += (sender, eventArgs) =>
             {
-                if (TryGetResponseContent(eventArgs.Request.Uri, out var statusCode, out var statusMessage, out var content, out var headers))
+                var isPageLoad = eventArgs.ResourceContext == CoreWebView2WebResourceContext.Document;
+                if (TryGetResponseContent(eventArgs.Request.Uri, isPageLoad, out var statusCode, out var statusMessage, out var content, out var headers))
                 {
                     eventArgs.Response = environment.CreateWebResourceResponse(content, statusCode, statusMessage, headers);
                 }

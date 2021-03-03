@@ -33,12 +33,14 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <param name="provider">The <see cref="IServiceProvider"/> for the application.</param>
         /// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
         /// <param name="appBaseUri">The base URI for the application. Since this is a webview, the base URI is typically on a private origin such as http://0.0.0.0/ or app://example/</param>
-        public WebViewManager(IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri, IFileProvider fileProvider)
+        /// <param name="fileProvider">Provides static content to the webview.</param>
+        /// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
+        public WebViewManager(IServiceProvider provider, Dispatcher dispatcher, Uri appBaseUri, IFileProvider fileProvider, string hostPageRelativePath)
         {
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             _appBaseUri = EnsureTrailingSlash(appBaseUri ?? throw new ArgumentNullException(nameof(appBaseUri)));
-            _staticContentProvider = new StaticContentProvider(fileProvider, appBaseUri);
+            _staticContentProvider = new StaticContentProvider(fileProvider, appBaseUri, hostPageRelativePath);
             _ipcSender = new IpcSender(_dispatcher, SendMessage);
             _ipcReceiver = new IpcReceiver(this);
         }
@@ -139,8 +141,8 @@ namespace Microsoft.AspNetCore.Components.WebView
             });
         }
 
-        protected bool TryGetResponseContent(string uri, out int statusCode, out string statusMessage, out Stream content, out string headers)
-            => _staticContentProvider.TryGetResponseContent(uri, out statusCode, out statusMessage, out content, out headers);
+        protected bool TryGetResponseContent(string uri, bool isPageLoad, out int statusCode, out string statusMessage, out Stream content, out string headers)
+            => _staticContentProvider.TryGetResponseContent(uri, isPageLoad, out statusCode, out statusMessage, out content, out headers);
 
         internal async Task AttachToPageAsync(string baseUrl, string startUrl)
         {
