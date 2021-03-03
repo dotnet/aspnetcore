@@ -10,7 +10,6 @@
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>14</AspNetCorePatchVersion>
     <ValidateBasline>false</ValidateBasline>
-
     <PreReleasePreviewNumber>0</PreReleasePreviewNumber>
     <ComponentsWebAssemblyMajorVersion>3</ComponentsWebAssemblyMajorVersion>
     <ComponentsWebAssemblyMinorVersion>2</ComponentsWebAssemblyMinorVersion>
@@ -171,10 +170,10 @@
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.1.13</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>3.1.13</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from aspnet/AspNetCore-Tooling -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.1.13</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.1.13</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftCodeAnalysisRazorPackageVersion>3.1.13</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>3.1.13</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.1.14</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.1.14</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>3.1.14</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>3.1.14</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
   <!--
 
