@@ -87,24 +87,29 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 // We're avoiding desccriptor.TagMatchingRules.Where and applicableRules.Any() to avoid
                 // Enumerator allocations on this hotpath
-                var applicableRules = new List<TagMatchingRuleDescriptor>();
+                List<TagMatchingRuleDescriptor> applicableRules = null;
                 for (var i = 0; i < descriptor.TagMatchingRules.Count; i++)
                 {
                     var rule = descriptor.TagMatchingRules[i];
                     if (TagHelperMatchingConventions.SatisfiesRule(tagNameWithoutPrefix, parentTagNameWithoutPrefix, attributes, rule))
                     {
+                        if (applicableRules is null)
+                        {
+                            applicableRules = new List<TagMatchingRuleDescriptor>();
+                        }
+
                         applicableRules.Add(rule);
                     }
                 }
 
-                if (applicableRules.Count > 0)
+                if (applicableRules != null && applicableRules.Count > 0)
                 {
                     if (applicableDescriptorMappings == null)
                     {
                         applicableDescriptorMappings = new Dictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>>();
                     }
 
-                    applicableDescriptorMappings[descriptor] = applicableRules.ToList();
+                    applicableDescriptorMappings[descriptor] = applicableRules;
                 }
             }
 
