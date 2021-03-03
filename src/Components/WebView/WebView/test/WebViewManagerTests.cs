@@ -7,35 +7,13 @@ namespace Microsoft.AspNetCore.Components.WebView
     public class WebViewManagerTests
     {
         [Fact]
-        public void RaisesOnPageAttachedWhenPageAttaches()
-        {
-            // Arrange
-            var services = new ServiceCollection().AddTestBlazorWebView().BuildServiceProvider();
-            var fileProvider = new TestFileProvider();
-            var webViewManager = new TestWebViewManager(services, fileProvider);
-            var didTriggerEvent = false;
-            webViewManager.OnPageAttached += (sender, eventArgs) =>
-            {
-                Assert.Same(webViewManager, sender);
-                didTriggerEvent = true;
-            };
-
-            // Act
-            webViewManager.ReceiveAttachPageMessage();
-
-            // Assert
-            Assert.True(didTriggerEvent);
-        }
-
-        [Fact]
         public void CanRenderRootComponent()
         {
             // Arrange
             var services = new ServiceCollection().AddTestBlazorWebView().BuildServiceProvider();
             var fileProvider = new TestFileProvider();
             var webViewManager = new TestWebViewManager(services, fileProvider);
-            webViewManager.OnPageAttached += (sender, eventArgs) =>
-                webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+            webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
 
             // Act
             Assert.Empty(webViewManager.SentIpcMessages);
