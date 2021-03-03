@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -30,11 +27,11 @@ namespace MapActionApi
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                Todo EchoTodo([FromBody] Todo todo) => todo;
+                endpoints.MapPost("/EchoTodo", (Func<Todo, Todo>)EchoTodo);
             });
         }
+
+        private record Todo(int Id, string Name, bool IsComplete);
     }
 }
