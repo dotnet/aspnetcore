@@ -1,4 +1,4 @@
-import { serializeMessage } from './WebViewIpcCommon';
+import { trySerializeMessage } from './WebViewIpcCommon';
 
 export function sendAttachPage(baseUrl: string, startUrl: string) {
   send('AttachPage', baseUrl, startUrl);
@@ -13,6 +13,8 @@ export function dispatchBrowserEvent(descriptor: string, eventArgs: string) {
 }
 
 function send(messageType: string, ...args: any[]) {
-  const serializedMessage = serializeMessage(messageType, args);
-  (window.external as any).sendMessage(serializedMessage);
+  const serializedMessage = trySerializeMessage(messageType, args);
+  if (serializedMessage) {
+    (window.external as any).sendMessage(serializedMessage);
+  }
 }

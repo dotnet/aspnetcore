@@ -1,6 +1,7 @@
+import { showErrorNotification } from '../../BootErrors';
 import { OutOfProcessRenderBatch } from '../../Rendering/RenderBatch/OutOfProcessRenderBatch';
 import { attachRootComponentToElement, renderBatch } from '../../Rendering/Renderer';
-import { tryDeserializeMessage } from './WebViewIpcCommon';
+import { setApplicationIsTerminated, tryDeserializeMessage } from './WebViewIpcCommon';
 import { sendRenderCompleted } from './WebViewIpcSender';
 
 export function startIpcReceiver() {
@@ -18,7 +19,13 @@ export function startIpcReceiver() {
       } catch (ex) {
         sendRenderCompleted(batchId, ex.toString());
       }
-    }
+    },
+
+    'NotifyUnhandledException': (message: string, stackTrace: string) => {
+      setApplicationIsTerminated();
+      console.error(`${message}\n${stackTrace}`);
+      showErrorNotification();
+    },
 
   };
 

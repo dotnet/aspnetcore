@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         public void NotifyUnhandledException(Exception exception)
         {
-            var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.NotifyUnhandledException, exception.StackTrace);
+            var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.NotifyUnhandledException, exception.Message, exception.StackTrace);
             _dispatcher.InvokeAsync(() => _messageDispatcher(message));
         }
 

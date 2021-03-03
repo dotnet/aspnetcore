@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
@@ -29,7 +30,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
 
         protected override void HandleException(Exception exception)
         {
+            // Notify the JS code so it can show the in-app UI
             _ipcSender.NotifyUnhandledException(exception);
+
+            // Also rethrow so the AppDomain's UnhandledException handler gets notified
+            ExceptionDispatchInfo.Capture(exception).Throw();
         }
 
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
