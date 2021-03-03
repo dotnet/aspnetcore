@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
                         await item.AddToWebViewManagerAsync(_webviewManager);
                     }
 
-                    foreach (var item in newItems.Except(oldItems))
+                    foreach (var item in oldItems.Except(newItems))
                     {
                         await item.RemoveFromWebViewManagerAsync(_webviewManager);
                     }
