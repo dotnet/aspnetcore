@@ -13,7 +13,7 @@
         </StackPanel>
         <blazor:BlazorWebView Services="{StaticResource services}">
             <blazor:BlazorWebView.RootComponents>
-                <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:DemoComponent}" />
+                <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
             </blazor:BlazorWebView.RootComponents>
         </blazor:BlazorWebView>
     </DockPanel>

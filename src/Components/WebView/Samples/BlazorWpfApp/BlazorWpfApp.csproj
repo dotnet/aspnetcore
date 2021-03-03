@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)-windows</TargetFramework>
@@ -12,10 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Note: this will need to change to <Content> when we switch to the Razor SDK here -->
-    <None Update="wwwroot\**">
+    <Content Update="wwwroot\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
 
 </Project>

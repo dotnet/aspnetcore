@@ -17,35 +17,8 @@ namespace BlazorWpfApp
             InitializeComponent();
         }
     }
-}
 
-// TODO: Replace with .razor component
-namespace BlazorWpfApp
-{
-    using Microsoft.AspNetCore.Components;
-    using Microsoft.AspNetCore.Components.Rendering;
-
-    internal class DemoComponent : ComponentBase
-    {
-        int count;
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.OpenElement(0, "h1");
-            builder.AddContent(1, "Hello, world!");
-            builder.CloseElement();
-
-            builder.OpenElement(2, "p");
-            builder.AddContent(3, $"Current count: {count}");
-            builder.CloseElement();
-
-            builder.OpenElement(4, "button");
-            builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, () =>
-            {
-                count++;
-            }));
-            builder.AddContent(6, "Click me");
-            builder.CloseElement();
-        }
-    }
+    // Workaround for compiler error "error MC3050: Cannot find the type 'local:Main'"
+    // It seems that, although WPF's design-time build can see Razor components, its runtime build cannot.
+    public partial class Main { }
 }

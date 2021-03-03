@@ -1,0 +1,14 @@
+﻿<h3>Hello, world!</h3>
+
+<p>The current count is <strong>@count</strong></p>
+
+<button @onclick="IncrementCount">Increment</button>
+
+@code {
+    int count;
+
+    void IncrementCount()
+    {
+        count++;
+    }
+}
