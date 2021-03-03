@@ -1,8 +1,10 @@
+import { DotNet } from '@microsoft/dotnet-js-interop';
 import { showErrorNotification } from '../../BootErrors';
 import { OutOfProcessRenderBatch } from '../../Rendering/RenderBatch/OutOfProcessRenderBatch';
 import { attachRootComponentToElement, renderBatch } from '../../Rendering/Renderer';
 import { setApplicationIsTerminated, tryDeserializeMessage } from './WebViewIpcCommon';
 import { sendRenderCompleted } from './WebViewIpcSender';
+import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
 
 export function startIpcReceiver() {
   const messageHandlers = {
@@ -27,6 +29,11 @@ export function startIpcReceiver() {
       showErrorNotification();
     },
 
+    'BeginInvokeJS': DotNet.jsCallDispatcher.beginInvokeJSFromDotNet,
+
+    'EndInvokeDotNet': DotNet.jsCallDispatcher.endInvokeDotNetFromJS,
+
+    'Navigate': navigationManagerFunctions.navigateTo,
   };
 
   (window.external as any).receiveMessage((message: string) => {

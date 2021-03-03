@@ -1,20 +1,12 @@
-﻿<h3>Hello, world!</h3>
-
-<p>The current count is <strong>@count</strong></p>
-
-<button @onclick="IncrementCount">Increment</button>
-<button @onclick="TriggerException">Throw</button>
-
-@code {
-    int count;
-
-    void IncrementCount()
-    {
-        count++;
-    }
-
-    void TriggerException()
-    {
-        throw new InvalidTimeZoneException("This is an exception from an event handler");
-    }
-}
+﻿<Router AppAssembly="@GetType().Assembly" PreferExactMatches="true">
+    <Found Context="routeData">
+        <NavLink href="" Match="NavLinkMatch.All">Home</NavLink> |
+        <NavLink href="other">Other</NavLink>
+        <hr />
+        <RouteView RouteData="@routeData" />
+    </Found>
+    <NotFound>
+        <h1>Not found</h1>
+        <p>Sorry, there's nothing here.</p>
+    </NotFound>
+</Router>

@@ -4,7 +4,7 @@ import { shouldAutoStart } from './BootCommon';
 import { internalFunctions as navigationManagerFunctions } from './Services/NavigationManager';
 import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
 import { startIpcReceiver } from './Platform/WebView/WebViewIpcReceiver';
-import { dispatchBrowserEvent, sendAttachPage } from './Platform/WebView/WebViewIpcSender';
+import { sendBrowserEvent, sendAttachPage, sendBeginInvokeDotNetFromJS, sendEndInvokeJSFromDotNet, sendLocationChanged } from './Platform/WebView/WebViewIpcSender';
 
 let started = false;
 
@@ -15,12 +15,19 @@ async function boot(): Promise<void> {
   started = true;
 
   startIpcReceiver();
+
+  DotNet.attachDispatcher({
+    beginInvokeDotNetFromJS: sendBeginInvokeDotNetFromJS,
+    endInvokeJSFromDotNet: sendEndInvokeJSFromDotNet,
+  });
+
+  navigationManagerFunctions.enableNavigationInterception();
+  navigationManagerFunctions.listenForNavigationEvents(sendLocationChanged);
+
   sendAttachPage(navigationManagerFunctions.getBaseURI(), navigationManagerFunctions.getLocationHref());
 }
 
-setEventDispatcher((descriptor, args) => {
-  dispatchBrowserEvent(JSON.stringify(descriptor), JSON.stringify(args));
-});
+setEventDispatcher(sendBrowserEvent);
 
 Blazor.start = boot;
 

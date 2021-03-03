@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.WebView
                         EndInvokeJS(pageContext, args[0].GetInt64(), args[1].GetBoolean(), args[2].GetString());
                         break;
                     case IpcCommon.IncomingMessageType.DispatchBrowserEvent:
-                        await DispatchBrowserEventAsync(pageContext, args[0].GetString(), args[1].GetString());
+                        await DispatchBrowserEventAsync(pageContext, args[0].GetRawText(), args[1].GetRawText());
                         break;
                     case IpcCommon.IncomingMessageType.OnRenderCompleted:
                         OnRenderCompleted(pageContext, args[0].GetInt64(), args[1].GetString());

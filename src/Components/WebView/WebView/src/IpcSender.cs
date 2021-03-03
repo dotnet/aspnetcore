@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         // Interop calls emitted by the JSRuntime
         public void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
         {
-            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.DetachFromDocument, taskId, identifier, argsJson, resultType, targetInstanceId));
+            DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.BeginInvokeJS, taskId, identifier, argsJson, resultType, targetInstanceId));
         }
 
         // TODO: We need to think about this, the invocation result contains the triplet [callId, successOrError, resultOrError]

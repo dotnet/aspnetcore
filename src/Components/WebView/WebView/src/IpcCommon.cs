@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             DetachFromDocument,
             EndInvokeDotNet,
             NotifyUnhandledException,
+            BeginInvokeJS,
         }
     }
 }
