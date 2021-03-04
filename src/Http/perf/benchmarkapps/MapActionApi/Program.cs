@@ -1,23 +1,33 @@
+using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace MapActionApi
-{
-    public class Program
+using var host = Host.CreateDefaultBuilder(args)
+    // REVIEW: do we want to measure default logging overhead?
+    .ConfigureLogging(logBuilder => logBuilder.ClearProviders())
+    .ConfigureWebHostDefaults(webBuilder =>
     {
-        public static void Main(string[] args)
+        webBuilder.Configure(app =>
         {
-            CreateHostBuilder(args).Build().Run();
-        }
+            app.UseRouting();
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                // REVIEW: do we want to measure default logging overhead?
-                .ConfigureLogging(logBuilder => logBuilder.ClearProviders())
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-    }
-}
+            app.UseEndpoints(endpoints =>
+            {
+                Todo EchoTodo([FromBody] Todo todo) => todo;
+                endpoints.MapPost("/EchoTodo", (Func<Todo, Todo>)EchoTodo);
+            });
+
+        });
+    })
+    .Build();
+
+await host.StartAsync();
+
+Console.WriteLine("Application started.");
+
+await host.WaitForShutdownAsync();
+
+record Todo(int Id, string Name, bool IsComplete);
