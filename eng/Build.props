@@ -43,10 +43,12 @@
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
                       " />
 
-    <!-- Exclude WPF-related projects on non-Windows -->
+    <!-- Exclude WinForms and WPF-related projects on non-Windows -->
     <ProjectToExclude Condition="'$(TargetOsName)' != 'win'"
                       Include="
+                      $(RepoRoot)src\Components\WebView\Platforms\WindowsForms\**\*.csproj;
                       $(RepoRoot)src\Components\WebView\Platforms\Wpf\**\*.csproj;
+                      $(RepoRoot)src\Components\WebView\Samples\BlazorWinFormsApp\**\*.csproj;
                       $(RepoRoot)src\Components\WebView\Samples\BlazorWpfApp\**\*.csproj;
                       " />
   </ItemGroup>
