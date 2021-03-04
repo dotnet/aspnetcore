@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         private List<string> _sentIpcMessages = new();
 
         public TestWebViewManager(IServiceProvider provider, IFileProvider fileProvider)
-            : base(provider, Dispatcher.CreateDefault(), AppBaseUri, fileProvider)
+            : base(provider, Dispatcher.CreateDefault(), AppBaseUri, fileProvider, hostPageRelativePath: "index.html")
         {
         }
 
