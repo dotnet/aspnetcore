@@ -230,5 +230,10 @@
     <XunitExtensibilityExecutionPackageVersion>2.3.1</XunitExtensibilityExecutionPackageVersion>
     <XunitPackageVersion>2.4.0</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
+
+    <!-- Dependencies listed only to include otherwise-transitive references in Microsoft.AspNetCore.App.nuspec. -->
+    <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.1.0</MicrosoftDotNetPlatformAbstractionsPackageVersion>
+    <SystemSecurityCryptographyPkcsPackageVersion>4.5.0</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemTextEncodingCodePagesPackageVersion>4.5.0</SystemTextEncodingCodePagesPackageVersion>
   </PropertyGroup>
 </Project>
