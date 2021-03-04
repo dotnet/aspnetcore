@@ -48,8 +48,6 @@ namespace RunTests
                 var playwrightBrowsers = Path.Combine(helixDir, "ms-playwright");
                 Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
                 EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
-                Console.WriteLine($"Setting PLAYWRIGHT_DRIVER_PATH: {helixDir}");
-                EnvironmentVariables.Add("PLAYWRIGHT_DRIVER_PATH", helixDir);
 #else
                 Console.WriteLine($"Skipping setting PLAYWRIGHT_BROWSERS_PATH");
 #endif
@@ -99,7 +97,7 @@ namespace RunTests
         {
             try
             {
-                Console.WriteLine($"Installing Playwright to Browsers: {EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]} Drivers: {EnvironmentVariables["PLAYWRIGHT_DRIVER_PATH"]}");
+                Console.WriteLine($"Installing Playwright to Browsers: {EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]} Driver: {EnvironmentVariables["PLAYWRIGHT_DRIVER_PATH"]}");
                 await Playwright.InstallAsync(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"], EnvironmentVariables["PLAYWRIGHT_DRIVER_PATH"]);
                 DisplayContents(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]);
                 return true;
