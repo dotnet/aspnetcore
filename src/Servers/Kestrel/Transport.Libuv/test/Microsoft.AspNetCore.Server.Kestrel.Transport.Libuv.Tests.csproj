@@ -4,6 +4,7 @@
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ServerGarbageCollection>true</ServerGarbageCollection>
+    <TestGroupName>Kestrel.Tests</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>
