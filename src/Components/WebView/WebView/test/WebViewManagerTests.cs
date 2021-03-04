@@ -74,6 +74,22 @@ namespace Microsoft.AspNetCore.Components.WebView
             Assert.NotSame(singleton.Services[0], singleton.Services[1]);
         }
 
+        [Fact]
+        public async Task AddRootComponentsWithExistingSelector_Throws()
+        {
+            // Arrange
+            const string arbitraryComponentSelector = "some_selector";
+            var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+            var fileProvider = new TestFileProvider();
+            var webViewManager = new TestWebViewManager(services, fileProvider);
+            await webViewManager.AddRootComponentAsync(typeof(MyComponent), arbitraryComponentSelector, ParameterView.Empty);
+
+            // Act & assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await webViewManager.AddRootComponentAsync(typeof(MyComponent), arbitraryComponentSelector, ParameterView.Empty));
+
+            Assert.Equal($"There is already a root component with selector '{arbitraryComponentSelector}'.", ex.Message);
+        }
+
         private static IServiceCollection RegisterTestServices()
         {
             return new ServiceCollection().AddSingleton<SingletonService>().AddScoped<ScopedService>();
