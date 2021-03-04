@@ -6,11 +6,11 @@ using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 {
-    internal class WindowsFormsWeb2ViewWrapper : IWebView2Wrapper
+    internal class WindowsFormsWebView2Wrapper : IWebView2Wrapper
     {
         private readonly WebView2Control _webView2;
 
-        public WindowsFormsWeb2ViewWrapper(WebView2Control webView2)
+        public WindowsFormsWebView2Wrapper(WebView2Control webView2)
         {
             if (webView2 is null)
             {
