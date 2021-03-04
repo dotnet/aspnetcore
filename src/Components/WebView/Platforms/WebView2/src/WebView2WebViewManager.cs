@@ -47,8 +47,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
             _webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
             _webview.CoreWebView2.WebResourceRequested += (sender, eventArgs) =>
             {
-                var isPageLoad = eventArgs.ResourceContext == CoreWebView2WebResourceContext.Document;
-                if (TryGetResponseContent(eventArgs.Request.Uri, isPageLoad, out var statusCode, out var statusMessage, out var content, out var headers))
+                // Unlike server-side code, we get told exactly why the browser is making the request,
+                // so we can be smarter about fallback. We can ensure that 'fetch' requests never result
+                // in fallback, for example.
+                var allowFallbackOnHostPage =
+                    eventArgs.ResourceContext == CoreWebView2WebResourceContext.Document ||
+                    eventArgs.ResourceContext == CoreWebView2WebResourceContext.Other; // e.g., dev tools requesting page source
+
+                if (TryGetResponseContent(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
                 {
                     eventArgs.Response = environment.CreateWebResourceResponse(content, statusCode, statusMessage, headers);
                 }

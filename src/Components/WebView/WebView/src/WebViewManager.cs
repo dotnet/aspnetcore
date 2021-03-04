@@ -141,8 +141,8 @@ namespace Microsoft.AspNetCore.Components.WebView
             });
         }
 
-        protected bool TryGetResponseContent(string uri, bool isPageLoad, out int statusCode, out string statusMessage, out Stream content, out string headers)
-            => _staticContentProvider.TryGetResponseContent(uri, isPageLoad, out statusCode, out statusMessage, out content, out headers);
+        protected bool TryGetResponseContent(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out string headers)
+            => _staticContentProvider.TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
 
         internal async Task AttachToPageAsync(string baseUrl, string startUrl)
         {
