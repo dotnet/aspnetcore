@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
                     harDirectory = browserContextOptions.RecordHar.Path;
                 }
                 browserContextOptions.RecordHar.Path = Path.Combine(harDirectory, $"{identifier}.har");
-                _harPath = browserContextOptions.RecordHar.Path
+                _harPath = browserContextOptions.RecordHar.Path;
             }
 
             if (browserContextOptions?.RecordVideo?.Dir != null)
