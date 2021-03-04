@@ -8,11 +8,14 @@ param(
     [string]$Quarantined,
     [string]$EF,
     [string]$HelixTimeout,
+    [string]$InstallPlaywright,
     [string]$FeedCred
 )
 
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
 $env:DOTNET_MULTILEVEL_LOOKUP = 0
+$env:PLAYWRIGHT_BROWSERS_PATH = "$currentDirectory\ms-playwright"
+$env:InstallPlaywright = "$InstallPlaywright"
 
 $currentDirectory = Get-Location
 $envPath = "$env:PATH;$env:HELIX_CORRELATION_PAYLOAD\node\bin"
@@ -53,7 +56,6 @@ function InstallDotnetSDKAndRuntime([string]$Feed, [string]$FeedCredParam) {
         Write-Host "Set PATH to: $env:PATH"
 
         $success = InvokeInstallDotnet ". eng\common\tools.ps1; InstallDotNet $env:DOTNET_ROOT $SdkVersion $Arch `'`' `$true `'$Feed`' `'$FeedCredParam`' `$true"
-
         if (!$success) {
             Write-Host "Retrying..."
             continue
