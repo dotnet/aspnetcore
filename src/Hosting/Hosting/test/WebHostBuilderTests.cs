@@ -21,7 +21,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 [assembly: HostingStartup(typeof(WebHostBuilderTests.TestHostingStartup))]
@@ -115,7 +114,6 @@ namespace Microsoft.AspNetCore.Hosting
 
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30582")]
         public async Task UseStartupFactoryWorks(IWebHostBuilder builder)
         {
             void ConfigureServices(IServiceCollection services) { }
