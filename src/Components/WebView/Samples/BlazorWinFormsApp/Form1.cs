@@ -17,7 +17,7 @@ namespace BlazorWinFormsApp
 
             blazorWebView1.HostPage = @"wwwroot\index.html";
             blazorWebView1.Services = serviceCollection.BuildServiceProvider();
-            blazorWebView1.RootComponents.Add(new RootComponent { Selector = "#app", ComponentType = typeof(Main) });
+            blazorWebView1.RootComponents.Add<Main>("#app");
         }
 
         private void button1_Click(object sender, EventArgs e)
