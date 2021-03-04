@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -6,8 +6,8 @@
     <IsShippingPackage>true</IsShippingPackage>
     <DefineConstants>$(DefineConstants);BLAZOR_WEBVIEW</DefineConstants>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
-    <!-- TODO: REMOVE -->
-    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

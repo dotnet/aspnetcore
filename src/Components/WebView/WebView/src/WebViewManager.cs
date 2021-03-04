@@ -125,6 +125,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         /// <summary>
         /// Notifies the <see cref="WebViewManager"/> about a message from JavaScript running within the web view.
         /// </summary>
+        /// <param name="sourceUri">The source URI for the message.</param>
         /// <param name="message">The message.</param>
         protected void MessageReceived(Uri sourceUri, string message)
         {
