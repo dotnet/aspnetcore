@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/pull/30463")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30582")]
         public async Task UseStartupFactoryWorks(IWebHostBuilder builder)
         {
             void ConfigureServices(IServiceCollection services) { }
