@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
             {
                 var identifier = Guid.NewGuid().ToString("N");
                 var harDirectory = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-                if (string.IsNullOrEmpty(harDir))
+                if (string.IsNullOrEmpty(harDirectory))
                 {
                     harDirectory = browserContextOptions.RecordHar.Path;
                 }
