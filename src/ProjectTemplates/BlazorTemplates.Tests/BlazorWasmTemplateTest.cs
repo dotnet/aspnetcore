@@ -79,8 +79,6 @@ namespace Templates.Test
                     EnsureBrowserAvailable(browserKind);
                 }
             }
-
-            Assert.True(0 == 1);
         }
 
         private async Task<IPage> NavigateToPage(IBrowserContext browser, string listeningUri)
