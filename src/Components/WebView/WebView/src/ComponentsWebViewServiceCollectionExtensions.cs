@@ -9,8 +9,16 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extensions for adding component webview services to the <see cref="IServiceCollection"/>.
+    /// </summary>
     public static class ComponentsWebViewServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds component webview services to the <paramref name="services"/> collection.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the component webview services to.</param>
+        /// <returns></returns>
         public static IServiceCollection AddBlazorWebView(this IServiceCollection services)
         {
             services.AddLogging();

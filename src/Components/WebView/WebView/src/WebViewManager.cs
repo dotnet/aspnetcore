@@ -156,6 +156,16 @@ namespace Microsoft.AspNetCore.Components.WebView
             });
         }
 
+        /// <summary>
+        /// Tries to provide the response content for a given network request.
+        /// </summary>
+        /// <param name="uri">The uri of the request</param>
+        /// <param name="allowFallbackOnHostPage">Whether or not to fallback to the host page.</param>
+        /// <param name="statusCode">The status code of the response.</param>
+        /// <param name="statusMessage">The response status message.</param>
+        /// <param name="content">The response content</param>
+        /// <param name="headers">The response headers</param>
+        /// <returns><c>true</c> if the response can be provided; <c>false</c> otherwise.</returns>
         protected bool TryGetResponseContent(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out string headers)
             => _staticContentProvider.TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
 
@@ -188,6 +198,10 @@ namespace Microsoft.AspNetCore.Components.WebView
             public ParameterView Parameters { get; set; }
         }
 
+        /// <summary>
+        /// Disposes the current <see cref="WebViewManager"/> instance.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> when dispose was called explicitly; <c>false</c> when it is called as part of the finalizer.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -201,6 +215,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
