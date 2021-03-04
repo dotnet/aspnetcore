@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         {
             var environment = await CoreWebView2Environment.CreateAsync().ConfigureAwait(true);
             await _webview.EnsureCoreWebView2Async(environment);
+            ApplyDefaultWebViewSettings();
 
             _webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
             _webview.CoreWebView2.WebResourceRequested += (sender, eventArgs) =>
@@ -68,6 +69,29 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
             _webview.CoreWebView2.WebMessageReceived += (sender, eventArgs)
                 => MessageReceived(new Uri(eventArgs.Source), eventArgs.TryGetWebMessageAsString());
+        }
+
+        private void ApplyDefaultWebViewSettings()
+        {
+            // Desktop applications typically don't want the default web browser context menu
+            _webview.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+
+            // Desktop applications almost never want to show a URL preview when hovering over a link
+            _webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
+
+            // Desktop applications don't normally want to enable things like "alt-left to go back"
+            // or "ctrl+f to find". Developers should explicitly opt into allowing these.
+            // TODO: Create a way of opting back in.
+            _webview.AcceleratorKeyPressed += (sender, eventArgs) =>
+            {
+                if (eventArgs.VirtualKey != 0x49) // Allow ctrl+shift+i to open dev tools, at least for now
+                {
+                    // Note: due to what seems like a bug (https://github.com/MicrosoftEdge/WebView2Feedback/issues/549),
+                    // setting eventArgs.Handled doesn't actually have any effect in WPF, even though it works fine in
+                    // WinForms. Leaving the code here because it's supposedly fixed in a newer version.
+                    eventArgs.Handled = true;
+                }
+            };
         }
     }
 }

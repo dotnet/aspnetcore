@@ -24,6 +24,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             set => _webView2.Source = value;
         }
 
+        public event EventHandler<CoreWebView2AcceleratorKeyPressedEventArgs> AcceleratorKeyPressed
+        {
+            add => _webView2.AcceleratorKeyPressed += value;
+            remove => _webView2.AcceleratorKeyPressed -= value;
+        }
+
         public Task EnsureCoreWebView2Async(CoreWebView2Environment environment = null)
         {
             if (_hasInitialized)

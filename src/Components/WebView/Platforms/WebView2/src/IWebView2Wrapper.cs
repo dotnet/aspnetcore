@@ -29,5 +29,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         /// <param name="environment">A <see cref="CoreWebView2Environment"/> that can be used to customize the control's behavior.</param>
         /// <returns>A <see cref="Task"/> that will complete once the <see cref="CoreWebView2"/> is initialized and attached to the control.</returns>
         Task EnsureCoreWebView2Async(CoreWebView2Environment environment = null);
+
+        /// <summary>
+        /// Event that occurs when an accelerator key is pressed.
+        /// </summary>
+        event EventHandler<CoreWebView2AcceleratorKeyPressedEventArgs> AcceleratorKeyPressed;
     }
 }
