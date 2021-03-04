@@ -19,11 +19,12 @@ First, please describe the purpose and value of the new API here.
 <!--
 Please provide the specific public API signature diff that you are proposing. For example:
 ```diff
-namespace System.Collections.Generic
+namespace Microsoft.AspNetCore.Http
 {
--    public class HashSet<T> : ICollection<T>, ISet<T> {
-+    public class HashSet<T> : ICollection<T>, ISet<T>, IReadOnlySet<T> {
-     }
+    public static class HttpResponseWritingExtensions
+    {
++       public Task WriteAsync(this HttpResponse response, StringBuilder builder);
+    }
 ```
 You may find the [Framework Design Guidelines](https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/framework-design-guidelines-digest.md) helpful.
 -->
