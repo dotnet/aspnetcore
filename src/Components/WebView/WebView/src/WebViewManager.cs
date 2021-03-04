@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         // Each time a web page connects, we establish a new per-page context
         private PageContext _currentPageContext;
+        private bool _disposed;
 
         /// <summary>
         /// Constructs an instance of <see cref="WebViewManager"/>.
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             _appBaseUri = EnsureTrailingSlash(appBaseUri ?? throw new ArgumentNullException(nameof(appBaseUri)));
             _staticContentProvider = new StaticContentProvider(fileProvider, appBaseUri, hostPageRelativePath);
             _ipcSender = new IpcSender(_dispatcher, SendMessage);
-            _ipcReceiver = new IpcReceiver(this);
+            _ipcReceiver = new IpcReceiver(AttachToPageAsync);
         }
 
         /// <summary>
@@ -88,9 +89,14 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             // If the page is already attached, add the root component to it now. Otherwise we'll
             // add it when the page attaches later.
-            return _currentPageContext != null
-                ? _currentPageContext.Renderer.AddRootComponentAsync(componentType, selector, parameters)
-                : Task.CompletedTask;
+            if (_currentPageContext != null)
+            {
+                return Dispatcher.InvokeAsync(() => _currentPageContext.Renderer.AddRootComponentAsync(componentType, selector, parameters));
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
         }
 
         /// <summary>
@@ -106,9 +112,14 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             // If the page is already attached, remove the root component from it now. Otherwise it's
             // enough to have updated the dictionary.
-            return _currentPageContext != null
-                ? _currentPageContext.Renderer.RemoveRootComponentAsync(selector)
-                : Task.CompletedTask;
+            if (_currentPageContext != null)
+            {
+                return Dispatcher.InvokeAsync(() => _currentPageContext.Renderer.RemoveRootComponentAsync(selector));
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
         }
 
         /// <summary>
@@ -164,14 +175,6 @@ namespace Microsoft.AspNetCore.Components.WebView
             }
         }
 
-        /// <summary>
-        /// Disposes the <see cref="WebViewManager"/>.
-        /// </summary>
-        public void Dispose()
-        {
-            _currentPageContext?.Dispose();
-        }
-
         private static Uri EnsureTrailingSlash(Uri uri)
             => uri.AbsoluteUri.EndsWith('/') ? uri : new Uri(uri.AbsoluteUri + '/');
 
@@ -179,6 +182,26 @@ namespace Microsoft.AspNetCore.Components.WebView
         {
             public Type ComponentType { get; init; }
             public ParameterView Parameters { get; set; }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _currentPageContext?.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

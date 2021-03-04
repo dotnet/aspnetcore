@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.WebView
     /// for web views, the IPC channel is outside the page context, whereas in Blazor Server,
     /// the IPC channel is within the circuit.
     /// </summary>
-    class PageContext : IDisposable
+    internal class PageContext : IDisposable
     {
         private readonly IServiceScope _serviceScope;
 

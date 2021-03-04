@@ -22,11 +22,11 @@ namespace Microsoft.AspNetCore.Components.WebView
     // It receives messages on OnMessageReceived, interprets the payload and dispatches them to the appropriate method
     internal class IpcReceiver
     {
-        private readonly WebViewManager _manager;
+        private readonly Func<string, string, Task> _onAttachMessage;
 
-        public IpcReceiver(WebViewManager manager)
+        public IpcReceiver(Func<string,string,Task> onAttachMessage)
         {
-            _manager = manager;
+            _onAttachMessage = onAttachMessage;
         }
 
         public async Task OnMessageReceivedAsync(PageContext pageContext, string message)
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             {
                 if (messageType == IpcCommon.IncomingMessageType.AttachPage)
                 {
-                    await _manager.AttachToPageAsync(args[0].GetString(), args[1].GetString());
+                    await _onAttachMessage(args[0].GetString(), args[1].GetString());
                     return;
                 }
 

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         {
             // We could come up with something a little more low-level here if we
             // wanted to avoid a couple of allocations
-            var messageTypeAndArgs = new object[] { messageType }.Concat(args);
+            var messageTypeAndArgs = args.Prepend(messageType);
             return $"{_ipcMessagePrefix}{JsonSerializer.Serialize(messageTypeAndArgs, JsonSerializerOptionsProvider.Options)}";
         }
 

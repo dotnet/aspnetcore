@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -7,13 +9,13 @@ namespace Microsoft.AspNetCore.Components.WebView
     public class WebViewManagerTests
     {
         [Fact]
-        public void CanRenderRootComponent()
+        public async Task CanRenderRootComponentAsync()
         {
             // Arrange
-            var services = new ServiceCollection().AddTestBlazorWebView().BuildServiceProvider();
+            var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
             var fileProvider = new TestFileProvider();
             var webViewManager = new TestWebViewManager(services, fileProvider);
-            webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+            await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
 
             // Act
             Assert.Empty(webViewManager.SentIpcMessages);
@@ -25,6 +27,58 @@ namespace Microsoft.AspNetCore.Components.WebView
                 m => AssertHelpers.IsRenderBatch(m));
         }
 
+        [Fact]
+        public async Task CanRenderRootComponent_AfterThePageIsAttachedAsync()
+        {
+            // Arrange
+            var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+            var fileProvider = new TestFileProvider();
+            var webViewManager = new TestWebViewManager(services, fileProvider);
+
+            Assert.Empty(webViewManager.SentIpcMessages);
+            webViewManager.ReceiveAttachPageMessage();
+
+            // Act
+            Assert.Empty(webViewManager.SentIpcMessages);
+            await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+
+            // Assert
+            Assert.Collection(webViewManager.SentIpcMessages,
+                m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
+                m => AssertHelpers.IsRenderBatch(m));
+        }
+
+        [Fact]
+        public async Task AttachingToNewPage_DisposesExistingScopeAsync()
+        {
+            // Arrange
+            var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+            var fileProvider = new TestFileProvider();
+            var webViewManager = new TestWebViewManager(services, fileProvider);
+            await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+            var singleton = services.GetRequiredService<SingletonService>();
+
+            // Act
+            Assert.Empty(webViewManager.SentIpcMessages);
+            webViewManager.ReceiveAttachPageMessage();
+            webViewManager.ReceiveAttachPageMessage();
+
+            // Assert
+            Assert.Collection(webViewManager.SentIpcMessages,
+                m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
+                m => AssertHelpers.IsRenderBatch(m),
+                m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
+                m => AssertHelpers.IsRenderBatch(m));
+
+            Assert.Equal(2, singleton.Services.Count);
+            Assert.NotSame(singleton.Services[0], singleton.Services[1]);
+        }
+
+        private static IServiceCollection RegisterTestServices()
+        {
+            return new ServiceCollection().AddSingleton<SingletonService>().AddScoped<ScopedService>();
+        }
+
         private class MyComponent : IComponent
         {
             private RenderHandle _handle;
@@ -33,6 +87,8 @@ namespace Microsoft.AspNetCore.Components.WebView
             {
                 _handle = renderHandle;
             }
+
+            [Inject] public ScopedService MyScopedService { get; set; }
 
             public Task SetParametersAsync(ParameterView parameters)
             {
@@ -44,6 +100,31 @@ namespace Microsoft.AspNetCore.Components.WebView
                 });
 
                 return Task.CompletedTask;
+            }
+        }
+
+        private class SingletonService
+        {
+            public List<ScopedService> Services { get; } = new();
+
+            public void Add(ScopedService service)
+            {
+                Services.Add(service);
+            }
+        }
+
+        private class ScopedService : IDisposable
+        {
+            public ScopedService(SingletonService singleton)
+            {
+                singleton.Add(this);
+            }
+
+            public bool Disposed { get; private set; }
+
+            public void Dispose()
+            {
+                Disposed = true;
             }
         }
     }
