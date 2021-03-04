@@ -18,6 +18,12 @@ using var host = Host.CreateDefaultBuilder(args)
             {
                 Todo EchoTodo([FromBody] Todo todo) => todo;
                 endpoints.MapPost("/EchoTodo", (Func<Todo, Todo>)EchoTodo);
+
+                string Plaintext() => "Hello, World!";
+                endpoints.MapGet("/plaintext", (Func<string>)Plaintext);
+
+                object Json() => new { message = "Hello, World!" };
+                endpoints.MapGet("/json", (Func<object>)Json);
             });
 
         });
