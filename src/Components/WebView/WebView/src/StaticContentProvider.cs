@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Components.WebView
         private readonly Uri _appBaseUri;
         private readonly string _hostPageRelativePath;
         private static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
+        private static ManifestEmbeddedFileProvider _manifestProvider =
+            new ManifestEmbeddedFileProvider(typeof(StaticContentProvider).Assembly);
 
         public StaticContentProvider(IFileProvider fileProvider, Uri appBaseUri, string hostPageRelativePath)
         {
@@ -88,13 +90,12 @@ namespace Microsoft.AspNetCore.Components.WebView
         {
             // We're not trying to simulate everything a real webserver does. We don't need to
             // support querystring parameters, for example. It's enough to require an exact match.
-            switch (relativePath)
+            var file = _manifestProvider.GetFileInfo(relativePath);
+            if (file.Exists)
             {
-                case "_framework/blazor.webview.js":
-                    var assembly = typeof(StaticContentProvider).Assembly;
-                    content = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.Resources.blazor.webview.js");
-                    contentType = GetResponseContentTypeOrDefault(relativePath);
-                    return true;
+                content = file.CreateReadStream();
+                contentType = GetResponseContentTypeOrDefault(relativePath);
+                return true;
             }
 
             content = default;
