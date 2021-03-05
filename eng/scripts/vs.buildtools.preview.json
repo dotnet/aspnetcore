@@ -14,6 +14,8 @@
         "Microsoft.VisualStudio.Component.NuGet.BuildTools",
         "Microsoft.VisualStudio.Component.VC.ATL",
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+        "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
+        "Microsoft.VisualStudio.Component.VC.Tools.ARM64",
         "Microsoft.VisualStudio.Component.Windows10SDK.17134",
         "Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools",
         "Microsoft.VisualStudio.Workload.MSBuildTools",
