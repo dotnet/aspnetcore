@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
-  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
+  <Import Condition="'$(ExcludeFromBuild)' != 'true'" Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -65,5 +65,5 @@
   </PropertyGroup>
 
   <!-- Shared testing infrastructure for running E2E tests -->
-  <Import Project="..\TestInfrastructure\PrepareForTest.targets" />
+  <Import Condition="'$(ExcludeFromBuild)' != 'true'" Project="..\TestInfrastructure\PrepareForTest.targets" />
 </Project>
