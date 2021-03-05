@@ -3,6 +3,7 @@
 
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.BrowserTesting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using ProjectTemplates.Tests.Infrastructure;
@@ -11,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class BlazorTemplateTest
+    public class BlazorTemplateTest : LoggedTest
     {
         public BlazorTemplateTest(PlaywrightFixture<BlazorServerTemplateTest> browserFixture)
         {
