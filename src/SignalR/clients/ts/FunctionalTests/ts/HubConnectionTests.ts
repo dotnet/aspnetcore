@@ -395,11 +395,6 @@ describe("hubConnection", () => {
 
                 await hubConnection.start();
                 const value = await hubConnection.invoke("EchoComplexObject", complexObject);
-                if (protocol.name === "messagepack") {
-                    // msgpack5 creates a Buffer for byte arrays and jasmine fails to compare a Buffer
-                    // and a Uint8Array even though Buffer instances are also Uint8Array instances
-                    value.ByteArray = new Uint8Array(value.ByteArray);
-                }
                 expect(value).toEqual(complexObject);
 
                 await hubConnection.stop();
@@ -429,11 +424,6 @@ describe("hubConnection", () => {
 
                 await hubConnection.start();
                 const value = await hubConnection.invoke("SendComplexObject");
-                if (protocol.name === "messagepack") {
-                    // msgpack5 creates a Buffer for byte arrays and jasmine fails to compare a Buffer
-                    // and a Uint8Array even though Buffer instances are also Uint8Array instances
-                    value.ByteArray = new Uint8Array(value.ByteArray);
-                }
                 expect(value).toEqual(complexObject);
 
                 await hubConnection.stop();

@@ -34,10 +34,10 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
         // * The "Length prefixed string" is the string format used by BinaryReader/BinaryWriter:
         //   * A 7-bit variable length integer encodes the length in bytes, followed by the encoded string in UTF-8.
 
-        public byte[] WriteInvocation(string methodName, object[] args) =>
+        public byte[] WriteInvocation(string methodName, object?[] args) =>
             WriteInvocation(methodName, args, excludedConnectionIds: null);
 
-        public byte[] WriteInvocation(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds)
+        public byte[] WriteInvocation(string methodName, object?[] args, IReadOnlyList<string>? excludedConnectionIds)
         {
             // Written as a MessagePack 'arr' containing at least these items:
             // * A MessagePack 'arr' of 'str's representing the excluded ids
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             ValidateArraySize(ref reader, 2, "Invocation");
 
             // Read excluded Ids
-            IReadOnlyList<string> excludedConnectionIds = null;
+            IReadOnlyList<string>? excludedConnectionIds = null;
             var idCount = reader.ReadArrayHeader();
             if (idCount > 0)
             {

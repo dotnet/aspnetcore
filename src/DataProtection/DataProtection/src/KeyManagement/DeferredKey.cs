@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             {
                 // It's important that the lambda above doesn't capture 'descriptorElement'. Clearing the reference here
                 // helps us detect if we've done this by causing a null ref at runtime.
-                keyElement = null;
+                keyElement = null!;
             }
         }
     }

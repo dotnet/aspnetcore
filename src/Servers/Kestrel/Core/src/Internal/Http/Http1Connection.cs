@@ -30,14 +30,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private uint _requestCount;
 
         private HttpRequestTarget _requestTargetForm = HttpRequestTarget.Unknown;
-        private Uri _absoluteRequestTarget;
+        private Uri? _absoluteRequestTarget;
 
         // The _parsed fields cache the Path, QueryString, RawTarget, and/or _absoluteRequestTarget
         // from the previous request when DisableStringReuse is false.
-        private string _parsedPath = null;
-        private string _parsedQueryString = null;
-        private string _parsedRawTarget = null;
-        private Uri _parsedAbsoluteRequestTarget;
+        private string? _parsedPath = null;
+        private string? _parsedQueryString = null;
+        private string? _parsedRawTarget = null;
+        private Uri? _parsedAbsoluteRequestTarget;
 
         private long _remainingRequestHeadersBytesAllowed;
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool RequestTimedOut => _requestTimedOut;
 
-        public MinDataRate MinResponseDataRate { get; set; }
+        public MinDataRate? MinResponseDataRate { get; set; }
 
         public MemoryPool<byte> MemoryPool { get; }
 
@@ -134,6 +134,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void HandleReadDataRateTimeout()
         {
+            Debug.Assert(MinRequestBodyDataRate != null);
+
             Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, TraceIdentifier, MinRequestBodyDataRate.BytesPerSecond);
             SendTimeoutResponse();
         }
@@ -596,7 +598,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // System.Uri doesn't not tell us if the port was in the original string or not.
                 // When IsDefaultPort = true, we will allow Host: with or without the default port
-                if (hostText != _absoluteRequestTarget.Authority)
+                if (hostText != _absoluteRequestTarget!.Authority)
                 {
                     if (!_absoluteRequestTarget.IsDefaultPort
                         || hostText != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))

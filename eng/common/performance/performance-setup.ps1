@@ -79,12 +79,6 @@ $CommonSetupArguments="--channel master --queue $Queue --build-number $BuildNumb
 $SetupArguments = "--repository https://github.com/$Repository --branch $Branch --get-perf-hash --commit-sha $CommitSha $CommonSetupArguments"
 
 
-#This grabs the LKG version number of dotnet and passes it to our scripts
-$VersionJSON = Get-Content global.json | ConvertFrom-Json
-$DotNetVersion = $VersionJSON.tools.dotnet
-$SetupArguments = "--dotnet-versions $DotNetVersion $SetupArguments"
-
-
 if ($RunFromPerformanceRepo) {
     $SetupArguments = "--perf-hash $CommitSha $CommonSetupArguments"
     

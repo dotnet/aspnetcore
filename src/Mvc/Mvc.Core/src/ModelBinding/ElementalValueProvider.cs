@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Globalization;
 
@@ -8,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     internal class ElementalValueProvider : IValueProvider
     {
-        public ElementalValueProvider(string key, string value, CultureInfo culture)
+        public ElementalValueProvider(string key, string? value, CultureInfo culture)
         {
             Key = key;
             Value = value;
@@ -19,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         public string Key { get; }
 
-        public string Value { get; }
+        public string? Value { get; }
 
         public bool ContainsPrefix(string prefix)
         {

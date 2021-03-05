@@ -41,6 +41,14 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field must be a number.";
 
+        /// <summary>
+        /// Gets or sets the associated <see cref="ElementReference"/>.
+        /// <para>
+        /// May be <see langword="null"/> if accessed before the component is rendered.
+        /// </para>
+        /// </summary>
+        [DisallowNull] public ElementReference? Element { get; protected set; }
+
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -51,6 +59,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(4, "class", CssClass);
             builder.AddAttribute(5, "value", BindConverter.FormatValue(CurrentValueAsString));
             builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddElementReferenceCapture(7, __inputReference => Element = __inputReference);
             builder.CloseElement();
         }
 
@@ -64,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
             else
             {
-                validationErrorMessage = string.Format(ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+                validationErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
                 return false;
             }
         }

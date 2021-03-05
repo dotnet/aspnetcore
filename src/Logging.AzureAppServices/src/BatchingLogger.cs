@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Text;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices
@@ -36,7 +37,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             }
 
             var builder = new StringBuilder();
-            builder.Append(timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff zzz"));
+            builder.Append(timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff zzz", CultureInfo.InvariantCulture));
             builder.Append(" [");
             builder.Append(logLevel.ToString());
             builder.Append("] ");

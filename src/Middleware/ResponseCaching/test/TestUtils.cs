@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var expires = context.Request.Query["Expires"];
             if (!string.IsNullOrEmpty(expires))
             {
-                headers.Expires = DateTimeOffset.Now.AddSeconds(int.Parse(expires));
+                headers.Expires = DateTimeOffset.Now.AddSeconds(int.Parse(expires, CultureInfo.InvariantCulture));
             }
 
             if (headers.CacheControl == null)
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var contentLength = context.Request.Query["ContentLength"];
             if (!string.IsNullOrEmpty(contentLength))
             {
-                headers.ContentLength = long.Parse(contentLength);
+                headers.ContentLength = long.Parse(contentLength, CultureInfo.InvariantCulture);
             }
 
             if (context.Request.Method != "HEAD")

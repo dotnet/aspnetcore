@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _currentKnownType = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
-                    ? collection.MaybeUnknown.GetEnumerator()
+                    ? collection.MaybeUnknown!.GetEnumerator()
                     : default;
             }
 

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Diagnostics;
@@ -31,9 +33,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             _logger = loggerFactory.CreateLogger<MvcAttributeRouteHandler>();
         }
 
-        public ActionDescriptor[] Actions { get; set; }
+        public ActionDescriptor[]? Actions { get; set; }
 
-        public VirtualPathData GetVirtualPath(VirtualPathContext context)
+        public VirtualPathData? GetVirtualPath(VirtualPathContext context)
         {
             if (context == null)
             {

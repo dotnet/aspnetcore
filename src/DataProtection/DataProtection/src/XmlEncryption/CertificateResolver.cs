@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// </summary>
         /// <param name="thumbprint">The thumbprint (as a hex string) of the certificate to resolve.</param>
         /// <returns>The resolved <see cref="X509Certificate2"/>, or null if the certificate cannot be found.</returns>
-        public virtual X509Certificate2 ResolveCertificate(string thumbprint)
+        public virtual X509Certificate2? ResolveCertificate(string thumbprint)
         {
             if (thumbprint == null)
             {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 ?? GetCertificateFromStore(StoreLocation.LocalMachine, thumbprint);
         }
 
-        private static X509Certificate2 GetCertificateFromStore(StoreLocation location, string thumbprint)
+        private static X509Certificate2? GetCertificateFromStore(StoreLocation location, string thumbprint)
         {
             var store = new X509Store(location);
             try

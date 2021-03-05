@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
@@ -15,7 +18,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private static readonly AsyncLocal<ActionContext> _storage = new AsyncLocal<ActionContext>();
 
         /// <inheritdoc/>
-        public ActionContext ActionContext
+        [DisallowNull]
+        public ActionContext? ActionContext
         {
             get { return _storage.Value; }
             set { _storage.Value = value; }
@@ -23,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private class NullActionContextAccessor : IActionContextAccessor
         {
-            public ActionContext ActionContext
+            public ActionContext? ActionContext
             {
                 get => null;
                 set { }

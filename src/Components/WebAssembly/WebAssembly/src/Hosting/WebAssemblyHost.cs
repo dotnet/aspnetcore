@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,6 +25,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private readonly IServiceProvider _services;
         private readonly IConfiguration _configuration;
         private readonly RootComponentMapping[] _rootComponents;
+        private readonly string? _persistedState;
 
         // NOTE: the host is disposable because it OWNs references to disposable things.
         //
@@ -35,9 +38,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         // already done.
         private bool _disposed;
         private bool _started;
-        private WebAssemblyRenderer _renderer;
+        private WebAssemblyRenderer? _renderer;
 
-        internal WebAssemblyHost(IServiceProvider services, IServiceScope scope, IConfiguration configuration, RootComponentMapping[] rootComponents)
+        internal WebAssemblyHost(
+            IServiceProvider services,
+            IServiceScope scope,
+            IConfiguration configuration,
+            RootComponentMapping[] rootComponents,
+            string? persistedState)
         {
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
             GC.KeepAlive(typeof(EntrypointInvoker));
@@ -47,6 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             _scope = scope;
             _configuration = configuration;
             _rootComponents = rootComponents;
+            _persistedState = persistedState;
         }
 
         /// <summary>
@@ -59,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         public IServiceProvider Services => _scope.ServiceProvider;
 
-        internal WebAssemblyCultureProvider CultureProvider { get; set; } = WebAssemblyCultureProvider.Instance;
+        internal WebAssemblyCultureProvider CultureProvider { get; set; } = WebAssemblyCultureProvider.Instance!;
 
         /// <summary>
         /// Disposes the host asynchronously.
@@ -132,9 +141,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // This is the earliest opportunity to fetch satellite assemblies for this selection.
             await CultureProvider.LoadCurrentCultureResourcesAsync();
 
-            var tcs = new TaskCompletionSource<object>();
+            var manager = Services.GetRequiredService<ComponentApplicationLifetime>();
+            var store = !string.IsNullOrEmpty(_persistedState) ?
+                new PrerenderComponentApplicationStore(_persistedState) :
+                new PrerenderComponentApplicationStore();
 
-            using (cancellationToken.Register(() => { tcs.TrySetResult(null); }))
+            await manager.RestoreStateAsync(store);
+
+            var tcs = new TaskCompletionSource();
+
+            using (cancellationToken.Register(() => tcs.TrySetResult()))
             {
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
                 _renderer = new WebAssemblyRenderer(Services, loggerFactory);
@@ -145,6 +161,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     var rootComponent = rootComponents[i];
                     await _renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
                 }
+
+                store.ExistingState.Clear();
 
                 await tcs.Task;
             }

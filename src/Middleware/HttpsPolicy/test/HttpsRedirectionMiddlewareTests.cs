@@ -286,21 +286,13 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         }
 
         [Fact]
-        public async Task SetServerAddressesFeature_MultipleHttpsAddresses_LogsAndFailsToRedirect()
+        public async Task SetServerAddressesFeature_MultipleHttpsAddresses_Throws()
         {
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
-                TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
                     .UseTestServer()
-                    .ConfigureServices(services =>
-                    {
-                        services.AddSingleton<ILoggerFactory>(loggerFactory);
-                    })
                    .Configure(app =>
                    {
                        app.UseHttpsRedirection();
@@ -323,16 +315,9 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
 
-            var response = await client.SendAsync(request);
-            Assert.Equal(200, (int)response.StatusCode);
-
-            var logMessages = sink.Writes.ToList();
-
-            Assert.Single(logMessages);
-            var message = logMessages.First();
-            Assert.Equal(LogLevel.Warning, message.LogLevel);
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(request));
             Assert.Equal("Cannot determine the https port from IServerAddressesFeature, multiple values were found. " +
-                "Please set the desired port explicitly on HttpsRedirectionOptions.HttpsPort.", message.State.ToString());
+                "Set the desired port explicitly on HttpsRedirectionOptions.HttpsPort.", ex.Message);
         }
 
         [Fact]

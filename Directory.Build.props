@@ -7,6 +7,12 @@
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Default</AnalysisMode>
+  </PropertyGroup>
+
   <!-- Defines project type conventions. -->
   <PropertyGroup>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
@@ -21,8 +27,7 @@
           $(MSBuildProjectName.EndsWith('.Test')) OR
           $(MSBuildProjectName.EndsWith('.FunctionalTest')) ) ">true</IsUnitTestProject>
     <IsTestAssetProject Condition=" $(RepoRelativeProjectDir.Contains('testassets')) ">true</IsTestAssetProject>
-    <IsSampleProject Condition=" $(RepoRelativeProjectDir.Contains('sample')) OR
-        $(RepoRelativeProjectDir.Contains('Sample')) ">true</IsSampleProject>
+    <IsSampleProject Condition=" $(RepoRelativeProjectDir.ToUpperInvariant().Contains('SAMPLE')) ">true</IsSampleProject>
     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
     <IsShipping Condition=" '$(IsSampleProject)' == 'true' OR
         '$(IsTestAssetProject)' == 'true' OR
@@ -96,20 +101,16 @@
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
     <IncludeSymbols>true</IncludeSymbols>
-
-    <!--
-      Also update the DefaultNetCoreTargetFramework defined at src/Razor/test/testassets/Directory.Build.props and
-      the packages referenced in Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj when this changes.
-    -->
-    <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
     <DefaultNetFxTargetFramework>net461</DefaultNetFxTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->
   <PropertyGroup>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- Don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
+    <!-- Ensure API docs are available. -->
+    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
+
+    <!-- For local builds, don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
+    <WarningsNotAsErrors Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
 
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
@@ -143,7 +144,7 @@
     <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
 
     <!--
-      Archives and installers using this prefix are intended for internal-use only.
+      Archives and installers using this prefix are intended for internal use only.
       For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks
       into their own installers.
     -->
@@ -161,6 +162,7 @@
       win-arm;
       win-arm64;
       osx-x64;
+      osx-arm64;
       linux-musl-x64;
       linux-musl-arm;
       linux-musl-arm64;
@@ -205,6 +207,7 @@
     <DeterministicSourcePaths Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">false</DeterministicSourcePaths>
     <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
     <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
+    <_MvcTestingTasksAssembly>$(ArtifactsBinDir)\Microsoft.AspNetCore.Mvc.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.Tasks.dll</_MvcTestingTasksAssembly>
     <!-- IIS native projects can only be built on Windows for x86 and x64. -->
     <BuildIisNativeProjects Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') ">true</BuildIisNativeProjects>
     <!-- This property is shared by several projects to layout the AspNetCore.App targeting pack for installers -->
@@ -219,6 +222,7 @@
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.props" />
+  <Import Project="artifacts\bin\GenerateFiles\Directory.Build.props" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\SharedFramework.Local.props" />

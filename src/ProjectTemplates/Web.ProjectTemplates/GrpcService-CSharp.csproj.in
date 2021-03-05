@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="${GrpcAspNetCorePackageVersion}" />
+    <PackageReference Include="Grpc.AspNetCore" Version="${GrpcAspNetCoreVersion}" />
   </ItemGroup>
 
 </Project>

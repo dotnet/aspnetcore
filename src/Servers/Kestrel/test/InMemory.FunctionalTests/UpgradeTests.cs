@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     Assert.False(feature.IsUpgradableRequest);
                     Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
-                    Assert.Equal(11, await context.Request.Body.ReadAsync(new byte[12], 0, 12));
+                    Assert.Equal(11, await context.Request.Body.ReadUntilEndAsync(new byte[100]));
                 }
                 else
                 {
@@ -381,6 +381,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task DoesNotThrowGivenCanceledReadResult()
+        {
+            var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await using var server = new TestServer(async context =>
+            {
+                try
+                {
+                    var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
+                    var duplexStream = await upgradeFeature.UpgradeAsync();
+
+                    // Kestrel will call Transport.Input.CancelPendingRead() during shutdown so idle connections
+                    // can wake up and shutdown gracefully. We manually call CancelPendingRead() to simulate this and
+                    // ensure the Stream returned by UpgradeAsync doesn't throw in this case.
+                    // https://github.com/dotnet/aspnetcore/issues/26482
+                    var connectionTransportFeature = context.Features.Get<IConnectionTransportFeature>();
+                    connectionTransportFeature.Transport.Input.CancelPendingRead();
+
+                    // Use ReadAsync() instead of CopyToAsync() for this test since IsCanceled is only checked in
+                    // HttpRequestStream.ReadAsync() and not HttpRequestStream.CopyToAsync()
+                    Assert.Equal(0, await duplexStream.ReadAsync(new byte[1]));
+                    appCompletedTcs.SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    appCompletedTcs.SetException(ex);
+                    throw;
+                }
+            },
+            new TestServiceContext(LoggerFactory));
+
+            using (var connection = server.CreateConnection())
+            {
+                await connection.SendEmptyGetWithUpgrade();
+                await connection.Receive("HTTP/1.1 101 Switching Protocols",
+                    "Connection: Upgrade",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+            }
+
+            await appCompletedTcs.Task.DefaultTimeout();
+        }
+
+        [Fact]
         public async Task DoesNotCloseConnectionWithout101Response()
         {
             var requestCount = 0;
@@ -411,51 +456,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                 }
             }
-        }
-
-        [Fact]
-        public async Task DoesNotThrowGivenCanceledReadResult()
-        {
-            var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            await using var server = new TestServer(async context =>
-            {
-                try
-                {
-                    var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
-                    var duplexStream = await upgradeFeature.UpgradeAsync();
-
-                    // Kestrel will call Transport.Input.CancelPendingRead() during shutdown so idle connections
-                    // can wake up and shutdown gracefully. We manually call CancelPendingRead() to simulate this and
-                    // ensure the Stream returned by UpgradeAsync doesn't throw in this case.
-                    // https://github.com/dotnet/aspnetcore/issues/26482
-                    var connectionTransportFeature = context.Features.Get<IConnectionTransportFeature>();
-                    connectionTransportFeature.Transport.Input.CancelPendingRead();
-
-                    // Use ReadAsync() instead of CopyToAsync() for this test since IsCanceled is only checked in
-                    // HttpRequestStream.ReadAsync() and not HttpRequestStream.CopyToAsync() 
-                    Assert.Equal(0, await duplexStream.ReadAsync(new byte[1]));
-                    appCompletedTcs.SetResult(null);
-                }
-                catch (Exception ex)
-                {
-                    appCompletedTcs.SetException(ex);
-                    throw;
-                }
-            },
-            new TestServiceContext(LoggerFactory));
-
-            using (var connection = server.CreateConnection())
-            {
-                await connection.SendEmptyGetWithUpgrade();
-                await connection.Receive("HTTP/1.1 101 Switching Protocols",
-                    "Connection: Upgrade",
-                    $"Date: {server.Context.DateHeaderValue}",
-                    "",
-                    "");
-            }
-
-            await appCompletedTcs.Task.DefaultTimeout();
         }
     }
 }

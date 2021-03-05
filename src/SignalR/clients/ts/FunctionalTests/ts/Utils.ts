@@ -18,22 +18,26 @@ export function getParameterByName(name: string) {
 export class PromiseSource<T = void> implements Promise<T> {
     public promise: Promise<T>;
 
-    private resolver!: (value?: T | PromiseLike<T>) => void;
-    private rejecter!: (reason?: any) => void;
+    private _resolver!: (value: T | PromiseLike<T>) => void;
+    private _rejecter!: (reason?: any) => void;
 
     constructor() {
         this.promise = new Promise<T>((resolve, reject) => {
-            this.resolver = resolve;
-            this.rejecter = reject;
+            this._resolver = resolve;
+            this._rejecter = reject;
         });
     }
 
-    public resolve(value?: T | PromiseLike<T>) {
-        this.resolver(value);
+    public finally(onfinally?: (() => void) | null): Promise<T> {
+        return this.promise.finally(onfinally);
+    }
+
+    public resolve(value: T | PromiseLike<T>) {
+        this._resolver(value);
     }
 
     public reject(reason?: any) {
-        this.rejecter(reason);
+        this._rejecter(reason);
     }
 
     // Look like a promise so we can be awaited directly;

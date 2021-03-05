@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
     internal class StackPolicy : IQueuePolicy
     {
         private readonly List<ResettableBooleanCompletionSource> _buffer;
-        public ResettableBooleanCompletionSource _cachedResettableTCS;
+        public ResettableBooleanCompletionSource? _cachedResettableTCS;
 
         private readonly int _maxQueueCapacity;
         private readonly int _maxConcurrentRequests;

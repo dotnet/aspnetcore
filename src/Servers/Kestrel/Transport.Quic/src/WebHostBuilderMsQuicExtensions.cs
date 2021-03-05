@@ -9,6 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Quic <see cref="IWebHostBuilder"/> extensions.
+    /// </summary>
     public static class WebHostBuilderMsQuicExtensions
     {
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)

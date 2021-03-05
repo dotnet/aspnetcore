@@ -9,20 +9,19 @@ namespace Microsoft.AspNetCore.Cryptography
 {
     internal static class WeakReferenceHelpers
     {
-        public static T GetSharedInstance<T>(ref WeakReference<T> weakReference, Func<T> factory)
+        public static T GetSharedInstance<T>(ref WeakReference<T>? weakReference, Func<T> factory)
             where T : class, IDisposable
         {
             // First, see if the WR already exists and points to a live object.
-            WeakReference<T> existingWeakRef = Volatile.Read(ref weakReference);
-            T newTarget = null;
-            WeakReference<T> newWeakRef = null;
+            WeakReference<T>? existingWeakRef = Volatile.Read(ref weakReference);
+            T? newTarget = null;
+            WeakReference<T>? newWeakRef = null;
 
             while (true)
             {
                 if (existingWeakRef != null)
                 {
-                    T existingTarget;
-                    if (weakReference.TryGetTarget(out existingTarget))
+                    if (weakReference!.TryGetTarget(out var existingTarget))
                     {
                         // If we created a new target on a previous iteration of the loop but we
                         // weren't able to store the target into the desired location, dispose of it now.
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore.Cryptography
                 Debug.Assert(newWeakRef != null);
 
                 // Try replacing the existing WR with our newly-created one.
-                WeakReference<T> currentWeakRef = Interlocked.CompareExchange(ref weakReference, newWeakRef, existingWeakRef);
+                WeakReference<T>? currentWeakRef = Interlocked.CompareExchange(ref weakReference, newWeakRef, existingWeakRef);
                 if (ReferenceEquals(currentWeakRef, existingWeakRef))
                 {
                     // success, 'weakReference' now points to our newly-created WR

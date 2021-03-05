@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace System.Buffers
 {
     /// <summary>
@@ -23,7 +25,7 @@ namespace System.Buffers
         /// </summary>
         public bool IsActive => PinnedArray != null;
 
-        public byte[] PinnedArray { get; private set; }
+        public byte[]? PinnedArray { get; private set; }
 
         public static MemoryPoolSlab Create(int length)
         {

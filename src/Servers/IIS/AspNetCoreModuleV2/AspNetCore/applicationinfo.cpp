@@ -80,75 +80,72 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 
         return S_OK;
     }
-    else
+    try
     {
-        try
+        const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pHttpApplication);
+        ShimOptions options(configurationSource);
+
+        ErrorContext errorContext;
+        errorContext.statusCode = 500i16;
+        errorContext.subStatusCode = 0i16;
+
+        const auto hr = TryCreateApplication(pHttpContext, options, errorContext);
+
+        if (FAILED_LOG(hr))
         {
-            const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pHttpApplication);
-            ShimOptions options(configurationSource);
+            EventLog::Error(
+                ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
+                ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
+                pHttpApplication.GetApplicationId(),
+                hr);
 
-            ErrorContext errorContext;
-            errorContext.statusCode = 500i16;
-            errorContext.subStatusCode = 0i16;
-
-            const auto hr = TryCreateApplication(pHttpContext, options, errorContext);
-
-            if (FAILED_LOG(hr))
+            auto page = options.QueryHostingModel() == HOSTING_IN_PROCESS ? IN_PROCESS_SHIM_STATIC_HTML : OUT_OF_PROCESS_SHIM_STATIC_HTML;
+            std::string responseContent;
+            if (options.QueryShowDetailedErrors())
             {
-                EventLog::Error(
-                    ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
-                    ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
-                    pHttpApplication.GetApplicationId(),
-                    hr);
-
-                auto page = options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? IN_PROCESS_SHIM_STATIC_HTML : OUT_OF_PROCESS_SHIM_STATIC_HTML;
-                std::string responseContent;
-                if (options.QueryShowDetailedErrors())
-                {
-                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, errorContext.statusCode, errorContext.subStatusCode, errorContext.generalErrorType, errorContext.errorReason, errorContext.detailedErrorContent);
-                }
-                else
-                {
-                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, errorContext.statusCode, errorContext.subStatusCode, errorContext.generalErrorType, errorContext.errorReason);
-                }
-
-                m_pApplication = make_application<ServerErrorApplication>(
-                    pHttpApplication,
-                    hr,
-                    options.QueryDisableStartupPage(),
-                    responseContent,
-                    errorContext.statusCode,
-                    errorContext.subStatusCode,
-                    "Internal Server Error");
+                responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, errorContext.statusCode, errorContext.subStatusCode, errorContext.generalErrorType, errorContext.errorReason, errorContext.detailedErrorContent);
             }
-            return S_OK;
-        }
-        catch (const ConfigurationLoadException &ex)
-        {
-            EventLog::Error(
-                ASPNETCORE_CONFIGURATION_LOAD_ERROR,
-                ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
-                ex.get_message().c_str());
-        }
-        catch (...)
-        {
-            EventLog::Error(
-                ASPNETCORE_CONFIGURATION_LOAD_ERROR,
-                ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
-                L"");
-        }
+            else
+            {
+                responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, errorContext.statusCode, errorContext.subStatusCode, errorContext.generalErrorType, errorContext.errorReason);
+            }
 
-        m_pApplication = make_application<ServerErrorApplication>(
-            pHttpApplication,
-            E_FAIL,
-            false /* disableStartupPage */,
-            "" /* responseContent */,
-            500i16 /* statusCode */,
-            0i16 /* subStatusCode */,
-            "Internal Server Error");
-
+            m_pApplication = make_application<ServerErrorApplication>(
+                pHttpApplication,
+                hr,
+                options.QueryDisableStartupPage(),
+                responseContent,
+                errorContext.statusCode,
+                errorContext.subStatusCode,
+                "Internal Server Error");
+        }
         return S_OK;
     }
+    catch (const ConfigurationLoadException &ex)
+    {
+        EventLog::Error(
+            ASPNETCORE_CONFIGURATION_LOAD_ERROR,
+            ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
+            ex.get_message().c_str());
+    }
+    catch (...)
+    {
+        EventLog::Error(
+            ASPNETCORE_CONFIGURATION_LOAD_ERROR,
+            ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG,
+            L"");
+    }
+
+    m_pApplication = make_application<ServerErrorApplication>(
+        pHttpApplication,
+        E_FAIL,
+        false /* disableStartupPage */,
+        "" /* responseContent */,
+        500i16 /* statusCode */,
+        0i16 /* subStatusCode */,
+        "Internal Server Error");
+
+    return S_OK;
 }
 
 HRESULT
@@ -194,7 +191,7 @@ APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOpt
 HRESULT
 APPLICATION_INFO::TryCreateHandler(
     IHttpContext& pHttpContext,
-    std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>& pHandler)
+    std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>& pHandler) const
 {
     if (m_pApplication != nullptr)
     {
@@ -213,7 +210,7 @@ APPLICATION_INFO::TryCreateHandler(
 }
 
 VOID
-APPLICATION_INFO::ShutDownApplication(bool fServerInitiated)
+APPLICATION_INFO::ShutDownApplication(const bool fServerInitiated)
 {
     SRWExclusiveLock lock(m_applicationLock);
 

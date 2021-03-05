@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -34,12 +37,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _logger = _loggerFactory.CreateLogger<CircuitFactory>();
         }
 
-        public CircuitHost CreateCircuitHost(
+        public async ValueTask<CircuitHost> CreateCircuitHostAsync(
             IReadOnlyList<ComponentDescriptor> components,
             CircuitClientProxy client,
             string baseUri,
             string uri,
-            ClaimsPrincipal user)
+            ClaimsPrincipal user,
+            IComponentApplicationStateStore store)
         {
             var scope = _scopeFactory.CreateScope();
             var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
@@ -58,6 +62,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 navigationManager.Initialize(baseUri, uri);
             }
+
+            var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentApplicationLifetime>();
+            await appLifetime.RestoreStateAsync(store);
 
             var renderer = new RemoteRenderer(
                 scope.ServiceProvider,

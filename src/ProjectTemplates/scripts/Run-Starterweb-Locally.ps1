@@ -9,4 +9,4 @@ $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\Test-Template.ps1
 
-Test-Template "mvc" "mvc -au Individual" "Microsoft.DotNet.Web.ProjectTemplates.5.0.5.0.0-dev.nupkg" $false
+Test-Template "mvc" "mvc -au Individual" "Microsoft.DotNet.Web.ProjectTemplates.6.0.6.0.0-dev.nupkg" $false

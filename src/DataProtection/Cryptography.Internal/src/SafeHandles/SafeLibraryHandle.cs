@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
         /// <summary>
         /// Formats a message string using the resource table in the specified library.
         /// </summary>
-        public string FormatMessage(int messageId)
+        public string? FormatMessage(int messageId)
         {
             // from winbase.h
             const uint FORMAT_MESSAGE_ALLOCATE_BUFFER = 0x00000100;
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
                 // Successfully retrieved the message.
                 using (messageHandle)
                 {
-                    return new String((char*)messageHandle.DangerousGetHandle(), 0, numCharsOutput).Trim();
+                    return new string((char*)messageHandle.DangerousGetHandle(), 0, numCharsOutput).Trim();
                 }
             }
             else
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
         /// <summary>
         /// Gets a delegate pointing to a given export from this library.
         /// </summary>
-        public TDelegate GetProcAddress<TDelegate>(string lpProcName, bool throwIfNotFound = true) where TDelegate : class
+        public TDelegate? GetProcAddress<TDelegate>(string lpProcName, bool throwIfNotFound = true) where TDelegate : class
         {
             IntPtr pfnProc = UnsafeNativeMethods.GetProcAddress(this, lpProcName);
             if (pfnProc == IntPtr.Zero)
@@ -168,11 +169,14 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
                 [In] IntPtr hFile,
                 [In] uint dwFlags);
 
+#pragma warning disable CS8763 // A method marked [DoesNotReturn] should not return.
+            [DoesNotReturn]
             internal static void ThrowExceptionForLastWin32Error()
             {
                 int hr = Marshal.GetHRForLastWin32Error();
                 Marshal.ThrowExceptionForHR(hr);
             }
+#pragma warning restore CS8763 // A method marked [DoesNotReturn] should not return.
         }
     }
 }

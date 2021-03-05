@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Http
         internal ResponseCookies(IFeatureCollection features)
         {
             _features = features;
-            Headers = _features.Get<IHttpResponseFeature>().Headers;
+            Headers = _features.Get<IHttpResponseFeature>()!.Headers;
         }
 
         private IHeaderDictionary Headers { get; set; }

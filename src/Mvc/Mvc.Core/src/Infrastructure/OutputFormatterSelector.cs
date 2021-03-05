@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -31,6 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="formatters">A list of formatters to use; this acts as an override to <see cref="MvcOptions.OutputFormatters"/>.</param>
         /// <param name="mediaTypes">A list of media types to use; this acts as an override to the <c>Accept</c> header. </param>
         /// <returns>The selected <see cref="IOutputFormatter"/>, or <c>null</c> if one could not be selected.</returns>
-        public abstract IOutputFormatter SelectFormatter(OutputFormatterCanWriteContext context, IList<IOutputFormatter> formatters, MediaTypeCollection mediaTypes);
+        public abstract IOutputFormatter? SelectFormatter(OutputFormatterCanWriteContext context, IList<IOutputFormatter> formatters, MediaTypeCollection mediaTypes);
     }
 }

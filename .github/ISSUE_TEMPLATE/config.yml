@@ -1,8 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Discussions
-    url: https://github.com/dotnet/aspnetcore/discussions/new
-    about: Is your issue perhaps more of a discussion? Please open topics for discussion using the new GitHub Discussions feature.
   - name: Issue with .NET runtime or core .NET libraries
     url:  https://github.com/dotnet/runtime/issues/new/choose
     about: Please open issues relating to the .NET runtime or core .NET libraries in dotnet/runtime.

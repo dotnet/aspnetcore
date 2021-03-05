@@ -5,11 +5,13 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -521,21 +523,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             Transport = pair.Transport;
 
-            var serviceContext = new ServiceContext
-            {
-                ServerOptions = new KestrelServerOptions(),
-                Log = _trace,
-                HttpParser = new HttpParser<Http1ParsingHandler>()
-            };
+            var serviceContext = TestContextFactory.CreateServiceContext(
+                serverOptions: new KestrelServerOptions(),
+                httpParser: new HttpParser<Http1ParsingHandler>(),
+                log: _trace);
 
-            Http1Connection = new Http1Connection(context: new HttpConnectionContext
-            {
-                ServiceContext = serviceContext,
-                ConnectionFeatures = new FeatureCollection(),
-                MemoryPool = MemoryPool,
-                Transport = Transport,
-                TimeoutControl = new TimeoutControl(timeoutHandler: null)
-            });
+            var connectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: serviceContext,
+                connectionContext: Mock.Of<ConnectionContext>(),
+                transport: Transport,
+                timeoutControl: new TimeoutControl(timeoutHandler: null),
+                memoryPool: MemoryPool,
+                connectionFeatures: new FeatureCollection());
+
+            Http1Connection = new Http1Connection(connectionContext);
 
             Parser = new HttpParser<Http1ParsingHandler>(showErrorDetails: true);
             ParsingHandler = new Http1ParsingHandler(Http1Connection);

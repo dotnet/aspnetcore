@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
+    /// <summary>
+    /// HTTP protocol versions
+    /// </summary>
     [Flags]
     public enum HttpProtocols
     {

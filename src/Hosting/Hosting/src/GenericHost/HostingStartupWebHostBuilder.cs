@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Hosting
     internal class HostingStartupWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
     {
         private readonly GenericWebHostBuilder _builder;
-        private Action<WebHostBuilderContext, IConfigurationBuilder> _configureConfiguration;
-        private Action<WebHostBuilderContext, IServiceCollection> _configureServices;
+        private Action<WebHostBuilderContext, IConfigurationBuilder>? _configureConfiguration;
+        private Action<WebHostBuilderContext, IServiceCollection>? _configureServices;
 
         public HostingStartupWebHostBuilder(GenericWebHostBuilder builder)
         {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public string GetSetting(string key) => _builder.GetSetting(key);
 
-        public IWebHostBuilder UseSetting(string key, string value)
+        public IWebHostBuilder UseSetting(string key, string? value)
         {
             _builder.UseSetting(key, value);
             return this;

@@ -39,7 +39,8 @@ namespace Microsoft.AspNetCore.Components.LegacyRouteMatching
             // PathSegments:    /foo/bar/one/two/three
             if (Template.ContainsCatchAllSegment && context.Segments.Length >= Template.Segments.Length)
             {
-                catchAllValue = string.Join('/', context.Segments[Range.StartAt(Template.Segments.Length - 1)]);
+                int startIndex = Template.Segments.Length - 1;
+                catchAllValue = string.Join('/', context.Segments, startIndex, context.Segments.Length - startIndex);
             }
             // If there are no optional segments on the route and the length of the route
             // and the template do not match, then there is no chance of this matching and

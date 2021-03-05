@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Mvc
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public sealed class AcceptVerbsAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
     {
+        private readonly List<string> _httpMethods;
+
         private int? _order;
 
         /// <summary>
@@ -35,13 +37,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="methods">The HTTP methods the action supports.</param>
         public AcceptVerbsAttribute(params string[] methods)
         {
-            HttpMethods = methods.Select(method => method.ToUpperInvariant());
+            _httpMethods = methods.Select(method => method.ToUpperInvariant()).ToList();
         }
 
         /// <summary>
         /// Gets the HTTP methods the action supports.
         /// </summary>
-        public IEnumerable<string> HttpMethods { get; }
+        public IEnumerable<string> HttpMethods => _httpMethods;
 
         /// <summary>
         /// The route template. May be null.

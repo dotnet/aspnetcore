@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +14,7 @@ namespace Microsoft.Extensions.Tools.Internal
         private List<TemporaryCSharpProject> _projects = new List<TemporaryCSharpProject>();
         private List<TemporaryDirectory> _subdirs = new List<TemporaryDirectory>();
         private Dictionary<string, string> _files = new Dictionary<string, string>();
-        private TemporaryDirectory _parent;
+        private TemporaryDirectory? _parent;
 
         public TemporaryDirectory()
         {

@@ -14,6 +14,10 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     {
         private readonly IDataProtectionProvider _dp;
 
+        /// <summary>
+        /// Initializes the <see cref="TwitterPostConfigureOptions"/>.
+        /// </summary>
+        /// <param name="dataProtection">The <see cref="IDataProtectionProvider"/>.</param>
         public TwitterPostConfigureOptions(IDataProtectionProvider dataProtection)
         {
             _dp = dataProtection;

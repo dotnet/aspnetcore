@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Security;
-using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
@@ -661,7 +660,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             CipherSuitesPolicy cipherSuitesPolicy = null;
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!OperatingSystem.IsWindows())
             {
                 try
                 {

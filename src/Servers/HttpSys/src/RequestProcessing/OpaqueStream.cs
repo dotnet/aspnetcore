@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return _requestStream.ReadByte();
         }
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return _requestStream.BeginRead(buffer, offset, count, callback, state);
         }
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _responseStream.WriteByte(value);
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return _responseStream.BeginWrite(buffer, offset, count, callback, state);
         }

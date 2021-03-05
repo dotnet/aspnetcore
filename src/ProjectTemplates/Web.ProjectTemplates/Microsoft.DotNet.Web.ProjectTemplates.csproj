@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <PackageId>Microsoft.DotNet.Web.ProjectTemplates.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
+    <PackageId>Microsoft.DotNet.Web.ProjectTemplates.$(AspNetCoreMajorMinorVersion)</PackageId>
     <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine</Description>
     <ComponentsWebAssemblyProjectsRoot>$(RepoRoot)src\Components\WebAssembly\</ComponentsWebAssemblyProjectsRoot>
   </PropertyGroup>
@@ -11,20 +11,20 @@
     <!-- Lists the versions of dependencies not built in this repo. Packages produced from this repo should be listed as a PackageVersionVariableReference.  -->
     <GeneratedContentProperties>
       DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
-      GrpcAspNetCorePackageVersion=$(GrpcAspNetCorePackageVersion);
-      MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion);
-      MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
-      MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
-      MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
-      MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
-      MicrosoftExtensionsHttpPackageVersion=$(MicrosoftExtensionsHttpPackageVersion);
-      MicrosoftIdentityWebPackageVersion=$(MicrosoftIdentityWebPackageVersion);
-      MicrosoftIdentityWebMicrosoftGraphPackageVersion=$(MicrosoftIdentityWebMicrosoftGraphPackageVersion);
-      MicrosoftIdentityWebUIPackageVersion=$(MicrosoftIdentityWebUIPackageVersion);
+      GrpcAspNetCoreVersion=$(GrpcAspNetCoreVersion);
+      MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion);
+      MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
+      MicrosoftEntityFrameworkCoreSqlServerVersion=$(MicrosoftEntityFrameworkCoreSqlServerVersion);
+      MicrosoftEntityFrameworkCoreToolsVersion=$(MicrosoftEntityFrameworkCoreToolsVersion);
+      MicrosoftExtensionsHostingVersion=$(MicrosoftExtensionsHostingVersion);
+      MicrosoftExtensionsHttpVersion=$(MicrosoftExtensionsHttpVersion);
+      MicrosoftIdentityWebVersion=$(MicrosoftIdentityWebVersion);
+      MicrosoftIdentityWebMicrosoftGraphVersion=$(MicrosoftIdentityWebMicrosoftGraphVersion);
+      MicrosoftIdentityWebUIVersion=$(MicrosoftIdentityWebUIVersion);
       MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
-      SystemNetHttpJsonPackageVersion=$(SystemNetHttpJsonPackageVersion);
-      MicrosoftGraphPackageVersion=$(MicrosoftGraphPackageVersion);
-      SwashbuckleAspNetCorePackageVersion=$(SwashbuckleAspNetCorePackageVersion);
+      SystemNetHttpJsonVersion=$(SystemNetHttpJsonVersion);
+      MicrosoftGraphVersion=$(MicrosoftGraphVersion);
+      SwashbuckleAspNetCoreVersion=$(SwashbuckleAspNetCoreVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 

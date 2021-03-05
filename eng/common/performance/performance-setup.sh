@@ -29,7 +29,7 @@ using_wasm=false
 use_latest_dotnet=false
 
 while (($# > 0)); do
-  lowerI="$(echo $1 | awk '{print tolower($0)}')"
+  lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
   case $lowerI in
     --sourcedirectory)
       source_directory=$2
@@ -88,6 +88,10 @@ while (($# > 0)); do
       internal=true
       shift 1
       ;;
+    --alpine)
+      alpine=true
+      shift 1
+      ;;
     --llvm)
       llvm=true
       shift 1
@@ -143,6 +147,7 @@ while (($# > 0)); do
       echo "  --monodotnet                   Pass the path to the mono dotnet for mono performance testing."
       echo "  --wasm                         Path to the unpacked wasm runtime pack."
       echo "  --latestdotnet                 --dotnet-versions will not be specified. --dotnet-versions defaults to LKG version in global.json "
+      echo "  --alpine                       Set for runs on Alpine"
       echo ""
       exit 0
       ;;
@@ -198,9 +203,24 @@ if [[ "$internal" == true ]]; then
     else
         queue=Ubuntu.1804.Amd64.Tiger.Perf
     fi
+
+    if [[ "$alpine" = "true" ]]; then
+        queue=alpine.amd64.tiger.perf
+    fi
+else
+    if [[ "$architecture" = "arm64" ]]; then
+        queue=ubuntu.1804.armarch.open
+    else
+        queue=Ubuntu.1804.Amd64.Open
+    fi
+
+    if [[ "$alpine" = "true" ]]; then
+        queue=alpine.amd64.tiger.perf
+    fi
 fi
 
 if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "false" ]]; then
+    configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
     extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoMono"
 fi
 
@@ -216,14 +236,6 @@ fi
 
 common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations --architecture $architecture"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
-
-
-if [[ "$use_latest_dotnet" = false ]]; then
-    # Get the tools section from the global.json.
-    # This grabs the LKG version number of dotnet and passes it to our scripts
-    dotnet_version=`cat global.json | python3 -c 'import json,sys;obj=json.load(sys.stdin);print(obj["tools"]["dotnet"])'`
-    setup_arguments="--dotnet-versions $dotnet_version $setup_arguments"
-fi
 
 if [[ "$run_from_perf_repo" = true ]]; then
     payload_directory=

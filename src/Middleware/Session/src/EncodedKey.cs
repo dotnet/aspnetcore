@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Session
     // This saves us from de-serializing and re-serializing every key on every request.
     internal class EncodedKey
     {
-        private string _keyString;
+        private string? _keyString;
         private int? _hashCode;
 
         internal EncodedKey(string key)
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Session
 
         internal byte[] KeyBytes { get; private set; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var otherKey = obj as EncodedKey;
             if (otherKey == null)

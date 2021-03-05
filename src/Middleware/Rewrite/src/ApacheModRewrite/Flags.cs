@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
 {
@@ -31,10 +32,9 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
             FlagDictionary[flag] = value;
         }
 
-        public bool GetValue(FlagType flag, out string value)
+        public bool GetValue(FlagType flag, [NotNullWhen(true)] out string? value)
         {
-            string res;
-            if (!FlagDictionary.TryGetValue(flag, out res))
+            if (!FlagDictionary.TryGetValue(flag, out var res))
             {
                 value = null;
                 return false;
@@ -43,12 +43,11 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
             return true;
         }
 
-        public string this[FlagType flag]
+        public string? this[FlagType flag]
         {
             get
             {
-                string res;
-                if (!FlagDictionary.TryGetValue(flag, out res))
+                if (!FlagDictionary.TryGetValue(flag, out var res))
                 {
                     return null;
                 }
@@ -62,8 +61,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
 
         public bool HasFlag(FlagType flag)
         {
-            string res;
-            return FlagDictionary.TryGetValue(flag, out res);
+            return FlagDictionary.ContainsKey(flag);
         }
     }
 }

@@ -16,8 +16,7 @@ namespace RoutingWebSite
         {
             services
                 .AddMvc()
-                .AddNewtonsoftJson()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddNewtonsoftJson();
 
             // Used by some controllers defined in this project.
             services.Configure<RouteOptions>(options => options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer));

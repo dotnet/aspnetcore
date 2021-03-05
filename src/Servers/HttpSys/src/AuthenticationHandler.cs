@@ -12,28 +12,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal class AuthenticationHandler : IAuthenticationHandler
     {
-        private RequestContext _requestContext;
-        private AuthenticationScheme _scheme;
+        private RequestContext? _requestContext;
+        private AuthenticationScheme? _scheme;
 
         public Task<AuthenticateResult> AuthenticateAsync()
         {
-            var identity = _requestContext.User?.Identity;
+            var identity = _requestContext!.User?.Identity;
             if (identity != null && identity.IsAuthenticated)
             {
-                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(_requestContext.User, properties: null, authenticationScheme: _scheme.Name)));
+                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(_requestContext.User!, properties: null, authenticationScheme: _scheme!.Name)));
             }
             return Task.FromResult(AuthenticateResult.NoResult());
         }
 
-        public Task ChallengeAsync(AuthenticationProperties properties)
+        public Task ChallengeAsync(AuthenticationProperties? properties)
         {
-            _requestContext.Response.StatusCode = 401;
+            _requestContext!.Response.StatusCode = 401;
             return Task.CompletedTask;
         }
 
-        public Task ForbidAsync(AuthenticationProperties properties)
+        public Task ForbidAsync(AuthenticationProperties? properties)
         {
-            _requestContext.Response.StatusCode = 403;
+            _requestContext!.Response.StatusCode = 403;
             return Task.CompletedTask;
         }
 

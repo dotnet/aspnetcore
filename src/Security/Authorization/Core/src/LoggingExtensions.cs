@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Logging
         {
             _userAuthorizationSucceeded = LoggerMessage.Define(
                 eventId: new EventId(1, "UserAuthorizationSucceeded"),
-                logLevel: LogLevel.Information,
+                logLevel: LogLevel.Debug,
                 formatString: "Authorization was successful.");
             _userAuthorizationFailed = LoggerMessage.Define<string>(
                 eventId: new EventId(2, "UserAuthorizationFailed"),

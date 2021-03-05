@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
 
                     // Call count increments with each call and is used as the access token
-                    Assert.Equal(callCount.ToString(), request.Headers.Authorization.Parameter);
+                    Assert.Equal(callCount.ToString(CultureInfo.InvariantCulture), request.Headers.Authorization.Parameter);
 
                     requestsExecuted = true;
 
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Task<string> AccessTokenProvider()
                 {
                     callCount++;
-                    return Task.FromResult(callCount.ToString());
+                    return Task.FromResult(callCount.ToString(CultureInfo.InvariantCulture));
                 }
 
                 await WithConnectionAsync(

@@ -16,15 +16,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 {
     internal class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature
     {
-        private readonly Task _processingTask;
+        private Task _processingTask = Task.CompletedTask;
         private readonly QuicStream _stream;
         private readonly QuicConnectionContext _connection;
         private readonly QuicTransportContext _context;
+        private readonly IDuplexPipe _originalTransport;
         private readonly CancellationTokenSource _streamClosedTokenSource = new CancellationTokenSource();
         private readonly IQuicTrace _log;
-        private string _connectionId;
+        private string? _connectionId;
         private const int MinAllocBufferSize = 4096;
-        private volatile Exception _shutdownReason;
+        private volatile Exception? _shutdownReason;
+        private bool _streamClosed;
+        private bool _aborted;
         private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly object _shutdownLock = new object();
 
@@ -34,11 +37,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             _connection = connection;
             _context = context;
             _log = context.Log;
+            MemoryPool = connection.MemoryPool;
 
             ConnectionClosed = _streamClosedTokenSource.Token;
 
-            var maxReadBufferSize = context.Options.MaxReadBufferSize.Value;
-            var maxWriteBufferSize = context.Options.MaxWriteBufferSize.Value;
+            var maxReadBufferSize = context.Options.MaxReadBufferSize ?? 0;
+            var maxWriteBufferSize = context.Options.MaxWriteBufferSize ?? 0;
 
             // TODO should we allow these PipeScheduler to be configurable here?
             var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
@@ -55,10 +59,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             CanRead = stream.CanRead;
             CanWrite = stream.CanWrite;
 
-            Transport = pair.Transport;
+            Transport = _originalTransport = pair.Transport;
             Application = pair.Application;
-
-            _processingTask = StartAsync();
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
@@ -94,6 +96,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         public long Error { get; set; }
 
+        public void Start()
+        {
+            _processingTask = StartAsync();
+        }
+
         private async Task StartAsync()
         {
             try
@@ -116,7 +123,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
                 // Now wait for both to complete
                 await receiveTask;
                 await sendTask;
-
             }
             catch (Exception ex)
             {
@@ -126,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         private async Task DoReceive()
         {
-            Exception error = null;
+            Exception? error = null;
 
             try
             {
@@ -196,6 +202,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         private void FireStreamClosed()
         {
+            // Guard against scheduling this multiple times
+            if (_streamClosed)
+            {
+                return;
+            }
+
+            _streamClosed = true;
+
             ThreadPool.UnsafeQueueUserWorkItem(state =>
             {
                 state.CancelConnectionClosedToken();
@@ -221,8 +235,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         private async Task DoSend()
         {
-            Exception shutdownReason = null;
-            Exception unexpectedError = null;
+            Exception? shutdownReason = null;
+            Exception? unexpectedError = null;
 
             try
             {
@@ -284,8 +298,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
+            // This abort is called twice, make sure that doesn't happen.
             // Don't call _stream.Shutdown and _stream.Abort at the same time.
-            _log.StreamAbort(ConnectionId, abortReason);
+            if (_aborted)
+            {
+                return;
+            }
+
+            _aborted = true;
+
+            _log.StreamAbort(ConnectionId, abortReason.Message);
 
             lock (_shutdownLock)
             {
@@ -297,15 +319,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             Output.CancelPendingRead();
         }
 
-        private async ValueTask ShutdownWrite(Exception shutdownReason)
+        private async ValueTask ShutdownWrite(Exception? shutdownReason)
         {
             try
             {
                 lock (_shutdownLock)
                 {
+                    // TODO: Exception is always allocated. Consider only allocating if receive hasn't completed.
                     _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Quic transport's send loop completed gracefully.");
 
-                    _log.StreamShutdownWrite(ConnectionId, _shutdownReason);
+                    _log.StreamShutdownWrite(ConnectionId, _shutdownReason.Message);
                     _stream.Shutdown();
                 }
 
@@ -320,8 +343,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         public override async ValueTask DisposeAsync()
         {
-            Transport.Input.Complete();
-            Transport.Output.Complete();
+            _originalTransport.Input.Complete();
+            _originalTransport.Output.Complete();
 
             await _processingTask;
 

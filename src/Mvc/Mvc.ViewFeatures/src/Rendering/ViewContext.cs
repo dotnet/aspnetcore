@@ -242,6 +242,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </summary>
         internal Dictionary<object, object> Items => _items ??= new Dictionary<object, object>();
 
+        /// <summary>
+        /// Gets the <see cref="FormContext"/> if <see cref="ClientValidationEnabled"/> is enabled.
+        /// </summary>
+        /// <returns></returns>
         public FormContext GetFormContextForClientValidation()
         {
             return ClientValidationEnabled ? FormContext : null;

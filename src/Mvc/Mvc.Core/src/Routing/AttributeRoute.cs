@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private readonly IServiceProvider _services;
         private readonly Func<ActionDescriptor[], IRouter> _handlerFactory;
 
-        private TreeRouter _router;
+        private TreeRouter? _router;
 
         public AttributeRoute(
             IActionDescriptorCollectionProvider actionDescriptorCollectionProvider,
@@ -114,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     throw new RouteCreationException(
                         "An error occurred while adding a route to the route builder. " +
-                        $"Route name '{routeInfo.RouteName}' and template '{routeInfo.RouteTemplate.TemplateText}'.",
+                        $"Route name '{routeInfo.RouteName}' and template '{routeInfo.RouteTemplate!.TemplateText}'.",
                         routeCreationException);
                 }
             }
@@ -201,11 +203,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             try
             {
-                if (!templateCache.TryGetValue(action.AttributeRouteInfo.Template, out var parsedTemplate))
+                var template = action.AttributeRouteInfo!.Template!;
+                if (!templateCache.TryGetValue(template, out var parsedTemplate))
                 {
                     // Parsing with throw if the template is invalid.
-                    parsedTemplate = TemplateParser.Parse(action.AttributeRouteInfo.Template);
-                    templateCache.Add(action.AttributeRouteInfo.Template, parsedTemplate);
+                    parsedTemplate = TemplateParser.Parse(template);
+                    templateCache.Add(template, parsedTemplate);
                 }
 
                 routeInfo.RouteTemplate = parsedTemplate;
@@ -242,15 +245,15 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private class RouteInfo
         {
-            public ActionDescriptor ActionDescriptor { get; set; }
+            public ActionDescriptor ActionDescriptor { get; init; } = default!;
 
-            public string ErrorMessage { get; set; }
+            public string? ErrorMessage { get; set; }
 
             public int Order { get; set; }
 
-            public string RouteName { get; set; }
+            public string? RouteName { get; set; }
 
-            public RouteTemplate RouteTemplate { get; set; }
+            public RouteTemplate? RouteTemplate { get; set; }
 
             public bool SuppressPathMatching { get; set; }
 
@@ -259,15 +262,15 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private class RouteInfoEqualityComparer : IEqualityComparer<RouteInfo>
         {
-            public static readonly RouteInfoEqualityComparer Instance = new RouteInfoEqualityComparer();
+            public static readonly RouteInfoEqualityComparer Instance = new();
 
-            public bool Equals(RouteInfo x, RouteInfo y)
+            public bool Equals(RouteInfo? x, RouteInfo? y)
             {
                 if (x == null && y == null)
                 {
                     return true;
                 }
-                else if (x == null ^ y == null)
+                else if (x == null || y == null)
                 {
                     return false;
                 }
@@ -278,8 +281,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 else
                 {
                     return string.Equals(
-                        x.RouteTemplate.TemplateText,
-                        y.RouteTemplate.TemplateText,
+                        x.RouteTemplate!.TemplateText,
+                        y.RouteTemplate!.TemplateText,
                         StringComparison.OrdinalIgnoreCase);
                 }
             }
@@ -293,7 +296,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
                 var hash = new HashCode();
                 hash.Add(obj.Order);
-                hash.Add(obj.RouteTemplate.TemplateText, StringComparer.OrdinalIgnoreCase);
+                hash.Add(obj.RouteTemplate!.TemplateText, StringComparer.OrdinalIgnoreCase);
                 return hash.ToHashCode();
             }
         }
@@ -303,7 +306,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             public static readonly NullRouter Instance = new NullRouter();
 
-            public VirtualPathData GetVirtualPath(VirtualPathContext context)
+            public VirtualPathData? GetVirtualPath(VirtualPathContext context)
             {
                 return null;
             }

@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 HttpResponseMessage res2 = await server
                     .CreateRequest("/SubFolder/extra.xml")
-                    .AddHeader("If-Modified-Since", DateTimeOffset.UtcNow.ToString(format))
+                    .AddHeader("If-Modified-Since", DateTimeOffset.UtcNow.ToString(format, CultureInfo.InvariantCulture))
                     .SendAsync(method.Method);
 
                 Assert.Equal(HttpStatusCode.NotModified, res2.StatusCode);

@@ -12,48 +12,48 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
     {
         private static class Log
         {
-            private static readonly Action<ILogger, TransferFormat, Exception> _startTransport =
+            private static readonly Action<ILogger, TransferFormat, Exception?> _startTransport =
                 LoggerMessage.Define<TransferFormat>(LogLevel.Information, new EventId(1, "StartTransport"), "Starting transport. Transfer mode: {TransferFormat}.");
 
-            private static readonly Action<ILogger, Exception> _transportStopped =
+            private static readonly Action<ILogger, Exception?> _transportStopped =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "TransportStopped"), "Transport stopped.");
 
-            private static readonly Action<ILogger, Exception> _startReceive =
+            private static readonly Action<ILogger, Exception?> _startReceive =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(3, "StartReceive"), "Starting receive loop.");
 
-            private static readonly Action<ILogger, Exception> _receiveStopped =
+            private static readonly Action<ILogger, Exception?> _receiveStopped =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(4, "ReceiveStopped"), "Receive loop stopped.");
 
-            private static readonly Action<ILogger, Exception> _receiveCanceled =
+            private static readonly Action<ILogger, Exception?> _receiveCanceled =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(5, "ReceiveCanceled"), "Receive loop canceled.");
 
-            private static readonly Action<ILogger, Exception> _transportStopping =
+            private static readonly Action<ILogger, Exception?> _transportStopping =
                 LoggerMessage.Define(LogLevel.Information, new EventId(6, "TransportStopping"), "Transport is stopping.");
 
-            private static readonly Action<ILogger, Exception> _closingConnection =
+            private static readonly Action<ILogger, Exception?> _closingConnection =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(7, "ClosingConnection"), "The server is closing the connection.");
 
-            private static readonly Action<ILogger, Exception> _receivedMessages =
+            private static readonly Action<ILogger, Exception?> _receivedMessages =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(8, "ReceivedMessages"), "Received messages from the server.");
 
             private static readonly Action<ILogger, Uri, Exception> _errorPolling =
                 LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(9, "ErrorPolling"), "Error while polling '{PollUrl}'.");
 
             // long? does properly format as "(null)" when null.
-            private static readonly Action<ILogger, int, long?, Exception> _pollResponseReceived =
+            private static readonly Action<ILogger, int, long?, Exception?> _pollResponseReceived =
                 LoggerMessage.Define<int, long?>(LogLevel.Trace, new EventId(10, "PollResponseReceived"),
                     "Poll response with status code {StatusCode} received from server. Content length: {ContentLength}.");
 
-            private static readonly Action<ILogger, Uri, Exception> _sendingDeleteRequest =
+            private static readonly Action<ILogger, Uri, Exception?> _sendingDeleteRequest =
                 LoggerMessage.Define<Uri>(LogLevel.Debug, new EventId(11, "SendingDeleteRequest"), "Sending DELETE request to '{PollUrl}'.");
 
-            private static readonly Action<ILogger, Uri, Exception> _deleteRequestAccepted =
+            private static readonly Action<ILogger, Uri, Exception?> _deleteRequestAccepted =
                 LoggerMessage.Define<Uri>(LogLevel.Debug, new EventId(12, "DeleteRequestAccepted"), "DELETE request to '{PollUrl}' accepted.");
 
             private static readonly Action<ILogger, Uri, Exception> _errorSendingDeleteRequest =
                 LoggerMessage.Define<Uri>(LogLevel.Error, new EventId(13, "ErrorSendingDeleteRequest"), "Error sending DELETE request to '{PollUrl}'.");
 
-            private static readonly Action<ILogger, Uri, Exception> _connectionAlreadyClosedSendingDeleteRequest =
+            private static readonly Action<ILogger, Uri, Exception?> _connectionAlreadyClosedSendingDeleteRequest =
                 LoggerMessage.Define<Uri>(LogLevel.Debug, new EventId(14, "ConnectionAlreadyClosedSendingDeleteRequest"), "A 404 response was returned from sending DELETE request to '{PollUrl}', likely because the transport was already closed on the server.");
 
             // EventIds 100 - 106 used in SendUtils
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 _startTransport(logger, transferFormat, null);
             }
 
-            public static void TransportStopped(ILogger logger, Exception exception)
+            public static void TransportStopped(ILogger logger, Exception? exception)
             {
                 _transportStopped(logger, exception);
             }

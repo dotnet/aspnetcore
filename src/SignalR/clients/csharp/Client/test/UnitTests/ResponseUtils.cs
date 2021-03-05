@@ -34,13 +34,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public static bool IsNegotiateRequest(HttpRequestMessage request)
         {
             return request.Method == HttpMethod.Post &&
-                   new UriBuilder(request.RequestUri).Path.EndsWith("/negotiate");
+                   new UriBuilder(request.RequestUri).Path.EndsWith("/negotiate", StringComparison.Ordinal);
         }
 
         public static bool IsLongPollRequest(HttpRequestMessage request)
         {
             return request.Method == HttpMethod.Get &&
-                   !IsServerSentEventsRequest(request) && 
+                   !IsServerSentEventsRequest(request) &&
                    (request.RequestUri.PathAndQuery.Contains("?id=") || request.RequestUri.PathAndQuery.Contains("&id="));
         }
 

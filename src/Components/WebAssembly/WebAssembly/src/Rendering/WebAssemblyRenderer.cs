@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
-using Microsoft.JSInterop.WebAssembly;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
         /// want to await the rendering of the added component.
         /// </remarks>
-        public Task AddComponentAsync<TComponent>(string domElementSelector, ParameterView parameters) where TComponent : IComponent
+        public Task AddComponentAsync<[DynamicallyAccessedMembers(Component)] TComponent>(string domElementSelector, ParameterView parameters) where TComponent : IComponent
             => AddComponentAsync(typeof(TComponent), domElementSelector, parameters);
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
         /// want to await the rendering of the added component.
         /// </remarks>
-        public Task AddComponentAsync(Type componentType, string domElementSelector, ParameterView parameters)
+        public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, string domElementSelector, ParameterView parameters)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         }
 
         /// <inheritdoc />
-        public override Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
+        public override Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
         {
             // Be sure we only run one event handler at once. Although they couldn't run
             // simultaneously anyway (there's only one thread), they could run nested on
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             try
             {
                 await DispatchEventAsync(info.EventHandlerId, info.EventFieldInfo, info.EventArgs);
-                taskCompletionSource.SetResult(null);
+                taskCompletionSource.SetResult();
             }
             catch (Exception ex)
             {
@@ -187,16 +187,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         readonly struct IncomingEventInfo
         {
             public readonly ulong EventHandlerId;
-            public readonly EventFieldInfo EventFieldInfo;
+            public readonly EventFieldInfo? EventFieldInfo;
             public readonly EventArgs EventArgs;
-            public readonly TaskCompletionSource<object> TaskCompletionSource;
+            public readonly TaskCompletionSource TaskCompletionSource;
 
-            public IncomingEventInfo(ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
+            public IncomingEventInfo(ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
             {
                 EventHandlerId = eventHandlerId;
                 EventFieldInfo = eventFieldInfo;
                 EventArgs = eventArgs;
-                TaskCompletionSource = new TaskCompletionSource<object>();
+                TaskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
         }
 

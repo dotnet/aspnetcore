@@ -35,6 +35,9 @@ const defaultNegotiateResponse: INegotiateResponse = {
     negotiateVersion: 1,
 };
 
+function ServerSentEventsNotAllowed() { throw new Error("Don't allow ServerSentEvents."); }
+function WebSocketNotAllowed() { throw new Error("Don't allow Websockets."); }
+
 registerUnhandledRejectionHandler();
 
 describe("HttpConnection", () => {
@@ -233,8 +236,8 @@ describe("HttpConnection", () => {
         await VerifyLogger.run(async (loggerImpl) => {
             let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
-                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
-                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                EventSource: ServerSentEventsNotAllowed,
+                WebSocket: WebSocketNotAllowed,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", () =>  {
@@ -264,8 +267,8 @@ describe("HttpConnection", () => {
         await VerifyLogger.run(async (loggerImpl) => {
             let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
-                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
-                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                EventSource: ServerSentEventsNotAllowed,
+                WebSocket: WebSocketNotAllowed,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", () =>  {
@@ -368,7 +371,7 @@ describe("HttpConnection", () => {
                     ...commonOptions,
                     httpClient: new TestHttpClient()
                         .on("POST", (r) => {
-                            negotiateUrl.resolve(r.url);
+                            negotiateUrl.resolve(r.url || "");
                             throw new HttpError("We don't care how this turns out", 500);
                         })
                         .on("GET", () => {
@@ -592,7 +595,7 @@ describe("HttpConnection", () => {
                         firstPoll = false;
                         return "";
                     }
-                    return new HttpResponse(204, "No Content", "");
+                    return new HttpResponse(200);
                 })
                 .on("DELETE", () => new HttpResponse(202));
 
@@ -607,7 +610,7 @@ describe("HttpConnection", () => {
             try {
                 await connection.start(TransferFormat.Text);
 
-                expect(httpClient.sentRequests.length).toBe(4);
+                expect(httpClient.sentRequests.length).toBeGreaterThanOrEqual(4);
                 expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate?negotiateVersion=1");
                 expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate?negotiateVersion=1");
                 expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
@@ -1085,7 +1088,6 @@ describe("HttpConnection", () => {
             let negotiateCount: number = 0;
             let getCount: number = 0;
             let connection: HttpConnection;
-            let connectionId: string | undefined;
             const options: IHttpConnectionOptions = {
                 WebSocket: TestWebSocket,
                 ...commonOptions,
@@ -1099,8 +1101,7 @@ describe("HttpConnection", () => {
                         if (getCount === 1) {
                             return new HttpResponse(200);
                         }
-                        connectionId = connection.connectionId;
-                        return new HttpResponse(204);
+                        return new HttpResponse(200);
                     })
                     .on("DELETE", () => new HttpResponse(202)),
 
@@ -1121,7 +1122,9 @@ describe("HttpConnection", () => {
             } catch { }
 
             expect(negotiateCount).toEqual(2);
-            expect(connectionId).toEqual("2");
+            expect(connection.connectionId).toEqual("2");
+
+            await connection.stop();
         },
         "Failed to start the transport 'WebSockets': Error: There was an error with the transport.");
     });

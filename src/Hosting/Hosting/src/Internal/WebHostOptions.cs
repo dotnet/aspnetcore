@@ -11,11 +11,6 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal class WebHostOptions
     {
-        public WebHostOptions() { }
-
-        public WebHostOptions(IConfiguration configuration)
-            : this(configuration, string.Empty) { }
-
         public WebHostOptions(IConfiguration configuration, string applicationNameFallback)
         {
             if (configuration == null)

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
 
         protected InvocationRequest(CancellationToken cancellationToken, Type resultType, string invocationId, ILogger logger, HubConnection hubConnection)
         {
-            _cancellationTokenRegistration = cancellationToken.Register(self => ((InvocationRequest)self).Cancel(), this);
+            _cancellationTokenRegistration = cancellationToken.Register(self => ((InvocationRequest)self!).Cancel(), this);
 
             InvocationId = invocationId;
             CancellationToken = cancellationToken;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
             Log.InvocationCreated(Logger, InvocationId);
         }
 
-        public static InvocationRequest Invoke(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection, out Task<object> result)
+        public static InvocationRequest Invoke(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection, out Task<object?> result)
         {
             var req = new NonStreaming(cancellationToken, resultType, invocationId, loggerFactory, hubConnection);
             result = req.Result;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         }
 
         public static InvocationRequest Stream(CancellationToken cancellationToken, Type resultType, string invocationId,
-            ILoggerFactory loggerFactory, HubConnection hubConnection, out ChannelReader<object> result)
+            ILoggerFactory loggerFactory, HubConnection hubConnection, out ChannelReader<object?> result)
         {
             var req = new Streaming(cancellationToken, resultType, invocationId, loggerFactory, hubConnection);
             result = req.Result;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
 
         public abstract void Fail(Exception exception);
         public abstract void Complete(CompletionMessage message);
-        public abstract ValueTask<bool> StreamItem(object item);
+        public abstract ValueTask<bool> StreamItem(object? item);
 
         protected abstract void Cancel();
 
@@ -67,14 +67,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
 
         private class Streaming : InvocationRequest
         {
-            private readonly Channel<object> _channel = Channel.CreateUnbounded<object>();
+            private readonly Channel<object?> _channel = Channel.CreateUnbounded<object?>();
 
             public Streaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection)
                 : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger<Streaming>(), hubConnection)
             {
             }
 
-            public ChannelReader<object> Result => _channel.Reader;
+            public ChannelReader<object?> Result => _channel.Reader;
 
             public override void Complete(CompletionMessage completionMessage)
             {
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
                 _channel.Writer.TryComplete(exception);
             }
 
-            public override async ValueTask<bool> StreamItem(object item)
+            public override async ValueTask<bool> StreamItem(object? item)
             {
                 try
                 {
@@ -127,14 +127,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
 
         private class NonStreaming : InvocationRequest
         {
-            private readonly TaskCompletionSource<object> _completionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly TaskCompletionSource<object?> _completionSource = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             public NonStreaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection)
                 : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger<NonStreaming>(), hubConnection)
             {
             }
 
-            public Task<object> Result => _completionSource.Task;
+            public Task<object?> Result => _completionSource.Task;
 
             public override void Complete(CompletionMessage completionMessage)
             {
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
                 _completionSource.TrySetException(exception);
             }
 
-            public override ValueTask<bool> StreamItem(object item)
+            public override ValueTask<bool> StreamItem(object? item)
             {
                 Log.StreamItemOnNonStreamInvocation(Logger, InvocationId);
                 _completionSource.TrySetException(new InvalidOperationException($"Streaming hub methods must be invoked with the '{nameof(HubConnection)}.{nameof(HubConnectionExtensions.StreamAsChannelAsync)}' method."));
@@ -172,27 +172,27 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         private static class Log
         {
             // Category: Streaming and NonStreaming
-            private static readonly Action<ILogger, string, Exception> _invocationCreated =
+            private static readonly Action<ILogger, string, Exception?> _invocationCreated =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(1, "InvocationCreated"), "Invocation {InvocationId} created.");
 
-            private static readonly Action<ILogger, string, Exception> _invocationDisposed =
+            private static readonly Action<ILogger, string, Exception?> _invocationDisposed =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(2, "InvocationDisposed"), "Invocation {InvocationId} disposed.");
 
-            private static readonly Action<ILogger, string, Exception> _invocationCompleted =
+            private static readonly Action<ILogger, string, Exception?> _invocationCompleted =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(3, "InvocationCompleted"), "Invocation {InvocationId} marked as completed.");
 
-            private static readonly Action<ILogger, string, Exception> _invocationFailed =
+            private static readonly Action<ILogger, string, Exception?> _invocationFailed =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(4, "InvocationFailed"), "Invocation {InvocationId} marked as failed.");
 
             // Category: Streaming
             private static readonly Action<ILogger, string, Exception> _errorWritingStreamItem =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(5, "ErrorWritingStreamItem"), "Invocation {InvocationId} caused an error trying to write a stream item.");
 
-            private static readonly Action<ILogger, string, Exception> _receivedUnexpectedComplete =
+            private static readonly Action<ILogger, string, Exception?> _receivedUnexpectedComplete =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(6, "ReceivedUnexpectedComplete"), "Invocation {InvocationId} received a completion result, but was invoked as a streaming invocation.");
 
             // Category: NonStreaming
-            private static readonly Action<ILogger, string, Exception> _streamItemOnNonStreamInvocation =
+            private static readonly Action<ILogger, string, Exception?> _streamItemOnNonStreamInvocation =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(5, "StreamItemOnNonStreamInvocation"), "Invocation {InvocationId} received stream item but was invoked as a non-streamed invocation.");
 
             public static void InvocationCreated(ILogger logger, string invocationId)

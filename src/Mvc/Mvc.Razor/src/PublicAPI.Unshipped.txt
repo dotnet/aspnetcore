@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory
+Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory.ConsolidatedAssemblyApplicationPartFactory() -> void
+~override Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory.GetApplicationParts(System.Reflection.Assembly assembly) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart>
