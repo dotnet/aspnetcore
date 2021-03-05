@@ -46,7 +46,10 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
             async Task InitializeCore()
             {
-                Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory/*, debug: "pw:api"*/);
+                // Work around weird driverExecutable lookup logic
+                var helixDirectory = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")
+                var driverPath = string.isNullOrEmpty(helixDirectory) ? null : Path.Combine(helixDirectory, "runtests.sh");
+                Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath /*, debug: "pw:api"*/);
                 foreach (var (browserName, options) in _browserManagerConfiguration.BrowserOptions)
                 {
                     if (!_launchBrowsers.ContainsKey(browserName))
