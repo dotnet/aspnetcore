@@ -299,7 +299,7 @@ if ($BuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=true" }
 # "-Projects ... -NoBuildJava -NoBuildManaged -NoBuildNodeJS". An empty `./build.ps1` command will build both
 # managed and native projects.
 $performDesktopBuild = ($BuildInstallers -and $Architecture -ne "arm") -or `
-    ($BuildNative -and -not $Architecture.StartsWith("arm", [System.StringComparison]::OrdinalIgnoreCase))
+    ($BuildNative -and -not $Architecture.Equals("arm", [System.StringComparison]::OrdinalIgnoreCase))
 $performDotnetBuild = $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
     ($All -and -not ($NoBuildJava -and $NoBuildManaged -and $NoBuildNodeJS)) -or `
     ($Projects -and -not ($BuildInstallers -or $specifiedBuildNative))

@@ -37,6 +37,19 @@
           PdbLocation="$(ArtifactsBinDir)AspNetCoreModuleShim\Win32\$(Configuration)\aspnetcorev2.pdb"
         />
         <Components
+          Platform="ARM64"
+          VCPlatform="ARM64"
+          BaseOutputPath="AspNetCoreModuleV2"
+          NativeAsset="aspnetcorev2"
+          ProjectName="AspNetCore.vcxproj"
+          PropetyName="AspNetCoreModuleV2Shim"
+          OutDirName="AspNetCoreModuleShim"
+          ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\AspNetCore"
+          Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"
+          DllLocation="$(ArtifactsBinDir)AspNetCoreModuleShim\ARM64\$(Configuration)\aspnetcorev2.dll"
+          PdbLocation="$(ArtifactsBinDir)AspNetCoreModuleShim\ARM64\$(Configuration)\aspnetcorev2.pdb"
+        />
+        <Components
           Platform="x64"
           VCPlatform="x64"
           BaseOutputPath="AspNetCoreModuleV2"
@@ -61,6 +74,19 @@
           Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj"
           DllLocation="$(ArtifactsBinDir)InProcessRequestHandler\Win32\$(Configuration)\aspnetcorev2_inprocess.dll"
           PdbLocation="$(ArtifactsBinDir)InProcessRequestHandler\Win32\$(Configuration)\aspnetcorev2_inprocess.pdb"
+        />
+        <Components
+          Platform="ARM64"
+          VCPlatform="ARM64"
+          BaseOutputPath="AspNetCoreModuleV2"
+          NativeAsset="aspnetcorev2_inprocess"
+          ProjectName="InProcessRequestHandler.vcxproj"
+          PropetyName="AspNetCoreModuleV2InProcessHandler"
+          OutDirName="InProcessRequestHandler"
+          ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler"
+          Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj"
+          DllLocation="$(ArtifactsBinDir)InProcessRequestHandler\ARM64\$(Configuration)\aspnetcorev2_inprocess.dll"
+          PdbLocation="$(ArtifactsBinDir)InProcessRequestHandler\ARM64\$(Configuration)\aspnetcorev2_inprocess.pdb"
         />
         <Components
           Platform="x64"
@@ -89,6 +115,20 @@
           Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj"
           DllLocation="$(ArtifactsBinDir)OutOfProcessRequestHandler\Win32\$(Configuration)\aspnetcorev2_outofprocess.dll"
           PdbLocation="$(ArtifactsBinDir)OutOfProcessRequestHandler\Win32\$(Configuration)\aspnetcorev2_outofprocess.pdb"
+        />
+        <Components
+          Platform="ARM64"
+          VCPlatform="ARM64"
+          BaseOutputPath="AspNetCoreModuleV2"
+          NativeAsset="aspnetcorev2_outofprocess"
+          ProjectName="OutOfProcessRequestHandler.vcxproj"
+          PropetyName="AspNetCoreModuleV2OutOfProcessHandler"
+          OutDirName="OutOfProcessRequestHandler"
+          PackageSubPath="$(AspNetCoreModuleOutOfProcessVersion)\"
+          ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler"
+          Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj"
+          DllLocation="$(ArtifactsBinDir)OutOfProcessRequestHandler\ARM64\$(Configuration)\aspnetcorev2_outofprocess.dll"
+          PdbLocation="$(ArtifactsBinDir)OutOfProcessRequestHandler\ARM64\$(Configuration)\aspnetcorev2_outofprocess.pdb"
         />
 
        <ShimComponents
@@ -118,6 +158,19 @@
           PdbLocation="$(ArtifactsBinDir)AspNetCoreModuleShim\Win32\$(Configuration)\aspnetcorev2.pdb"
         />
         <ShimComponents
+          Platform="ARM64"
+          VCPlatform="ARM64"
+          BaseOutputPath="AspNetCoreModuleV2"
+          NativeAsset="aspnetcorev2"
+          ProjectName="AspNetCore.vcxproj"
+          PropetyName="AspNetCoreModuleV2Shim"
+          OutDirName="AspNetCoreModuleShim"
+          ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\AspNetCore"
+          Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"
+          DllLocation="$(ArtifactsBinDir)AspNetCoreModuleShim\ARM64\$(Configuration)\aspnetcorev2.dll"
+          PdbLocation="$(ArtifactsBinDir)AspNetCoreModuleShim\ARM64\$(Configuration)\aspnetcorev2.pdb"
+        />
+        <ShimComponents
           Platform="x64"
           VCPlatform="x64"
           BaseOutputPath="AspNetCoreModuleV2"
@@ -145,6 +198,20 @@
           DllLocation="$(ArtifactsBinDir)OutOfProcessRequestHandler\Win32\$(Configuration)\aspnetcorev2_outofprocess.dll"
           PdbLocation="$(ArtifactsBinDir)OutOfProcessRequestHandler\Win32\$(Configuration)\aspnetcorev2_outofprocess.pdb"
         />
+        <ShimComponents
+          Platform="ARM64"
+          VCPlatform="ARM64"
+          BaseOutputPath="AspNetCoreModuleV2"
+          NativeAsset="aspnetcorev2_outofprocess"
+          ProjectName="OutOfProcessRequestHandler.vcxproj"
+          PropetyName="AspNetCoreModuleV2OutOfProcessHandler"
+          OutDirName="OutOfProcessRequestHandler"
+          PackageSubPath="$(AspNetCoreModuleOutOfProcessVersion)\"
+          ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler"
+          Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj"
+          DllLocation="$(ArtifactsBinDir)OutOfProcessRequestHandler\ARM64\$(Configuration)\aspnetcorev2_outofprocess.dll"
+          PdbLocation="$(ArtifactsBinDir)OutOfProcessRequestHandler\ARM64\$(Configuration)\aspnetcorev2_outofprocess.pdb"
+        />
 
        <InProcessComponents
           Platform="x64"
@@ -171,6 +238,19 @@
           Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj"
           DllLocation="$(ArtifactsBinDir)InProcessRequestHandler\Win32\$(Configuration)\aspnetcorev2_inprocess.dll"
           PdbLocation="$(ArtifactsBinDir)InProcessRequestHandler\Win32\$(Configuration)\aspnetcorev2_inprocess.pdb"
+        />
+        <InProcessComponents
+          Platform="ARM64"
+          VCPlatform="ARM64"
+          BaseOutputPath="AspNetCoreModuleV2"
+          NativeAsset="aspnetcorev2_inprocess"
+          ProjectName="InProcessRequestHandler.vcxproj"
+          PropetyName="AspNetCoreModuleV2InProcessHandler"
+          OutDirName="InProcessRequestHandler"
+          ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler"
+          Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj"
+          DllLocation="$(ArtifactsBinDir)InProcessRequestHandler\ARM64\$(Configuration)\aspnetcorev2_inprocess.dll"
+          PdbLocation="$(ArtifactsBinDir)InProcessRequestHandler\ARM64\$(Configuration)\aspnetcorev2_inprocess.pdb"
         />
 
        <RunShimComponents

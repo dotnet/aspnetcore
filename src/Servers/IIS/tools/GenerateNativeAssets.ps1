@@ -8,6 +8,10 @@ $platforms = @(
     @{
         Platform = "x86";
         VCPlatform = "Win32";
+    },
+    @{
+        Platform = "ARM64";
+        VCPlatform = "ARM64";
     }
 );
 $srcDir = "`$(MSBuildThisFileDirectory)..";
