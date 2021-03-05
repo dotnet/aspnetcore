@@ -52,21 +52,18 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
         internal BrowserContextOptions ConfigureUniqueHarPath(BrowserContextOptions browserContextOptions)
         {
+            var uploadDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
             if (browserContextOptions?.RecordHar?.Path != null)
             {
                 var identifier = Guid.NewGuid().ToString("N");
-                var harDirectory = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-                if (string.IsNullOrEmpty(harDirectory))
-                {
-                    harDirectory = browserContextOptions.RecordHar.Path;
-                }
-                browserContextOptions.RecordHar.Path = Path.Combine(harDirectory, $"{identifier}.har");
+                browserContextOptions.RecordHar.Path = Path.Combine(
+                    string.IsNullOrEmpty(uploadDir) ? browserContextOptions.RecordHar.Path : uploadDir, 
+                    $"{identifier}.har");
                 _harPath = browserContextOptions.RecordHar.Path;
             }
 
             if (browserContextOptions?.RecordVideo?.Dir != null)
             {
-                var uploadDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
                 if (!string.IsNullOrEmpty(uploadDir))
                 {
                     browserContextOptions.RecordVideo.Dir = uploadDir;
