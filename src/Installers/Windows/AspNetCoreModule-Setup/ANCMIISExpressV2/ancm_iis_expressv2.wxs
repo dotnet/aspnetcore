@@ -56,7 +56,7 @@
                  Manufacturer="!(loc.Manufacturer)"
                  Compressed="yes"
                  InstallPrivileges="elevated"
-                 InstallerVersion="400"
+                 InstallerVersion="$(var.InstallerVersion)"
                  Platform="$(var.PlatformValue)" />
 
         <Media Id="1" Cabinet="aspnetcoremodule.cab" EmbedCab="yes" CompressionLevel="high"/>
