@@ -280,6 +280,7 @@ namespace Templates.Test
         [InlineData(BrowserKind.Chromium)]
         // LocalDB doesn't work on non Windows platforms
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30700")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
         {
             return BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
