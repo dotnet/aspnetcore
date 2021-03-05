@@ -14,20 +14,32 @@ using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
+    /// <summary>
+    /// A Windows Presentation Foundation (WPF) control for hosting Blazor web components locally in Windows desktop applications.
+    /// </summary>
     public sealed class BlazorWebView : Control, IDisposable
     {
         #region Dependency property definitions
+        /// <summary>
+        /// The backing store for the <see cref="HostPage"/> property.
+        /// </summary>
         public static readonly DependencyProperty HostPageProperty = DependencyProperty.Register(
             name: nameof(HostPage),
             propertyType: typeof(string),
             ownerType: typeof(BlazorWebView),
             typeMetadata: new PropertyMetadata(OnHostPagePropertyChanged));
 
+        /// <summary>
+        /// The backing store for the <see cref="RootComponent"/> property.
+        /// </summary>
         public static readonly DependencyProperty RootComponentsProperty = DependencyProperty.Register(
             name: nameof(RootComponents),
             propertyType: typeof(ObservableCollection<RootComponent>),
             ownerType: typeof(BlazorWebView));
 
+        /// <summary>
+        /// The backing store for the <see cref="Services"/> property.
+        /// </summary>
         public static readonly DependencyProperty ServicesProperty = DependencyProperty.Register(
             name: nameof(Services),
             propertyType: typeof(IServiceProvider),
@@ -39,6 +51,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         private WebView2Control _webview;
         private WebView2WebViewManager _webviewManager;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="BlazorWebView"/>.
+        /// </summary>
         public BlazorWebView()
         {
             SetValue(RootComponentsProperty, new ObservableCollection<RootComponent>());
@@ -54,15 +69,27 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             Application.Current.Exit += HandleApplicationExiting;
         }
 
+        /// <summary>
+        /// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
+        /// This property must be set to a valid value for the Blazor components to start.
+        /// </summary>
         public string HostPage
         {
             get => (string)GetValue(HostPageProperty);
             set => SetValue(HostPageProperty, value);
         }
 
+        /// <summary>
+        /// A collection of <see cref="RootComponent"/> instances that specify the Blazor <see cref="IComponent"/> types
+        /// to be used directly in the specified <see cref="HostPage"/>.
+        /// </summary>
         public ObservableCollection<RootComponent> RootComponents =>
             (ObservableCollection<RootComponent>)GetValue(RootComponentsProperty);
 
+        /// <summary>
+        /// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
+        /// This property must be set to a valid value for the Blazor components to start.
+        /// </summary>
         public IServiceProvider Services
         {
             get => (IServiceProvider)GetValue(ServicesProperty);
@@ -82,6 +109,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             HostPage != null &&
             Services != null;
 
+        /// <inheritdoc />
         public override void OnApplyTemplate()
         {
             // Called when the control is created after its child control (the WebView2) is created from the Template property
@@ -94,6 +122,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             }
         }
 
+        /// <inheritdoc />
         protected override void OnInitialized(EventArgs e)
         {
             // Called when BeginInit/EndInit are used, such as when creating the control from XAML
@@ -152,6 +181,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             Dispose();
         }
 
+        /// <summary>
+        /// Releases all resources used by the control.
+        /// </summary>
         public void Dispose()
         {
             Application.Current.Exit -= HandleApplicationExiting;

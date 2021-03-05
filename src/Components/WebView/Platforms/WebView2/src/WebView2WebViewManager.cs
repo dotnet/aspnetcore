@@ -8,6 +8,10 @@ using Microsoft.Web.WebView2.Core;
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
+    /// <summary>
+    /// An implementation of <see cref="WebViewManager"/> that uses the Edge WebView2 browser control
+    /// to render web content.
+    /// </summary>
     public class WebView2WebViewManager : WebViewManager
     {
         // Using an IP address means that WebView2 doesn't wait for any DNS resolution,
@@ -18,6 +22,14 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         private readonly IWebView2Wrapper _webview;
         private readonly Task _webviewReadyTask;
 
+        /// <summary>
+        /// Constructs an instance of <see cref="WebView2WebViewManager"/>.
+        /// </summary>
+        /// <param name="webview">A wrapper to access platform-specific WebView2 APIs.</param>
+        /// <param name="services">A service provider containing services to be used by this class and also by application code.</param>
+        /// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
+        /// <param name="fileProvider">Provides static content to the webview.</param>
+        /// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
         public WebView2WebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, string hostPageRelativePath)
             : base(services, dispatcher, new Uri(AppOrigin), fileProvider, hostPageRelativePath)
         {
@@ -29,6 +41,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
             _webviewReadyTask = InitializeWebView2();
         }
 
+        /// <inheritdoc />
         protected override void NavigateCore(Uri absoluteUri)
         {
             _ = Dispatcher.InvokeAsync(async () =>
@@ -38,6 +51,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
             });
         }
 
+        /// <inheritdoc />
         protected override void SendMessage(string message)
             => _webview.CoreWebView2.PostWebMessageAsString(message);
 

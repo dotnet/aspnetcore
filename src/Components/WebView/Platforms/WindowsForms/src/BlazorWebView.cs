@@ -13,6 +13,9 @@ using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 {
+    /// <summary>
+    /// A Windows Forms control for hosting Blazor web components locally in Windows desktop applications.
+    /// </summary>
     public sealed class BlazorWebView : Control, IDisposable
     {
         private WebView2Control _webview;
@@ -21,6 +24,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         private string _hostPage;
         private IServiceProvider _services;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="BlazorWebView"/>.
+        /// </summary>
         public BlazorWebView()
         {
             Dispatcher = new WindowsFormsDispatcher(this);
@@ -35,6 +41,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
         private WindowsFormsDispatcher Dispatcher { get; }
 
+        /// <inheritdoc />
         protected override void OnCreateControl()
         {
             base.OnCreateControl();
@@ -42,6 +49,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             StartWebViewCoreIfPossible();
         }
 
+        /// <summary>
+        /// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
+        /// This property must be set to a valid value for the Blazor components to start.
+        /// </summary>
         public string HostPage
         {
             get => _hostPage;
@@ -52,8 +63,16 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             }
         }
 
+        /// <summary>
+        /// A collection of <see cref="RootComponent"/> instances that specify the Blazor <see cref="IComponent"/> types
+        /// to be used directly in the specified <see cref="HostPage"/>.
+        /// </summary>
         public ObservableCollection<RootComponent> RootComponents { get; } = new();
 
+        /// <summary>
+        /// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
+        /// This property must be set to a valid value for the Blazor components to start.
+        /// </summary>
         public IServiceProvider Services
         {
             get => _services;
@@ -120,6 +139,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             }
         }
 
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
