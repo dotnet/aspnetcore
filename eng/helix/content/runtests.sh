@@ -2,6 +2,7 @@
 
 dotnet_sdk_version="$2"
 dotnet_runtime_version="$3"
+installPlaywright="${10}"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -25,8 +26,10 @@ export DOTNET_CLI_HOME="$DIR/.home$RANDOM"
 
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
-# Set playwright browser path
+# Set playwright stuff
 export PLAYWRIGHT_BROWSERS_PATH="$DIR/ms-playwright"
+export PLAYWRIGHT_BROWSERS_PATH="$DIR/.playwright\unix\native\playwright.sh"
+export InstallPlaywright="$installPlaywright"
 
 RESET="\033[0m"
 RED="\033[0;31m"

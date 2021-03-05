@@ -8,7 +8,7 @@
     <HelixPreCommand Include="call RunPowershell.cmd mssql\InstallSqlServerLocalDB.ps1 || exit /b 1" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+  <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
     <SkipHelixQueues>Windows.7.Amd64.Open;Windows.81.Amd64.Open</SkipHelixQueues>
   </PropertyGroup>
 
