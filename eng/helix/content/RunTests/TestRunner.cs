@@ -48,8 +48,10 @@ namespace RunTests
                 var playwrightBrowsers = Path.Combine(helixDir, "ms-playwright");
                 Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
                 EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
+#else
+                Console.WriteLine($"Skipping setting PLAYWRIGHT_BROWSERS_PATH");
 #endif
-    
+
                 Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
                 Directory.CreateDirectory(nugetRestore);
 
@@ -95,8 +97,9 @@ namespace RunTests
         {
             try
             {
-                Console.WriteLine($"Installing Playwright to {EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]}");
-                await Playwright.InstallAsync(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]);
+                Console.WriteLine($"Installing Playwright to Browsers: {EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]} Driver: {EnvironmentVariables["PLAYWRIGHT_DRIVER_PATH"]}");
+                await Playwright.InstallAsync(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"], EnvironmentVariables["PLAYWRIGHT_DRIVER_PATH"]);
+                DisplayContents(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]);
                 return true;
             }
             catch (Exception e)
@@ -106,7 +109,7 @@ namespace RunTests
             }
         }
 #endif
-        
+
         public async Task<bool> InstallAspNetAppIfNeededAsync()
         {
             try
@@ -170,7 +173,7 @@ namespace RunTests
                         errorDataReceived: Console.Error.WriteLine,
                         throwOnError: false,
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-                    
+
                     // ';' is the path separator on Windows, and ':' on Unix
                     Options.Path += OperatingSystem.IsWindows() ? ";" : ":";
                     Options.Path += $"{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
