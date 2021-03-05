@@ -97,9 +97,9 @@ namespace RunTests
         {
             try
             {
-                Console.WriteLine($"Installing Playwright to Browsers: {EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]} Driver: {EnvironmentVariables["PLAYWRIGHT_DRIVER_PATH"]}");
-                await Playwright.InstallAsync(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"], EnvironmentVariables["PLAYWRIGHT_DRIVER_PATH"]);
-                DisplayContents(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]);
+                Console.WriteLine($"Installing Playwright to Browsers: {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")} Driver: {Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH")}");
+                await Playwright.InstallAsync(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"), Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH"));
+                DisplayContents(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"));
                 return true;
             }
             catch (Exception e)
