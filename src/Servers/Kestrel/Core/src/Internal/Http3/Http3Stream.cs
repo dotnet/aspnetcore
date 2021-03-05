@@ -440,11 +440,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload) where TContext : notnull
         {
-            if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
-            {
-                throw new Http3StreamErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(_incomingFrame.Type), Http3ErrorCode.UnexpectedFrame);
-            }
-
             switch (_incomingFrame.Type)
             {
                 case Http3FrameType.Data:
@@ -472,6 +467,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload) where TContext : notnull
         {
+            // HEADERS frame after trailing headers is invalid.
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+            {
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3FrameType.Headers), Http3ErrorCode.UnexpectedFrame);
+            }
+
             if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
             {
                 _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
@@ -508,9 +510,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)
         {
+            // DATA frame before headers is invalid.
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
             if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
             {
                 throw new Http3StreamErrorException(CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders, Http3ErrorCode.UnexpectedFrame);
+            }
+
+            // DATA frame after trailing headers is invalid.
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+            {
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3FrameType.Data), Http3ErrorCode.UnexpectedFrame);
             }
 
             if (InputRemaining.HasValue)
