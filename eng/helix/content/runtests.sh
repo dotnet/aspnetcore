@@ -30,6 +30,10 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 export PLAYWRIGHT_BROWSERS_PATH="$DIR/ms-playwright"
 export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/unix/native/playwright.sh"
 export InstallPlaywright="$installPlaywright"
+if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
+    echo "chmod +x $PLAYWRIGHT_DRIVER_PATH"
+    chmod +x $PLAYWRIGHT_DRIVER_PATH
+fi
 
 RESET="\033[0m"
 RED="\033[0;31m"
