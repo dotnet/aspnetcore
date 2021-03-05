@@ -28,7 +28,7 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
 # Set playwright stuff
 export PLAYWRIGHT_BROWSERS_PATH="$DIR/ms-playwright"
-export PLAYWRIGHT_BROWSERS_PATH="$DIR/.playwright\unix\native\playwright.sh"
+export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright\unix\native\playwright.sh"
 export InstallPlaywright="$installPlaywright"
 
 RESET="\033[0m"
