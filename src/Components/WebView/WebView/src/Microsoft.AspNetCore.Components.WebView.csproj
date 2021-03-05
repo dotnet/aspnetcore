@@ -65,7 +65,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_AddEmbeddedBlazorWebView" DependsOnTargets="_CheckBlazorWebViewJSPath">
+  <Target Name="_AddEmbeddedBlazorWebView" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" DependsOnTargets="_CheckBlazorWebViewJSPath">
     <ItemGroup>
       <EmbeddedResource Include="$(BlazorWebViewJSFile)" LogicalName="_framework/$(BlazorWebViewJSFilename)" />
       <EmbeddedResource Include="$(BlazorWebViewJSFile).map" LogicalName="_framework/$(BlazorWebViewJSFilename).map" Condition="Exists('$(BlazorWebViewJSFile).map')" />
