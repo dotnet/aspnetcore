@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 return;
             }
 
-            properties = properties ?? new AuthenticationProperties();
+            properties ??= new AuthenticationProperties();
 
             Logger.EnteringOpenIdAuthenticationHandlerHandleSignOutAsync(GetType().FullName);
 
