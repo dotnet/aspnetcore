@@ -223,9 +223,9 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             var canonicalizedRequestBuilder = new StringBuilder();
             canonicalizedRequestBuilder.Append(httpMethod.Method);
-            canonicalizedRequestBuilder.Append("&");
+            canonicalizedRequestBuilder.Append('&');
             canonicalizedRequestBuilder.Append(Uri.EscapeDataString(url));
-            canonicalizedRequestBuilder.Append("&");
+            canonicalizedRequestBuilder.Append('&');
             canonicalizedRequestBuilder.Append(Uri.EscapeDataString(parameterString));
 
             var signature = ComputeSignature(Options.ConsumerSecret, accessToken?.TokenSecret, canonicalizedRequestBuilder.ToString());
