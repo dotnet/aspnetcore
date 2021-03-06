@@ -33,6 +33,8 @@ export InstallPlaywright="$installPlaywright"
 if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
     echo "chmod +x $PLAYWRIGHT_DRIVER_PATH"
     chmod +x $PLAYWRIGHT_DRIVER_PATH
+    echo "chmod +x $DIR/.playwright/unix/native/node"
+    chmod +x $DIR/.playwright/unix/native/node
 fi
 
 RESET="\033[0m"
