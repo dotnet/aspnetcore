@@ -472,7 +472,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
-                throw new Http3StreamErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3FrameType.Headers), Http3ErrorCode.UnexpectedFrame);
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame);
             }
 
             if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
@@ -522,7 +522,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
-                throw new Http3StreamErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3FrameType.Data), Http3ErrorCode.UnexpectedFrame);
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data))), Http3ErrorCode.UnexpectedFrame);
             }
 
             if (InputRemaining.HasValue)

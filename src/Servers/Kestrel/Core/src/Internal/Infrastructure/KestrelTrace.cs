@@ -134,16 +134,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(44, "Http3ConnectionClosed"),
                 @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
 
-        private static readonly Action<ILogger, string, Http3ErrorCode, Exception> _http3StreamAbort =
-            LoggerMessage.Define<string, Http3ErrorCode>(LogLevel.Debug, new EventId(45, "Http3StreamAbort"),
+        private static readonly Action<ILogger, string, string, Exception> _http3StreamAbort =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(45, "Http3StreamAbort"),
                 @"Trace id ""{TraceIdentifier}"": HTTP/3 stream error ""{error}"". An abort is being sent to the stream.");
 
-        private static readonly Action<ILogger, string, Http3FrameType, long, long, Exception?> _http3FrameReceived =
-            LoggerMessage.Define<string, Http3FrameType, long, long>(LogLevel.Trace, new EventId(46, "Http3FrameReceived"),
+        private static readonly Action<ILogger, string, string, long, long, Exception?> _http3FrameReceived =
+            LoggerMessage.Define<string, string, long, long>(LogLevel.Trace, new EventId(46, "Http3FrameReceived"),
                 @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length}.");
 
-        private static readonly Action<ILogger, string, Http3FrameType, long, long, Exception?> _http3FrameSending =
-            LoggerMessage.Define<string, Http3FrameType, long, long>(LogLevel.Trace, new EventId(47, "Http3FrameSending"),
+        private static readonly Action<ILogger, string, string, long, long, Exception?> _http3FrameSending =
+            LoggerMessage.Define<string, string, long, long>(LogLevel.Trace, new EventId(47, "Http3FrameSending"),
                 @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length}.");
 
         protected readonly ILogger _logger;
@@ -346,17 +346,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
         {
-            _http3StreamAbort(_logger, traceIdentifier, error, abortReason);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _http3StreamAbort(_logger, traceIdentifier, Http3Formatting.ToFormattedErrorCode(error), abortReason);
+            }
         }
 
         public void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame)
         {
-            _http3FrameReceived(_logger, connectionId, frame.Type, streamId, frame.Length, null);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _http3FrameReceived(_logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.Length, null);
+            }
         }
 
         public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame)
         {
-            _http3FrameSending(_logger, connectionId, frame.Type, streamId, frame.Length, null);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _http3FrameSending(_logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.Length, null);
+            }
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
