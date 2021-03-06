@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Tests.Fakes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -114,6 +115,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30582")]
         public async Task UseStartupFactoryWorks(IWebHostBuilder builder)
         {
             void ConfigureServices(IServiceCollection services) { }
