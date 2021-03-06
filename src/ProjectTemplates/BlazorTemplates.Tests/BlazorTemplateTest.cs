@@ -24,8 +24,7 @@ namespace Templates.Test
 
         public static ILoggerFactory CreateFactory(ITestOutputHelper output)
         {
-            var testSink = new TestSink();
-            testSink.MessageLogged += LogMessage;
+            TestSink.MessageLogged += LogMessage;
             var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
             return loggerFactory;
 
