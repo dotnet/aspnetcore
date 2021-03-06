@@ -1037,36 +1037,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             return null;
         }
 
-        private AuthenticationProperties GetPropertiesFromState(string state)
-        {
-            // assume a well formed query string: <a=b&>OpenIdConnectAuthenticationDefaults.AuthenticationPropertiesKey=kasjd;fljasldkjflksdj<&c=d>
-            var startIndex = 0;
-            if (string.IsNullOrEmpty(state) || (startIndex = state.IndexOf(OpenIdConnectDefaults.AuthenticationPropertiesKey, StringComparison.Ordinal)) == -1)
-            {
-                return null;
-            }
-
-            var authenticationIndex = startIndex + OpenIdConnectDefaults.AuthenticationPropertiesKey.Length;
-            if (authenticationIndex == -1 || authenticationIndex == state.Length || state[authenticationIndex] != '=')
-            {
-                return null;
-            }
-
-            // scan rest of string looking for '&'
-            authenticationIndex++;
-            var endIndex = state.Substring(authenticationIndex, state.Length - authenticationIndex).IndexOf("&", StringComparison.Ordinal);
-
-            // -1 => no other parameters are after the AuthenticationPropertiesKey
-            if (endIndex == -1)
-            {
-                return Options.StateDataFormat.Unprotect(Uri.UnescapeDataString(state.Substring(authenticationIndex).Replace('+', ' ')));
-            }
-            else
-            {
-                return Options.StateDataFormat.Unprotect(Uri.UnescapeDataString(state.Substring(authenticationIndex, endIndex).Replace('+', ' ')));
-            }
-        }
-
         private async Task<MessageReceivedContext> RunMessageReceivedEventAsync(OpenIdConnectMessage message, AuthenticationProperties properties)
         {
             Logger.MessageReceived(message.BuildRedirectUrl());

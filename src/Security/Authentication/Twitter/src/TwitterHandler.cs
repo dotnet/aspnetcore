@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             JsonDocument user;
             if (Options.RetrieveUserDetails)
             {
-                user = await RetrieveUserDetailsAsync(accessToken, identity);
+                user = await RetrieveUserDetailsAsync(accessToken);
             }
             else
             {
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         }
 
         // https://dev.twitter.com/rest/reference/get/account/verify_credentials
-        private async Task<JsonDocument> RetrieveUserDetailsAsync(AccessToken accessToken, ClaimsIdentity identity)
+        private async Task<JsonDocument> RetrieveUserDetailsAsync(AccessToken accessToken)
         {
             Logger.RetrieveUserDetails();
 
