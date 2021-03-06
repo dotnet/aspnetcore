@@ -49,8 +49,16 @@ namespace Microsoft.AspNetCore.BrowserTesting
             {
                 // Work around weird driverExecutable lookup logic
                 var helixDirectory = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
-                var driverPath = string.IsNullOrEmpty(helixDirectory) ? null : Path.Combine(helixDirectory, "runtests.sh");
-                Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath /*, debug: "pw:api"*/);
+                if (string.IsNullOrEmpty(helixDirectory)) 
+                {
+                    var driverPath = Path.Combine(helixDirectory,
+                        RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "playwright.sh" : "playwright.cmd");
+                    Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath /*, debug: "pw:api"*/);
+                }
+                else
+                {
+                    Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory /*, debug: "pw:api"*/);
+                }
                 foreach (var (browserName, options) in _browserManagerConfiguration.BrowserOptions)
                 {
                     if (!_launchBrowsers.ContainsKey(browserName))
