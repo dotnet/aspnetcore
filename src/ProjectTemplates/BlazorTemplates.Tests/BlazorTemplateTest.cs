@@ -22,10 +22,10 @@ namespace Templates.Test
         public PlaywrightFixture<BlazorServerTemplateTest> Fixture { get; }
 
 
-        public static ILoggerFactory CreateFactory(ITestOutputHelper output)
+        public ILoggerFactory CreateFactory(ITestOutputHelper output)
         {
             TestSink.MessageLogged += LogMessage;
-            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var loggerFactory = new TestLoggerFactory(TestSink, enabled: true);
             return loggerFactory;
 
             void LogMessage(WriteContext ctx)
