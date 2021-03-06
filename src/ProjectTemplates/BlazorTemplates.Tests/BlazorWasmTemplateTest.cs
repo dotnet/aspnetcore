@@ -26,16 +26,13 @@ namespace Templates.Test
 {
     public class BlazorWasmTemplateTest : BlazorTemplateTest
     {
-        public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory, PlaywrightFixture<BlazorServerTemplateTest> browserFixture, ITestOutputHelper output)
+        public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory, PlaywrightFixture<BlazorServerTemplateTest> browserFixture)
             : base(browserFixture)
         {
             ProjectFactory = projectFactory;
-            Output = output;
         }
 
         public ProjectFactoryFixture ProjectFactory { get; set; }
-
-        public ITestOutputHelper Output { get; }
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
@@ -44,7 +41,7 @@ namespace Templates.Test
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandalone" + browserKind, Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorstandalone" + browserKind, TestOutputHelper);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
@@ -64,7 +61,7 @@ namespace Templates.Test
             var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
             using (serveProcess)
             {
-                Output.WriteLine($"Opening browser at {listeningUri}...");
+                TestOutputHelper.WriteLine($"Opening browser at {listeningUri}...");
                 if (Fixture.BrowserManager.IsAvailable(browserKind))
                 {
                     await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
@@ -94,7 +91,7 @@ namespace Templates.Test
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);            
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, TestOutputHelper);            
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
@@ -153,7 +150,7 @@ namespace Templates.Test
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", TestOutputHelper);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--pwa" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
@@ -172,7 +169,7 @@ namespace Templates.Test
             {
                 var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
                 await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-                Output.WriteLine($"Opening browser at {listeningUri}...");
+                TestOutputHelper.WriteLine($"Opening browser at {listeningUri}...");
                 var page = await NavigateToPage(browser, listeningUri);
                 using (serveProcess)
                 {
@@ -200,7 +197,7 @@ namespace Templates.Test
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", TestOutputHelper);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "--pwa" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
@@ -296,7 +293,7 @@ namespace Templates.Test
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""), Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""), TestOutputHelper);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
@@ -369,7 +366,7 @@ namespace Templates.Test
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual" + browserKind, Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual" + browserKind, TestOutputHelper);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] {
                 "-au",
@@ -401,7 +398,7 @@ namespace Templates.Test
             var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
             using (serveProcess)
             {
-                Output.WriteLine($"Opening browser at {listeningUri}...");
+                TestOutputHelper.WriteLine($"Opening browser at {listeningUri}...");
                 await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
                 var page = await NavigateToPage(browser, listeningUri);
                 await TestBasicNavigation(project.ProjectName, page);
@@ -482,7 +479,7 @@ namespace Templates.Test
         [MemberData(nameof(TemplateData))]
         public async Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
         {
-            var project = await ProjectFactory.GetOrCreateProject(instance.Name, Output);
+            var project = await ProjectFactory.GetOrCreateProject(instance.Name, TestOutputHelper);
             project.TargetFramework = "netstandard2.1";
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: instance.Arguments);
@@ -651,7 +648,7 @@ namespace Templates.Test
         {
             var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
 
-            Output.WriteLine("Running dotnet serve on published output...");
+            TestOutputHelper.WriteLine("Running dotnet serve on published output...");
             var developmentCertificate = DevelopmentCertificate.Create(project.TemplateOutputDir);
             var args = $"-S --pfx \"{developmentCertificate.CertificatePath}\" --pfx-pwd \"{developmentCertificate.CertificatePassword}\" --port 0";
             var command = DotNetMuxer.MuxerPathOrDefault();
@@ -665,7 +662,7 @@ namespace Templates.Test
                 args = "--roll-forward LatestMajor " + args; // dotnet-serve targets net5.0 by default
             }            
             
-            var serveProcess = ProcessEx.Run(Output, publishDir, command, args);
+            var serveProcess = ProcessEx.Run(TestOutputHelper, publishDir, command, args);
             var listeningUri = ResolveListeningUrl(serveProcess);
             return (serveProcess, listeningUri);
         }
