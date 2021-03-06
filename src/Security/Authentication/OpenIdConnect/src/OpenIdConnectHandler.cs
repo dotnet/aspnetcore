@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
                 Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
-                await Response.Body.WriteAsync(buffer, Context.RequestAborted);
+                await Response.Body.WriteAsync(buffer);
             }
             else
             {
@@ -479,7 +479,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
                 Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
-                await Response.Body.WriteAsync(buffer, Context.RequestAborted);
+                await Response.Body.WriteAsync(buffer);
                 return;
             }
 
