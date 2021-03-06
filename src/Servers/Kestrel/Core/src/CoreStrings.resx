@@ -663,6 +663,6 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
     <value>The client sent a {frameType} frame to a request stream which isn't supported.</value>
   </data>
   <data name="Http3ErrorUnsupportedFrameOnServer" xml:space="preserve">
-    <value>The client sent a {frameType} frame to a the server which isn't supported.</value>
+    <value>The client sent a {frameType} frame to the server which isn't supported.</value>
   </data>
 </root>
