@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings!);
         }
 
-        private void AddQueryString<T>(
+        private static void AddQueryString<T>(
            Dictionary<string, string> queryStrings,
            AuthenticationProperties properties,
            string name,
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             }
         }
 
-        private void AddQueryString(
+        private static void AddQueryString(
             Dictionary<string, string> queryStrings,
             AuthenticationProperties properties,
             string name,

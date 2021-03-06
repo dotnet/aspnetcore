@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             return Convert.ToInt64(secondsSinceUnixEpocStart.TotalSeconds).ToString(CultureInfo.InvariantCulture);
         }
 
-        private string ComputeSignature(string consumerSecret, string tokenSecret, string signatureData)
+        private static string ComputeSignature(string consumerSecret, string tokenSecret, string signatureData)
         {
             using (var algorithm = new HMACSHA1())
             {

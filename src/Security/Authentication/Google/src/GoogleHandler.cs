@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             return authorizationEndpoint;
         }
 
-        private void AddQueryString<T>(
+        private static void AddQueryString<T>(
             IDictionary<string, string> queryStrings,
             AuthenticationProperties properties,
             string name,
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             }
         }
 
-        private void AddQueryString(
+        private static void AddQueryString(
             IDictionary<string, string> queryStrings,
             AuthenticationProperties properties,
             string name,
