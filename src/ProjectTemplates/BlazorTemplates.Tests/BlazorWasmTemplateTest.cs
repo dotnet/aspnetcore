@@ -31,14 +31,11 @@ namespace Templates.Test
         {
             ProjectFactory = projectFactory;
             Output = output;
-            BrowserContextInfo = new ContextInformation(CreateFactory(output));
         }
 
         public ProjectFactoryFixture ProjectFactory { get; set; }
 
         public ITestOutputHelper Output { get; }
-
-        public ContextInformation BrowserContextInfo { get; }
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
