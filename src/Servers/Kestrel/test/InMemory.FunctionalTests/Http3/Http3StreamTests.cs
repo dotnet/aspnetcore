@@ -761,7 +761,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
 
-            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.RequestCancelled, CoreStrings.FormatHttp3StreamResetByApplication(Http3ErrorCode.RequestCancelled));
+            await requestStream.WaitForStreamErrorAsync(
+                Http3ErrorCode.RequestCancelled,
+                CoreStrings.FormatHttp3StreamResetByApplication(Http3Formatting.ToFormattedErrorCode(Http3ErrorCode.RequestCancelled)));
         }
 
         [Fact]
@@ -1544,7 +1546,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.WaitForStreamErrorAsync(
                 Http3ErrorCode.NoError,
-                expectedErrorMessage: "The HTTP/3 stream was reset by the application with error code NoError.");
+                expectedErrorMessage: "The HTTP/3 stream was reset by the application with error code H3_NO_ERROR.");
 
             clientTcs.SetResult(0);
             await appTcs.Task;
@@ -1614,7 +1616,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.WaitForStreamErrorAsync(
                 Http3ErrorCode.NoError,
-                expectedErrorMessage: "The HTTP/3 stream was reset by the application with error code NoError.");
+                expectedErrorMessage: "The HTTP/3 stream was reset by the application with error code H3_NO_ERROR.");
 
             clientTcs.SetResult(0);
             await appTcs.Task;
