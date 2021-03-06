@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
               && Request.Body.CanRead)
             {
-                var form = await Request.ReadFormAsync();
+                var form = await Request.ReadFormAsync(Context.RequestAborted);
                 message = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
 
@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
               && Request.Body.CanRead)
             {
-                var form = await Request.ReadFormAsync();
+                var form = await Request.ReadFormAsync(Context.RequestAborted);
                 authorizationResponse = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
 
@@ -823,7 +823,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, tokenEndpointRequest.TokenEndpoint ?? _configuration.TokenEndpoint);
             requestMessage.Content = new FormUrlEncodedContent(tokenEndpointRequest.Parameters);
             requestMessage.Version = Backchannel.DefaultRequestVersion;
-            var responseMessage = await Backchannel.SendAsync(requestMessage);
+            var responseMessage = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
 
             var contentMediaType = responseMessage.Content.Headers.ContentType?.MediaType;
             if (string.IsNullOrEmpty(contentMediaType))
@@ -842,7 +842,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             OpenIdConnectMessage message;
             try
             {
-                var responseContent = await responseMessage.Content.ReadAsStringAsync();
+                var responseContent = await responseMessage.Content.ReadAsStringAsync(Context.RequestAborted);
                 message = new OpenIdConnectMessage(responseContent);
             }
             catch (Exception ex)
@@ -886,9 +886,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, userInfoEndpoint);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", message.AccessToken);
             requestMessage.Version = Backchannel.DefaultRequestVersion;
-            var responseMessage = await Backchannel.SendAsync(requestMessage);
+            var responseMessage = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
             responseMessage.EnsureSuccessStatusCode();
-            var userInfoResponse = await responseMessage.Content.ReadAsStringAsync();
+            var userInfoResponse = await responseMessage.Content.ReadAsStringAsync(Context.RequestAborted);
 
             JsonDocument user;
             var contentType = responseMessage.Content.Headers.ContentType;
