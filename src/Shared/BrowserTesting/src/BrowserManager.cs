@@ -48,11 +48,9 @@ namespace Microsoft.AspNetCore.BrowserTesting
             async Task InitializeCore()
             {
                 // Work around weird driverExecutable lookup logic
-                var helixDirectory = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
-                if (string.IsNullOrEmpty(helixDirectory)) 
+                var driverPath = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
+                if (string.IsNullOrEmpty(driverPath)) 
                 {
-                    var driverPath = Path.Combine(helixDirectory,
-                        RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "playwright.sh" : "playwright.cmd");
                     Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath /*, debug: "pw:api"*/);
                 }
                 else
