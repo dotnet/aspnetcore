@@ -20,14 +20,15 @@ namespace Templates.Test
         }
 
         public PlaywrightFixture<BlazorServerTemplateTest> Fixture { get; }
+        public ContextInformation BrowserContextInfo { get; }
 
-
-        public ILoggerFactory CreateFactory(ITestOutputHelper output)
+        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper) 
         {
-            TestSink.MessageLogged += LogMessage;
-            var loggerFactory = new TestLoggerFactory(TestSink, enabled: true);
-            return loggerFactory;
+            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
+            TestSink.MessageLogged += LogMessage;
+            BrowserContextInfo = new ContextInformation(LoggerFactory);
+            
             void LogMessage(WriteContext ctx)
             {
                 output.WriteLine($"{MapLogLevel(ctx)}: [Browser]{ctx.Message}");
