@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
         private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
-
+        private readonly IProtocolErrorCodeFeature _errorCodeFeature;
 
         public Http3Connection(Http3ConnectionContext context)
         {
@@ -48,6 +48,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _systemClock = context.ServiceContext.SystemClock;
             _timeoutControl = new TimeoutControl(this);
             _context.TimeoutControl ??= _timeoutControl;
+
+            _errorCodeFeature = context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
 
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
 
@@ -163,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return false;
         }
 
-        public void Abort(ConnectionAbortedException ex)
+        public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode)
         {
             bool previousState;
 
@@ -180,6 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     SendGoAway(_highestOpenedStreamId);
                 }
 
+                _errorCodeFeature.Error = (long)errorCode;
                 _multiplexedContext.Abort(ex);
             }
         }
@@ -363,7 +366,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 catch
                 {
-                    Abort(connectionError);
+                    Abort(connectionError, Http3ErrorCode.NoError);
                     throw;
                 }
             }

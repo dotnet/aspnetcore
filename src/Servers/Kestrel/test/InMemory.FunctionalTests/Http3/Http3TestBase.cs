@@ -149,10 +149,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             }
 
-            VerifyGoAway(frame, expectedLastStreamId, expectedErrorCode);
+            Assert.Equal((long)expectedErrorCode, MultiplexedConnectionContext.Error);
+
+            VerifyGoAway(frame, expectedLastStreamId);
         }
 
-        internal void VerifyGoAway(Http3FrameWithPayload frame, long expectedLastStreamId, Http3ErrorCode expectedErrorCode)
+        internal void VerifyGoAway(Http3FrameWithPayload frame, long expectedLastStreamId)
         {
             Assert.Equal(Http3FrameType.GoAway, frame.Type);
             var payload = frame.Payload;
@@ -329,6 +331,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     }
                 }
             }
+
+            internal async Task SendFrameAsync(Http3RawFrame frame, Memory<byte> data, bool endStream = false)
+            {
+                var outputWriter = _pair.Application.Output;
+                frame.Length = data.Length;
+                Http3FrameWriter.WriteHeader(frame, outputWriter);
+                await SendAsync(data.Span);
+
+                if (endStream)
+                {
+                    await _pair.Application.Output.CompleteAsync();
+                }
+            }
         }
 
         internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler, IProtocolErrorCodeFeature
@@ -381,19 +396,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var frame = new Http3RawFrame();
                 frame.PrepareData();
                 await SendFrameAsync(frame, data, endStream);
-            }
-
-            internal async Task SendFrameAsync(Http3RawFrame frame, Memory<byte> data, bool endStream = false)
-            {
-                var outputWriter = _pair.Application.Output;
-                frame.Length = data.Length;
-                Http3FrameWriter.WriteHeader(frame, outputWriter);
-                await SendAsync(data.Span);
-
-                if (endStream)
-                {
-                    await _pair.Application.Output.CompleteAsync();
-                }
             }
 
             internal async Task<Dictionary<string, string>> ExpectHeadersAsync()
@@ -483,7 +485,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var inputPipeOptions = GetInputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
                 var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-                StreamContext = new TestStreamContext(canRead: false, canWrite: true, _pair, this);
+                StreamContext = new TestStreamContext(canRead: true, canWrite: false, _pair, this);
             }
 
             public Http3ControlStream(ConnectionContext streamContext)
@@ -505,6 +507,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 WriteSpan(writableBuffer);
 
                 await FlushAsync(writableBuffer);
+            }
+
+            internal async Task SendSettingsAsync(List<Http3PeerSetting> settings, bool endStream = false)
+            {
+                var frame = new Http3RawFrame();
+                frame.PrepareSettings();
+
+                var settingsLength = CalculateSettingsSize(settings);
+                var buffer = new byte[settingsLength];
+                WriteSettings(settings, buffer);
+
+                await SendFrameAsync(frame, buffer, endStream);
+            }
+
+            internal static int CalculateSettingsSize(List<Http3PeerSetting> settings)
+            {
+                var length = 0;
+                foreach (var setting in settings)
+                {
+                    length += VariableLengthIntegerHelper.GetByteCount((long)setting.Parameter);
+                    length += VariableLengthIntegerHelper.GetByteCount(setting.Value);
+                }
+                return length;
+            }
+
+            internal static void WriteSettings(List<Http3PeerSetting> settings, Span<byte> destination)
+            {
+                foreach (var setting in settings)
+                {
+                    var parameterLength = VariableLengthIntegerHelper.WriteInteger(destination, (long)setting.Parameter);
+                    destination = destination.Slice(parameterLength);
+
+                    var valueLength = VariableLengthIntegerHelper.WriteInteger(destination, (long)setting.Value);
+                    destination = destination.Slice(valueLength);
+                }
             }
 
             public async ValueTask<long> TryReadStreamIdAsync()
@@ -540,7 +577,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        public class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature
+        public class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature, IProtocolErrorCodeFeature
         {
             public readonly Channel<ConnectionContext> ToServerAcceptQueue = Channel.CreateUnbounded<ConnectionContext>(new UnboundedChannelOptions
             {
@@ -562,6 +599,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Features = new FeatureCollection();
                 Features.Set<IConnectionLifetimeNotificationFeature>(this);
                 Features.Set<IConnectionHeartbeatFeature>(this);
+                Features.Set<IProtocolErrorCodeFeature>(this);
                 ConnectionClosedRequested = ConnectionClosingCts.Token;
             }
 
@@ -574,6 +612,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public CancellationToken ConnectionClosedRequested { get; set; }
 
             public CancellationTokenSource ConnectionClosingCts { get; set; } = new CancellationTokenSource();
+
+            public long Error { get; set; }
 
             public override void Abort()
             {

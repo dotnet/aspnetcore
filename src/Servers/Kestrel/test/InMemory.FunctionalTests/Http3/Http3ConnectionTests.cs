@@ -3,15 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -27,9 +23,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var outboundcontrolStream = await CreateControlStream();
             var inboundControlStream = await GetInboundControlStream();
 
-            Connection.Abort(new ConnectionAbortedException());
+            Connection.Abort(new ConnectionAbortedException(), Http3ErrorCode.NoError);
             await _closedStateReached.Task.DefaultTimeout();
-            await WaitForConnectionErrorAsync(ignoreNonGoAwayFrames: true, expectedLastStreamId: 0, expectedErrorCode: 0);
+            await WaitForConnectionErrorAsync(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http3ErrorCode.NoError);
         }
 
         [Fact]
@@ -82,6 +81,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Trigger server shutdown.
             MultiplexedConnectionContext.ConnectionClosingCts.Cancel();
             Assert.Null(await MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
+        }
+
+        [Fact]
+        public async Task SETTINGS_ReservedSettingSent_ConnectionError()
+        {
+            await InitializeConnectionAsync(_echoApplication);
+
+            var outboundcontrolStream = await CreateControlStream();
+            await outboundcontrolStream.SendSettingsAsync(new List<Http3PeerSetting>
+            {
+                new Http3PeerSetting(0x0, 0) // reserved value
+            });
+
+            await GetInboundControlStream();
+
+            await WaitForConnectionErrorAsync(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http3ErrorCode.SettingsError);
         }
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Threading;
@@ -214,8 +215,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         return;
                     }
                 }
-                catch (Http3StreamErrorException)
+                catch (Http3ConnectionErrorException ex)
                 {
+                    _http3Connection.Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
                 }
                 finally
                 {
@@ -299,10 +301,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // These are client settings, for outbound traffic.
             switch (id)
             {
+                case 0x0:
+                case 0x2:
+                case 0x3:
+                case 0x4:
+                case 0x5:
+                    // HTTP/2 settings are reserved.
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4.1-5
+                    var message = CoreStrings.FormatHttp3ErrorControlStreamReservedSetting("0x" + id.ToString("X", CultureInfo.InvariantCulture));
+                    throw new Http3ConnectionErrorException(message, Http3ErrorCode.SettingsError);
                 case (long)Http3SettingType.QPackMaxTableCapacity:
                     _http3Connection.ApplyMaxTableCapacity(value);
                     break;
-                case (long)Http3SettingType.MaxHeaderListSize:
+                case (long)Http3SettingType.MaxFieldSectionSize:
                     _http3Connection.ApplyMaxHeaderListSize(value);
                     break;
                 case (long)Http3SettingType.QPackBlockedStreams:
@@ -310,6 +321,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     break;
                 default:
                     // Ignore all unknown settings.
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
                     break;
             }
         }
