@@ -19,6 +19,11 @@ $currentDirectory = Get-Location
 $env:PLAYWRIGHT_BROWSERS_PATH = "$currentDirectory\ms-playwright"
 $env:PLAYWRIGHT_DRIVER_PATH = "$currentDirectory\.playwright\win-x64\native\playwright.cmd"
 
+if ($InstallPlaywright -eq "true") {
+    Write-Host "Copying playwright drivers: Copy-Item $currentDirectory\.playwright\win-x64\native $currentDIrectory -recurse"
+    Copy-Item $currentDirectory\.playwright\win-x64\native $currentDirectory -recurse
+}
+
 $envPath = "$env:PATH;$env:HELIX_CORRELATION_PAYLOAD\node\bin"
 
 function InvokeInstallDotnet([string]$command) {
