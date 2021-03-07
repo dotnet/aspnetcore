@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _invalidResponseHeaderRemoved(_logger, null);
         }
 
-        public void Http3ConnectionError(string connectionId, Http3ConnectionException ex)
+        public void Http3ConnectionError(string connectionId, Http3ConnectionErrorException ex)
         {
             _http3ConnectionError(_logger, connectionId, ex);
         }

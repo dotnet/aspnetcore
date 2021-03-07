@@ -387,6 +387,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 error = ex;
                 Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
             }
+            catch (Http3ConnectionErrorException ex)
+            {
+                // TODO: Abort overall connection
+                error = ex;
+                Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
+            }
             catch (Exception ex)
             {
                 error = ex;
@@ -450,11 +456,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 case Http3FrameType.CancelPush:
                 case Http3FrameType.GoAway:
                 case Http3FrameType.MaxPushId:
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
                     // These frames need to be on a control stream
-                    throw new Http3StreamErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
+                    throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
                 case Http3FrameType.PushPromise:
                     // The server should never receive push promise
-                    throw new Http3StreamErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
+                    throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
                 default:
                     return ProcessUnknownFrameAsync();
             }
@@ -462,6 +469,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private Task ProcessUnknownFrameAsync()
         {
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-9
             // Unknown frames must be explicitly ignored.
             return Task.CompletedTask;
         }
@@ -472,7 +480,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
-                throw new Http3StreamErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame);
+                throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame);
             }
 
             if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
@@ -515,14 +523,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
             if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
             {
-                throw new Http3StreamErrorException(CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders, Http3ErrorCode.UnexpectedFrame);
+                throw new Http3ConnectionErrorException(CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders, Http3ErrorCode.UnexpectedFrame);
             }
 
             // DATA frame after trailing headers is invalid.
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
-                throw new Http3StreamErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data))), Http3ErrorCode.UnexpectedFrame);
+                var message = CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data)));
+                throw new Http3ConnectionErrorException(message, Http3ErrorCode.UnexpectedFrame);
             }
 
             if (InputRemaining.HasValue)

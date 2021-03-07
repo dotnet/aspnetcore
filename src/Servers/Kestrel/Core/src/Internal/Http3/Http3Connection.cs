@@ -326,9 +326,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 Log.RequestProcessingError(_context.ConnectionId, ex);
                 error = ex;
             }
-            catch (Http3ConnectionException ex)
+            catch (Http3ConnectionErrorException ex)
             {
-                // TODO Connection error code?
                 Log.Http3ConnectionError(_context.ConnectionId, ex);
                 error = ex;
             }

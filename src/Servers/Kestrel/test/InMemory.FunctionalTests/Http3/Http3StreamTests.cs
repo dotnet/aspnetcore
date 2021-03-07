@@ -1631,7 +1631,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.WaitForStreamErrorAsync(
                 Http3ErrorCode.UnexpectedFrame,
-                expectedErrorMessage: "The client sent a DATA frame before the HEADERS frame.");
+                expectedErrorMessage: CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders);
         }
 
         [Fact]

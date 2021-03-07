@@ -654,7 +654,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
     <value>An error occurred after the response headers were sent, a reset is being sent.</value>
   </data>
   <data name="Http3StreamErrorDataReceivedBeforeHeaders" xml:space="preserve">
-    <value>The client sent a DATA frame before the HEADERS frame.</value>
+    <value>The client sent a DATA frame to a request stream before the HEADERS frame.</value>
   </data>
   <data name="Http3StreamErrorFrameReceivedAfterTrailers" xml:space="preserve">
     <value>The client sent a {frameType} frame after trailing HEADERS.</value>
@@ -664,5 +664,14 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="Http3ErrorUnsupportedFrameOnServer" xml:space="preserve">
     <value>The client sent a {frameType} frame to the server which isn't supported.</value>
+  </data>
+  <data name="Http3ErrorUnsupportedFrameOnControlStream" xml:space="preserve">
+    <value>The client sent a {frameType} frame to a control stream which isn't supported.</value>
+  </data>
+  <data name="Http3ErrorControlStreamMultipleSettingsFrames" xml:space="preserve">
+    <value>The client sent a SETTINGS frame to a control stream that already has settings.</value>
+  </data>
+  <data name="Http3ErrorControlStreamFrameReceivedBeforeSettings" xml:space="preserve">
+    <value>The client sent a {frameType} frame to a control stream before the SETTINGS frame.</value>
   </data>
 </root>
