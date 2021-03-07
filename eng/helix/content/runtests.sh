@@ -35,6 +35,8 @@ if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
     chmod +x $PLAYWRIGHT_DRIVER_PATH
     echo "chmod +x $DIR/.playwright/unix/native/node"
     chmod +x $DIR/.playwright/unix/native/node
+    echo "copying drivers to workitem root"
+    cp -r ./.playwright/unix/native/ .
 fi
 
 RESET="\033[0m"
