@@ -21,7 +21,7 @@ namespace Templates.Test
         }
 
         public PlaywrightFixture<BlazorServerTemplateTest> Fixture { get; }
-        public ContextInformation BrowserContextInfo { get; }
+        public ContextInformation BrowserContextInfo { get; private set; }
 
         public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper) 
         {
