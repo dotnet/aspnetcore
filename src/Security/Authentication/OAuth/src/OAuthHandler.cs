@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
             if (response.IsSuccessStatusCode)
             {
-                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(Context.RequestAborted));
                 return OAuthTokenResponse.Success(payload);
             }
             else
