@@ -4,7 +4,7 @@
   "BaseArtifactsFolder": ".",
   "GlobalBrowserOptions": {
     "ChromiumSandbox": true,
-    "DumpIO": true,
+    "DumpIO": false,
     "IgnoreHTTPSErrors": true,
     "Headless": true,
     "Timeout": 30000
