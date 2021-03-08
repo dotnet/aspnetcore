@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
             // Desktop applications don't normally want to enable things like "alt-left to go back"
             // or "ctrl+f to find". Developers should explicitly opt into allowing these.
-            // TODO: Create a way of opting back in.
+            // Issues #30511 and #30624 track making an option to control this.
             _webview.AcceleratorKeyPressed += (sender, eventArgs) =>
             {
                 if (eventArgs.VirtualKey != 0x49) // Allow ctrl+shift+i to open dev tools, at least for now

@@ -46,8 +46,6 @@ namespace Microsoft.AspNetCore.Components.WebView
                 // For any other message, you have to have a page attached already
                 if (pageContext == null)
                 {
-                    // TODO: Should we just ignore these messages? Is there any way their delivery
-                    // might be delayed until after a page has detached?
                     throw new InvalidOperationException("Cannot receive IPC messages when no page is attached");
                 }
 
