@@ -121,27 +121,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             if (_inboundControlStream == null)
             {
-                return await CreateNewInboundControlStream();
-            }
-
-            return null;
-        }
-
-        internal async ValueTask<Http3ControlStream> CreateNewInboundControlStream()
-        {
-            var reader = MultiplexedConnectionContext.ToClientAcceptQueue.Reader;
-            while (await reader.WaitToReadAsync())
-            {
-                while (reader.TryRead(out var stream))
+                var reader = MultiplexedConnectionContext.ToClientAcceptQueue.Reader;
+                while (await reader.WaitToReadAsync())
                 {
-                    _inboundControlStream = stream;
-                    var streamId = await stream.TryReadStreamIdAsync();
-                    Debug.Assert(streamId == 0, "StreamId sent that was non-zero, which isn't handled by tests");
-                    return _inboundControlStream;
+                    while (reader.TryRead(out var stream))
+                    {
+                        _inboundControlStream = stream;
+                        var streamId = await stream.TryReadStreamIdAsync();
+                        Debug.Assert(streamId == 0, "StreamId sent that was non-zero, which isn't handled by tests");
+                        return _inboundControlStream;
+                    }
                 }
             }
 
-            throw new InvalidOperationException("Should never reach here.");
+            return null;
         }
 
         internal async Task WaitForConnectionErrorAsync<TException>(bool ignoreNonGoAwayFrames, long expectedLastStreamId, Http3ErrorCode expectedErrorCode, params string[] expectedErrorMessage)
@@ -464,21 +457,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _testBase.Logger.LogTrace("Input is completed");
 
                 Assert.True(readResult.IsCompleted);
-                //try
-                {
-                    Assert.Equal(protocolError, (Http3ErrorCode)Error);
+                Assert.Equal(protocolError, (Http3ErrorCode)Error);
 
-                    if (expectedErrorMessage != null)
-                    {
-                        Assert.Contains(_testBase.LogMessages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
-                    }
+                if (expectedErrorMessage != null)
+                {
+                    Assert.Contains(_testBase.LogMessages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
                 }
-                //catch (Exception ex)
-                //{
-                //    Debugger.Launch();
-                //    string s = ex.Message;
-                //    throw;
-                //}
             }
         }
 

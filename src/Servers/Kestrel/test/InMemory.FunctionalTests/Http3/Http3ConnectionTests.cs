@@ -110,5 +110,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorCode: Http3ErrorCode.StreamCreationError,
                 expectedErrorMessage: CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams(name));
         }
+
+        [Theory]
+        [InlineData(nameof(Http3FrameType.Data))]
+        [InlineData(nameof(Http3FrameType.Headers))]
+        [InlineData(nameof(Http3FrameType.PushPromise))]
+        public async Task ControlStream_UnexpectedFrameType_ConnectionError(string frameType)
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            var controlStream = await CreateControlStream();
+
+            var frame = new Http3RawFrame();
+            frame.Type = Enum.Parse<Http3FrameType>(frameType);
+            await controlStream.SendFrameAsync(frame, Memory<byte>.Empty);
+
+            await WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
+                expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(Http3Formatting.ToFormattedType(frame.Type)));
+        }
     }
 }
