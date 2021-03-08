@@ -62,7 +62,6 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         internal override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
         {
             var eventGroups = messages.GroupBy(GetBlobKey);
-            DateTime currDate = DateTime.Now;
             foreach (var eventGroup in eventGroups)
             {
                 var key = eventGroup.Key;
@@ -70,11 +69,13 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
 
                 if (!string.IsNullOrEmpty(_customPrefixFileName))
                 {
-                    string filename = $"{_customPrefixFileName}{currDate.Year}{currDate.Month:00}{currDate.Day:00}.txt";
+                    var filename = $"{_customPrefixFileName}{key.Year}{key.Month:00}{key.Day:00}.txt";
                     blobName = $"{_appName}/{filename}";
                 }
                 else
+                {
                     blobName = $"{_appName}/{key.Year}/{key.Month:00}/{key.Day:00}/{key.Hour:00}/{_fileName}";
+                }
 
                 var blob = _blobReferenceFactory(blobName);
 
