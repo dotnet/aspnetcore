@@ -11,8 +11,8 @@ parameters:
   WorkItemDirectory: ''                  # optional -- a payload directory to zip up and send to Helix; requires WorkItemCommand; incompatible with XUnitProjects
   CorrelationPayloadDirectory: ''        # optional -- a directory to zip up and send to Helix as a correlation payload
   IncludeDotNetCli: false                # optional -- true will download a version of the .NET CLI onto the Helix machine as a correlation payload; requires DotNetCliPackageType and DotNetCliVersion
-  DotNetCliPackageType: ''               # optional -- either 'sdk', 'runtime' or 'aspnetcore-runtime'; determines whether the sdk or runtime will be sent to Helix; see https://raw.githubusercontent.com/dotnet/core/master/release-notes/releases.json
-  DotNetCliVersion: ''                   # optional -- version of the CLI to send to Helix; based on this: https://raw.githubusercontent.com/dotnet/core/master/release-notes/releases.json
+  DotNetCliPackageType: ''               # optional -- either 'sdk', 'runtime' or 'aspnetcore-runtime'; determines whether the sdk or runtime will be sent to Helix; see https://raw.githubusercontent.com/dotnet/core/main/release-notes/releases.json
+  DotNetCliVersion: ''                   # optional -- version of the CLI to send to Helix; based on this: https://raw.githubusercontent.com/dotnet/core/main/release-notes/releases.json
   EnableXUnitReporter: false             # optional -- true enables XUnit result reporting to Mission Control
   WaitForWorkItemCompletion: true        # optional -- true will make the task wait until work items have been completed and fail the build if work items fail. False is "fire and forget."
   Creator: ''                            # optional -- if the build is external, use this to specify who is sending the job
