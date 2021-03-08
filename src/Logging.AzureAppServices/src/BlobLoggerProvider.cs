@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         private readonly string _fileName;
         private readonly Func<string, ICloudAppendBlob> _blobReferenceFactory;
         private readonly HttpClient _httpClient;
-        private readonly string _customPrefixFileName;
+        private readonly string _customFileNamePrefix;
 
         /// <summary>
         /// Creates a new instance of <see cref="BlobLoggerProvider"/>
@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             _fileName = value.ApplicationInstanceId + "_" + value.BlobName;
             _blobReferenceFactory = blobReferenceFactory;
             _httpClient = new HttpClient();
-            _customPrefixFileName = value.CustomFileNamePrefix;
+            _customFileNamePrefix = value.CustomFileNamePrefix;
         }
 
         internal override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
@@ -67,9 +67,9 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
                 var key = eventGroup.Key;
                 string blobName;
 
-                if (!string.IsNullOrEmpty(_customPrefixFileName))
+                if (!string.IsNullOrEmpty(_customFileNamePrefix))
                 {
-                    var filename = $"{_customPrefixFileName}{key.Year}{key.Month:00}{key.Day:00}.txt";
+                    var filename = $"{_customFileNamePrefix}{key.Year}{key.Month:00}{key.Day:00}.txt";
                     blobName = $"{_appName}/{filename}";
                 }
                 else
