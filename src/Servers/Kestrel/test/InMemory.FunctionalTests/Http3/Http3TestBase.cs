@@ -137,7 +137,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return null;
         }
 
-        internal async Task WaitForConnectionErrorAsync(bool ignoreNonGoAwayFrames, long expectedLastStreamId, Http3ErrorCode expectedErrorCode)
+        internal async Task WaitForConnectionErrorAsync<TException>(bool ignoreNonGoAwayFrames, long expectedLastStreamId, Http3ErrorCode expectedErrorCode, params string[] expectedErrorMessage)
+            where TException : Exception
         {
             var frame = await _inboundControlStream.ReceiveFrameAsync();
 
@@ -149,9 +150,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             }
 
+            VerifyGoAway(frame, expectedLastStreamId);
+
             Assert.Equal((long)expectedErrorCode, MultiplexedConnectionContext.Error);
 
-            VerifyGoAway(frame, expectedLastStreamId);
+            if (expectedErrorMessage?.Length > 0)
+            {
+                var message = Assert.Single(LogMessages, m => m.Exception is TException);
+
+                Assert.Contains(expectedErrorMessage, expected => message.Exception.Message.Contains(expected));
+            }
         }
 
         internal void VerifyGoAway(Http3FrameWithPayload frame, long expectedLastStreamId)
@@ -180,6 +188,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(application);
 
             OutboundControlStream = await CreateControlStream();
+
+            await GetInboundControlStream();
 
             return await CreateRequestStream();
         }
@@ -447,12 +457,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _testBase.Logger.LogTrace("Input is completed");
 
                 Assert.True(readResult.IsCompleted);
-                Assert.Equal((long)protocolError, Error);
-
-                if (expectedErrorMessage != null)
+                //try
                 {
-                    Assert.Contains(_testBase.LogMessages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
+                    Assert.Equal(protocolError, (Http3ErrorCode)Error);
+
+                    if (expectedErrorMessage != null)
+                    {
+                        Assert.Contains(_testBase.LogMessages, m => m.Exception?.Message.Contains(expectedErrorMessage) ?? false);
+                    }
                 }
+                //catch (Exception ex)
+                //{
+                //    Debugger.Launch();
+                //    string s = ex.Message;
+                //    throw;
+                //}
             }
         }
 

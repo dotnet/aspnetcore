@@ -389,9 +389,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             catch (Http3ConnectionErrorException ex)
             {
-                // TODO: Abort overall connection
                 error = ex;
-                Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
+                _errorCodeFeature.Error = (long)ex.ErrorCode;
+
+                Log.Http3ConnectionError(_http3Connection.ConnectionId, ex);
+                _http3Connection.Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
+
+                // TODO: HTTP/3 stream will be aborted by connection. Check this is correct.
             }
             catch (Exception ex)
             {

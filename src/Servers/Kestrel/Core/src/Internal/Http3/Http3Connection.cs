@@ -78,6 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public Http3ControlStream? ControlStream { get; set; }
         public Http3ControlStream? EncoderStream { get; set; }
         public Http3ControlStream? DecoderStream { get; set; }
+        public string ConnectionId => _context.ConnectionId;
 
         public async Task ProcessStreamsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
         {
@@ -354,7 +355,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                     foreach (var stream in _streams.Values)
                     {
-                        stream.Abort(connectionError);
+                        stream.Abort(connectionError, (Http3ErrorCode)_errorCodeFeature.Error);
                     }
 
                     while (_activeRequestCount > 0)

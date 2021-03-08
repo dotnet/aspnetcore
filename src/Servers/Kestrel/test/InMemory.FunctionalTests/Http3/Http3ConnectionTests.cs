@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,22 +16,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http3ConnectionTests : Http3TestBase
     {
-        [Fact]
-        public async Task GoAwayReceived()
-        {
-            await InitializeConnectionAsync(_echoApplication);
-
-            var outboundcontrolStream = await CreateControlStream();
-            var inboundControlStream = await GetInboundControlStream();
-
-            Connection.Abort(new ConnectionAbortedException(), Http3ErrorCode.NoError);
-            await _closedStateReached.Task.DefaultTimeout();
-            await WaitForConnectionErrorAsync(
-                ignoreNonGoAwayFrames: true,
-                expectedLastStreamId: 0,
-                expectedErrorCode: Http3ErrorCode.NoError);
-        }
-
         [Fact]
         public async Task CreateRequestStream_RequestCompleted_Disposed()
         {
@@ -83,23 +68,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Null(await MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
         }
 
-        [Fact]
-        public async Task SETTINGS_ReservedSettingSent_ConnectionError()
+        [Theory]
+        [InlineData(0x0)]
+        [InlineData(0x2)]
+        [InlineData(0x3)]
+        [InlineData(0x4)]
+        [InlineData(0x5)]
+        public async Task SETTINGS_ReservedSettingSent_ConnectionError(long settingIdentifier)
         {
             await InitializeConnectionAsync(_echoApplication);
 
             var outboundcontrolStream = await CreateControlStream();
             await outboundcontrolStream.SendSettingsAsync(new List<Http3PeerSetting>
             {
-                new Http3PeerSetting(0x0, 0) // reserved value
+                new Http3PeerSetting((Internal.Http3.Http3SettingType) settingIdentifier, 0) // reserved value
             });
 
             await GetInboundControlStream();
 
-            await WaitForConnectionErrorAsync(
+            await WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
                 ignoreNonGoAwayFrames: true,
                 expectedLastStreamId: 0,
-                expectedErrorCode: Http3ErrorCode.SettingsError);
+                expectedErrorCode: Http3ErrorCode.SettingsError,
+                expectedErrorMessage: $"HTTP/3 connection error (SettingsError): The client sent a reserved setting identifier: 0x{settingIdentifier.ToString("X", CultureInfo.InvariantCulture)}");
         }
     }
 }

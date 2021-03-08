@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly Http3StreamContext _context;
         private readonly Http3PeerSettings _serverPeerSettings;
         private readonly IStreamIdFeature _streamIdFeature;
+        private readonly IProtocolErrorCodeFeature _protocolErrorCodeFeature;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         private volatile int _isClosed;
         private int _gracefulCloseInitiator;
@@ -41,6 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _context = context;
             _serverPeerSettings = context.ServerSettings;
             _streamIdFeature = context.ConnectionFeatures.Get<IStreamIdFeature>()!;
+            _protocolErrorCodeFeature = context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
 
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,
@@ -217,6 +219,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 catch (Http3ConnectionErrorException ex)
                 {
+                    _protocolErrorCodeFeature.Error = (long)ex.ErrorCode;
+
+                    Log.Http3ConnectionError(_http3Connection.ConnectionId, ex);
                     _http3Connection.Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
                 }
                 finally

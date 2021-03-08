@@ -675,6 +675,6 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
     <value>The client sent a {frameType} frame to a control stream before the SETTINGS frame.</value>
   </data>
   <data name="Http3ErrorControlStreamReservedSetting" xml:space="preserve">
-    <value>The client sent a reserved setting {identifier}.</value>
+    <value>The client sent a reserved setting identifier: {identifier}</value>
   </data>
 </root>
