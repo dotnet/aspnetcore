@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             options.ContainerUrl = _configuration.GetSection("APPSETTING_DIAGNOSTICS_AZUREBLOBCONTAINERSASURL")?.Value;
             options.ApplicationName = _context.SiteName;
             options.ApplicationInstanceId = _context.SiteInstanceId;
-            options.CustomPrefixFileName = _customPrefix;
+            options.CustomFileNamePrefix = _customPrefix;
         }
     }
 }

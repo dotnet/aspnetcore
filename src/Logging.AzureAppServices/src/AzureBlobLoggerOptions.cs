@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             }
         }
 
-        internal string CustomPrefixFileName { get; set; }
+        internal string CustomFileNamePrefix { get; set; }
        
         internal string ContainerUrl { get; set; }
 

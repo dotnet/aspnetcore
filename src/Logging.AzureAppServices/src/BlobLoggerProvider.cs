@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             _fileName = value.ApplicationInstanceId + "_" + value.BlobName;
             _blobReferenceFactory = blobReferenceFactory;
             _httpClient = new HttpClient();
-            _customPrefixFileName = value.CustomPrefixFileName;
+            _customPrefixFileName = value.CustomFileNamePrefix;
         }
 
         internal override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
