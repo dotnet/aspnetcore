@@ -32,7 +32,7 @@ namespace Templates.Test
             
             void LogMessage(WriteContext ctx)
             {
-                output.WriteLine($"{MapLogLevel(ctx)}: [Browser]{ctx.Message}");
+                testOutputHelper.WriteLine($"{MapLogLevel(ctx)}: [Browser]{ctx.Message}");
 
                 static string MapLogLevel(WriteContext obj) => obj.LogLevel switch
                 {
