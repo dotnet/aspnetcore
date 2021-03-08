@@ -23,7 +23,7 @@
     <?define ProgramFilesFolder = ProgramFilesFolder ?>
     <?define SystemFolder = SystemFolder ?>
     <?define PlatformValue = Intel ?>
-  <?elseif $(var.Platform) = "arm64" ?>
+  <?elseif $(var.Platform) ~= "arm64" ?>
     <?define IsWin64 = yes ?>
     <?define PlatformArchitecture = ARM64 ?>
     <?define ProgramFilesFolder = ProgramFiles64Folder ?>
