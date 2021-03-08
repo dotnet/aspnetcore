@@ -126,7 +126,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Platform)'=='ARM64'">
     <Link>
-      <AdditionalLibraryDirectories>$(VC_ReferencesPath_x86);$(WindowsSDK_LibraryPath)\$(PlatformTarget);$(WIX)sdk\$(WixPlatformToolset)\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VC_ReferencesPath_x86);$(WindowsSDK_LibraryPath)\$(PlatformTarget);$(WIX)sdk\$(WixPlatformToolset)\lib\arm64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
