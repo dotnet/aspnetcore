@@ -12,7 +12,7 @@
   <Target Name="Pack" />
   <Target Name="Restore" />
   <Target Name="ResolveNuGetPackageAssets" />
-  <Target Name="Test" Condition="'$(IsTestProject)' == 'true'" >
+  <Target Name="Test" Condition="'$(IsTestProject)' == 'true' AND '$(SkipNativeTest)' != 'true'" >
     <Warning Condition="'$(TestProjectSkipReason)' != ''" Text="Skipped $(MSBuildProjectFileName): $(TestProjectSkipReason)" />
     <Exec Condition="'$(TestProjectSkipReason)' == ''" Command="&quot;$(TargetPath)&quot;" />
   </Target>
