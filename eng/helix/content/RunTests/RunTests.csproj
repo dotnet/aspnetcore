@@ -8,6 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20158.1" />
-    <PackageReference Condition=" '$(InstallPlaywright)' == 'true' " Include="PlaywrightSharp" Version="0.191.1" />
+    <PackageReference Condition=" '$(InstallPlaywright)' == 'true' " Include="PlaywrightSharp" Version="0.180.0" />
   </ItemGroup>
 </Project>
