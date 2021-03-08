@@ -4,16 +4,17 @@ const TerserJsPlugin = require("terser-webpack-plugin");
 const { DuplicatesPlugin } = require("inspectpack/plugin");
 
 module.exports = (env, args) => ({
-    resolve: { 
+    resolve: {
         extensions: ['.ts', '.js'],
     },
-    devtool: args.mode === 'development' ? 'source-map' : undefined,
+    devtool: false, // Source maps configured below
     module: {
         rules: [{ test: /\.ts?$/, loader: 'ts-loader' }]
     },
     entry: {
-        'blazor.webassembly': './Boot.WebAssembly.ts',
         'blazor.server': './Boot.Server.ts',
+        'blazor.webassembly': './Boot.WebAssembly.ts',
+        'blazor.webview': './Boot.WebView.ts',
     },
     output: { path: path.join(__dirname, '/..', '/dist', args.mode == 'development' ? '/Debug' : '/Release'), filename: '[name].js' },
     performance: {
@@ -26,10 +27,10 @@ module.exports = (env, args) => ({
         usedExports: true,
         innerGraph: true,
         minimize: true,
-        minimizer: [new TerserJsPlugin({        
+        minimizer: [new TerserJsPlugin({
             terserOptions: {
                 ecma: 2019,
-                compress: { 
+                compress: {
                     passes: 3
                 },
                 mangle: {
@@ -43,8 +44,8 @@ module.exports = (env, args) => ({
                 toplevel: true
           }
         })]
-    },    
-    plugins: [
+    },
+    plugins: Array.prototype.concat.apply([
         new webpack.DefinePlugin({
             'process.env.NODE_DEBUG': false,
             'Platform.isNode': false
@@ -54,8 +55,19 @@ module.exports = (env, args) => ({
             emitHandler: undefined,
             ignoredPackages: undefined,
             verbose: false
-        })
-    ],
+        }),
+
+    ], args.mode !== 'development' ? [] : [
+        // In most cases we want to use external source map files
+        new webpack.SourceMapDevToolPlugin({
+            filename: '[name].js.map',
+            exclude: 'blazor.webview.js',
+        }),
+        // ... but for blazor.webview.js, it has to be internal, due to https://github.com/MicrosoftEdge/WebView2Feedback/issues/961
+        new webpack.SourceMapDevToolPlugin({
+            include: 'blazor.webview.js',
+        }),
+    ]),
     stats: {
         //all: true,
         warnings: true,

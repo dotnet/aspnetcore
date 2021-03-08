@@ -1,0 +1,22 @@
+﻿@page "/"
+
+<h3>Hello, world!</h3>
+
+<p>The current count is <strong>@count</strong></p>
+
+<button @onclick="IncrementCount">Increment</button>
+<button @onclick="TriggerException">Throw</button>
+
+@code {
+    int count;
+
+    void IncrementCount()
+    {
+        count++;
+    }
+
+    void TriggerException()
+    {
+        throw new InvalidTimeZoneException("This is an exception from an event handler");
+    }
+}

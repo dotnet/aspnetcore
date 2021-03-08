@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
                 throw new HttpRequestException($"An error occurred when retrieving Microsoft user information ({response.StatusCode}). Please check if the authentication information is correct and the corresponding Microsoft Account API is enabled.");
             }
 
-            using (var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
+            using (var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(Context.RequestAborted)))
             {
                 var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload.RootElement);
                 context.RunClaimActions();
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings!);
         }
 
-        private void AddQueryString<T>(
+        private static void AddQueryString<T>(
            Dictionary<string, string> queryStrings,
            AuthenticationProperties properties,
            string name,
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             }
         }
 
-        private void AddQueryString(
+        private static void AddQueryString(
             Dictionary<string, string> queryStrings,
             AuthenticationProperties properties,
             string name,

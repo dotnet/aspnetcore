@@ -243,13 +243,13 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 {
                     builder.Append(" error=\"");
                     builder.Append(eventContext.Error);
-                    builder.Append("\"");
+                    builder.Append('\"');
                 }
                 if (!string.IsNullOrEmpty(eventContext.ErrorDescription))
                 {
                     if (!string.IsNullOrEmpty(eventContext.Error))
                     {
-                        builder.Append(",");
+                        builder.Append(',');
                     }
 
                     builder.Append(" error_description=\"");
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     if (!string.IsNullOrEmpty(eventContext.Error) ||
                         !string.IsNullOrEmpty(eventContext.ErrorDescription))
                     {
-                        builder.Append(",");
+                        builder.Append(',');
                     }
 
                     builder.Append(" error_uri=\"");

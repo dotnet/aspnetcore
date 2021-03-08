@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
+    <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" Link="SyncPoint.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.crt" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />

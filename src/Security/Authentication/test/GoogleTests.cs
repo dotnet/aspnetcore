@@ -941,7 +941,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         }
 
         [Fact]
-        public async Task AuthenticateFacebookWhenAlreadySignedWithGoogleReturnsNull()
+        public async Task AuthenticateGoogleWhenAlreadySignedWithGoogleReturnsNull()
         {
             var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             using var host = await CreateHost(o =>
@@ -978,7 +978,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         }
 
         [Fact]
-        public async Task ChallengeFacebookWhenAlreadySignedWithGoogleSucceeds()
+        public async Task ChallengeGoogleWhenAlreadySignedWithGoogleSucceeds()
         {
             var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             using var host = await CreateHost(o =>

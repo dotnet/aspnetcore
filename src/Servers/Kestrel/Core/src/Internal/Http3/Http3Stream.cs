@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool _isMethodConnect;
 
         private readonly Http3Connection _http3Connection;
-        private bool _receivedHeaders;
         private TaskCompletionSource? _appCompleted;
 
         public Pipe RequestBodyPipe { get; }
@@ -468,19 +467,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload) where TContext : notnull
         {
+            // HEADERS frame after trailing headers is invalid.
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+            {
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3FrameType.Headers), Http3ErrorCode.UnexpectedFrame);
+            }
+
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
+            {
+                _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
+            }
+
             QPackDecoder.Decode(payload, handler: this);
             QPackDecoder.Reset();
 
-            // start off a request once qpack has decoded
-            // Make sure to await this task.
-            if (_receivedHeaders)
+            switch (_requestHeaderParsingState)
             {
-                // trailers
-                // TODO figure out if there is anything else to do here.
-                return Task.CompletedTask;
+                case RequestHeaderParsingState.Ready:
+                case RequestHeaderParsingState.PseudoHeaderFields:
+                    _requestHeaderParsingState = RequestHeaderParsingState.Headers;
+                    break;
+                case RequestHeaderParsingState.Headers:
+                    break;
+                case RequestHeaderParsingState.Trailers:
+                    // trailers
+                    // TODO figure out if there is anything else to do here.
+                    return Task.CompletedTask;
+                default:
+                    Debug.Fail("Unexpected header parsing state.");
+                    break;
             }
 
-            _receivedHeaders = true;
             InputRemaining = HttpRequestHeaders.ContentLength;
 
             _appCompleted = new TaskCompletionSource();
@@ -492,6 +510,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)
         {
+            // DATA frame before headers is invalid.
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
+            {
+                throw new Http3StreamErrorException(CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders, Http3ErrorCode.UnexpectedFrame);
+            }
+
+            // DATA frame after trailing headers is invalid.
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+            {
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3FrameType.Data), Http3ErrorCode.UnexpectedFrame);
+            }
+
             if (InputRemaining.HasValue)
             {
                 // https://tools.ietf.org/html/rfc7540#section-8.1.2.6

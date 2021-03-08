@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
             async Task InitializeCore()
             {
-                Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, debug: "pw:api");
+                Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory/*, debug: "pw:api"*/);
                 foreach (var (browserName, options) in _browserManagerConfiguration.BrowserOptions)
                 {
                     if (!_launchBrowsers.ContainsKey(browserName))
