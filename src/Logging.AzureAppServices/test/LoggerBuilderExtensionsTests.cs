@@ -24,21 +24,21 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
         }
 
         [Fact]
-        public void BuilderExtensionAddsSingleSetOfServicesWhenCalledTwiceOrig()
+        public void BuilderExtensionAddsSingleSetOfServicesWhenCalledTwice()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext, null));
+            serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext));
             var count = serviceCollection.Count;
 
             Assert.NotEqual(0, count);
 
-            serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext, null));
+            serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext));
 
             Assert.Equal(count, serviceCollection.Count);
         }
 
         [Fact]
-        public void BuilderExtensionAddsSingleSetOfServicesWhenCalledTwiceOverload()
+        public void BuilderExtensionAddsSingleSetOfServicesWhenCalledTwiceCustomPrefix()
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext, "customPrefix"));
@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
         }
 
         [Fact]
-        public void BuilderExtensionAddsConfigurationChangeTokenSourceOrig()
+        public void BuilderExtensionAddsConfigurationChangeTokenSource()
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging(builder => builder.AddConfiguration(new ConfigurationBuilder().Build()));
@@ -60,14 +60,14 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             // Tracking for main configuration
             Assert.Equal(1, serviceCollection.Count(d => d.ServiceType == typeof(IOptionsChangeTokenSource<LoggerFilterOptions>)));
 
-            serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext, null));
+            serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext));
 
             // Make sure we add another config change token for azure diagnostic configuration
             Assert.Equal(2, serviceCollection.Count(d => d.ServiceType == typeof(IOptionsChangeTokenSource<LoggerFilterOptions>)));
         }
 
         [Fact]
-        public void BuilderExtensionAddsConfigurationChangeTokenSourceOverload()
+        public void BuilderExtensionAddsConfigurationChangeTokenSourceCustomPrefix()
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging(builder => builder.AddConfiguration(new ConfigurationBuilder().Build()));
@@ -82,7 +82,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
         }
 
         [Fact]
-        public void BuilderExtensionAddsIConfigureOptionsOrig()
+        public void BuilderExtensionAddsIConfigureOptions()
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging(builder => builder.AddConfiguration(new ConfigurationBuilder().Build()));
@@ -90,13 +90,13 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             // Tracking for main configuration
             Assert.Equal(2, serviceCollection.Count(d => d.ServiceType == typeof(IConfigureOptions<LoggerFilterOptions>)));
 
-            serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext, null));
+            serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext));
 
             Assert.Equal(4, serviceCollection.Count(d => d.ServiceType == typeof(IConfigureOptions<LoggerFilterOptions>)));
         }
 
         [Fact]
-        public void BuilderExtensionAddsIConfigureOptionsOverload()
+        public void BuilderExtensionAddsIConfigureOptionsCustomPrefix()
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging(builder => builder.AddConfiguration(new ConfigurationBuilder().Build()));
@@ -110,17 +110,17 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
         }
 
         [Fact]
-        public void LoggerProviderIsResolvableOrig()
+        public void LoggerProviderIsResolvable()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext, null));
+            serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var loggerFactory = serviceProvider.GetService<ILoggerProvider>();
         }
 
         [Fact]
-        public void LoggerProviderIsResolvableOverload()
+        public void LoggerProviderIsResolvableCustomPrefix()
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext, "customPrefix"));
