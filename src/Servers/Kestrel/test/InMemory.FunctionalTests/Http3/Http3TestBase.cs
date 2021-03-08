@@ -121,20 +121,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             if (_inboundControlStream == null)
             {
-                var reader = MultiplexedConnectionContext.ToClientAcceptQueue.Reader;
-                while (await reader.WaitToReadAsync())
-                {
-                    while (reader.TryRead(out var stream))
-                    {
-                        _inboundControlStream = stream;
-                        var streamId = await stream.TryReadStreamIdAsync();
-                        Debug.Assert(streamId == 0, "StreamId sent that was non-zero, which isn't handled by tests");
-                        return _inboundControlStream;
-                    }
-                }
-            }    
-            
+                return await CreateNewInboundControlStream();
+            }
+
             return null;
+        }
+
+        internal async ValueTask<Http3ControlStream> CreateNewInboundControlStream()
+        {
+            var reader = MultiplexedConnectionContext.ToClientAcceptQueue.Reader;
+            while (await reader.WaitToReadAsync())
+            {
+                while (reader.TryRead(out var stream))
+                {
+                    _inboundControlStream = stream;
+                    var streamId = await stream.TryReadStreamIdAsync();
+                    Debug.Assert(streamId == 0, "StreamId sent that was non-zero, which isn't handled by tests");
+                    return _inboundControlStream;
+                }
+            }
+
+            throw new InvalidOperationException("Should never reach here.");
         }
 
         internal async Task WaitForConnectionErrorAsync<TException>(bool ignoreNonGoAwayFrames, long expectedLastStreamId, Http3ErrorCode expectedErrorCode, params string[] expectedErrorMessage)
@@ -152,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             VerifyGoAway(frame, expectedLastStreamId);
 
-            Assert.Equal((long)expectedErrorCode, MultiplexedConnectionContext.Error);
+            Assert.Equal((Http3ErrorCode)expectedErrorCode, (Http3ErrorCode)MultiplexedConnectionContext.Error);
 
             if (expectedErrorMessage?.Length > 0)
             {
@@ -180,6 +187,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Skip all heartbeat and lifetime notification feature registrations.
             _connectionTask = Connection.ProcessStreamsAsync(new DummyApplication(application));
 
+            await GetInboundControlStream();
+
             await Task.CompletedTask;
         }
 
@@ -188,8 +197,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(application);
 
             OutboundControlStream = await CreateControlStream();
-
-            await GetInboundControlStream();
 
             return await CreateRequestStream();
         }

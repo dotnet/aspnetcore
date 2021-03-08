@@ -677,4 +677,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http3ErrorControlStreamReservedSetting" xml:space="preserve">
     <value>The client sent a reserved setting identifier: {identifier}</value>
   </data>
+  <data name="Http3ControlStreamErrorMultipleInboundStreams" xml:space="preserve">
+    <value>The client created multiple inbound {streamType} streams for the connection.</value>
+  </data>
 </root>

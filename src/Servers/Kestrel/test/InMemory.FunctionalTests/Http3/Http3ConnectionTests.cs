@@ -90,7 +90,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ignoreNonGoAwayFrames: true,
                 expectedLastStreamId: 0,
                 expectedErrorCode: Http3ErrorCode.SettingsError,
-                expectedErrorMessage: $"HTTP/3 connection error (SettingsError): The client sent a reserved setting identifier: 0x{settingIdentifier.ToString("X", CultureInfo.InvariantCulture)}");
+                expectedErrorMessage: CoreStrings.FormatHttp3ErrorControlStreamReservedSetting($"0x{settingIdentifier.ToString("X", CultureInfo.InvariantCulture)}"));
+        }
+
+        [Theory]
+        [InlineData(0, "control")]
+        [InlineData(2, "encoder")]
+        [InlineData(3, "decoder")]
+        public async Task InboundStreams_CreateMultiple_ConnectionError(int streamId, string name)
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await CreateControlStream(streamId);
+            await CreateControlStream(streamId);
+
+            await WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http3ErrorCode.StreamCreationError,
+                expectedErrorMessage: CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams(name));
         }
     }
 }

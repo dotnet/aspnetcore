@@ -147,45 +147,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
-            var streamType = await TryReadStreamIdAsync();
-
-            if (streamType == -1)
+            try
             {
-                return;
-            }
+                var streamType = await TryReadStreamIdAsync();
 
-            if (streamType == ControlStream)
-            {
-                if (!_http3Connection.SetInboundControlStream(this))
+                if (streamType == -1)
                 {
-                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1
-                    throw new Http3ConnectionErrorException("Only one inbound control stream per peer is permitted.", Http3ErrorCode.StreamCreationError);
+                    return;
                 }
 
-                await HandleControlStream();
-            }
-            else if (streamType == EncoderStream)
-            {
-                if (!_http3Connection.SetInboundEncoderStream(this))
+                if (streamType == ControlStream)
                 {
-                    // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
-                    throw new Http3ConnectionErrorException("Only one inbound encoder stream per peer is permitted.", Http3ErrorCode.StreamCreationError);
-                }
+                    if (!_http3Connection.SetInboundControlStream(this))
+                    {
+                        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1
+                        throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("control"), Http3ErrorCode.StreamCreationError);
+                    }
 
-                await HandleEncodingDecodingTask();
-            }
-            else if (streamType == DecoderStream)
-            {
-                if (!_http3Connection.SetInboundDecoderStream(this))
-                {
-                    // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
-                    throw new Http3ConnectionErrorException("Only one inbound decoder stream per peer is permitted.", Http3ErrorCode.StreamCreationError);
+                    await HandleControlStream();
                 }
-                await HandleEncodingDecodingTask();
+                else if (streamType == EncoderStream)
+                {
+                    if (!_http3Connection.SetInboundEncoderStream(this))
+                    {
+                        // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
+                        throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("encoder"), Http3ErrorCode.StreamCreationError);
+                    }
+
+                    await HandleEncodingDecodingTask();
+                }
+                else if (streamType == DecoderStream)
+                {
+                    if (!_http3Connection.SetInboundDecoderStream(this))
+                    {
+                        // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
+                        throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("decoder"), Http3ErrorCode.StreamCreationError);
+                    }
+                    await HandleEncodingDecodingTask();
+                }
+                else
+                {
+                    // TODO Close the control stream as it's unexpected.
+                }
             }
-            else
+            catch (Http3ConnectionErrorException ex)
             {
-                // TODO Close the control stream as it's unexpected.
+                Log.Http3ConnectionError(_http3Connection.ConnectionId, ex);
+                _http3Connection.Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
             }
         }
 
