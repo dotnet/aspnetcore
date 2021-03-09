@@ -7,34 +7,34 @@ using System.Net.Sockets;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketReceiver : SocketSenderReceiverBase
+    internal sealed class SocketReceiver : SocketAwaitableEventArgs
     {
-        public SocketReceiver(Socket socket, PipeScheduler scheduler) : base(socket, scheduler)
+        public SocketReceiver(PipeScheduler ioScheduler) : base(ioScheduler)
         {
         }
 
-        public SocketAwaitableEventArgs WaitForDataAsync()
+        public SocketAwaitableEventArgs WaitForDataAsync(Socket socket)
         {
-            _awaitableEventArgs.SetBuffer(Memory<byte>.Empty);
+            SetBuffer(Memory<byte>.Empty);
 
-            if (!_socket.ReceiveAsync(_awaitableEventArgs))
+            if (!socket.ReceiveAsync(this))
             {
-                _awaitableEventArgs.Complete();
+                Complete();
             }
 
-            return _awaitableEventArgs;
+            return this;
         }
 
-        public SocketAwaitableEventArgs ReceiveAsync(Memory<byte> buffer)
+        public SocketAwaitableEventArgs ReceiveAsync(Socket socket, Memory<byte> buffer)
         {
-            _awaitableEventArgs.SetBuffer(buffer);
+            SetBuffer(buffer);
 
-            if (!_socket.ReceiveAsync(_awaitableEventArgs))
+            if (!socket.ReceiveAsync(this))
             {
-                _awaitableEventArgs.Complete();
+                Complete();
             }
 
-            return _awaitableEventArgs;
+            return this;
         }
     }
 }

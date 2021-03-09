@@ -20,7 +20,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly Socket _socket;
         private readonly ISocketsTrace _trace;
         private readonly SocketReceiver _receiver;
-        private readonly SocketSender _sender;
+        private SocketSender? _sender;
+        private readonly SocketSenderPool _socketSenderPool;
         private readonly IDuplexPipe _originalTransport;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
@@ -36,6 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                                   MemoryPool<byte> memoryPool,
                                   PipeScheduler transportScheduler,
                                   ISocketsTrace trace,
+                                  SocketSenderPool socketSenderPool,
                                   PipeOptions inputOptions,
                                   PipeOptions outputOptions,
                                   bool waitForData = true)
@@ -48,8 +50,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             MemoryPool = memoryPool;
             _trace = trace;
             _waitForData = waitForData;
+            _socketSenderPool = socketSenderPool;
 
-            LocalEndPoint = _socket.LocalEndPoint;
+             LocalEndPoint = _socket.LocalEndPoint;
             RemoteEndPoint = _socket.RemoteEndPoint;
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
@@ -59,8 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // https://github.com/aspnet/KestrelHttpServer/issues/2573
             var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
 
-            _receiver = new SocketReceiver(_socket, awaiterScheduler);
-            _sender = new SocketSender(_socket, awaiterScheduler);
+            _receiver = new SocketReceiver(awaiterScheduler);
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 await sendTask;
 
                 _receiver.Dispose();
-                _sender.Dispose();
+                _sender?.Dispose();
             }
             catch (Exception ex)
             {
@@ -183,13 +185,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 if (_waitForData)
                 {
                     // Wait for data before allocating a buffer.
-                    await _receiver.WaitForDataAsync();
+                    await _receiver.WaitForDataAsync(_socket);
                 }
 
                 // Ensure we have some reasonable amount of buffer space
                 var buffer = input.GetMemory(MinAllocBufferSize);
 
-                var bytesReceived = await _receiver.ReceiveAsync(buffer);
+                var bytesReceived = await _receiver.ReceiveAsync(_socket, buffer);
 
                 if (bytesReceived == 0)
                 {
@@ -282,7 +284,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 var isCompleted = result.IsCompleted;
                 if (!buffer.IsEmpty)
                 {
-                    await _sender.SendAsync(buffer);
+                    _sender = _socketSenderPool.Rent();
+                    await _sender.SendAsync(_socket, buffer);
+                    _socketSenderPool.Return(_sender);
+                    _sender = null;
                 }
 
                 output.AdvanceTo(end);

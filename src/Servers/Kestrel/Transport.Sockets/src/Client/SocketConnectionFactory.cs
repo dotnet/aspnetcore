@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private readonly SocketsTrace _trace;
         private readonly PipeOptions _inputOptions;
         private readonly PipeOptions _outputOptions;
+        private readonly SocketSenderPool _socketSenderPool;
 
         public SocketConnectionFactory(IOptions<SocketTransportOptions> options, ILoggerFactory loggerFactory)
         {
@@ -46,9 +47,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             // These are the same, it's either the thread pool or inline
             var applicationScheduler = _options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
             var transportScheduler = applicationScheduler;
+            var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
 
             _inputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
             _outputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
+            _socketSenderPool = new SocketSenderPool(awaiterScheduler);
         }
 
         public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
@@ -72,6 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 _memoryPool,
                 _inputOptions.ReaderScheduler, // This is either threadpool or inline
                 _trace,
+                _socketSenderPool,
                 _inputOptions,
                 _outputOptions,
                 _options.WaitForDataBeforeAllocatingBuffer);
