@@ -9,7 +9,7 @@
     <AspNetCoreMajorVersion>5</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>5</AspNetCorePatchVersion>
-    <ValidateBasline>false</ValidateBasline>
+    <ValidateBasline>true</ValidateBasline>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
