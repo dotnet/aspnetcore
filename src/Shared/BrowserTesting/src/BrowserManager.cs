@@ -47,7 +47,6 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
             async Task InitializeCore()
             {
-                // Work around weird driverExecutable lookup logic
                 var driverPath = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
                 if (!string.IsNullOrEmpty(driverPath)) 
                 {
