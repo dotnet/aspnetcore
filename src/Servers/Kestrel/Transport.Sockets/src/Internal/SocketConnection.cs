@@ -36,10 +36,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                                   MemoryPool<byte> memoryPool,
                                   PipeScheduler transportScheduler,
                                   ISocketsTrace trace,
-                                  long? maxReadBufferSize = null,
-                                  long? maxWriteBufferSize = null,
-                                  bool waitForData = true,
-                                  bool useInlineSchedulers = false)
+                                  PipeOptions inputOptions,
+                                  PipeOptions outputOptions,
+                                  bool waitForData = true)
         {
             Debug.Assert(socket != null);
             Debug.Assert(memoryPool != null);
@@ -60,22 +59,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // https://github.com/aspnet/KestrelHttpServer/issues/2573
             var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
 
-            var applicationScheduler = PipeScheduler.ThreadPool;
-            if (useInlineSchedulers)
-            {
-                transportScheduler = PipeScheduler.Inline;
-                awaiterScheduler = PipeScheduler.Inline;
-                applicationScheduler = PipeScheduler.Inline;
-            }
-
             _receiver = new SocketReceiver(_socket, awaiterScheduler);
             _sender = new SocketSender(_socket, awaiterScheduler);
-
-            maxReadBufferSize ??= 0;
-            maxWriteBufferSize ??= 0;
-
-            var inputOptions = new PipeOptions(MemoryPool, applicationScheduler, transportScheduler, maxReadBufferSize.Value, maxReadBufferSize.Value / 2, useSynchronizationContext: false);
-            var outputOptions = new PipeOptions(MemoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize.Value, maxWriteBufferSize.Value / 2, useSynchronizationContext: false);
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
