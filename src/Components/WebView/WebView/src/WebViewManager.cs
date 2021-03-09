@@ -171,9 +171,9 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         internal async Task AttachToPageAsync(string baseUrl, string startUrl)
         {
-            // If there was some previous attached page, dispose all its resources. TODO: Are we happy
-            // with this pattern? The alternative would be requiring the platform author to notify us
-            // when the webview is navigating away so we could dispose more eagerly then.
+            // If there was some previous attached page, dispose all its resources. We're not eagerly disposing
+            // page contexts when the user navigates away, because we don't get notified about that. We could
+            // change this if any important reason emerges.
             _currentPageContext?.Dispose();
 
             var serviceScope = _provider.CreateScope();
