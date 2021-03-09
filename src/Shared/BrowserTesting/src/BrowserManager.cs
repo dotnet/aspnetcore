@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.BrowserTesting
             {
                 // Work around weird driverExecutable lookup logic
                 var driverPath = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
-                if (string.IsNullOrEmpty(driverPath)) 
+                if (!string.IsNullOrEmpty(driverPath)) 
                 {
                     Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath /*, debug: "pw:api"*/);
                 }
