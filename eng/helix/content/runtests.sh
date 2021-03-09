@@ -2,6 +2,7 @@
 
 dotnet_sdk_version="$2"
 dotnet_runtime_version="$3"
+helixQueue="$5"
 installPlaywright="${10}"
 
 RESET="\033[0m"
@@ -28,7 +29,11 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
 # Set playwright stuff
 export PLAYWRIGHT_BROWSERS_PATH="$DIR/ms-playwright"
-export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/unix/native/playwright.sh"
+if [[ "$helixQueue" == *"OSX"* ]]; then
+    export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/osx/native/playwright.sh"
+else
+    export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/unix/native/playwright.sh"
+fi
 export InstallPlaywright="$installPlaywright"
 if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
     echo "chmod +x $PLAYWRIGHT_DRIVER_PATH"
@@ -96,8 +101,8 @@ exit_code=0
 echo "Restore: $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --ignore-failed-sources"
 $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --ignore-failed-sources
 
-echo "Running tests: $DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --helixTimeout $9"
-$DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --helixTimeout $9
+echo "Running tests: $DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $helixQueue --arch $6 --quarantined $7 --ef $8 --helixTimeout $9"
+$DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $helixQueue --arch $6 --quarantined $7 --ef $8 --helixTimeout $9
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 
