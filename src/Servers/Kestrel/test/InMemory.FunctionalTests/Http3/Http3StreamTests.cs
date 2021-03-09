@@ -1660,6 +1660,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30754")]
         public async Task FrameAfterTrailers_UnexpectedFrameError()
         {
             var headers = new[]
