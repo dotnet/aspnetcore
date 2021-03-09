@@ -13,13 +13,13 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class WebAssemblyConfigurationTest : ServerTestBase<DevHostServerFixture<BasicTestApp.Program>>
+    public class WebAssemblyConfigurationTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestApp.Program>>
     {
         private IWebElement _appElement;
 
         public WebAssemblyConfigurationTest(
              BrowserFixture browserFixture,
-             DevHostServerFixture<BasicTestApp.Program> serverFixture,
+             BlazorWasmTestAppFixture<BasicTestApp.Program> serverFixture,
              ITestOutputHelper output) :
              base(browserFixture, serverFixture, output)
         {
@@ -40,11 +40,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Verify values from the default 'appsettings.json' are read.
             Browser.Equal("Default key1-value", () => _appElement.FindElement(By.Id("key1")).Text);
 
-            // Verify values overriden by an environment specific 'appsettings.$(Environment).json are read
-            Assert.Equal("Development key2-value", _appElement.FindElement(By.Id("key2")).Text);
+            if (_serverFixture.TestTrimmedApps)
+            {
+                // Verify values overriden by an environment specific 'appsettings.$(Environment).json are read
+                Assert.Equal("Prod key2-value", _appElement.FindElement(By.Id("key2")).Text);
 
-            // Lastly for sanity, make sure values specified in an environment specific 'appsettings.$(Environment).json are read
-            Assert.Equal("Development key3-value", _appElement.FindElement(By.Id("key3")).Text);
+                // Lastly for sanity, make sure values specified in an environment specific 'appsettings.$(Environment).json are read
+                Assert.Equal("Prod key3-value", _appElement.FindElement(By.Id("key3")).Text);
+            }
+            else
+            {
+                // Verify values overriden by an environment specific 'appsettings.$(Environment).json are read
+                Assert.Equal("Development key2-value", _appElement.FindElement(By.Id("key2")).Text);
+
+                // Lastly for sanity, make sure values specified in an environment specific 'appsettings.$(Environment).json are read
+                Assert.Equal("Development key3-value", _appElement.FindElement(By.Id("key3")).Text);
+            }
         }
 
         [Fact]
@@ -61,13 +72,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Asser that the value of the key has been updated
             Browser.Equal("newValue", () => _appElement.FindElement(By.Id("key1")).Text);
-        }
-
-        [Fact]
-        public void WebAssemblyHostingEnvironment_Works()
-        {
-            // Dev-Server defaults to Development. It's in the name!
-            Browser.Equal("Development", () => _appElement.FindElement(By.Id("environment")).Text);
         }
     }
 }

@@ -12,11 +12,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class StartupErrorNotificationTest : ServerTestBase<DevHostServerFixture<Program>>
+    public class StartupErrorNotificationTest : ServerTestBase<BlazorWasmTestAppFixture<Program>>
     {
         public StartupErrorNotificationTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<Program> serverFixture,
+            BlazorWasmTestAppFixture<Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
