@@ -63,7 +63,7 @@
       </ItemGroup>
     </When>
     <Otherwise>
-      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'ARM' ">
+      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') ">
         <!-- Build the ANCM custom action -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=Win32" />
