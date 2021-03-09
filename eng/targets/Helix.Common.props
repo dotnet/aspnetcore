@@ -12,14 +12,14 @@
 
   <!-- PR(ci.yaml) required queues -->
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(_UseHelixOpenQueues)' == 'true'">
-    <HelixAvailableTargetQueue Include="Ubuntu.1604.Amd64.Open" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.Server20H2.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="Linux" />
   </ItemGroup>
 
   <!-- queues for helix-matrix.yml pipeline -->
   <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
-    <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="Ubuntu.1604.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="OSX.1100.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Debian.9.Amd64.Open" Platform="Linux" />
