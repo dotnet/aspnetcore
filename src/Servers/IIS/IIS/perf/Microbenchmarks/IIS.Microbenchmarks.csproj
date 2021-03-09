@@ -10,6 +10,7 @@
     <OutputType>Exe</OutputType>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SkipMicrobenchmarksValidation>true</SkipMicrobenchmarksValidation>
   </PropertyGroup>
 
   <ItemGroup>
