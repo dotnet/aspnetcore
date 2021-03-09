@@ -61,12 +61,16 @@
   <!-- TODO: https://github.com/aspnet/AspNetCore/issues/6304. Harvest shared frameworks from a project reference -->
   <Target Name="ExtractIntermediateSharedFx" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
+      <SharedFrameworkArm64HarvestRootPath Condition="'$(SharedFrameworkArm64HarvestRootPath)' == ''">$(InstallersOutputPath)</SharedFrameworkArm64HarvestRootPath>
       <SharedFrameworkX64HarvestRootPath Condition="'$(SharedFrameworkX64HarvestRootPath)' == ''">$(InstallersOutputPath)</SharedFrameworkX64HarvestRootPath>
       <SharedFrameworkX86HarvestRootPath Condition="'$(SharedFrameworkX86HarvestRootPath)' == ''">$(InstallersOutputPath)</SharedFrameworkX86HarvestRootPath>
+      <IntermediateArm64SharedFxZip>$(SharedFrameworkArm64HarvestRootPath)aspnetcore-runtime-internal-$(PackageVersion)-win-arm64.zip</IntermediateArm64SharedFxZip>
       <IntermediateX64SharedFxZip>$(SharedFrameworkX64HarvestRootPath)aspnetcore-runtime-internal-$(PackageVersion)-win-x64.zip</IntermediateX64SharedFxZip>
       <IntermediateX86SharedFxZip>$(SharedFrameworkX86HarvestRootPath)aspnetcore-runtime-internal-$(PackageVersion)-win-x86.zip</IntermediateX86SharedFxZip>
     </PropertyGroup>
 
+    <Unzip Condition="'$(Platform)' == 'arm64'"
+           SourceFiles="$(IntermediateArm64SharedFxZip)" DestinationFolder="$(HarvestSource)" />
     <Unzip Condition="'$(Platform)' == 'x64'"
            SourceFiles="$(IntermediateX64SharedFxZip)" DestinationFolder="$(HarvestSource)" />
     <Unzip Condition="'$(Platform)' == 'x86'"

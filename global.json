@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "3.1.112"
+    "version": "3.1.113"
   },
   "tools": {
-    "dotnet": "3.1.112",
+    "dotnet": "3.1.113",
     "runtimes": {
       "dotnet/x64": [
         "$(MicrosoftNETCoreAppInternalPackageVersion)"
