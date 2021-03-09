@@ -31,15 +31,19 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 export PLAYWRIGHT_BROWSERS_PATH="$DIR/ms-playwright"
 if [[ "$helixQueue" == *"OSX"* ]]; then
     export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/osx/native/playwright.sh"
+    PLAYWRIGHT_NODE_PATH=$DIR/.playwright/osx/native/node
 else
     export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/unix/native/playwright.sh"
+    PLAYWRIGHT_NODE_PATH=$DIR/.playwright/unix/native/node"
 fi
 export InstallPlaywright="$installPlaywright"
 if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
+    echo "sudo apt-get install libdbus-glib-1-2 (for playwright)"
+    sudo apt-get install libdbus-glib-1-2
     echo "chmod +x $PLAYWRIGHT_DRIVER_PATH"
     chmod +x $PLAYWRIGHT_DRIVER_PATH
-    echo "chmod +x $DIR/.playwright/unix/native/node"
-    chmod +x $DIR/.playwright/unix/native/node
+    echo "chmod +x $PLAYWRIGHT_NODE_PATH"
+    chmod +x PLAYWRIGHT_NODE_PATH
 fi
 
 RESET="\033[0m"
