@@ -27,6 +27,12 @@ namespace RunTests
                 {
                     keepGoing = runner.InstallAspNetRefIfNeeded();
                 }
+#if INSTALLPLAYWRIGHT
+                if (keepGoing)
+                {
+                    keepGoing = await runner.InstallPlaywrightAsync();
+                }
+#endif
 
                 runner.DisplayContents();
 

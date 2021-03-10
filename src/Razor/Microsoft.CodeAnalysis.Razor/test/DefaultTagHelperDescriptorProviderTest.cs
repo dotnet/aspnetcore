@@ -85,7 +85,7 @@ namespace TestAssembly
         }
 
         [Fact]
-        public void Execute_WithTargetMetadataReference_Works()
+        public void Execute_WithTargetAssembly_Works()
         {
             // Arrange
             var testTagHelper = "TestAssembly.TestTagHelper";
@@ -104,7 +104,7 @@ namespace TestAssembly
 
             var context = TagHelperDescriptorProviderContext.Create();
             context.SetCompilation(compilation);
-            context.Items.SetTargetMetadataReference(compilation.References.First(r => r.Display.Contains("Microsoft.CodeAnalysis.Razor.Test.dll")));
+            context.Items.SetTargetAssembly((IAssemblySymbol) compilation.GetAssemblyOrModuleSymbol(compilation.References.First(r => r.Display.Contains("Microsoft.CodeAnalysis.Razor.Test.dll"))));
 
             // Act
             descriptorProvider.Execute(context);

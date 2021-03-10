@@ -493,7 +493,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.True(Activity.Current.Recorded);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30582")]
         public void ActivityListenersAreCalled()
         {
             var hostingApplication = CreateApplication(out var features);

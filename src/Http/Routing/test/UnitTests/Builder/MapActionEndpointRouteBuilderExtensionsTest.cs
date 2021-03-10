@@ -4,9 +4,10 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.TestObjects;
 using Moq;
 using Xunit;
 
@@ -25,47 +26,127 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        public void MapAction_BuildsEndpointFromAttributes()
+        public void MapEndpoint_PrecedenceOfMetadata_BuilderMetadataReturned()
         {
-            const string customPattern = "/CustomTemplate";
-            const string customMethod = "CUSTOM_METHOD";
-
-            [CustomRouteMetadata(Pattern = customPattern, Methods = new[] { customMethod })]
-            void TestAction() { };
-
             var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
-            _ = builder.MapAction((Action)TestAction);
 
-            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal(customPattern, routeEndpointBuilder.RoutePattern.RawText);
+            [HttpMethod("ATTRIBUTE")]
+            void TestAction()
+            {
+            }
 
-            var dataSource = GetBuilderEndpointDataSource(builder);
+            var endpointBuilder = builder.MapMethods("/", new[] { "METHOD" }, (Action)TestAction);
+            endpointBuilder.WithMetadata(new HttpMethodMetadata(new[] { "BUILDER" }));
+
+            var dataSource = Assert.Single(builder.DataSources);
             var endpoint = Assert.Single(dataSource.Endpoints);
 
-            var httpMethodMetadata = Assert.Single(endpoint.Metadata.OfType<IHttpMethodMetadata>());
-            var method = Assert.Single(httpMethodMetadata.HttpMethods);
-            Assert.Equal(customMethod, method);
+            var metadataArray = endpoint.Metadata.Where(m => m is not CompilerGeneratedAttribute).ToArray();
+
+            Assert.Equal(3, metadataArray.Length);
+            Assert.Equal("ATTRIBUTE", GetMethod(metadataArray[0]));
+            Assert.Equal("METHOD", GetMethod(metadataArray[1]));
+            Assert.Equal("BUILDER", GetMethod(metadataArray[2]));
+
+            Assert.Equal("BUILDER", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()!.HttpMethods.Single());
+
+            string GetMethod(object metadata)
+            {
+                var httpMethodMetadata = Assert.IsAssignableFrom<IHttpMethodMetadata>(metadata);
+                return Assert.Single(httpMethodMetadata.HttpMethods);
+            }
         }
 
         [Fact]
-        public void MapAction_BuildsEndpointWithRouteNameAndOrder()
+        public void MapGet_BuildsEndpointWithCorrectMethod()
         {
-            const string customName = "Custom Name";
-            const int customOrder = 1337;
-
-            [CustomRouteMetadata(Name = customName, Order = customOrder)]
-            void TestAction() { };
-
             var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
-            _ = builder.MapAction((Action)TestAction);
+            _ = builder.MapGet("/", (Action)(() => { }));
 
             var dataSource = GetBuilderEndpointDataSource(builder);
             // Trigger Endpoint build by calling getter.
             var endpoint = Assert.Single(dataSource.Endpoints);
 
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("GET", method);
+
             var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
-            Assert.Equal(customName, routeEndpointBuilder.DisplayName);
-            Assert.Equal(customOrder, routeEndpointBuilder.Order);
+            Assert.Equal("/ HTTP: GET", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        [Fact]
+        public void MapPost_BuildsEndpointWithCorrectMethod()
+        {
+            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            _ = builder.MapPost("/", (Action)(() => { }));
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("POST", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("/ HTTP: POST", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        [Fact]
+        public void MapPut_BuildsEndpointWithCorrectMethod()
+        {
+            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            _ = builder.MapPut("/", (Action)(() => { }));
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("PUT", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("/ HTTP: PUT", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        [Fact]
+        public void MapDelete_BuildsEndpointWithCorrectMethod()
+        {
+            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+            _ = builder.MapDelete("/", (Action)(() => { }));
+
+            var dataSource = GetBuilderEndpointDataSource(builder);
+            // Trigger Endpoint build by calling getter.
+            var endpoint = Assert.Single(dataSource.Endpoints);
+
+            var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+            Assert.NotNull(methodMetadata);
+            var method = Assert.Single(methodMetadata!.HttpMethods);
+            Assert.Equal("DELETE", method);
+
+            var routeEndpointBuilder = GetRouteEndpointBuilder(builder);
+            Assert.Equal("/ HTTP: DELETE", routeEndpointBuilder.DisplayName);
+            Assert.Equal("/", routeEndpointBuilder.RoutePattern.RawText);
+        }
+
+        private class HttpMethodAttribute : Attribute, IHttpMethodMetadata
+        {
+            public bool AcceptCorsPreflight => false;
+
+            public IReadOnlyList<string> HttpMethods { get; }
+
+            public HttpMethodAttribute(params string[] httpMethods)
+            {
+                HttpMethods = httpMethods;
+            }
         }
     }
 }

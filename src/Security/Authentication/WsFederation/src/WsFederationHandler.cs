@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
               && Request.Body.CanRead)
             {
-                var form = await Request.ReadFormAsync();
+                var form = await Request.ReadFormAsync(Context.RequestAborted);
 
                 wsFederationMessage = new WsFederationMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }

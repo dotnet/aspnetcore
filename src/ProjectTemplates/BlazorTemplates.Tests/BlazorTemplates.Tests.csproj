@@ -6,10 +6,8 @@
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
-    <!--Do not run this test project on Helix.-->
-    <BuildHelixPayload>false</BuildHelixPayload>
+    <IsWindowsOnlyTest>true</IsWindowsOnlyTest>
     <SkipHelixArm>true</SkipHelixArm>
-
     <BaseOutputPath />
     <OutputPath />
 
@@ -18,6 +16,8 @@
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+    <TestDependsOnMssql>true</TestDependsOnMssql>
+    <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
   </PropertyGroup>
 
   <ItemGroup>

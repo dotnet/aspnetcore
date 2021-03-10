@@ -8,6 +8,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
+using Microsoft.AspNetCore.Testing;
 using PlaywrightSharp;
 using ProjectTemplates.Tests.Infrastructure;
 using Templates.Test.Helpers;
@@ -34,6 +35,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30761")]
         public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278

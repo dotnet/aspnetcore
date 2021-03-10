@@ -25,6 +25,9 @@ export DOTNET_CLI_HOME="$DIR/.home$RANDOM"
 
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
+# Set playwright browser path
+export PLAYWRIGHT_BROWSERS_PATH="$DIR/ms-playwright"
+
 RESET="\033[0m"
 RED="\033[0;31m"
 YELLOW="\033[0;33m"
@@ -32,7 +35,7 @@ MAGENTA="\033[0;95m"
 
 . eng/common/tools.sh
 
-if [[ -z "${10:-}" ]]; then
+if [[ -z "${11:-}" ]]; then
     echo "InstallDotNet $DOTNET_ROOT $dotnet_sdk_version '' '' true"
     InstallDotNet $DOTNET_ROOT $dotnet_sdk_version "" "" true || {
       exit_code=$?
@@ -49,7 +52,7 @@ if [[ -z "${10:-}" ]]; then
     }
 else
     echo "InstallDotNet $DOTNET_ROOT $dotnet_sdk_version '' '' true https://dotnetclimsrc.blob.core.windows.net/dotnet ..."
-    InstallDotNet $DOTNET_ROOT $dotnet_sdk_version "" "" true https://dotnetclimsrc.blob.core.windows.net/dotnet ${10} || {
+    InstallDotNet $DOTNET_ROOT $dotnet_sdk_version "" "" true https://dotnetclimsrc.blob.core.windows.net/dotnet ${11} || {
       exit_code=$?
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
       ExitWithExitCode $exit_code
@@ -57,7 +60,7 @@ else
     echo
 
     echo "InstallDotNet $DOTNET_ROOT $dotnet_runtime_version '' dotnet true https://dotnetclimsrc.blob.core.windows.net/dotnet ..."
-    InstallDotNet $DOTNET_ROOT $dotnet_runtime_version "" dotnet true https://dotnetclimsrc.blob.core.windows.net/dotnet ${10} || {
+    InstallDotNet $DOTNET_ROOT $dotnet_runtime_version "" dotnet true https://dotnetclimsrc.blob.core.windows.net/dotnet ${11} || {
       exit_code=$?
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
       ExitWithExitCode $exit_code

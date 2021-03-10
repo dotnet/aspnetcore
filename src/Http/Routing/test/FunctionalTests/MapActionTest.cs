@@ -20,9 +20,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
     public class MapActionTest
     {
         [Fact]
-        public async Task MapAction_FromBodyWorksWithJsonPayload()
+        public async Task MapPost_FromBodyWorksWithJsonPayload()
         {
-            [HttpPost("/EchoTodo/{id}")]
             Todo EchoTodo([FromRoute] int id, [FromBody] Todo todo) => todo with { Id = id };
 
             using var host = new HostBuilder()
@@ -32,7 +31,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                         .Configure(app =>
                         {
                             app.UseRouting();
-                            app.UseEndpoints(b => b.MapAction((Func<int, Todo, Todo>)EchoTodo));
+                            app.UseEndpoints(b => b.MapPost("/EchoTodo/{id}", (Func<int, Todo, Todo>)EchoTodo));
                         })
                         .UseTestServer();
                 })

@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
@@ -15,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     /// Identifies an action that supports a given set of HTTP methods.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public abstract class HttpMethodAttribute : Attribute, IHttpMethodMetadata, IActionHttpMethodProvider, IRouteTemplateProvider
+    public abstract class HttpMethodAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
     {
         private readonly List<string> _httpMethods;
 
@@ -51,9 +50,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <inheritdoc />
         public IEnumerable<string> HttpMethods => _httpMethods;
 
-        IReadOnlyList<string> IHttpMethodMetadata.HttpMethods => _httpMethods;
-        bool IHttpMethodMetadata.AcceptCorsPreflight => false;
-
         /// <inheritdoc />
         public string? Template { get; }
 
@@ -75,6 +71,5 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <inheritdoc />
         [DisallowNull]
         public string? Name { get; set; }
-
     }
 }

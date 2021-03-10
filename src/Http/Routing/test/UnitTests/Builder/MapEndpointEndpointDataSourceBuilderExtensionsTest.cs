@@ -149,10 +149,5 @@ namespace Microsoft.AspNetCore.Builder
         private class Attribute2 : Attribute
         {
         }
-
-        private class Metadata
-        {
-
-        }
     }
 }

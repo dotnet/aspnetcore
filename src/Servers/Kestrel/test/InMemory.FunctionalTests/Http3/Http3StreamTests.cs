@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -1611,6 +1613,119 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             clientTcs.SetResult(0);
             await appTcs.Task;
+        }
+
+        [Fact]
+        public async Task DataBeforeHeaders_UnexpectedFrameError()
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+
+            await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("This is invalid."));
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.UnexpectedFrame, expectedErrorMessage: "The client sent a DATA frame before the HEADERS frame.");
+        }
+
+        [Fact]
+        public async Task RequestTrailers_CanReadTrailersFromRequest()
+        {
+            string testValue = null;
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            var trailers = new[]
+            {
+                new KeyValuePair<string, string>("TestName", "TestValue"),
+            };
+            var requestStream = await InitializeConnectionAndStreamsAsync(async c =>
+            {
+                var data = new byte[1024];
+                await c.Request.Body.ReadAsync(data);
+
+                testValue = c.Request.GetTrailer("TestName");
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: false);
+            await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("Hello world"));
+            await requestStream.SendHeadersAsync(trailers, endStream: true);
+
+            await requestStream.ExpectHeadersAsync();
+
+            Assert.Equal("TestValue", testValue);
+
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30754")]
+        public async Task FrameAfterTrailers_UnexpectedFrameError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            var trailers = new[]
+            {
+                new KeyValuePair<string, string>("TestName", "TestValue"),
+            };
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+
+            await requestStream.SendHeadersAsync(headers, endStream: false);
+            await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("Hello world"));
+            await requestStream.SendHeadersAsync(trailers, endStream: false);
+            await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("This is invalid."));
+
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.UnexpectedFrame, expectedErrorMessage: "The client sent a Data frame after trailing HEADERS.");
+        }
+
+        [Fact]
+        public async Task TrailersWithoutEndingStream_ErrorAccessingTrailers()
+        {
+            var readTrailersTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var syncPoint = new SyncPoint();
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            var trailers = new[]
+            {
+                new KeyValuePair<string, string>("TestName", "TestValue"),
+            };
+            var requestStream = await InitializeConnectionAndStreamsAsync(async c =>
+            {
+                var data = new byte[1024];
+                await c.Request.Body.ReadAsync(data);
+
+                await syncPoint.WaitToContinue();
+
+                try
+                {
+                    c.Request.GetTrailer("TestName");
+                }
+                catch (Exception ex)
+                {
+                    readTrailersTcs.TrySetException(ex);
+                    throw;
+                }
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: false);
+            await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("Hello world"));
+            await requestStream.SendHeadersAsync(trailers, endStream: false);
+
+            await syncPoint.WaitForSyncPoint().DefaultTimeout();
+            syncPoint.Continue();
+
+            // Stream not ended after trailing headers.
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => readTrailersTcs.Task).DefaultTimeout();
+            Assert.Equal("The request trailers are not available yet. They may not be available until the full request body is read.", ex.Message);
         }
     }
 }

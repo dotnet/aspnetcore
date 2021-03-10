@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
               && Request.Body.CanRead)
             {
-                var form = await Request.ReadFormAsync();
+                var form = await Request.ReadFormAsync(Context.RequestAborted);
                 message = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
 
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 return;
             }
 
-            properties = properties ?? new AuthenticationProperties();
+            properties ??= new AuthenticationProperties();
 
             Logger.EnteringOpenIdAuthenticationHandlerHandleSignOutAsync(GetType().FullName);
 
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
                 Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
-                await Response.Body.WriteAsync(buffer, 0, buffer.Length);
+                await Response.Body.WriteAsync(buffer);
             }
             else
             {
@@ -479,7 +479,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
                 Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
-                await Response.Body.WriteAsync(buffer, 0, buffer.Length);
+                await Response.Body.WriteAsync(buffer);
                 return;
             }
 
@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
               && Request.Body.CanRead)
             {
-                var form = await Request.ReadFormAsync();
+                var form = await Request.ReadFormAsync(Context.RequestAborted);
                 authorizationResponse = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
 
@@ -823,7 +823,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, tokenEndpointRequest.TokenEndpoint ?? _configuration.TokenEndpoint);
             requestMessage.Content = new FormUrlEncodedContent(tokenEndpointRequest.Parameters);
             requestMessage.Version = Backchannel.DefaultRequestVersion;
-            var responseMessage = await Backchannel.SendAsync(requestMessage);
+            var responseMessage = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
 
             var contentMediaType = responseMessage.Content.Headers.ContentType?.MediaType;
             if (string.IsNullOrEmpty(contentMediaType))
@@ -842,7 +842,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             OpenIdConnectMessage message;
             try
             {
-                var responseContent = await responseMessage.Content.ReadAsStringAsync();
+                var responseContent = await responseMessage.Content.ReadAsStringAsync(Context.RequestAborted);
                 message = new OpenIdConnectMessage(responseContent);
             }
             catch (Exception ex)
@@ -886,9 +886,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, userInfoEndpoint);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", message.AccessToken);
             requestMessage.Version = Backchannel.DefaultRequestVersion;
-            var responseMessage = await Backchannel.SendAsync(requestMessage);
+            var responseMessage = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
             responseMessage.EnsureSuccessStatusCode();
-            var userInfoResponse = await responseMessage.Content.ReadAsStringAsync();
+            var userInfoResponse = await responseMessage.Content.ReadAsStringAsync(Context.RequestAborted);
 
             JsonDocument user;
             var contentType = responseMessage.Content.Headers.ContentType;
@@ -1035,36 +1035,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
 
             return null;
-        }
-
-        private AuthenticationProperties GetPropertiesFromState(string state)
-        {
-            // assume a well formed query string: <a=b&>OpenIdConnectAuthenticationDefaults.AuthenticationPropertiesKey=kasjd;fljasldkjflksdj<&c=d>
-            var startIndex = 0;
-            if (string.IsNullOrEmpty(state) || (startIndex = state.IndexOf(OpenIdConnectDefaults.AuthenticationPropertiesKey, StringComparison.Ordinal)) == -1)
-            {
-                return null;
-            }
-
-            var authenticationIndex = startIndex + OpenIdConnectDefaults.AuthenticationPropertiesKey.Length;
-            if (authenticationIndex == -1 || authenticationIndex == state.Length || state[authenticationIndex] != '=')
-            {
-                return null;
-            }
-
-            // scan rest of string looking for '&'
-            authenticationIndex++;
-            var endIndex = state.Substring(authenticationIndex, state.Length - authenticationIndex).IndexOf("&", StringComparison.Ordinal);
-
-            // -1 => no other parameters are after the AuthenticationPropertiesKey
-            if (endIndex == -1)
-            {
-                return Options.StateDataFormat.Unprotect(Uri.UnescapeDataString(state.Substring(authenticationIndex).Replace('+', ' ')));
-            }
-            else
-            {
-                return Options.StateDataFormat.Unprotect(Uri.UnescapeDataString(state.Substring(authenticationIndex, endIndex).Replace('+', ' ')));
-            }
         }
 
         private async Task<MessageReceivedContext> RunMessageReceivedEventAsync(OpenIdConnectMessage message, AuthenticationProperties properties)

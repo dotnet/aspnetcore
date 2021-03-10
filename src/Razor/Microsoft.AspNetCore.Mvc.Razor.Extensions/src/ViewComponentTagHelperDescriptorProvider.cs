@@ -38,13 +38,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var types = new List<INamedTypeSymbol>();
             var visitor = new ViewComponentTypeVisitor(vcAttribute, nonVCAttribute, types);
 
-            var targetReference = context.Items.GetTargetMetadataReference();
-            if (targetReference is not null)
+            var targetAssembly = context.Items.GetTargetAssembly();
+            if (targetAssembly is not null)
             {
-                if (compilation.GetAssemblyOrModuleSymbol(targetReference) is IAssemblySymbol targetAssembly && IsTagHelperAssembly(targetAssembly))
-                {
-                    visitor.Visit(targetAssembly.GlobalNamespace);
-                }
+                visitor.Visit(targetAssembly.GlobalNamespace);
             }
             else
             {

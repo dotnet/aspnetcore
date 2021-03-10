@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Server\src\Circuits\RenderBatchWriter.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" />
   </ItemGroup>
 
 </Project>

@@ -13,6 +13,11 @@ namespace Microsoft.AspNetCore.Builder
     {
         private readonly List<IEndpointConventionBuilder> _endpointConventionBuilders;
 
+        internal MapActionEndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
+        {
+            _endpointConventionBuilders = new List<IEndpointConventionBuilder>() { endpointConventionBuilder };
+        }
+
         internal MapActionEndpointConventionBuilder(List<IEndpointConventionBuilder> endpointConventionBuilders)
         {
             _endpointConventionBuilders = endpointConventionBuilders;
