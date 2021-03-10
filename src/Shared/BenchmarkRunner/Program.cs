@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
 
         private static IConfig GetConfig()
         {
-#if NET5_0 || NETCOREAPP5_0
+#if NET5_0
             return ManualConfig.CreateEmpty()
                 .AddJob(Job.Default
                     .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings
