@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing
 using PlaywrightSharp;
 using ProjectTemplates.Tests.Infrastructure;
 using Templates.Test.Helpers;
