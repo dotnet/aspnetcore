@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -66,9 +67,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 // where 000..000 is a placeholder for our magic header and key id.
 
                 // Write out the magic header and key id
+                BinaryPrimitives.WriteUInt32BigEndian(retVal, MAGIC_HEADER_V0);
                 fixed (byte* pbRetVal = retVal)
                 {
-                    WriteBigEndianInteger(pbRetVal, MAGIC_HEADER_V0);
                     Write32bitAlignedGuid(&pbRetVal[sizeof(uint)], defaultKeyId);
                 }
 
