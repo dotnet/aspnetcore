@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
     internal class QuicConnectionListener : IMultiplexedConnectionListener, IAsyncDisposable
     {
         private readonly IQuicTrace _log;
-        private readonly SslServerAuthenticationOptions _sslServerAuthenticationOptions;
         private bool _disposed;
         private readonly QuicTransportContext _context;
         private readonly QuicListener _listener;
@@ -35,14 +34,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             _log = log;
             _context = new QuicTransportContext(_log, options);
             EndPoint = endpoint;
-            _sslServerAuthenticationOptions = sslServerAuthenticationOptions;
             var quicListenerOptions = new QuicListenerOptions();
 
-            //var sslConfig = new SslServerAuthenticationOptions();
-            //sslConfig.ServerCertificate = options.Certificate;
-            //sslConfig.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
+            // TODO Should HTTP/3 specific ALPN still be global? Revisit whether it can be statically set once HTTP/3 is finalized.
+            sslServerAuthenticationOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
 
-            quicListenerOptions.ServerAuthenticationOptions = _sslServerAuthenticationOptions;
+            quicListenerOptions.ServerAuthenticationOptions = sslServerAuthenticationOptions;
             quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
             quicListenerOptions.IdleTimeout = options.IdleTimeout;
 
