@@ -22,6 +22,8 @@ Param(
   [switch] $ci,
   [switch] $prepareMachine,
   [switch] $help,
+  [string] $runtimeSourceFeed = "",
+  [string] $runtimeSourceFeedKey = "",
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
 
@@ -29,33 +31,35 @@ Param(
 
 function Print-Usage() {
     Write-Host "Common settings:"
-    Write-Host "  -configuration <value>  Build configuration: 'Debug' or 'Release' (short: -c)"
-    Write-Host "  -platform <value>       Platform configuration: 'x86', 'x64' or any valid Platform value to pass to msbuild"
-    Write-Host "  -verbosity <value>      Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
-    Write-Host "  -binaryLog              Output binary log (short: -bl)"
-    Write-Host "  -help                   Print help and exit"
+    Write-Host "  -configuration <value>        Build configuration: 'Debug' or 'Release' (short: -c)"
+    Write-Host "  -platform <value>             Platform configuration: 'x86', 'x64' or any valid Platform value to pass to msbuild"
+    Write-Host "  -verbosity <value>            Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
+    Write-Host "  -binaryLog                    Output binary log (short: -bl)"
+    Write-Host "  -help                         Print help and exit"
     Write-Host ""
 
     Write-Host "Actions:"
-    Write-Host "  -restore                Restore dependencies (short: -r)"
-    Write-Host "  -build                  Build solution (short: -b)"
-    Write-Host "  -rebuild                Rebuild solution"
-    Write-Host "  -deploy                 Deploy built VSIXes"
-    Write-Host "  -deployDeps             Deploy dependencies (e.g. VSIXes for integration tests)"
-    Write-Host "  -test                   Run all unit tests in the solution (short: -t)"
-    Write-Host "  -integrationTest        Run all integration tests in the solution"
-    Write-Host "  -performanceTest        Run all performance tests in the solution"
-    Write-Host "  -pack                   Package build outputs into NuGet packages and Willow components"
-    Write-Host "  -sign                   Sign build outputs"
-    Write-Host "  -publish                Publish artifacts (e.g. symbols)"
+    Write-Host "  -restore                      Restore dependencies (short: -r)"
+    Write-Host "  -build                        Build solution (short: -b)"
+    Write-Host "  -rebuild                      Rebuild solution"
+    Write-Host "  -deploy                       Deploy built VSIXes"
+    Write-Host "  -deployDeps                   Deploy dependencies (e.g. VSIXes for integration tests)"
+    Write-Host "  -test                         Run all unit tests in the solution (short: -t)"
+    Write-Host "  -integrationTest              Run all integration tests in the solution"
+    Write-Host "  -performanceTest              Run all performance tests in the solution"
+    Write-Host "  -pack                         Package build outputs into NuGet packages and Willow components"
+    Write-Host "  -sign                         Sign build outputs"
+    Write-Host "  -publish                      Publish artifacts (e.g. symbols)"
     Write-Host ""
 
     Write-Host "Advanced settings:"
-    Write-Host "  -projects <value>       Semi-colon delimited list of sln/proj's to build. Globbing is supported (*.sln)"
-    Write-Host "  -ci                     Set when running on CI server"
-    Write-Host "  -prepareMachine         Prepare machine for CI run, clean up processes after build"
-    Write-Host "  -warnAsError <value>    Sets warnaserror msbuild parameter ('true' or 'false')"
-    Write-Host "  -msbuildEngine <value>  Msbuild engine to use to run build ('dotnet', 'vs', or unspecified)."
+    Write-Host "  -projects <value>             Semi-colon delimited list of sln/proj's to build. Globbing is supported (*.sln)"
+    Write-Host "  -ci                           Set when running on CI server"
+    Write-Host "  -prepareMachine               Prepare machine for CI run, clean up processes after build"
+    Write-Host "  -warnAsError <value>          Sets warnaserror msbuild parameter ('true' or 'false')"
+    Write-Host "  -msbuildEngine <value>        Msbuild engine to use to run build ('dotnet', 'vs', or unspecified)."
+    Write-Host "  -runtimeSourceFeed <value>    Alternate feed source for restoring .NET Runtimes and SDKs"
+    Write-Host "  -runtimeSourceFeedKey <value> Key value for non-public values of runtimeSourceFeed"
     Write-Host ""
 
     Write-Host "Command line arguments not listed above are passed thru to msbuild."
@@ -75,7 +79,7 @@ function InitializeCustomToolset {
 }
 
 function Build {
-  $toolsetBuildProj = InitializeToolset
+  $toolsetBuildProj = InitializeToolset -runtimeSourceFeed $runtimeSourceFeed -runtimeSourceFeedKey $runtimeSourceFeedKey
   InitializeCustomToolset
 
   $bl = if ($binaryLog) { "/bl:" + (Join-Path $LogDir "Build.binlog") } else { "" }

@@ -96,7 +96,7 @@ function Exec-Process([string]$command, [string]$commandArgs) {
   }
 }
 
-function InitializeDotNetCli([bool]$install) {
+function InitializeDotNetCli([bool]$install, [string] $runtimeSourceFeed, [string] $runtimeSourceFeedKey) {
   if (Test-Path variable:global:_DotNetInstallDir) {
     return $global:_DotNetInstallDir
   }
@@ -138,7 +138,7 @@ function InitializeDotNetCli([bool]$install) {
 
     if (-not (Test-Path(Join-Path $dotnetRoot "sdk\$dotnetSdkVersion"))) {
       if ($install) {
-        InstallDotNetSdk $dotnetRoot $dotnetSdkVersion
+        InstallDotNetSdk -dotnetRoot $dotnetRoot -version $dotnetSdkVersion -runtimeSourceFeed $runtimeSourceFeed -runtimeSourceFeedKey $runtimeSourceFeedKey
       } else {
         Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Unable to find dotnet with SDK version '$dotnetSdkVersion'"
         ExitWithExitCode 1
@@ -207,8 +207,8 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
   return $installScript
 }
 
-function InstallDotNetSdk([string] $dotnetRoot, [string] $version, [string] $architecture = "") {
-  InstallDotNet $dotnetRoot $version $architecture
+function InstallDotNetSdk([string] $dotnetRoot, [string] $version, [string] $architecture = "", [string] $runtimeSourceFeed, [string] $runtimeSourceFeedKey ) {
+  InstallDotNet -dotnetRoot $dotnetRoot -version $version -architecture $architecture -skipNonVersionedFiles $false -runtimeSourceFeed $runtimeSourceFeed -runtimeSourceFeedKey $runtimeSourceFeedKey
 }
 
 function InstallDotNet([string] $dotnetRoot, 
@@ -233,10 +233,9 @@ function InstallDotNet([string] $dotnetRoot,
     & $installScript @installParameters
   }
   catch {
-    Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Failed to install dotnet runtime '$runtime' from public location."
-
-    # Only the runtime can be installed from a custom [private] location.
-    if ($runtime -and ($runtimeSourceFeed -or $runtimeSourceFeedKey)) {
+    # If we fail, retry from a custom (possibly private) location.
+    if ($runtimeSourceFeed -or $runtimeSourceFeedKey) {
+      Write-Host "Failed to install dotnet runtime '$runtime' version '$version' from public location; trying specified alternate feed credentials"
       if ($runtimeSourceFeed) { $installParameters.AzureFeed = $runtimeSourceFeed }
 
       if ($runtimeSourceFeedKey) {
@@ -253,6 +252,7 @@ function InstallDotNet([string] $dotnetRoot,
         ExitWithExitCode 1
       }
     } else {
+      Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Failed to install dotnet runtime '$runtime' version '$version' from public location."
       ExitWithExitCode 1
     }
   }
@@ -439,7 +439,7 @@ function LocateVisualStudio([object]$vsRequirements = $null){
   return $vsInfo[0]
 }
 
-function InitializeBuildTool() {
+function InitializeBuildTool([string] $runtimeSourceFeed, [string] $runtimeSourceFeedKey) {
   if (Test-Path variable:global:_BuildTool) {
     return $global:_BuildTool
   }
@@ -451,7 +451,7 @@ function InitializeBuildTool() {
   # Initialize dotnet cli if listed in 'tools'
   $dotnetRoot = $null
   if (Get-Member -InputObject $GlobalJson.tools -Name "dotnet") {
-    $dotnetRoot = InitializeDotNetCli -install:$restore
+    $dotnetRoot = InitializeDotNetCli -install:$restore -runtimeSourceFeed $runtimeSourceFeed -runtimeSourceFeedKey $runtimeSourceFeedKey
   }
 
   if ($msbuildEngine -eq "dotnet") {
@@ -523,7 +523,8 @@ function InitializeNativeTools() {
   }
 }
 
-function InitializeToolset() {
+function InitializeToolset([string] $runtimeSourceFeed, [string] $runtimeSourceFeedKey) 
+{
   if (Test-Path variable:global:_ToolsetBuildProj) {
     return $global:_ToolsetBuildProj
   }
@@ -545,7 +546,7 @@ function InitializeToolset() {
     ExitWithExitCode 1
   }
 
-  $buildTool = InitializeBuildTool
+  $buildTool = InitializeBuildTool -runtimeSourceFeed $runtimeSourceFeed -runtimeSourceFeedKey $runtimeSourceFeedKey
 
   $proj = Join-Path $ToolsetDir "restore.proj"
   $bl = if ($binaryLog) { "/bl:" + (Join-Path $LogDir "ToolsetRestore.binlog") } else { "" }
