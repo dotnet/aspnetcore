@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.DataProtection.SP800_108;
 namespace Microsoft.AspNetCore.DataProtection.Managed
 {
     // An encryptor that uses AesGcm to do encryption
-    internal unsafe sealed class AesGcmAuthenticatedEncryptor : ISpanAuthenticatedEncryptor, IDisposable
+    internal unsafe sealed class AesGcmAuthenticatedEncryptor : IAuthenticatedEncryptor, IDisposable
     {
         // Having a key modifier ensures with overwhelming probability that no two encryption operations
         // will ever derive the same (encryption subkey, MAC subkey) pair. This limits an attacker's
@@ -71,14 +71,24 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
             ciphertext.Validate();
             additionalAuthenticatedData.Validate();
 
-            return Decrypt(ciphertext.AsSpan(), additionalAuthenticatedData.AsSpan()).ToArray();
+            var retVal = new byte[ciphertext.Count - (KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES)];
+            if (TryDecrypt(retVal, ciphertext, additionalAuthenticatedData, out int _))
+            {
+                return retVal;
+            }
+            // This should never happen as we allocate the byte array to be sufficiently large.
+            throw CryptoUtil.Fail("Unexpected TryDecrypt failure.");
         }
 
         public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
         {
             var retVal = new byte[checked(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Count + TAG_SIZE_IN_BYTES)];
-            Encrypt(retVal, plaintext, additionalAuthenticatedData);
-            return retVal;
+            if (TryEncrypt(retVal, plaintext, additionalAuthenticatedData, out int _))
+            {
+                return retVal;
+            }
+            // This should never happen as we allocate the byte array to be sufficiently large.
+            throw CryptoUtil.Fail("Unexpected TryEncrypt failure.");
         }
 
         public void Dispose()
@@ -86,11 +96,19 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
             _keyDerivationKey.Dispose();
         }
 
-        public void Encrypt(Span<byte> output, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData)
+        public bool IsSpanEnabled() => true;
+
+        public bool TryEncrypt(Span<byte> output, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, out int bytesWritten)
         {
+            // In GCM, the encrypted output will be the same length as the plaintext input.
+            if (output.Length < plaintext.Length)
+            {
+                bytesWritten = 0;
+                return false;
+            }
+
             try
             {
-                // In GCM, the encrypted output will be the same length as the plaintext input.
                 int keyModifierOffset; // position in ciphertext.Array where key modifier begins
                 int nonceOffset; // position in ciphertext.Array where key modifier ends / nonce begins
                 int encryptedDataOffset; // position in ciphertext.Array where nonce ends / encryptedData begins
@@ -109,7 +127,9 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                 var nonceBytes = _genRandom.GenRandom(NONCE_SIZE_IN_BYTES);
 
                 keyModifier.CopyTo(output);
+                bytesWritten = KEY_MODIFIER_SIZE_IN_BYTES;
                 nonceBytes.CopyTo(output.Slice(keyModifier.Length));
+                bytesWritten += NONCE_SIZE_IN_BYTES;
 
                 // At this point, output := { keyModifier | nonce | _____ | _____ }
 
@@ -138,8 +158,10 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                         using var aes = new AesGcm(derivedKey);
                         aes.Encrypt(nonce, plaintext, encrypted, tag);
 
-                        // At this point, output := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
+                        // At this point, output := { keyModifier | nonce | encryptedData | authenticationTag }
                         // And we're done!
+                        bytesWritten += plaintext.Length + TAG_SIZE_IN_BYTES;
+                        return true;
                     }
                     finally
                     {
@@ -156,7 +178,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
             }
         }
 
-        public Span<byte> Decrypt(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData)
+        public bool TryDecrypt(Span<byte> output, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, out int bytesWritten)
         {
             // Argument checking: input must at the absolute minimum contain a key modifier, nonce, and tag
             if (ciphertext.Length < KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES)
@@ -166,7 +188,11 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
 
             // Assumption: pbCipherText := { keyModifier || nonce || encryptedData || authenticationTag }
             var plaintextBytes = ciphertext.Length - (KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES);
-            var plaintext = new byte[plaintextBytes];
+            if (output.Length < plaintextBytes)
+            {
+                bytesWritten = 0;
+                return false;
+            }
 
             try
             {
@@ -212,8 +238,9 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                         var tag = ciphertext.Slice(tagOffset, TAG_SIZE_IN_BYTES);
                         var encrypted = ciphertext.Slice(encryptedDataOffset, plaintextBytes);
                         using var aes = new AesGcm(derivedKey);
-                        aes.Decrypt(nonce, encrypted, tag, plaintext);
-                        return plaintext;
+                        aes.Decrypt(nonce, encrypted, tag, output);
+                        bytesWritten = plaintextBytes;
+                        return true;
                     }
                     finally
                     {

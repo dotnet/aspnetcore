@@ -29,19 +29,55 @@ namespace Microsoft.AspNetCore.DataProtection
         }
 
         [Fact]
-        public void CanProtectUnprotectWithSpans()
+        public void CanTryProtectUnprotect()
         {
             // Arrange
             var dataProtector1 = new EphemeralDataProtectionProvider().CreateProtector("purpose");
-            var sp = dataProtector1 as ISpanDataProtector;
 
             byte[] bytes = Encoding.UTF8.GetBytes("Hello there!");
+            Span<byte> results = new byte[bytes.Length];
+            Span<byte> encrypted = new byte[100];
 
             // Act & assert
-            var results = sp.Unprotect(sp.Protect(bytes.AsSpan()));
+            Assert.True(dataProtector1.TryProtect(encrypted, bytes, out var encryptWritten));
+            Assert.Equal(76, encryptWritten);
+            Assert.True(dataProtector1.TryUnprotect(results, encrypted.Slice(0, encryptWritten), out var decryptWritten));
+            Assert.Equal(bytes.Length, decryptWritten);
 
             Assert.Equal("Hello there!", Encoding.UTF8.GetString(results));
         }
+
+        [Fact]
+        public void TryProtectReturnsFalseIfOutputTooSmall()
+        {
+            // Arrange
+            var dataProtector1 = new EphemeralDataProtectionProvider().CreateProtector("purpose");
+
+            byte[] bytes = Encoding.UTF8.GetBytes("Hello there!");
+            Span<byte> encrypted = new byte[10];
+
+            // Act & assert
+            Assert.False(dataProtector1.TryProtect(encrypted, bytes, out var encryptWritten));
+            Assert.Equal(0, encryptWritten);
+        }
+
+        [Fact]
+        public void TryUnprotectReturnsFalseIfOutputTooSmall()
+        {
+            // Arrange
+            var dataProtector1 = new EphemeralDataProtectionProvider().CreateProtector("purpose");
+
+            byte[] bytes = Encoding.UTF8.GetBytes("Hello there!");
+            Span<byte> results = new byte[10];
+            Span<byte> encrypted = new byte[100];
+
+            // Act & assert
+            Assert.True(dataProtector1.TryProtect(encrypted, bytes, out var encryptWritten));
+            Assert.Equal(76, encryptWritten);
+            Assert.False(dataProtector1.TryUnprotect(results, encrypted.Slice(0, encryptWritten), out var decryptWritten));
+            Assert.Equal(0, decryptWritten);
+        }
+
 
         [Fact]
         public void SingleProvider_DifferentPurpose_DoesNotRoundTripData()

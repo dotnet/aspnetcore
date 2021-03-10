@@ -15,9 +15,9 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
 #if NETCOREAPP
-    internal unsafe sealed class KeyRingBasedDataProtector : ISpanDataProtector, IPersistedDataProtector
+    internal unsafe sealed class KeyRingBasedDataProtector : IDataProtector, IPersistedDataProtector
     {
-        public Span<byte> Protect(ReadOnlySpan<byte> plaintext)
+        public bool TryProtect(Span<byte> output, ReadOnlySpan<byte> plaintext, out int bytesWritten)
         {
             if (plaintext == null)
             {
@@ -41,25 +41,26 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 // If the default key id has been updated since the last call to Protect, also write back the updated template.
                 var aad = _aadTemplate.GetAadForKey(defaultKeyId, isProtecting: true);
 
-                Span<byte> retVal;
-                var optimizedEncryptor = defaultEncryptorInstance as ISpanAuthenticatedEncryptor;
-                var magicHeaderAndKeyOffset = sizeof(uint) + sizeof(Guid);
-                if (optimizedEncryptor != null)
+                if (defaultEncryptorInstance.IsSpanEnabled())
                 {
-                    retVal = new byte[magicHeaderAndKeyOffset + plaintext.Length];
-                    optimizedEncryptor.Encrypt(retVal.Slice(magicHeaderAndKeyOffset), plaintext, aad);
-                }
-                else
-                {
-                    // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
-                    retVal = defaultEncryptorInstance.Encrypt(
-                        plaintext: new ArraySegment<byte>(plaintext.ToArray()),
-                        additionalAuthenticatedData: new ArraySegment<byte>(aad),
-                        preBufferSize: (uint)(sizeof(uint) + sizeof(Guid)),
-                        postBufferSize: 0).AsSpan();
+                    return defaultEncryptorInstance.TryEncrypt(output, plaintext, aad, out bytesWritten);
                 }
 
+                // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
+                var retVal = defaultEncryptorInstance.Encrypt(
+                    plaintext: new ArraySegment<byte>(plaintext.ToArray()),
+                    additionalAuthenticatedData: new ArraySegment<byte>(aad),
+                    preBufferSize: (uint)(sizeof(uint) + sizeof(Guid)),
+                    postBufferSize: 0);
+
                 CryptoUtil.Assert(retVal != null && retVal.Length >= sizeof(uint) + sizeof(Guid), "retVal != null && retVal.Length >= sizeof(uint) + sizeof(Guid)");
+
+                // Make sure the output is large enough to hold the data
+                if (output.Length < retVal.Length)
+                {
+                    bytesWritten = 0;
+                    return false;
+                }
 
                 // At this point: retVal := { 000..000 || encryptorSpecificProtectedPayload },
                 // where 000..000 is a placeholder for our magic header and key id.
@@ -72,8 +73,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 }
 
                 // At this point, retVal := { magicHeader || keyId || encryptorSpecificProtectedPayload }
-                // And we're done!
-                return retVal;
+                // And copy it to the output and we're done!
+                retVal.CopyTo(output);
+                bytesWritten = retVal.Length;
+                return true;
             }
             catch (Exception ex) when (ex.RequiresHomogenization())
             {
@@ -82,7 +85,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
         }
 
-        public Span<byte> Unprotect(ReadOnlySpan<byte> protectedData)
+        public bool TryUnprotect(Span<byte> output, ReadOnlySpan<byte> protectedData, out int bytesWritten)
         {
             if (protectedData == null)
             {
@@ -90,13 +93,14 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
 
             // Argument checking will be done by the callee
-            return DangerousUnprotect(protectedData,
+            return TryDangerousUnprotect(output, protectedData,
                 ignoreRevocationErrors: false,
                 requiresMigration: out bool _,
-                wasRevoked: out bool __);
+                wasRevoked: out bool _,
+                out bytesWritten);
         }
 
-        public Span<byte> DangerousUnprotect(ReadOnlySpan<byte> protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
+        public bool TryDangerousUnprotect(Span<byte> output, ReadOnlySpan<byte> protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked, out int bytesWritten)
         {
             // argument & state checking
             if (protectedData == null)
@@ -105,15 +109,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
 
             UnprotectStatus status;
-            var retVal = UnprotectSpanCore(protectedData, ignoreRevocationErrors, status: out status);
-            requiresMigration = (status != UnprotectStatus.Ok);
-            wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
-            return retVal;
-        }
-
-        private Span<byte> UnprotectSpanCore(ReadOnlySpan<byte> protectedData, bool allowOperationsOnRevokedKeys, out UnprotectStatus status)
-        {
-            Debug.Assert(protectedData != null);
 
             try
             {
@@ -183,7 +178,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 // Do we need to notify the caller that this key was revoked?
                 if (keyWasRevoked)
                 {
-                    if (allowOperationsOnRevokedKeys)
+                    if (ignoreRevocationErrors)
                     {
                         if (_logger.IsDebugLevelEnabled())
                         {
@@ -201,8 +196,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     }
                 }
 
-                var spanEncryptor = requestedEncryptor as ISpanAuthenticatedEncryptor;
-                if (spanEncryptor != null)
+                requiresMigration = (status != UnprotectStatus.Ok);
+                wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
+                if (requestedEncryptor.IsSpanEnabled())
                 {
                     // Perform the decryption operation.
                     var ciphertext = protectedData.Slice(sizeof(uint) + sizeof(Guid), protectedData.Length - (sizeof(uint) + sizeof(Guid))); // chop off magic header + encryptor id
@@ -210,23 +206,31 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
                     // At this point, cipherText := { encryptorSpecificPayload },
                     // so all that's left is to invoke the decryption routine directly.
-                    var retVal = spanEncryptor.Decrypt(ciphertext, additionalAuthenticatedData);
-                    if (retVal == null)
-                    {
-                        CryptoUtil.Fail("IAuthenticatedEncryptor.Decrypt returned null.");
-                    }
-                    return retVal;
+                    return requestedEncryptor.TryDecrypt(output, ciphertext, additionalAuthenticatedData, out bytesWritten);
                 }
                 else
                 {
                     // Perform the decryption operation.
-                    ArraySegment<byte> ciphertext = new ArraySegment<byte>(protectedData.ToArray(), sizeof(uint) + sizeof(Guid), protectedData.Length - (sizeof(uint) + sizeof(Guid))); // chop off magic header + encryptor id
-                    ArraySegment<byte> additionalAuthenticatedData = new ArraySegment<byte>(_aadTemplate.GetAadForKey(keyIdFromPayload, isProtecting: false));
+                    var ciphertext = new ArraySegment<byte>(protectedData.ToArray(), sizeof(uint) + sizeof(Guid), protectedData.Length - (sizeof(uint) + sizeof(Guid))); // chop off magic header + encryptor id
+                    var additionalAuthenticatedData = new ArraySegment<byte>(_aadTemplate.GetAadForKey(keyIdFromPayload, isProtecting: false));
 
                     // At this point, cipherText := { encryptorSpecificPayload },
                     // so all that's left is to invoke the decryption routine directly.
-                    return requestedEncryptor.Decrypt(ciphertext, additionalAuthenticatedData)
-                        ?? CryptoUtil.Fail<byte[]>("IAuthenticatedEncryptor.Decrypt returned null.");
+                    var decrypt = requestedEncryptor.Decrypt(ciphertext, additionalAuthenticatedData);
+                    if (decrypt == null)
+                    {
+                        throw CryptoUtil.Fail("IAuthenticatedEncryptor.Decrypt returned null.");
+                    }
+
+                    if (output.Length < decrypt.Length)
+                    {
+                        bytesWritten = 0;
+                        return false;
+                    }
+
+                    decrypt.CopyTo(output);
+                    bytesWritten = decrypt.Length;
+                    return true;
                 }
             }
             catch (Exception ex) when (ex.RequiresHomogenization())
@@ -320,9 +324,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             {
                 throw new ArgumentNullException(nameof(plaintext));
             }
-#if NETCOREAPP
-            return Protect(plaintext.AsSpan()).ToArray();
-#else
             try
             {
                 // Perform the encryption operation using the current default encryptor.
@@ -367,7 +368,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 // homogenize all errors to CryptographicException
                 throw Error.Common_EncryptionFailed(ex);
             }
-#endif
         }
 
         // Helper function to read a GUID from a 32-bit alignment; useful on architectures where unaligned reads
