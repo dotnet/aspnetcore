@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -56,7 +57,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
 
             var features = new FeatureCollection();
-            features.Set(listenOptions.HttpsOptions);
+
+            if (listenOptions.HttpsOptions != null)
+            {
+                // TODO Set other relevant values on options
+                var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
+                {
+                    ServerCertificate = listenOptions.HttpsOptions.ServerCertificate
+                };
+
+                features.Set(sslServerAuthenticationOptions);
+            }
 
             var transport = await _multiplexedTransportFactory.BindAsync(endPoint, features).ConfigureAwait(false);
             StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), listenOptions.EndpointConfig);
