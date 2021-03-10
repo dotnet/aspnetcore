@@ -33,6 +33,8 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public IMessageSink DiagnosticsMessageSink { get; }
 
+        public string UserProfileDir { get; private set; }
+
         public static void EnforceSupportedConfigurations()
         {
             // Do not change the current platform support without explicit approval.
@@ -168,6 +170,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             {
                 Directory.CreateDirectory(userProfileDirectory);
                 opts.AddArgument($"--user-data-dir={userProfileDirectory}");
+                opts.AddUserProfilePreference("download.default_directory", Path.Combine(userProfileDirectory, "Downloads"));
             }
 
             var instance = await SeleniumStandaloneServer.GetInstanceAsync(output);
