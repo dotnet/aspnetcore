@@ -151,7 +151,8 @@ class MsalAuthorizeService implements AuthorizeService {
             const request: Msal.AuthorizationUrlRequest = {
                 redirectUri: this._settings.auth?.redirectUri,
                 state: await this.saveState(state),
-                scopes: []
+                scopes: [],
+                extraQueryParameters: state.extraQueryParameters
             };
 
             if (this._settings.defaultAccessTokenScopes && this._settings.defaultAccessTokenScopes.length > 0) {
@@ -180,7 +181,8 @@ class MsalAuthorizeService implements AuthorizeService {
                     const silentRequest : Msal.SilentRequest = {
                         redirectUri: request.redirectUri,
                         account: account,
-                        scopes: request?.scopes?.concat(request.extraScopesToConsent || []) || []
+                        scopes: request?.scopes?.concat(request.extraScopesToConsent || []) || [],
+                        extraQueryParameters: request.extraQueryParameters
                     };
                     await this._msalApplication.acquireTokenSilent(silentRequest);
                 }

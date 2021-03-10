@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
@@ -218,6 +221,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         private async Task ProcessLogIn(string returnUrl)
         {
             AuthenticationState.ReturnUrl = returnUrl;
+            AuthenticationState.ExtraQueryParameters = GetParameters();
+
             var result = await AuthenticationService.SignInAsync(new RemoteAuthenticationContext<TAuthenticationState>
             {
                 State = AuthenticationState
@@ -329,6 +334,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 default:
                     throw new InvalidOperationException($"Invalid authentication result status.");
             }
+        }
+
+        private Dictionary<string, string> GetParameters()
+        {
+            var queryString = new Uri(Navigation.Uri).Query;
+            var parameters = HttpUtility.ParseQueryString(queryString);
+            return parameters.AllKeys.ToDictionary(k => k, k => parameters[k]);
         }
 
         private string GetReturnUrl(TAuthenticationState state, string defaultReturnUrl = null)
