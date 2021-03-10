@@ -12,6 +12,7 @@ using System.Threading;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -462,6 +463,57 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         }
 
         [Fact]
+        public void TryUnprotect_KeyRevoked_RevocationAllowed_ReturnsOriginalData_SetsRevokedAndMigrationFlags()
+        {
+            // Arrange
+            Guid defaultKeyId = new Guid("ba73c9ce-d322-4e45-af90-341307e11c38");
+            byte[] expectedCiphertext = new byte[] { 0x03, 0x05, 0x07, 0x11, 0x13, 0x17, 0x19 };
+            byte[] protectedData = BuildProtectedDataFromCiphertext(defaultKeyId, expectedCiphertext);
+            byte[] expectedAad = BuildAadFromPurposeStrings(defaultKeyId, "purpose");
+            byte[] expectedPlaintext = new byte[] { 0x23, 0x29, 0x31, 0x37 };
+
+            var mockEncryptor = new Mock<IAuthenticatedEncryptor>();
+            mockEncryptor
+                .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
+                .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
+                {
+                    Assert.Equal(expectedCiphertext, actualCiphertext);
+                    Assert.Equal(expectedAad, actualAad);
+                    return expectedPlaintext;
+                });
+
+            var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
+            var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
+            mockEncryptorFactory.Setup(o => o.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(mockEncryptor.Object);
+
+            Key defaultKey = new Key(defaultKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
+            defaultKey.SetRevoked();
+            var keyRing = new KeyRing(defaultKey, new[] { defaultKey });
+            var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+            mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
+
+            IDataProtector protector = new KeyRingBasedDataProtector(
+                keyRingProvider: mockKeyRingProvider.Object,
+                logger: GetLogger(),
+                originalPurposes: null,
+                newPurpose: "purpose");
+
+            // Act
+            byte[] retVal = new byte[expectedPlaintext.Length];
+            Assert.True(((IPersistedDataProtector)protector).TryDangerousUnprotect(retVal, protectedData,
+                ignoreRevocationErrors: true,
+                requiresMigration: out var requiresMigration,
+                wasRevoked: out var wasRevoked,
+                bytesWritten: out var bytesWritten));
+            Assert.Equal(expectedPlaintext.Length, bytesWritten);
+
+            // Assert
+            Assert.Equal(expectedPlaintext, retVal);
+            Assert.True(requiresMigration);
+            Assert.True(wasRevoked);
+        }
+
+        [Fact]
         public void Unprotect_IsAlsoDefaultKey_Success_NoMigrationRequired()
         {
             // Arrange
@@ -554,6 +606,59 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 ignoreRevocationErrors: false,
                 requiresMigration: out var requiresMigration,
                 wasRevoked: out var wasRevoked);
+            Assert.Equal(expectedPlaintext, retVal);
+            Assert.True(requiresMigration);
+            Assert.False(wasRevoked);
+        }
+
+        [Fact]
+        public void TryUnprotect_IsNotDefaultKey_Success_RequiresMigration()
+        {
+            // Arrange
+            Guid defaultKeyId = new Guid("ba73c9ce-d322-4e45-af90-341307e11c38");
+            Guid embeddedKeyId = new Guid("9b5d2db3-299f-4eac-89e9-e9067a5c1853");
+            byte[] expectedCiphertext = new byte[] { 0x03, 0x05, 0x07, 0x11, 0x13, 0x17, 0x19 };
+            byte[] protectedData = BuildProtectedDataFromCiphertext(embeddedKeyId, expectedCiphertext);
+            byte[] expectedAad = BuildAadFromPurposeStrings(embeddedKeyId, "purpose");
+            byte[] expectedPlaintext = new byte[] { 0x23, 0x29, 0x31, 0x37 };
+
+            var mockEncryptor = new Mock<IAuthenticatedEncryptor>();
+            mockEncryptor
+                .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
+                .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
+                {
+                    Assert.Equal(expectedCiphertext, actualCiphertext);
+                    Assert.Equal(expectedAad, actualAad);
+                    return expectedPlaintext;
+                });
+            var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
+            var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
+            mockEncryptorFactory.Setup(o => o.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(mockEncryptor.Object);
+
+            Key defaultKey = new Key(defaultKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new Mock<IAuthenticatedEncryptorDescriptor>().Object, new[] { mockEncryptorFactory.Object });
+            Key embeddedKey = new Key(embeddedKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
+            var keyRing = new KeyRing(defaultKey, new[] { defaultKey, embeddedKey });
+            var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+            mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
+
+            IDataProtector protector = new KeyRingBasedDataProtector(
+                keyRingProvider: mockKeyRingProvider.Object,
+                logger: GetLogger(),
+                originalPurposes: null,
+                newPurpose: "purpose");
+
+            // Act & assert - IDataProtector
+            byte[] retVal = protector.Unprotect(protectedData);
+            Assert.Equal(expectedPlaintext, retVal);
+
+            // Act & assert - IPersistedDataProtector
+            retVal = new byte[expectedPlaintext.Length];
+            Assert.True(((IPersistedDataProtector)protector).TryDangerousUnprotect(retVal, protectedData,
+                ignoreRevocationErrors: true,
+                requiresMigration: out var requiresMigration,
+                wasRevoked: out var wasRevoked,
+                bytesWritten: out var bytesWritten));
+            Assert.Equal(expectedPlaintext.Length, bytesWritten);
             Assert.Equal(expectedPlaintext, retVal);
             Assert.True(requiresMigration);
             Assert.False(wasRevoked);

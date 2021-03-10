@@ -32,18 +32,12 @@ namespace Microsoft.AspNetCore.DataProtection
         /// invalid or malformed.
         /// </remarks>
         byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked);
-    }
 
 #if NETCOREAPP
-    /// <summary>
-    /// Span enabled version of <see cref="IPersistedDataProtector"/>.
-    /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
-    public interface ISpanPersistedDataProtector : IPersistedDataProtector
-    {
         /// <summary>
         /// Span enabled version of <see cref="IPersistedDataProtector.DangerousUnprotect(byte[], bool, out bool, out bool)"/>.
         /// </summary>
+        /// <param name="output">Where the plaintext form of the protected data will be written.</param>
         /// <param name="protectedData">The protected data to unprotect.</param>
         /// <param name="ignoreRevocationErrors">'true' if the payload should be unprotected even
         /// if the cryptographic key used to protect it has been revoked (due to potential compromise),
@@ -55,9 +49,11 @@ namespace Microsoft.AspNetCore.DataProtection
         /// has been revoked, 'false' otherwise. Payloads whose keys have been revoked should be
         /// treated as suspect unless the application has separate assurance that the payload
         /// has not been tampered with.</param>
+        /// <param name="bytesWritten">The number of bytes written to output.</param>
         /// <returns>The plaintext form of the protected data.</returns>
-        Span<byte> DangerousUnprotect(ReadOnlySpan<byte> protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked);
-    }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
+        bool TryDangerousUnprotect(Span<byte> output, ReadOnlySpan<byte> protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked, out int bytesWritten)
+            => throw new NotImplementedException();
 #endif
-
+    }
 }
