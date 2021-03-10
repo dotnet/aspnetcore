@@ -30,6 +30,10 @@
       <_Parameter1>PreviousAspNetCoreReleaseVersion</_Parameter1>
       <_Parameter2>$(PreviousAspNetCoreReleaseVersion)</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>ValidateBaseline</_Parameter1>
+      <_Parameter2>$(ValidateBaseline)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
