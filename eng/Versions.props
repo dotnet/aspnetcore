@@ -136,7 +136,7 @@
     <MicrosoftEntityFrameworkCorePackageVersion>5.0.4</MicrosoftEntityFrameworkCorePackageVersion>
     <MicrosoftEntityFrameworkCoreDesignPackageVersion>5.0.4</MicrosoftEntityFrameworkCoreDesignPackageVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>5.0.0-beta.21159.2</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>5.0.0-beta.21159.7</MicrosoftDotNetBuildTasksInstallersPackageVersion>
   </PropertyGroup>
   <!--
 
