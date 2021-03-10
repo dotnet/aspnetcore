@@ -224,6 +224,23 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
+        public void EvaluatePolicy_SetIsOriginAllowed_VariesByOrigin()
+        {
+            // Arrange
+            var corsService = GetCorsService();
+            var requestContext = GetHttpContext(origin: "http://example.com");
+            var policy = new CorsPolicy();
+            policy.IsOriginAllowed = origin => true;
+
+            // Act
+            var result = corsService.EvaluatePolicy(requestContext, policy);
+
+            // Assert
+            Assert.Equal("http://example.com", result.AllowedOrigin);
+            Assert.True(result.VaryByOrigin);
+        }
+
+        [Fact]
         public void EvaluatePolicy_NoExposedHeaders_NoAllowExposedHeaders()
         {
             // Arrange

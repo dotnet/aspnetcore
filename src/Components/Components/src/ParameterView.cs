@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="defaultValue">The default value to return if no such parameter exists in the collection.</param>
         /// <returns>The parameter value if found; otherwise <paramref name="defaultValue"/>.</returns>
         public TValue GetValueOrDefault<TValue>(string parameterName, TValue defaultValue)
-            => TryGetValue<TValue>(parameterName, out TValue result) ? result : defaultValue;
+            => TryGetValue<TValue>(parameterName, out TValue? result) ? result : defaultValue;
 
         /// <summary>
         /// Returns a dictionary populated with the contents of the <see cref="ParameterView"/>.
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="parameters">The <see cref="IDictionary{TKey, TValue}"/> with the parameters.</param>
         /// <returns>A <see cref="ParameterView"/>.</returns>
-        public static ParameterView FromDictionary(IDictionary<string, object> parameters)
+        public static ParameterView FromDictionary(IDictionary<string, object?> parameters)
         {
             var frames = new RenderTreeFrame[parameters.Count + 1];
             frames[0] = RenderTreeFrame.Element(0, GeneratedParameterViewElementName);

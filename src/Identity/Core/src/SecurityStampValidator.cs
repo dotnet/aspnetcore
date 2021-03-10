@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Identity
                 }
                 else
                 {
-                    Logger.LogDebug(0, "Security stamp validation failed, rejecting cookie.");
+                    Logger.LogDebug(EventIds.SecurityStampValidationFailed, "Security stamp validation failed, rejecting cookie.");
                     context.RejectPrincipal();
                     await SignInManager.SignOutAsync();
                 }

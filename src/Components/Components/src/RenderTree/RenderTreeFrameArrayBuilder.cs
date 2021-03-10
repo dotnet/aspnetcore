@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
@@ -74,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             };
         }
 
-        public void AppendComponent(int sequence, Type componentType)
+        public void AppendComponent(int sequence, [DynamicallyAccessedMembers(Component)] Type componentType)
         {
             if (_itemsInUse == _items.Length)
             {

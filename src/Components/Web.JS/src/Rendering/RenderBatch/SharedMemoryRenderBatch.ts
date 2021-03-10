@@ -1,5 +1,5 @@
 import { platform } from '../../Environment';
-import { RenderBatch, ArrayRange, ArrayBuilderSegment, RenderTreeDiff, RenderTreeEdit, RenderTreeFrame, ArrayValues, EditType, FrameType, RenderTreeFrameReader } from './RenderBatch';
+import { RenderBatch, ArrayRange, ArrayBuilderSegment, RenderTreeDiff, RenderTreeEdit, RenderTreeFrame, ArrayValues, EditType, FrameType } from './RenderBatch';
 import { Pointer, System_Array, System_Object } from '../../Platform/Platform';
 
 // Used when running on Mono WebAssembly for shared-memory interop. The code here encapsulates

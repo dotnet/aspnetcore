@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -18,19 +20,14 @@ namespace Microsoft.AspNetCore.Routing
         /// Constructor for a new <see cref="DataTokensMetadata"/> given <paramref name="dataTokens"/>.
         /// </summary>
         /// <param name="dataTokens">The data tokens.</param>
-        public DataTokensMetadata(IReadOnlyDictionary<string, object> dataTokens)
+        public DataTokensMetadata(IReadOnlyDictionary<string, object?> dataTokens)
         {
-            if (dataTokens == null)
-            {
-                throw new ArgumentNullException(nameof(dataTokens));
-            }
-
-            DataTokens = dataTokens;
+            DataTokens = dataTokens ?? throw new ArgumentNullException(nameof(dataTokens));
         }
 
         /// <summary>
         /// Get the data tokens.
         /// </summary>
-        public IReadOnlyDictionary<string, object> DataTokens { get; }
+        public IReadOnlyDictionary<string, object?> DataTokens { get; }
     }
 }

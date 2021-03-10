@@ -7,7 +7,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.Http.Connections</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +22,10 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
     <Reference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
   </ItemGroup>
 
 </Project>

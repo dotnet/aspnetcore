@@ -8,6 +8,9 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+#if INSTALLPLAYWRIGHT
+using PlaywrightSharp;
+#endif
 
 namespace RunTests
 {
@@ -26,13 +29,6 @@ namespace RunTests
         {
             try
             {
-                // Rename default.NuGet.config to NuGet.config if there is not a custom one from the project
-                // We use a local NuGet.config file to avoid polluting global machine state and avoid relying on global machine state
-                if (!File.Exists("NuGet.config"))
-                {
-                    File.Copy("default.NuGet.config", "NuGet.config");
-                }
-
                 EnvironmentVariables.Add("PATH", Options.Path);
                 EnvironmentVariables.Add("helix", Options.HelixQueue);
 
@@ -47,6 +43,13 @@ namespace RunTests
                 Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
                 EnvironmentVariables.Add("DotNetEfFullPath", dotnetEFFullPath);
 
+#if INSTALLPLAYWRIGHT
+                // Playwright will download and look for browsers to this directory
+                var playwrightBrowsers = Path.Combine(helixDir, "ms-playwright");
+                Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
+                EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
+#endif
+    
                 Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
                 Directory.CreateDirectory(nugetRestore);
 
@@ -87,6 +90,23 @@ namespace RunTests
             }
         }
 
+#if INSTALLPLAYWRIGHT
+        public async Task<bool> InstallPlaywrightAsync()
+        {
+            try
+            {
+                Console.WriteLine($"Installing Playwright to {EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]}");
+                await Playwright.InstallAsync(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception installing playwright: {e.ToString()}");
+                return false;
+            }
+        }
+#endif
+        
         public async Task<bool> InstallAspNetAppIfNeededAsync()
         {
             try
@@ -143,8 +163,16 @@ namespace RunTests
                         throwOnError: false,
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
+                    await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                        $"tool install dotnet-serve --tool-path {Options.HELIX_WORKITEM_ROOT}",
+                        environmentVariables: EnvironmentVariables,
+                        outputDataReceived: Console.WriteLine,
+                        errorDataReceived: Console.Error.WriteLine,
+                        throwOnError: false,
+                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+                    
                     // ';' is the path separator on Windows, and ':' on Unix
-                    Options.Path += RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";
+                    Options.Path += OperatingSystem.IsWindows() ? ";" : ":";
                     Options.Path += $"{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
                     EnvironmentVariables["PATH"] = Options.Path;
                 }
@@ -238,7 +266,7 @@ namespace RunTests
             {
                 // Timeout test run 5 minutes before the Helix job would timeout
                 var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
-                var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=5m\"";
+                var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\"";
                 if (Options.Quarantined)
                 {
                     Console.WriteLine("Running quarantined tests.");

@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 if (!Directory.Exists(DeploymentParameters.ApplicationPath))
                 {
-                    throw new DirectoryNotFoundException(string.Format("Application path {0} does not exist.", DeploymentParameters.ApplicationPath));
+                    throw new DirectoryNotFoundException($"Application path {DeploymentParameters.ApplicationPath} does not exist.");
                 }
 
                 if (string.IsNullOrEmpty(DeploymentParameters.ApplicationName))

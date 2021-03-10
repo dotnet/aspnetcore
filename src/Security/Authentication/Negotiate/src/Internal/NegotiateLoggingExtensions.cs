@@ -7,17 +7,17 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class NegotiateLoggingExtensions
     {
-        private static Action<ILogger, Exception> _incompleteNegotiateChallenge;
-        private static Action<ILogger, Exception> _negotiateComplete;
-        private static Action<ILogger, Exception> _enablingCredentialPersistence;
-        private static Action<ILogger, string, Exception> _disablingCredentialPersistence;
+        private static Action<ILogger, Exception?> _incompleteNegotiateChallenge;
+        private static Action<ILogger, Exception?> _negotiateComplete;
+        private static Action<ILogger, Exception?> _enablingCredentialPersistence;
+        private static Action<ILogger, string, Exception?> _disablingCredentialPersistence;
         private static Action<ILogger, Exception> _exceptionProcessingAuth;
         private static Action<ILogger, Exception> _credentialError;
         private static Action<ILogger, Exception> _clientError;
-        private static Action<ILogger, Exception> _challengeNegotiate;
-        private static Action<ILogger, Exception> _reauthenticating;
-        private static Action<ILogger, Exception> _deferring;
-        private static Action<ILogger, string, Exception> _negotiateError;
+        private static Action<ILogger, Exception?> _challengeNegotiate;
+        private static Action<ILogger, Exception?> _reauthenticating;
+        private static Action<ILogger, Exception?> _deferring;
+        private static Action<ILogger, string, Exception?> _negotiateError;
 
         static NegotiateLoggingExtensions()
         {

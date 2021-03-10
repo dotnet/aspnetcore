@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -319,6 +320,41 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         }
 
         [Fact]
+        public async Task VerifyValidClientCertWithAdditionalCertificatesAuthenticates()
+        {
+            using var host = await CreateHost(
+                new CertificateAuthenticationOptions
+                {
+                    Events = successfulValidationEvents,
+                    ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
+                    CustomTrustStore = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, },
+                    AdditionalChainCertificates = new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
+                    RevocationMode = X509RevocationMode.NoCheck
+                }, Certificates.SignedClient);
+
+            using var server = host.GetTestServer();
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyValidClientCertFailsWithoutAdditionalCertificatesAuthenticates()
+        {
+            using var host = await CreateHost(
+                new CertificateAuthenticationOptions
+                {
+                    Events = successfulValidationEvents,
+                    ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
+                    CustomTrustStore = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, },
+                    RevocationMode = X509RevocationMode.NoCheck
+                }, Certificates.SignedClient);
+
+            using var server = host.GetTestServer();
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
         public async Task VerifyHeaderIsUsedIfCertIsNotPresent()
         {
             using var host = await CreateHost(
@@ -520,7 +556,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                             var claims = new[]
                             {
                                 new Claim(ClaimTypes.Name, Expected, ClaimValueTypes.String, context.Options.ClaimsIssuer),
-                                new Claim("ValidationCount", validationCount.ToString(), ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                                new Claim("ValidationCount", validationCount.ToString(CultureInfo.InvariantCulture), ClaimValueTypes.String, context.Options.ClaimsIssuer)
                             };
 
                             context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
@@ -569,7 +605,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(Expected, name.First().Value);
             count = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "ValidationCount");
             Assert.Single(count);
-            var expected = cache ? "1" : "2"; 
+            var expected = cache ? "1" : "2";
             Assert.Equal(expected, count.First().Value);
         }
 
@@ -692,6 +728,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                                 options.RevocationFlag = configureOptions.RevocationFlag;
                                 options.RevocationMode = configureOptions.RevocationMode;
                                 options.ValidateValidityPeriod = configureOptions.ValidateValidityPeriod;
+                                options.AdditionalChainCertificates = configureOptions.AdditionalChainCertificates;
                             });
                         }
                         else

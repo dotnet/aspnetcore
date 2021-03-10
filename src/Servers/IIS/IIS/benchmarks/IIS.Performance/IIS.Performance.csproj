@@ -1,4 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\build\testsite.props" />
 
   <PropertyGroup>
     <!-- Using shorter assembly name instead of Microsoft.AspNetCore.Server.Kestrel.Performance because https://github.com/dotnet/BenchmarkDotNet/issues/498 -->
@@ -11,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="..\..\test\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\test\Common.FunctionalTests\Infrastructure\*.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildIisNativeProjects)' == 'true'">

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Security.Cryptography;
 using Xunit;
 
@@ -26,7 +27,9 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             // Assert
             Assert.Equal(typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            string expectedXml = string.Format(@"
+            string expectedXml = string.Format(
+                CultureInfo.InvariantCulture,
+                @"
                 <descriptor>
                   <encryption algorithm='{0}' keyLength='2048' />
                   <validation algorithm='{1}' />
@@ -59,7 +62,9 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             // Assert
             Assert.Equal(typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            string expectedXml = string.Format(@"
+            string expectedXml = string.Format(
+                CultureInfo.InvariantCulture,
+                @"
                 <descriptor>
                   <encryption algorithm='{0}' keyLength='2048' />
                   <validation algorithm='{1}' />

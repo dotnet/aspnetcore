@@ -5,6 +5,8 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Microsoft.Extensions.Internal
 {
     internal static class TypeNameHelper
@@ -31,7 +33,7 @@ namespace Microsoft.Extensions.Internal
             { typeof(ushort), "ushort" }
         };
 
-        public static string GetTypeDisplayName(object item, bool fullName = true)
+        public static string? GetTypeDisplayName(object item, bool fullName = true)
         {
             return item == null ? null : GetTypeDisplayName(item.GetType(), fullName);
         }
@@ -76,7 +78,7 @@ namespace Microsoft.Extensions.Internal
             }
             else
             {
-                var name = options.FullName ? type.FullName : type.Name;
+                var name = options.FullName ? type.FullName! : type.Name;
                 builder.Append(name);
 
                 if (options.NestedTypeDelimiter != DefaultNestedTypeDelimiter)
@@ -91,7 +93,7 @@ namespace Microsoft.Extensions.Internal
             var innerType = type;
             while (innerType.IsArray)
             {
-                innerType = innerType.GetElementType();
+                innerType = innerType.GetElementType()!;
             }
 
             ProcessType(builder, innerType, options);
@@ -101,7 +103,7 @@ namespace Microsoft.Extensions.Internal
                 builder.Append('[');
                 builder.Append(',', type.GetArrayRank() - 1);
                 builder.Append(']');
-                type = type.GetElementType();
+                type = type.GetElementType()!;
             }
         }
 
@@ -110,14 +112,14 @@ namespace Microsoft.Extensions.Internal
             var offset = 0;
             if (type.IsNested)
             {
-                offset = type.DeclaringType.GetGenericArguments().Length;
+                offset = type.DeclaringType!.GetGenericArguments().Length;
             }
 
             if (options.FullName)
             {
                 if (type.IsNested)
                 {
-                    ProcessGenericType(builder, type.DeclaringType, genericArguments, offset, options);
+                    ProcessGenericType(builder, type.DeclaringType!, genericArguments, offset, options);
                     builder.Append(options.NestedTypeDelimiter);
                 }
                 else if (!string.IsNullOrEmpty(type.Namespace))

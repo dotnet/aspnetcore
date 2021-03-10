@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal override string GetDisplayName()
         {
-            return $"{Scheme}://localhost:{IPEndPoint.Port}";
+            return $"{Scheme}://localhost:{IPEndPoint!.Port}";
         }
 
         internal override async Task BindAsync(AddressBindContext context)
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
             catch (Exception ex) when (!(ex is IOException))
             {
-                context.Logger.LogWarning(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv4 loopback", ex.Message);
+                context.Logger.LogInformation(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv4 loopback", ex.Message);
                 exceptions.Add(ex);
             }
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
             catch (Exception ex) when (!(ex is IOException))
             {
-                context.Logger.LogWarning(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv6 loopback", ex.Message);
+                context.Logger.LogInformation(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv6 loopback", ex.Message);
                 exceptions.Add(ex);
             }
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         // used for cloning to two IPEndpoints
         internal ListenOptions Clone(IPAddress address)
         {
-            var options = new ListenOptions(new IPEndPoint(address, IPEndPoint.Port))
+            var options = new ListenOptions(new IPEndPoint(address, IPEndPoint!.Port))
             {
                 KestrelServerOptions = KestrelServerOptions,
                 Protocols = Protocols,

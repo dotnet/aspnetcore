@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace System.IO.Pipelines
@@ -19,7 +20,7 @@ namespace System.IO.Pipelines
 
         public int Count => _size;
 
-        public bool TryPop(out BufferSegment result)
+        public bool TryPop([NotNullWhen(true)] out BufferSegment? result)
         {
             int size = _size - 1;
             SegmentAsValueType[] array = _array;

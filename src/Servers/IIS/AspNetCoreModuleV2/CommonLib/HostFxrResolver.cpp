@@ -113,7 +113,7 @@ HostFxrResolver::GetHostFxrParameters(
             }
             else
             {
-                LOG_INFOF(L"hostfxr.dll found app local at '%ls', treating application as portable with launcher", hostFxrDllPath.c_str());
+                LOG_INFOF(L"hostfxr.dll not found at '%ls', treating application as portable with launcher", hostFxrDllPath.c_str());
 
                 // passing "dotnet" here because we don't know where dotnet.exe should come from
                 // so trying all fallbacks is appropriate

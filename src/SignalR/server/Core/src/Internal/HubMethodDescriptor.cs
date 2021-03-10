@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,15 +23,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             .GetRuntimeMethods()
             .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeAsyncEnumerableFromChannel)) && m.IsGenericMethod);
 
-        private readonly MethodInfo _makeCancelableEnumerableMethodInfo;
-        private Func<object, CancellationToken, IAsyncEnumerable<object>> _makeCancelableEnumerable;
+        private readonly MethodInfo? _makeCancelableEnumerableMethodInfo;
+        private Func<object, CancellationToken, IAsyncEnumerable<object>>? _makeCancelableEnumerable;
 
         public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IEnumerable<IAuthorizeData> policies)
         {
             MethodExecutor = methodExecutor;
 
             NonAsyncReturnType = (MethodExecutor.IsMethodAsync)
-                ? MethodExecutor.AsyncResultType
+                ? MethodExecutor.AsyncResultType!
                 : MethodExecutor.MethodReturnType;
 
             foreach (var returnType in NonAsyncReturnType.GetInterfaces().Concat(NonAsyncReturnType.AllBaseTypes()))
@@ -91,19 +89,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             Policies = policies.ToArray();
         }
 
-        public List<Type> StreamingParameters { get; private set; }
+        public List<Type>? StreamingParameters { get; private set; }
 
         public ObjectMethodExecutor MethodExecutor { get; }
 
         public IReadOnlyList<Type> ParameterTypes { get; }
 
-        public IReadOnlyList<Type> OriginalParameterTypes { get; }
+        public IReadOnlyList<Type>? OriginalParameterTypes { get; }
 
         public Type NonAsyncReturnType { get; }
 
         public bool IsStreamResponse => StreamReturnType != null;
 
-        public Type StreamReturnType { get; }
+        public Type? StreamReturnType { get; }
 
         public IList<IAuthorizeData> Policies { get; }
 
@@ -114,7 +112,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             // there is the potential for compile to be called times but this has no harmful effect other than perf
             if (_makeCancelableEnumerable == null)
             {
-                _makeCancelableEnumerable = CompileConvertToEnumerable(_makeCancelableEnumerableMethodInfo, StreamReturnType);
+                _makeCancelableEnumerable = CompileConvertToEnumerable(_makeCancelableEnumerableMethodInfo!, StreamReturnType!);
             }
 
             return _makeCancelableEnumerable.Invoke(stream, cancellationToken);

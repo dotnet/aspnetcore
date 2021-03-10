@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            if (modelType.GetTypeInfo().IsValueType)
+            if (modelType.IsValueType)
             {
                 return Activator.CreateInstance(modelType);
             }

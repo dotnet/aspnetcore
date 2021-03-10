@@ -188,7 +188,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             // Not returning type name here for IEnumerable<IFormFile> since we will be returning
             // a more specific name, IEnumerableOfIFormFileName.
-            var fieldTypeInfo = fieldType.GetTypeInfo();
 
             if (typeof(IEnumerable<IFormFile>) != fieldType)
             {
@@ -203,7 +202,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             else if (!modelMetadata.IsComplexType)
             {
                 // IsEnum is false for the Enum class itself
-                if (fieldTypeInfo.IsEnum)
+                if (fieldType.IsEnum)
                 {
                     // Same as fieldType.BaseType.Name in this case
                     yield return "Enum";
@@ -216,12 +215,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 yield return "String";
                 yield break;
             }
-            else if (!fieldTypeInfo.IsInterface)
+            else if (!fieldType.IsInterface)
             {
                 var type = fieldType;
                 while (true)
                 {
-                    type = type.GetTypeInfo().BaseType;
+                    type = type.BaseType;
                     if (type == null || type == typeof(object))
                     {
                         break;

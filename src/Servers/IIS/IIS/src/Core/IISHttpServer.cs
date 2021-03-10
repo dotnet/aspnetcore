@@ -3,12 +3,12 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -22,13 +22,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     {
         private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
-        private static readonly NativeMethods.PFN_REQUEST_HANDLER _requestHandler = HandleRequest;
-        private static readonly NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
-        private static readonly NativeMethods.PFN_DISCONNECT_HANDLER _onDisconnect = OnDisconnect;
-        private static readonly NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
-        private static readonly NativeMethods.PFN_REQUESTS_DRAINED_HANDLER _requestsDrainedHandler = OnRequestsDrained;
-
-        private IISContextFactory _iisContextFactory;
+        private IISContextFactory? _iisContextFactory;
         private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
         private GCHandle _httpServerHandle;
         private readonly IHostApplicationLifetime _applicationLifetime;
@@ -37,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private readonly IISNativeApplication _nativeApplication;
         private readonly ServerAddressesFeature _serverAddressesFeature;
 
-        private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _shutdownSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool? _websocketAvailable;
         private CancellationTokenRegistration _cancellationTokenRegistration;
         private bool _disposed;
@@ -78,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             if (_options.ForwardWindowsAuthentication)
             {
-                authentication.AddScheme(new AuthenticationScheme(IISServerDefaults.AuthenticationScheme, _options.AuthenticationDisplayName, typeof(IISServerAuthenticationHandler)));
+                authentication.AddScheme(new AuthenticationScheme(IISServerDefaults.AuthenticationScheme, _options.AuthenticationDisplayName, typeof(IISServerAuthenticationHandlerInternal)));
             }
 
             Features.Set<IServerAddressesFeature>(_serverAddressesFeature);
@@ -89,12 +83,19 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
+        public unsafe Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
         {
             _httpServerHandle = GCHandle.Alloc(this);
 
             _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this, _logger);
-            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, _requestsDrainedHandler, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
+            _nativeApplication.RegisterCallbacks(
+                &HandleRequest,
+                &HandleShutdown,
+                &OnDisconnect,
+                &OnAsyncCompletion,
+                &OnRequestsDrained,
+                (IntPtr)_httpServerHandle,
+                (IntPtr)_httpServerHandle);
 
             _serverAddressesFeature.Addresses = _options.ServerAddresses;
 
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _nativeApplication.StopIncomingRequests();
             _cancellationTokenRegistration = cancellationToken.Register((shutdownSignal) =>
             {
-                ((TaskCompletionSource<object>)shutdownSignal).TrySetResult(null);
+                ((TaskCompletionSource)shutdownSignal!).TrySetResult();
             },
             _shutdownSignal);
 
@@ -123,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             // Block any more calls into managed from native as we are unloading.
             _nativeApplication.StopCallsIntoManaged();
-            _shutdownSignal.TrySetResult(null);
+            _shutdownSignal.TrySetResult();
 
             if (_httpServerHandle.IsAllocated)
             {
@@ -134,13 +135,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _nativeApplication.Dispose();
         }
 
+        [UnmanagedCallersOnly]
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pInProcessHandler, IntPtr pvRequestContext)
         {
-            IISHttpServer server = null;
+            IISHttpServer? server = null;
             try
             {
                 // Unwrap the server so we can create an http context and process the request
-                server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
+                server = (IISHttpServer?)GCHandle.FromIntPtr(pvRequestContext).Target;
 
                 // server can be null if ungraceful shutdown.
                 if (server == null)
@@ -149,6 +151,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
 
                 var safehandle = new NativeSafeHandle(pInProcessHandler);
+
+                Debug.Assert(server._iisContextFactory != null, "StartAsync must be called first.");
                 var context = server._iisContextFactory.CreateHttpContext(safehandle);
 
                 ThreadPool.UnsafeQueueUserWorkItem(context, preferLocal: false);
@@ -163,18 +167,19 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private static bool HandleShutdown(IntPtr pvRequestContext)
+        [UnmanagedCallersOnly]
+        private static int HandleShutdown(IntPtr pvRequestContext)
         {
-            IISHttpServer server = null;
+            IISHttpServer? server = null;
             try
             {
-                server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
+                server = (IISHttpServer?)GCHandle.FromIntPtr(pvRequestContext).Target;
 
                 // server can be null if ungraceful shutdown.
                 if (server ==  null)
                 {
                     // return value isn't checked.
-                    return true;
+                    return 1;
                 }
 
                 server._applicationLifetime.StopApplication();
@@ -183,15 +188,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 server?._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(HandleShutdown)}.");
             }
-            return true;
+            return 1;
         }
 
+        [UnmanagedCallersOnly]
         private static void OnDisconnect(IntPtr pvManagedHttpContext)
         {
-            IISHttpContext context = null;
+            IISHttpContext? context = null;
             try
             {
-                context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
+                context = (IISHttpContext?)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
 
                 // Context can be null if ungraceful shutdown.
                 if (context == null)
@@ -207,12 +213,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
+        [UnmanagedCallersOnly]
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(IntPtr pvManagedHttpContext, int hr, int bytes)
         {
-            IISHttpContext context = null;
+            IISHttpContext? context = null;
             try
             {
-                context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
+                context = (IISHttpContext?)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
 
                 // Context can be null if ungraceful shutdown.
                 if (context == null)
@@ -231,12 +238,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
+        [UnmanagedCallersOnly]
         private static void OnRequestsDrained(IntPtr serverContext)
         {
-            IISHttpServer server = null;
+            IISHttpServer? server = null;
             try
             {
-                server = (IISHttpServer)GCHandle.FromIntPtr(serverContext).Target;
+                server = (IISHttpServer?)GCHandle.FromIntPtr(serverContext).Target;
 
                 // server can be null if ungraceful shutdown.
                 if (server == null)
@@ -245,7 +253,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
 
                 server._nativeApplication.StopCallsIntoManaged();
-                server._shutdownSignal.TrySetResult(null);
+                server._shutdownSignal.TrySetResult();
                 server._cancellationTokenRegistration.Dispose();
             }
             catch (Exception ex)
@@ -254,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private class IISContextFactory<T> : IISContextFactory
+        private class IISContextFactory<T> : IISContextFactory where T : notnull
         {
             private const string Latin1Suppport = "Microsoft.AspNetCore.Server.IIS.Latin1RequestHeaders";
 

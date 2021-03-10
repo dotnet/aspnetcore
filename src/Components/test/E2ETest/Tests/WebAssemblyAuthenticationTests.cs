@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -19,7 +21,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using Wasm.Authentication.Server;
 using Wasm.Authentication.Server.Data;
 using Xunit;
@@ -59,6 +60,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             Navigate("/", noReload: true);
+            Browser.Manage().Window.Size = new Size(1024, 800);
             EnsureDatabaseCreated(_serverFixture.Host.Services);
             WaitUntilLoaded();
         }
@@ -201,8 +203,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             },
             payload.Scopes.OrderBy(id => id));
 
-            var currentTime = DateTimeOffset.Parse(Browser.Exists(By.Id("current-time")).Text);
-            var tokenExpiration = DateTimeOffset.Parse(Browser.Exists(By.Id("access-token-expires")).Text);
+            var currentTime = DateTimeOffset.Parse(Browser.Exists(By.Id("current-time")).Text, CultureInfo.InvariantCulture);
+            var tokenExpiration = DateTimeOffset.Parse(Browser.Exists(By.Id("access-token-expires")).Text, CultureInfo.InvariantCulture);
             Assert.True(currentTime.AddMinutes(50) < tokenExpiration);
             Assert.True(currentTime.AddMinutes(60) >= tokenExpiration);
         }
@@ -383,7 +385,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(By.Name("Input.Email")).SendKeys(userName);
             Browser.Exists(By.Name("Input.Password")).SendKeys(password);
             Browser.Exists(By.Name("Input.ConfirmPassword")).SendKeys(password);
-            Browser.Exists(By.Id("registerSubmit")).Click();
+            Browser.Click(By.Id("registerSubmit"));
 
             // We will be redirected to the RegisterConfirmation
             Browser.Contains("/Identity/Account/RegisterConfirmation", () => Browser.Url);

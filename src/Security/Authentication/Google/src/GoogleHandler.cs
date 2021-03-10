@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 throw new HttpRequestException($"An error occurred when retrieving Google user information ({response.StatusCode}). Please check if the authentication information is correct.");
             }
 
-            using (var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
+            using (var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(Context.RequestAborted)))
             {
                 var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload.RootElement);
                 context.RunClaimActions();
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.ApprovalPromptKey);
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.PromptParameterKey);
             AddQueryString(queryStrings, properties, GoogleChallengeProperties.LoginHintKey);
-            AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString().ToLower(), (bool?)null);
+            AddQueryString(queryStrings, properties, GoogleChallengeProperties.IncludeGrantedScopesKey, v => v?.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(), (bool?)null);
 
             var state = Options.StateDataFormat.Protect(properties);
             queryStrings.Add("state", state);
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             return authorizationEndpoint;
         }
 
-        private void AddQueryString<T>(
+        private static void AddQueryString<T>(
             IDictionary<string, string> queryStrings,
             AuthenticationProperties properties,
             string name,
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             }
         }
 
-        private void AddQueryString(
+        private static void AddQueryString(
             IDictionary<string, string> queryStrings,
             AuthenticationProperties properties,
             string name,

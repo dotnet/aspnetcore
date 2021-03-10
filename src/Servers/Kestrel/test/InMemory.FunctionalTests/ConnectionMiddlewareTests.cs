@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             var serviceContext = new TestServiceContext(LoggerFactory);
 
-            TestApplicationErrorLogger.ThrowOnUngracefulShutdown = false;
+            ThrowOnUngracefulShutdown = false;
 
             var stopTask = Task.CompletedTask;
             await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Unhandled exception while processing " + connectionId + "."));
+            Assert.Contains(LogMessages, m => m.Message.Contains("Unhandled exception while processing " + connectionId + "."));
         }
 
         [Fact]

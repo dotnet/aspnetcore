@@ -268,7 +268,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(eventIndex, events.Count);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "SslStream.AuthenticateAsServerAsync() doesn't throw on Win 7 when the client tries SSL 2.0.")]
         public async Task TlsHandshakeFailure_EmitsStartAndStopEventsWithActivityIds()
         {
             int port;
@@ -298,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     TargetHost = "localhost",
 
-                    // Only enabling SslProtocols.Ssl2 should cause a handshake failure on all platforms.
+                    // Only enabling SslProtocols.Ssl2 should cause a handshake failure on most platforms.
 #pragma warning disable CS0618 // Type or member is obsolete
                     EnabledSslProtocols = SslProtocols.Ssl2,
 #pragma warning restore CS0618 // Type or member is obsolete

@@ -158,15 +158,23 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         private static void ValidateRegistrations(IEnumerable<HealthCheckRegistration> registrations)
         {
             // Scan the list for duplicate names to provide a better error if there are duplicates.
-            var duplicateNames = registrations
-                .GroupBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key)
-                .ToList();
 
-            if (duplicateNames.Count > 0)
+            StringBuilder? builder = null;
+            var distinctRegistrations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var registration in registrations)
             {
-                throw new ArgumentException($"Duplicate health checks were registered with the name(s): {string.Join(", ", duplicateNames)}", nameof(registrations));
+                if (!distinctRegistrations.Add(registration.Name))
+                {
+                    builder ??= new StringBuilder("Duplicate health checks were registered with the name(s): ");
+
+                    builder.Append(registration.Name).Append(", ");
+                }
+            }
+
+            if (builder is not null)
+            {
+                throw new ArgumentException(builder.ToString(0, builder.Length - 2), nameof(registrations));
             }
         }
 
@@ -191,7 +199,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             private static readonly Action<ILogger, double, HealthStatus, Exception?> _healthCheckProcessingEnd = LoggerMessage.Define<double, HealthStatus>(
                 LogLevel.Debug,
                 EventIds.HealthCheckProcessingEnd,
-                "Health check processing completed after {ElapsedMilliseconds}ms with combined status {HealthStatus}");
+                "Health check processing with combined status {HealthStatus} completed after {ElapsedMilliseconds}ms");
 
             private static readonly Action<ILogger, string, Exception?> _healthCheckBegin = LoggerMessage.Define<string>(
                 LogLevel.Debug,
@@ -199,7 +207,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 "Running health check {HealthCheckName}");
 
             // These are separate so they can have different log levels
-            private static readonly string HealthCheckEndText = "Health check {HealthCheckName} completed after {ElapsedMilliseconds}ms with status {HealthStatus} and description '{HealthCheckDescription}'";
+            private static readonly string HealthCheckEndText = "Health check {HealthCheckName} with status {HealthStatus} completed after {ElapsedMilliseconds}ms with message '{HealthCheckDescription}'";
 
             private static readonly Action<ILogger, string, double, HealthStatus, string?, Exception?> _healthCheckEndHealthy = LoggerMessage.Define<string, double, HealthStatus, string?>(
                 LogLevel.Debug,

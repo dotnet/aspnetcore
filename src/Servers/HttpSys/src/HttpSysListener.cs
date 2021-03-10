@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Logger.LogTrace(LoggerEventIds.ListenerStopping,"Stopping the listener.");
+                    Logger.LogTrace(LoggerEventIds.ListenerStopping, "Stopping the listener.");
 
                     // If this instance created the queue then remove the URL prefixes before shutting down.
                     if (_requestQueue.Created)
@@ -277,66 +277,49 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// Accept a request from the incoming request queue.
         /// </summary>
-        public Task<RequestContext> AcceptAsync()
+        internal ValueTask<RequestContext> AcceptAsync(AsyncAcceptContext acceptContext)
         {
-            AsyncAcceptContext acceptContext = null;
+            CheckDisposed();
+            Debug.Assert(_state != State.Stopped, "Listener has been stopped.");
+
+            return acceptContext.AcceptAsync();
+        }
+
+        internal bool ValidateRequest(NativeRequestContext requestMemory)
+        {
             try
             {
-                CheckDisposed();
-                Debug.Assert(_state != State.Stopped, "Listener has been stopped.");
-                // prepare the ListenerAsyncResult object (this will have it's own
-                // event that the user can wait on for IO completion - which means we
-                // need to signal it when IO completes)
-                acceptContext = new AsyncAcceptContext(this);
-                uint statusCode = acceptContext.QueueBeginGetContext();
-                if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                    statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+                // Block potential DOS attacks
+                if (requestMemory.UnknownHeaderCount > UnknownHeaderLimit)
                 {
-                    // some other bad error, possible(?) return values are:
-                    // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
-                    acceptContext.Dispose();
-                    throw new HttpSysException((int)statusCode);
+                    SendError(requestMemory.RequestId, StatusCodes.Status400BadRequest, authChallenges: null);
+                    return false;
+                }
+
+                if (!Options.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
+                {
+                    SendError(requestMemory.RequestId, StatusCodes.Status401Unauthorized,
+                        AuthenticationManager.GenerateChallenges(Options.Authentication.Schemes));
+                    return false;
                 }
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                Logger.LogError(LoggerEventIds.AcceptError, exception, "AcceptAsync");
-                throw;
-            }
-
-            return acceptContext.Task;
-        }
-
-        internal unsafe bool ValidateRequest(NativeRequestContext requestMemory)
-        {
-            // Block potential DOS attacks
-            if (requestMemory.UnknownHeaderCount > UnknownHeaderLimit)
-            {
-                SendError(requestMemory.RequestId, StatusCodes.Status400BadRequest, authChallenges: null);
+                Logger.LogError(LoggerEventIds.RequestValidationFailed, ex, "Error validating request {RequestId}", requestMemory.RequestId);
                 return false;
             }
+
             return true;
         }
 
-        internal unsafe bool ValidateAuth(NativeRequestContext requestMemory)
-        {
-            if (!Options.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
-            {
-                SendError(requestMemory.RequestId, StatusCodes.Status401Unauthorized,
-                    AuthenticationManager.GenerateChallenges(Options.Authentication.Schemes));
-                return false;
-            }
-            return true;
-        }
-
-        internal unsafe void SendError(ulong requestId, int httpStatusCode, IList<string> authChallenges = null)
+        internal unsafe void SendError(ulong requestId, int httpStatusCode, IList<string>? authChallenges = null)
         {
             HttpApiTypes.HTTP_RESPONSE_V2 httpResponse = new HttpApiTypes.HTTP_RESPONSE_V2();
             httpResponse.Response_V1.Version = new HttpApiTypes.HTTP_VERSION();
             httpResponse.Response_V1.Version.MajorVersion = (ushort)1;
             httpResponse.Response_V1.Version.MinorVersion = (ushort)1;
 
-            List<GCHandle> pinnedHeaders = null;
+            List<GCHandle>? pinnedHeaders = null;
             GCHandle gcHandle;
             try
             {
@@ -345,8 +328,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     pinnedHeaders = new List<GCHandle>(authChallenges.Count + 3);
 
-                    HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
-                    knownHeaderInfo = new HttpApiTypes.HTTP_RESPONSE_INFO[1];
+                    HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = new HttpApiTypes.HTTP_RESPONSE_INFO[1];
                     gcHandle = GCHandle.Alloc(knownHeaderInfo, GCHandleType.Pinned);
                     pinnedHeaders.Add(gcHandle);
                     httpResponse.pResponseInfo = (HttpApiTypes.HTTP_RESPONSE_INFO*)gcHandle.AddrOfPinnedObject();
@@ -386,10 +368,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
 
                 httpResponse.Response_V1.StatusCode = (ushort)httpStatusCode;
-                string statusDescription = HttpReasonPhrase.Get(httpStatusCode);
+                string? statusDescription = HttpReasonPhrase.Get(httpStatusCode);
                 uint dataWritten = 0;
                 uint statusCode;
-                byte[] byteReason = HeaderEncoding.GetBytes(statusDescription);
+                byte[] byteReason = statusDescription != null ? HeaderEncoding.GetBytes(statusDescription) : Array.Empty<byte>();
                 fixed (byte* pReason = byteReason)
                 {
                     httpResponse.Response_V1.pReason = (byte*)pReason;

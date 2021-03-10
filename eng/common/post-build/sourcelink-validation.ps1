@@ -161,9 +161,12 @@ $ValidatePackage = {
 function CheckJobResult(
     $result, 
     $packagePath,
-    [ref]$ValidationFailures) {
-  if ($jobResult.result -ne '0') {
-    Write-PipelineTelemetryError -Category 'SourceLink' -Message "$packagePath has broken SourceLink links."
+    [ref]$ValidationFailures,
+    [switch]$logErrors) {
+  if ($result -ne '0') {
+    if ($logErrors) {
+      Write-PipelineTelemetryError -Category 'SourceLink' -Message "$packagePath has broken SourceLink links."
+    }
     $ValidationFailures.Value++
   }
 }
@@ -228,16 +231,14 @@ function ValidateSourceLinkLinks {
 
       foreach ($Job in @(Get-Job -State 'Completed')) {
         $jobResult = Wait-Job -Id $Job.Id | Receive-Job
-        CheckJobResult $jobResult.result $jobResult.packagePath ([ref]$ValidationFailures)
+        CheckJobResult $jobResult.result $jobResult.packagePath ([ref]$ValidationFailures) -LogErrors
         Remove-Job -Id $Job.Id
       }
     }
 
   foreach ($Job in @(Get-Job)) {
     $jobResult = Wait-Job -Id $Job.Id | Receive-Job
-    if ($jobResult -ne '0') {
-      $ValidationFailures++
-    }
+    CheckJobResult $jobResult.result $jobResult.packagePath ([ref]$ValidationFailures)
     Remove-Job -Id $Job.Id
   }
   if ($ValidationFailures -gt 0) {

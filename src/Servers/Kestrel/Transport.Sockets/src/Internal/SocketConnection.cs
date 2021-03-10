@@ -5,9 +5,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -18,20 +16,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     internal sealed class SocketConnection : TransportConnection
     {
         private static readonly int MinAllocBufferSize = SlabMemoryPool.BlockSize / 2;
-        private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        private static readonly bool IsMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
         private readonly Socket _socket;
         private readonly ISocketsTrace _trace;
         private readonly SocketReceiver _receiver;
         private readonly SocketSender _sender;
+        private readonly IDuplexPipe _originalTransport;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
         private readonly object _shutdownLock = new object();
         private volatile bool _socketDisposed;
-        private volatile Exception _shutdownReason;
-        private Task _processingTask;
-        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        private volatile Exception? _shutdownReason;
+        private Task? _processingTask;
+        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource();
         private bool _connectionClosed;
         private readonly bool _waitForData;
 
@@ -39,10 +36,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                                   MemoryPool<byte> memoryPool,
                                   PipeScheduler transportScheduler,
                                   ISocketsTrace trace,
-                                  long? maxReadBufferSize = null,
-                                  long? maxWriteBufferSize = null,
-                                  bool waitForData = true,
-                                  bool useInlineSchedulers = false)
+                                  PipeOptions inputOptions,
+                                  PipeOptions outputOptions,
+                                  bool waitForData = true)
         {
             Debug.Assert(socket != null);
             Debug.Assert(memoryPool != null);
@@ -61,29 +57,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // On *nix platforms, Sockets already dispatches to the ThreadPool.
             // Yes, the IOQueues are still used for the PipeSchedulers. This is intentional.
             // https://github.com/aspnet/KestrelHttpServer/issues/2573
-            var awaiterScheduler = IsWindows ? transportScheduler : PipeScheduler.Inline;
-
-            var applicationScheduler = PipeScheduler.ThreadPool;
-            if (useInlineSchedulers)
-            {
-                transportScheduler = PipeScheduler.Inline;
-                awaiterScheduler = PipeScheduler.Inline;
-                applicationScheduler = PipeScheduler.Inline;
-            }
+            var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
 
             _receiver = new SocketReceiver(_socket, awaiterScheduler);
             _sender = new SocketSender(_socket, awaiterScheduler);
 
-            maxReadBufferSize ??= 0;
-            maxWriteBufferSize ??= 0;
-
-            var inputOptions = new PipeOptions(MemoryPool, applicationScheduler, transportScheduler, maxReadBufferSize.Value, maxReadBufferSize.Value / 2, useSynchronizationContext: false);
-            var outputOptions = new PipeOptions(MemoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize.Value, maxWriteBufferSize.Value / 2, useSynchronizationContext: false);
-
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
             // Set the transport and connection id
-            Transport = pair.Transport;
+            Transport = _originalTransport = pair.Transport;
             Application = pair.Application;
         }
 
@@ -131,8 +113,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         // Only called after connection middleware is complete which means the ConnectionClosed token has fired.
         public override async ValueTask DisposeAsync()
         {
-            Transport.Input.Complete();
-            Transport.Output.Complete();
+            _originalTransport.Input.Complete();
+            _originalTransport.Output.Complete();
 
             if (_processingTask != null)
             {
@@ -144,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private async Task DoReceive()
         {
-            Exception error = null;
+            Exception? error = null;
 
             try
             {
@@ -244,8 +226,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private async Task DoSend()
         {
-            Exception shutdownReason = null;
-            Exception unexpectedError = null;
+            Exception? shutdownReason = null;
+            Exception? unexpectedError = null;
 
             try
             {
@@ -332,7 +314,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             preferLocal: false);
         }
 
-        private void Shutdown(Exception shutdownReason)
+        private void Shutdown(Exception? shutdownReason)
         {
             lock (_shutdownLock)
             {
@@ -381,12 +363,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private static bool IsConnectionResetError(SocketError errorCode)
         {
-            // A connection reset can be reported as SocketError.ConnectionAborted on Windows.
-            // ProtocolType can be removed once https://github.com/dotnet/corefx/issues/31927 is fixed.
             return errorCode == SocketError.ConnectionReset ||
                    errorCode == SocketError.Shutdown ||
-                   (errorCode == SocketError.ConnectionAborted && IsWindows) ||
-                   (errorCode == SocketError.ProtocolType && IsMacOS);
+                   (errorCode == SocketError.ConnectionAborted && OperatingSystem.IsWindows());
         }
 
         private static bool IsConnectionAbortError(SocketError errorCode)
@@ -394,7 +373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // Calling Dispose after ReceiveAsync can cause an "InvalidArgument" error on *nix.
             return errorCode == SocketError.OperationAborted ||
                    errorCode == SocketError.Interrupted ||
-                   (errorCode == SocketError.InvalidArgument && !IsWindows);
+                   (errorCode == SocketError.InvalidArgument && !OperatingSystem.IsWindows());
         }
     }
 }

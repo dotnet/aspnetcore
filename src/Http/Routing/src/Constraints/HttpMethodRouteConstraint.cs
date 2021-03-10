@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                         return true;
                     }
 
-                    return AllowedMethods.Contains(Convert.ToString(obj), StringComparer.OrdinalIgnoreCase);
+                    return AllowedMethods.Contains(Convert.ToString(obj, CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase);
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(routeDirection));

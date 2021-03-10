@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -50,14 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
             var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "SimpleForms");
-#if GENERATE_BASELINES
-            // Reverse usual substitution and insert a format item into the new file content.
-            responseContent = responseContent.Replace(forgeryToken, "{0}");
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            expectedContent = string.Format(expectedContent, forgeryToken);
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, forgeryToken);
         }
 
         [Fact]
@@ -790,7 +783,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     { "Name", name },
-                    { "Age", age.ToString() },
+                    { "Age", age.ToString(CultureInfo.InvariantCulture) },
                 }),
             };
             await AddAntiforgeryHeaders(request);
@@ -815,7 +808,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     { "Name", name },
-                    { "Age", age.ToString() },
+                    { "Age", age.ToString(CultureInfo.InvariantCulture) },
                 }),
             };
             await AddAntiforgeryHeaders(request);

@@ -9,10 +9,10 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating an ASP.NET Core application with example ASP.NET Core MVC Views and Controllers. This template can also be used for RESTful HTTP services.",
   "groupIdentity": "Microsoft.Web.Mvc",
-  "precedence": "7000",
-  "identity": "Microsoft.Web.Mvc.CSharp.5.0",
+  "precedence": "8000",
+  "identity": "Microsoft.Web.Mvc.CSharp.6.0",
   "shortName": "mvc",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/5.0-third-party-notices",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/6.0-third-party-notices",
   "tags": {
     "language": "C#",
     "type": "project"
@@ -313,12 +313,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net5.0",
-          "description": "Target net5.0"
+          "choice": "net6.0",
+          "description": "Target net6.0"
         }
       ],
-      "replaces": "net5.0",
-      "defaultValue": "net5.0"
+      "replaces": "net6.0",
+      "defaultValue": "net6.0"
     },
     "copyrightYear": {
       "type": "generated",

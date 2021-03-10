@@ -298,4 +298,7 @@
   <data name="UnsupportedRenderMode" xml:space="preserve">
     <value>Unsupported RenderMode '{0}'.</value>
   </data>
+  <data name="AsyncDisposableViewsNotSupported" xml:space="preserve">
+    <value>Views implementing '{0}' are not supported.</value>
+  </data>
 </root>

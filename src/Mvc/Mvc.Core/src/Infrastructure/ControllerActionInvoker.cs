@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,10 +21,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private readonly ControllerActionInvokerCacheEntry _cacheEntry;
         private readonly ControllerContext _controllerContext;
 
-        private Dictionary<string, object> _arguments;
+        private Dictionary<string, object?>? _arguments;
 
-        private ActionExecutingContextSealed _actionExecutingContext;
-        private ActionExecutedContextSealed _actionExecutedContext;
+        private ActionExecutingContextSealed? _actionExecutingContext;
+        private ActionExecutedContextSealed? _actionExecutedContext;
 
         internal ControllerActionInvoker(
             ILogger logger,
@@ -46,15 +48,17 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         // Internal for testing
         internal ControllerContext ControllerContext => _controllerContext;
 
-        protected override void ReleaseResources()
+        protected override ValueTask ReleaseResources()
         {
             if (_instance != null && _cacheEntry.ControllerReleaser != null)
             {
-                _cacheEntry.ControllerReleaser(_controllerContext, _instance);
+                return _cacheEntry.ControllerReleaser(_controllerContext, _instance);
             }
+
+            return default;
         }
 
-        private Task Next(ref State next, ref Scope scope, ref object state, ref bool isCompleted)
+        private Task Next(ref State next, ref Scope scope, ref object? state, ref bool isCompleted)
         {
             switch (next)
             {
@@ -70,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                         _logger.ExecutedControllerFactory(controllerContext);
 
-                        _arguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                        _arguments = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
                         var task = BindArgumentsAsync();
                         if (task.Status != TaskStatus.RanToCompletion)
@@ -89,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_actionExecutingContext == null)
                             {
-                                _actionExecutingContext = new ActionExecutingContextSealed(_controllerContext, _filters, _arguments, _instance);
+                                _actionExecutingContext = new ActionExecutingContextSealed(_controllerContext, _filters, _arguments!, _instance!);
                             }
 
                             state = current.FilterAsync;
@@ -99,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_actionExecutingContext == null)
                             {
-                                _actionExecutingContext = new ActionExecutingContextSealed(_controllerContext, _filters, _arguments, _instance);
+                                _actionExecutingContext = new ActionExecutingContextSealed(_controllerContext, _filters, _arguments!, _instance!);
                             }
 
                             state = current.Filter;
@@ -150,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             _actionExecutedContext = new ActionExecutedContextSealed(
                                 _controllerContext,
                                 _filters,
-                                _instance)
+                                _instance!)
                             {
                                 Canceled = true,
                                 Result = _actionExecutingContext.Result,
@@ -196,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             _actionExecutedContext = new ActionExecutedContextSealed(
                                 _actionExecutingContext,
                                 _filters,
-                                _instance)
+                                _instance!)
                             {
                                 Canceled = true,
                                 Result = _actionExecutingContext.Result,
@@ -259,7 +263,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_actionExecutedContext == null)
                             {
-                                _actionExecutedContext = new ActionExecutedContextSealed(_controllerContext, _filters, _instance)
+                                _actionExecutedContext = new ActionExecutedContextSealed(_controllerContext, _filters, _instance!)
                                 {
                                     Result = _result,
                                 };
@@ -291,7 +295,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             try
             {
                 var next = State.ActionNext;
-                var state = (object)null;
+                var state = (object?)null;
                 var scope = Scope.Action;
                 var isCompleted = false;
                 while (!isCompleted)
@@ -305,7 +309,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             catch (Exception exception)
             {
-                _actionExecutedContext = new ActionExecutedContextSealed(_controllerContext, _filters, _instance)
+                _actionExecutedContext = new ActionExecutedContextSealed(_controllerContext, _filters, _instance!)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                 };
@@ -314,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Debug.Assert(_actionExecutedContext != null);
             return Task.CompletedTask;
 
-            static async Task Awaited(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, object state, bool isCompleted)
+            static async Task Awaited(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, object? state, bool isCompleted)
             {
                 try
                 {
@@ -327,7 +331,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
                 catch (Exception exception)
                 {
-                    invoker._actionExecutedContext = new ActionExecutedContextSealed(invoker._controllerContext, invoker._filters, invoker._instance)
+                    invoker._actionExecutedContext = new ActionExecutedContextSealed(invoker._controllerContext, invoker._filters, invoker._instance!)
                     {
                         ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                     };
@@ -387,7 +391,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var actionMethodExecutor = _cacheEntry.ActionMethodExecutor;
             var orderedArguments = PrepareArguments(_arguments, objectMethodExecutor);
 
-            var actionResultValueTask = actionMethodExecutor.Execute(_mapper, objectMethodExecutor, _instance, orderedArguments);
+            var actionResultValueTask = actionMethodExecutor.Execute(_mapper, objectMethodExecutor, _instance!, orderedArguments);
             if (actionResultValueTask.IsCompletedSuccessfully)
             {
                 _result = actionResultValueTask.Result;
@@ -416,7 +420,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 var diagnosticListener = invoker._diagnosticListener;
                 var logger = invoker._logger;
 
-                IActionResult result = null;
+                IActionResult? result = null;
                 try
                 {
                     diagnosticListener.BeforeControllerActionMethod(
@@ -425,7 +429,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         controller);
                     logger.ActionMethodExecuting(controllerContext, orderedArguments);
                     var stopwatch = ValueStopwatch.StartNew();
-                    var actionResultValueTask = actionMethodExecutor.Execute(invoker._mapper, objectMethodExecutor, controller, orderedArguments);
+                    var actionResultValueTask = actionMethodExecutor.Execute(invoker._mapper, objectMethodExecutor, controller!, orderedArguments);
                     if (actionResultValueTask.IsCompletedSuccessfully)
                     {
                         result = actionResultValueTask.Result;
@@ -457,7 +461,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 var next = State.ActionBegin;
                 var scope = Scope.Invoker;
-                var state = (object)null;
+                var state = (object?)null;
                 var isCompleted = false;
 
                 while (!isCompleted)
@@ -478,7 +482,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return Task.FromException(ex);
             }
 
-            static async Task Awaited(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, object state, bool isCompleted)
+            static async Task Awaited(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, object? state, bool isCompleted)
             {
                 await lastTask;
 
@@ -489,7 +493,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static void Rethrow(ActionExecutedContextSealed context)
+        private static void Rethrow(ActionExecutedContextSealed? context)
         {
             if (context == null)
             {
@@ -524,11 +528,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             Debug.Assert(_cacheEntry.ControllerBinderDelegate != null);
-            return _cacheEntry.ControllerBinderDelegate(_controllerContext, _instance, _arguments);
+            return _cacheEntry.ControllerBinderDelegate(_controllerContext, _instance, _arguments!);
         }
 
-        private static object[] PrepareArguments(
-            IDictionary<string, object> actionParameters,
+        private static object?[]? PrepareArguments(
+            IDictionary<string, object?>? actionParameters,
             ObjectMethodExecutor actionMethodExecutor)
         {
             var declaredParameterInfos = actionMethodExecutor.MethodParameters;
@@ -538,12 +542,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return null;
             }
 
-            var arguments = new object[count];
+            Debug.Assert(actionParameters != null, "Expect arguments to be initialized.");
+
+            var arguments = new object?[count];
             for (var index = 0; index < count; index++)
             {
                 var parameterInfo = declaredParameterInfos[index];
 
-                if (!actionParameters.TryGetValue(parameterInfo.Name, out var value))
+                if (!actionParameters.TryGetValue(parameterInfo.Name!, out var value))
                 {
                     value = actionMethodExecutor.GetDefaultValueForParameter(index);
                 }
@@ -574,7 +580,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private sealed class ActionExecutingContextSealed : ActionExecutingContext
         {
-            public ActionExecutingContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters, IDictionary<string, object> actionArguments, object controller) : base(actionContext, filters, actionArguments, controller) { }
+            public ActionExecutingContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters, IDictionary<string, object?> actionArguments, object controller) : base(actionContext, filters, actionArguments, controller) { }
         }
 
         private sealed class ActionExecutedContextSealed : ActionExecutedContext

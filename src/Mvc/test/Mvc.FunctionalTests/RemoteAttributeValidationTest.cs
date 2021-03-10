@@ -42,14 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("utf-8", response.Content.Headers.ContentType.CharSet);
 
             var responseContent = await response.Content.ReadAsStringAsync();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(
-                expectedContent,
-                responseContent,
-                ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Theory]

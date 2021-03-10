@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         {
             if (context.User != null)
             {
-                if (context.User.Identities.Any(i => string.Equals(i.Name, requirement.RequiredName)))
+                if (context.User.Identities.Any(i => string.Equals(i.Name, requirement.RequiredName, StringComparison.Ordinal)))
                 {
                     context.Succeed(requirement);
                 }

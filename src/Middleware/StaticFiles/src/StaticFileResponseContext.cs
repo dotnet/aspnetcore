@@ -15,28 +15,12 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <summary>
         /// Constructs the <see cref="StaticFileResponseContext"/>.
         /// </summary>
-        [Obsolete("Use the constructor that passes in the HttpContext and IFileInfo parameters: StaticFileResponseContext(HttpContext context, IFileInfo file)", false)]
-        public StaticFileResponseContext()
-        {
-        }
-
-        /// <summary>
-        /// Constructs the <see cref="StaticFileResponseContext"/>.
-        /// </summary>
         /// <param name="context">The request and response information.</param>
         /// <param name="file">The file to be served.</param>
         public StaticFileResponseContext(HttpContext context, IFileInfo file)
         {
-            if (file == null)
-            {
-                throw new ArgumentNullException(nameof(file));
-            }
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-            Context = context;
-            File = file;
+            Context = context ?? throw new ArgumentNullException(nameof(context));
+            File = file ?? throw new ArgumentNullException(nameof(file));
         }
 
         /// <summary>

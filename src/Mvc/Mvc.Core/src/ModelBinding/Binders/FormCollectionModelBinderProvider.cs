@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
-using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class FormCollectionModelBinderProvider : IModelBinderProvider
     {
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var modelType = context.Metadata.ModelType;
 
-            if (typeof(FormCollection).GetTypeInfo().IsAssignableFrom(modelType))
+            if (typeof(FormCollection).IsAssignableFrom(modelType))
             {
                 throw new InvalidOperationException(
                     Resources.FormatFormCollectionModelBinder_CannotBindToFormCollection(

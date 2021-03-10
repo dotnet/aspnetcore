@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Components for providing real-time bi-directional communication across the Web.</Description>
@@ -6,7 +6,6 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +23,7 @@
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)NonCapturingTimer\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

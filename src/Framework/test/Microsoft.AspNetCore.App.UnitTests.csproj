@@ -28,6 +28,10 @@
       <_Parameter2>$(SharedFxVersion)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>DefaultNetCoreTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>TargetRuntimeIdentifier</_Parameter1>
       <_Parameter2>$(TargetRuntimeIdentifier)</_Parameter2>
     </AssemblyAttribute>

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
         /// <remarks>
         /// Activation of the encryptor instance is deferred until first access.
         /// </remarks>
-        IAuthenticatedEncryptor DefaultAuthenticatedEncryptor { get; }
+        IAuthenticatedEncryptor? DefaultAuthenticatedEncryptor { get; }
 
         /// <summary>
         /// The id of the key associated with <see cref="DefaultAuthenticatedEncryptor"/>.
@@ -31,6 +31,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
         /// <remarks>
         /// Activation of the encryptor instance is deferred until first access.
         /// </remarks>
-        IAuthenticatedEncryptor GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked);
+        IAuthenticatedEncryptor? GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked);
     }
 }

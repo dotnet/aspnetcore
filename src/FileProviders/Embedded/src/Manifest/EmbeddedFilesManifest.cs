@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
             _rootDirectory = rootDirectory;
         }
 
-        internal ManifestEntry ResolveEntry(string path)
+        internal ManifestEntry? ResolveEntry(string path)
         {
             if (string.IsNullOrEmpty(path) || HasInvalidPathChars(path))
             {

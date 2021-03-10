@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         {
             // Arrange
             Secret kdk = new Secret(new byte[512 / 8]);
-            GcmAuthenticatedEncryptor encryptor = new GcmAuthenticatedEncryptor(kdk, CachedAlgorithmHandles.AES_GCM, symmetricAlgorithmKeySizeInBytes: 256 / 8);
+            CngGcmAuthenticatedEncryptor encryptor = new CngGcmAuthenticatedEncryptor(kdk, CachedAlgorithmHandles.AES_GCM, symmetricAlgorithmKeySizeInBytes: 256 / 8);
             ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
             ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         {
             // Arrange
             Secret kdk = new Secret(new byte[512 / 8]);
-            GcmAuthenticatedEncryptor encryptor = new GcmAuthenticatedEncryptor(kdk, CachedAlgorithmHandles.AES_GCM, symmetricAlgorithmKeySizeInBytes: 256 / 8);
+            CngGcmAuthenticatedEncryptor encryptor = new CngGcmAuthenticatedEncryptor(kdk, CachedAlgorithmHandles.AES_GCM, symmetricAlgorithmKeySizeInBytes: 256 / 8);
             ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
             ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
             byte[] validCiphertext = encryptor.Encrypt(plaintext, aad);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         {
             // Arrange
             Secret kdk = new Secret(Encoding.UTF8.GetBytes("master key"));
-            GcmAuthenticatedEncryptor encryptor = new GcmAuthenticatedEncryptor(kdk, CachedAlgorithmHandles.AES_GCM, symmetricAlgorithmKeySizeInBytes: 128 / 8, genRandom: new SequentialGenRandom());
+            CngGcmAuthenticatedEncryptor encryptor = new CngGcmAuthenticatedEncryptor(kdk, CachedAlgorithmHandles.AES_GCM, symmetricAlgorithmKeySizeInBytes: 128 / 8, genRandom: new SequentialGenRandom());
             ArraySegment<byte> plaintext = new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 2, 3);
             ArraySegment<byte> aad = new ArraySegment<byte>(new byte[] { 7, 6, 5, 4, 3, 2, 1, 0 }, 1, 4);
 

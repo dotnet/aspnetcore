@@ -6,11 +6,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
@@ -114,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
-        protected IComponent InstantiateComponent(Type componentType)
+        protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
             => _componentFactory.InstantiateComponent(_serviceProvider, componentType);
 
         /// <summary>
@@ -245,15 +247,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
         /// has completed.
         /// </returns>
-        public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo fieldInfo, EventArgs eventArgs)
+        public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs)
         {
             Dispatcher.AssertAccess();
 
-            if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))
-            {
-                throw new ArgumentException($"There is no event handler associated with this event. EventId: '{eventHandlerId}'.", nameof(eventHandlerId));
-            }
-
+            var callback = GetRequiredEventCallback(eventHandlerId);
             Log.HandlingEvent(_logger, eventHandlerId, eventArgs);
 
             if (fieldInfo != null)
@@ -289,6 +287,24 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // work that was queued so let our error handler deal with it.
             var result = GetErrorHandledTask(task);
             return result;
+        }
+
+        /// <summary>
+        /// Gets the event arguments type for the specified event handler.
+        /// </summary>
+        /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
+        /// <returns>The parameter type expected by the event handler. Normally this is a subclass of <see cref="EventArgs"/>.</returns>
+        public Type GetEventArgsType(ulong eventHandlerId)
+        {
+            var methodInfo = GetRequiredEventCallback(eventHandlerId).Delegate?.Method;
+
+            // The DispatchEventAsync code paths allow for the case where Delegate or its method
+            // is null, and in this case the event receiver just receives null. This won't happen
+            // under normal circumstances, but to avoid creating a new failure scenario, allow for
+            // that edge case here too.
+            return methodInfo == null
+                ? typeof(EventArgs)
+                : EventArgsTypeCache.GetEventArgsType(methodInfo);
         }
 
         internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
@@ -402,6 +418,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // values even if they refer to an event handler ID that's since been superseded. This is essential
             // for tree patching to work in an async environment.
             _eventHandlerIdReplacements.Add(oldEventHandlerId, newEventHandlerId);
+        }
+
+        private EventCallback GetRequiredEventCallback(ulong eventHandlerId)
+        {
+            if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))
+            {
+                throw new ArgumentException($"There is no event handler associated with this event. EventId: '{eventHandlerId}'.", nameof(eventHandlerId));
+            }
+
+            return callback;
         }
 
         private ulong FindLatestEventHandlerIdInChain(ulong eventHandlerId)

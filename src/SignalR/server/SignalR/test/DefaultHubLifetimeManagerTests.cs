@@ -12,11 +12,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<MyHub>
+    public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<Hub>
     {
-        public override HubLifetimeManager<MyHub> CreateNewHubLifetimeManager()
+        public override HubLifetimeManager<Hub> CreateNewHubLifetimeManager()
         {
-            return new DefaultHubLifetimeManager<MyHub>(new Logger<DefaultHubLifetimeManager<MyHub>>(NullLoggerFactory.Instance));
+            return new DefaultHubLifetimeManager<Hub>(new Logger<DefaultHubLifetimeManager<Hub>>(NullLoggerFactory.Instance));
         }
 
         [Fact]

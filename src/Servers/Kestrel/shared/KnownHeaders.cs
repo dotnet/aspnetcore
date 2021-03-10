@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http.HPack;
 using System.Text;
-using Microsoft.Net.Http.Headers;
 
 namespace CodeGenerator
 {
@@ -16,6 +16,7 @@ namespace CodeGenerator
         public readonly static KnownHeader[] RequestHeaders;
         public readonly static KnownHeader[] ResponseHeaders;
         public readonly static KnownHeader[] ResponseTrailers;
+        public readonly static long InvalidH2H3ResponseHeadersBits;
 
         static KnownHeaders()
         {
@@ -107,7 +108,8 @@ namespace CodeGenerator
                 "Request-Id",
                 "Correlation-Context",
                 "TraceParent",
-                "TraceState"
+                "TraceState",
+                "Baggage"
             })
             .Concat(corsRequestHeaders)
             .Select((header, index) => new KnownHeader
@@ -158,6 +160,7 @@ namespace CodeGenerator
                 "ETag",
                 "Location",
                 "Proxy-Authenticate",
+                "Proxy-Connection",
                 "Retry-After",
                 "Server",
                 "Set-Cookie",
@@ -197,6 +200,20 @@ namespace CodeGenerator
                 PrimaryHeader = responsePrimaryHeaders.Contains(header)
             })
             .ToArray();
+
+            var invalidH2H3ResponseHeaders = new[]
+            {
+                "Connection",
+                "Transfer-Encoding",
+                "Keep-Alive",
+                "Upgrade",
+                "Proxy-Connection"
+            };
+
+            InvalidH2H3ResponseHeadersBits = ResponseHeaders
+                .Where(header => invalidH2H3ResponseHeaders.Contains(header.Name))
+                .Select(header => 1L << header.Index)
+                .Aggregate((a, b) => a | b);
         }
 
         static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
@@ -357,27 +374,27 @@ namespace CodeGenerator
             public bool FastCount { get; set; }
             public bool EnhancedSetter { get; set; }
             public bool PrimaryHeader { get; set; }
-            public string FlagBit() => $"{"0x" + (1L << Index).ToString("x")}L";
-            public string TestBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) != 0";
-            public string TestTempBit() => $"(tempBits & {"0x" + (1L << Index).ToString("x")}L) != 0";
-            public string TestNotTempBit() => $"(tempBits & ~{"0x" + (1L << Index).ToString("x")}L) == 0";
-            public string TestNotBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) == 0";
-            public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x")}L";
-            public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x")}L";
+            public string FlagBit() => $"{"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
+            public string TestBit() => $"(_bits & {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) != 0";
+            public string TestTempBit() => $"(tempBits & {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) != 0";
+            public string TestNotTempBit() => $"(tempBits & ~{"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) == 0";
+            public string TestNotBit() => $"(_bits & {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L) == 0";
+            public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
+            public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
 
             private string ResolveIdentifier(string name)
             {
-                var identifer = name.Replace("-", "");
+                var identifier = name.Replace("-", "");
 
                 // Pseudo headers start with a colon. A colon isn't valid in C# names so
                 // remove it and pascal case the header name. e.g. :path -> Path, :scheme -> Scheme.
                 // This identifier will match the names in HeadersNames.cs
-                if (identifer.StartsWith(':'))
+                if (identifier.StartsWith(':'))
                 {
-                    identifer = char.ToUpper(identifer[1]) + identifer.Substring(2);
+                    identifier = char.ToUpperInvariant(identifier[1]) + identifier.Substring(2);
                 }
 
-                return identifer;
+                return identifier;
             }
 
             private void GetMaskAndComp(string name, int offset, int count, out ulong mask, out ulong comp)
@@ -706,6 +723,8 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {{
     internal enum KnownHeaderType
@@ -963,7 +982,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {{
                     return;
                 }}
-                tempBits &= ~{"0x" + (1L << header.Index).ToString("x")}L;
+                tempBits &= ~{"0x" + (1L << header.Index).ToString("x", CultureInfo.InvariantCulture)}L;
             }}
             ")}
         }}
@@ -979,7 +998,7 @@ $@"        private void Clear(long bitsToClear)
                 {{
                     return;
                 }}
-                tempBits &= ~{"0x" + (1L << header.Index).ToString("x")}L;
+                tempBits &= ~{"0x" + (1L << header.Index).ToString("x" , CultureInfo.InvariantCulture)}L;
             }}
             ")}
         }}
@@ -1009,14 +1028,19 @@ $@"        private void Clear(long bitsToClear)
                     array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                     ++arrayIndex;
                 }}
-            ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, StringValues>>?)MaybeUnknown)?.CopyTo(array, arrayIndex);
 
             return true;
         }}
         {(loop.ClassName == "HttpResponseHeaders" ? $@"
+        internal bool HasInvalidH2H3Headers => (_bits & {InvalidH2H3ResponseHeadersBits}) != 0;
+        internal void ClearInvalidH2H3Headers()
+        {{
+            _bits &= ~{InvalidH2H3ResponseHeadersBits};
+        }}
         internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {{
-            var tempBits = (ulong)_bits | (_contentLength.HasValue ? {"0x" + (1L << 63).ToString("x")}L : 0);
+            var tempBits = (ulong)_bits | (_contentLength.HasValue ? {"0x" + (1L << 63).ToString("x" , CultureInfo.InvariantCulture)}L : 0);
             var next = 0;
             var keyStart = 0;
             var keyLength = 0;
@@ -1029,7 +1053,7 @@ $@"        private void Clear(long bitsToClear)
                     case {hi.Index}: // Header: ""{hi.Header.Name}""
                         if ({hi.Header.TestTempBit()})
                         {{
-                            tempBits ^= {"0x" + (1L << hi.Header.Index).ToString("x")}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
+                            tempBits ^= {"0x" + (1L << hi.Header.Index).ToString("x" , CultureInfo.InvariantCulture)}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
                             values = ref _headers._{hi.Header.Identifier};
                             keyStart = {hi.Header.BytesOffset};
                             keyLength = {hi.Header.BytesCount};
@@ -1048,7 +1072,7 @@ $@"        private void Clear(long bitsToClear)
                                 break; // OutputHeader
                             }}")}" : $@"
                             output.Write(HeaderBytes.Slice({hi.Header.BytesOffset}, {hi.Header.BytesCount}));
-                            output.WriteNumeric((ulong)ContentLength.Value);
+                            output.WriteNumeric((ulong)ContentLength.GetValueOrDefault());
                             if (tempBits == 0)
                             {{
                                 return;
@@ -1126,7 +1150,7 @@ $@"        private void Clear(long bitsToClear)
         {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => @"
             public StringValues _" + header.Identifier + ";")}
             {Each(loop.Headers.Where(header => header.EnhancedSetter), header => @"
-            public byte[] _raw" + header.Identifier + ";")}
+            public byte[]? _raw" + header.Identifier + ";")}
         }}
 
         public partial struct Enumerator

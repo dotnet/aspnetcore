@@ -12,12 +12,31 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     /// </summary>
     public interface IHtmlGenerator
     {
+        /// <summary>
+        /// Gets the replacement for '.' in an Id attribute.
+        /// </summary>
         string IdAttributeDotReplacement { get; }
 
+        /// <summary>
+        /// Encodes a value.
+        /// </summary>
+        /// <param name="value">The value to encode.</param>
+        /// <returns>The encoded value.</returns>
         string Encode(string value);
 
+        /// <summary>
+        /// Encodes a value.
+        /// </summary>
+        /// <param name="value">The value to encode.</param>
+        /// <returns>The encoded value.</returns>
         string Encode(object value);
 
+        /// <summary>
+        /// Format a value.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="format">The format to use.</param>
+        /// <returns>The formatted value.</returns>
         string FormatValue(object value, string format);
 
         /// <summary>

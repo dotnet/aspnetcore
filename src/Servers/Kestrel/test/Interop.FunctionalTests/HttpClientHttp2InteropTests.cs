@@ -690,7 +690,6 @@ namespace Interop.FunctionalTests
 
         [Theory]
         [MemberData(nameof(SupportedSchemes))]
-        [QuarantinedTest]
         public async Task ServerReset_BeforeRequestBody_ClientBodyThrows(string scheme)
         {
             var clientEcho = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1019,7 +1018,6 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
-        [QuarantinedTest("https://github.com/dotnet/runtime/issues/860")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task RequestHeaders_MultipleFrames_Accepted(string scheme)
         {
@@ -1184,7 +1182,7 @@ namespace Interop.FunctionalTests
         // Nor does Kestrel yet support sending dynamic table updates, so there's nothing to test here. https://github.com/dotnet/aspnetcore/issues/4715
 
         [Theory]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27379")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsGet_Server(string scheme)
         {
@@ -1246,7 +1244,7 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27370")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
         {
@@ -1343,7 +1341,6 @@ namespace Interop.FunctionalTests
         // Settings_MaxFrameSize_Larger_Client - Not configurable
 
         [Theory]
-        [QuarantinedTest("https://github.com/dotnet/runtime/issues/860")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxHeaderListSize_Server(string scheme)
         {

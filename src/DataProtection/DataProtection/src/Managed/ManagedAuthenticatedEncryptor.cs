@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
         private readonly int _validationAlgorithmSubkeyLengthInBytes;
         private readonly Func<KeyedHashAlgorithm> _validationAlgorithmFactory;
 
-        public ManagedAuthenticatedEncryptor(Secret keyDerivationKey, Func<SymmetricAlgorithm> symmetricAlgorithmFactory, int symmetricAlgorithmKeySizeInBytes, Func<KeyedHashAlgorithm> validationAlgorithmFactory, IManagedGenRandom genRandom = null)
+        public ManagedAuthenticatedEncryptor(Secret keyDerivationKey, Func<SymmetricAlgorithm> symmetricAlgorithmFactory, int symmetricAlgorithmKeySizeInBytes, Func<KeyedHashAlgorithm> validationAlgorithmFactory, IManagedGenRandom? genRandom = null)
         {
             _genRandom = genRandom ?? ManagedGenRandomImpl.Instance;
             _keyDerivationKey = keyDerivationKey;
@@ -186,9 +186,9 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                     ciphertextOffset = ivOffset + _symmetricAlgorithmBlockSizeInBytes;
                 }
 
-                ArraySegment<byte> keyModifier = new ArraySegment<byte>(protectedPayload.Array, keyModifierOffset, ivOffset - keyModifierOffset);
+                ArraySegment<byte> keyModifier = new ArraySegment<byte>(protectedPayload.Array!, keyModifierOffset, ivOffset - keyModifierOffset);
                 var iv = new byte[_symmetricAlgorithmBlockSizeInBytes];
-                Buffer.BlockCopy(protectedPayload.Array, ivOffset, iv, 0, iv.Length);
+                Buffer.BlockCopy(protectedPayload.Array!, ivOffset, iv, 0, iv.Length);
 
                 // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
                 // We pin all unencrypted keys to limit their exposure via GC relocation.
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                         using (var cryptoTransform = symmetricAlgorithm.CreateEncryptor(encryptionSubkey, iv))
                         using (var cryptoStream = new CryptoStream(outputStream, cryptoTransform, CryptoStreamMode.Write))
                         {
-                            cryptoStream.Write(plaintext.Array, plaintext.Offset, plaintext.Count);
+                            cryptoStream.Write(plaintext.Array!, plaintext.Offset, plaintext.Count);
                             cryptoStream.FlushFinalBlock();
 
                             // At this point, outputStream := { keyModifier || IV || ciphertext }

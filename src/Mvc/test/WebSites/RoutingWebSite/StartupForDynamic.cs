@@ -21,8 +21,7 @@ namespace RoutingWebSite
         {
             services
                 .AddMvc()
-                .AddNewtonsoftJson()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddNewtonsoftJson();
 
             services.AddTransient<Transformer>();
             services.AddScoped<TestResponseGenerator>();

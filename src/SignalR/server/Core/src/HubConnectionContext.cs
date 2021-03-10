@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.SignalR
         private bool _receivedMessageTimeoutEnabled = false;
         private long _receivedMessageElapsedTicks = 0;
         private long _receivedMessageTimestamp;
+        private ClaimsPrincipal? _user;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -116,7 +117,17 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets the user for this connection.
         /// </summary>
-        public virtual ClaimsPrincipal? User => Features.Get<IConnectionUserFeature>()?.User;
+        public virtual ClaimsPrincipal User
+        {
+            get
+            {
+                if (_user is null)
+                {
+                    _user = Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal();
+                }
+                return _user;
+            }
+        }
 
         /// <summary>
         /// Gets the collection of features available on this connection.
@@ -181,6 +192,12 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 return new ValueTask(CompleteWriteAsync(task));
             }
+            else
+            {
+                // If it's a IValueTaskSource backed ValueTask,
+                // inform it its result has been read so it can reset
+                task.GetAwaiter().GetResult();
+            }
 
             // Otherwise, release the lock acquired when entering WriteAsync
             _writeLock.Release();
@@ -217,6 +234,12 @@ namespace Microsoft.AspNetCore.SignalR
             if (!task.IsCompletedSuccessfully)
             {
                 return new ValueTask(CompleteWriteAsync(task));
+            }
+            else
+            {
+                // If it's a IValueTaskSource backed ValueTask,
+                // inform it its result has been read so it can reset
+                task.GetAwaiter().GetResult();
             }
 
             // Otherwise, release the lock acquired when entering WriteAsync

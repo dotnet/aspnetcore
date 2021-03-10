@@ -28,23 +28,23 @@ type ErrorMatchFunction = (error: string) => boolean;
 
 export class VerifyLogger implements ILogger {
     public unexpectedErrors: string[];
-    private expectedErrors: ErrorMatchFunction[];
+    private _expectedErrors: ErrorMatchFunction[];
 
-    public constructor(...expectedErrors: Array<RegExp | string | ErrorMatchFunction>) {
+    public constructor(...expectedErrors: (RegExp | string | ErrorMatchFunction)[]) {
         this.unexpectedErrors = [];
-        this.expectedErrors = [];
+        this._expectedErrors = [];
         expectedErrors.forEach((element) => {
             if (element instanceof RegExp) {
-                this.expectedErrors.push((e) => element.test(e));
+                this._expectedErrors.push((e) => element.test(e));
             } else if (typeof element === "string") {
-                this.expectedErrors.push((e) => element === e);
+                this._expectedErrors.push((e) => element === e);
             } else {
-                this.expectedErrors.push(element);
+                this._expectedErrors.push(element);
             }
         }, this);
     }
 
-    public static async run(fn: (logger: VerifyLogger) => Promise<void>, ...expectedErrors: Array<RegExp | string | ErrorMatchFunction>): Promise<void> {
+    public static async run(fn: (logger: VerifyLogger) => Promise<void>, ...expectedErrors: (RegExp | string | ErrorMatchFunction)[]): Promise<void> {
         const logger = new VerifyLogger(...expectedErrors);
         await fn(logger);
         expect(logger.unexpectedErrors.join(EOL)).toBe("");
@@ -52,7 +52,7 @@ export class VerifyLogger implements ILogger {
 
     public log(logLevel: LogLevel, message: string): void {
         if (logLevel >= LogLevel.Error) {
-            if (!this.expectedErrors.some((fn) => fn(message))) {
+            if (!this._expectedErrors.some((fn) => fn(message))) {
                 this.unexpectedErrors.push(message);
             }
         }

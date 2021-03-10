@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (endTag != null)
                 {
                     var tagName = endTag.GetTagNameWithOptionalBang();
-                    if (TryRewriteTagHelperEnd(endTag, out tagHelperEnd))
+                    if (TryRewriteTagHelperEnd(startTag, endTag, out tagHelperEnd))
                     {
                         // This is a tag helper
                         if (startTag == null)
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var tagName = startTag.GetTagNameWithOptionalBang();
 
                 // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
-                if (string.IsNullOrEmpty(tagName) || tagName.StartsWith("!"))
+                if (string.IsNullOrEmpty(tagName) || tagName.StartsWith("!", StringComparison.Ordinal))
                 {
                     return false;
                 }
@@ -289,25 +289,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return true;
             }
 
-            private bool TryRewriteTagHelperEnd(MarkupEndTagSyntax tagBlock, out MarkupTagHelperEndTagSyntax rewritten)
+            private bool TryRewriteTagHelperEnd(MarkupStartTagSyntax startTag, MarkupEndTagSyntax endTag, out MarkupTagHelperEndTagSyntax rewritten)
             {
                 rewritten = null;
-                var tagName = tagBlock.GetTagNameWithOptionalBang();
+                var tagName = endTag.GetTagNameWithOptionalBang();
                 // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
-                if (string.IsNullOrEmpty(tagName) || tagName.StartsWith("!"))
+                if (string.IsNullOrEmpty(tagName) || tagName.StartsWith("!", StringComparison.Ordinal))
                 {
                     return false;
                 }
 
                 var tracker = CurrentTagHelperTracker;
                 var tagNameScope = tracker?.TagName ?? string.Empty;
-                if (!IsPotentialTagHelperEnd(tagName, tagBlock))
+                if (!IsPotentialTagHelperEnd(tagName, endTag))
                 {
                     return false;
                 }
 
                 // Validate that our end tag matches the currently scoped tag, if not we may need to error.
-                if (tagNameScope.Equals(tagName, StringComparison.OrdinalIgnoreCase))
+                if (startTag != null && tagNameScope.Equals(tagName, StringComparison.OrdinalIgnoreCase))
                 {
                     // If there are additional end tags required before we can build our block it means we're in a
                     // situation like this: <myth req="..."><myth></myth></myth> where we're at the inside </myth>.
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         return false;
                     }
 
-                    ValidateEndTagSyntax(tagName, tagBlock);
+                    ValidateEndTagSyntax(tagName, endTag);
 
                     _trackerStack.Pop();
                 }
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             // End tag TagHelper that states it shouldn't have an end tag.
                             _errorSink.OnError(
                                 RazorDiagnosticFactory.CreateParsing_TagHelperMustNotHaveAnEndTag(
-                                    new SourceSpan(SourceLocationTracker.Advance(tagBlock.GetSourceLocation(_source), "</"), tagName.Length),
+                                    new SourceSpan(SourceLocationTracker.Advance(endTag.GetSourceLocation(_source), "</"), tagName.Length),
                                     tagName,
                                     descriptor.DisplayName,
                                     invalidRule.TagStructure));
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
 
                 rewritten = SyntaxFactory.MarkupTagHelperEndTag(
-                    tagBlock.OpenAngle, tagBlock.ForwardSlash, tagBlock.Bang, tagBlock.Name, tagBlock.MiscAttributeContent, tagBlock.CloseAngle);
+                    endTag.OpenAngle, endTag.ForwardSlash, endTag.Bang, endTag.Name, endTag.MiscAttributeContent, endTag.CloseAngle);
 
                 return true;
             }

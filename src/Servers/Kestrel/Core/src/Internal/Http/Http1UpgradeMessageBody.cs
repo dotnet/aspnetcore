@@ -27,31 +27,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            ThrowIfCompleted();
+            ThrowIfReaderCompleted();
             return ReadAsyncInternal(cancellationToken);
         }
 
         public override bool TryRead(out ReadResult result)
         {
-            ThrowIfCompleted();
+            ThrowIfReaderCompleted();
             return TryReadInternal(out result);
-        }
-
-        public override void AdvanceTo(SequencePosition consumed)
-        {
-            _context.Input.AdvanceTo(consumed);
         }
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             _context.Input.AdvanceTo(consumed, examined);
-        }
-
-        public override void Complete(Exception exception)
-        {
-            // Don't call Connection.Complete.
-            _context.ReportApplicationError(exception);
-            _completed = true;
         }
 
         public override void CancelPendingRead()
@@ -65,9 +53,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Task.CompletedTask;
         }
 
-        public override Task StopAsync()
+        public override ValueTask StopAsync()
         {
-            return Task.CompletedTask;
+            return default;
         }
 
         public override bool TryReadInternal(out ReadResult readResult)
