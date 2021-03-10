@@ -3,12 +3,14 @@
 
 #nullable enable
 
+using Microsoft.AspNetCore.Routing;
+
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
     /// Interface for attributes which can supply a route template for attribute routing.
     /// </summary>
-    public interface IRouteTemplateProvider
+    public interface IRouteTemplateProvider : IRoutePatternMetadata, IRouteOrderMetadata, IRouteNameMetadata
     {
         /// <summary>
         /// The route template. May be <see langword="null"/>.
@@ -28,5 +30,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         ///  of relying on selection of a route based on the given set of route values.
         /// </summary>
         string? Name { get; }
+
+        /// <inheritdoc />
+        string? IRoutePatternMetadata.RoutePattern => Template;
+
+        /// <inheritdoc />
+        int? IRouteOrderMetadata.RouteOrder => Order;
+
+        /// <inheritdoc />
+        string? IRouteNameMetadata.RouteName => Name;
     }
 }

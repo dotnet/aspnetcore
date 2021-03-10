@@ -38,7 +38,8 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
             Assert.Equal("No RootPath was set on the SpaStaticFilesOptions.", exception.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29549")]
         public async Task UseSpa_KillsRds_WhenAppIsStopped()
         {
             var serviceProvider = GetServiceProvider(s => s.RootPath = "/");
@@ -57,7 +58,8 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
             await Assert_NpmKilled_WhenAppIsStopped(applicationLifetime, listener);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29549")]
         public async Task UseSpa_KillsAngularCli_WhenAppIsStopped()
         {
             var serviceProvider = GetServiceProvider(s => s.RootPath = "/");

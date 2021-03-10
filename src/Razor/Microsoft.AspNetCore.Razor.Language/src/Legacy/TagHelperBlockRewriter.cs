@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new SyntaxList<SyntaxToken>(SyntaxFactory.MissingToken(SyntaxKind.Transition)));
             RazorMetaCodeSyntax colon = null;
             MarkupTextLiteralSyntax parameterName = null;
-            if (attributeName.StartsWith("@"))
+            if (attributeName.StartsWith("@", StringComparison.Ordinal))
             {
                 attributeName = attributeName.Substring(1);
                 var attributeNameToken = SyntaxFactory.Token(SyntaxKind.Text, attributeName);
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new SyntaxList<SyntaxToken>(SyntaxFactory.MissingToken(SyntaxKind.Transition)));
             RazorMetaCodeSyntax colon = null;
             MarkupTextLiteralSyntax parameterName = null;
-            if (attributeName.StartsWith("@"))
+            if (attributeName.StartsWith("@", StringComparison.Ordinal))
             {
                 attributeName = attributeName.Substring(1);
                 var attributeNameToken = SyntaxFactory.Token(SyntaxKind.Text, attributeName);

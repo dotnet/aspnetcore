@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal sealed class Request
     {
-        private X509Certificate2 _clientCert;
+        private X509Certificate2? _clientCert;
         // TODO: https://github.com/aspnet/HttpSysServer/issues/231
         // private byte[] _providedTokenBindingId;
         // private byte[] _referredTokenBindingId;
@@ -28,12 +28,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private BoundaryType _contentBoundaryType;
 
         private long? _contentLength;
-        private RequestStream _nativeStream;
+        private RequestStream? _nativeStream;
 
-        private AspNetCore.HttpSys.Internal.SocketAddress _localEndPoint;
-        private AspNetCore.HttpSys.Internal.SocketAddress _remoteEndPoint;
+        private AspNetCore.HttpSys.Internal.SocketAddress? _localEndPoint;
+        private AspNetCore.HttpSys.Internal.SocketAddress? _remoteEndPoint;
 
-        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> _requestInfo;
+        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>>? _requestInfo;
 
         private bool _isDisposed = false;
 
@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             SslStatus = requestContext.SslStatus;
 
             KnownMethod = requestContext.VerbId;
-            Method = requestContext.GetVerb();
+            Method = requestContext.GetVerb()!;
 
-            RawUrl = requestContext.GetRawUrl();
+            RawUrl = requestContext.GetRawUrl()!;
 
             var cookedUrl = requestContext.GetCookedUrl();
             QueryString = cookedUrl.GetQueryString() ?? string.Empty;
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
                     }
                 }
-                 else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
+                 else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost()!, originalPath, out var pathBase, out var path))
                 {
                     PathBase = pathBase;
                     Path = path;
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public Stream Body => EnsureRequestStream() ?? Stream.Null;
 
-        private RequestStream EnsureRequestStream()
+        private RequestStream? EnsureRequestStream()
         {
             if (_nativeStream == null && HasEntityBody)
             {
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (_remoteEndPoint == null)
                 {
-                    _remoteEndPoint = RequestContext.GetRemoteEndPoint();
+                    _remoteEndPoint = RequestContext.GetRemoteEndPoint()!;
                 }
 
                 return _remoteEndPoint;
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (_localEndPoint == null)
                 {
-                    _localEndPoint = RequestContext.GetLocalEndPoint();
+                    _localEndPoint = RequestContext.GetLocalEndPoint()!;
                 }
 
                 return _localEndPoint;
@@ -240,9 +240,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         // TODO: Lazy cache?
-        public IPAddress RemoteIpAddress => RemoteEndPoint.GetIPAddress();
+        public IPAddress? RemoteIpAddress => RemoteEndPoint.GetIPAddress();
 
-        public IPAddress LocalIpAddress => LocalEndPoint.GetIPAddress();
+        public IPAddress? LocalIpAddress => LocalEndPoint.GetIPAddress();
 
         public int RemotePort => RemoteEndPoint.GetPort();
 
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
         }
 
-        public X509Certificate2 ClientCertificate
+        public X509Certificate2? ClientCertificate
         {
             get
             {
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to
         // enable this, but it's unclear what Http.Sys would do.
-        public async Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (SslStatus == SslStatus.Insecure)
             {

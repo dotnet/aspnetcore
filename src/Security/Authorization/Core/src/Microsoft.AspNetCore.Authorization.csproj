@@ -11,6 +11,7 @@ Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authorization</PackageTags>
     <Nullable>enable</Nullable>
+    <Trimmable>true</Trimmable>
   </PropertyGroup>
 
   <ItemGroup>

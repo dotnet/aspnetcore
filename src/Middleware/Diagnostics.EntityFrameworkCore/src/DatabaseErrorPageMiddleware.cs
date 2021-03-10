@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
                 case DbContextErrorEventData contextErrorEventData:
                     {
-                        _localDiagnostic.Value?.Hold(contextErrorEventData.Exception, contextErrorEventData.Context.GetType());
+                        _localDiagnostic.Value?.Hold(contextErrorEventData.Exception, contextErrorEventData.Context!.GetType());
 
                         break;
                     }

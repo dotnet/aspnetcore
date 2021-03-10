@@ -14,6 +14,14 @@ namespace Microsoft.JSInterop.WebAssembly
     /// </summary>
     public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalledRuntime
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WebAssemblyJSRuntime"/>.
+        /// </summary>
+        protected WebAssemblyJSRuntime()
+        {
+            JsonSerializerOptions.Converters.Insert(0, new WebAssemblyJSObjectReferenceJsonConverter(this));
+        }
+
         /// <inheritdoc />
         protected override string InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
         {

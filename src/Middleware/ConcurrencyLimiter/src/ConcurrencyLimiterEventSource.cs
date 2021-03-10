@@ -13,8 +13,11 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         public static readonly ConcurrencyLimiterEventSource Log = new ConcurrencyLimiterEventSource();
         private static readonly QueueFrame CachedNonTimerResult = new QueueFrame(timer: null, parent: Log);
 
+#pragma warning disable IDE0052 // Remove unread private members (2021-02-02: These ARE set in OnEventCommand - the the IDE0052 analyzer is incorrect at this time)
         private PollingCounter? _rejectedRequestsCounter;
         private PollingCounter? _queueLengthCounter;
+#pragma warning restore IDE0052 // Remove unread private members
+
         private EventCounter? _queueDuration;
 
         private long _rejectedRequests;
@@ -62,8 +65,8 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         internal struct QueueFrame : IDisposable
         {
-            private ValueStopwatch? _timer;
-            private ConcurrencyLimiterEventSource _parent;
+            private readonly ValueStopwatch? _timer;
+            private readonly ConcurrencyLimiterEventSource _parent;
 
             public QueueFrame(ValueStopwatch? timer, ConcurrencyLimiterEventSource parent)
             {

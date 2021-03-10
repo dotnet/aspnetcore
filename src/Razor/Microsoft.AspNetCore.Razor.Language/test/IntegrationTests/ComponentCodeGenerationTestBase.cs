@@ -3153,6 +3153,544 @@ namespace Test
         }
 
         [Fact]
+        public void CascadingGenericInference_Explicit()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid TItem=""DateTime"" Items=""@(Array.Empty<DateTime>())""><Column /><Column /></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_ExplicitOverride()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid TItem=""DateTime"" Items=""@(Array.Empty<DateTime>())""><Column TItem=""System.TimeZoneInfo"" /></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_NotCascaded_Explicit()
+        {
+            // The point of this test is to show that, without [CascadingTypeParameter], we don't cascade
+
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid TItem=""DateTime"" Items=""@(Array.Empty<DateTime>())""><Column /></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_NotCascaded_Inferred()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid Items=""@(Array.Empty<DateTime>())""><Column /><Column /></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_Partial_CreatesError()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem, TChildOther> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid Items=""@(Array.Empty<DateTime>())""><Column TChildOther=""long"" /></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.GenericComponentMissingTypeArgument.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_WithSplatAndKey()
+        {
+            // This is an integration test to show that our type inference code doesn't
+            // have bad interactions with some of the other more complicated transformations
+
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem> : ComponentBase
+    {
+        [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object> OtherAttributes { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@{ var parentKey = new object(); var childKey = new object(); }
+<Grid @key=""@parentKey"" Items=""@(Array.Empty<DateTime>())"">
+    <Column @key=""@childKey"" Title=""Hello"" Another=""@DateTime.MinValue"" />
+</Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_Multilayer()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class Ancestor<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Passthrough : ComponentBase
+    {
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Child<TItem> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Ancestor Items=""@(Array.Empty<DateTime>())""><Passthrough><Child /></Passthrough></Ancestor>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_Override_Multilayer()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class TreeNode<TItem> : ComponentBase
+    {
+        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter] public TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<TreeNode Item=""@DateTime.Now"">
+    <TreeNode Item=""@System.Threading.Thread.CurrentThread"">
+        <TreeNode>
+            <TreeNode />
+        </TreeNode>
+    </TreeNode>
+    <TreeNode />
+</TreeNode>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_Override()
+        {
+            // This test is to show that, even if an ancestor is trying to cascade its generic types,
+            // a descendant can still override that through inference
+
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem> : ComponentBase
+    {
+        [Parameter] public TItem OverrideParam { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid Items=""@(Array.Empty<DateTime>())""><Column OverrideParam=""@(""Some string"")"" /></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_NotCascaded_CreatesError()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid Items=""@(Array.Empty<DateTime>())""><Column /></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_GenericChildContent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem> : ComponentBase
+    {
+        [Parameter] public RenderFragment<TItem> ChildContent { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid Items=""@(Array.Empty<DateTime>())""><Column>@context.Year</Column></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_GenericLambda()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    public class Grid<TItem> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.IEnumerable<TItem> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem, TOutput> : ComponentBase
+    {
+        [Parameter] public System.Func<TItem, TOutput> SomeLambda { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid Items=""@(Array.Empty<DateTime>())""><Column SomeLambda=""@(x => x.Year)"" /></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_MultipleTypes()
+        {
+
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TKey))]
+    [CascadingTypeParameter(nameof(TValue))]
+    [CascadingTypeParameter(nameof(TOther))]
+    public class Parent<TKey, TValue, TOther> : ComponentBase
+    {
+        [Parameter] public Dictionary<TKey, TValue> Data { get; set; }
+        [Parameter] public TOther Other { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Child<TOther, TValue, TKey, TChildOnly> : ComponentBase
+    {
+        [Parameter] public ICollection<TChildOnly> ChildOnlyItems { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Parent Data=""@(new System.Collections.Generic.Dictionary<int, string>())"" Other=""@DateTime.MinValue"">
+    <Child ChildOnlyItems=""@(new[] { 'a', 'b', 'c' })"" />
+</Parent>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_WithUnrelatedType_CreatesError()
+        {
+            // It would succeed if you changed this to Column<TItem, TUnrelated>, or if the Grid took a parameter
+            // whose type included TItem and not TUnrelated. It just doesn't work if the only inference parameters
+            // also include unrelated generic types, because the inference methods we generate don't know what
+            // to do with extra type parameters. It would be nice just to ignore them, but at the very least we
+            // have to rewrite their names to avoid clashes and figure out whether multiple unrelated generic
+            // types with the same name should be rewritten to the same name or unique names.
+
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TItem))]
+    [CascadingTypeParameter(nameof(TUnrelated))]
+    public class Grid<TItem, TUnrelated> : ComponentBase
+    {
+        [Parameter] public System.Collections.Generic.Dictionary<TItem, TUnrelated> Items { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Column<TItem> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Grid Items=""@(new Dictionary<int, string>())""><Column /></Grid>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void CascadingGenericInference_CombiningMultipleAncestors()
+        {
+
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [CascadingTypeParameter(nameof(TOne))]
+    public class ParentOne<TOne> : ComponentBase
+    {
+        [Parameter] public TOne Value { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    [CascadingTypeParameter(nameof(TTwo))]
+    public class ParentTwo<TTwo> : ComponentBase
+    {
+        [Parameter] public TTwo Value { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
+    }
+
+    public class Child<TOne, TTwo> : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<ParentOne Value=""@int.MaxValue"">
+    <ParentTwo Value=""@(""Hello"")"">
+        <Child />
+    </ParentTwo>
+</ParentOne>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void ChildComponent_GenericWeaklyTypedAttribute()
         {
             // Arrange

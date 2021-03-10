@@ -5,9 +5,6 @@ using System;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-// Remove once HttpSys has enabled nullable
-#nullable enable
-
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static class HeaderEncoding

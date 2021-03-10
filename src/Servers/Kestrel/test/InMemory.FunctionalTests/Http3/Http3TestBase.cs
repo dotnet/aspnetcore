@@ -333,6 +333,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler, IProtocolErrorCodeFeature
         {
+            private TestStreamContext _testStreamContext;
+
             internal ConnectionContext StreamContext { get; }
 
             public bool CanRead => true;
@@ -340,6 +342,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public long StreamId => 0;
 
+            public bool Disposed => _testStreamContext.Disposed;
             public long Error { get; set; }
 
             private readonly byte[] _headerEncodingBuffer = new byte[16 * 1024];
@@ -355,8 +358,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
 
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-
-                StreamContext = new TestStreamContext(canRead: true, canWrite: true, _pair, this);
+                _testStreamContext = new TestStreamContext(canRead: true, canWrite: true, _pair, this);
+                StreamContext = _testStreamContext;
             }
 
             public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers, bool endStream = false)
@@ -628,6 +631,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 CanWrite = canWrite;
             }
 
+            public bool Disposed { get; private set; }
+
             public override string ConnectionId { get; set; }
 
             public long StreamId { get; }
@@ -655,6 +660,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public override void Abort(ConnectionAbortedException abortReason)
             {
                 _pair.Application.Output.Complete(abortReason);
+            }
+
+            public override ValueTask DisposeAsync()
+            {
+                Disposed = true;
+                return base.DisposeAsync();
             }
         }
     }

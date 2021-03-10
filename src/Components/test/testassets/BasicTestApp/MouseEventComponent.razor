@@ -23,11 +23,16 @@
         <div id="drop" @ondrop="OnDrop" ondragover="event.preventDefault()" style="width: 100px; height: 100px; border: dotted">Drop Target</div>
     </p>
     <p>
-        <button @onclick="Clear">Clear</button>
+        <button id="clear_event_log" @onclick="Clear">Clear</button>
     </p>
 
     <p>
         Another input (to distract you) <input id="other" />
+    </p>
+
+    <p>
+        Polymorphic args handler:
+        <div id="polymorphic_event_elem" draggable="true" @onpointerup="OnPolymorphicEvent" @ondragstart="OnPolymorphicEvent">Click or drag me</div>
     </p>
 </div>
 
@@ -39,56 +44,68 @@
     {
         DumpEvent(e);
         message += "onmouseover,";
-        StateHasChanged();
     }
 
     void OnMouseOut(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmouseout,";
-        StateHasChanged();
     }
 
     void OnMouseMove(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmousemove,";
-        StateHasChanged();
     }
 
     void OnMouseDown(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmousedown,";
-        StateHasChanged();
     }
 
     void OnMouseUp(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmouseup,";
-        StateHasChanged();
     }
 
     void OnPointerDown(PointerEventArgs e)
     {
         DumpEvent(e);
         message += "onpointerdown";
-        StateHasChanged();
     }
 
     void OnDragStart(DragEventArgs e)
     {
         DumpEvent(e);
         message += "ondragstart,";
-        StateHasChanged();
     }
 
     void OnDrop(DragEventArgs e)
     {
         DumpEvent(e);
         message += "ondrop,";
-        StateHasChanged();
+    }
+
+    void OnPolymorphicEvent(EventArgs e)
+    {
+        // The purpose of this handler is to show that, even though the declared args type is
+        // the EventArgs base class, at runtime we actually receive the subclass corresponding
+        // to the event that occurred. Note that this will only be supported for the built-in
+        // web event types (for back compatibility), and cannot work for any custom events,
+        // since we have no way to know which subclass you'd want for a custom event.
+        message += e.GetType().FullName;
+
+        switch (e)
+        {
+            case PointerEventArgs pointerEvent:
+                message += $":{pointerEvent.PointerType}";
+                break;
+            case DragEventArgs dragEvent:
+                message += $":{dragEvent.Buttons}";
+                break;
+        }
     }
 
     void DumpEvent(MouseEventArgs e)

@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -80,6 +78,7 @@ namespace Microsoft.AspNetCore.Components
             return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
         }
 
+        [RequiresUnreferencedCode("This API attempts to JSON deserialize types which might be trimmed.")]
         public IList<object> GetParameterValues(string parameterValues)
         {
             return JsonSerializer.Deserialize<IList<object>>(parameterValues, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;

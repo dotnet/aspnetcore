@@ -423,7 +423,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         break;
                     }
 
+                    // Observe HTTP/2 backpressure
                     var actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityTask);
+
+                    var shouldFlush = false;
 
                     if (actual > 0)
                     {
@@ -439,25 +442,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             dataLength = 0;
                         }
 
-                        // Don't call TimeFlushUnsynchronizedAsync() since we time this write while also accounting for
+                        // Don't call FlushAsync() with the min data rate, since we time this write while also accounting for
                         // flow control induced backpressure below.
-                        writeTask = _flusher.FlushAsync();
+                        shouldFlush = true;
                     }
                     else if (firstWrite)
                     {
                         // If we're facing flow control induced backpressure on the first write for a given stream's response body,
                         // we make sure to flush the response headers immediately.
+                        shouldFlush = true;
+                    }
+
+                    if (shouldFlush)
+                    {
+                        if (_minResponseDataRate != null)
+                        {
+                            // Call BytesWrittenToBuffer before FlushAsync() to make testing easier, otherwise the Flush can cause test code to run before the timeout
+                            // control updates and if the test checks for a timeout it can fail
+                            _timeoutControl.BytesWrittenToBuffer(_minResponseDataRate, _unflushedBytes);
+                        }
+
+                        _unflushedBytes = 0;
+
                         writeTask = _flusher.FlushAsync();
                     }
 
                     firstWrite = false;
-
-                    if (_minResponseDataRate != null)
-                    {
-                        _timeoutControl.BytesWrittenToBuffer(_minResponseDataRate, _unflushedBytes);
-                    }
-
-                    _unflushedBytes = 0;
                 }
 
                 // Avoid timing writes that are already complete. This is likely to happen during the last iteration.

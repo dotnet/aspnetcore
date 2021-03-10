@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -15,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     // True-internal because this is a weird and tricky class to use :)
     internal static class AsyncEnumerableAdapters
     {
-        public static IAsyncEnumerable<object> MakeCancelableAsyncEnumerable<T>(IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken = default)
+        public static IAsyncEnumerable<object?> MakeCancelableAsyncEnumerable<T>(IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken = default)
         {
             return new CancelableAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
         }
@@ -26,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         }
 
 #if NETCOREAPP
-        public static async IAsyncEnumerable<object> MakeAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public static async IAsyncEnumerable<object?> MakeAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await foreach (var item in channel.ReadAllAsync(cancellationToken))
             {
@@ -36,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 #else
         // System.Threading.Channels.ReadAllAsync() is not available on netstandard2.0 and netstandard2.1
         // But this is the exact same code that it uses
-        public static async IAsyncEnumerable<object> MakeAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public static async IAsyncEnumerable<object?> MakeAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             while (await channel.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -66,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     var registration = cancellationToken.Register((ctsState) =>
                     {
-                        ((CancellationTokenSource)ctsState).Cancel();
+                        ((CancellationTokenSource)ctsState!).Cancel();
                     }, _cts);
 
                     return new CancelableEnumerator<TResult>(enumerator, registration);
@@ -102,7 +100,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         }
 
         /// <summary>Converts an IAsyncEnumerable of T to an IAsyncEnumerable of object.</summary>
-        private class CancelableAsyncEnumerable<T> : IAsyncEnumerable<object>
+        private class CancelableAsyncEnumerable<T> : IAsyncEnumerable<object?>
         {
             private readonly IAsyncEnumerable<T> _asyncEnumerable;
             private readonly CancellationToken _cancellationToken;
@@ -113,17 +111,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 _cancellationToken = cancellationToken;
             }
 
-            public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            public IAsyncEnumerator<object?> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             {
                 // Assume that this will be iterated through with await foreach which always passes a default token.
                 // Instead use the token from the ctor.
                 Debug.Assert(cancellationToken == default);
 
                 var enumeratorOfT = _asyncEnumerable.GetAsyncEnumerator(_cancellationToken);
-                return enumeratorOfT as IAsyncEnumerator<object> ?? new BoxedAsyncEnumerator(enumeratorOfT);
+                return enumeratorOfT as IAsyncEnumerator<object?> ?? new BoxedAsyncEnumerator(enumeratorOfT);
             }
 
-            private class BoxedAsyncEnumerator : IAsyncEnumerator<object>
+            private class BoxedAsyncEnumerator : IAsyncEnumerator<object?>
             {
                 private IAsyncEnumerator<T> _asyncEnumerator;
 
@@ -132,7 +130,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     _asyncEnumerator = asyncEnumerator;
                 }
 
-                public object Current => _asyncEnumerator.Current;
+                public object? Current => _asyncEnumerator.Current;
 
                 public ValueTask<bool> MoveNextAsync()
                 {

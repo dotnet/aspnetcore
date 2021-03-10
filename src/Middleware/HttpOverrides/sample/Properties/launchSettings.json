@@ -8,15 +8,15 @@
     }
   },
   "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
+    "web": {
+      "commandName": "web",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "web": {
-      "commandName": "web",
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

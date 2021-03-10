@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System.Diagnostics.Tracing;
 using System.Threading;
 using Microsoft.Extensions.Internal;
@@ -13,11 +11,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
     {
         public static readonly HttpConnectionsEventSource Log = new HttpConnectionsEventSource();
 
-        private PollingCounter _connectionsStartedCounter;
-        private PollingCounter _connectionsStoppedCounter;
-        private PollingCounter _connectionsTimedOutCounter;
-        private PollingCounter _currentConnectionsCounter;
-        private EventCounter _connectionDuration;
+        private PollingCounter? _connectionsStartedCounter;
+        private PollingCounter? _connectionsStoppedCounter;
+        private PollingCounter? _connectionsTimedOutCounter;
+        private PollingCounter? _currentConnectionsCounter;
+        private EventCounter? _connectionDuration;
 
         private long _connectionsStarted;
         private long _connectionsStopped;
@@ -46,7 +44,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             if (IsEnabled())
             {
                 var duration = timer.IsActive ? timer.GetElapsedTime().TotalMilliseconds : 0.0;
-                _connectionDuration.WriteMetric(duration);
+                _connectionDuration!.WriteMetric(duration);
 
                 if (IsEnabled(EventLevel.Informational, EventKeywords.None))
                 {

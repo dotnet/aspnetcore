@@ -16,7 +16,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="${MicrosoftAspNetCoreComponentsWebAssemblyAuthenticationVersion}" Condition="'$(IndividualLocalAuth)' == 'true'" />
     <PackageReference Include="Microsoft.Authentication.WebAssembly.Msal" Version="${MicrosoftAuthenticationWebAssemblyMsalVersion}" Condition="'$(OrganizationalAuth)' == 'true' OR '$(IndividualB2CAuth)' == 'true'" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="${MicrosoftExtensionsHttpVersion}" Condition="'$(NoAuth)' != 'true' AND '$(Hosted)' == 'true'" />
-    <PackageReference Include="System.Net.Http.Json" Version="${SystemNetHttpJsonVersion}" />
   </ItemGroup>
 
   <!--#if Hosted -->

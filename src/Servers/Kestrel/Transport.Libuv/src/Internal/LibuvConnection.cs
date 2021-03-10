@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             (handle, suggestedSize, state) => AllocCallback(handle, suggestedSize, state);
 
         private readonly UvStreamHandle _socket;
+        private readonly IDuplexPipe _originalTransport;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
         private volatile ConnectionAbortedException _abortReason;
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
             // Set the transport and connection id
-            Transport = pair.Transport;
+            Transport = _originalTransport = pair.Transport;
             Application = pair.Application;
         }
 
@@ -162,8 +163,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public override async ValueTask DisposeAsync()
         {
-            Transport.Input.Complete();
-            Transport.Output.Complete();
+            _originalTransport.Input.Complete();
+            _originalTransport.Output.Complete();
 
             if (_processingTask != null)
             {

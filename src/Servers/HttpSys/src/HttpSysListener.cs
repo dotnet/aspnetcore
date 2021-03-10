@@ -312,14 +312,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return true;
         }
 
-        internal unsafe void SendError(ulong requestId, int httpStatusCode, IList<string> authChallenges = null)
+        internal unsafe void SendError(ulong requestId, int httpStatusCode, IList<string>? authChallenges = null)
         {
             HttpApiTypes.HTTP_RESPONSE_V2 httpResponse = new HttpApiTypes.HTTP_RESPONSE_V2();
             httpResponse.Response_V1.Version = new HttpApiTypes.HTTP_VERSION();
             httpResponse.Response_V1.Version.MajorVersion = (ushort)1;
             httpResponse.Response_V1.Version.MinorVersion = (ushort)1;
 
-            List<GCHandle> pinnedHeaders = null;
+            List<GCHandle>? pinnedHeaders = null;
             GCHandle gcHandle;
             try
             {
@@ -328,8 +328,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     pinnedHeaders = new List<GCHandle>(authChallenges.Count + 3);
 
-                    HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
-                    knownHeaderInfo = new HttpApiTypes.HTTP_RESPONSE_INFO[1];
+                    HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = new HttpApiTypes.HTTP_RESPONSE_INFO[1];
                     gcHandle = GCHandle.Alloc(knownHeaderInfo, GCHandleType.Pinned);
                     pinnedHeaders.Add(gcHandle);
                     httpResponse.pResponseInfo = (HttpApiTypes.HTTP_RESPONSE_INFO*)gcHandle.AddrOfPinnedObject();
@@ -369,10 +368,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
 
                 httpResponse.Response_V1.StatusCode = (ushort)httpStatusCode;
-                string statusDescription = HttpReasonPhrase.Get(httpStatusCode);
+                string? statusDescription = HttpReasonPhrase.Get(httpStatusCode);
                 uint dataWritten = 0;
                 uint statusCode;
-                byte[] byteReason = HeaderEncoding.GetBytes(statusDescription);
+                byte[] byteReason = statusDescription != null ? HeaderEncoding.GetBytes(statusDescription) : Array.Empty<byte>();
                 fixed (byte* pReason = byteReason)
                 {
                     httpResponse.Response_V1.pReason = (byte*)pReason;

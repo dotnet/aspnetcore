@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
-    <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
+    <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) || exit /b 1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TestDependsOnAspNetRuntime)' == 'true' ">

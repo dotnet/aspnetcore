@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder;
         }
 
-        private static IHubConnectionBuilder WithUrlCore(this IHubConnectionBuilder hubConnectionBuilder, Uri url, HttpTransportType? transports, Action<HttpConnectionOptions> configureHttpConnection)
+        private static IHubConnectionBuilder WithUrlCore(this IHubConnectionBuilder hubConnectionBuilder, Uri url, HttpTransportType? transports, Action<HttpConnectionOptions>? configureHttpConnection)
         {
             if (hubConnectionBuilder == null)
             {
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private class HttpConnectionOptionsDerivedHttpEndPoint : UriEndPoint
         {
             public HttpConnectionOptionsDerivedHttpEndPoint(IOptions<HttpConnectionOptions> httpConnectionOptions)
-                : base(httpConnectionOptions.Value.Url)
+                : base(httpConnectionOptions.Value.Url!)
             {
             }
         }

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private volatile int _stopping;
         private int _outstandingRequests;
-        private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _shutdownSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         private int _shutdownSignalCompleted;
 
         private readonly ServerAddressesFeature _serverAddresses;
@@ -66,13 +66,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal HttpSysListener Listener { get; }
 
-        internal IRequestContextFactory RequestContextFactory { get; set; }
+        internal IRequestContextFactory? RequestContextFactory { get; set; }
 
         public IFeatureCollection Features { get; }
 
         internal bool Stopping => _stopping == 1;
 
-        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
+        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
         {
             if (application == null)
             {
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void SetShutdownSignal()
         {
-            _shutdownSignal.TrySetResult(null);
+            _shutdownSignal.TrySetResult();
         }
 
         // The message pump.
@@ -178,6 +178,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // The awaits will manage stack depth for us.
         private async Task ProcessRequestsWorker()
         {
+            Debug.Assert(RequestContextFactory != null);
+
             // Allocate and accept context per loop and reuse it for all accepts
             using var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory);
 
@@ -236,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     if (Interlocked.Exchange(ref _shutdownSignalCompleted, 1) == 0)
                     {
                         _logger.LogInformation(LoggerEventIds.StopCancelled, "Canceled, terminating " + _outstandingRequests + " request(s).");
-                        _shutdownSignal.TrySetResult(null);
+                        _shutdownSignal.TrySetResult();
                     }
                 });
             }
@@ -258,7 +260,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 else
                 {
-                    _shutdownSignal.TrySetResult(null);
+                    _shutdownSignal.TrySetResult();
                 }
             }
             catch (Exception ex)
@@ -272,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public void Dispose()
         {
             _stopping = 1;
-            _shutdownSignal.TrySetResult(null);
+            _shutdownSignal.TrySetResult();
 
             Listener.Dispose();
         }

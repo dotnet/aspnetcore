@@ -6,11 +6,13 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal partial class Http3Stream : IHttpResetFeature,
+                                         IHttpMinRequestBodyDataRateFeature,
                                          IHttpResponseTrailersFeature
     {
         private IHeaderDictionary? _userTrailers;
@@ -37,6 +39,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
 
                 _userTrailers = value;
+            }
+        }
+
+        MinDataRate? IHttpMinRequestBodyDataRateFeature.MinDataRate
+        {
+            get => throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
+            set
+            {
+                if (value != null)
+                {
+                    throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
+                }
+
+                MinRequestBodyDataRate = value;
             }
         }
 

@@ -61,6 +61,11 @@
         <_Parameter1>Serviceable</_Parameter1>
         <_Parameter2>True</_Parameter2>
       </AssemblyAttribute>
+
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(Trimmable)' == 'true'">
+        <_Parameter1>IsTrimmable</_Parameter1>
+        <_Parameter2>True</_Parameter2>
+      </AssemblyAttribute>
     </ItemGroup>
   </Target>
 
@@ -80,7 +85,8 @@
 
         SuppressNullableAttributesImport to disable. Used when attributes are already present from another project because of InternalsVisibleTo.
      -->
-    <When Condition="'$(Nullable)' != '' AND '$(SuppressNullableAttributesImport)' != 'true' AND ('$(TargetFrameworkIdentifier)' == '.NETStandard' OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
+    <When Condition="'$(Nullable)' != '' AND '$(SuppressNullableAttributesImport)' != 'true' AND
+        (('$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.0'))) OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
       <PropertyGroup>
         <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
         <NoWarn>$(NoWarn);nullable</NoWarn>

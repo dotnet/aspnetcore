@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         private readonly QuicStream _stream;
         private readonly QuicConnectionContext _connection;
         private readonly QuicTransportContext _context;
+        private readonly IDuplexPipe _originalTransport;
         private readonly CancellationTokenSource _streamClosedTokenSource = new CancellationTokenSource();
         private readonly IQuicTrace _log;
         private string? _connectionId;
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             CanRead = stream.CanRead;
             CanWrite = stream.CanWrite;
 
-            Transport = pair.Transport;
+            Transport = _originalTransport = pair.Transport;
             Application = pair.Application;
         }
 
@@ -342,8 +343,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         public override async ValueTask DisposeAsync()
         {
-            Transport.Input.Complete();
-            Transport.Output.Complete();
+            _originalTransport.Input.Complete();
+            _originalTransport.Output.Complete();
 
             await _processingTask;
 

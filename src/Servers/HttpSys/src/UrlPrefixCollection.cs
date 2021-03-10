@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     public class UrlPrefixCollection : ICollection<UrlPrefix>
     {
         private readonly IDictionary<int, UrlPrefix> _prefixes = new Dictionary<int, UrlPrefix>(1);
-        private UrlGroup _urlGroup;
+        private UrlGroup? _urlGroup;
         private int _nextId = 1;
 
         // Valid port range of 5000 - 48000.
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        internal UrlPrefix GetPrefix(int id)
+        internal UrlPrefix? GetPrefix(int id)
         {
             lock (_prefixes)
             {
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        internal bool TryMatchLongestPrefix(bool isHttps, string host, string originalPath, out string pathBase, out string remainingPath)
+        internal bool TryMatchLongestPrefix(bool isHttps, string host, string originalPath, [NotNullWhen(true)] out string? pathBase, [NotNullWhen(true)] out string? remainingPath)
         {
             var originalPathString = new PathString(originalPath);
             var found = false;
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     if (isHttps == prefix.IsHttps
                         && string.Equals(host, prefix.HostAndPort, StringComparison.OrdinalIgnoreCase)
                         && originalPathString.StartsWithSegments(new PathString(prefix.PathWithoutTrailingSlash), StringComparison.OrdinalIgnoreCase, out var remainder)
-                        && (!found || remainder.Value.Length < remainingPath.Length)) // Longest match
+                        && (!found || remainder.Value!.Length < remainingPath!.Length)) // Longest match
                     {
                         found = true;
                         pathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Maintain the input casing
@@ -219,6 +220,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private void FindHttpPortUnsynchronized(int key, UrlPrefix urlPrefix)
         {
+            Debug.Assert(_urlGroup != null);
+
             for (var index = 0; index < MaxRetries; index++)
             {
                 try
@@ -252,6 +255,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             lock (_prefixes)
             {
+                if (_urlGroup == null)
+                {
+                    return;
+                }
+
                 // go through the uri list and unregister for each one of them
                 foreach (var prefix in _prefixes.Values)
                 {

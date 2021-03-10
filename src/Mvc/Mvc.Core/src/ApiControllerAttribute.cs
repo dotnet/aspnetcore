@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </para>
     /// <para>
     /// When decorated on an assembly, all controllers in the assembly will be treated as controllers with API behavior.
+    /// For more information, see <see href="https://docs.microsoft.com/aspnet/core/web-api/#apicontroller-attribute">ApiController attribute</see>.
     /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]

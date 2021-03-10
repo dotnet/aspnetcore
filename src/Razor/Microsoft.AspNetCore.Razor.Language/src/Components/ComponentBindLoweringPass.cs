@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -496,7 +497,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return true;
             }
 
-            if (!attributeName.StartsWith("bind-"))
+            if (!attributeName.StartsWith("bind-", StringComparison.Ordinal))
             {
                 return false;
             }
@@ -548,7 +549,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             if (bindEntry.BindEventNode == null)
             {
                 // @bind:event not specified
-                changeAttributeName ??= node.TagHelper.GetChangeAttributeName();
+                changeAttributeName = node.TagHelper.GetChangeAttributeName();
             }
             else if (TryExtractEventNodeStaticText(bindEntry.BindEventNode, out var text))
             {

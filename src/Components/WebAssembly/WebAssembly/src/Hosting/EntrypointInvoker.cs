@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             }
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075", Justification = "MainAsync does not get linked.")]
         private static MethodBase FindUnderlyingEntrypoint(Assembly assembly)
         {
             // This is the entrypoint declared in .NET metadata. In the case of async main, it's the
@@ -49,24 +50,28 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             // For "async Task Main", the C# compiler generates a method called "<Main>"
             // that is marked as the assembly entrypoint. Detect this case, and instead of
-            // calling "<Whatever>", call the sibling "Whatever".
+            // calling "<Whatever>", call the sibling "Whatever".  Top level main methods
+            // are generated with the name "<Main>$" so also check for that "<Whatever>$".
             if (metadataEntrypointMethodBase!.IsSpecialName)
             {
                 var origName = metadataEntrypointMethodBase.Name;
                 var origNameLength = origName.Length;
                 if (origNameLength > 2)
                 {
-                    var candidateMethodName = origName.Substring(1, origNameLength - 2);
-                    var candidateMethod = metadataEntrypointMethodBase.DeclaringType!.GetMethod(
-                        candidateMethodName,
-                        BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
-                        null,
-                        metadataEntrypointMethodBase.GetParameters().Select(p => p.ParameterType).ToArray(),
-                        null);
-
-                    if (candidateMethod != null)
+                    var candidateNames = new [] { origName.Substring(1, origNameLength - 2), origName + "$" };
+                    foreach (var candidateMethodName in candidateNames)
                     {
-                        return candidateMethod;
+                        var candidateMethod = metadataEntrypointMethodBase.DeclaringType!.GetMethod(
+                            candidateMethodName,
+                            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                            null,
+                            metadataEntrypointMethodBase.GetParameters().Select(p => p.ParameterType).ToArray(),
+                            null);
+
+                        if (candidateMethod != null)
+                        {
+                            return candidateMethod;
+                        }
                     }
                 }
             }

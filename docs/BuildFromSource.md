@@ -163,9 +163,11 @@ Studio because those projects are not listed in AspNetCore.sln.
 This will download the required tools and restore all projects inside the repository. At that point, you should be able
 to open the .sln file or one of the project specific .slnf files to work on the projects you care about.
 
-> :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master
+
+> :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the main
 > branch, we regularly update the versions of .NET Core SDK required to build the repo.
 > You will need to restart Visual Studio every time we update the .NET Core SDK.
+
 
 > :bulb: Rerunning the above command or, perhaps, the quicker `.\build.cmd -noBuildNative -noBuildManaged` may be
 > necessary after switching branches, especially if the `$(DefaultNetCoreTargetFramework)` value changes.
@@ -234,13 +236,19 @@ code .
 
 When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](using-dotnet-on-command-line-in-this-repo).
 
-On Windows:
+The source code in this repo is divided into directories for each project area. Each directory will typically contain a `src` directory that contains the source files for a project and a `test` directory that contains the test projects and assets within a project.
+
+Some projects, like the `Components` project or the `Razor` project, might contain additional subdirectories.
+
+To build a code change associated with a modification, run the build script in the directory closest to the modified file. For example, if you've modified `src/Components/WebAssembly/Server/src/WebAssemblyNetDebugProxyAppBuilderExtensions.cs` then run the build script located in `src/Components`.
+
+On Windows, you can run the command script:
 
 ```powershell
 .\build.cmd
 ```
 
-On macOS/Linux:
+On macOS/Linux, you can run the shell script:
 
 ```bash
 ./build.sh
@@ -276,7 +284,7 @@ source ./activate.sh
 
 ### Running tests on command-line
 
-Tests are not run by default. Use the `-test` option to run tests in addition to building.
+Tests are not run by default. When invoking a `build.cmd`/`build.sh` script, use the `-test` option to run tests in addition to building.
 
 On Windows:
 
