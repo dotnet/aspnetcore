@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _waitForData = waitForData;
             _socketSenderPool = socketSenderPool;
 
-             LocalEndPoint = _socket.LocalEndPoint;
+            LocalEndPoint = _socket.LocalEndPoint;
             RemoteEndPoint = _socket.RemoteEndPoint;
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
