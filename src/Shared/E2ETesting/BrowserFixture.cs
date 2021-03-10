@@ -166,6 +166,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
 
             var userProfileDirectory = UserProfileDirectory(context);
+            UserProfileDir = userProfileDirectory;
             if (!string.IsNullOrEmpty(userProfileDirectory))
             {
                 Directory.CreateDirectory(userProfileDirectory);
