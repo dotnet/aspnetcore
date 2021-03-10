@@ -288,6 +288,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30820")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
         {
             return BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
