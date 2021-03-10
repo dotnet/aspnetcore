@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging.Testing;
 using Newtonsoft.Json.Linq;
 using PlaywrightSharp;
 using ProjectTemplates.Tests.Infrastructure;
@@ -24,6 +25,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
+    [LogLevel(LogLevel.Debug)]
     public class BlazorWasmTemplateTest : BlazorTemplateTest
     {
         public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory, PlaywrightFixture<BlazorServerTemplateTest> browserFixture)
