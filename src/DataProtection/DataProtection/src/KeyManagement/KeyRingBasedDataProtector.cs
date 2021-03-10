@@ -78,14 +78,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
                 // Write out the magic header and key id
                 BinaryPrimitives.WriteUInt32BigEndian(output, MAGIC_HEADER_V0);
-                fixed (byte* pbRetVal = output)
-                {
-                    Write32bitAlignedGuid(&pbRetVal[sizeof(uint)], defaultKeyId);
-                }
 
                 // At this point, retVal := { magicHeader || keyId || encryptorSpecificProtectedPayload }
                 // And we're done!
-                return true;
+                return defaultKeyId.TryWriteBytes(output.Slice(sizeof(uint)));
             }
             catch (Exception ex) when (ex.RequiresHomogenization())
             {
