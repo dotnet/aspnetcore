@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Experimental;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -47,15 +48,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return transport.EndPoint;
         }
 
-        public async Task<EndPoint> BindAsync(EndPoint endPoint, MultiplexedConnectionDelegate multiplexedConnectionDelegate, EndpointConfig? endpointConfig)
+        public async Task<EndPoint> BindAsync(EndPoint endPoint, MultiplexedConnectionDelegate multiplexedConnectionDelegate, ListenOptions listenOptions)
         {
             if (_multiplexedTransportFactory is null)
             {
                 throw new InvalidOperationException($"Cannot bind with {nameof(MultiplexedConnectionDelegate)} no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
             }
 
-            var transport = await _multiplexedTransportFactory.BindAsync(endPoint).ConfigureAwait(false);
-            StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), endpointConfig);
+            var features = new FeatureCollection();
+            features.Set(listenOptions.HttpsOptions);
+
+            var transport = await _multiplexedTransportFactory.BindAsync(endPoint, features).ConfigureAwait(false);
+            StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), listenOptions.EndpointConfig);
             return transport.EndPoint;
         }
 

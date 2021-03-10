@@ -20,11 +20,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
     internal class QuicConnectionListener : IMultiplexedConnectionListener, IAsyncDisposable
     {
         private readonly IQuicTrace _log;
+        private readonly SslServerAuthenticationOptions _sslServerAuthenticationOptions;
         private bool _disposed;
         private readonly QuicTransportContext _context;
         private readonly QuicListener _listener;
 
-        public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint)
+        public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint, SslServerAuthenticationOptions sslServerAuthenticationOptions)
         {
             if (options.Alpn == null)
             {
@@ -34,17 +35,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             _log = log;
             _context = new QuicTransportContext(_log, options);
             EndPoint = endpoint;
-
+            _sslServerAuthenticationOptions = sslServerAuthenticationOptions;
             var quicListenerOptions = new QuicListenerOptions();
-            var sslConfig = new SslServerAuthenticationOptions();
-            sslConfig.ServerCertificate = options.Certificate;
-            sslConfig.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
 
-            quicListenerOptions.ServerAuthenticationOptions = sslConfig;
-            quicListenerOptions.CertificateFilePath = options.CertificateFilePath;
-            quicListenerOptions.PrivateKeyFilePath = options.PrivateKeyFilePath;
+            //var sslConfig = new SslServerAuthenticationOptions();
+            //sslConfig.ServerCertificate = options.Certificate;
+            //sslConfig.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
+
+            quicListenerOptions.ServerAuthenticationOptions = _sslServerAuthenticationOptions;
             quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
-            quicListenerOptions.IdleTimeout = TimeSpan.FromMinutes(2);
+            quicListenerOptions.IdleTimeout = options.IdleTimeout;
 
             _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
             _listener.Start();

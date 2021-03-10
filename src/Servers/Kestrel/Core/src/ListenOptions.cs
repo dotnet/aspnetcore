@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -97,6 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         internal bool IsTls { get; set; }
+        internal HttpsConnectionAdapterOptions? HttpsOptions { get; set; }
 
         /// <summary>
         /// Gets the name of this endpoint to display on command-line when the web server starts.
