@@ -97,7 +97,7 @@ This repo contains a Selenium-based tests require a version of Chrome to be inst
 
 #### Visual Studio Code Extension
 
-Following extension are recommanded for Visual Studio Code in order to work with ASP.NET Core repository.
+The following extensions are recommended when developing in the ASP.NET Core repository with Visual Studio Code.
 
 - [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
 
