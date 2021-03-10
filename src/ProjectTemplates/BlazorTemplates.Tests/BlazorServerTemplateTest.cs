@@ -17,6 +17,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
+    [LogLevel(LogLevel.Debug)]
     public class BlazorServerTemplateTest : BlazorTemplateTest
     {
         public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory, PlaywrightFixture<BlazorServerTemplateTest> fixture)
