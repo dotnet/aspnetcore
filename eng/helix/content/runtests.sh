@@ -34,7 +34,7 @@ if [[ "$helixQueue" == *"OSX"* ]]; then
     PLAYWRIGHT_NODE_PATH=$DIR/.playwright/osx/native/node
 else
     export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/unix/native/playwright.sh"
-    PLAYWRIGHT_NODE_PATH=$DIR/.playwright/unix/native/node"
+    PLAYWRIGHT_NODE_PATH=$DIR/.playwright/unix/native/node
 fi
 export InstallPlaywright="$installPlaywright"
 if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
