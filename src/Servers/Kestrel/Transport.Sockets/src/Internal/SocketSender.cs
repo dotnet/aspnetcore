@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
             // We clear the buffer and buffer list before we put it back into the pool
             // it's a small performance hit but it removes the confusion when looking at dumps to see this still
-            // holder onto the buffer when it's back in the pool
+            // holds onto the buffer when it's back in the pool
             BufferList = null;
 
             SetBuffer(null, 0, 0);
@@ -68,11 +68,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             if (_bufferList == null)
             {
                 _bufferList = new List<ArraySegment<byte>>();
-            }
-            else
-            {
-                // Buffers are pooled, so it's OK to root them until the next multi-buffer write.
-                _bufferList.Clear();
             }
 
             foreach (var b in buffer)

@@ -286,6 +286,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 {
                     _sender = _socketSenderPool.Rent();
                     await _sender.SendAsync(_socket, buffer);
+                    // We don't return to the pool if there was an exception, and
+                    // we keep the _sender assigned so that we can dispose it in StartAsync.
                     _socketSenderPool.Return(_sender);
                     _sender = null;
                 }
