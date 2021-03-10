@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
@@ -44,6 +45,11 @@ namespace Microsoft.AspNetCore.Connections
         /// Gets or sets the remote endpoint for this connection.
         /// </summary>
         public virtual EndPoint? RemoteEndPoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the socket for this connection.
+        /// </summary>
+        public virtual Socket? Socket { get; set; }
 
         /// <summary>
         /// Aborts the underlying connection.

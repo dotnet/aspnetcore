@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +23,8 @@ namespace Microsoft.AspNetCore.Connections
                                             IConnectionTransportFeature,
                                             IConnectionUserFeature,
                                             IConnectionLifetimeFeature,
-                                            IConnectionEndPointFeature
+                                            IConnectionEndPointFeature,
+                                            IConnectionSocketFeature
     {
         private CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
@@ -51,6 +53,7 @@ namespace Microsoft.AspNetCore.Connections
             Features.Set<IConnectionTransportFeature>(this);
             Features.Set<IConnectionLifetimeFeature>(this);
             Features.Set<IConnectionEndPointFeature>(this);
+            Features.Set<IConnectionSocketFeature>(this);
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
         }
@@ -95,6 +98,9 @@ namespace Microsoft.AspNetCore.Connections
 
         /// <inheritdoc />
         public override EndPoint? RemoteEndPoint { get; set; }
+
+        /// <inheritdoc />
+        public override Socket? Socket { get; set; }
 
         /// <inheritdoc />
         public override void Abort(ConnectionAbortedException abortReason)

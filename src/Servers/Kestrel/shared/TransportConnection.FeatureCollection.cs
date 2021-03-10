@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Net.Sockets;
 using System.Threading;
 using Microsoft.AspNetCore.Connections.Features;
 
@@ -15,7 +16,8 @@ namespace Microsoft.AspNetCore.Connections
                                                  IConnectionTransportFeature,
                                                  IConnectionItemsFeature,
                                                  IMemoryPoolFeature,
-                                                 IConnectionLifetimeFeature
+                                                 IConnectionLifetimeFeature,
+                                                 IConnectionSocketFeature
     {
         // NOTE: When feature interfaces are added to or removed from this TransportConnection class implementation,
         // then the list of `features` in the generated code project MUST also be updated.
@@ -39,6 +41,11 @@ namespace Microsoft.AspNetCore.Connections
         {
             get => ConnectionClosed;
             set => ConnectionClosed = value;
+        }
+
+        Socket? IConnectionSocketFeature.Socket
+        {
+            get => Socket;
         }
 
         void IConnectionLifetimeFeature.Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application via IConnectionLifetimeFeature.Abort()."));
