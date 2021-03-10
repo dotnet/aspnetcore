@@ -203,7 +203,7 @@
     <SystemSecurityPermissionsPackageVersion>4.5.0</SystemSecurityPermissionsPackageVersion>
     <SystemSecurityPrincipalWindowsPackageVersion>4.5.1</SystemSecurityPrincipalWindowsPackageVersion>
     <SystemServiceProcessServiceControllerPackageVersion>4.5.0</SystemServiceProcessServiceControllerPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.5.0</SystemTextEncodingsWebPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.5.1</SystemTextEncodingsWebPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.5.0</SystemThreadingChannelsPackageVersion>
     <SystemThreadingTasksDataflowPackageVersion>4.9.0</SystemThreadingTasksDataflowPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.4</SystemThreadingTasksExtensionsPackageVersion>

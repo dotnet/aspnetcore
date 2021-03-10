@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TestGroupName>Kestrel.Tests</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>
