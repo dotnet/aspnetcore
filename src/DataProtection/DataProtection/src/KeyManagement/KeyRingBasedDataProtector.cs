@@ -44,39 +44,47 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
                 if (defaultEncryptorInstance.IsSpanEnabled())
                 {
-                    return defaultEncryptorInstance.TryEncrypt(output, plaintext, aad, out bytesWritten);
+                    // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
+                    if (!defaultEncryptorInstance.TryEncrypt(output.Slice(20), plaintext, aad, out bytesWritten))
+                    {
+                        return false;
+                    }
+                    bytesWritten += 20; // Size of header and bytes
                 }
-
-                // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
-                var retVal = defaultEncryptorInstance.Encrypt(
-                    plaintext: new ArraySegment<byte>(plaintext.ToArray()),
-                    additionalAuthenticatedData: new ArraySegment<byte>(aad),
-                    preBufferSize: (uint)(sizeof(uint) + sizeof(Guid)),
-                    postBufferSize: 0);
-
-                CryptoUtil.Assert(retVal != null && retVal.Length >= sizeof(uint) + sizeof(Guid), "retVal != null && retVal.Length >= sizeof(uint) + sizeof(Guid)");
-
-                // Make sure the output is large enough to hold the data
-                if (output.Length < retVal.Length)
+                else
                 {
-                    bytesWritten = 0;
-                    return false;
+                    // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
+                    var retVal = defaultEncryptorInstance.Encrypt(
+                        plaintext: new ArraySegment<byte>(plaintext.ToArray()),
+                        additionalAuthenticatedData: new ArraySegment<byte>(aad),
+                        preBufferSize: (uint)(sizeof(uint) + sizeof(Guid)),
+                        postBufferSize: 0);
+
+                    CryptoUtil.Assert(retVal != null && retVal.Length >= sizeof(uint) + sizeof(Guid), "retVal != null && retVal.Length >= sizeof(uint) + sizeof(Guid)");
+
+                    // Make sure the output is large enough to hold the data
+                    if (output.Length < retVal.Length)
+                    {
+                        bytesWritten = 0;
+                        return false;
+                    }
+
+                    retVal.CopyTo(output);
+                    bytesWritten = retVal.Length;
                 }
 
                 // At this point: retVal := { 000..000 || encryptorSpecificProtectedPayload },
                 // where 000..000 is a placeholder for our magic header and key id.
 
                 // Write out the magic header and key id
-                BinaryPrimitives.WriteUInt32BigEndian(retVal, MAGIC_HEADER_V0);
-                fixed (byte* pbRetVal = retVal)
+                BinaryPrimitives.WriteUInt32BigEndian(output, MAGIC_HEADER_V0);
+                fixed (byte* pbRetVal = output)
                 {
                     Write32bitAlignedGuid(&pbRetVal[sizeof(uint)], defaultKeyId);
                 }
 
                 // At this point, retVal := { magicHeader || keyId || encryptorSpecificProtectedPayload }
-                // And copy it to the output and we're done!
-                retVal.CopyTo(output);
-                bytesWritten = retVal.Length;
+                // And we're done!
                 return true;
             }
             catch (Exception ex) when (ex.RequiresHomogenization())

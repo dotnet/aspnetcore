@@ -9,8 +9,10 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.Cng;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.AspNetCore.Testing;
@@ -36,6 +38,71 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
             // Act & assert
             ExceptionAssert.ThrowsArgumentNull(() => protector.Protect(plaintext: null), "plaintext");
+        }
+
+        [Fact]
+        public void TryProtect_AesGcm_Encrypts_MultiplePurposes()
+        {
+            // Arrange
+            var masterKey = Secret.Random(512 / 8);
+            var control = new AesGcmAuthenticatedEncryptor(
+                keyDerivationKey: masterKey,
+                256 / 8);
+
+            // Arrange
+            Guid defaultKey = new Guid("ba73c9ce-d322-4e45-af90-341307e11c38");
+            byte[] expectedPlaintext = new byte[] { 0x03, 0x05, 0x07, 0x11, 0x13, 0x17, 0x19 };
+            byte[] expectedAad = BuildAadFromPurposeStrings(defaultKey, "purpose1", "purpose2", "yet another purpose");
+
+            // Act & assert - data round trips properly from control to test
+            Span<byte> ciphertext = new byte[100];
+
+            Assert.True(control.TryEncrypt(ciphertext, expectedPlaintext, expectedAad, out int bytesWritten));
+            ciphertext = ciphertext.Slice(0, bytesWritten);
+            var cipherArray = ciphertext.ToArray();
+
+            byte[] expectedProtectedData = BuildProtectedDataFromCiphertext(defaultKey, cipherArray);
+
+            // Double check payload
+            byte[] roundTripPlaintext = control.Decrypt(new ArraySegment<byte>(cipherArray), new ArraySegment<byte>(expectedAad));
+            Assert.Equal(expectedPlaintext, roundTripPlaintext);
+
+            var keyBytes = defaultKey.ToByteArray();
+            var encryptor = new AesGcmAuthenticatedEncryptor(new Secret(keyBytes), keyBytes.Length);
+
+            var mockKeyRing = new Mock<IKeyRing>(MockBehavior.Strict);
+            mockKeyRing.Setup(o => o.DefaultKeyId).Returns(defaultKey);
+            mockKeyRing.Setup(o => o.DefaultAuthenticatedEncryptor).Returns(encryptor);
+            mockKeyRing.Setup(o => o.GetAuthenticatedEncryptorByKeyId(It.Is<Guid>(g => g == defaultKey), out It.Ref<bool>.IsAny)).Returns(encryptor);
+            var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+            mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(mockKeyRing.Object);
+
+            IDataProtector protector = new KeyRingBasedDataProtector(
+                keyRingProvider: mockKeyRingProvider.Object,
+                logger: GetLogger(),
+                originalPurposes: new[] { "purpose1", "purpose2" },
+                newPurpose: "yet another purpose");
+
+            // Act - Generate encrypted data
+            byte[] protectedBytes = protector.Protect(expectedPlaintext);
+
+            byte[] tryProtectBytes = new byte[protectedBytes.Length];
+            Assert.True(protector.TryProtect(tryProtectBytes, expectedPlaintext, out bytesWritten));
+            Assert.Equal(protectedBytes.Length, bytesWritten);
+
+            // Assert - Make sure we can decrypt both payloads using both Span and non span
+            Assert.Equal(expectedPlaintext, protector.Unprotect(protectedBytes));
+            Assert.Equal(expectedPlaintext, protector.Unprotect(tryProtectBytes));
+
+            roundTripPlaintext = new byte[expectedPlaintext.Length];
+            Assert.True(protector.TryUnprotect(roundTripPlaintext, tryProtectBytes, out bytesWritten));
+            Assert.Equal(roundTripPlaintext.Length, bytesWritten);
+            Assert.Equal(expectedPlaintext, roundTripPlaintext);
+
+            roundTripPlaintext = new byte[expectedPlaintext.Length];
+            Assert.True(protector.TryUnprotect(roundTripPlaintext, protectedBytes, out bytesWritten));
+            Assert.Equal(roundTripPlaintext.Length, bytesWritten);
+            Assert.Equal(expectedPlaintext, roundTripPlaintext);
         }
 
         [Fact]
