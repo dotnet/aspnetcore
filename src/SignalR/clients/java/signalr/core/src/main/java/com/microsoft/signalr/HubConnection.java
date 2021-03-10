@@ -264,7 +264,13 @@ public class HubConnection implements AutoCloseable {
                 Transport transport = customTransport;
                 if (transport == null) {
                     Single<String> tokenProvider = negotiateResponse.getAccessToken() != null ? Single.just(negotiateResponse.getAccessToken()) : accessTokenProvider;
-                    switch (negotiateResponse.getChosenTransport()) {
+                    TransportEnum chosenTransport;
+                    if (this.skipNegotiate) {
+                        chosenTransport = this.transportEnum;
+                    } else {
+                        chosenTransport = negotiateResponse.getChosenTransport();
+                    }
+                    switch (chosenTransport) {
                         case LONG_POLLING:
                             transport = new LongPollingTransport(localHeaders, httpClient, tokenProvider);
                             break;

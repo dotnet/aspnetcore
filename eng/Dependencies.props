@@ -176,7 +176,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Selenium.Support" />
     <LatestPackageReference Include="Selenium.WebDriver" />
     <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" />
-    <LatestPackageReference Include="Selenium.WebDriver.MicrosoftDriver" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" />
     <LatestPackageReference Include="Serilog.Sinks.File" />
     <LatestPackageReference Include="StackExchange.Redis" />

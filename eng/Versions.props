@@ -9,7 +9,7 @@
     <AspNetCoreMajorVersion>5</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>5</AspNetCorePatchVersion>
-    <ValidateBaseline>false</ValidateBaseline>
+    <ValidateBasline>true</ValidateBasline>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
@@ -59,10 +59,10 @@
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>5.0.3-servicing.21072.12</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.4-servicing.21116.14</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>5.0.0</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.3</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>5.0.3-servicing.21072.12</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.4</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>5.0.4-servicing.21116.14</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0</MicrosoftWin32SystemEventsPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>5.0.0</MicrosoftExtensionsCachingAbstractionsPackageVersion>
@@ -104,7 +104,7 @@
     <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>5.0.1</SystemDiagnosticsEventLogPackageVersion>
     <SystemDirectoryServicesProtocolsPackageVersion>5.0.0</SystemDirectoryServicesProtocolsPackageVersion>
-    <SystemDrawingCommonPackageVersion>5.0.1</SystemDrawingCommonPackageVersion>
+    <SystemDrawingCommonPackageVersion>5.0.2</SystemDrawingCommonPackageVersion>
     <SystemIOPipelinesPackageVersion>5.0.1</SystemIOPipelinesPackageVersion>
     <SystemNetHttpJsonPackageVersion>5.0.0</SystemNetHttpJsonPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>5.0.0</SystemNetHttpWinHttpHandlerPackageVersion>
@@ -120,23 +120,23 @@
     <SystemSecurityPermissionsPackageVersion>5.0.0</SystemSecurityPermissionsPackageVersion>
     <SystemSecurityPrincipalWindowsPackageVersion>5.0.0</SystemSecurityPrincipalWindowsPackageVersion>
     <SystemServiceProcessServiceControllerPackageVersion>5.0.0</SystemServiceProcessServiceControllerPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>5.0.0</SystemTextEncodingsWebPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>5.0.1</SystemTextEncodingsWebPackageVersion>
     <SystemTextJsonPackageVersion>5.0.1</SystemTextJsonPackageVersion>
     <SystemThreadingChannelsPackageVersion>5.0.0</SystemThreadingChannelsPackageVersion>
     <SystemWindowsExtensionsPackageVersion>5.0.0</SystemWindowsExtensionsPackageVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>5.0.1</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefPackageVersion>5.0.3</dotnetefPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.3</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.3</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.3</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.3</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.3</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftEntityFrameworkCorePackageVersion>5.0.3</MicrosoftEntityFrameworkCorePackageVersion>
-    <MicrosoftEntityFrameworkCoreDesignPackageVersion>5.0.3</MicrosoftEntityFrameworkCoreDesignPackageVersion>
+    <dotnetefPackageVersion>5.0.4</dotnetefPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.4</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.4</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.4</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.4</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.4</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>5.0.4</MicrosoftEntityFrameworkCorePackageVersion>
+    <MicrosoftEntityFrameworkCoreDesignPackageVersion>5.0.4</MicrosoftEntityFrameworkCoreDesignPackageVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>5.0.0-beta.21112.3</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>5.0.0-beta.21159.2</MicrosoftDotNetBuildTasksInstallersPackageVersion>
   </PropertyGroup>
   <!--
 
@@ -236,7 +236,7 @@
     <!-- Packages from 2.1, 2.2, and 3.1 branches used for site extension build. -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>3.1.12-servicing-21070-12</MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>3.1.13-servicing-21117-13</MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64PackageVersion>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86PackageVersion>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86PackageVersion>
     <!-- 3rd party dependencies -->
@@ -265,10 +265,9 @@
     <NewtonsoftJsonBsonPackageVersion>1.0.2</NewtonsoftJsonBsonPackageVersion>
     <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
     <NSwagApiDescriptionClientPackageVersion>13.0.4</NSwagApiDescriptionClientPackageVersion>
-    <SeleniumSupportPackageVersion>4.0.0-alpha07</SeleniumSupportPackageVersion>
-    <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
-    <SeleniumWebDriverChromeDriverPackageVersion>87.0.4280.2000-beta</SeleniumWebDriverChromeDriverPackageVersion>
-    <SeleniumWebDriverPackageVersion>4.0.0-alpha07</SeleniumWebDriverPackageVersion>
+    <SeleniumSupportPackageVersion>4.0.0-beta1</SeleniumSupportPackageVersion>
+    <SeleniumWebDriverChromeDriverPackageVersion>89.0.4389.2300-beta</SeleniumWebDriverChromeDriverPackageVersion>
+    <SeleniumWebDriverPackageVersion>4.0.0-beta1</SeleniumWebDriverPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>4.0.0</SerilogSinksFilePackageVersion>
     <StackExchangeRedisPackageVersion>2.0.593</StackExchangeRedisPackageVersion>

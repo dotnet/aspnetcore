@@ -2744,6 +2744,37 @@ class HubConnectionTest {
     }
 
     @Test
+    public void SkippingNegotiateDoesNotNegotiate() {
+        try (TestLogger logger = new TestLogger(WebSocketTransport.class.getName())) {
+            AtomicBoolean negotiateCalled = new AtomicBoolean(false);
+            TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> {
+                        negotiateCalled.set(true);
+                        return Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                    });
+
+            HubConnection hubConnection = HubConnectionBuilder
+                    .create("http://example")
+                    .withTransport(TransportEnum.WEBSOCKETS)
+                    .shouldSkipNegotiate(true)
+                    .withHttpClient(client)
+                    .build();
+
+            try {
+                hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+            } catch (Exception e) {
+                assertEquals("WebSockets isn't supported in testing currently.", e.getMessage());
+            }
+            assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+            assertFalse(negotiateCalled.get());
+
+            logger.assertLog("Starting Websocket connection.");
+        }
+    }
+
+    @Test
     public void connectionIdIsAvailableAfterStart() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
