@@ -132,14 +132,14 @@
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>6.0.0-preview.3.21159.16</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>6.0.0-preview.3.21159.19</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-preview.3.21159.19</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>6.0.0-preview.3.21159.19</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>6.0.0-preview.3.21159.19</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>6.0.0-preview.3.21159.19</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>6.0.0-preview.3.21159.19</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>6.0.0-preview.3.21159.19</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-preview.3.21159.19</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>6.0.0-preview.3.21160.4</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>6.0.0-preview.3.21160.4</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>6.0.0-preview.3.21160.4</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>6.0.0-preview.3.21160.4</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>6.0.0-preview.3.21160.4</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>6.0.0-preview.3.21160.4</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>6.0.0-preview.3.21160.4</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>6.0.0-preview.3.21160.4</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.21152.1</MicrosoftDotNetBuildTasksInstallersVersion>
   </PropertyGroup>
