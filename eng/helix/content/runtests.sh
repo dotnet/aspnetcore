@@ -38,7 +38,7 @@ else
 fi
 export InstallPlaywright="$installPlaywright"
 if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
-    echo "sudo apt-get install libdbus-glib-1-2 for playwright"
+    echo "sudo apt-get install libdbus-glib-1-2"
     sudo apt-get install libdbus-glib-1-2
     echo "chmod +x $PLAYWRIGHT_DRIVER_PATH"
     chmod +x $PLAYWRIGHT_DRIVER_PATH
