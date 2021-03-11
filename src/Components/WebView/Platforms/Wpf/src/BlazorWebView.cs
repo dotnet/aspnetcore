@@ -163,8 +163,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
                 // Dispatch because this is going to be async, and we want to catch any errors
                 WpfDispatcher.Instance.InvokeAsync(async () =>
                 {
-                    var newItems = eventArgs.OldItems.Cast<RootComponent>();
-                    var oldItems = eventArgs.NewItems.Cast<RootComponent>();
+                    var newItems = eventArgs.NewItems.Cast<RootComponent>();
+                    var oldItems = eventArgs.OldItems.Cast<RootComponent>();
 
                     foreach (var item in newItems.Except(oldItems))
                     {
