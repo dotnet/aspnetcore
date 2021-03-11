@@ -267,7 +267,7 @@ namespace RunTests
                 // Timeout test run 5 minutes before the Helix job would timeout
                 var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
 #if INSTALLPLAYWRIGHT
-                var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\" --Logging:LogLevel:PlaywrightSharp=Warning";
+                var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\" --Logging:Console:LogLevel:PlaywrightSharp=Warning";
 #else                
                 var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\"";
 #endif    
