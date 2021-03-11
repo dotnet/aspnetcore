@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -65,6 +66,11 @@ namespace ProjectTemplates.Tests.Infrastructure
             var sink = new TestSink();
             sink.MessageLogged += LogBrowserManagerMessage;
             var factory = new TestLoggerFactory(sink, enabled: true);
+            var helixUploadDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+            if (!string.IsNullOrEmpty(helixUploadDir))
+            {
+                factory.AddFile(Path.Combine(helixUploadDir, "playwright-fixture.log"));
+            }
             BrowserManager = await BrowserManager.CreateAsync(_configuration, factory);
         }
 
