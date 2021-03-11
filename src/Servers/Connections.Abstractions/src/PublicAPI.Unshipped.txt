@@ -26,6 +26,4 @@ Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionDelegate
 abstract Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionContext.AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
 abstract Microsoft.AspNetCore.Connections.Experimental.MultiplexedConnectionContext.ConnectAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>
 override Microsoft.AspNetCore.Connections.DefaultConnectionContext.Socket.get -> System.Net.Sockets.Socket?
-override Microsoft.AspNetCore.Connections.DefaultConnectionContext.Socket.set -> void
 virtual Microsoft.AspNetCore.Connections.BaseConnectionContext.Socket.get -> System.Net.Sockets.Socket?
-virtual Microsoft.AspNetCore.Connections.BaseConnectionContext.Socket.set -> void
