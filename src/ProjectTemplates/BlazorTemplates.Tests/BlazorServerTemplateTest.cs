@@ -108,6 +108,7 @@ namespace Templates.Test
         [Theory]
         [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30807")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
         public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
