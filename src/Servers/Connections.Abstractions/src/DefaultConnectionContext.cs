@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Connections
         public override EndPoint? RemoteEndPoint { get; set; }
 
         /// <inheritdoc />
-        public override Socket? Socket { get; }
+        public override Socket? Socket { get; set; }
 
         /// <inheritdoc />
         public override void Abort(ConnectionAbortedException abortReason)
