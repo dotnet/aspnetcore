@@ -50,11 +50,11 @@ namespace Microsoft.AspNetCore.BrowserTesting
                 var driverPath = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
                 if (!string.IsNullOrEmpty(driverPath)) 
                 {
-                    Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath /*, debug: "pw:api"*/);
+                    Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath, debug: "pw:api");
                 }
                 else
                 {
-                    Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory /*, debug: "pw:api"*/);
+                    Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, debug: "pw:api");
                 }
                 foreach (var (browserName, options) in _browserManagerConfiguration.BrowserOptions)
                 {
