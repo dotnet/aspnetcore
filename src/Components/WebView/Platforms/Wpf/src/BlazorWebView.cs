@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         private const string webViewTemplateChildName = "WebView";
         private WebView2Control _webview;
         private WebView2WebViewManager _webviewManager;
+        private bool _isDisposed;
 
         /// <summary>
         /// Creates a new instance of <see cref="BlazorWebView"/>.
@@ -63,10 +64,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             {
                 VisualTree = new FrameworkElementFactory(typeof(WebView2Control), webViewTemplateChildName)
             };
-
-            // TODO: Implement correct WPF disposal pattern, if this isn't already it
-            Unloaded += (sender, eventArgs) => Dispose();
-            Application.Current.Exit += HandleApplicationExiting;
         }
 
         /// <summary>
@@ -112,6 +109,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         /// <inheritdoc />
         public override void OnApplyTemplate()
         {
+            CheckDisposed();
+
             // Called when the control is created after its child control (the WebView2) is created from the Template property
             base.OnApplyTemplate();
 
@@ -132,6 +131,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
         private void StartWebViewCoreIfPossible()
         {
+            CheckDisposed();
+
             if (!RequiredStartupPropertiesSet || _webviewManager != null)
             {
                 return;
@@ -154,6 +155,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
         private void HandleRootComponentsCollectionChanged(object sender, NotifyCollectionChangedEventArgs eventArgs)
         {
+            CheckDisposed();
+
             // If we haven't initialized yet, this is a no-op
             if (_webviewManager != null)
             {
@@ -176,9 +179,30 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             }
         }
 
-        private void HandleApplicationExiting(object sender, ExitEventArgs e)
+        private void Dispose(bool disposing)
         {
-            Dispose();
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    // Dispose managed state (managed objects)
+                    _webviewManager?.Dispose();
+                    _webview?.Dispose();
+                }
+
+                // Also: free unmanaged resources (unmanaged objects) and override finalizer
+                // Also: set large fields to null
+                _isDisposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Performs the final cleanup before the garbage collector destroys the object.
+        /// </summary>
+        ~BlazorWebView()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: false);
         }
 
         /// <summary>
@@ -186,9 +210,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         /// </summary>
         public void Dispose()
         {
-            Application.Current.Exit -= HandleApplicationExiting;
-            _webviewManager?.Dispose();
-            _webview?.Dispose();
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void CheckDisposed()
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
         }
     }
 }
