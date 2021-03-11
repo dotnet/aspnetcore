@@ -38,8 +38,10 @@ else
 fi
 export InstallPlaywright="$installPlaywright"
 if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
-    echo "sudo apt-get install libdbus-glib-1-2"
-    sudo apt-get install libdbus-glib-1-2
+    if [[ "$helixQueue" != *"OSX"* ]]; then
+        echo "sudo apt-get install libdbus-glib-1-2"
+        sudo apt-get install libdbus-glib-1-2
+    fi
     echo "chmod +x $PLAYWRIGHT_DRIVER_PATH"
     chmod +x $PLAYWRIGHT_DRIVER_PATH
     echo "chmod +x $PLAYWRIGHT_NODE_PATH"
