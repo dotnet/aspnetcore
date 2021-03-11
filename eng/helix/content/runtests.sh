@@ -41,6 +41,24 @@ if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
     if [[ "$helixQueue" != *"OSX"* ]]; then
         echo "sudo apt-get install libdbus-glib-1-2"
         sudo apt-get install libdbus-glib-1-2
+        sudo apt-get install libbrotli1
+        sudo apt-get install libegl1
+        sudo apt-get install libnotify4
+        sudo apt-get install libvpx5
+        sudo apt-get install libopus0
+        sudo apt-get install libwoff1
+        sudo apt-get install libgstreamer-plugins-base1.0-0
+        sudo apt-get install libgstreamer1.0-0
+        sudo apt-get install libgstreamer-gl1.0-0
+        sudo apt-get install libgstreamer-plugins-bad1.0-0
+        sudo apt-get install libopenjp2-7
+        sudo apt-get install libwebpdemux2
+        sudo apt-get install libwebp6
+        sudo apt-get install libenchant1c2a
+        sudo apt-get install libsecret-1-0
+        sudo apt-get install libhyphen0
+        sudo apt-get install libgles2
+        sudo apt-get install gstreamer1.0-libav        
     fi
     echo "chmod +x $PLAYWRIGHT_DRIVER_PATH"
     chmod +x $PLAYWRIGHT_DRIVER_PATH
