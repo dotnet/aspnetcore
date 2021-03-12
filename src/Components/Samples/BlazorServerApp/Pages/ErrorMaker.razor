@@ -80,6 +80,8 @@
     // (via the "cascading a custom ErrorBoundary-type component" technique), so are outside the scope of this work. We retain
     // the option of making component initialization errors recoverable in the future, as I think it's fair to say that would
     // not be a breaking change, as we'd be replacing a previously-fatal error with a nonfatal one.
+    // - Actually we don't need to handle it for these anyway, because in these cases the exception will just bubble
+    //   up to the SetParametersAsync on the parent, and become a handleable error at that level.
 
     // After a lot of consideration, I don't think we should allow exceptions during Dispose/DisposeAsync to be recoverable.
     // We could do so, since components are only disposed once they are removed from their parents, so even if their disposal
