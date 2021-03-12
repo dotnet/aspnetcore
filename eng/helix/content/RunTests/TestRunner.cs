@@ -48,6 +48,9 @@ namespace RunTests
                 var playwrightBrowsers = Path.Combine(helixDir, "ms-playwright");
                 Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
                 EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
+                
+                Console.WriteLine($"Setting playwright console logging to warning: Logging__Console__LogLevel__PlaywrightSharp = Warning");
+                EnvironmentVariables.Add("Logging__Console__LogLevel__PlaywrightSharp", "Warning");
 #endif
     
                 Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
@@ -266,11 +269,7 @@ namespace RunTests
             {
                 // Timeout test run 5 minutes before the Helix job would timeout
                 var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
-#if INSTALLPLAYWRIGHT
-                var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\" --Logging:Console:LogLevel:PlaywrightSharp=Warning";
-#else                
                 var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\"";
-#endif    
                 if (Options.Quarantined)
                 {
                     Console.WriteLine("Running quarantined tests.");
