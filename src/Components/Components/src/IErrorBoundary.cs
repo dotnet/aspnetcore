@@ -18,6 +18,12 @@ namespace Microsoft.AspNetCore.Components
         // occurs in < 100ms, then treat it as fatal. Technically we could do this for all IErrorBoundary
         // (not just the .Web one) by stashing that info in ComponentState, at the cost of using more
         // memory for every component, not just IErrorBoundary.
+        //
+        // Another option is to handle this in the .Web one using the rule "if you notify me of an error
+        // while I believe I'm already showing an error, then I'll just rethrow so it gets treated as
+        // fatal for the whole circuit". This would take care of errors caused when rendering ErrorContent.
+        // This might be the best solution. People implementing a custom IErrorBoundary should take care
+        // to put in similar logic, if we're OK relying on that.
         void HandleException(Exception exception);
     }
 }
