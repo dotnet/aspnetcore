@@ -217,6 +217,7 @@ namespace Templates.Test
         [InlineData("SingleOrg", null)]
         [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", new string[] { "--calls-graph" })]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorServerTemplat_IdentityWeb_BuildAndPublish(string auth, string[] args)
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);

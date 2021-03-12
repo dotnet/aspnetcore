@@ -15,12 +15,14 @@
          '$(IsTestAssetProject)' == 'true' or
          '$(IsBenchmarkProject)' == 'true' or
          '$(IsSampleProject)' == 'true' or
-         '$(IsSpecificationTestProject)' == 'true')">true</ExcludeFromBuild>
+         '$(IsSpecificationTestProject)' == 'true' or
+         '$(IsMicrobenchmarksProject)' == 'true')">true</ExcludeFromBuild>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- Ignore API doc requirements for test assets -->
-    <NoWarn Condition="'$(IsTestAssetProject)' == 'true' or '$(IsSampleProject)' == 'true' or '$(IsBenchmarkProject)' == 'true'">$(NoWarn);CS1591</NoWarn>
+    <NoWarn Condition="'$(IsTestAssetProject)' == 'true' or '$(IsSampleProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or
+      '$(IsMicrobenchmarksProject)' == 'true'">$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Label="Resx settings">
@@ -60,7 +62,8 @@
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <IsPackable
-        Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
+        Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR
+         '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' OR '$(IsMicrobenchmarksProject)' == 'true') ">false</IsPackable>
   </PropertyGroup>
 
   <Import Project="eng\Baseline.Designer.props" />
@@ -109,7 +112,8 @@
         '$(IsSampleProject)' != 'true' AND
         '$(IsSpecificationTestProject)' != 'true' AND
         '$(IsTestAssetProject)' != 'true' AND
-        '$(IsTestProject)' != 'true' ">true</IsImplementationProject>
+        '$(IsTestProject)' != 'true' AND
+        '$(IsMicrobenchmarksProject)' != 'true' ">true</IsImplementationProject>
 
     <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND

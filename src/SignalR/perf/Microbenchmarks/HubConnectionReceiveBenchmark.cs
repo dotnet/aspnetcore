@@ -74,6 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             }
 
             hubConnectionBuilder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IHubProtocol), hubProtocol));
+            hubConnectionBuilder.WithUrl("http://doesntmatter");
 
             _invocationMessageBytes = hubProtocol.GetMessageBytes(new InvocationMessage(MethodName, arguments));
 

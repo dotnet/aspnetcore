@@ -18,7 +18,7 @@
       "src\\Razor\\Microsoft.CodeAnalysis.Razor\\test\\Microsoft.CodeAnalysis.Razor.Test.csproj",
       "src\\Razor\\tools\\Microsoft.AspNetCore.Razor.Internal.Transport\\Microsoft.AspNetCore.Razor.Internal.Transport.csproj",
       "src\\Razor\\tools\\RazorSyntaxGenerator\\RazorSyntaxGenerator.csproj",
-      "src\\Razor\\perf\\Microsoft.AspNetCore.Razor.Performance\\Microsoft.AspNetCore.Razor.Performance.csproj",
+      "src\\Razor\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Razor.Microbenchmarks.csproj",
       "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.Common\\Microsoft.AspNetCore.Razor.Test.Common.csproj",
       "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.ComponentShim\\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj",
       "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.MvcShim\\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj",

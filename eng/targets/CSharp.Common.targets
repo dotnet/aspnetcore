@@ -20,7 +20,8 @@
     <NoWarn Condition=" '$(IsTestProject)' == 'true' OR
         '$(IsTestAssetProject)' == 'true' OR
         '$(ISBenchmarkProject)' == 'true' OR
-        '$(IsSampleProject)' == 'true' ">$(NoWarn);CA1416</NoWarn>
+        '$(IsSampleProject)' == 'true' OR
+        '$(IsMicrobenchmarksProject)' == 'true'">$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(DotNetBuildFromSource)' != 'true' AND $(AddPublicApiAnalyzers) ">
@@ -96,6 +97,17 @@
       </ItemGroup>
     </When>
   </Choose>
+
+  <Target Name="ValidateBenchmarks" BeforeTargets="Test" Condition="'$(IsMicrobenchmarksProject)' == 'true' AND '$(SkipMicrobenchmarksValidation)' != 'true'">
+    <Message Text="%0ARunning benchmark validation for:%0A$(MSBuildProjectName)%0A"
+    Importance="High" />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="GetTargetPath">
+      <Output TaskParameter="TargetOutputs" PropertyName="ExecPath" />
+    </MSBuild>
+
+    <Exec Command="dotnet $(ExecPath) -f * --validate-fast" IgnoreStandardErrorWarningFormat="true" StandardOutputImportance="low" />
+  </Target>
 
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />
