@@ -38,9 +38,28 @@
             throw new InvalidTimeZoneException($"Exception from {nameof(BuildRenderTree)}");
         }
     </fieldset>
+
+    <fieldset>
+        <legend>Trying to ignore errors</legend>
+        <ErrorIgnorer>
+            <ErrorCausingCounter />
+        </ErrorIgnorer>
+    </fieldset>
 </fieldset>
 
 @code {
+    // A weird subtlety is what happens if you do:
+    // <ErrorBoundary>Some inline content that may throw, either in a event-handling lambda or on render</ErrorBoundar>
+    // Syntactically it looks as if the error boundary will take care of errors in that content inside itself, but
+    // actually:
+    // [1] Any error-throwing lambdas in there are mapped to the host component outside the <ErrorBoundary>, since
+    //     that's where the delegate lives. So those errors will not be handled by this error boundary.
+    // [2] Any rendering errors in there are explicitly *not* dispatched to that <ErrorBoundary> because it would
+    //     commonly be an infinite error loop. So again, those errors will go up to any boundaries in ancestors.
+    // People will have to understand that error boundaries are responsible for their descendants, not for themselves.
+    // However on consideration I think we should probably change rule [2], as long as there is some mechanism to
+    // detect infinite error loops.
+
     // Note that unhandled exceptions inside InvokeAsync are already non-fatal, since we simply return them to the
     // upstream caller who decides what to do. We lack any API for transferring execution into the sync context
     // that returns void and takes care of its own error handling (besides the complicated trick of stashing an

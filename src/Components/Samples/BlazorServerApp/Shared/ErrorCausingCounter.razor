@@ -1,0 +1,14 @@
+﻿<p>
+    Count: @currentCount
+    <button @onclick="@(() => currentCount++)">Increment</button>
+    <button @onclick="Throw">Throw</button>
+</p>
+
+@code {
+    private int currentCount;
+
+    private void Throw()
+    {
+        throw new InvalidTimeZoneException($"Exception from {nameof(ErrorCausingCounter)}");
+    }
+}

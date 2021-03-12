@@ -7,6 +7,17 @@ namespace Microsoft.AspNetCore.Components
 {
     public interface IErrorBoundary
     {
+        // Warning: if you make an IErrorBoundary that reacts to errors by rendering some child
+        // that throws during its own rendering, you will have an infinite loop of errors. How could
+        // we detect this? As long as it's legit to recover, then you have to deal with a succession
+        // of valid (non-infinite-looping) errors over time. We can't detect this by looking at the
+        // call stack, because a child might trigger an error asynchronously, making it into a slightly
+        // spaced out but still infinite loop.
+        //
+        // It would be weird, but we could track the timestamp of the last error, and if another one
+        // occurs in < 100ms, then treat it as fatal. Technically we could do this for all IErrorBoundary
+        // (not just the .Web one) by stashing that info in ComponentState, at the cost of using more
+        // memory for every component, not just IErrorBoundary.
         void HandleException(Exception exception);
     }
 }

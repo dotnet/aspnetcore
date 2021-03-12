@@ -399,20 +399,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 if (componentState.Component is IErrorBoundary errorBoundary)
                 {
-                    // Normally we expect the IErrorBoundary to remove its previous child content on error,
-                    // thereby cleaning up all the resources in its subtree. However, error boundaries are
-                    // allowed to ignore errors and leave the child content in place. In part this is because
-                    // it's hard to stop them from doing so, but also because the only kinds of exceptions
-                    // we send to them are truly recoverable ones where the framework ensures that no framework
-                    // state is left corrupted and all resources can still be cleaned up.
-                    // TODO: What if, in the future, we do need to guarantee that the failed subtree gets
-                    //       removed? That would be a breaking change. Should we somehow ensure it gets removed
-                    //       now, just to mitigate this future risk, even though it's not necessary today?
-                    //       It's unclear how we'd do this without breaking normal rendering rules.
+                    // Force the IErrorBoundary component to clear its output, regardless of any logic inside
+                    // that component. This ensures that all descendants are cleaned up. We don't strictly have
+                    // to do this, since the only errors we handle this way are actually recoverable, so technically
+                    // it would be OK if the old output was left in place and continued operating. However that
+                    // would be a whole new way of keeping components running after failure which we don't want
+                    // to introduce and guarantee to support forever.
+                    AddToRenderQueue(componentState.ComponentId, builder => { });
+
                     try
                     {
+                        // TODO: Should we log the error here? Currently it's up to the IErrorBoundary to do what
+                        // it wants, including hiding the error. Maybe we should force it to get logged regardless
+                        // of what the IErrorBoundary want to do. Whichever way we go on this is permanent, as
+                        // switching in either direction would be a breaking change.
                         errorBoundary.HandleException(error);
-                        return true;
                     }
                     catch (Exception errorBoundaryException)
                     {
@@ -420,8 +421,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         // different from an IErrorBoundary component throwing during its own rendering or
                         // lifecycle methods.
                         HandleException(errorBoundaryException);
-                        return false;
                     }
+
+                    return true;
                 }
 
                 componentState = componentState.ParentComponentState;
