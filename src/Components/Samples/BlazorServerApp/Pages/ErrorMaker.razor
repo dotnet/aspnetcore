@@ -8,9 +8,26 @@
         <button @onclick="@EventHandlerErrorSync">Synchronous</button>
         <button @onclick="@EventHandlerErrorAsync">Asynchronous</button>
     </fieldset>
+
+    <fieldset>
+        <legend>Lifecycle methods</legend>
+        <div><label><input @bind="throwInOnParametersSet" type="checkbox" /></label> OnParametersSet (sync)</div>
+        <div><label><input @bind="throwInOnParametersSetAsync" type="checkbox" /></label> OnParametersSetAsync (async)</div>
+        <div><label><input @bind="throwInOnAfterRender" type="checkbox" /></label> OnAfterRender (sync)</div>
+        <div><label><input @bind="throwInOnAfterRenderAsync" type="checkbox" /></label> OnAfterRenderAsync (async)</div>
+        <ErrorCausingChild ThrowOnParametersSet="@throwInOnParametersSet"
+                           ThrowOnParametersSetAsync="@throwInOnParametersSetAsync"
+                           ThrowOnAfterRender="@throwInOnAfterRender"
+                           ThrowOnAfterRenderAsync="@throwInOnAfterRenderAsync" />
+    </fieldset>
 </fieldset>
 
 @code {
+    private bool throwInOnParametersSet;
+    private bool throwInOnParametersSetAsync;
+    private bool throwInOnAfterRender;
+    private bool throwInOnAfterRenderAsync;
+
     void EventHandlerErrorSync()
         => throw new InvalidTimeZoneException("Synchronous error from event handler");
 

@@ -1,0 +1,42 @@
+﻿@code {
+    [Parameter] public bool ThrowOnParametersSet { get; set; }
+    [Parameter] public bool ThrowOnParametersSetAsync { get; set; }
+    [Parameter] public bool ThrowOnAfterRender { get; set; }
+    [Parameter] public bool ThrowOnAfterRenderAsync { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (ThrowOnParametersSet)
+        {
+            throw new InvalidTimeZoneException("Synchronous exception in OnParametersSet");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await Task.Yield();
+
+        if (ThrowOnParametersSetAsync)
+        {
+            throw new InvalidTimeZoneException("Asynchronous exception in OnParametersSetAsync");
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (ThrowOnAfterRender)
+        {
+            throw new InvalidTimeZoneException("Synchronous exception in OnAfterRender");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await Task.Yield();
+
+        if (ThrowOnAfterRenderAsync)
+        {
+            throw new InvalidTimeZoneException("Asynchronous exception in OnAfterRenderAsync");
+        }
+    }
+}
