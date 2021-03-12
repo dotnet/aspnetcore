@@ -113,15 +113,20 @@ class OidcAuthorizeService implements AuthorizeService {
 
                 const newUser = await this._userManager.signinSilent(parameters);
 
+                if (hasValidAccessToken(newUser) && hasAllScopes(request, newUser.scopes)) {
+                    return {
+                        status: AccessTokenResultStatus.Success,
+                        token: {
+                            grantedScopes: newUser.scopes,
+                            expires: getExpiration(newUser.expires_in),
+                            value: newUser.access_token
+                        }
+                    };
+                const msg = "Successful validation, but no valid access_token/scopes. Did you request a id_token, but was expecting access_token? Try use ResponseType = code";
+                this._userManager.Log.warn(msg);
                 return {
-                    status: AccessTokenResultStatus.Success,
-                    token: {
-                        grantedScopes: newUser.scopes,
-                        expires: getExpiration(newUser.expires_in),
-                        value: newUser.access_token
-                    }
+                    status: msg
                 };
-
             } catch (e) {
                 return {
                     status: AccessTokenResultStatus.RequiresRedirect
