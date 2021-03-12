@@ -11,22 +11,37 @@
 
     <fieldset>
         <legend>Lifecycle methods</legend>
-        <div><label><input @bind="throwInOnParametersSet" type="checkbox" /></label> OnParametersSet (sync)</div>
-        <div><label><input @bind="throwInOnParametersSetAsync" type="checkbox" /></label> OnParametersSetAsync (async)</div>
-        <div><label><input @bind="throwInOnAfterRender" type="checkbox" /></label> OnAfterRender (sync)</div>
-        <div><label><input @bind="throwInOnAfterRenderAsync" type="checkbox" /></label> OnAfterRenderAsync (async)</div>
+        <div><label><input @bind="throwInOnParametersSet" type="checkbox" /> OnParametersSet (sync)</label></div>
+        <div><label><input @bind="throwInOnParametersSetAsync" type="checkbox" /> OnParametersSetAsync (async)</label></div>
+        <div><label><input @bind="throwInOnAfterRender" type="checkbox" /> OnAfterRender (sync)</label></div>
+        <div><label><input @bind="throwInOnAfterRenderAsync" type="checkbox" /> OnAfterRenderAsync (async)</label></div>
         <ErrorCausingChild ThrowOnParametersSet="@throwInOnParametersSet"
                            ThrowOnParametersSetAsync="@throwInOnParametersSetAsync"
                            ThrowOnAfterRender="@throwInOnAfterRender"
                            ThrowOnAfterRenderAsync="@throwInOnAfterRenderAsync" />
     </fieldset>
+
+    <fieldset>
+        <legend>Rendering</legend>
+        <label><input @bind="throwWhileRendering" type="checkbox" /> Throw during rendering</label>
+        @if (throwWhileRendering)
+        {
+            throw new InvalidTimeZoneException($"Exception from {nameof(BuildRenderTree)}");
+        }
+    </fieldset>
 </fieldset>
 
 @code {
+    // Also consider:
+    // - Attach
+    // - Dispose/DisposeAsync
+    // - InvokeAsync
+
     private bool throwInOnParametersSet;
     private bool throwInOnParametersSetAsync;
     private bool throwInOnAfterRender;
     private bool throwInOnAfterRenderAsync;
+    private bool throwWhileRendering;
 
     void EventHandlerErrorSync()
         => throw new InvalidTimeZoneException("Synchronous error from event handler");

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
         private readonly bool _hasCascadingParameters;
         private readonly bool _hasAnyCascadingParameterSubscriptions;
-        private RenderTreeBuilder _renderTreeBuilderPrevious;
+        private RenderTreeBuilder _nextRenderTree;
         private ArrayBuilder<RenderTreeFrame>? _latestDirectParametersSnapshot; // Lazily instantiated
         private bool _componentWasDisposed;
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
             CurrentRenderTree = new RenderTreeBuilder();
-            _renderTreeBuilderPrevious = new RenderTreeBuilder();
+            _nextRenderTree = new RenderTreeBuilder();
 
             if (_cascadingParameters.Count != 0)
             {
@@ -54,8 +54,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public ComponentState ParentComponentState { get; }
         public RenderTreeBuilder CurrentRenderTree { get; private set; }
 
-        public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment)
+        public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
         {
+            renderFragmentException = null;
+
             // A component might be in the render queue already before getting disposed by an
             // earlier entry in the render queue. In that case, rendering is a no-op.
             if (_componentWasDisposed)
@@ -63,19 +65,38 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 return;
             }
 
+            _nextRenderTree.Clear();
+
+            try
+            {
+                renderFragment(_nextRenderTree);
+            }
+            catch (Exception ex)
+            {
+                // If an exception occurs in the render fragment delegate, we won't process the diff in any way, so child components,
+                // event handlers, etc., will all be left untouched as if this component didn't re-render at all. We also are careful
+                // to leave ComponentState in an internally-consistent state so that technically this component could continue to be
+                // used.
+                // TODO: Verify that having a try/catch here doesn't degrade perf noticeably on WebAssembly. It might do.
+                // TODO: Should we actually terminate this component in some way to guarantee it doesn't re-render? That's tricky because
+                // we need it to be disposed in order that descendants, event handlers, etc. get cleaned up too. Unless we rely on it
+                // getting removed from its parent, we would have to duplicate quite a bit of internal state-keeping to ensure all the
+                // descendant state gets cleared up.
+                renderFragmentException = ex;
+                return;
+            }
+
+            // We don't want to make errors from this be recoverable, because there's no legitimate reason for them to happen
+            _nextRenderTree.AssertTreeIsValid(Component);
+
             // Swap the old and new tree builders
-            (CurrentRenderTree, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, CurrentRenderTree);
-
-            CurrentRenderTree.Clear();
-            renderFragment(CurrentRenderTree);
-
-            CurrentRenderTree.AssertTreeIsValid(Component);
+            (CurrentRenderTree, _nextRenderTree) = (_nextRenderTree, CurrentRenderTree);
 
             var diff = RenderTreeDiffBuilder.ComputeDiff(
                 _renderer,
                 batchBuilder,
                 ComponentId,
-                _renderTreeBuilderPrevious.GetFrames(),
+                _nextRenderTree.GetFrames(),
                 CurrentRenderTree.GetFrames());
             batchBuilder.UpdatedComponentDiffs.Append(diff);
             batchBuilder.InvalidateParameterViews();
@@ -236,7 +257,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private void DisposeBuffers()
         {
-            ((IDisposable)_renderTreeBuilderPrevious).Dispose();
+            ((IDisposable)_nextRenderTree).Dispose();
             ((IDisposable)CurrentRenderTree).Dispose();
             _latestDirectParametersSnapshot?.Dispose();
         }

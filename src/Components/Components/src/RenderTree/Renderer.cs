@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -777,7 +778,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             var componentState = renderQueueEntry.ComponentState;
             Log.RenderingComponent(_logger, componentState);
-            componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment);
+            componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment, out var renderFragmentException);
+            if (renderFragmentException != null && !TrySendExceptionToErrorBoundary(componentState.Component, renderFragmentException))
+            {
+                // Exception from render fragment could not be handled by an error boundary, so treat as unhandled (fatal)
+                ExceptionDispatchInfo.Capture(renderFragmentException).Throw();
+            }
 
             List<Exception> exceptions = null;
 
