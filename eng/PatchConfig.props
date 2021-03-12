@@ -96,6 +96,8 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.27' ">
     <PackagesInPatch>
+      @aspnet/signalr;
+      @aspnet/signalr-protocol-msgpack;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
