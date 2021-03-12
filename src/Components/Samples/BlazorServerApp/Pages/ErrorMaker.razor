@@ -28,7 +28,7 @@
                                    ThrowOnAfterRenderAsync="@throwInOnAfterRenderAsync" />
             </CascadingValue>
         </CascadingValue>
-</fieldset>
+    </fieldset>
 
     <fieldset>
         <legend>Rendering</legend>
@@ -41,11 +41,18 @@
 </fieldset>
 
 @code {
-    // Also consider:
-    // - InvokeAsync
+    // Note that unhandled exceptions inside InvokeAsync are already non-fatal, since we simply return them to the
+    // upstream caller who decides what to do. We lack any API for transferring execution into the sync context
+    // that returns void and takes care of its own error handling (besides the complicated trick of stashing an
+    // exception in a field and triggering a render that then throws during rendering). If we add such an API
+    // in the future, it would be a method on ComponentBase that internally does InvokeAsync to a delegate that
+    // does try/catch around your Action/Func<Task>, and if there's an exception, calls some new method on RenderHandle
+    // that passes the exception and IComponent instance onto the Renderer, which then uses TrySendExceptionToErrorBoundary
+    // and falls back on HandleError (fatal). We could call it something like Execute/ExecuteAsync (both void),
+    // or maybe InvokeAndHandle/InvokeAndHandleAsync (both void).
 
-    // I'm proposing not to allow handling exceptions that occur during either IComponentActivator.CreateInstance or
-    // IComponent.Attach, because:
+    // I'm proposing not to allow handling exceptions that occur during either IComponentActivator.CreateInstance
+    // (e.g., component constructor) or IComponent.Attach, because:
     // [1] For most applications, these won't run any developer-supplied code, and will only run the framework's
     //     built-in logic (e.g., ComponentBase.Attach which can't throw). The value here is pretty low.
     // [2] Supporting recovery from these is difficult and leads to entirely new states, such as a "component" RenderTreeFrame
