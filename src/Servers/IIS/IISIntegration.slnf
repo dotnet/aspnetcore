@@ -33,7 +33,7 @@
       "src\\Servers\\IIS\\IISIntegration\\samples\\IISSample\\IISSample.csproj",
       "src\\Servers\\IIS\\IISIntegration\\src\\Microsoft.AspNetCore.Server.IISIntegration.csproj",
       "src\\Servers\\IIS\\IISIntegration\\test\\Tests\\Microsoft.AspNetCore.Server.IISIntegration.Tests.csproj",
-      "src\\Servers\\IIS\\IIS\\benchmarks\\IIS.Performance\\IIS.Performance.csproj",
+      "src\\Servers\\IIS\\IIS\\perf\\Microbenchmarks\\IIS.Microbenchmarks.csproj",
       "src\\Servers\\IIS\\IIS\\samples\\NativeIISSample\\NativeIISSample.csproj",
       "src\\Servers\\IIS\\IIS\\src\\Microsoft.AspNetCore.Server.IIS.csproj",
       "src\\Servers\\IIS\\IIS\\test\\IIS.FunctionalTests\\IIS.FunctionalTests.csproj",

@@ -1,4 +1,4 @@
-{
+﻿{
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
     "projects": [
@@ -25,7 +25,9 @@
       "src\\Http\\Owin\\test\\Microsoft.AspNetCore.Owin.Tests.csproj",
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",
       "src\\Http\\Routing.Abstractions\\test\\Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests.csproj",
-      "src\\Http\\Routing\\perf\\Microsoft.AspNetCore.Routing.Performance.csproj",
+      "src\\Http\\Http\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Http.Microbenchmarks.csproj",
+      "src\\Http\\Http.Abstractions\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks.csproj",
+      "src\\Http\\Routing\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Routing.Microbenchmarks.csproj",
       "src\\Http\\Routing\\samples\\MapActionSample\\MapActionSample.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
       "src\\Http\\Routing\\test\\FunctionalTests\\Microsoft.AspNetCore.Routing.FunctionalTests.csproj",
@@ -33,7 +35,7 @@
       "src\\Http\\Routing\\test\\testassets\\Benchmarks\\Benchmarks.csproj",
       "src\\Http\\Routing\\test\\testassets\\RoutingSandbox\\RoutingSandbox.csproj",
       "src\\Http\\Routing\\test\\testassets\\RoutingWebSite\\RoutingWebSite.csproj",
-      "src\\Http\\WebUtilities\\perf\\Microsoft.AspNetCore.WebUtilities.Performance\\Microsoft.AspNetCore.WebUtilities.Performance.csproj",
+      "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
       "src\\Http\\WebUtilities\\test\\Microsoft.AspNetCore.WebUtilities.Tests.csproj",
       "src\\Http\\samples\\SampleApp\\HttpAbstractions.SampleApp.csproj",
@@ -48,7 +50,8 @@
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
-      "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
+      "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj",
+      "src\\Http\\WebUtilities\\perf\\Microbenchmarks\\Microsoft.AspNetCore.WebUtilities.Microbenchmarks.csproj"
     ]
   }
 }

@@ -619,9 +619,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpAbstractions.SampleApp"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebUtilities.Tests", "src\Http\WebUtilities\test\Microsoft.AspNetCore.WebUtilities.Tests.csproj", "{F6BE35A7-1D5C-416B-8B32-61CAA2A95FF0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Performance", "src\Http\Http\perf\Microsoft.AspNetCore.Http.Performance.csproj", "{C713DCA1-B36D-44BD-ACFA-F562782AD40E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Microbenchmarks", "src\Http\Http\perf\Microbenchmarks\Microsoft.AspNetCore.Http.Microbenchmarks.csproj", "{C713DCA1-B36D-44BD-ACFA-F562782AD40E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.Performance", "src\Http\Routing\perf\Microsoft.AspNetCore.Routing.Performance.csproj", "{A2701184-BD48-4B72-AA6E-8DD1DE2F217F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.Microbenchmarks", "src\Http\Routing\perf\Microbenchmarks\Microsoft.AspNetCore.Routing.Microbenchmarks.csproj", "{A2701184-BD48-4B72-AA6E-8DD1DE2F217F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{17DD5861-0635-46D0-84BA-6B163150AA4F}"
 EndProject
@@ -633,7 +633,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Ro
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{E7CADFE4-CDD0-4DE3-90ED-7184A969F47B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebUtilities.Performance", "src\Http\WebUtilities\perf\Microsoft.AspNetCore.WebUtilities.Performance\Microsoft.AspNetCore.WebUtilities.Performance.csproj", "{822FF16C-A4E0-40A0-AE65-530752575261}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebUtilities.Microbenchmarks", "src\Http\WebUtilities\perf\Microbenchmarks\Microsoft.AspNetCore.WebUtilities.Microbenchmarks.csproj", "{822FF16C-A4E0-40A0-AE65-530752575261}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Metadata", "Metadata", "{71DE18B5-87F9-4D03-89BB-C3E243576F92}"
 EndProject
@@ -801,7 +801,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Locali
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization.Routing.Tests", "src\Middleware\Localization.Routing\test\Microsoft.AspNetCore.Localization.Routing.Tests.csproj", "{99CB7560-3B6F-447B-880A-C5A53F1E56F9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCompression.Performance", "src\Middleware\ResponseCompression\perf\Microsoft.AspNetCore.ResponseCompression.Performance.csproj", "{605D0C19-6E99-4A73-B336-1AD700AE93C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCompression.Microbenchmarks", "src\Middleware\ResponseCompression\perf\Microbenchmarks\Microsoft.AspNetCore.ResponseCompression.Microbenchmarks.csproj", "{605D0C19-6E99-4A73-B336-1AD700AE93C0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConformanceTests", "ConformanceTests", "{73BC406B-4D98-4BE0-A756-19F0F3D2B587}"
 EndProject
@@ -934,7 +934,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPagesWebSite", "src\Mv
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{CA6DD42B-2DBC-4061-91E8-C91FA8F4C410}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Performance", "src\Mvc\benchmarks\Microsoft.AspNetCore.Mvc.Performance\Microsoft.AspNetCore.Mvc.Performance.csproj", "{199639E9-0FAA-49C4-A75F-95EE71F32CC0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Microbenchmarks", "src\Mvc\perf\Microbenchmarks\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.Microbenchmarks.csproj", "{199639E9-0FAA-49C4-A75F-95EE71F32CC0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorBuildWebSite", "src\Mvc\test\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj", "{F634FAC8-1CE5-4AD2-8A8B-92CFBB127D3A}"
 EndProject
@@ -954,7 +954,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.Api.Analyzers.Test", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Api.Analyzers", "src\Mvc\Mvc.Api.Analyzers\src\Microsoft.AspNetCore.Mvc.Api.Analyzers.csproj", "{72879779-4CAC-4CB0-A052-FF60EB386B7A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Performance.Views", "src\Mvc\benchmarks\Microsoft.AspNetCore.Mvc.Performance.Views\Microsoft.AspNetCore.Mvc.Performance.Views.csproj", "{5BD69C96-623F-427B-9AAF-67C0817A9A9A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Views.Microbenchmarks", "src\Mvc\perf\Microbenchmarks\Microsoft.AspNetCore.Mvc.Views\Microsoft.AspNetCore.Mvc.Views.Microbenchmarks.csproj", "{5BD69C96-623F-427B-9AAF-67C0817A9A9A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenericHostWebSite", "src\Mvc\test\WebSites\GenericHostWebSite\GenericHostWebSite.csproj", "{D10BA44E-219B-4528-98F5-0CB0FCF17017}"
 EndProject
@@ -1066,7 +1066,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorSyntaxGenerator", "src
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{D510860C-B2DA-41D3-9137-81B029312E71}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Performance", "src\Razor\perf\Microsoft.AspNetCore.Razor.Performance\Microsoft.AspNetCore.Razor.Performance.csproj", "{8ED505A5-A33A-401E-89BA-3AED7B73DD6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Microbenchmarks", "src\Razor\perf\Microbenchmarks\Microsoft.AspNetCore.Razor.Microbenchmarks.csproj", "{8ED505A5-A33A-401E-89BA-3AED7B73DD6A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{06C916C7-67BF-45DC-9D0B-CEEF0C731451}"
 EndProject
@@ -1144,7 +1144,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authen
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{966E6A8A-4D9C-4B9E-92DB-06F5144F5DC8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Security.Performance", "src\Security\benchmarks\Microsoft.AspNetCore.Security.Performance\Microsoft.AspNetCore.Security.Performance.csproj", "{9819CE5A-0E8F-42C4-B628-F6B3A1B2550F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Security.Microbenchmarks", "src\Security\perf\Microbenchmarks\Microsoft.AspNetCore.Security.Microbenchmarks.csproj", "{9819CE5A-0E8F-42C4-B628-F6B3A1B2550F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Negotiate", "Negotiate", "{3FE077EF-DD37-4652-B71C-3174D4C485E2}"
 EndProject
@@ -1304,7 +1304,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeIISSample", "src\Serv
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{ABC4EF1D-3525-41A9-929D-0FF7CEED4DDB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.Performance", "src\Servers\IIS\IIS\benchmarks\IIS.Performance\IIS.Performance.csproj", "{65EC29AD-91CA-49BA-B1FC-D3DF127BE887}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.Microbenchmarks", "src\Servers\IIS\IIS\perf\Microbenchmarks\IIS.Microbenchmarks.csproj", "{65EC29AD-91CA-49BA-B1FC-D3DF127BE887}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.FunctionalTests", "src\Servers\IIS\IIS\test\IIS.FunctionalTests\IIS.FunctionalTests.csproj", "{45A023F9-C7E7-42CA-968B-5FCE9EC626BC}"
 EndProject
@@ -1328,7 +1328,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{C69630AA-7BCC-401E-B0EE-AACFCF55F6A8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Performance", "src\Servers\Kestrel\perf\Kestrel.Performance\Microsoft.AspNetCore.Server.Kestrel.Performance.csproj", "{51A02E3E-6932-479C-A287-CC6C3611B715}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks", "src\Servers\Kestrel\perf\Microbenchmarks\Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks.csproj", "{51A02E3E-6932-479C-A287-CC6C3611B715}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7B976D8F-EA31-4C0B-97BD-DFD9B3CC86FB}"
 EndProject
@@ -1615,6 +1615,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebView.WindowsForms", "src\Components\WebView\Platforms\WindowsForms\src\Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj", "{3BA297F8-1CA1-492D-AE64-A60B825D8501}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWinFormsApp", "src\Components\WebView\Samples\BlazorWinFormsApp\BlazorWinFormsApp.csproj", "{CC740832-D268-47A3-9058-B9054F8397E2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks", "src\Http\Http.Abstractions\perf\Microbenchmarks\Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks.csproj", "{3F752B48-2936-4FCA-B0DC-4AB0F788F897}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -7639,6 +7641,18 @@ Global
 		{CC740832-D268-47A3-9058-B9054F8397E2}.Release|x64.Build.0 = Release|Any CPU
 		{CC740832-D268-47A3-9058-B9054F8397E2}.Release|x86.ActiveCfg = Release|Any CPU
 		{CC740832-D268-47A3-9058-B9054F8397E2}.Release|x86.Build.0 = Release|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Debug|x64.Build.0 = Debug|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Debug|x86.Build.0 = Debug|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Release|x64.ActiveCfg = Release|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Release|x64.Build.0 = Release|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Release|x86.ActiveCfg = Release|Any CPU
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -8437,6 +8451,7 @@ Global
 		{D4E9A2C5-0838-42DF-BC80-C829C4C9137E} = {8B196DE0-F585-43D6-BE72-6F15BB4EB5E5}
 		{3BA297F8-1CA1-492D-AE64-A60B825D8501} = {D4E9A2C5-0838-42DF-BC80-C829C4C9137E}
 		{CC740832-D268-47A3-9058-B9054F8397E2} = {D3B76F4E-A980-45BF-AEA1-EA3175B0B5A1}
+		{3F752B48-2936-4FCA-B0DC-4AB0F788F897} = {DCBBDB52-4A49-4141-8F4D-81C0FFFB7BD5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
