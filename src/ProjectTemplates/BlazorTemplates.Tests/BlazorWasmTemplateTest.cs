@@ -42,6 +42,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
         public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
@@ -149,6 +150,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
         public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
