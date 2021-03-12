@@ -383,29 +383,29 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 return false;
             }
 
-            // TODO: We probably need to ensure calls to this method are dispatched
+            // We only get here in specific situations. Currently, all of them are when we're
+            // already on the sync context (and if not, we have a bug we want to know about).
             Dispatcher.AssertAccess();
 
-            // This linear search will be slow, but only happens during exception handling, so is likely OK.
+            // Slow linear search is fine because this is only during exception handling.
             // If it becomes problematic, we can maintain a lookup from component instance to ID.
             var componentState = _componentStateById.FirstOrDefault(kvp => kvp.Value.Component == errorSource).Value;
 
-            // Find the closest ancestor that's an immediate child of an error boundary. This is the component
-            // that will be terminated.
-            while (componentState is not null)
+            // Find the closest IErrorBoundary, if any
+            while (componentState is not null) // Could be null initially if the errorSource was already disposed
             {
-                if (componentState.ParentComponentState?.Component is IErrorBoundary errorBoundary)
+                if (componentState.Component is IErrorBoundary errorBoundary)
                 {
-                    // TODO: Is it OK that we're trusting the IErrorBoundary to remove its previous child
-                    // content? What if it fails to do so? We could proactively dispose componentState.Component
-                    // within the current batch here if we wanted, but that does complicate things. Until now,
-                    // we only dispose components during diffing, and there's an error if diffing tries to queue a
-                    // disposal for something that's already disposed.
-                    // Overall I think it's probably OK to let the IErrorBoundary make its own choice. Almost
-                    // everyone will have the default behaviors, and even if someone leaves the broken component
-                    // in place, we will already have done some level of recovery close to the call site.
-                    // Also it's quite complicate to proactively dispose any component here, because we're not
-                    // necessarily inside an in-progress render batch.
+                    // Normally we expect the IErrorBoundary to remove its previous child content on error,
+                    // thereby cleaning up all the resources in its subtree. However, error boundaries are
+                    // allowed to ignore errors and leave the child content in place. In part this is because
+                    // it's hard to stop them from doing so, but also because the only kinds of exceptions
+                    // we send to them are truly recoverable ones where the framework ensures that no framework
+                    // state is left corrupted and all resources can still be cleaned up.
+                    // TODO: What if, in the future, we do need to guarantee that the failed subtree gets
+                    //       removed? That would be a breaking change. Should we somehow ensure it gets removed
+                    //       now, just to mitigate this future risk, even though it's not necessary today?
+                    //       It's unclear how we'd do this without breaking normal rendering rules.
                     errorBoundary.HandleException(error);
                     return true;
                 }
