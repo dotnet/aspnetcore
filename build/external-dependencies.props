@@ -224,9 +224,9 @@
     <ExternalDependency Include="xunit" Version="$(XunitPackageVersion)" />
 
     <!-- Dependencies listed only to include otherwise-transitive references in Microsoft.AspNetCore.App.nuspec. -->
-    <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
-    <ExternalDependency Include="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
-    <ExternalDependency Include="System.Text.Encoding.CodePages" Version="$(SystemTextEncodingCodePagesPackageVersion)" />
+    <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
+    <ExternalDependency Include="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
+    <ExternalDependency Include="System.Text.Encoding.CodePages" Version="$(SystemTextEncodingCodePagesPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
   </ItemGroup>
 
 </Project>
