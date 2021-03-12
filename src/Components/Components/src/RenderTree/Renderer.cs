@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -335,7 +336,28 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             catch (Exception e)
             {
-                HandleException(e);
+                // Exceptions in event handlers don't compromise the stability of the framework, since the
+                // framework wasn't processing any internal state that might have been left corrupted. The
+                // risk is that user code is now left in some invalid state. So:
+                //
+                // * If we can identify a strong enough candidate for which component subtree is at risk
+                //   of being affected, we'll shut down that subtree. The conditions for this are:
+                //   * The event callback was dispatched to an IComponent
+                //   * ... which is still live in the hierarchy
+                //   * ... and is within an error boundary
+                // * Otherwise, we're in a more ambiguous case, such as event callbacks being dispatched
+                //   to non-components. In this case, we'll treat it as fatal for the entire renderer.
+                //
+                // This is pretty subjective. Even in the "safe" case, it's possible that some non-component
+                // (domain model) state has been left corrupted. But we have to let developers be responsible
+                // for keeping their non-component state valid otherwise we couldn't have any error recovery.
+                var recovered = callback.Receiver is IComponent componentReceiver
+                    && TrySendExceptionToErrorBoundary(componentReceiver, e);
+                if (!recovered)
+                {
+                    HandleException(e);
+                }
+
                 return Task.CompletedTask;
             }
             finally
@@ -351,6 +373,43 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // work that was queued so let our error handler deal with it.
             var result = GetErrorHandledTask(task);
             return result;
+        }
+
+        private bool TrySendExceptionToErrorBoundary(IComponent errorSource, Exception error)
+        {
+            if (!_isBatchInProgress)
+            {
+                // This should never happen, but if we have a bug, we want to know
+                throw new InvalidOperationException($"{nameof(TrySendExceptionToErrorBoundary)} can only be called when a batch is in progress.");
+            }
+
+            // This linear search will be slow, but only happens during exception handling, so is likely OK.
+            // If it becomes problematic, we can maintain a lookup from component instance to ID.
+            var componentState = _componentStateById.FirstOrDefault(kvp => kvp.Value.Component == errorSource).Value;
+
+            // Find the closest ancestor that's an immediate child of an error boundary. This is the component
+            // that will be terminated.
+            while (componentState is not null)
+            {
+                // TODO: Consider having an IErrorBoundary interface to support custom implementations
+                if (componentState.ParentComponentState?.Component is IErrorBoundary errorBoundary)
+                {
+                    // TODO: Is it OK that we're trusting the IErrorBoundary to remove its previous child
+                    // content? What if it fails to do so? We could proactively dispose componentState.Component
+                    // within the current batch here if we wanted, but that does complicate things. Until now,
+                    // we only dispose components during diffing, and there's an error if diffing tries to queue a
+                    // disposal for something that's already disposed.
+                    // Overall I think it's probably OK to let the IErrorBoundary make its own choice. Almost
+                    // everyone will have the default behaviors, and even if someone leaves the broken component
+                    // in place, we will already have done some level of recovery close to the call site.
+                    errorBoundary.HandleException(error);
+                    return true;
+                }
+
+                componentState = componentState.ParentComponentState;
+            }
+
+            return false;
         }
 
         /// <summary>

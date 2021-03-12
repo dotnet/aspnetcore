@@ -1,0 +1,22 @@
+﻿@page "/errormaker"
+
+<fieldset>
+    <legend>Error maker</legend>
+
+    <fieldset>
+        <legend>Event handlers</legend>
+        <button @onclick="@EventHandlerErrorSync">Synchronous</button>
+        <button @onclick="@EventHandlerErrorAsync">Asynchronous</button>
+    </fieldset>
+</fieldset>
+
+@code {
+    void EventHandlerErrorSync()
+        => throw new InvalidTimeZoneException("Synchronous error from event handler");
+
+    async Task EventHandlerErrorAsync()
+    {
+        await Task.Yield();
+        throw new InvalidTimeZoneException("Asynchronous error from event handler");
+    }
+}
