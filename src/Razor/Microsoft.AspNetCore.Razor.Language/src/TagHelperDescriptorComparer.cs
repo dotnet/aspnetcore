@@ -159,6 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 foreach (var kvp in descriptor.Metadata)
                 {
+                    hash.Add(kvp.Key, StringComparer.Ordinal);
                     hash.Add(kvp.Value, StringComparer.Ordinal);
                 }
             }
