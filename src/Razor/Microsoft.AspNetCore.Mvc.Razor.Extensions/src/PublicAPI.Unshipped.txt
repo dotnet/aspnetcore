@@ -1,1 +1,7 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ConsolidatedMvcViewDocumentClassifierPass
+Microsoft.AspNetCore.Mvc.Razor.Extensions.ConsolidatedMvcViewDocumentClassifierPass.ConsolidatedMvcViewDocumentClassifierPass() -> void
+~override Microsoft.AspNetCore.Mvc.Razor.Extensions.ConsolidatedMvcViewDocumentClassifierPass.DocumentKind.get -> string
+~override Microsoft.AspNetCore.Mvc.Razor.Extensions.ConsolidatedMvcViewDocumentClassifierPass.IsMatch(Microsoft.AspNetCore.Razor.Language.RazorCodeDocument codeDocument, Microsoft.AspNetCore.Razor.Language.Intermediate.DocumentIntermediateNode documentNode) -> bool
+~override Microsoft.AspNetCore.Mvc.Razor.Extensions.ConsolidatedMvcViewDocumentClassifierPass.OnDocumentStructureCreated(Microsoft.AspNetCore.Razor.Language.RazorCodeDocument codeDocument, Microsoft.AspNetCore.Razor.Language.Intermediate.NamespaceDeclarationIntermediateNode namespace, Microsoft.AspNetCore.Razor.Language.Intermediate.ClassDeclarationIntermediateNode class, Microsoft.AspNetCore.Razor.Language.Intermediate.MethodDeclarationIntermediateNode method) -> void
+~static readonly Microsoft.AspNetCore.Mvc.Razor.Extensions.ConsolidatedMvcViewDocumentClassifierPass.MvcViewDocumentKind -> string
