@@ -759,7 +759,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 }
                 else if (task.Status == TaskStatus.Faulted)
                 {
-                    HandleException(task.Exception);
+                    if (!TrySendExceptionToErrorBoundary(state.Component, task.Exception))
+                    {
+                        HandleException(task.Exception);
+                    }
                     return;
                 }
             }
@@ -767,7 +770,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // The Task is incomplete.
             // Queue up the task and we can inspect it later.
             batch = batch ?? new List<Task>();
-            batch.Add(GetErrorHandledTask(task, null)); // TODO: Should there be an owningComponent?
+            batch.Add(GetErrorHandledTask(task, state.Component));
         }
 
         private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)
