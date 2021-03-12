@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -92,6 +93,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
             _componentFactory = new ComponentFactory(componentActivator);
+
+            HotReloadManager.OnDeltaApplied += RenderRootComponentsOnHotReload;
         }
 
         private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
@@ -101,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         /// <summary>
-        /// Gets the <see cref="Microsoft.AspNetCore.Components.Dispatcher" /> associated with this <see cref="Renderer" />.
+        /// Gets the <see cref="Components.Dispatcher" /> associated with this <see cref="Renderer" />.
         /// </summary>
         public abstract Dispatcher Dispatcher { get; }
 
@@ -111,13 +114,54 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         protected internal ElementReferenceContext? ElementReferenceContext { get; protected set; }
 
+        internal HotReloadContext HotReloadContext { get; } = new();
+
+        private async void RenderRootComponentsOnHotReload()
+        {
+            await Dispatcher.InvokeAsync(async () =>
+            {
+                HotReloadContext.HotReloading = true;
+
+                try
+                {
+                    _pendingTasks = new List<Task>();
+                    foreach (var componentState in _componentStateById.Values)
+                    {
+                        if (componentState.IsRootComponent)
+                        {
+                            var parameterView = componentState.InitialParameters is null ?
+                                ParameterView.Empty :
+                                ParameterView.FromDictionary((IDictionary<string, object?>)componentState.InitialParameters);
+                            AddToPendingTasks(componentState.Component.SetParametersAsync(parameterView));
+                        }
+                    }
+
+                    await ProcessAsynchronousWork();
+                    Debug.Assert(_pendingTasks.Count == 0);
+                }
+                finally
+                {
+                    _pendingTasks = null;
+                    HotReloadContext.HotReloading = false;
+                }
+            });
+        }
+
         /// <summary>
         /// Constructs a new component of the specified type.
         /// </summary>
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
         protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
-            => _componentFactory.InstantiateComponent(_serviceProvider, componentType);
+        {
+            var component = _componentFactory.InstantiateComponent(_serviceProvider, componentType);
+            if (component is IReceiveHotReloadContext receiveHotReloadContext)
+            {
+                receiveHotReloadContext.Receive(HotReloadContext);
+            }
+
+            return component;
+        }
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -182,7 +226,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // During the asynchronous rendering process we want to wait up until all components have
             // finished rendering so that we can produce the complete output.
             var componentState = GetRequiredComponentState(componentId);
+            componentState.IsRootComponent = true;
             componentState.SetDirectParameters(initialParameters);
+
+            if (HotReloadManager.IsHotReloadEnabled)
+            {
+                // when we're doing hot-reload, stash away the parameters used while rendering root components.
+                // We'll use this to trigger re-renders on hot reload updates.
+                componentState.InitialParameters = initialParameters.ToDictionary();
+            }
 
             try
             {
@@ -884,6 +936,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
+            HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
+
             if (_disposed)
             {
                 return;

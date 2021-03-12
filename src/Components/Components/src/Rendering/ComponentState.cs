@@ -53,6 +53,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public IComponent Component { get; }
         public ComponentState ParentComponentState { get; }
         public RenderTreeBuilder CurrentRenderTree { get; private set; }
+        public bool IsRootComponent { get; set; }
+
+
+        /// <summary>
+        /// A snapshot of the <see cref="ParameterView"/> used to initially render a component.
+        /// This is used to capture parameters specified via <see cref="Renderer.RenderRootComponentAsync(int, ParameterView)"/>
+        /// when hot reload is enabled.
+        /// </summary>
+        public IReadOnlyDictionary<string, object>? InitialParameters { get; set; }
 
         public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment)
         {
