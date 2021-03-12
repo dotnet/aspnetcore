@@ -42,6 +42,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
@@ -90,12 +91,13 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);            
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
@@ -149,6 +151,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
@@ -196,6 +199,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
@@ -483,6 +487,7 @@ namespace Templates.Test
 
         [Theory]
         [MemberData(nameof(TemplateData))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30880")]
         public async Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
         {
             var project = await ProjectFactory.GetOrCreateProject(instance.Name, Output);
@@ -666,8 +671,8 @@ namespace Templates.Test
             {
                 command = "dotnet-serve";
                 args = "--roll-forward LatestMajor " + args; // dotnet-serve targets net5.0 by default
-            }            
-            
+            }
+
             var serveProcess = ProcessEx.Run(Output, publishDir, command, args);
             var listeningUri = ResolveListeningUrl(serveProcess);
             return (serveProcess, listeningUri);
