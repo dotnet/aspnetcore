@@ -28,7 +28,7 @@
     },
     "Firefox": {
       "BrowserKind": "Firefox",
-      "IsEnabled": false
+      "IsEnabled": true
     },
     "Webkit": {
       "BrowserKind": "Webkit",
