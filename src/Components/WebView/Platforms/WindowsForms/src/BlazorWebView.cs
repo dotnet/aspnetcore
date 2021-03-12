@@ -43,10 +43,11 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         /// Returns the inner <see cref="WebView2Control"/> used by this control.
         /// </summary>
         /// <remarks>
-        /// Directly using some functionality of the inner web view can cause unexpected behavior because its behavior
+        /// Directly using some functionality of the inner web view can cause unexpected results because its behavior
         /// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
         /// </remarks>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public WebView2Control WebView => _webview;
 
         private WindowsFormsDispatcher Dispatcher { get; }
@@ -56,24 +57,15 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         {
             base.OnCreateControl();
 
-            // NOTE: This only checks if THIS control is in design mode by existing on the design surface. If this
-            // control wants to handle the case where it is a child control of another user control or custom
-            // control then we might need to check parent tree manually to see if any parent is in DesignMode.
-            if (DesignMode)
-            {
-                // TODO: Consider doing something in design mode, such as showing info about the control?
-            }
-            else
-            {
-                // Only boot up the WebView at runtime
-                StartWebViewCoreIfPossible();
-            }
+            StartWebViewCoreIfPossible();
         }
 
         /// <summary>
         /// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
         /// This property must be set to a valid value for the Blazor components to start.
         /// </summary>
+        [Category("Behavior")]
+        [Description(@"Path to the host page within the application's static files. Example: wwwroot\index.html.")]
         public string HostPage
         {
             get => _hostPage;
@@ -84,16 +76,24 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             }
         }
 
+        // Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8
+        private void ResetHostPage() => HostPage = null;
+        private bool ShouldSerializeHostPage() => !string.IsNullOrEmpty(HostPage);
+
         /// <summary>
         /// A collection of <see cref="RootComponent"/> instances that specify the Blazor <see cref="IComponent"/> types
         /// to be used directly in the specified <see cref="HostPage"/>.
         /// </summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ObservableCollection<RootComponent> RootComponents { get; } = new();
 
         /// <summary>
         /// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
         /// This property must be set to a valid value for the Blazor components to start.
         /// </summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IServiceProvider Services
         {
             get => _services;
@@ -108,6 +108,16 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
         private void OnServicesPropertyChanged() => StartWebViewCoreIfPossible();
 
+        private bool IsAncestorSiteInDesignMode =>
+            GetSitedParentSite(this) is ISite parentSite && parentSite.DesignMode;
+
+        private ISite GetSitedParentSite(Control control) =>
+            control is null
+                ? throw new ArgumentNullException(nameof(control))
+                : control.Site != null || control.Parent is null
+                    ? control.Site
+                    : GetSitedParentSite(control.Parent);
+
         private bool RequiredStartupPropertiesSet =>
             Created &&
             _webview != null &&
@@ -116,7 +126,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
         private void StartWebViewCoreIfPossible()
         {
-            if (!RequiredStartupPropertiesSet || _webviewManager != null)
+            // We never start the Blazor code in design time because it doesn't make sense to run
+            // a Blazor component in the designer.
+            if (!IsAncestorSiteInDesignMode && (!RequiredStartupPropertiesSet || _webviewManager != null))
             {
                 return;
             }
