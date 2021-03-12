@@ -48,7 +48,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             MemoryPool = memoryPool;
             _trace = trace;
             _waitForData = waitForData;
-            Socket = _socket;
 
             LocalEndPoint = _socket.LocalEndPoint;
             RemoteEndPoint = _socket.RemoteEndPoint;

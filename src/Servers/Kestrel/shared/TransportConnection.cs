@@ -65,8 +65,6 @@ namespace Microsoft.AspNetCore.Connections
             }
         }
 
-        public override Socket? Socket { get; set; }
-
         public override CancellationToken ConnectionClosed { get; set; }
 
         // DO NOT remove this override to ConnectionContext.Abort. Doing so would cause

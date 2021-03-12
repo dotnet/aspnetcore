@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Connections
         private object? _currentIConnectionItemsFeature;
         private object? _currentIMemoryPoolFeature;
         private object? _currentIConnectionLifetimeFeature;
+        private object? _currentIConnectionSocketFeature;
 
         private int _featureRevision;
 
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Connections
             _currentIConnectionItemsFeature = this;
             _currentIMemoryPoolFeature = this;
             _currentIConnectionLifetimeFeature = this;
-
+            _currentIConnectionSocketFeature = this;
         }
 
         // Internal for testing
@@ -123,6 +124,10 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentIConnectionLifetimeFeature;
                 }
+                else if (key == typeof(IConnectionSocketFeature))
+                {
+                    feature = _currentIConnectionSocketFeature;
+                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
@@ -155,6 +160,10 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     _currentIConnectionLifetimeFeature = value;
                 }
+                else if (key == typeof(IConnectionSocketFeature))
+                {
+                    _currentIConnectionSocketFeature = value;
+                }
                 else
                 {
                     ExtraFeatureSet(key, value);
@@ -184,6 +193,10 @@ namespace Microsoft.AspNetCore.Connections
             else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
             {
                 feature = (TFeature?)_currentIConnectionLifetimeFeature;
+            }
+            else if (typeof(TFeature) == typeof(IConnectionSocketFeature))
+            {
+                feature = (TFeature?)_currentIConnectionSocketFeature;
             }
             else if (MaybeExtra != null)
             {
@@ -216,6 +229,10 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _currentIConnectionLifetimeFeature = feature;
             }
+            else if (typeof(TFeature) == typeof(IConnectionSocketFeature))
+            {
+                _currentIConnectionSocketFeature = feature;
+            }
             else
             {
                 ExtraFeatureSet(typeof(TFeature), feature);
@@ -243,6 +260,10 @@ namespace Microsoft.AspNetCore.Connections
             if (_currentIConnectionLifetimeFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IConnectionLifetimeFeature), _currentIConnectionLifetimeFeature);
+            }
+            if (_currentIConnectionSocketFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IConnectionSocketFeature), _currentIConnectionSocketFeature);
             }
 
             if (MaybeExtra != null)

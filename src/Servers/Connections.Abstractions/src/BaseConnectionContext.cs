@@ -47,11 +47,6 @@ namespace Microsoft.AspNetCore.Connections
         public virtual EndPoint? RemoteEndPoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the socket for this connection.
-        /// </summary>
-        public virtual Socket? Socket { get; set; }
-
-        /// <summary>
         /// Aborts the underlying connection.
         /// </summary>
         public abstract void Abort();
