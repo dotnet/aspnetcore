@@ -185,21 +185,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 parameters = parameters.WithCascadingParameters(_cascadingParameters);
             }
 
-            // Normalise sync and async exceptions into a Task, as there's no value in differentiating
-            // between "it returned an already-faulted Task" and "it just threw".
-            // TODO: This is the most invasive part of this whole work area on perf. Need to validate
-            // that this doesn't regress WebAssembly rendering perf too much in intense cases.
-            Task setParametersAsyncTask;
-            try
-            {
-                setParametersAsyncTask = Component.SetParametersAsync(parameters);
-            }
-            catch (Exception ex)
-            {
-                setParametersAsyncTask = Task.FromException(ex);
-            }
-
-            _renderer.AddToPendingTasks(setParametersAsyncTask, Component);
+            SupplyCombinedParameters(parameters);
         }
 
         public void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
@@ -208,10 +194,29 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
                 : ParameterView.Empty;
             var allParams = directParams.WithCascadingParameters(_cascadingParameters!);
-            var task = Component.SetParametersAsync(allParams);
+            SupplyCombinedParameters(allParams);
+        }
 
-            // TODO: Think about passing self as owningComponent for error recovery
-            _renderer.AddToPendingTasks(task, null);
+        // This should not be called from anywhere except SetDirectParameters or NotifyCascadingValueChanged.
+        // Those two methods know how to correctly combine both cascading and non-cascading parameters to supply
+        // a consistent set to the recipient.
+        private void SupplyCombinedParameters(ParameterView directAndCascadingParameters)
+        {
+            // Normalise sync and async exceptions into a Task, as there's no value in differentiating
+            // between "it returned an already-faulted Task" and "it just threw".
+            // TODO: This is the most invasive part of this whole work area on perf. Need to validate
+            // that this doesn't regress WebAssembly rendering perf too much in intense cases.
+            Task setParametersAsyncTask;
+            try
+            {
+                setParametersAsyncTask = Component.SetParametersAsync(directAndCascadingParameters);
+            }
+            catch (Exception ex)
+            {
+                setParametersAsyncTask = Task.FromException(ex);
+            }
+
+            _renderer.AddToPendingTasks(setParametersAsyncTask, Component);
         }
 
         private bool AddCascadingParameterSubscriptions()

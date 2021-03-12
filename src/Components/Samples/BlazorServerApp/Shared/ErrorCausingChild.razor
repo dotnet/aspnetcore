@@ -4,9 +4,15 @@
     [Parameter] public bool ThrowOnAfterRender { get; set; }
     [Parameter] public bool ThrowOnAfterRenderAsync { get; set; }
 
+    [CascadingParameter(Name = nameof(ThrowOnCascadingParameterNotification))]
+    public bool ThrowOnCascadingParameterNotification { get; set; }
+
+    [CascadingParameter(Name = nameof(ThrowOnCascadingParameterNotificationAsync))]
+    public bool ThrowOnCascadingParameterNotificationAsync { get; set; }
+
     protected override void OnParametersSet()
     {
-        if (ThrowOnParametersSet)
+        if (ThrowOnParametersSet || ThrowOnCascadingParameterNotification)
         {
             throw new InvalidTimeZoneException("Synchronous exception in OnParametersSet");
         }
@@ -16,7 +22,7 @@
     {
         await Task.Yield();
 
-        if (ThrowOnParametersSetAsync)
+        if (ThrowOnParametersSetAsync || ThrowOnCascadingParameterNotificationAsync)
         {
             throw new InvalidTimeZoneException("Asynchronous exception in OnParametersSetAsync");
         }

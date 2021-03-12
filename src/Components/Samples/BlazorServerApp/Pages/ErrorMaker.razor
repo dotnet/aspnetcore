@@ -13,13 +13,22 @@
         <legend>Lifecycle methods</legend>
         <div><label><input @bind="throwInOnParametersSet" type="checkbox" /> OnParametersSet (sync)</label></div>
         <div><label><input @bind="throwInOnParametersSetAsync" type="checkbox" /> OnParametersSetAsync (async)</label></div>
+        <div><label><input @bind="throwInOnParametersSetViaCascading" type="checkbox" /> OnParametersSet via cascading parameter (sync)</label></div>
+        <div><label><input @bind="throwInOnParametersSetAsyncViaCascading" type="checkbox" /> OnParametersSetAsync via cascading parameter (async)</label></div>
         <div><label><input @bind="throwInOnAfterRender" type="checkbox" /> OnAfterRender (sync)</label></div>
         <div><label><input @bind="throwInOnAfterRenderAsync" type="checkbox" /> OnAfterRenderAsync (async)</label></div>
-        <ErrorCausingChild ThrowOnParametersSet="@throwInOnParametersSet"
-                           ThrowOnParametersSetAsync="@throwInOnParametersSetAsync"
-                           ThrowOnAfterRender="@throwInOnAfterRender"
-                           ThrowOnAfterRenderAsync="@throwInOnAfterRenderAsync" />
-    </fieldset>
+
+        <CascadingValue Name="@nameof(ErrorCausingChild.ThrowOnCascadingParameterNotification)"
+                        Value="@throwInOnParametersSetViaCascading">
+            <CascadingValue Name="@nameof(ErrorCausingChild.ThrowOnCascadingParameterNotificationAsync)"
+                            Value="@throwInOnParametersSetAsyncViaCascading">
+                <ErrorCausingChild ThrowOnParametersSet="@throwInOnParametersSet"
+                                   ThrowOnParametersSetAsync="@throwInOnParametersSetAsync"
+                                   ThrowOnAfterRender="@throwInOnAfterRender"
+                                   ThrowOnAfterRenderAsync="@throwInOnAfterRenderAsync" />
+            </CascadingValue>
+        </CascadingValue>
+</fieldset>
 
     <fieldset>
         <legend>Rendering</legend>
@@ -57,6 +66,8 @@
 
     private bool throwInOnParametersSet;
     private bool throwInOnParametersSetAsync;
+    private bool throwInOnParametersSetViaCascading;
+    private bool throwInOnParametersSetAsyncViaCascading;
     private bool throwInOnAfterRender;
     private bool throwInOnAfterRenderAsync;
     private bool throwWhileRendering;
