@@ -391,8 +391,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // If it becomes problematic, we can maintain a lookup from component instance to ID.
             var componentState = _componentStateById.FirstOrDefault(kvp => kvp.Value.Component == errorSource).Value;
 
-            // Find the closest IErrorBoundary, if any
-            while (componentState is not null) // Could be null initially if the errorSource was already disposed
+            // Find the closest IErrorBoundary, if any. Start looking at the first parent, to ensure
+            // that an error boundary component doesn't try to handle its own errors, as that could
+            // be an infinite loop.
+            componentState = componentState?.ParentComponentState;
+            while (componentState is not null)
             {
                 if (componentState.Component is IErrorBoundary errorBoundary)
                 {
@@ -406,8 +409,19 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     //       removed? That would be a breaking change. Should we somehow ensure it gets removed
                     //       now, just to mitigate this future risk, even though it's not necessary today?
                     //       It's unclear how we'd do this without breaking normal rendering rules.
-                    errorBoundary.HandleException(error);
-                    return true;
+                    try
+                    {
+                        errorBoundary.HandleException(error);
+                        return true;
+                    }
+                    catch (Exception errorBoundaryException)
+                    {
+                        // If *notifying* about an exception fails, it's OK for that to be fatal. This is
+                        // different from an IErrorBoundary component throwing during its own rendering or
+                        // lifecycle methods.
+                        HandleException(errorBoundaryException);
+                        return false;
+                    }
                 }
 
                 componentState = componentState.ParentComponentState;
