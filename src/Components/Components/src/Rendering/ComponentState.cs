@@ -164,7 +164,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 parameters = parameters.WithCascadingParameters(_cascadingParameters);
             }
 
-            _renderer.AddToPendingTasks(Component.SetParametersAsync(parameters));
+            // TODO: Think about passing self as owningComponent for error recovery
+            _renderer.AddToPendingTasks(Component.SetParametersAsync(parameters), null);
         }
 
         public void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
@@ -174,7 +175,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 : ParameterView.Empty;
             var allParams = directParams.WithCascadingParameters(_cascadingParameters!);
             var task = Component.SetParametersAsync(allParams);
-            _renderer.AddToPendingTasks(task);
+
+            // TODO: Think about passing self as owningComponent for error recovery
+            _renderer.AddToPendingTasks(task, null);
         }
 
         private bool AddCascadingParameterSubscriptions()

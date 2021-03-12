@@ -317,6 +317,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             Dispatcher.AssertAccess();
 
             var callback = GetRequiredEventCallback(eventHandlerId);
+            IComponent? componentReceiver = callback.Receiver as IComponent; // Null if the receiver is null or isn't a component
             Log.HandlingEvent(_logger, eventHandlerId, eventArgs);
 
             if (fieldInfo != null)
@@ -351,7 +352,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // This is pretty subjective. Even in the "safe" case, it's possible that some non-component
                 // (domain model) state has been left corrupted. But we have to let developers be responsible
                 // for keeping their non-component state valid otherwise we couldn't have any error recovery.
-                var recovered = callback.Receiver is IComponent componentReceiver
+                var recovered = componentReceiver is not null
                     && TrySendExceptionToErrorBoundary(componentReceiver, e);
                 if (!recovered)
                 {
@@ -371,17 +372,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             // Task completed synchronously or is still running. We already processed all of the rendering
             // work that was queued so let our error handler deal with it.
-            var result = GetErrorHandledTask(task);
+            var result = GetErrorHandledTask(task, componentReceiver);
             return result;
         }
 
         private bool TrySendExceptionToErrorBoundary(IComponent errorSource, Exception error)
         {
-            if (!_isBatchInProgress)
-            {
-                // This should never happen, but if we have a bug, we want to know
-                throw new InvalidOperationException($"{nameof(TrySendExceptionToErrorBoundary)} can only be called when a batch is in progress.");
-            }
+            // TODO: We probably need to ensure calls to this method are dispatched
+            Dispatcher.AssertAccess();
 
             // This linear search will be slow, but only happens during exception handling, so is likely OK.
             // If it becomes problematic, we can maintain a lookup from component instance to ID.
@@ -391,7 +389,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // that will be terminated.
             while (componentState is not null)
             {
-                // TODO: Consider having an IErrorBoundary interface to support custom implementations
                 if (componentState.ParentComponentState?.Component is IErrorBoundary errorBoundary)
                 {
                     // TODO: Is it OK that we're trusting the IErrorBoundary to remove its previous child
@@ -402,6 +399,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     // Overall I think it's probably OK to let the IErrorBoundary make its own choice. Almost
                     // everyone will have the default behaviors, and even if someone leaves the broken component
                     // in place, we will already have done some level of recovery close to the call site.
+                    // Also it's quite complicate to proactively dispose any component here, because we're not
+                    // necessarily inside an in-progress render batch.
                     errorBoundary.HandleException(error);
                     return true;
                 }
@@ -448,7 +447,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             frame.ComponentIdField = newComponentState.ComponentId;
         }
 
-        internal void AddToPendingTasks(Task task)
+        // TODO: Need to reason about all the code paths that lead here and ensure it makes sense
+        // to treat the exceptions as handleable
+        internal void AddToPendingTasks(Task task, IComponent? owningComponent)
         {
             switch (task == null ? TaskStatus.RanToCompletion : task.Status)
             {
@@ -464,12 +465,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     // an 'async' state machine (the ones generated using async/await) where even
                     // the synchronous exceptions will get captured and converted into a faulted
                     // task.
+                    // TODO: Presumably we need to use TrySendExceptionToErrorBoundary here
                     HandleException(task.Exception.GetBaseException());
                     break;
                 default:
                     // It's important to evaluate the following even if we're not going to use
                     // handledErrorTask below, because it has the side-effect of calling HandleException.
-                    var handledErrorTask = GetErrorHandledTask(task);
+                    var handledErrorTask = GetErrorHandledTask(task, owningComponent);
 
                     // The pendingTasks collection is only used during prerendering to track quiescence,
                     // so will be null at other times.
@@ -758,7 +760,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // The Task is incomplete.
             // Queue up the task and we can inspect it later.
             batch = batch ?? new List<Task>();
-            batch.Add(GetErrorHandledTask(task));
+            batch.Add(GetErrorHandledTask(task, null)); // TODO: Should there be an owningComponent?
         }
 
         private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)
@@ -796,7 +798,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     }
                     else
                     {
-                        AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result));
+                        // TODO: Should we use disposeComponentState.Component as the owningComponent
+                        // so this is recoverable via IErrorBoundary?
+                        AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result), null);
 
                         async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
                         {
@@ -874,7 +878,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
         }
 
-        private async Task GetErrorHandledTask(Task taskToHandle)
+        private async Task GetErrorHandledTask(Task taskToHandle, IComponent? owningComponent)
         {
             try
             {
@@ -882,10 +886,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             catch (Exception ex)
             {
+                // Ignore errors due to task cancellations.
                 if (!taskToHandle.IsCanceled)
                 {
-                    // Ignore errors due to task cancellations.
-                    HandleException(ex);
+                    if (owningComponent is null || !TrySendExceptionToErrorBoundary(owningComponent, ex))
+                    {
+                        // It's unhandled
+                        HandleException(ex);
+                    }
                 }
             }
         }
