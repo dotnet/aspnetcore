@@ -34,8 +34,16 @@
 @code {
     // Also consider:
     // - Attach
-    // - Dispose/DisposeAsync
     // - InvokeAsync
+    // - SetParametersAsync being triggered by a cascading parameter subscription
+
+    // After a lot of consideration, I don't think we should allow exceptions during Dispose/DisposeAsync to be recoverable.
+    // We could do so, since components are only disposed once they are removed from their parents, so even if their disposal
+    // fails we know they are gone from the component hierarchy anyway, and we can still be sure to clean up all the framework
+    // managed resources for them and their descendants. However, if disposal throws, then it's very likely that the application
+    // cleanup logic didn't complete properly, and hence the application is now leaking memory. It's not smart to have a default
+    // behavior that lets the developer get away with randomly incomplete cleanup. If a developer really wants to opt into this
+    // on a per-Dispose/DisposeAsync basis, they can use a try/catch there, and in most cases they should not do so.
 
     private bool throwInOnParametersSet;
     private bool throwInOnParametersSetAsync;
