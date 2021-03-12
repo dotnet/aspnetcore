@@ -352,8 +352,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // This is pretty subjective. Even in the "safe" case, it's possible that some non-component
                 // (domain model) state has been left corrupted. But we have to let developers be responsible
                 // for keeping their non-component state valid otherwise we couldn't have any error recovery.
-                var recovered = componentReceiver is not null
-                    && TrySendExceptionToErrorBoundary(componentReceiver, e);
+                var recovered = TrySendExceptionToErrorBoundary(componentReceiver, e);
                 if (!recovered)
                 {
                     HandleException(e);
@@ -376,8 +375,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             return result;
         }
 
-        private bool TrySendExceptionToErrorBoundary(IComponent errorSource, Exception error)
+        private bool TrySendExceptionToErrorBoundary(IComponent? errorSource, Exception error)
         {
+            if (errorSource is null)
+            {
+                return false;
+            }
+
             // TODO: We probably need to ensure calls to this method are dispatched
             Dispatcher.AssertAccess();
 
@@ -465,8 +469,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     // an 'async' state machine (the ones generated using async/await) where even
                     // the synchronous exceptions will get captured and converted into a faulted
                     // task.
-                    // TODO: Presumably we need to use TrySendExceptionToErrorBoundary here
-                    HandleException(task.Exception.GetBaseException());
+                    var baseException = task.Exception.GetBaseException();
+                    if (!TrySendExceptionToErrorBoundary(owningComponent, baseException))
+                    {
+                        HandleException(baseException);
+                    }
                     break;
                 default:
                     // It's important to evaluate the following even if we're not going to use
@@ -889,7 +896,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // Ignore errors due to task cancellations.
                 if (!taskToHandle.IsCanceled)
                 {
-                    if (owningComponent is null || !TrySendExceptionToErrorBoundary(owningComponent, ex))
+                    if (!TrySendExceptionToErrorBoundary(owningComponent, ex))
                     {
                         // It's unhandled
                         HandleException(ex);

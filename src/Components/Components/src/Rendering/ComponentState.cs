@@ -164,8 +164,21 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 parameters = parameters.WithCascadingParameters(_cascadingParameters);
             }
 
-            // TODO: Think about passing self as owningComponent for error recovery
-            _renderer.AddToPendingTasks(Component.SetParametersAsync(parameters), null);
+            // Normalise sync and async exceptions into a Task, as there's no value in differentiating
+            // between "it returned an already-faulted Task" and "it just threw".
+            // TODO: This is the most invasive part of this whole work area on perf. Need to validate
+            // that this doesn't regress WebAssembly rendering perf too much in intense cases.
+            Task setParametersAsyncTask;
+            try
+            {
+                setParametersAsyncTask = Component.SetParametersAsync(parameters);
+            }
+            catch (Exception ex)
+            {
+                setParametersAsyncTask = Task.FromException(ex);
+            }
+
+            _renderer.AddToPendingTasks(setParametersAsyncTask, Component);
         }
 
         public void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
