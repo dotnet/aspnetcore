@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
@@ -76,11 +75,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
                 return false;
             }
 
-            var attribute = type.GetAttributes().Where(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, queryAttribute)).FirstOrDefault();
-
-            if (attribute != null)
+            foreach (var attribute in type.GetAttributes())
             {
-                return true;
+                if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, queryAttribute))
+                {
+                    return true;
+                }
             }
 
             return AttributeIsDefined(type.BaseType, queryAttribute);

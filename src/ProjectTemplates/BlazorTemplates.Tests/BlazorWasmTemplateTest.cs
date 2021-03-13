@@ -46,6 +46,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalone" + browserKind, Output);
@@ -179,6 +180,7 @@ namespace Templates.Test
 
         [Theory, TestPriority(100)]
         [InlineData(BrowserKind.Chromium)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", Output);
@@ -262,6 +264,65 @@ namespace Templates.Test
         //        EnsureBrowserAvailable(browserKind);
         //    }
         //}
+        [Theory]
+        [InlineData(BrowserKind.Chromium)]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
+        public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
+        {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
+            var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", Output);
+
+            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "--pwa" });
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+            var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
+
+            var publishResult = await serverProject.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", serverProject, publishResult));
+
+            var buildResult = await serverProject.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", serverProject, buildResult));
+
+            await BuildAndRunTest(project.ProjectName, serverProject, browserKind);
+
+            ValidatePublishedServiceWorker(serverProject);
+
+            string listeningUri = null;
+            if (Fixture.BrowserManager.IsAvailable(browserKind))
+            {
+                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                IPage page = null;
+                using (var aspNetProcess = serverProject.StartPublishedProjectAsync())
+                {
+                    Assert.False(
+                        aspNetProcess.Process.HasExited,
+                        ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
+
+                    await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+                    page = await browser.NewPageAsync();
+                    await aspNetProcess.VisitInBrowserAsync(page);
+                    await TestBasicNavigation(project.ProjectName, page);
+
+                    // Note: we don't want to use aspNetProcess.ListeningUri because that isn't necessarily the HTTPS URI
+                    listeningUri = new Uri(page.Url).GetLeftPart(UriPartial.Authority);
+                }
+
+                // The PWA template supports offline use. By now, the browser should have cached everything it needs,
+                // so we can continue working even without the server.
+                // Since this is the hosted project, backend APIs won't work offline, so we need to skip "fetchdata"
+                await page.GoToAsync("about:blank");
+                await browser.SetOfflineAsync(true);
+                await page.GoToAsync(listeningUri);
+                await TestBasicNavigation(project.ProjectName, page, skipFetchData: true);
+                await page.CloseAsync();
+            }
+            else
+            {
+                EnsureBrowserAvailable(browserKind);
+            }
+        }
 
         private void ValidatePublishedServiceWorker(Project project)
         {
@@ -478,6 +539,7 @@ namespace Templates.Test
 
         [Theory]
         [MemberData(nameof(TemplateData))]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30880")]
         public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
             => CreateBuildPublishAsync(instance.Name, args: instance.Arguments, targetFramework: "netstandard2.1");
 

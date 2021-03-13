@@ -37,7 +37,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30761")]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30761")]
         public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorservernoauth" + browserKind.ToString(), Output);
@@ -186,7 +186,9 @@ namespace Templates.Test
         [InlineData("SingleOrg", null)]
         [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", new string[] { "--calls-graph" })]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args)
             => CreateBuildPublishAsync("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), auth, args);
+
     }
 }
