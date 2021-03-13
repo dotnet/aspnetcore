@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,6 @@ using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -84,6 +84,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                 {
                     configureServices(services);
 
+                    // Ensure there is at least one multiplexed connection lister factory if none was added to services.
+                    if (!services.Any(d => d.ServiceType == typeof(IMultiplexedConnectionListenerFactory)))
+                    {
+                        // Mock multiplexed connection listner is added so Kestrel doesn't error
+                        // when a HTTP/3 endpoint is configured.
+                        services.AddSingleton<IMultiplexedConnectionListenerFactory>(new MockMultiplexedConnectionListenerFactory());
+                    }
+
                     services.AddSingleton<IStartup>(this);
                     services.AddSingleton(context.LoggerFactory);
 
@@ -93,9 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                         configureKestrel(context.ServerOptions);
                         return new KestrelServerImpl(
                             new IConnectionListenerFactory[] { _transportFactory },
-                            // Mock multiplexed connection listner is added so Kestrel doesn't error
-                            // when a HTTP/3 endpoint is configured.
-                            new IMultiplexedConnectionListenerFactory[] { new MockMultiplexedConnectionListenerFactory() },
+                            sp.GetServices<IMultiplexedConnectionListenerFactory>(),
                             context);
                     });
                 });
@@ -139,39 +145,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             // The concrete Host implements IAsyncDisposable
             await ((IAsyncDisposable)_host).DisposeAsync().ConfigureAwait(false);
             _memoryPool.Dispose();
-        }
-
-        private class MockMultiplexedConnectionListenerFactory : IMultiplexedConnectionListenerFactory
-        {
-            public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
-            {
-                return ValueTask.FromResult<IMultiplexedConnectionListener>(new MockMultiplexedConnectionListener(endpoint));
-            }
-        }
-
-        private class MockMultiplexedConnectionListener : IMultiplexedConnectionListener
-        {
-            public MockMultiplexedConnectionListener(EndPoint endpoint)
-            {
-                EndPoint = endpoint;
-            }
-
-            public EndPoint EndPoint { get; }
-
-            public ValueTask<MultiplexedConnectionContext> AcceptAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
-            {
-                return ValueTask.FromResult<MultiplexedConnectionContext>(null);
-            }
-
-            public ValueTask DisposeAsync()
-            {
-                return default;
-            }
-
-            public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
-            {
-                return default;
-            }
         }
     }
 }

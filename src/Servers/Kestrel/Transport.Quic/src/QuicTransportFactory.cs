@@ -55,6 +55,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
             {
                 throw new InvalidOperationException("Couldn't find HTTPS configuration for QUIC transport.");
             }
+            if (sslServerAuthenticationOptions.ServerCertificate == null)
+            {
+                throw new InvalidOperationException("SslServerAuthenticationOptions.ServerCertificate must be configured with a value.");
+            }
 
             var transport = new QuicConnectionListener(_options, _log, endpoint, sslServerAuthenticationOptions);
             return new ValueTask<IMultiplexedConnectionListener>(transport);
