@@ -24,43 +24,31 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
+    [TestCaseOrderer("Templates.Test.PriorityOrderer", "BlazorTemplates.Tests")]
     public class BlazorWasmTemplateTest : BlazorTemplateTest
     {
         public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory, PlaywrightFixture<BlazorServerTemplateTest> browserFixture, ITestOutputHelper output)
-            : base(browserFixture)
+            : base(projectFactory, browserFixture, output)
         {
-            ProjectFactory = projectFactory;
-            Output = output;
-            BrowserContextInfo = new ContextInformation(CreateFactory(output));
         }
 
-        public ProjectFactoryFixture ProjectFactory { get; set; }
+        public override string ProjectType { get; } = "blazorwasm";
 
-        public ITestOutputHelper Output { get; }
+        [Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
+        public async Task BlazorWasmTemplate_CreateBuildPublish_Standalone()
+        {
+            await CreateBuildPublishAsync("blazorstandalone" + BrowserKind.Chromium.ToString());
 
-        public ContextInformation BrowserContextInfo { get; }
+            // The service worker assets manifest isn't generated for non-PWA projects
+            var publishDir = Path.Combine(Project.TemplatePublishDir, "wwwroot");
+            Assert.False(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "Non-PWA templates should not produce service-worker-assets.js");
+        }
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
         public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
         {
-            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
-            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
-
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalone" + browserKind, Output);
-
-            var createResult = await project.RunDotNetNewAsync("blazorwasm");
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
-
-            var publishResult = await project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
-
-            // The service worker assets manifest isn't generated for non-PWA projects
-            var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
-            Assert.False(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "Non-PWA templates should not produce service-worker-assets.js");
-
-            var buildResult = await project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
             await BuildAndRunTest(project.ProjectName, project, browserKind);
 
@@ -90,12 +78,13 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);            
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
@@ -131,6 +120,43 @@ namespace Templates.Test
             }
         }
 
+        //[Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
+        //public Task BlazorWasmTemplate_CreateBuildPublish_Hosted()
+        //    => CreateBuildPublishAsync("blazorhosted" + BrowserKind.Chromium, args: new[] { "--hosted" }, serverProject: true);
+
+
+        //[Theory]
+        //[InlineData(BrowserKind.Chromium)]
+        //public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
+        //{
+        //    var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);
+
+        //    var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
+
+        //    await BuildAndRunTest(project.ProjectName, serverProject, browserKind);
+
+        //    using var aspNetProcess = serverProject.StartPublishedProjectAsync();
+
+        //    Assert.False(
+        //        aspNetProcess.Process.HasExited,
+        //        ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
+
+        //    await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+        //    await AssertCompressionFormat(aspNetProcess, "br");
+
+        //    if (Fixture.BrowserManager.IsAvailable(browserKind))
+        //    {
+        //        await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        //        var page = await browser.NewPageAsync();
+        //        await aspNetProcess.VisitInBrowserAsync(page);
+        //        await TestBasicNavigation(project.ProjectName, page);
+        //    }
+        //    else
+        //    {
+        //        EnsureBrowserAvailable(browserKind);
+        //    }
+        //}
+
         private static async Task AssertCompressionFormat(AspNetProcess aspNetProcess, string expectedEncoding)
         {
             var response = await aspNetProcess.SendRequest(() =>
@@ -147,23 +173,15 @@ namespace Templates.Test
             Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
         }
 
-        [Theory]
+        [Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
+        public Task BlazorWasmTemplate_CreateBuildPublish_StandalonePwa()
+            => CreateBuildPublishAsync("blazorstandalonepwa", args: new[] { "--pwa" });
+
+        [Theory, TestPriority(100)]
         [InlineData(BrowserKind.Chromium)]
         public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
         {
-            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
-            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
-
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", Output);
-
-            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--pwa" });
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
-
-            var publishResult = await project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
-
-            var buildResult = await project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
             await BuildAndRunTest(project.ProjectName, project, browserKind);
 
@@ -194,64 +212,56 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
-        [InlineData(BrowserKind.Chromium)]
-        public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
-        {
-            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
-            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+        //[Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
+        //public Task BlazorWasmTemplate_CreateBuildPublish_HostedPwa()
+        //    => CreateBuildPublishAsync("blazorhostedpwa", args: new[] { "--hosted", "--pwa" }, serverProject: true);
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", Output);
+        //[Theory, TestPriority(100)]
+        //[InlineData(BrowserKind.Chromium)]
+        //public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
+        //{
+        //    var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", Output);
 
-            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "--pwa" });
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+        //    var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
-            var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
+        //    await BuildAndRunTest(project.ProjectName, serverProject, browserKind);
 
-            var publishResult = await serverProject.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", serverProject, publishResult));
+        //    ValidatePublishedServiceWorker(serverProject);
 
-            var buildResult = await serverProject.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", serverProject, buildResult));
+        //    string listeningUri = null;
+        //    if (Fixture.BrowserManager.IsAvailable(browserKind))
+        //    {
+        //        await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        //        IPage page = null;
+        //        using (var aspNetProcess = serverProject.StartPublishedProjectAsync())
+        //        {
+        //            Assert.False(
+        //                aspNetProcess.Process.HasExited,
+        //                ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
 
-            await BuildAndRunTest(project.ProjectName, serverProject, browserKind);
+        //            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+        //            page = await browser.NewPageAsync();
+        //            await aspNetProcess.VisitInBrowserAsync(page);
+        //            await TestBasicNavigation(project.ProjectName, page);
 
-            ValidatePublishedServiceWorker(serverProject);
+        //            // Note: we don't want to use aspNetProcess.ListeningUri because that isn't necessarily the HTTPS URI
+        //            listeningUri = new Uri(page.Url).GetLeftPart(UriPartial.Authority);
+        //        }
 
-            string listeningUri = null;
-            if (Fixture.BrowserManager.IsAvailable(browserKind))
-            {
-                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-                IPage page = null;
-                using (var aspNetProcess = serverProject.StartPublishedProjectAsync())
-                {
-                    Assert.False(
-                        aspNetProcess.Process.HasExited,
-                        ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
-
-                    await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-                    page = await browser.NewPageAsync();
-                    await aspNetProcess.VisitInBrowserAsync(page);
-                    await TestBasicNavigation(project.ProjectName, page);
-
-                    // Note: we don't want to use aspNetProcess.ListeningUri because that isn't necessarily the HTTPS URI
-                    listeningUri = new Uri(page.Url).GetLeftPart(UriPartial.Authority);
-                }
-
-                // The PWA template supports offline use. By now, the browser should have cached everything it needs,
-                // so we can continue working even without the server.
-                // Since this is the hosted project, backend APIs won't work offline, so we need to skip "fetchdata"
-                await page.GoToAsync("about:blank");
-                await browser.SetOfflineAsync(true);
-                await page.GoToAsync(listeningUri);
-                await TestBasicNavigation(project.ProjectName, page, skipFetchData: true);
-                await page.CloseAsync();
-            }
-            else
-            {
-                EnsureBrowserAvailable(browserKind);
-            }
-        }
+        //        // The PWA template supports offline use. By now, the browser should have cached everything it needs,
+        //        // so we can continue working even without the server.
+        //        // Since this is the hosted project, backend APIs won't work offline, so we need to skip "fetchdata"
+        //        await page.GoToAsync("about:blank");
+        //        await browser.SetOfflineAsync(true);
+        //        await page.GoToAsync(listeningUri);
+        //        await TestBasicNavigation(project.ProjectName, page, skipFetchData: true);
+        //        await page.CloseAsync();
+        //    }
+        //    else
+        //    {
+        //        EnsureBrowserAvailable(browserKind);
+        //    }
+        //}
 
         private void ValidatePublishedServiceWorker(Project project)
         {
@@ -276,29 +286,26 @@ namespace Templates.Test
             Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
         }
 
-        [ConditionalTheory]
-        [InlineData(BrowserKind.Chromium)]
-        // LocalDB doesn't work on non Windows platforms
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30700")]
-        public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
-        {
-            return BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
-        }
+        //[ConditionalTheory]
+        //[InlineData(BrowserKind.Chromium)]
+        //// LocalDB doesn't work on non Windows platforms
+        //[OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30700")]
+        //public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
+        //{
+        //    return BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
+        //}
 
-        [Theory]
-        [InlineData(BrowserKind.Chromium)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30820")]
-        public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
-        {
-            return BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
-        }
+        //[Theory]
+        //[InlineData(BrowserKind.Chromium)]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30820")]
+        //public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
+        //{
+        //    return BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
+        //}
 
         private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(BrowserKind browserKind, bool useLocalDb)
         {
-            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
-            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
-
             var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""), Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
@@ -365,16 +372,10 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
-        [InlineData(BrowserKind.Chromium, Skip = "https://github.com/dotnet/aspnetcore/issues/28596")]
-        public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works(BrowserKind browserKind)
-        {
-            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
-            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
-
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual" + browserKind, Output);
-
-            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] {
+        [Theory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
+        [InlineData(BrowserKind.Chromium)]
+        public Task BlazorWasmStandaloneTemplate_CreateBuildPublish_IndividualAuth(BrowserKind browserKind)
+            => CreateBuildPublishAsync("blazorstandaloneindividual" + browserKind, args: new[] {
                 "-au",
                 "Individual",
                 "--authority",
@@ -383,17 +384,11 @@ namespace Templates.Test
                 "sample-client-id"
             });
 
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
-
-            var publishResult = await project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
-
-            // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
-            // later, while the opposite is not true.
-
-            var buildResult = await project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+        [Theory]
+        [InlineData(BrowserKind.Chromium, Skip = "https://github.com/dotnet/aspnetcore/issues/28596")]
+        public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works(BrowserKind browserKind)
+        {
+            var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual" + browserKind, Output);
 
             // We don't want to test the auth flow as we don't have the required settings to talk to a third-party IdP
             // but we want to make sure that we are able to run the app without errors.
@@ -483,25 +478,8 @@ namespace Templates.Test
 
         [Theory]
         [MemberData(nameof(TemplateData))]
-        public async Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
-        {
-            var project = await ProjectFactory.GetOrCreateProject(instance.Name, Output);
-            project.TargetFramework = "netstandard2.1";
-
-            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: instance.Arguments);
-
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
-
-            var publishResult = await project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
-
-            // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
-            // later, while the opposite is not true.
-
-            var buildResult = await project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
-        }
+        public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
+            => CreateBuildPublishAsync(instance.Name, args: instance.Arguments, targetFramework: "netstandard2.1");
 
         protected async Task BuildAndRunTest(string appName, Project project, BrowserKind browserKind, bool usesAuth = false)
         {
@@ -611,25 +589,6 @@ namespace Templates.Test
             return File.ReadAllText(Path.Combine(basePath, path));
         }
 
-        private Project GetSubProject(Project project, string projectDirectory, string projectName)
-        {
-            var subProjectDirectory = Path.Combine(project.TemplateOutputDir, projectDirectory);
-            if (!Directory.Exists(subProjectDirectory))
-            {
-                throw new DirectoryNotFoundException($"Directory {subProjectDirectory} was not found.");
-            }
-
-            var subProject = new Project
-            {
-                Output = project.Output,
-                DiagnosticsMessageSink = project.DiagnosticsMessageSink,
-                ProjectName = projectName,
-                TemplateOutputDir = subProjectDirectory,
-            };
-
-            return subProject;
-        }
-
         private void UpdatePublishedSettings(Project serverProject)
         {
             // Hijack here the config file to use the development key during publish.
@@ -666,8 +625,8 @@ namespace Templates.Test
             {
                 command = "dotnet-serve";
                 args = "--roll-forward LatestMajor " + args; // dotnet-serve targets net5.0 by default
-            }            
-            
+            }
+
             var serveProcess = ProcessEx.Run(Output, publishDir, command, args);
             var listeningUri = ResolveListeningUrl(serveProcess);
             return (serveProcess, listeningUri);
