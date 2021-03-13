@@ -41,7 +41,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // We clear the buffer and buffer list before we put it back into the pool
             // it's a small performance hit but it removes the confusion when looking at dumps to see this still
             // holds onto the buffer when it's back in the pool
-            BufferList = null;
+            if (BufferList != null)
+            {
+                BufferList = null;
+            }
 
             SetBuffer(null, 0, 0);
 

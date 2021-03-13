@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 for (var i = 0; i < _settingsCount; i++)
                 {
                     var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
+                    // https://github.com/aspnet/KestrelHttpServer/issues/2573
                     var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
 
                     _settings[i] = new Settings
@@ -64,6 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             else
             {
                 var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
+                // https://github.com/aspnet/KestrelHttpServer/issues/2573
                 var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
 
                 var directScheduler = new Settings[]
