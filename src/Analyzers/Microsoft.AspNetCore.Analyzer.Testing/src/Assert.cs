@@ -16,10 +16,8 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
 
             // Only check line position if there is an actual line in the real diagnostic
             if (actualLinePosition.Line > 0)
-            {
-                if (actualLinePosition.Line + 1 != expected.Line)
-                {
-                    throw new DiagnosticLocationAssertException(
+            {if (actualLinePosition.Line + 1 != expected.Line)
+                {throw new DiagnosticLocationAssertException(
                         expected,
                         actual,
                         $"Expected diagnostic to be on line \"{expected.Line}\" was actually on line \"{actualLinePosition.Line + 1}\"");
@@ -28,14 +26,14 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
 
             // Only check column position if there is an actual column position in the real diagnostic
             if (actualLinePosition.Character > 0)
-            {
+                        {
                 if (actualLinePosition.Character + 1 != expected.Column)
                 {
                     throw new DiagnosticLocationAssertException(
                         expected,
                         actual,
                         $"Expected diagnostic to start at column \"{expected.Column}\" was actually on column \"{actualLinePosition.Character + 1}\"");
-                }
+      }
             }
         }
 
