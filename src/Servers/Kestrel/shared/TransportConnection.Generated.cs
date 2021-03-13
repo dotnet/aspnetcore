@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Connections
             _currentIMemoryPoolFeature = this;
             _currentIConnectionLifetimeFeature = this;
             _currentIConnectionSocketFeature = this;
+
         }
 
         // Internal for testing
