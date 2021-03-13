@@ -32,12 +32,12 @@ As a minor point, the current system also makes our project files somewhat less 
 ## Important files
 
 * [eng/Baseline.xml](/eng/Baseline.xml) - this contains the 'baseline' of the latest servicing release for this branch.
-  It should be modified and used to update the generated file, [eng/Baseline.Designer.props](eng/Baseline.Designer.props).
+  It should be modified and used to update the generated file, [/eng/Baseline.Designer.props](eng/Baseline.Designer.props).
 * [eng/Dependencies.props](/eng/Dependencies.props) - contains a list of all package references that might be used in the repo.
 * [eng/ProjectReferences.props](/eng/ProjectReferences.props) - lists which assemblies or packages might be available to be referenced as a local project.
 * [eng/Versions.props](/eng/Versions.props) - contains a list of versions which may be updated by automation. This is used by MSBuild to restore and build.
 * [eng/Version.Details.xml](/eng/Version.Details.xml) - used by automation to update dependency variables in
-  [eng/Versions.props](/eng/Versions.props) and, for SDKs and `msbuild` toolsets, [global.json](global.json).
+  [eng/Versions.props](/eng/Versions.props) and, for SDKs and `msbuild` toolsets, [global.json](/global.json).
 
 ## Example: adding a new project
 

@@ -4,7 +4,6 @@
 
 The folder contains command-line tools for ASP.NET Core. The following tools are bundled* in the .NET Core CLI. Follow the links below for more details on each tool.
 
-- [dotnet-watch](dotnet-watch/README.md)
 - [dotnet-user-secrets](dotnet-user-secrets/README.md)
 - [dotnet-sql-cache](dotnet-sql-cache/README.md)
 - [dotnet-dev-certs](dotnet-dev-certs/README.md)
@@ -31,7 +30,6 @@ This folder also contains the infrastructure for our partners' service reference
 The command line tools can be invoked as a subcommand of `dotnet`.
 
 ```sh
-dotnet watch
 dotnet user-secrets
 dotnet sql-cache
 dotnet dev-certs
@@ -41,5 +39,5 @@ dotnet openapi
 Add `--help` to see more details. For example,
 
 ```sh
-dotnet watch --help
+dotnet user-secrets --help
 ```
