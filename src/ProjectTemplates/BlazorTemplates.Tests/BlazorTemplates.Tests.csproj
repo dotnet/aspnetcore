@@ -7,6 +7,7 @@
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
     <SkipHelixArm>true</SkipHelixArm>
+    <SkipHelixQueues>Ubuntu.1604.Amd64.Open;Ubuntu.1604.Amd64</<SkipHelixQueues>
     <BaseOutputPath />
     <OutputPath />
 
