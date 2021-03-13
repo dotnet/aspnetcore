@@ -1,0 +1,40 @@
+name: Daily code format check
+on: pull_request
+jobs:
+  dotnet-format:
+    runs-on: windows-latest
+    steps:
+      - name: Install dotnet-format
+        run: dotnet tool install -g dotnet-format
+
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Run dotnet format
+        id: format
+        uses: MCCshreyas/dotnet-format@v1.0.5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          action: "fix"
+          only-changed-files: true # only works for PRs
+          workspace: "AspNetCore.sln"
+    
+      - name: Commit files
+        if: steps.format.outputs.has-changes == 'true'
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -a -m 'Automated dotnet-format update'
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: '[housekeeping] Automated PR to fix formatting errors'
+          body: |
+            Automated PR to fix formatting errors
+          committer: GitHub <noreply@github.com>
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          #labels: t/housekeeping ♻︎
+          branch: housekeeping/fix-codeformatting
