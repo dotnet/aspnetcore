@@ -1,40 +1,34 @@
-name: Daily code format check
+name: Code format on pull request
 on: pull_request
 jobs:
   dotnet-format:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
       - name: Install dotnet-format
         run: dotnet tool install -g dotnet-format
 
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
-
       - name: Run dotnet format
         id: format
-        uses: MCCshreyas/dotnet-format@v1.0.5
+        uses: MCCshreyas/dotnet-format@v1.0.2
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           action: "fix"
-          only-changed-files: true # only works for PRs
-          workspace: "AspNetCore.sln"
-    
+          only-changed-files: true
+          folder: "."
+      
       - name: Commit files
         if: steps.format.outputs.has-changes == 'true'
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -a -m 'Automated dotnet-format update'
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: EndBug/add-and-commit@v4.1.0
         with:
-          title: '[housekeeping] Automated PR to fix formatting errors'
-          body: |
-            Automated PR to fix formatting errors
-          committer: GitHub <noreply@github.com>
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          #labels: t/housekeeping ♻︎
-          branch: housekeeping/fix-codeformatting
+          author_name: Github Actions
+          author_email: actions@github.com
+          message: Automated dotnet-format update
+          ref: ${{ github.head_ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
