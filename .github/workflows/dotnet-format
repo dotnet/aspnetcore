@@ -1,10 +1,10 @@
 name: Code format on pull request
 push:
     branches:
-      - patch-3
+      - main
   pull_request:
     branches:
-      - patch-3
+      - main
 jobs:
   dotnet-format:
     runs-on: ubuntu-latest
