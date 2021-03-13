@@ -61,6 +61,7 @@ if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
         sudo apt-get install -y gstreamer1.0-libav
         sudo apt-get install -y libxkbcommon0
         sudo apt-get install -y libgtk-3-0
+        sudo apt-get install -y libharfbuzz-icu0
     fi
     echo "chmod +x $PLAYWRIGHT_DRIVER_PATH"
     chmod +x $PLAYWRIGHT_DRIVER_PATH
