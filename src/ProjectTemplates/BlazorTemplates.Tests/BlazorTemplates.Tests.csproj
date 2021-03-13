@@ -7,7 +7,6 @@
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
     <SkipHelixArm>true</SkipHelixArm>
-    <SkipHelixQueues>Alpine.312.Amd64.Open;Alpine.312.Amd64;Fedora.33.Amd64.Open;Fedora.33.Amd64;Redhat.7.Amd64.Open;Redhat.7.Amd64;Debian.9.Amd64.Open;Debian.9.Amd64.Open;Ubuntu.1604.Amd64.Open;Ubuntu.1604.Amd64</SkipHelixQueues>
     <BaseOutputPath />
     <OutputPath />
 
