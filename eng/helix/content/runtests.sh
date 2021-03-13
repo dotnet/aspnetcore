@@ -58,7 +58,9 @@ if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
         sudo apt-get install -y libsecret-1-0
         sudo apt-get install -y libhyphen0
         sudo apt-get install -y libgles2
-        sudo apt-get install -y gstreamer1.0-libav        
+        sudo apt-get install -y gstreamer1.0-libav
+        sudo apt-get install -y libxkbcommon0
+        sudo apt-get install -y libgtk-3-0
     fi
     echo "chmod +x $PLAYWRIGHT_DRIVER_PATH"
     chmod +x $PLAYWRIGHT_DRIVER_PATH
