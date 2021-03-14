@@ -24,5 +24,21 @@ namespace Microsoft.AspNetCore.Internal
                 return valueTask.AsTask();
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ValueTask GetAsValueTask(this in ValueTask<FlushResult> valueTask)
+        {
+            // Try to avoid the allocation from AsTask
+            if (valueTask.IsCompletedSuccessfully)
+            {
+                // Signal consumption to the IValueTaskSource
+                valueTask.GetAwaiter().GetResult();
+                return ValueTask.CompletedTask;
+            }
+            else
+            {
+                return new ValueTask(valueTask.AsTask());
+            }
+        }
     }
 }

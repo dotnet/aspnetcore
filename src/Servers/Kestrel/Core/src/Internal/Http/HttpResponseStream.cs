@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
-            return new ValueTask(WriteAsyncInternal(source, cancellationToken));
+            return _pipeWriter.WriteAsync(source, cancellationToken).GetAsValueTask();
         }
 
         private Task WriteAsyncInternal(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
