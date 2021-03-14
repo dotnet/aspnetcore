@@ -93,7 +93,7 @@ namespace Templates.Test
 
         [Theory]
         [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30807")]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30807")]
         public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""), Output);
