@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Internal
             {
                 // Signal consumption to the IValueTaskSource
                 valueTask.GetAwaiter().GetResult();
-                return ValueTask.CompletedTask;
+                return default;
             }
             else
             {
