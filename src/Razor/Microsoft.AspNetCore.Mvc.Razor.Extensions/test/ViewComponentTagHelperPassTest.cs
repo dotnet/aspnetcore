@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             return RazorProjectEngine.Create(b =>
             {
-                b.Features.Add(new MvcViewDocumentClassifierPass());
+                b.Features.Add(new MvcViewDocumentClassifierPass(b.Configuration.LanguageVersion));
 
                 b.Features.Add(new TestTagHelperFeature(tagHelpers));
             });

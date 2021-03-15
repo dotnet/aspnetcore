@@ -13,7 +13,7 @@ namespace Test.Namespace
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"471b74bb73c8ae8e0ed24c654340198b9b4a1ec8", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewWithNamespace.cshtml")]
-    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewWithNamespace : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
+    internal class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewWithNamespace : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()

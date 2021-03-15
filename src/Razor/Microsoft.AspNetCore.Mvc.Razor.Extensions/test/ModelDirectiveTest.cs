@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 b.AddDirective(ModelDirective.Directive);
 
                 b.Features.Add(new RazorPageDocumentClassifierPass());
-                b.Features.Add(new MvcViewDocumentClassifierPass());
+                b.Features.Add(new MvcViewDocumentClassifierPass(b.Configuration.LanguageVersion));
                 b.Features.Add(new DesignTimeOptionsFeature(designTime));
             }).Engine;
         }

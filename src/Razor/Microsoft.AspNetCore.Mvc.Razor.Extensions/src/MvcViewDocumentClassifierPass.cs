@@ -13,7 +13,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         protected override string DocumentKind => MvcViewDocumentKind;
 
-        protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode) => true;
+        private RazorLanguageVersion _razorLanguageVersion;
+
+        public MvcViewDocumentClassifierPass(RazorLanguageVersion razorLanguageVersion)
+        {
+            _razorLanguageVersion = razorLanguageVersion;
+        }
+
+        protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
+        {
+            return documentNode.Options.DesignTime == true || _razorLanguageVersion != RazorLanguageVersion.Latest;
+        }
 
         protected override void OnDocumentStructureCreated(
             RazorCodeDocument codeDocument, 

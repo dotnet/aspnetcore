@@ -7,6 +7,7 @@
     <PublishWindowsPdb>true</PublishWindowsPdb>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <NoWarn>RS0016;RS0017</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

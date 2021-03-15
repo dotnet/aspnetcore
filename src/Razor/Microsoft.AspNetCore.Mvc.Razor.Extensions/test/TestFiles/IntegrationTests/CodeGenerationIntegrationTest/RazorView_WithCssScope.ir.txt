@@ -9,7 +9,7 @@ Document -
         UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         RazorSourceChecksumAttribute - 
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_test - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
+        ClassDeclaration -  - internal - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_test - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
             PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_0 - Bar - Foo - HtmlAttributeValueStyle.DoubleQuotes
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - asp-route - register - HtmlAttributeValueStyle.DoubleQuotes
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_2 - method - post - HtmlAttributeValueStyle.DoubleQuotes

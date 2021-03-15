@@ -13,7 +13,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         protected override string DocumentKind => MvcViewDocumentKind;
 
-        protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode) => true;
+        private RazorLanguageVersion _razorLanguageVersion;
+
+        public ConsolidatedMvcViewDocumentClassifierPass(RazorLanguageVersion razorLanguageVersion)
+        {
+            _razorLanguageVersion = razorLanguageVersion;
+        }
+
+        // ConsolidatedMvcViewDocumentClassifier should not apply for design time
+        // builds or language versions less than the most recent. This feature is
+        // intended to be used alongside source generator support in the Razor compiler.
+        protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
+        {
+            return documentNode.Options.DesignTime != true && _razorLanguageVersion == RazorLanguageVersion.Latest;
+        }
+            
 
         protected override void OnDocumentStructureCreated(
             RazorCodeDocument codeDocument, 

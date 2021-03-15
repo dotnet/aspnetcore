@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var projectEngine = CreateProjectEngine();
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ConsolidatedMvcViewDocumentClassifierPass
+            var pass = new ConsolidatedMvcViewDocumentClassifierPass(Version)
             {
                 Engine = projectEngine.Engine
             };
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var projectEngine = CreateProjectEngine();
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ConsolidatedMvcViewDocumentClassifierPass
+            var pass = new ConsolidatedMvcViewDocumentClassifierPass(Version)
             {
                 Engine = projectEngine.Engine
             };
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var projectEngine = CreateProjectEngine();
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ConsolidatedMvcViewDocumentClassifierPass
+            var pass = new ConsolidatedMvcViewDocumentClassifierPass(Version)
             {
                 Engine = projectEngine.Engine
             };
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var projectEngine = CreateProjectEngine();
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ConsolidatedMvcViewDocumentClassifierPass
+            var pass = new ConsolidatedMvcViewDocumentClassifierPass(Version)
             {
                 Engine = projectEngine.Engine
             };
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var projectEngine = CreateProjectEngine();
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ConsolidatedMvcViewDocumentClassifierPass
+            var pass = new ConsolidatedMvcViewDocumentClassifierPass(Version)
             {
                 Engine = projectEngine.Engine
             };
