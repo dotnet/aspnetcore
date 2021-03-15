@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
         private readonly ILogger<Renderer> _logger;
         private readonly ComponentFactory _componentFactory;
+        private List<(ComponentState, ParameterView)>? _rootComponents;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
@@ -120,20 +121,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             await Dispatcher.InvokeAsync(async () =>
             {
-                HotReloadContext.HotReloading = true;
+                Debug.Assert(_rootComponents is not null);
+                HotReloadContext.IsHotReloading = true;
 
                 try
                 {
                     _pendingTasks = new List<Task>();
-                    foreach (var componentState in _componentStateById.Values)
+                    foreach (var (componentState, initialParameters) in _rootComponents)
                     {
-                        if (componentState.IsRootComponent)
-                        {
-                            var parameterView = componentState.InitialParameters is null ?
-                                ParameterView.Empty :
-                                ParameterView.FromDictionary((IDictionary<string, object?>)componentState.InitialParameters);
-                            AddToPendingTasks(componentState.Component.SetParametersAsync(parameterView));
-                        }
+                        AddToPendingTasks(componentState.Component.SetParametersAsync(initialParameters));
                     }
 
                     await ProcessAsynchronousWork();
@@ -142,7 +138,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 finally
                 {
                     _pendingTasks = null;
-                    HotReloadContext.HotReloading = false;
+                    HotReloadContext.IsHotReloading = false;
                 }
             });
         }
@@ -155,7 +151,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
         {
             var component = _componentFactory.InstantiateComponent(_serviceProvider, componentType);
-            if (component is IReceiveHotReloadContext receiveHotReloadContext)
+            if (HotReloadManager.IsHotReloadEnabled && component is IReceiveHotReloadContext receiveHotReloadContext)
             {
                 receiveHotReloadContext.Receive(HotReloadContext);
             }
@@ -226,15 +222,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // During the asynchronous rendering process we want to wait up until all components have
             // finished rendering so that we can produce the complete output.
             var componentState = GetRequiredComponentState(componentId);
-            componentState.IsRootComponent = true;
-            componentState.SetDirectParameters(initialParameters);
-
             if (HotReloadManager.IsHotReloadEnabled)
             {
                 // when we're doing hot-reload, stash away the parameters used while rendering root components.
                 // We'll use this to trigger re-renders on hot reload updates.
-                componentState.InitialParameters = initialParameters.ToDictionary();
+                _rootComponents ??= new();
+                _rootComponents.Add((componentState, initialParameters.Clone()));
+                
             }
+
+            componentState.SetDirectParameters(initialParameters);
 
             try
             {

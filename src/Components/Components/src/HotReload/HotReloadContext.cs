@@ -8,12 +8,9 @@ namespace Microsoft.AspNetCore.Components.HotReload
     /// </summary>
     public sealed class HotReloadContext
     {
-        internal bool HotReloading { get; set; }
-
         /// <summary>
         /// Gets a value that indicates if the application is re-rendering in response to a hot-reload change.
         /// </summary>
-        /// <returns></returns>
-        public bool IsHotReloading() => HotReloading;
+        public bool IsHotReloading { get; internal set; }
     }
 }

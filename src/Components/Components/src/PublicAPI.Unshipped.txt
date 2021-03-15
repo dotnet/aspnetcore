@@ -10,7 +10,7 @@ Microsoft.AspNetCore.Components.ComponentApplicationState.TryTakeAsJson<TValue>(
 Microsoft.AspNetCore.Components.ComponentApplicationState.TryTakePersistedState(string! key, out byte[]? value) -> bool
 Microsoft.AspNetCore.Components.HotReload.HotReloadContext
 Microsoft.AspNetCore.Components.HotReload.HotReloadContext.HotReloadContext() -> void
-Microsoft.AspNetCore.Components.HotReload.HotReloadContext.IsHotReloading() -> bool
+Microsoft.AspNetCore.Components.HotReload.HotReloadContext.IsHotReloading.get -> bool
 Microsoft.AspNetCore.Components.HotReload.IReceiveHotReloadContext
 Microsoft.AspNetCore.Components.HotReload.IReceiveHotReloadContext.Receive(Microsoft.AspNetCore.Components.HotReload.HotReloadContext! context) -> void
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime

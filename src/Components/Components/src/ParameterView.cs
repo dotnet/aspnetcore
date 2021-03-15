@@ -116,6 +116,17 @@ namespace Microsoft.AspNetCore.Components
             return result;
         }
 
+        internal ParameterView Clone()
+        {
+            if (ReferenceEquals(_frames, _emptyFrames))
+            {
+                return Empty;
+            }
+
+            var dictionary = ToDictionary();
+            return FromDictionary((IDictionary<string, object?>)dictionary);
+        }
+
         internal ParameterView WithCascadingParameters(IReadOnlyList<CascadingParameterState> cascadingParameters)
             => new ParameterView(_lifetime, _frames, _ownerIndex, cascadingParameters);
 

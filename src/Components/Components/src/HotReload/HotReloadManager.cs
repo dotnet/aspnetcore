@@ -8,13 +8,13 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components.HotReload
 {
-    // Not to be confused with the HR Manager.
     internal static class HotReloadManager
     {
-        // Hot reload stuff
-        internal static bool IsHotReloadEnabled = Environment.GetEnvironmentVariable("COMPLUS_ForceEnc") == "1";
+        /// <summary>
+        /// Gets a value that determines if HotReload is configured for this application.
+        /// </summary>
+        public static bool IsHotReloadEnabled { get; } = Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") == "debug";
 
-        // For hotreload
         internal static event Action? OnDeltaApplied;
 
         public static void DeltaApplied()

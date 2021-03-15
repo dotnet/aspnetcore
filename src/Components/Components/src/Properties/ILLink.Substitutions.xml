@@ -1,0 +1,13 @@
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Components" >
+    <!-- Trim away hot-reload -->
+    <type fullname="Microsoft.AspNetCore.Components.HotReload.HotReloadManager">
+      <method signature="System.Boolean get_IsHotReloadEnabled()" body="stub" value="false" />
+      <event name="OnDeltaApplied" body="stub" />
+    </type>
+    <type fullname="Microsoft.AspNetCore.Components.HotReload.HotReloadContext">
+      <method signature="System.Boolean get_IsHotReloading()" body="stub" value="false" />
+      <method signature="System.Void set_IsHotReloading(System.Boolean)" body="remove" />
+    </type>
+  </assembly>
+</linker>

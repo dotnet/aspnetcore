@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -29,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var editsBufferStartLength = editsBuffer.Count;
 
             var diffContext = new DiffContext(renderer, batchBuilder, componentId, oldTree.Array, newTree.Array);
-            AppendDiffEntriesForRange(renderer, ref diffContext, 0, oldTree.Count, 0, newTree.Count);
+            AppendDiffEntriesForRange(ref diffContext, 0, oldTree.Count, 0, newTree.Count);
 
             var editsSegment = editsBuffer.ToSegment(editsBufferStartLength, editsBuffer.Count);
             var result = new RenderTreeDiff(componentId, editsSegment);
@@ -40,7 +42,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => DisposeFramesInRange(batchBuilder, frames.Array, 0, frames.Count);
 
         private static void AppendDiffEntriesForRange(
-            Renderer renderer,
             ref DiffContext diffContext,
             int oldStartIndex, int oldEndIndexExcl,
             int newStartIndex, int newEndIndexExcl)
@@ -238,7 +239,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     switch (action)
                     {
                         case DiffAction.Match:
-                            AppendDiffEntriesForFramesWithSameSequence(renderer, ref diffContext, oldStartIndex, matchWithNewTreeIndex);
+                            AppendDiffEntriesForFramesWithSameSequence(ref diffContext, oldStartIndex, matchWithNewTreeIndex);
                             oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
                             newStartIndex = NextSiblingIndex(newTree[newStartIndex], newStartIndex);
                             hasMoreOld = oldEndIndexExcl > oldStartIndex;
@@ -510,7 +511,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         private static void UpdateRetainedChildComponent(
-            Renderer renderer,
             ref DiffContext diffContext,
             int oldComponentIndex,
             int newComponentIndex)
@@ -525,17 +525,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             newComponentFrame.ComponentStateField = componentState;
             newComponentFrame.ComponentIdField = componentState.ComponentId;
 
-            var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
-            var newParameters = new ParameterView(newParametersLifetime, newTree, newComponentIndex);
-            if (renderer.HotReloadContext.IsHotReloading())
-            {
-                // When performing hot reload, we want to force all components.
-                // We do this using two mechanisms - we call SetParametersAsync even if the parameters
-                // are unchanged and we ignore ComponentBase.ShouldRender
-                componentState.SetDirectParameters(newParameters);
-                return;
-            }
-
             // As an important rendering optimization, we want to skip parameter update
             // notifications if we know for sure they haven't changed/mutated. The
             // "MayHaveChangedSince" logic is conservative, in that it returns true if
@@ -546,8 +535,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // comparisons it wants with the old values. Later we could choose to pass the
             // old parameter values if we wanted. By default, components always rerender
             // after any SetParameters call, which is safe but now always optimal for perf.
+
+            // When performing hot reload, we want to force all components to re-render.
+            // We do this using two mechanisms - we call SetParametersAsync even if the parameters
+            // are unchanged and we ignore ComponentBase.ShouldRender
+
             var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldComponentIndex);
-            if (!newParameters.DefinitelyEquals(oldParameters))
+            var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
+            var newParameters = new ParameterView(newParametersLifetime, newTree, newComponentIndex);
+            if (!newParameters.DefinitelyEquals(oldParameters) || diffContext.Renderer.HotReloadContext.IsHotReloading)
             {
                 componentState.SetDirectParameters(newParameters);
             }
@@ -569,7 +565,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         private static void AppendDiffEntriesForFramesWithSameSequence(
-            Renderer renderer,
             ref DiffContext diffContext,
             int oldFrameIndex,
             int newFrameIndex)
@@ -648,7 +643,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                                 var prevSiblingIndex = diffContext.SiblingIndex;
                                 diffContext.SiblingIndex = 0;
                                 AppendDiffEntriesForRange(
-                                    renderer,
                                     ref diffContext,
                                     oldFrameAttributesEndIndexExcl, oldFrameChildrenEndIndexExcl,
                                     newFrameAttributesEndIndexExcl, newFrameChildrenEndIndexExcl);
@@ -672,7 +666,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 case RenderTreeFrameType.Region:
                     {
                         AppendDiffEntriesForRange(
-                            renderer,
                             ref diffContext,
                             oldFrameIndex + 1, oldFrameIndex + oldFrame.RegionSubtreeLengthField,
                             newFrameIndex + 1, newFrameIndex + newFrame.RegionSubtreeLengthField);
@@ -684,7 +677,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         if (oldFrame.ComponentTypeField == newFrame.ComponentTypeField)
                         {
                             UpdateRetainedChildComponent(
-                                renderer,
                                 ref diffContext,
                                 oldFrameIndex,
                                 newFrameIndex);
