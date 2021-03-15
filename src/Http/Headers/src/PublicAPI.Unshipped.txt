@@ -10,4 +10,3 @@ static readonly Microsoft.Net.Http.Headers.HeaderNames.PermissionsPolicy -> stri
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ProxyConnection -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ReferrerPolicy -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ReportTo -> string!
-static readonly Microsoft.Net.Http.Headers.HeaderNames.XContentTypeOptions  -> string!
