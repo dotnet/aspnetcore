@@ -1,6 +1,6 @@
 Document - 
     RazorCompiledItemAttribute - 
-    NamespaceDeclaration -  - AspNetCore
+    NamespaceDeclaration -  - AspNetCoreGeneratedDocument
         UsingDirective - (1:0,1 [14] ) - System
         UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
         UsingDirective - (51:2,1 [19] ) - System.Linq
@@ -9,7 +9,7 @@ Document -
         UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         RazorSourceChecksumAttribute - 
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+        ClassDeclaration -  - internal - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 MalformedDirective - (0:0,0 [6] MalformedPageDirective.cshtml) - page
                 HtmlContent - (6:0,6 [49] MalformedPageDirective.cshtml)

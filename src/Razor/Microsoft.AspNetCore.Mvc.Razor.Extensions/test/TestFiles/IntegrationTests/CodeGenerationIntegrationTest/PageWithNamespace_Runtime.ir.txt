@@ -9,7 +9,7 @@ Document -
         UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         RazorSourceChecksumAttribute - 
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_PageWithNamespace - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+        ClassDeclaration -  - internal - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_PageWithNamespace - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (34:2,0 [20] PageWithNamespace.cshtml)
                     LazyIntermediateToken - (34:2,0 [3] PageWithNamespace.cshtml) - Html - <h1

@@ -1,6 +1,6 @@
 Document - 
     RazorCompiledItemAttribute - 
-    NamespaceDeclaration -  - AspNetCore
+    NamespaceDeclaration -  - AspNetCoreGeneratedDocument
         UsingDirective - (1:0,1 [14] ) - System
         UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
         UsingDirective - (51:2,1 [19] ) - System.Linq
@@ -10,7 +10,7 @@ Document -
         UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         UsingDirective - (55:4,1 [43] RazorPages.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
         RazorSourceChecksumAttribute - 
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+        ClassDeclaration -  - internal - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_0 - class - text-danger - HtmlAttributeValueStyle.DoubleQuotes
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - class - col-md-10 - HtmlAttributeValueStyle.DoubleQuotes
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_2 - class - form-group - HtmlAttributeValueStyle.DoubleQuotes

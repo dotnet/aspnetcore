@@ -21,11 +21,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             ClassDeclarationIntermediateNode @class, 
             MethodDeclarationIntermediateNode method)
         {
-            // while (!System.Diagnostics.Debugger.IsAttached)
-            // {
-            //     System.Console.WriteLine($"Waiting to connect on {System.Diagnostics.Process.GetCurrentProcess().Id}");
-            //     System.Threading.Thread.Sleep(1000);
-            // }
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
 
             if (!codeDocument.TryComputeNamespace(fallbackToRootNamespace: false, out var namespaceName))

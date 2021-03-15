@@ -1,5 +1,5 @@
 Document - 
-    NamespaceDeclaration -  - AspNetCore
+    NamespaceDeclaration - - AspNetCore
         UsingDirective -  - TModel = global::System.Object
         UsingDirective - (16:1,1 [32] ) - System.Collections.Generic
         UsingDirective - (51:2,1 [17] ) - System.Linq
