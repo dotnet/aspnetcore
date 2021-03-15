@@ -3,4 +3,11 @@
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesMediaType(Microsoft.Extensions.Primitives.StringSegment otherMediaType) -> bool
 Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(Microsoft.Net.Http.Headers.EntityTagHeaderValue! entityTag) -> void
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Baggage -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.CrossOriginEmbedderPolicy -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.CrossOriginOpenerPolicy -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.CrossOriginResourcePolicy -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.PermissionsPolicy -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ProxyConnection -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ReferrerPolicy -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.ReportTo -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.XContentTypeOptions  -> string!
