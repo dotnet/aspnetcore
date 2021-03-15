@@ -219,6 +219,8 @@ namespace Microsoft.AspNetCore.Hosting
             var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
 
             listenOptions.IsTls = true;
+            listenOptions.HttpsOptions = httpsOptions;
+
             listenOptions.Use(next =>
             {
                 // Set the list of protocols from listen options
