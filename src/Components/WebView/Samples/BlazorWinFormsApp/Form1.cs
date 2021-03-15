@@ -10,12 +10,13 @@ namespace BlazorWinFormsApp
 {
     public partial class Form1 : Form
     {
-        //private readonly AppState _appState;
+        private readonly AppState _appState = new();
 
         public Form1()
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddBlazorWebView();
+            serviceCollection.AddSingleton<AppState>(_appState);
             InitializeComponent();
 
             blazorWebView1.HostPage = @"wwwroot\index.html";
@@ -25,7 +26,10 @@ namespace BlazorWinFormsApp
 
         private void button1_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"Current counter value is <unknown>", "Counter Value");
+            MessageBox.Show(
+                owner: this,
+                text: $"Current counter value is: {_appState.Counter}",
+                caption: "Counter");
         }
     }
 }
