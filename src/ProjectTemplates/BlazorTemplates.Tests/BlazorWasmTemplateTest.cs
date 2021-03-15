@@ -27,8 +27,8 @@ namespace Templates.Test
     [TestCaseOrderer("Templates.Test.PriorityOrderer", "BlazorTemplates.Tests")]
     public class BlazorWasmTemplateTest : BlazorTemplateTest
     {
-        public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory, PlaywrightFixture<BlazorServerTemplateTest> browserFixture, ITestOutputHelper output)
-            : base(projectFactory, browserFixture, output)
+        public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
+            : base(projectFactory, output)
         {
         }
 
@@ -57,9 +57,9 @@ namespace Templates.Test
             using (serveProcess)
             {
                 Output.WriteLine($"Opening browser at {listeningUri}...");
-                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                if (BrowserManager.IsAvailable(browserKind))
                 {
-                    await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                    await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
                     var page = await NavigateToPage(browser, listeningUri);
                     await TestBasicNavigation(project.ProjectName, page);
                 }
@@ -101,9 +101,9 @@ namespace Templates.Test
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
             await AssertCompressionFormat(aspNetProcess, "br");
 
-            if (Fixture.BrowserManager.IsAvailable(browserKind))
+            if (BrowserManager.IsAvailable(browserKind))
             {
-                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
                 var page = await browser.NewPageAsync();
                 await aspNetProcess.VisitInBrowserAsync(page);
                 await TestBasicNavigation(project.ProjectName, page);
@@ -145,10 +145,10 @@ namespace Templates.Test
 
             ValidatePublishedServiceWorker(project);
 
-            if (Fixture.BrowserManager.IsAvailable(browserKind))
+            if (BrowserManager.IsAvailable(browserKind))
             {
                 var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
-                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
                 Output.WriteLine($"Opening browser at {listeningUri}...");
                 var page = await NavigateToPage(browser, listeningUri);
                 using (serveProcess)
@@ -188,9 +188,9 @@ namespace Templates.Test
             ValidatePublishedServiceWorker(serverProject);
 
             string listeningUri = null;
-            if (Fixture.BrowserManager.IsAvailable(browserKind))
+            if (BrowserManager.IsAvailable(browserKind))
             {
-                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
                 IPage page = null;
                 using (var aspNetProcess = serverProject.StartPublishedProjectAsync())
                 {
@@ -309,7 +309,7 @@ namespace Templates.Test
 
             UpdatePublishedSettings(serverProject);
 
-            if (Fixture.BrowserManager.IsAvailable(browserKind))
+            if (BrowserManager.IsAvailable(browserKind))
             {
                 using var aspNetProcess = serverProject.StartPublishedProjectAsync();
 
@@ -319,7 +319,7 @@ namespace Templates.Test
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
-                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
                 var page = await browser.NewPageAsync();
                 await aspNetProcess.VisitInBrowserAsync(page);
                 await TestBasicNavigation(project.ProjectName, page, usesAuth: true);
@@ -359,7 +359,7 @@ namespace Templates.Test
             using (serveProcess)
             {
                 Output.WriteLine($"Opening browser at {listeningUri}...");
-                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
                 var page = await NavigateToPage(browser, listeningUri);
                 await TestBasicNavigation(project.ProjectName, page);
                 await page.CloseAsync();
@@ -450,9 +450,9 @@ namespace Templates.Test
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-            if (Fixture.BrowserManager.IsAvailable(browserKind))
+            if (BrowserManager.IsAvailable(browserKind))
             {
-                await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
                 var page = await browser.NewPageAsync();
                 await aspNetProcess.VisitInBrowserAsync(page);
                 await TestBasicNavigation(appName, page, usesAuth);

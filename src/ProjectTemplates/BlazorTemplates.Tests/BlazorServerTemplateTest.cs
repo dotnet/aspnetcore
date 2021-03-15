@@ -19,8 +19,8 @@ namespace Templates.Test
     [TestCaseOrderer("Templates.Test.PriorityOrderer", "BlazorTemplates.Tests")]
     public class BlazorServerTemplateTest : BlazorTemplateTest
     {
-        public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory, PlaywrightFixture<BlazorServerTemplateTest> fixture, ITestOutputHelper output)
-            : base(projectFactory, fixture, output)
+        public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
+            : base(projectFactory, output)
         {
         }
 
@@ -42,8 +42,8 @@ namespace Templates.Test
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorservernoauth" + browserKind.ToString(), Output);
 
-            await using var browser = Fixture.BrowserManager.IsAvailable(browserKind) ?
-                await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo) :
+            await using var browser = BrowserManager.IsAvailable(browserKind) ?
+                await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo) :
                 null;
 
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
@@ -54,7 +54,7 @@ namespace Templates.Test
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
-                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                if (BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);
@@ -74,7 +74,7 @@ namespace Templates.Test
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                if (BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);
@@ -98,9 +98,9 @@ namespace Templates.Test
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""), Output);
 
-            var browser = !Fixture.BrowserManager.IsAvailable(browserKind) ?
+            var browser = !BrowserManager.IsAvailable(browserKind) ?
                 null :
-                await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
 
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
@@ -109,7 +109,7 @@ namespace Templates.Test
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                if (BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);
@@ -129,7 +129,7 @@ namespace Templates.Test
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                if (BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);

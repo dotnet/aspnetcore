@@ -2,38 +2,87 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using ProjectTemplates.Tests.Infrastructure;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Templates.Test
 {
-    public abstract class BlazorTemplateTest
+    public abstract class BlazorTemplateTest : IAsyncLifetime
     {
         public const int BUILDCREATEPUBLISH_PRIORITY = -1000;
 
-        public BlazorTemplateTest(ProjectFactoryFixture projectFactory, PlaywrightFixture<BlazorServerTemplateTest> browserFixture, ITestOutputHelper output)
+        public BlazorTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
         {
-            Fixture = browserFixture;
             ProjectFactory = projectFactory;
             Output = output;
-            BrowserContextInfo = new ContextInformation(CreateFactory(output));
         }
 
-        public PlaywrightFixture<BlazorServerTemplateTest> Fixture { get; }
+        public async Task InitializeAsync()
+        {
+            var sink = new TestSink();
+            sink.MessageLogged += LogBrowserManagerMessage;
+            var factory = new TestLoggerFactory(sink, enabled: true);
+            BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), factory);
+            BrowserContextInfo = new ContextInformation(CreateFactory(Output));
+        }
+
+        private static IConfiguration CreateConfiguration()
+        {
+            var basePath = Path.GetDirectoryName(typeof(BlazorTemplateTest).Assembly.Location);
+            var os = Environment.OSVersion.Platform switch
+            {
+                PlatformID.Win32NT => "win",
+                PlatformID.Unix => "linux",
+                PlatformID.MacOSX => "osx",
+                _ => null
+            };
+
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile(Path.Combine(basePath, "playwrightSettings.json"))
+                .AddJsonFile(Path.Combine(basePath, $"playwrightSettings.{os}.json"), optional: true);
+
+            if (_isCIEnvironment)
+            {
+                builder.AddJsonFile(Path.Combine(basePath, "playwrightSettings.ci.json"), optional: true)
+                    .AddJsonFile(Path.Combine(basePath, $"playwrightSettings.ci.{os}.json"), optional: true);
+            }
+
+            if (Debugger.IsAttached)
+            {
+                builder.AddJsonFile(Path.Combine(basePath, "playwrightSettings.debug.json"), optional: true);
+            }
+
+            return builder.Build();
+        }
+
+        public Task DisposeAsync() => BrowserManager.DisposeAsync();
+
         public ProjectFactoryFixture ProjectFactory { get; set; }
         public ITestOutputHelper Output { get; }
         public Project Project { get; protected set; }
-        public ContextInformation BrowserContextInfo { get; }
-        public abstract string ProjectType { get; }
+        public ContextInformation BrowserContextInfo { get; protected set; }
+        public BrowserManager BrowserManager { get; private set; }
 
+        public abstract string ProjectType { get; }
+        private static readonly bool _isCIEnvironment =
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild"));
+
+
+        private void LogBrowserManagerMessage(WriteContext context)
+        {
+            Output.WriteLine(context.Message);
+        }
 
         public static ILoggerFactory CreateFactory(ITestOutputHelper output)
         {
@@ -91,7 +140,6 @@ namespace Templates.Test
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", targetProject, buildResult));
         }
 
-
         protected static Project GetSubProject(Project project, string projectDirectory, string projectName)
         {
             var subProjectDirectory = Path.Combine(project.TemplateOutputDir, projectDirectory);
@@ -122,7 +170,7 @@ namespace Templates.Test
             Assert.False(
                 TryValidateBrowserRequired(
                     browserKind,
-                    isRequired: !Fixture.BrowserManager.IsExplicitlyDisabled(browserKind),
+                    isRequired: !BrowserManager.IsExplicitlyDisabled(browserKind),
                     out var errorMessage),
                 errorMessage);
         }
