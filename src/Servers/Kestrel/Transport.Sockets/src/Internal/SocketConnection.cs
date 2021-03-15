@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             MemoryPool = memoryPool;
             _trace = trace;
             _waitForData = waitForData;
+            Socket = socket;
 
             LocalEndPoint = _socket.LocalEndPoint;
             RemoteEndPoint = _socket.RemoteEndPoint;
@@ -74,6 +75,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         public PipeReader Output => Application.Input;
 
         public override MemoryPool<byte> MemoryPool { get; }
+
+        public override Socket Socket { get; }
 
         public void Start()
         {
