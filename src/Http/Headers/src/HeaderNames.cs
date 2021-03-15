@@ -109,6 +109,15 @@ namespace Microsoft.Net.Http.Headers
         /// <summary>Gets the <c>Cookie</c> HTTP header name.</summary>
         public static readonly string Cookie = "Cookie";
 
+        /// <summary>Gets the <c>Cross-Origin-Embedder-Policy</c> HTTP header name.</summary>
+        public static readonly string CrossOriginEmbedderPolicy = "Cross-Origin-Embedder-Policy";
+
+        /// <summary>Gets the <c>Cross-Origin-Opener-Policy</c> HTTP header name.</summary>
+        public static readonly string CrossOriginOpenerPolicy = "Cross-Origin-Opener-Policy";
+
+        /// <summary>Gets the <c>Cross-Origin-Resource-Policy</c> HTTP header name.</summary>
+        public static readonly string CrossOriginResourcePolicy = "Cross-Origin-Resource-Policy";
+
         /// <summary>Gets the <c>Date</c> HTTP header name.</summary>
         public static readonly string Date = "Date";
 
@@ -181,6 +190,9 @@ namespace Microsoft.Net.Http.Headers
         /// <summary>Gets the <c>:path</c> HTTP header name.</summary>
         public static readonly string Path = ":path";
 
+        /// <summary>Gets the <c>Permissions-Policy</c> HTTP header name.</summary>
+        public static readonly string PermissionsPolicy = "Permissions-Policy";
+
         /// <summary>Gets the <c>Pragma</c> HTTP header name.</summary>
         public static readonly string Pragma = "Pragma";
 
@@ -198,6 +210,12 @@ namespace Microsoft.Net.Http.Headers
 
         /// <summary>Gets the <c>Referer</c> HTTP header name.</summary>
         public static readonly string Referer = "Referer";
+
+        /// <summary>Gets the <c>Referrer-Policy</c> HTTP header name.</summary>
+        public static readonly string ReferrerPolicy = "Referrer-Policy";
+
+        /// <summary>Gets the <c>Report-To</c> HTTP header name.</summary>
+        public static readonly string ReportTo = "Report-To";
 
         /// <summary>Gets the <c>Retry-After</c> HTTP header name.</summary>
         public static readonly string RetryAfter = "Retry-After";
@@ -273,6 +291,9 @@ namespace Microsoft.Net.Http.Headers
 
         /// <summary>Gets the <c>WWW-Authenticate</c> HTTP header name.</summary>
         public static readonly string WWWAuthenticate = "WWW-Authenticate";
+
+        /// <summary>Gets the <c>X-Content-Type-Options</c> HTTP header name.</summary>
+        public static readonly string XContentTypeOptions = "X-Content-Type-Options";
 
         /// <summary>Gets the <c>X-Frame-Options</c> HTTP header name.</summary>
         public static readonly string XFrameOptions = "X-Frame-Options";
