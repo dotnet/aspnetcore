@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var _assemblyMap =
                 new Dictionary<UIFramework, string>()
                 {
-                    [UIFramework.Bootstrap4] = "Microsoft.AspNetCore.Identity.UI.Views.V4",
+                    [UIFramework.Bootstrap4] = "Microsoft.AspNetCore.Identity.UI",
                 };
 
             var mvcBuilder = services
