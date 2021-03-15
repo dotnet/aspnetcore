@@ -221,7 +221,6 @@ namespace Templates.Test
                 EnsureBrowserAvailable(browserKind);
             }
         }
-        
 
         private void ValidatePublishedServiceWorker(Project project)
         {
