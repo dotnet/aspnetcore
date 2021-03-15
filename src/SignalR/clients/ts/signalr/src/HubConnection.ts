@@ -769,6 +769,7 @@ export class HubConnection {
 
                 if (this._connectionState !== HubConnectionState.Reconnecting) {
                     this._logger.log(LogLevel.Debug, "Connection left the reconnecting state during reconnect attempt. Done reconnecting.");
+                    this._completeClose();
                     return;
                 }
 
