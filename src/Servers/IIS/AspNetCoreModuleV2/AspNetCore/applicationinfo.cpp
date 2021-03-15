@@ -3,8 +3,6 @@
 
 #include "applicationinfo.h"
 
-#include "rpcdce.h"
-#include "Rpc.h"
 #include "proxymodule.h"
 #include "HostFxrResolver.h"
 #include "debugutil.h"
@@ -93,7 +91,7 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
             m_pApplication = make_application<ServerErrorApplication>(
                 pHttpApplication,
                 E_FAIL,
-                false /* disableStartupPage */,
+                options.QueryDisableStartupPage() /* disableStartupPage */,
                 "" /* responseContent */,
                 503i16 /* statusCode */,
                 0i16 /* subStatusCode */,
@@ -192,7 +190,7 @@ APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOpt
         }
     }
 
-    std::filesystem::path shadowCopyPath = HandleShadowCopy(options, pHttpContext);
+    auto shadowCopyPath = HandleShadowCopy(options, pHttpContext);
 
     RETURN_IF_FAILED(m_handlerResolver.GetApplicationFactory(*pHttpContext.GetApplication(), shadowCopyPath, m_pApplicationFactory, options, error));
     LOG_INFO(L"Creating handler application");
@@ -253,7 +251,7 @@ APPLICATION_INFO::ShutDownApplication(const bool fServerInitiated)
     m_pApplicationFactory = nullptr;
 }
 
-std::wstring
+std::filesystem::path
 APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHttpContext)
 {
     std::filesystem::path shadowCopyPath;
@@ -289,11 +287,12 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
             {
                 try
                 {
-                    int intFileName = std::stoi(entry.path().filename().string());
+                    auto tempDirName = entry.path().filename().string();
+                    int intFileName = std::stoi(tempDirName);
                     if (intFileName > directoryName)
                     {
                         directoryName = intFileName;
-                        directoryNameStr = entry.path().filename().string();
+                        directoryNameStr = tempDirName;
                     }
                 }
                 catch (...)

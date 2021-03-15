@@ -79,7 +79,7 @@ private:
     HRESULT
     TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, ErrorContext& error);
 
-    std::wstring
+    std::filesystem::path
     HandleShadowCopy(const ShimOptions& options, IHttpContext& pHttpContext);
 
     IHttpServer            &m_pServer;

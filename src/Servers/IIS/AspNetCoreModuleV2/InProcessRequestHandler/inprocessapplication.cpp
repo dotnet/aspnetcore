@@ -81,6 +81,7 @@ IN_PROCESS_APPLICATION::StopClr()
 
     const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, m_pConfig->QueryShutdownTimeLimitInMS());
 
+    // If waitResults != WAIT_OBJECT_0 + 1, it means main hasn't returned, so okay to call into it.
     if (!m_blockManagedCallbacks && waitResult != WAIT_OBJECT_0 + 1)
     {
         // We cannot call into managed if the dll is detaching from the process.
