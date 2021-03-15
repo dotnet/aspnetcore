@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.DataProtection
                     return forwardedTypeName;
                 }
 
-                forwardedTypeName = forwardedTypeName.Substring(0, versionStartIndex - 1) + forwardedTypeName.Substring(versionEndIndex + 1);
+                forwardedTypeName = forwardedTypeName.Remove(versionStartIndex, versionEndIndex - versionStartIndex);
                 versionStartIndex = forwardedTypeName.IndexOf("Version=", StringComparison.Ordinal);
             }
 
