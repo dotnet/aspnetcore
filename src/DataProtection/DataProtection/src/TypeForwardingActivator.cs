@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 if (versionEndIndex == -1)
                 {
                     // No end index?
-                    return forwardedTypeName;
+                    throw new InvalidOperationException("Unexpected end of version string.");
                 }
 
                 forwardedTypeName = forwardedTypeName.Remove(versionStartIndex, versionEndIndex - versionStartIndex + 2);
