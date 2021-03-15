@@ -243,7 +243,7 @@ APPLICATION_INFO::ShutDownApplication(const bool fServerInitiated)
         }
         app = m_pApplication.get();
     }
-   
+
     LOG_INFOF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
     app->Stop(fServerInitiated);
 
@@ -258,7 +258,8 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
 {
     std::filesystem::path shadowCopyPath;
 
-    if (options.QueryShadowCopyEnabled())
+    // Only support shadow copying for IIS.
+    if (options.QueryShadowCopyEnabled() && !m_pServer.IsCommandLineLaunch())
     {
         shadowCopyPath = options.QueryShadowCopyDirectory();
         std::wstring physicalPath = pHttpContext.GetApplication()->GetApplicationPhysicalPath();
