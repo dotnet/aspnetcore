@@ -15,14 +15,7 @@ Microsoft.AspNetCore.Components.Forms.InputTextArea.Element.get -> Microsoft.Asp
 Microsoft.AspNetCore.Components.Forms.InputTextArea.Element.set -> void
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.BrowserFileExtensions.RequestImageFileAsync(this Microsoft.AspNetCore.Components.Forms.IBrowserFile! browserFile, string! format, int maxWith, int maxHeight) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
 Microsoft.AspNetCore.Components.Web.ErrorBoundary
-Microsoft.AspNetCore.Components.Web.ErrorBoundary.AutoReset.get -> bool
-Microsoft.AspNetCore.Components.Web.ErrorBoundary.AutoReset.set -> void
-Microsoft.AspNetCore.Components.Web.ErrorBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
-Microsoft.AspNetCore.Components.Web.ErrorBoundary.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Web.ErrorBoundary.ErrorBoundary() -> void
-Microsoft.AspNetCore.Components.Web.ErrorBoundary.ErrorContent.get -> Microsoft.AspNetCore.Components.RenderFragment<System.Exception!>?
-Microsoft.AspNetCore.Components.Web.ErrorBoundary.ErrorContent.set -> void
-Microsoft.AspNetCore.Components.Web.ErrorBoundary.HandleException(System.Exception! exception) -> void
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception, bool clientOnly) -> System.Threading.Tasks.ValueTask
 static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference, bool preventScroll) -> System.Threading.Tasks.ValueTask

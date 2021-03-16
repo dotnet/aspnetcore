@@ -76,12 +76,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 // If an exception occurs in the render fragment delegate, we won't process the diff in any way, so child components,
                 // event handlers, etc., will all be left untouched as if this component didn't re-render at all. We also are careful
                 // to leave ComponentState in an internally-consistent state so that technically this component could continue to be
-                // used.
+                // used. However, the Renderer will not allow the component to continue to be used, except if it's the IErrorBoundary,
+                // because it forcibly clears the descendants of the IErrorBoundary before notifying it.
                 // TODO: Verify that having a try/catch here doesn't degrade perf noticeably on WebAssembly. It might do.
-                // TODO: Should we actually terminate this component in some way to guarantee it doesn't re-render? That's tricky because
-                // we need it to be disposed in order that descendants, event handlers, etc. get cleaned up too. Unless we rely on it
-                // getting removed from its parent, we would have to duplicate quite a bit of internal state-keeping to ensure all the
-                // descendant state gets cleared up.
                 renderFragmentException = ex;
                 return;
             }

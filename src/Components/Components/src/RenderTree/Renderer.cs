@@ -391,10 +391,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // If it becomes problematic, we can maintain a lookup from component instance to ID.
             var componentState = _componentStateById.FirstOrDefault(kvp => kvp.Value.Component == errorSource).Value;
 
-            // Find the closest IErrorBoundary, if any
+            // Find the closest error boundary, if any
             while (componentState is not null)
             {
-                if (componentState.Component is IErrorBoundary errorBoundary)
+                if (componentState.Component is ErrorBoundaryBase errorBoundary)
                 {
                     // Force the IErrorBoundary component to clear its output, regardless of any logic inside
                     // that component. This ensures that all descendants are cleaned up. We don't strictly have
@@ -406,10 +406,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
                     try
                     {
-                        // TODO: Should we log the error here? Currently it's up to the IErrorBoundary to do what
-                        // it wants, including hiding the error. Maybe we should force it to get logged regardless
-                        // of what the IErrorBoundary want to do. Whichever way we go on this is permanent, as
-                        // switching in either direction would be a breaking change.
+                        // We don't log the error here, and instead leave it up to the IErrorBoundary to do
+                        // what it wants (which could be suppressing the error entirely). Note that the default
+                        // logging behavior has to vary between hosting models.
+                        // TODO: Are we happy with letting IErrorBoundary suppress errors if it wants?
                         errorBoundary.HandleException(error);
                     }
                     catch (Exception errorBoundaryException)
@@ -417,6 +417,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         // If *notifying* about an exception fails, it's OK for that to be fatal. This is
                         // different from an IErrorBoundary component throwing during its own rendering or
                         // lifecycle methods.
+                        // TODO: Should we support rethrowing from inside HandleException? I prefer not to
+                        // unless we get a better justification. See design doc.
                         HandleException(errorBoundaryException);
                     }
 
@@ -827,8 +829,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     }
                     else
                     {
-                        // TODO: Should we use disposeComponentState.Component as the owningComponent
-                        // so this is recoverable via IErrorBoundary?
                         AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result), null);
 
                         async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
