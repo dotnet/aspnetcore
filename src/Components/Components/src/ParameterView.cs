@@ -124,9 +124,11 @@ namespace Microsoft.AspNetCore.Components
             }
 
             var numEntries = GetEntryCount();
+            var cloneBuffer = new RenderTreeFrame[1 + numEntries];
+            cloneBuffer[0] = RenderTreeFrame.PlaceholderChildComponentWithSubtreeLength(1 + numEntries);
+            _frames.AsSpan(1, numEntries).CopyTo(cloneBuffer.AsSpan(1));
 
-            var dictionary = ToDictionary();
-            return FromDictionary((IDictionary<string, object?>)dictionary);
+            return new ParameterView(Lifetime, cloneBuffer, _ownerIndex);
         }
 
         internal ParameterView WithCascadingParameters(IReadOnlyList<CascadingParameterState> cascadingParameters)
