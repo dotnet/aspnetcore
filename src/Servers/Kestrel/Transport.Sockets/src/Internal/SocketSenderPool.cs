@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             if (_disposed || Interlocked.Increment(ref _count) > MaxQueueSize)
             {
                 Interlocked.Decrement(ref _count);
-                // We disposed the queue
                 sender.Dispose();
                 return;
             }
