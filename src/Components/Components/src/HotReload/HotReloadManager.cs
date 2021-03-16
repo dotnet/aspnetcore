@@ -10,12 +10,7 @@ namespace Microsoft.AspNetCore.Components.HotReload
 {
     internal static class HotReloadManager
     {
-        /// <summary>
-        /// Gets a value that determines if HotReload is configured for this application.
-        /// </summary>
-        public static bool IsHotReloadEnabled { get; } = Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") == "debug";
-
-        internal static event Action? OnDeltaApplied;
+       internal static event Action? OnDeltaApplied;
 
         public static void DeltaApplied()
         {

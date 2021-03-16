@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
         private readonly ILogger<Renderer> _logger;
         private readonly ComponentFactory _componentFactory;
+        private readonly HotReloadEnvironment _hotReloadEnvironment;
         private List<(ComponentState, ParameterView)>? _rootComponents;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
@@ -95,6 +96,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _logger = loggerFactory.CreateLogger<Renderer>();
             _componentFactory = new ComponentFactory(componentActivator);
 
+            _hotReloadEnvironment = serviceProvider.GetService<HotReloadEnvironment>() ?? HotReloadEnvironment.Instance;
+
             HotReloadManager.OnDeltaApplied += RenderRootComponentsOnHotReload;
         }
 
@@ -151,7 +154,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
         {
             var component = _componentFactory.InstantiateComponent(_serviceProvider, componentType);
-            if (HotReloadManager.IsHotReloadEnabled && component is IReceiveHotReloadContext receiveHotReloadContext)
+            if (_hotReloadEnvironment.IsHotReloadEnabled && component is IReceiveHotReloadContext receiveHotReloadContext)
             {
                 receiveHotReloadContext.Receive(HotReloadContext);
             }
@@ -222,13 +225,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // During the asynchronous rendering process we want to wait up until all components have
             // finished rendering so that we can produce the complete output.
             var componentState = GetRequiredComponentState(componentId);
-            if (HotReloadManager.IsHotReloadEnabled)
+            if (_hotReloadEnvironment.IsHotReloadEnabled)
             {
                 // when we're doing hot-reload, stash away the parameters used while rendering root components.
                 // We'll use this to trigger re-renders on hot reload updates.
                 _rootComponents ??= new();
                 _rootComponents.Add((componentState, initialParameters.Clone()));
-                
             }
 
             componentState.SetDirectParameters(initialParameters);
