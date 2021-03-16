@@ -65,19 +65,19 @@ namespace Microsoft.AspNetCore.DataProtection
         {
             // Type, Assembly, Version={Version}, Culture={Culture}, PublicKeyToken={Token}
 
-            var versionStartIndex = forwardedTypeName.IndexOf("Version=", StringComparison.Ordinal);
+            var versionStartIndex = forwardedTypeName.IndexOf(", Version=", StringComparison.Ordinal);
             while (versionStartIndex != -1)
             {
-                var versionEndIndex = forwardedTypeName.IndexOf(',', versionStartIndex + "Version=".Length);
+                var versionEndIndex = forwardedTypeName.IndexOf(',', versionStartIndex + ", Version=".Length);
 
                 if (versionEndIndex == -1)
                 {
-                    // No end index?
-                    throw new InvalidOperationException("Unexpected end of version string.");
+                    // No end index, so are done and can remove the rest
+                    return forwardedTypeName.Substring(0, versionStartIndex);
                 }
 
-                forwardedTypeName = forwardedTypeName.Remove(versionStartIndex, versionEndIndex - versionStartIndex + 2);
-                versionStartIndex = forwardedTypeName.IndexOf("Version=", StringComparison.Ordinal);
+                forwardedTypeName = forwardedTypeName.Remove(versionStartIndex, versionEndIndex - versionStartIndex);
+                versionStartIndex = forwardedTypeName.IndexOf(", Version=", StringComparison.Ordinal);
             }
 
             // No version left
