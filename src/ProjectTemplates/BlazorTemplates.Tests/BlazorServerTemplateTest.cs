@@ -19,8 +19,8 @@ namespace Templates.Test
     [TestCaseOrderer("Templates.Test.PriorityOrderer", "BlazorTemplates.Tests")]
     public class BlazorServerTemplateTest : BlazorTemplateTest
     {
-        public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
-            : base(projectFactory, output)
+        public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper TestOutputHelper)
+            : base(projectFactory, TestOutputHelper)
         {
         }
 
@@ -40,7 +40,7 @@ namespace Templates.Test
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30761")]
         public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorservernoauth" + browserKind.ToString(), Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorservernoauth" + browserKind.ToString(), TestOutputHelper);
 
             await using var browser = BrowserManager.IsAvailable(browserKind) ?
                 await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo) :
@@ -96,7 +96,7 @@ namespace Templates.Test
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30807")]
         public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""), Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""), TestOutputHelper);
 
             var browser = !BrowserManager.IsAvailable(browserKind) ?
                 null :
