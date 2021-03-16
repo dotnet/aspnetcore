@@ -1,23 +1,27 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 {
     // Simplified version of Roslyn's SyntaxNodeCache
-    internal static class SyntaxTokenCache
+    internal sealed class SyntaxTokenCache
     {
         private const int CacheSizeBits = 16;
         private const int CacheSize = 1 << CacheSizeBits;
         private const int CacheMask = CacheSize - 1;
+        public static readonly SyntaxTokenCache Instance = new();
         private static readonly Entry[] s_cache = new Entry[CacheSize];
 
-        private struct Entry
+        internal SyntaxTokenCache() { }
+
+        private readonly struct Entry
         {
             public int Hash { get; }
-            public SyntaxToken Token { get; }
+            public SyntaxToken? Token { get; }
 
             internal Entry(int hash, SyntaxToken token)
             {
@@ -26,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             }
         }
 
-        public static bool CanBeCached(SyntaxKind kind, params RazorDiagnostic[] diagnostics)
+        public bool CanBeCached(SyntaxKind kind, params RazorDiagnostic[] diagnostics)
         {
             if (diagnostics.Length == 0)
             {
@@ -50,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             return false;
         }
 
-        public static SyntaxToken GetCachedToken(SyntaxKind kind, string content)
+        public SyntaxToken GetCachedToken(SyntaxKind kind, string content)
         {
             var hash = (kind, content).GetHashCode();
 
@@ -60,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             var idx = indexableHash & CacheMask;
             var e = s_cache[idx];
 
-            if (e.Hash == hash && e.Token.Kind == kind && e.Token.Content == content)
+            if (e.Hash == hash && e.Token != null && e.Token.Kind == kind && e.Token.Content == content)
             {
                 return e.Token;
             }
