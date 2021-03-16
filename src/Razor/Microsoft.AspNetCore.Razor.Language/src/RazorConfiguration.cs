@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             RazorLanguageVersion languageVersion,
             string configurationName,
             IEnumerable<RazorExtension> extensions,
-            bool isConsolidatedMvcViews = false)
+            bool useConsolidatedMvcViews = false)
         {
             if (languageVersion == null)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(extensions));
             }
 
-            return new DefaultRazorConfiguration(languageVersion, configurationName, extensions.ToArray(), isConsolidatedMvcViews);
+            return new DefaultRazorConfiguration(languageVersion, configurationName, extensions.ToArray(), useConsolidatedMvcViews);
         }
 
         public abstract string ConfigurationName { get; }
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract RazorLanguageVersion LanguageVersion { get; }
 
-        public abstract bool IsConsolidatedMvcViews { get; }
+        public abstract bool UseConsolidatedMvcViews { get; }
 
         public override bool Equals(object obj)
         {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return false;
             }
 
-            if (IsConsolidatedMvcViews != other.IsConsolidatedMvcViews)
+            if (UseConsolidatedMvcViews != other.UseConsolidatedMvcViews)
             {
                 return false;
             }
@@ -111,12 +111,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 RazorLanguageVersion languageVersion,
                 string configurationName,
                 RazorExtension[] extensions,
-                bool isConsolidatedMvcViews = false)
+                bool useConsolidatedMvcViews = false)
             {
                 LanguageVersion = languageVersion;
                 ConfigurationName = configurationName;
                 Extensions = extensions;
-                IsConsolidatedMvcViews = isConsolidatedMvcViews;
+                UseConsolidatedMvcViews = useConsolidatedMvcViews;
             }
 
             public override string ConfigurationName { get; }
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override RazorLanguageVersion LanguageVersion { get; }
 
-            public override bool IsConsolidatedMvcViews { get; }
+            public override bool UseConsolidatedMvcViews { get; }
         }
     }
 }

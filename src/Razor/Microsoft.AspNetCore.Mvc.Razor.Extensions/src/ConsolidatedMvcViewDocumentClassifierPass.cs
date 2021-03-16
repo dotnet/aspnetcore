@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         protected override string DocumentKind => MvcViewDocumentKind;
 
         protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode) => true;
-            
 
         protected override void OnDocumentStructureCreated(
             RazorCodeDocument codeDocument, 
@@ -45,7 +44,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 @class.ClassName = className;
             }
             
-
             @class.BaseType = "global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>";
             @class.Modifiers.Clear();
             @class.Modifiers.Add("internal");

@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Features.Add(new ViewComponentTagHelperPass());
             builder.Features.Add(new RazorPageDocumentClassifierPass());
 
-            if (builder.Configuration.IsConsolidatedMvcViews)
+            if (builder.Configuration.UseConsolidatedMvcViews)
             {
                 builder.Features.Add(new ConsolidatedMvcViewDocumentClassifierPass());
             }
