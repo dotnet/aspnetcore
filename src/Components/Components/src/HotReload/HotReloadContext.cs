@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Components.HotReload
 {
     /// <summary>
-    /// A context that indicates when a component is being rendered after a hot reload is applied to the application.
+    /// A context that indicates when a component is being rendered because of a hot reload operation.
     /// </summary>
     public sealed class HotReloadContext
     {

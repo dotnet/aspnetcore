@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.HotReload
         /// <summary>
         /// Configures a component to use the hot reload context.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">The hot reload context.</param>
         void Receive(HotReloadContext context);
     }
 }
