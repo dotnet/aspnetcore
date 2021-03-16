@@ -37,7 +37,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Features.Add(new PagesPropertyInjectionPass());
             builder.Features.Add(new ViewComponentTagHelperPass());
             builder.Features.Add(new RazorPageDocumentClassifierPass());
-            builder.Features.Add(new MvcViewDocumentClassifierPass());
+
+            if (builder.Configuration.IsConsolidatedMvcViews)
+            {
+                builder.Features.Add(new ConsolidatedMvcViewDocumentClassifierPass());
+            }
+            else
+            {
+                builder.Features.Add(new MvcViewDocumentClassifierPass());
+            }
 
             builder.Features.Add(new MvcImportProjectFeature());
 

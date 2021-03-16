@@ -13,12 +13,14 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static readonly RazorConfiguration Default = new DefaultRazorConfiguration(
             RazorLanguageVersion.Latest, 
             "unnamed",
-            Array.Empty<RazorExtension>());
+            Array.Empty<RazorExtension>(),
+            false);
 
         public static RazorConfiguration Create(
             RazorLanguageVersion languageVersion,
             string configurationName,
-            IEnumerable<RazorExtension> extensions)
+            IEnumerable<RazorExtension> extensions,
+            bool isConsolidatedMvcViews = false)
         {
             if (languageVersion == null)
             {
@@ -35,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(extensions));
             }
 
-            return new DefaultRazorConfiguration(languageVersion, configurationName, extensions.ToArray());
+            return new DefaultRazorConfiguration(languageVersion, configurationName, extensions.ToArray(), isConsolidatedMvcViews);
         }
 
         public abstract string ConfigurationName { get; }
@@ -43,6 +45,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract IReadOnlyList<RazorExtension> Extensions { get; }
 
         public abstract RazorLanguageVersion LanguageVersion { get; }
+
+        public abstract bool IsConsolidatedMvcViews { get; }
 
         public override bool Equals(object obj)
         {
@@ -67,6 +71,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             if (Extensions.Count != other.Extensions.Count)
+            {
+                return false;
+            }
+
+            if (IsConsolidatedMvcViews != other.IsConsolidatedMvcViews)
             {
                 return false;
             }
@@ -101,11 +110,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             public DefaultRazorConfiguration(
                 RazorLanguageVersion languageVersion,
                 string configurationName,
-                RazorExtension[] extensions)
+                RazorExtension[] extensions,
+                bool isConsolidatedMvcViews = false)
             {
                 LanguageVersion = languageVersion;
                 ConfigurationName = configurationName;
                 Extensions = extensions;
+                IsConsolidatedMvcViews = isConsolidatedMvcViews;
             }
 
             public override string ConfigurationName { get; }
@@ -113,6 +124,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             public override IReadOnlyList<RazorExtension> Extensions { get; }
 
             public override RazorLanguageVersion LanguageVersion { get; }
+
+            public override bool IsConsolidatedMvcViews { get; }
         }
     }
 }
