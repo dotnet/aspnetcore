@@ -34,7 +34,7 @@ namespace Templates.Test
         [Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
         public async Task BlazorWasmTemplate_CreateBuildPublish_Standalone()
         {
-            var project = await CreateBuildPublishAsync("blazorstandalone" + BrowserKind.Chromium.ToString());
+            var project = await CreateBuildPublishAsync("blazorstandalone" + BrowserKind.Chromium);
 
             // The service worker assets manifest isn't generated for non-PWA projects
             var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
@@ -76,7 +76,23 @@ namespace Templates.Test
 
         [Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
         public Task BlazorWasmTemplate_CreateBuildPublish_Hosted()
-            => CreateBuildPublishAsync("blazorhosted" + BrowserKind.Chromium, args: new[] { "--hosted" }, serverProject: true);
+        {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + BrowserKind.Chromium, Output);
+            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+            var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
+
+            var publishResult = await serverProject.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", serverProject, publishResult));
+
+            var buildResult = await serverProject.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", serverProject, buildResult));        
+        }
+            // => CreateBuildPublishAsync("blazorhosted" + BrowserKind.Chromium, args: new[] { "--hosted" }, serverProject: true);
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
