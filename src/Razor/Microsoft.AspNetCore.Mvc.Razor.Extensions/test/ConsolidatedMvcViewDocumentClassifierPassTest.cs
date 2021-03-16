@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>", visitor.Class.BaseType);
-            Assert.Equal(new[] { "internal" }, visitor.Class.Modifiers);
+            Assert.Equal(new[] { "internal", "sealed" }, visitor.Class.Modifiers);
             Assert.Equal("Test", visitor.Class.ClassName);
         }
 
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>", visitor.Class.BaseType);
-            Assert.Equal(new[] { "internal" }, visitor.Class.Modifiers);
+            Assert.Equal(new[] { "internal", "sealed" }, visitor.Class.Modifiers);
             Assert.Equal("AspNetCore_d9f877a857a7e9928eac04d09a59f25967624155", visitor.Class.ClassName);
         }
 
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal(expected, visitor.Class.ClassName);
-            Assert.Equal(new[] { "internal" }, visitor.Class.Modifiers);
+            Assert.Equal(new[] { "internal", "sealed" }, visitor.Class.Modifiers);
         }
 
         [Fact]

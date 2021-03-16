@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class ConsolidatedMvcViewDocumentClassifierPass : DocumentClassifierPassBase
+    public sealed class ConsolidatedMvcViewDocumentClassifierPass : DocumentClassifierPassBase
     {
         public static readonly string MvcViewDocumentKind = "mvc.1.0.view";
 
