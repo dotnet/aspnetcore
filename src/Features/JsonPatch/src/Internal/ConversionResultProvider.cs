@@ -34,12 +34,20 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             {
                 try
                 {
-                    var serializerSettings = new JsonSerializerSettings()
+                    if (contractResolver == null)
                     {
-                        ContractResolver = contractResolver
-                    };
-                    var deserialized = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), typeToConvertTo, serializerSettings);
-                    return new ConversionResult(true, deserialized);
+                        var deserialized = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), typeToConvertTo);
+                        return new ConversionResult(true, deserialized);
+                    }
+                    else
+                    {
+                        var serializerSettings = new JsonSerializerSettings()
+                        {
+                            ContractResolver = contractResolver
+                        };
+                        var deserialized = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), typeToConvertTo, serializerSettings);
+                        return new ConversionResult(true, deserialized);
+                    }
                 }
                 catch
                 {
