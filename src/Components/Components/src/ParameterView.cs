@@ -123,6 +123,8 @@ namespace Microsoft.AspNetCore.Components
                 return Empty;
             }
 
+            var numEntries = GetEntryCount();
+
             var dictionary = ToDictionary();
             return FromDictionary((IDictionary<string, object?>)dictionary);
         }
@@ -200,11 +202,7 @@ namespace Microsoft.AspNetCore.Components
         {
             builder.Clear();
 
-            var numEntries = 0;
-            foreach (var entry in this)
-            {
-                numEntries++;
-            }
+            var numEntries = GetEntryCount();
 
             // We need to prefix the captured frames with an "owner" frame that
             // describes the length of the buffer so that ParameterView
@@ -216,6 +214,17 @@ namespace Microsoft.AspNetCore.Components
             {
                 builder.Append(_frames, _ownerIndex + 1, numEntries);
             }
+        }
+
+        private int GetEntryCount()
+        {
+            var numEntries = 0;
+            foreach (var _ in this)
+            {
+                numEntries++;
+            }
+
+            return numEntries;
         }
 
         /// <summary>

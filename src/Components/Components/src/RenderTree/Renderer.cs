@@ -96,9 +96,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _logger = loggerFactory.CreateLogger<Renderer>();
             _componentFactory = new ComponentFactory(componentActivator);
 
+            // HotReloadEnvironment is a test-specific feature and may not be available in a running app. We'll fallback to the default instance
+            // if the test fixture does not provide one.
             _hotReloadEnvironment = serviceProvider.GetService<HotReloadEnvironment>() ?? HotReloadEnvironment.Instance;
 
-            HotReloadManager.OnDeltaApplied += RenderRootComponentsOnHotReload;
+            if (_hotReloadEnvironment.IsHotReloadEnabled)
+            {
+                HotReloadManager.OnDeltaApplied += RenderRootComponentsOnHotReload;
+            }
         }
 
         private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
@@ -122,25 +127,25 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private async void RenderRootComponentsOnHotReload()
         {
-            await Dispatcher.InvokeAsync(async () =>
+            await Dispatcher.InvokeAsync(() =>
             {
-                Debug.Assert(_rootComponents is not null);
-                HotReloadContext.IsHotReloading = true;
+                if (_rootComponents is null)
+                {
+                    return;
+                }
 
+                HotReloadContext.IsHotReloading = true;
                 try
                 {
-                    _pendingTasks = new List<Task>();
                     foreach (var (componentState, initialParameters) in _rootComponents)
                     {
-                        AddToPendingTasks(componentState.Component.SetParametersAsync(initialParameters));
+                        componentState.SetDirectParameters(initialParameters);
                     }
 
-                    await ProcessAsynchronousWork();
-                    Debug.Assert(_pendingTasks.Count == 0);
+                    ProcessPendingRender();
                 }
                 finally
                 {
-                    _pendingTasks = null;
                     HotReloadContext.IsHotReloading = false;
                 }
             });
@@ -935,7 +940,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
-            HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
+            if (_hotReloadEnvironment.IsHotReloadEnabled)
+            {
+                HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
+            }
 
             if (_disposed)
             {
