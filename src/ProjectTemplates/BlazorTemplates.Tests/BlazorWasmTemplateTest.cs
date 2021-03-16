@@ -34,7 +34,7 @@ namespace Templates.Test
         [Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
         public async Task BlazorWasmTemplate_CreateBuildPublish_Standalone()
         {
-            var project = await CreateBuildPublishAsync("blazorstandalone" + BrowserKind.Chromium.ToString());
+            var project = await CreateBuildPublishAsync("blazorstandalone" + BrowserKind.Chromium);
 
             // The service worker assets manifest isn't generated for non-PWA projects
             var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
@@ -80,7 +80,7 @@ namespace Templates.Test
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + BrowserKind.Chromium, Output);
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
