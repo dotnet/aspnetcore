@@ -34,31 +34,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public void Return(SocketSender sender)
         {
-            if (Volatile.Read(ref _disposed))
+            // This counting isn't accurate, but it's good enough for what we need to avoid using _queue.Count which could be expensive
+            if (_disposed || Interlocked.Increment(ref _count) > MaxQueueSize)
             {
+                Interlocked.Decrement(ref _count);
                 // We disposed the queue
                 sender.Dispose();
                 return;
             }
 
-            // Add this sender back to the queue if we haven't crossed the max
-            var count = Volatile.Read(ref _count);
-            while (count < MaxQueueSize)
-            {
-                var prev = Interlocked.CompareExchange(ref _count, count + 1, count);
-
-                if (prev == count)
-                {
-                    sender.Reset();
-                    _queue.Enqueue(sender);
-                    return;
-                }
-
-                count = prev;
-            }
-
-            // Over the limit
-            sender.Dispose();
+            sender.Reset();
+            _queue.Enqueue(sender);
         }
 
         public void Dispose()

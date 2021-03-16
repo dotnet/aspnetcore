@@ -44,13 +44,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             if (BufferList != null)
             {
                 BufferList = null;
+
+                _bufferList?.Clear();
             }
             else
             {
                 SetBuffer(null, 0, 0);
             }
-
-            _bufferList?.Clear();
         }
 
         private SocketAwaitableEventArgs SendAsync(Socket socket, ReadOnlyMemory<byte> memory)
