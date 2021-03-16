@@ -1,1 +1,3 @@
 #nullable enable
+~static Microsoft.AspNetCore.JsonPatch.Internal.ConversionResultProvider.ConvertTo(object value, System.Type typeToConvertTo, Newtonsoft.Json.Serialization.IContractResolver contractResolver) -> Microsoft.AspNetCore.JsonPatch.Internal.ConversionResult
+~virtual Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.TryConvertValue(object originalValue, System.Type listTypeArgument, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object convertedValue, out string errorMessage) -> bool
