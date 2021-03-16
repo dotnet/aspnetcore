@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             // These are the same, it's either the thread pool or inline
             var applicationScheduler = _options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
             var transportScheduler = applicationScheduler;
+            // https://github.com/aspnet/KestrelHttpServer/issues/2573
             var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
 
             _inputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
