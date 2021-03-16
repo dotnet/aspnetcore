@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
 
-            var vcthFullName = "AspNetCore.test.__Generated__TagCloudViewComponentTagHelper";
+            var vcthFullName = "AspNetCoreGeneratedDocument.test.__Generated__TagCloudViewComponentTagHelper";
 
             // Act
             pass.Execute(codeDocument, irDocument);
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
 
-            var vcthFullName = "AspNetCore.test.__Generated__TagCloudViewComponentTagHelper";
+            var vcthFullName = "AspNetCoreGeneratedDocument.test.__Generated__TagCloudViewComponentTagHelper";
 
             // Act
             pass.Execute(codeDocument, irDocument);
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
             
-            var vcthFullName = "AspNetCore.test.__Generated__TagCloudViewComponentTagHelper";
+            var vcthFullName = "AspNetCoreGeneratedDocument.test.__Generated__TagCloudViewComponentTagHelper";
 
             // Act
             pass.Execute(codeDocument, irDocument);
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return RazorProjectEngine.Create(b =>
             {
                 b.Features.Add(new MvcViewDocumentClassifierPass(b.Configuration.LanguageVersion));
-
+                b.Features.Add(new ConsolidatedMvcViewDocumentClassifierPass(b.Configuration.LanguageVersion));
                 b.Features.Add(new TestTagHelperFeature(tagHelpers));
             });
         }
