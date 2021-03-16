@@ -10,11 +10,9 @@ using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using ProjectTemplates.Tests.Infrastructure;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Templates.Test
 {
@@ -70,7 +68,6 @@ namespace Templates.Test
 
         public ProjectFactoryFixture ProjectFactory { get; set; }
         public ITestOutputHelper Output { get; }
-        public Project Project { get; protected set; }
         public ContextInformation BrowserContextInfo { get; protected set; }
         public BrowserManager BrowserManager { get; private set; }
 
@@ -109,24 +106,24 @@ namespace Templates.Test
             }
         }
 
-        protected async Task CreateBuildPublishAsync(string projectName, string auth = null, string[] args = null, string targetFramework = null, bool serverProject = false)
+        protected async Task<Project> CreateBuildPublishAsync(string projectName, string auth = null, string[] args = null, string targetFramework = null, bool serverProject = false)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            Project = await ProjectFactory.GetOrCreateProject(projectName, Output);
+            var project = await ProjectFactory.GetOrCreateProject(projectName, Output);
             if (targetFramework != null)
             {
-                Project.TargetFramework = targetFramework;
+                project.TargetFramework = targetFramework;
             }
 
-            var createResult = await Project.RunDotNetNewAsync(ProjectType, auth: auth, args: args);
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+            var createResult = await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args);
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
-            var targetProject = Project;
+            var targetProject = project;
             if (serverProject)
             {
-                targetProject = GetSubProject(Project, "Server", $"{Project.ProjectName}.Server");
+                targetProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
             }
 
             var publishResult = await targetProject.RunDotNetPublishAsync(noRestore: !serverProject);
@@ -138,6 +135,8 @@ namespace Templates.Test
 
             var buildResult = await targetProject.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", targetProject, buildResult));
+
+            return project;
         }
 
         protected static Project GetSubProject(Project project, string projectDirectory, string projectName)

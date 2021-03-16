@@ -40,17 +40,17 @@ namespace Templates.Test
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30761")]
         public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
         {
-            Project = await ProjectFactory.GetOrCreateProject("blazorservernoauth" + browserKind.ToString(), Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorservernoauth" + browserKind.ToString(), Output);
 
             await using var browser = BrowserManager.IsAvailable(browserKind) ?
                 await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo) :
                 null;
 
-            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            using (var aspNetProcess = project.StartBuiltProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
@@ -58,7 +58,7 @@ namespace Templates.Test
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);
-                    await TestBasicNavigation(page);
+                    await TestBasicNavigation(project, page);
                     await page.CloseAsync();
                 }
                 else
@@ -67,18 +67,18 @@ namespace Templates.Test
                 }
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            using (var aspNetProcess = project.StartPublishedProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
                 if (BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);
-                    await TestBasicNavigation(page);
+                    await TestBasicNavigation(project, page);
                     await page.CloseAsync();
                 }
                 else
@@ -96,24 +96,24 @@ namespace Templates.Test
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30807")]
         public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
         {
-            Project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""), Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""), Output);
 
             var browser = !BrowserManager.IsAvailable(browserKind) ?
                 null :
                 await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
 
-            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            using (var aspNetProcess = project.StartBuiltProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
                 if (BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);
-                    await TestBasicNavigation(page);
+                    await TestBasicNavigation(project, page);
                     await page.CloseAsync();
                 }
                 else
@@ -122,18 +122,18 @@ namespace Templates.Test
                 }
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            using (var aspNetProcess = project.StartPublishedProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
                 if (BrowserManager.IsAvailable(browserKind))
                 {
                     var page = await browser.NewPageAsync();
                     await aspNetProcess.VisitInBrowserAsync(page);
-                    await TestBasicNavigation(page);
+                    await TestBasicNavigation(project, page);
                     await page.CloseAsync();
                 }
                 else
@@ -143,7 +143,7 @@ namespace Templates.Test
             }
         }
 
-        private async Task TestBasicNavigation(IPage page)
+        private async Task TestBasicNavigation(Project project, IPage page)
         {
             var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
                 (await page.WaitForEventAsync(PageEvent.WebSocket)).WebSocket;
@@ -158,7 +158,7 @@ namespace Templates.Test
 
             await page.WaitForSelectorAsync("ul");
             // <title> element gets project ID injected into it during template execution
-            Assert.Equal(Project.ProjectName.Trim(), (await page.GetTitleAsync()).Trim());
+            Assert.Equal(project.ProjectName.Trim(), (await page.GetTitleAsync()).Trim());
 
             // Initially displays the home page
             await page.WaitForSelectorAsync("h1 >> text=Hello, world!");

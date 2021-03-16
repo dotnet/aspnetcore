@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json.Linq;
 using PlaywrightSharp;
-using ProjectTemplates.Tests.Infrastructure;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,19 +27,17 @@ namespace Templates.Test
     public class BlazorWasmTemplateTest : BlazorTemplateTest
     {
         public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
-            : base(projectFactory, output)
-        {
-        }
+            : base(projectFactory, output) { }
 
         public override string ProjectType { get; } = "blazorwasm";
 
         [Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
         public async Task BlazorWasmTemplate_CreateBuildPublish_Standalone()
         {
-            await CreateBuildPublishAsync("blazorstandalone" + BrowserKind.Chromium.ToString());
+            var project = await CreateBuildPublishAsync("blazorstandalone" + BrowserKind.Chromium.ToString());
 
             // The service worker assets manifest isn't generated for non-PWA projects
-            var publishDir = Path.Combine(Project.TemplatePublishDir, "wwwroot");
+            var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
             Assert.False(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "Non-PWA templates should not produce service-worker-assets.js");
         }
 
@@ -245,30 +242,36 @@ namespace Templates.Test
             Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
         }
 
+        [ConditionalTheory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
+        [InlineData(BrowserKind.Chromium)]
+        //// LocalDB doesn't work on non Windows platforms
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public Task BlazorWasmTemplate_CreateBuildPublish_IndividualAuthLocalDb(BrowserKind browserKind)
+            => CreateBuildPublishIndividualAuthProject(browserKind, useLocalDb: true);
+
         [ConditionalTheory]
         [InlineData(BrowserKind.Chromium)]
         //// LocalDB doesn't work on non Windows platforms
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30700")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
-        {
-            return BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
-        }
+            => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
+
+        [ConditionalTheory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
+        [InlineData(BrowserKind.Chromium)]
+        public Task BlazorWasmTemplate_CreateBuildPublish_IndividualAuthNoLocalDb(BrowserKind browserKind)
+            => CreateBuildPublishIndividualAuthProject(browserKind, useLocalDb: false);
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30820")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
-        {
-            return BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
-        }
+            => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
 
-        private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(BrowserKind browserKind, bool useLocalDb)
+        private async Task CreateBuildPublishIndividualAuthProject(BrowserKind browserKind, bool useLocalDb)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""), Output);
-
-            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+            var project = await CreateBuildPublishAsync("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""),
+                args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
 
             var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -304,6 +307,13 @@ namespace Templates.Test
                 var dbUpdateResult = await serverProject.RunDotNetEfUpdateDatabaseAsync();
                 Assert.True(0 == dbUpdateResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", serverProject, dbUpdateResult));
             }
+        }
+
+        private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(BrowserKind browserKind, bool useLocalDb)
+        {
+            var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""), Output);
+
+            var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
             await BuildAndRunTest(project.ProjectName, serverProject, browserKind, usesAuth: true);
 
