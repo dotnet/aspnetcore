@@ -45,6 +45,22 @@
             <ErrorCausingCounter />
         </ErrorIgnorer>
     </fieldset>
+
+    <fieldset>
+        <legend>Exception inline in error boundary markup</legend>
+        <ErrorBoundary>
+            <ChildContent>
+                @if (throwInline) { throw new InvalidTimeZoneException("Inline exception"); }
+                 <p>Hello!</p>
+            </ChildContent>
+            <ErrorContent>
+                @if (throwInErrorContent) { throw new InvalidTimeZoneException("Inline exception in error content"); }
+                <p>There was an error: @context</p>
+            </ErrorContent>
+        </ErrorBoundary>
+        <button @onclick="@(() => throwInline = true)">Throw in child content</button>
+        <button @onclick="@(() => throwInErrorContent = true)">Throw in error content</button>
+    </fieldset>
 </fieldset>
 
 @code {
@@ -98,6 +114,8 @@
     private bool throwInOnAfterRender;
     private bool throwInOnAfterRenderAsync;
     private bool throwWhileRendering;
+    private bool throwInline;
+    private bool throwInErrorContent;
 
     void EventHandlerErrorSync()
         => throw new InvalidTimeZoneException("Synchronous error from event handler");

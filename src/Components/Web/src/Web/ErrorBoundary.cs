@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -26,6 +27,13 @@ namespace Microsoft.AspNetCore.Components.Web
 
         public void HandleException(Exception exception)
         {
+            if (_currentException is not null)
+            {
+                // If there's an error while we're already displaying error content, then it's the
+                // error content that's failing. Avoid the risk of an infinite error rendering loop.
+                ExceptionDispatchInfo.Capture(exception).Throw();
+            }
+
             _ = ErrorBoundaryLogger!.LogErrorAsync(exception, clientOnly: false);
 
             _currentException = exception;

@@ -391,10 +391,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // If it becomes problematic, we can maintain a lookup from component instance to ID.
             var componentState = _componentStateById.FirstOrDefault(kvp => kvp.Value.Component == errorSource).Value;
 
-            // Find the closest IErrorBoundary, if any. Start looking at the first parent, to ensure
-            // that an error boundary component doesn't try to handle its own errors, as that could
-            // be an infinite loop.
-            componentState = componentState?.ParentComponentState;
+            // Find the closest IErrorBoundary, if any
             while (componentState is not null)
             {
                 if (componentState.Component is IErrorBoundary errorBoundary)
