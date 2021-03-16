@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO.Pipelines;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private const int MaxQueueSize = 1024; // REVIEW: Is this good enough?
 
         private readonly ConcurrentQueue<SocketSender> _queue = new();
+        private int _count;
         private readonly PipeScheduler _scheduler;
         private bool _disposed;
 
@@ -24,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
             if (_queue.TryDequeue(out var sender))
             {
+                Interlocked.Decrement(ref _count);
                 return sender;
             }
             return new SocketSender(_scheduler);
@@ -31,15 +34,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public void Return(SocketSender sender)
         {
-            if (_disposed || _queue.Count > MaxQueueSize)
+            if (Volatile.Read(ref _disposed))
             {
+                // We disposed the queue
                 sender.Dispose();
                 return;
             }
 
-            sender.Reset();
+            // Add this sender back to the queue if we haven't crossed the max
+            var count = Volatile.Read(ref _count);
+            while (count < MaxQueueSize)
+            {
+                var prev = Interlocked.CompareExchange(ref _count, count + 1, count);
 
-            _queue.Enqueue(sender);
+                if (prev == count)
+                {
+                    sender.Reset();
+                    _queue.Enqueue(sender);
+                    return;
+                }
+
+                count = prev;
+            }
+
+            // Over the limit
+            sender.Dispose();
         }
 
         public void Dispose()

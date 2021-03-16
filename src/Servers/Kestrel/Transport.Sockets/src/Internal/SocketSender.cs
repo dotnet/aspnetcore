@@ -45,8 +45,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 BufferList = null;
             }
-
-            SetBuffer(null, 0, 0);
+            else
+            {
+                SetBuffer(null, 0, 0);
+            }
 
             _bufferList?.Clear();
         }
