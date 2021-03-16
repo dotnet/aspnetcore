@@ -185,10 +185,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Win32.SystemEvents" Version="6.0.0-preview.3.21166.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
-    </Dependency>
     <Dependency Name="System.ComponentModel.Annotations" Version="6.0.0-preview.3.21166.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
@@ -202,10 +198,6 @@
       <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
     </Dependency>
     <Dependency Name="System.DirectoryServices.Protocols" Version="6.0.0-preview.3.21166.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
-    </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="6.0.0-preview.3.21166.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
     </Dependency>
@@ -245,10 +237,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Permissions" Version="6.0.0-preview.3.21166.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
-    </Dependency>
     <Dependency Name="System.Security.Principal.Windows" Version="6.0.0-preview.3.21166.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
@@ -266,10 +254,6 @@
       <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
     </Dependency>
     <Dependency Name="System.Threading.Channels" Version="6.0.0-preview.3.21166.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
-    </Dependency>
-    <Dependency Name="System.Windows.Extensions" Version="6.0.0-preview.3.21166.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>ec1897724f6dc5ab49eebde5f35292493e1bed7b</Sha>
     </Dependency>

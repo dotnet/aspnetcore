@@ -72,7 +72,6 @@
     <MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>6.0.0-preview.3.21166.1</MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>
     <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.0-preview.3.21166.1</MicrosoftNETCoreBrowserDebugHostTransportVersion>
     <MicrosoftWin32RegistryVersion>6.0.0-preview.3.21166.1</MicrosoftWin32RegistryVersion>
-    <MicrosoftWin32SystemEventsVersion>6.0.0-preview.3.21166.1</MicrosoftWin32SystemEventsVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>6.0.0-preview.3.21166.1</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>6.0.0-preview.3.21166.1</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>6.0.0-preview.3.21166.1</MicrosoftExtensionsConfigurationAbstractionsVersion>
@@ -112,7 +111,6 @@
     <SystemDiagnosticsDiagnosticSourceVersion>6.0.0-preview.3.21166.1</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>6.0.0-preview.3.21166.1</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>6.0.0-preview.3.21166.1</SystemDirectoryServicesProtocolsVersion>
-    <SystemDrawingCommonVersion>6.0.0-preview.3.21166.1</SystemDrawingCommonVersion>
     <SystemIOPipelinesVersion>6.0.0-preview.3.21166.1</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>6.0.0-preview.3.21166.1</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>6.0.0-preview.3.21166.1</SystemNetHttpWinHttpHandlerVersion>
@@ -122,13 +120,11 @@
     <SystemSecurityCryptographyCngVersion>6.0.0-preview.3.21166.1</SystemSecurityCryptographyCngVersion>
     <SystemSecurityCryptographyPkcsVersion>6.0.0-preview.3.21166.1</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>6.0.0-preview.3.21166.1</SystemSecurityCryptographyXmlVersion>
-    <SystemSecurityPermissionsVersion>6.0.0-preview.3.21166.1</SystemSecurityPermissionsVersion>
     <SystemSecurityPrincipalWindowsVersion>6.0.0-preview.3.21166.1</SystemSecurityPrincipalWindowsVersion>
     <SystemServiceProcessServiceControllerVersion>6.0.0-preview.3.21166.1</SystemServiceProcessServiceControllerVersion>
     <SystemTextEncodingsWebVersion>6.0.0-preview.3.21166.1</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>6.0.0-preview.3.21166.1</SystemTextJsonVersion>
     <SystemThreadingChannelsVersion>6.0.0-preview.3.21166.1</SystemThreadingChannelsVersion>
-    <SystemWindowsExtensionsVersion>6.0.0-preview.3.21166.1</SystemWindowsExtensionsVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>6.0.0-preview.3.21166.1</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->
