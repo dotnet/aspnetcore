@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return ConvertTo(value, typeToConvertTo, null);
         }
 
-        public static ConversionResult ConvertTo(object value, Type typeToConvertTo, IContractResolver contractResolver)
+        internal static ConversionResult ConvertTo(object value, Type typeToConvertTo, IContractResolver contractResolver)
         {
             if (value == null)
             {
