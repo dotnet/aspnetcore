@@ -18,7 +18,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public abstract class BlazorTemplateTest : LoggedTest, IAsyncLifetime
+    public abstract class BlazorTemplateTest : LoggedTestBase, IAsyncLifetime
     {
         public const int BUILDCREATEPUBLISH_PRIORITY = -1000;
 
@@ -28,16 +28,19 @@ namespace Templates.Test
             ProjectFactory = projectFactory;
         }
 
-        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
-        {
-            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        public ProjectFactoryFixture ProjectFactory { get; set; }
+        public ContextInformation BrowserContextInfo { get; protected set; }
+        public BrowserManager BrowserManager { get; private set; }
 
-        }
+        public abstract string ProjectType { get; }
+        private static readonly bool _isCIEnvironment =
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild"));
 
         public async Task InitializeAsync()
         {
-            TestSink.MessageLogged += LogMessage;
-            var factory = new TestLoggerFactory(TestSink, enabled: true);
+            var testSink = new TestSink();
+            testSink.MessageLogged += LogMessage;
+            var factory = new TestLoggerFactory(testSink, enabled: true);
 
             void LogMessage(WriteContext ctx)
             {
@@ -56,10 +59,11 @@ namespace Templates.Test
                 };
             }
 
-            //new TestLoggerFactory(TestSink, enabled: true);
-            BrowserContextInfo = new ContextInformation(factory);
             BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), factory);
+            BrowserContextInfo = new ContextInformation(factory);
         }
+
+        public Task DisposeAsync() => BrowserManager.DisposeAsync();
 
         private static IConfiguration CreateConfiguration()
         {
@@ -89,19 +93,6 @@ namespace Templates.Test
 
             return builder.Build();
         }
-
-        public Task DisposeAsync() => BrowserManager.DisposeAsync();
-
-        public ProjectFactoryFixture ProjectFactory { get; set; }
-        public ContextInformation BrowserContextInfo { get; protected set; }
-        public BrowserManager BrowserManager { get; private set; }
-
-        public ILoggerFactory TestLoggerFactory { get; private set; }
-
-        public abstract string ProjectType { get; }
-        private static readonly bool _isCIEnvironment =
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild"));
-
 
         private void LogBrowserManagerMessage(WriteContext context)
         {
