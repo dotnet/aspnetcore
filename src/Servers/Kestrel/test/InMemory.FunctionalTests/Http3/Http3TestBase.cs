@@ -389,13 +389,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers, bool endStream = false)
             {
-                var outputWriter = _pair.Application.Output;
                 var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
                 var done = _qpackEncoder.BeginEncode(headers, buffer.Span, out var length);
 
-                // TODO may want to modify behavior of input frames to mock different client behavior (client can send anything).
                 await SendFrameAsync(frame, buffer.Slice(0, length), endStream);
 
                 return done;
