@@ -38,14 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Features.Add(new ViewComponentTagHelperPass());
             builder.Features.Add(new RazorPageDocumentClassifierPass());
 
-            if (builder.Configuration.UseConsolidatedMvcViews)
-            {
-                builder.Features.Add(new ConsolidatedMvcViewDocumentClassifierPass());
-            }
-            else
-            {
-                builder.Features.Add(new MvcViewDocumentClassifierPass());
-            }
+            builder.Features.Add(new RazorPageDocumentClassifierPass(builder.Configuration.UseConsolidatedMvcViews));
+	        builder.Features.Add(new MvcViewDocumentClassifierPass(builder.Configuration.UseConsolidatedMvcViews));
 
             builder.Features.Add(new MvcImportProjectFeature());
 

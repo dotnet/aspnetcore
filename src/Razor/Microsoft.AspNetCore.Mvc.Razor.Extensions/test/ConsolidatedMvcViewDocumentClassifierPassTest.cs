@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var projectEngine = CreateProjectEngine();
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ConsolidatedMvcViewDocumentClassifierPass
+            var pass = new MvcViewDocumentClassifierPass(useConsolidatedMvcViews: true)
             {
                 Engine = projectEngine.Engine
             };
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var projectEngine = CreateProjectEngine();
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ConsolidatedMvcViewDocumentClassifierPass
+            var pass = new MvcViewDocumentClassifierPass(useConsolidatedMvcViews: true)
             {
                 Engine = projectEngine.Engine
             };
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var projectEngine = CreateProjectEngine();
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ConsolidatedMvcViewDocumentClassifierPass
+            var pass = new MvcViewDocumentClassifierPass(useConsolidatedMvcViews: true)
             {
                 Engine = projectEngine.Engine
             };
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         [Theory]
         [InlineData("/Views/Home/Index.cshtml", "_Views_Home_Index")]
         [InlineData("/Areas/MyArea/Views/Home/About.cshtml", "_Areas_MyArea_Views_Home_About")]
-        public void MvcViewDocumentClassifierPass_UsesRelativePathToGenerateTypeName(string relativePath, string expected)
+        public void ConsolidatedMvcViewDocumentClassifierPass_UsesRelativePathToGenerateTypeName(string relativePath, string expected)
         {
             // Arrange
             var properties = new RazorSourceDocumentProperties(filePath: "ignored", relativePath: relativePath);
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var projectEngine = CreateProjectEngine();
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ConsolidatedMvcViewDocumentClassifierPass
+            var pass = new MvcViewDocumentClassifierPass(useConsolidatedMvcViews: true)
             {
                 Engine = projectEngine.Engine
             };
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var projectEngine = CreateProjectEngine();
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
-            var pass = new ConsolidatedMvcViewDocumentClassifierPass
+            var pass = new MvcViewDocumentClassifierPass(useConsolidatedMvcViews: true)
             {
                 Engine = projectEngine.Engine
             };
