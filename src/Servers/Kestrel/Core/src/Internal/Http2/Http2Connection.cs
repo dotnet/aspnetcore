@@ -668,7 +668,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return streamContext;
         }
 
-        private void ReturnStream(Http2Stream stream)
+        private bool ReturnStream(Http2Stream stream)
         {
             // We're conservative about what streams we can reuse.
             // If there is a chance the stream is still in use then don't attempt to reuse it.
@@ -680,7 +680,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 stream.DrainExpirationTicks = SystemClock.UtcNowTicks + StreamPoolExpiryTicks;
 
                 StreamPool.Push(stream);
+                return true;
             }
+
+            return false;
         }
 
         private Task ProcessPriorityFrameAsync()
@@ -1181,12 +1184,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private void RemoveStream(Http2Stream stream)
         {
             _streams.Remove(stream.StreamId);
-            if (stream.CanReuse)
+            if (stream.CanReuse && ReturnStream(stream))
             {
-                ReturnStream(stream);
+                // Completed stream is placed into pool.
             }
             else
             {
+                // Stream didn't complete gracefully or pool is full.
                 stream.Dispose();
             }
         }
