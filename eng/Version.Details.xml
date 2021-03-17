@@ -145,9 +145,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="5.0.0">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
+    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="5.0.1">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>2f740adc1457e8a28c1c072993b66f515977eb51</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -173,9 +173,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="5.0.0">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>cf258a14b70ad9069470a108f13765e0e5988f51</Sha>
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="5.0.1">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>2f740adc1457e8a28c1c072993b66f515977eb51</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Internal.Transport" Version="5.0.0-rtm.20519.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -270,9 +270,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>e6b30911ce808668d81d926b0744f1dd02a43840</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Json" Version="5.0.1">
+    <Dependency Name="System.Text.Json" Version="5.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>cb5f173b9696d9d00a544b953d95190ab3b56df2</Sha>
+      <Sha>2f740adc1457e8a28c1c072993b66f515977eb51</Sha>
     </Dependency>
     <Dependency Name="System.Threading.Channels" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -296,22 +296,22 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e6b30911ce808668d81d926b0744f1dd02a43840</Sha>
+      <Sha>2f740adc1457e8a28c1c072993b66f515977eb51</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.5-servicing.21159.6">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.5-servicing.21166.9">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e6b30911ce808668d81d926b0744f1dd02a43840</Sha>
+      <Sha>2f740adc1457e8a28c1c072993b66f515977eb51</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.5-servicing.21159.6">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.5-servicing.21166.9">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e6b30911ce808668d81d926b0744f1dd02a43840</Sha>
+      <Sha>2f740adc1457e8a28c1c072993b66f515977eb51</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.1">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>c636bbdc8a2d393d07c0e9407a4f8923ba1a21cb</Sha>
+      <Sha>2f740adc1457e8a28c1c072993b66f515977eb51</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.21159.7">
       <Uri>https://github.com/dotnet/arcade</Uri>
