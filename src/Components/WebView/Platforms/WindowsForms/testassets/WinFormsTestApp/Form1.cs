@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 
 namespace WinFormsTestApp
 {
@@ -14,7 +8,13 @@ namespace WinFormsTestApp
     {
         public Form1()
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddBlazorWebView();
             InitializeComponent();
+
+            blazorWebView1.HostPage = @"wwwroot\index.html";
+            blazorWebView1.Services = serviceCollection.BuildServiceProvider();
+            blazorWebView1.RootComponents.Add<Main>("#app");
         }
     }
 }

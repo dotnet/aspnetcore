@@ -29,12 +29,31 @@ namespace WinFormsTestApp
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.blazorWebView1 = new Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView();
+            this.SuspendLayout();
+            // 
+            // panel1
+            // 
+            this.blazorWebView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.blazorWebView1.Location = new System.Drawing.Point(0, 0);
+            this.blazorWebView1.Name = "blazorWebView1";
+            this.blazorWebView1.Size = new System.Drawing.Size(800, 450);
+            this.blazorWebView1.TabIndex = 0;
+            // 
+            // Form1
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(15F, 37F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.blazorWebView1);
+            this.Name = "Form1";
             this.Text = "Form1";
+            this.ResumeLayout(false);
+
         }
 
         #endregion
+
+        private Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView blazorWebView1;
     }
 }
