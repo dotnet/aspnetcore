@@ -8,6 +8,5 @@ using Templates.Test.Helpers;
 using Xunit;
 
 [assembly: AssemblyFixture(typeof(ProjectFactoryFixture))]
-//[assembly: AssemblyFixture(typeof(PlaywrightFixture<BlazorServerTemplateTest>))]
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
