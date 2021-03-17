@@ -16,7 +16,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public static readonly string RazorPageDocumentKind = "mvc.1.0.razor-page";
         public static readonly string RouteTemplateKey = "RouteTemplate";
 
-        public RazorPageDocumentClassifierPass(bool useConsolidatedMvcViews = false)
+        public RazorPageDocumentClassifierPass() : this(false) { }
+
+        public RazorPageDocumentClassifierPass(bool useConsolidatedMvcViews)
         {
             _useConsolidatedMvcViews = useConsolidatedMvcViews;
         }

@@ -17,7 +17,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode) => true;
 
-        public MvcViewDocumentClassifierPass(bool useConsolidatedMvcViews = false)
+        public MvcViewDocumentClassifierPass() : this(false) { }
+
+        public MvcViewDocumentClassifierPass(bool useConsolidatedMvcViews)
         {
             _useConsolidatedMvcViews = useConsolidatedMvcViews;
         }
