@@ -64,6 +64,5 @@
     <NuspecProperty Include="OutputPath=$(OutputPath)" />
     <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
   </ItemGroup>
-  
 
 </Project>
