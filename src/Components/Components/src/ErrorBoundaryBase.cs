@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// A base class for error boundary components.
     /// </summary>
-    public abstract class ErrorBoundaryBase : IComponent
+    public abstract class ErrorBoundaryBase : IComponent, IErrorBoundary
     {
         // This deliberately doesn't inherit from ComponentBase because it's not intended to be
         // subclassable using a .razor file. ErrorBoundaryBase shouldn't be used as a base class
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="exception">The current exception.</param>
         protected abstract void RenderDefaultErrorContent(RenderTreeBuilder builder, Exception exception);
 
-        internal void HandleException(Exception exception)
+        void IErrorBoundary.HandleException(Exception exception)
         {
             if (_currentException is not null)
             {

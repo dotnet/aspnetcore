@@ -394,14 +394,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // Find the closest error boundary, if any
             while (componentState is not null)
             {
-                if (componentState.Component is ErrorBoundaryBase errorBoundary)
+                if (componentState.Component is IErrorBoundary errorBoundary)
                 {
-                    // Force the IErrorBoundary component to clear its output, regardless of any logic inside
-                    // that component. This ensures that all descendants are cleaned up. We don't strictly have
-                    // to do this, since the only errors we handle this way are actually recoverable, so technically
-                    // it would be OK if the old output was left in place and continued operating. However that
-                    // would be a whole new way of keeping components running after failure which we don't want
-                    // to introduce and guarantee to support forever.
+                    // Even though ErrorBoundaryBase always removes its ChildContent from the tree when
+                    // switching into an error state, the Renderer doesn't rely on that. To guarantee that
+                    // the failed subtree is disposed, forcibly remove it here. If the failed components did
+                    // continue to run, it wouldn't harm framework state, but it would be a whole new kind of
+                    // edge case to support forever.
                     AddToRenderQueue(componentState.ComponentId, builder => { });
 
                     try
