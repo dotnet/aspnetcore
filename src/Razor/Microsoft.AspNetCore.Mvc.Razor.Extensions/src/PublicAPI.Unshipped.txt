@@ -1,4 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ConsolidatedMvcViewDocumentClassifierPass
-Microsoft.AspNetCore.Mvc.Razor.Extensions.ConsolidatedMvcViewDocumentClassifierPass.ConsolidatedMvcViewDocumentClassifierPass() -> void
-~static readonly Microsoft.AspNetCore.Mvc.Razor.Extensions.ConsolidatedMvcViewDocumentClassifierPass.MvcViewDocumentKind -> string
+*REMOVED*Microsoft.AspNetCore.Mvc.Razor.Extensions.MvcViewDocumentClassifierPass.MvcViewDocumentClassifierPass() -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorPageDocumentClassifierPass.RazorPageDocumentClassifierPass() -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.MvcViewDocumentClassifierPass.MvcViewDocumentClassifierPass(bool useConsolidatedMvcViews = false) -> void
+Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorPageDocumentClassifierPass.RazorPageDocumentClassifierPass(bool useConsolidatedMvcViews = false) -> void

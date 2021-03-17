@@ -36,15 +36,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Features.Add(new ModelExpressionPass());
             builder.Features.Add(new PagesPropertyInjectionPass());
             builder.Features.Add(new ViewComponentTagHelperPass());
-            builder.Features.Add(new RazorPageDocumentClassifierPass());
+            
 
             if (builder.Configuration.UseConsolidatedMvcViews)
             {
-                builder.Features.Add(new ConsolidatedMvcViewDocumentClassifierPass());
+                builder.Features.Add(new RazorPageDocumentClassifierPass(useConsolidatedMvcViews: true));
+                builder.Features.Add(new MvcViewDocumentClassifierPass(useConsolidatedMvcViews: true));
             }
             else
             {
-                builder.Features.Add(new MvcViewDocumentClassifierPass());
+                builder.Features.Add(new RazorPageDocumentClassifierPass());                builder.Features.Add(new MvcViewDocumentClassifierPass());
             }
 
             builder.Features.Add(new MvcImportProjectFeature());
