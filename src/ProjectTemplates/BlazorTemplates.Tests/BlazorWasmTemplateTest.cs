@@ -99,7 +99,7 @@ namespace Templates.Test
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Test`Helper);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, TestOutputHelper);
 
             var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
