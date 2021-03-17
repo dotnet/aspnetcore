@@ -37,14 +37,14 @@ namespace WinFormsTestApp
             this.blazorWebView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.blazorWebView1.Location = new System.Drawing.Point(0, 0);
             this.blazorWebView1.Name = "blazorWebView1";
-            this.blazorWebView1.Size = new System.Drawing.Size(800, 450);
+            this.blazorWebView1.Size = new System.Drawing.Size(1024, 768);
             this.blazorWebView1.TabIndex = 0;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(15F, 37F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1024, 768);
             this.Controls.Add(this.blazorWebView1);
             this.Name = "Form1";
             this.Text = "Form1";
