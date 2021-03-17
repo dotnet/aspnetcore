@@ -17,7 +17,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.AspNetCore.Components.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class ComponentParameterAnalyzer : DiagnosticAnalyzer
+    public sealed class ComponentParameterAnalyzer : DiagnosticAnalyzer
     {
         public ComponentParameterAnalyzer()
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 DiagnosticDescriptors.ComponentParameterSettersShouldBePublic,
                 DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
                 DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
-                DiagnosticDescriptors.ComponentParametersShouldBeAutoProperty,
+                DiagnosticDescriptors.ComponentParametersShouldBeAutoProperies,
             });
         }
 
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                             if (!IsAutoProperty(property) && !IsSameSemanticAsAutoProperty(property, context.CancellationToken))
                             {
                                 context.ReportDiagnostic(Diagnostic.Create(
-                                    DiagnosticDescriptors.ComponentParametersShouldBeAutoProperty,
+                                    DiagnosticDescriptors.ComponentParametersShouldBeAutoProperies,
                                     propertyLocation,
                                     property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
                             }
@@ -174,8 +174,6 @@ namespace Microsoft.AspNetCore.Components.Analyzers
 
                 IdentifierNameSyntax? identifierUsedInSetter = GetIdentifierUsedInSetter(setterAccessor);
                 return identifierUsedInGetter.Identifier.ValueText == identifierUsedInSetter?.Identifier.ValueText;
-
-
             }
 
             return false;

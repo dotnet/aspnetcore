@@ -99,7 +99,7 @@ public class C
 " + ComponentsTestDeclarations.Source;
             VerifyCSharpDiagnostic(source, new DiagnosticResult
             {
-                Id = DiagnosticDescriptors.ComponentParametersShouldBeAutoProperty.Id,
+                Id = DiagnosticDescriptors.ComponentParametersShouldBeAutoProperies.Id,
                 Locations = new[]
                 {
                     new DiagnosticResultLocation("Test0.cs", 9, 19),
