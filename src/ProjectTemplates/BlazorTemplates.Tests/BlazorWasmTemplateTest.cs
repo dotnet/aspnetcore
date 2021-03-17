@@ -75,12 +75,12 @@ namespace Templates.Test
         }
 
         [Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
-        public Task BlazorWasmTemplate_CreateBuildPublish_Hosted()
+        public async Task BlazorWasmTemplate_CreateBuildPublish_Hosted()
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + BrowserKind.Chromium, Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + BrowserKind.Chromium, TestOutputHelper);
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
@@ -99,7 +99,7 @@ namespace Templates.Test
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, TestOutputHelper);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Test`Helper);
 
             var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
