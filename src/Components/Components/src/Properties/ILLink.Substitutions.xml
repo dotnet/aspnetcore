@@ -1,8 +1,12 @@
 <linker>
   <assembly fullname="Microsoft.AspNetCore.Components" >
-    <!-- Trim away hot-reload -->
+    <!-- HotReload will not be available in a trimmed app. We'll attempt to aggressively remove all references to it. -->
     <type fullname="Microsoft.AspNetCore.Components.RenderTree.Renderer">
       <method signature="System.Void RenderRootComponentsOnHotReload()" body="remove" />
+      <method signature="System.Void InitializeHotReload(System.IServiceProvider)" body="stub" />
+      <method signature="System.Void InstatiateComponentForHotReload(Microsoft.AspNetCore.Components.IComponent)" body="stub" />
+      <method signature="System.Void CaptureRootComponentForHotReload(Microsoft.AspNetCore.Components.ParameterView,Microsoft.AspNetCore.Components.Rendering.ComponentState)" body="stub" />
+      <method signature="System.Void DisposeForHotReload()" body="stub" />
     </type>
     <type fullname="Microsoft.AspNetCore.Components.HotReload.HotReloadEnvironment">
       <method signature="System.Boolean get_IsHotReloadEnabled()" body="stub" value="false" />
@@ -10,6 +14,9 @@
     <type fullname="Microsoft.AspNetCore.Components.HotReload.HotReloadContext">
       <method signature="System.Boolean get_IsHotReloading()" body="stub" value="false" />
       <method signature="System.Void set_IsHotReloading(System.Boolean)" body="remove" />
+    </type>
+    <type fullname="Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiffBuilder">
+      <method signature="System.Boolean IsHotReloading(Microsoft.AspNetCore.Components.RenderTree.Renderer)" body="stub" value="false" />
     </type>
   </assembly>
 </linker>
