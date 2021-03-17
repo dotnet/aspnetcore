@@ -125,6 +125,8 @@ namespace Templates.Test
             {
                 EnsureBrowserAvailable(browserKind);
             }
+            
+            Assert.True(1 == 0);
         }
 
         private static async Task AssertCompressionFormat(AspNetProcess aspNetProcess, string expectedEncoding)
@@ -286,6 +288,9 @@ namespace Templates.Test
 
         private async Task CreateBuildPublishIndividualAuthProject(BrowserKind browserKind, bool useLocalDb)
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await CreateBuildPublishAsync("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""),
                 args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
 
