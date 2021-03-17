@@ -12,9 +12,9 @@ namespace WinFormsTestApp
             serviceCollection.AddBlazorWebView();
             InitializeComponent();
 
-            blazorWebView1.HostPage = @"wwwroot\index.html";
+            blazorWebView1.HostPage = @"wwwroot\webviewhost.html";
             blazorWebView1.Services = serviceCollection.BuildServiceProvider();
-            blazorWebView1.RootComponents.Add<Main>("#app");
+            blazorWebView1.RootComponents.Add<BasicTestApp.Index>("#app");
         }
     }
 }
