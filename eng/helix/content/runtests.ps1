@@ -14,10 +14,11 @@ param(
 
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
 $env:DOTNET_MULTILEVEL_LOOKUP = 0
-$env:PLAYWRIGHT_BROWSERS_PATH = "$currentDirectory\ms-playwright"
 $env:InstallPlaywright = "$InstallPlaywright"
-
 $currentDirectory = Get-Location
+$env:PLAYWRIGHT_BROWSERS_PATH = "$currentDirectory\ms-playwright"
+$env:PLAYWRIGHT_DRIVER_PATH = "$currentDirectory\.playwright\win-x64\native\playwright.cmd"
+
 $envPath = "$env:PATH;$env:HELIX_CORRELATION_PAYLOAD\node\bin"
 
 function InvokeInstallDotnet([string]$command) {

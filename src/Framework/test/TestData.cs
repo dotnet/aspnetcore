@@ -141,15 +141,11 @@ namespace Microsoft.AspNetCore
                 "Microsoft.Extensions.WebEncoders",
                 "Microsoft.JSInterop",
                 "Microsoft.Net.Http.Headers",
-                "Microsoft.Win32.SystemEvents",
                 "System.Diagnostics.EventLog",
                 "System.Diagnostics.EventLog.Messages",
-                "System.Drawing.Common",
                 "System.IO.Pipelines",
                 "System.Security.Cryptography.Pkcs",
                 "System.Security.Cryptography.Xml",
-                "System.Security.Permissions",
-                "System.Windows.Extensions"
             };
 
             ListedTargetingPackAssemblies = new SortedDictionary<string, string>
@@ -282,9 +278,7 @@ namespace Microsoft.AspNetCore
                 { "System.Security.AccessControl", "6.0.0.0" },
                 { "System.Security.Cryptography.Cng", "6.0.0.0" },
                 { "System.Security.Cryptography.Xml", "6.0.0.0" },
-                { "System.Security.Permissions", "6.0.0.0" },
                 { "System.Security.Principal.Windows", "6.0.0.0" },
-                { "System.Windows.Extensions", "6.0.0.0" }
             };
 
             if (!VerifyAncmBinary())

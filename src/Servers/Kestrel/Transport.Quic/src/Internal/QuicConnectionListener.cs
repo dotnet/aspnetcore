@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         private readonly QuicTransportContext _context;
         private readonly QuicListener _listener;
 
-        public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint)
+        public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint, SslServerAuthenticationOptions sslServerAuthenticationOptions)
         {
             if (options.Alpn == null)
             {
@@ -34,17 +34,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             _log = log;
             _context = new QuicTransportContext(_log, options);
             EndPoint = endpoint;
-
             var quicListenerOptions = new QuicListenerOptions();
-            var sslConfig = new SslServerAuthenticationOptions();
-            sslConfig.ServerCertificate = options.Certificate;
-            sslConfig.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
 
-            quicListenerOptions.ServerAuthenticationOptions = sslConfig;
-            quicListenerOptions.CertificateFilePath = options.CertificateFilePath;
-            quicListenerOptions.PrivateKeyFilePath = options.PrivateKeyFilePath;
+            // TODO Should HTTP/3 specific ALPN still be global? Revisit whether it can be statically set once HTTP/3 is finalized.
+            sslServerAuthenticationOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
+
+            quicListenerOptions.ServerAuthenticationOptions = sslServerAuthenticationOptions;
             quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
-            quicListenerOptions.IdleTimeout = TimeSpan.FromMinutes(2);
+            quicListenerOptions.IdleTimeout = options.IdleTimeout;
 
             _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
             _listener.Start();

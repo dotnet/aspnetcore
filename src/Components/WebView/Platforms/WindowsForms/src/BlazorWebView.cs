@@ -4,6 +4,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -16,11 +17,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
     /// <summary>
     /// A Windows Forms control for hosting Blazor web components locally in Windows desktop applications.
     /// </summary>
-    public sealed class BlazorWebView : Control, IDisposable
+    public sealed class BlazorWebView : ContainerControl, IDisposable
     {
-        private WebView2Control _webview;
+        private readonly WebView2Control _webview;
         private WebView2WebViewManager _webviewManager;
-
         private string _hostPage;
         private IServiceProvider _services;
 
@@ -36,8 +36,19 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             {
                 Dock = DockStyle.Fill,
             };
-            Controls.Add(_webview);
+            ((BlazorWebViewControlCollection)Controls).AddInternal(_webview);
         }
+
+        /// <summary>
+        /// Returns the inner <see cref="WebView2Control"/> used by this control.
+        /// </summary>
+        /// <remarks>
+        /// Directly using some functionality of the inner web view can cause unexpected results because its behavior
+        /// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
+        /// </remarks>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public WebView2Control WebView => _webview;
 
         private WindowsFormsDispatcher Dispatcher { get; }
 
@@ -53,6 +64,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         /// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
         /// This property must be set to a valid value for the Blazor components to start.
         /// </summary>
+        [Category("Behavior")]
+        [Description(@"Path to the host page within the application's static files. Example: wwwroot\index.html.")]
         public string HostPage
         {
             get => _hostPage;
@@ -63,16 +76,24 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             }
         }
 
+        // Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8
+        private void ResetHostPage() => HostPage = null;
+        private bool ShouldSerializeHostPage() => !string.IsNullOrEmpty(HostPage);
+
         /// <summary>
         /// A collection of <see cref="RootComponent"/> instances that specify the Blazor <see cref="IComponent"/> types
         /// to be used directly in the specified <see cref="HostPage"/>.
         /// </summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ObservableCollection<RootComponent> RootComponents { get; } = new();
 
         /// <summary>
         /// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
         /// This property must be set to a valid value for the Blazor components to start.
         /// </summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IServiceProvider Services
         {
             get => _services;
@@ -87,6 +108,16 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
         private void OnServicesPropertyChanged() => StartWebViewCoreIfPossible();
 
+        private bool IsAncestorSiteInDesignMode =>
+            GetSitedParentSite(this) is ISite parentSite && parentSite.DesignMode;
+
+        private ISite GetSitedParentSite(Control control) =>
+            control is null
+                ? throw new ArgumentNullException(nameof(control))
+                : control.Site != null || control.Parent is null
+                    ? control.Site
+                    : GetSitedParentSite(control.Parent);
+
         private bool RequiredStartupPropertiesSet =>
             Created &&
             _webview != null &&
@@ -95,7 +126,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
         private void StartWebViewCoreIfPossible()
         {
-            if (!RequiredStartupPropertiesSet || _webviewManager != null)
+            // We never start the Blazor code in design time because it doesn't make sense to run
+            // a Blazor component in the designer.
+            if (!IsAncestorSiteInDesignMode && (!RequiredStartupPropertiesSet || _webviewManager != null))
             {
                 return;
             }
@@ -149,6 +182,37 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
                 _webviewManager?.Dispose();
                 _webview?.Dispose();
             }
+        }
+
+        /// <inheritdoc />
+        protected override ControlCollection CreateControlsInstance()
+        {
+            return new BlazorWebViewControlCollection(this);
+        }
+
+        /// <summary>
+        /// Custom control collection that ensures that only the owning <see cref="BlazorWebView"/> can add
+        /// controls to it.
+        /// </summary>
+        private sealed class BlazorWebViewControlCollection : ControlCollection
+        {
+            public BlazorWebViewControlCollection(BlazorWebView owner) : base(owner)
+            {
+            }
+
+            /// <summary>
+            /// This is the only API we use; everything else is blocked.
+            /// </summary>
+            /// <param name="value"></param>
+            internal void AddInternal(Control value) => base.Add(value);
+
+            // Everything below is overridden to protect the control collection as read-only.
+            public override bool IsReadOnly => true;
+
+            public override void Add(Control value) => throw new NotSupportedException();
+            public override void Clear() => throw new NotSupportedException();
+            public override void Remove(Control value) => throw new NotSupportedException();
+            public override void SetChildIndex(Control child, int newIndex) => throw new NotSupportedException();
         }
     }
 }

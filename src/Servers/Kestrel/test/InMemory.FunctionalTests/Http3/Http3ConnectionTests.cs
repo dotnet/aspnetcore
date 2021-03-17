@@ -3,15 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -19,19 +16,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http3ConnectionTests : Http3TestBase
     {
-        [Fact]
-        public async Task GoAwayReceived()
-        {
-            await InitializeConnectionAsync(_echoApplication);
-
-            var outboundcontrolStream = await CreateControlStream();
-            var inboundControlStream = await GetInboundControlStream();
-
-            Connection.Abort(new ConnectionAbortedException());
-            await _closedStateReached.Task.DefaultTimeout();
-            await WaitForConnectionErrorAsync(ignoreNonGoAwayFrames: true, expectedLastStreamId: 0, expectedErrorCode: 0);
-        }
-
         [Fact]
         public async Task CreateRequestStream_RequestCompleted_Disposed()
         {
@@ -82,6 +66,70 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Trigger server shutdown.
             MultiplexedConnectionContext.ConnectionClosingCts.Cancel();
             Assert.Null(await MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
+        }
+
+        [Theory]
+        [InlineData(0x0)]
+        [InlineData(0x2)]
+        [InlineData(0x3)]
+        [InlineData(0x4)]
+        [InlineData(0x5)]
+        public async Task SETTINGS_ReservedSettingSent_ConnectionError(long settingIdentifier)
+        {
+            await InitializeConnectionAsync(_echoApplication);
+
+            var outboundcontrolStream = await CreateControlStream();
+            await outboundcontrolStream.SendSettingsAsync(new List<Http3PeerSetting>
+            {
+                new Http3PeerSetting((Internal.Http3.Http3SettingType) settingIdentifier, 0) // reserved value
+            });
+
+            await GetInboundControlStream();
+
+            await WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http3ErrorCode.SettingsError,
+                expectedErrorMessage: CoreStrings.FormatHttp3ErrorControlStreamReservedSetting($"0x{settingIdentifier.ToString("X", CultureInfo.InvariantCulture)}"));
+        }
+
+        [Theory]
+        [InlineData(0, "control")]
+        [InlineData(2, "encoder")]
+        [InlineData(3, "decoder")]
+        public async Task InboundStreams_CreateMultiple_ConnectionError(int streamId, string name)
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await CreateControlStream(streamId);
+            await CreateControlStream(streamId);
+
+            await WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http3ErrorCode.StreamCreationError,
+                expectedErrorMessage: CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams(name));
+        }
+
+        [Theory]
+        [InlineData(nameof(Http3FrameType.Data))]
+        [InlineData(nameof(Http3FrameType.Headers))]
+        [InlineData(nameof(Http3FrameType.PushPromise))]
+        public async Task ControlStream_UnexpectedFrameType_ConnectionError(string frameType)
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            var controlStream = await CreateControlStream();
+
+            var frame = new Http3RawFrame();
+            frame.Type = Enum.Parse<Http3FrameType>(frameType);
+            await controlStream.SendFrameAsync(frame, Memory<byte>.Empty);
+
+            await WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
+                expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(Http3Formatting.ToFormattedType(frame.Type)));
         }
     }
 }

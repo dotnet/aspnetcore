@@ -158,6 +158,20 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Fact]
+        public async Task PreferEmptyValuesFromValueFilter_OverRequestHeader()
+        {
+            // Arrange
+            Configuration.Headers.Add("in", (context) => StringValues.Empty);
+            Context.Request.Headers.Add("in", "no");
+
+            // Act
+            await Middleware.Invoke(Context);
+
+            // Assert
+            Assert.DoesNotContain("in", CapturedHeaders.Keys);
+        }
+
+        [Fact]
         public async Task EmptyValuesFromValueFilter_DoesNotAddIt()
         {
             // Arrange
