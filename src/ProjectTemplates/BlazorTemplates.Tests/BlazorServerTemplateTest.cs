@@ -35,7 +35,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(BrowserKind.Chromium)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30761")]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30761")]
         public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
@@ -107,8 +107,8 @@ namespace Templates.Test
 
         [Theory]
         [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30807")]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30807")]
+        //[SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
         public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
@@ -217,7 +217,7 @@ namespace Templates.Test
         [InlineData("SingleOrg", null)]
         [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", new string[] { "--calls-graph" })]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorServerTemplat_IdentityWeb_BuildAndPublish(string auth, string[] args)
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
