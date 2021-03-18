@@ -42,9 +42,10 @@ namespace Templates.Test.Helpers
             bool published,
             bool hasListeningUri = true,
             bool usePublishedAppHost = false,
-            ILogger logger = null)
+            ILogger logger = null,
+            DevelopmentCertificate cert = null)
         {
-            _developmentCertificate = DevelopmentCertificate.Create(workingDirectory);
+            _developmentCertificate = cert ?? DevelopmentCertificate.Create(workingDirectory);
 
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
