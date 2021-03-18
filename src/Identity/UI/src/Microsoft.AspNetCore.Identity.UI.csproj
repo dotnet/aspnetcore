@@ -6,10 +6,9 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
-    <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <RazorTargetName>Microsoft.AspNetCore.Identity.UI.Views.V4</RazorTargetName>
+    <NoWarn>RS0016</NoWarn>
 
     <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
     <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>

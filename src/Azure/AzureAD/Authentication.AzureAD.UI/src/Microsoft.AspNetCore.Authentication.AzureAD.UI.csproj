@@ -6,8 +6,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageTags>aspnetcore;authentication;AzureAD</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <NoWarn>RS0016</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
