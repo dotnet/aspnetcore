@@ -15,38 +15,16 @@ For other types of questions, consider using [StackOverflow](https://stackoverfl
 
 -->
 
-<!-- NOTE: This issue template is meant specifically to be used for issues with the new experimental Razor tooling experience provided in Visual Studio's Preview Feature pane -->
+### Visual Studio Code
 
-### Describe the bug
-A clear and concise description of what the bug is.
+Select the `Razor: Report a Razor Issue` command in VSCode (`ctrl + shift + p`) and follow the instructions to gather information necessary for us to investigate. Once done you can replace this content with contents that are put on your clipboard.
 
-### To Reproduce
-<!--
-We ❤ code! Point us to a minimalistic repro project hosted in a GitHub repo.
-For a repro project, create a new ASP.NET Core project using the template of your your choice, apply the minimum required code to result in the issue you're observing.
+### Visual Studio Windows
 
-We will close this issue if:
-- the repro project you share with us is complex. We can't investigate custom projects, so don't point us to such, please.
-- if we will not be able to repro the behavior you're reporting
--->
+You may file an issue here but please create a Visual Studio bug first and link here as it will capture all necessary logs for us to investigate further.
 
-### Logs & Exceptions
+How to report a problem in Visual Studio: https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019
 
-Please collect the data below before reporting your issue to aid us in diagnosing the root cause.
+### Visual Studio Mac
 
-#### Activity log (only needed if VS crashes)
-[Here](https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-use-the-activity-log?view=vs-2019#to-examine-the-activity-log) are the instructions on how to generate/acquire one. Note that GitHub does not generally allow .xml files to be uploaded with issues.
-
-#### Language Server logs
-1. Run Visual Studio with the [/Log](https://docs.microsoft.com/en-us/visualstudio/ide/reference/log-devenv-exe?view=vs-2019) command line switch
-2. Reproduce the issue
-3. Provide the logs located at `%Temp%\VisualStudio\LSP`
-
-### Further technical details
-- VS version (Help => About Microsoft Visual Studio, i.e. 16.8.0 Preview 1 30313.27...). If in Codespaces there will be two versions (server and client), please provide both.
-- Scenario (Local, LiveShare, Codespaces)
-
-### Pre-requisite checklist
-- [ ] Steps to reproduce the issue
-- [ ] Razor Language Server client logs included.
-- [ ] HTML Language Server client logs included
+Please try and provide as much information as possible so we can try and resolve the issue.
