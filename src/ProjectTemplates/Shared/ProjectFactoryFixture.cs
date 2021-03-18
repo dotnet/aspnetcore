@@ -41,6 +41,9 @@ namespace Templates.Test.Helpers
                     var assemblyPath = GetType().Assembly;
                     var basePath = GetTemplateFolderBasePath(assemblyPath);
                     project.TemplateOutputDir = Path.Combine(basePath, project.ProjectName);
+                    
+                    project.DevCert = DevelopmentCertificate.Create(project.TemplateOutputDir);
+                    
                     return project;
                 },
                 output);
