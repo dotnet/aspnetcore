@@ -1,5 +1,5 @@
 ﻿@page "/"
-
+@using WebviewAppShared
 // NOTE: The full namespace is included here to work around this bug: https://github.com/dotnet/aspnetcore/issues/30851
 @inject BlazorWpfApp.AppState AppState
 
@@ -9,6 +9,9 @@
 
 <button @onclick="IncrementCount">Increment</button>
 <button @onclick="TriggerException">Throw</button>
+
+<p>This is a shared component</p>
+<SharedComponent />
 
 @code {
     void IncrementCount()

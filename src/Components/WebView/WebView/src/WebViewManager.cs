@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -44,6 +45,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             _provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             _appBaseUri = EnsureTrailingSlash(appBaseUri ?? throw new ArgumentNullException(nameof(appBaseUri)));
+            fileProvider = StaticWebAssetsLoader.UseStaticWebAssets(fileProvider);
             _staticContentProvider = new StaticContentProvider(fileProvider, appBaseUri, hostPageRelativePath);
             _ipcSender = new IpcSender(_dispatcher, SendMessage);
             _ipcReceiver = new IpcReceiver(AttachToPageAsync);
