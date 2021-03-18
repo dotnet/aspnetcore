@@ -116,12 +116,11 @@ namespace Microsoft.AspNetCore.Testing
             _testLog.Dispose();
         }
 
-        async Task ITestMethodLifecycle.OnTestStartAsync(TestContext context, CancellationToken cancellationToken)
+        Task ITestMethodLifecycle.OnTestStartAsync(TestContext context, CancellationToken cancellationToken)
         {
 
             Context = context;
-            await InitializeAsync(context, context.TestMethod, context.MethodArguments, context.Output);
-            return Task.CompletedTask;
+            return InitializeAsync(context, context.TestMethod, context.MethodArguments, context.Output);
         }
 
         Task ITestMethodLifecycle.OnTestEndAsync(TestContext context, Exception exception, CancellationToken cancellationToken)
