@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Text;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public void ImportFromXml_BuiltInTypes_CreatesAppropriateDescriptor(Type encryptionAlgorithmType, Type validationAlgorithmType)
         {
             // Arrange
+            var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
             var descriptor = new ManagedAuthenticatedEncryptorDescriptor(
                 new ManagedAuthenticatedEncryptorConfiguration()
                 {
@@ -28,20 +30,17 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                     EncryptionAlgorithmKeySize = 192,
                     ValidationAlgorithmType = validationAlgorithmType
                 },
-                "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret());
+                masterKey.ToSecret());
             var control = CreateEncryptorInstanceFromDescriptor(descriptor);
 
-            string xml = string.Format(
-                CultureInfo.InvariantCulture,
-                @"
+            var xml = $@"
                 <descriptor>
-                  <encryption algorithm='{0}' keyLength='192' />
-                  <validation algorithm='{1}' />
+                  <encryption algorithm='{encryptionAlgorithmType.Name}' keyLength='192' />
+                  <validation algorithm='{validationAlgorithmType.Name}' />
                   <masterKey enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
-                    <value>k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==</value>
+                    <value>{masterKey}</value>
                   </masterKey>
-                </descriptor>",
-                 encryptionAlgorithmType.Name, validationAlgorithmType.Name);
+                </descriptor>";
             var deserializedDescriptor = new ManagedAuthenticatedEncryptorDescriptorDeserializer().ImportFromXml(XElement.Parse(xml));
             var test = CreateEncryptorInstanceFromDescriptor(deserializedDescriptor as ManagedAuthenticatedEncryptorDescriptor);
 
@@ -57,6 +56,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public void ImportFromXml_CustomType_CreatesAppropriateDescriptor()
         {
             // Arrange
+            var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
             var descriptor = new ManagedAuthenticatedEncryptorDescriptor(
                 new ManagedAuthenticatedEncryptorConfiguration()
                 {
@@ -64,20 +64,17 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                     EncryptionAlgorithmKeySize = 192,
                     ValidationAlgorithmType = typeof(HMACSHA384)
                 },
-                "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret());
+                masterKey.ToSecret());
             var control = CreateEncryptorInstanceFromDescriptor(descriptor);
 
-            string xml = string.Format(
-                CultureInfo.InvariantCulture,
-                @"
+            var xml = $@"
                 <descriptor>
-                  <encryption algorithm='{0}' keyLength='192' />
-                  <validation algorithm='{1}' />
+                  <encryption algorithm='{typeof(Aes).AssemblyQualifiedName}' keyLength='192' />
+                  <validation algorithm='{typeof(HMACSHA384).AssemblyQualifiedName}' />
                   <masterKey enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
-                    <value>k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==</value>
+                    <value>{masterKey}</value>
                   </masterKey>
-                </descriptor>",
-                 typeof(Aes).AssemblyQualifiedName, typeof(HMACSHA384).AssemblyQualifiedName);
+                </descriptor>";
             var deserializedDescriptor = new ManagedAuthenticatedEncryptorDescriptorDeserializer().ImportFromXml(XElement.Parse(xml));
             var test = CreateEncryptorInstanceFromDescriptor(deserializedDescriptor as ManagedAuthenticatedEncryptorDescriptor);
 
