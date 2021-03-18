@@ -8,7 +8,7 @@
 #include "Environment.h"
 
 #define CS_ASPNETCORE_HANDLER_VERSION                    L"handlerVersion"
-#define CS_ASPNETCORE_SHADOW_COPY                        L"enableShadowCopy"
+#define CS_ASPNETCORE_SHADOW_COPY                        L"experimentalEnableShadowCopy"
 #define CS_ASPNETCORE_SHADOW_COPY_DIRECTORY              L"shadowCopyDirectory"
 #define CS_ASPNETCORE_CLEAN_SHADOW_DIRECTORY_CONTENT     L"cleanShadowCopyDirectory"
 
@@ -41,14 +41,14 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
         m_strHandlerVersion = find_element(handlerSettings, CS_ASPNETCORE_HANDLER_VERSION).value_or(std::wstring());
     }
 
-    auto enableShadowCopyElement = find_element(handlerSettings, CS_ASPNETCORE_SHADOW_COPY).value_or(std::wstring());
-    m_fEnableShadowCopying = equals_ignore_case(L"true", enableShadowCopyElement);
+    auto experimentalEnableShadowCopyElement = find_element(handlerSettings, CS_ASPNETCORE_SHADOW_COPY).value_or(std::wstring());
+    m_fexperimentalEnableShadowCopying = equals_ignore_case(L"true", experimentalEnableShadowCopyElement);
 
     auto cleanShadowCopyDirectory = find_element(handlerSettings, CS_ASPNETCORE_CLEAN_SHADOW_DIRECTORY_CONTENT).value_or(std::wstring());
     m_fCleanShadowCopyDirectory = equals_ignore_case(L"true", cleanShadowCopyDirectory);
 
     m_strShadowCopyingDirectory = find_element(handlerSettings, CS_ASPNETCORE_SHADOW_COPY_DIRECTORY)
-        .value_or(m_fEnableShadowCopying ? L"ShadowCopyDirectory" : std::wstring());
+        .value_or(m_fexperimentalEnableShadowCopying ? L"ShadowCopyDirectory" : std::wstring());
 
     m_strProcessPath = section->GetRequiredString(CS_ASPNETCORE_PROCESS_EXE_PATH);
     m_strArguments = section->GetString(CS_ASPNETCORE_PROCESS_ARGUMENTS).value_or(CS_ASPNETCORE_PROCESS_ARGUMENTS_DEFAULT);

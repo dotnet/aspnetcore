@@ -68,7 +68,7 @@ public:
     bool
     QueryShadowCopyEnabled() const noexcept
     {
-        return m_fEnableShadowCopying;
+        return m_fexperimentalEnableShadowCopying;
     }
 
     bool
@@ -94,7 +94,7 @@ private:
     bool                           m_fStdoutLogEnabled;
     bool                           m_fDisableStartupPage;
     bool                           m_fShowDetailedErrors;
-    bool                           m_fEnableShadowCopying;
+    bool                           m_fexperimentalEnableShadowCopying;
     bool                           m_fCleanShadowCopyDirectory;
     std::wstring                   m_strShadowCopyingDirectory;
 };
