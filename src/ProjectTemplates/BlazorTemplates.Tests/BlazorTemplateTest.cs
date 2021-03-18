@@ -38,29 +38,8 @@ namespace Templates.Test
 
         public async Task InitializeAsync()
         {
-            var testSink = new TestSink();
-            testSink.MessageLogged += LogMessage;
-            var factory = new TestLoggerFactory(testSink, enabled: true);
-
-            void LogMessage(WriteContext ctx)
-            {
-                TestOutputHelper.WriteLine($"{MapLogLevel(ctx)}: [Browser]{ctx.Message}");
-
-                static string MapLogLevel(WriteContext obj) => obj.LogLevel switch
-                {
-                    LogLevel.Trace => "trace",
-                    LogLevel.Debug => "dbug",
-                    LogLevel.Information => "info",
-                    LogLevel.Warning => "warn",
-                    LogLevel.Error => "error",
-                    LogLevel.Critical => "crit",
-                    LogLevel.None => "info",
-                    _ => "info"
-                };
-            }
-
-            BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), factory);
-            BrowserContextInfo = new ContextInformation(factory);
+            BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), LoggerFactory);
+            BrowserContextInfo = new ContextInformation(LoggerFactory);
         }
 
         public Task DisposeAsync() => BrowserManager.DisposeAsync();
