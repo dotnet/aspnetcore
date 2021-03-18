@@ -17,13 +17,17 @@ For other types of questions, consider using [StackOverflow](https://stackoverfl
 
 ### Visual Studio Code
 
-Select the `Razor: Report a Razor Issue` command in VSCode (`ctrl + shift + p`) and follow the instructions to gather information necessary for us to investigate. Once done you can replace this content with contents that are put on your clipboard.
+Select the `Razor: Report a Razor Issue` command in [VSCode Command Palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) and follow the instructions to gather information necessary for us to investigate. Paste below:
+
+---
+Paste Content Here
+---
 
 ### Visual Studio Windows
 
 You may file an issue here but please create a Visual Studio bug first and link here as it will capture all necessary logs for us to investigate further.
 
-How to report a problem in Visual Studio: https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2019
+How to report a problem in Visual Studio: https://docs.microsoft.com/en-us/visualstudio/ide/how-to-report-a-problem-with-visual-studio
 
 ### Visual Studio Mac
 
