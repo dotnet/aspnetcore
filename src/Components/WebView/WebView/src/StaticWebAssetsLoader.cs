@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebView
         internal static IFileProvider UseStaticWebAssets(IFileProvider systemProvider)
         {
             using var manifest = GetManifestStream();
-            if(manifest != null)
+            if (manifest != null)
             {
                 return UseStaticWebAssetsCore(systemProvider, manifest);
             }else
