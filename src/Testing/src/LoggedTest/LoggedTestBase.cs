@@ -95,6 +95,12 @@ namespace Microsoft.AspNetCore.Testing
                 _initializationException = ExceptionDispatchInfo.Capture(e);
             }
         }
+        
+        public virtual Task InitializeAsync(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+        {
+            Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+            return Task.CompletedTask;
+        }
 
         public virtual void Dispose()
         {
@@ -110,12 +116,11 @@ namespace Microsoft.AspNetCore.Testing
             _testLog.Dispose();
         }
 
-        Task ITestMethodLifecycle.OnTestStartAsync(TestContext context, CancellationToken cancellationToken)
+        async Task ITestMethodLifecycle.OnTestStartAsync(TestContext context, CancellationToken cancellationToken)
         {
 
             Context = context;
-
-            Initialize(context, context.TestMethod, context.MethodArguments, context.Output);
+            await InitializeAsync(context, context.TestMethod, context.MethodArguments, context.Output);
             return Task.CompletedTask;
         }
 
