@@ -18,7 +18,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public abstract class BlazorTemplateTest : LoggedTestBase, IAsyncLifetime
+    public abstract class BlazorTemplateTest : LoggedTest, IAsyncLifetime
     {
         public const int BUILDCREATEPUBLISH_PRIORITY = -1000;
 
@@ -36,11 +36,14 @@ namespace Templates.Test
         private static readonly bool _isCIEnvironment =
             !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild"));
 
-        public async Task InitializeAsync()
+        public override async Task InitializeAsync(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
+            await base.InitializeAsync(context, methodInfo, testMethodArguments, testOutputHelper);
             BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), LoggerFactory);
             BrowserContextInfo = new ContextInformation(LoggerFactory);
         }
+
+        public async Task InitializeAsync() => Task.CompletedTask;
 
         public Task DisposeAsync() => BrowserManager.DisposeAsync();
 
