@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Components.WebView
             if (manifest != null)
             {
                 return UseStaticWebAssetsCore(systemProvider, manifest);
-            }else
+            }
+            else
             {
                 return systemProvider;
             }
