@@ -16,9 +16,9 @@ namespace Templates.Test.Helpers
             CertificateThumbprint = certificateThumbprint;
         }
 
-        public readonly string CertificatePath { get; }
-        public readonly string CertificatePassword { get; }
-        public readonly string CertificateThumbprint { get; }
+        public string CertificatePath { get; }
+        public string CertificatePassword { get; }
+        public string CertificateThumbprint { get; }
 
         public static DevelopmentCertificate Create(string workingDirectory)
         {
