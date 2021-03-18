@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Certificates.Generation;
 
 namespace Templates.Test.Helpers
 {
-    public readonly struct DevelopmentCertificate
+    public class DevelopmentCertificate
     {
         public DevelopmentCertificate(string certificatePath, string certificatePassword, string certificateThumbprint)
         {
