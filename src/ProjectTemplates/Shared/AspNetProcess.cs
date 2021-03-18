@@ -45,7 +45,7 @@ namespace Templates.Test.Helpers
             ILogger logger = null,
             DevelopmentCertificate cert = null)
         {
-            _developmentCertificate = cert ?? DevelopmentCertificate.Create(workingDirectory);
+            _developmentCertificate = cert ?? throw new ArgumentNullException(nameof(cert)); //DevelopmentCertificate.Create(workingDirectory);
 
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
