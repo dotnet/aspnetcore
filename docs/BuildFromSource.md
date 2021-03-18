@@ -63,7 +63,7 @@ If you're reading this, you probably already have Git installed to support cloni
 
 #### [NodeJS](https://nodejs.org) on Windows
 
-Building the repo requires version 10.14.2 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
+Building the repo requires version 10.17.0 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
 
 #### [Yarn](https://yarnpkg.com/) on Windows
 
