@@ -15,7 +15,6 @@ namespace Templates.Test.Helpers
     public class ProjectFactoryFixture : IDisposable
     {
         private readonly ConcurrentDictionary<string, Project> _projects = new ConcurrentDictionary<string, Project>();
-        private DevelopmentCertificate _cert = DevelopmentCertificate.Create(AppContext.BaseDirectory);
 
         public IMessageSink DiagnosticsMessageSink { get; }
 
@@ -42,7 +41,6 @@ namespace Templates.Test.Helpers
                     var assemblyPath = GetType().Assembly;
                     var basePath = GetTemplateFolderBasePath(assemblyPath);
                     project.TemplateOutputDir = Path.Combine(basePath, project.ProjectName);
-                    project.DevCert = _cert;
                     return project;
                 },
                 output);
