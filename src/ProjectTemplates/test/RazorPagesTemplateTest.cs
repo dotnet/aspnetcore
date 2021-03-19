@@ -224,6 +224,7 @@ namespace Templates.Test
 
         [ConditionalFact]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31044")]
         public async Task RazorPagesTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             var project = await BuildAndPublishRazorPagesTemplate(auth: null, new[] { "--razor-runtime-compilation" });
