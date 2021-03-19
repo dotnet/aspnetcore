@@ -31,7 +31,10 @@ export function startIpcReceiver() {
 
     'BeginInvokeJS': DotNet.jsCallDispatcher.beginInvokeJSFromDotNet,
 
-    'EndInvokeDotNet': DotNet.jsCallDispatcher.endInvokeDotNetFromJS,
+    'EndInvokeDotNet': (asyncCallId: string, success: boolean, invocationResultOrError: string) => {
+      const resultOrExceptionMessage: any = DotNet.parseJsonWithRevivers(invocationResultOrError);
+      DotNet.jsCallDispatcher.endInvokeDotNetFromJS(asyncCallId, success, resultOrExceptionMessage);
+    },
 
     'Navigate': navigationManagerFunctions.navigateTo,
   };

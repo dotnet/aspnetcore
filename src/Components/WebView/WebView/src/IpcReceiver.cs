@@ -82,14 +82,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         private void EndInvokeJS(PageContext pageContext, long asyncHandle, bool succeeded, string argumentsOrError)
         {
-            if (succeeded)
-            {
-                DotNetDispatcher.EndInvokeJS(pageContext.JSRuntime, argumentsOrError);
-            }
-            else
-            {
-                throw new InvalidOperationException(argumentsOrError);
-            }
+            DotNetDispatcher.EndInvokeJS(pageContext.JSRuntime, argumentsOrError);
         }
 
         private Task DispatchBrowserEventAsync(PageContext pageContext, string eventDescriptor, string eventArgs)
