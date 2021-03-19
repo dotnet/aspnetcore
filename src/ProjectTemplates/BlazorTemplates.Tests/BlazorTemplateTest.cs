@@ -32,6 +32,19 @@ namespace Templates.Test
         public ContextInformation BrowserContextInfo { get; protected set; }
         public BrowserManager BrowserManager { get; private set; }
 
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
+        {
+            get
+            {
+                if (_output == null)
+                {
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
+            }
+        }
+        
         public abstract string ProjectType { get; }
         private static readonly bool _isCIEnvironment =
             !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild"));
@@ -86,7 +99,7 @@ namespace Templates.Test
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject(projectName, TestOutputHelper);
+            var project = await ProjectFactory.GetOrCreateProject(projectName, Output);
             if (targetFramework != null)
             {
                 project.TargetFramework = targetFramework;
