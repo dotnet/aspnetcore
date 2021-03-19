@@ -45,7 +45,8 @@
       <Content Include="$(DotNetUnpackFolder)\**\*.*" Exclude="$(DotNetUnpackFolder)\**\.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
       <Content Include="%(ShimComponents.DllLocation)"
             Pack="true"
-            PackagePath="content\ancm\%(NativeContent.HandlerPath)" />
+            Condition="'%(ShimComponents.Platform)' == '$(TargetArchitecture)'"
+            PackagePath="content\ancm\%(ShimComponents.TempSubfolder)" />
     </ItemGroup>
   </Target>
 
