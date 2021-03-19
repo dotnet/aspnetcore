@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Components.WebView
