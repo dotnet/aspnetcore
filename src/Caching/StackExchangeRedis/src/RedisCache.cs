@@ -194,13 +194,13 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     if (_options.ConfigurationOptions != null)
                     {
                         _connection = ConnectionMultiplexer.Connect(_options.ConfigurationOptions);
-                        _connection.RegisterProfiler(_options.ProfilingSession);
                     }
                     else
                     {
                         _connection = ConnectionMultiplexer.Connect(_options.Configuration);
-                        _connection.RegisterProfiler(_options.ProfilingSession);
                     }
+
+                    TryRegisterProfiler();
                     _cache = _connection.GetDatabase();
                 }
             }
@@ -228,20 +228,27 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     if (_options.ConfigurationOptions != null)
                     {
                         _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions).ConfigureAwait(false);
-                        _connection.RegisterProfiler(_options.ProfilingSession);
                     }
                     else
                     {
                         _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);
-                        _connection.RegisterProfiler(_options.ProfilingSession);
                     }
 
+                    TryRegisterProfiler();
                     _cache = _connection.GetDatabase();
                 }
             }
             finally
             {
                 _connectionLock.Release();
+            }
+        }
+
+        private void TryRegisterProfiler()
+        {
+            if (_connection != null && _options.ProfilingSession != null)
+            {
+                _connection.RegisterProfiler(_options.ProfilingSession);
             }
         }
 
