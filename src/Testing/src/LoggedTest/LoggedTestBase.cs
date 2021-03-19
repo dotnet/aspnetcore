@@ -103,6 +103,7 @@ namespace Microsoft.AspNetCore.Testing
         }
         
         protected virtual Task InitializeCoreAsync(TestContext context) => Task.CompletedTask;
+        
         public virtual void Dispose()
         {
             if (_testLog == null)
