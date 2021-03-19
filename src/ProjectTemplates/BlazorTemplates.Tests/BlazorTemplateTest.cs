@@ -48,11 +48,11 @@ namespace Templates.Test
         private static readonly bool _isCIEnvironment =
             !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild"));
 
-        public override async Task InitializeAsync(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+        public override Task InitializeCoreAsync(TestContext context)
         {
-            await base.InitializeAsync(context, methodInfo, testMethodArguments, testOutputHelper);
             BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), LoggerFactory);
             BrowserContextInfo = new ContextInformation(LoggerFactory);
+            return Task.CompletedTask;
         }
 
         public Task InitializeAsync() => Task.CompletedTask;
