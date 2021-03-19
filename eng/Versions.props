@@ -182,11 +182,11 @@
     <MonoWebAssemblyInteropVersion>3.1.1-preview4.19614.4</MonoWebAssemblyInteropVersion>
     <!-- Partner teams -->
     <MicrosoftBclAsyncInterfacesVersion>1.0.0</MicrosoftBclAsyncInterfacesVersion>
-    <MicrosoftBuildVersion>15.8.166</MicrosoftBuildVersion>
+    <MicrosoftBuildVersion>16.9.0</MicrosoftBuildVersion>
     <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
-    <MicrosoftBuildFrameworkVersion>15.8.166</MicrosoftBuildFrameworkVersion>
+    <MicrosoftBuildFrameworkVersion>16.9.0</MicrosoftBuildFrameworkVersion>
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
-    <MicrosoftBuildUtilitiesCoreVersion>15.8.166</MicrosoftBuildUtilitiesCoreVersion>
+    <MicrosoftBuildUtilitiesCoreVersion>16.9.0</MicrosoftBuildUtilitiesCoreVersion>
     <MicrosoftCodeAnalysisCommonVersion>3.7.0</MicrosoftCodeAnalysisCommonVersion>
     <MicrosoftCodeAnalysisCSharpVersion>3.7.0</MicrosoftCodeAnalysisCSharpVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesVersion>3.7.0</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
@@ -204,8 +204,8 @@
     <MicrosoftWebWebView2Version>1.0.705.50</MicrosoftWebWebView2Version>
     <MicrosoftWebXdtVersion>1.4.0</MicrosoftWebXdtVersion>
     <SystemIdentityModelTokensJwtVersion>6.8.0</SystemIdentityModelTokensJwtVersion>
-    <NuGetVersioningVersion>5.9.0-rc.7121</NuGetVersioningVersion>
-    <NuGetFrameworksVersion>5.9.0-rc.7121</NuGetFrameworksVersion>
+    <NuGetVersioningVersion>5.9.0</NuGetVersioningVersion>
+    <NuGetFrameworksVersion>5.9.0</NuGetFrameworksVersion>
     <SystemNetExperimentalMsQuicVersion>5.0.0-alpha.20560.6</SystemNetExperimentalMsQuicVersion>
     <!-- Packages from 2.1, 3.1, and 5.0 branches used for site extension build. -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>
