@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -16,16 +15,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     {
         public readonly RoutePattern Pattern;
         public readonly string RouteName;
-        public readonly RouteValueDictionary DataTokens;
+        public readonly RouteValueDictionary? DataTokens;
         public readonly int Order;
         public readonly IReadOnlyList<Action<EndpointBuilder>> Conventions;
 
         public ConventionalRouteEntry(
             string routeName,
             string pattern,
-            RouteValueDictionary defaults,
-            IDictionary<string, object> constraints,
-            RouteValueDictionary dataTokens,
+            RouteValueDictionary? defaults,
+            IDictionary<string, object?>? constraints,
+            RouteValueDictionary? dataTokens,
             int order,
             List<Action<EndpointBuilder>> conventions)
         {
@@ -43,9 +42,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             catch (Exception exception)
             {
                 throw new RouteCreationException(string.Format(
-                    CultureInfo.CurrentCulture, 
-                    "An error occurred while creating the route with name '{0}' and pattern '{1}'.", 
-                    routeName, 
+                    CultureInfo.CurrentCulture,
+                    "An error occurred while creating the route with name '{0}' and pattern '{1}'.",
+                    routeName,
                     pattern), exception);
             }
         }

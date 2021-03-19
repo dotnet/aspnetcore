@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return attribute?.MatchBehavior ?? ApiConventionTypeMatchBehavior.AssignableFrom;
         }
 
-        private static TAttribute GetCustomAttribute<TAttribute>(ICustomAttributeProvider attributeProvider)
+        private static TAttribute? GetCustomAttribute<TAttribute>(ICustomAttributeProvider attributeProvider)
         {
             var attributes = attributeProvider.GetCustomAttributes(inherit: false);
             for (var i = 0; i < attributes.Length; i++)
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return default;
         }
 
-        internal static bool IsNameMatch(string name, string conventionName, ApiConventionNameMatchBehavior nameMatchBehavior)
+        internal static bool IsNameMatch(string? name, string? conventionName, ApiConventionNameMatchBehavior nameMatchBehavior)
         {
             switch (nameMatchBehavior)
             {
@@ -100,6 +100,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             bool IsNameMatchPrefix()
             {
+                if (name is null || conventionName is null)
+                {
+                    return false;
+                }
+
                 if (name.Length < conventionName.Length)
                 {
                     return false;
@@ -124,6 +129,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             bool IsNameMatchSuffix()
             {
+                if (name is null || conventionName is null)
+                {
+                    return false;
+                }
+
                 if (name.Length < conventionName.Length)
                 {
                     // name = "person", conventionName = "personName"

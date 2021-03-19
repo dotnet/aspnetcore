@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -706,12 +708,10 @@ namespace Microsoft.AspNetCore.Mvc
             _selectingFirstCanWriteFormatter(logger, null);
         }
 
-#nullable enable
-        public static IDisposable? ActionScope(this ILogger logger, ActionDescriptor action)
+        public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
         {
             return logger.BeginScope(new ActionLogScope(action));
         }
-#nullable restore
 
         public static void ExecutingAction(this ILogger logger, ActionDescriptor action)
         {
@@ -1717,7 +1717,7 @@ namespace Microsoft.AspNetCore.Mvc
                     }
                     else if (index == 1)
                     {
-                        return new KeyValuePair<string, object>("ActionName", _action.DisplayName);
+                        return new KeyValuePair<string, object>("ActionName", _action.DisplayName ?? string.Empty);
                     }
                     throw new IndexOutOfRangeException(nameof(index));
                 }
@@ -1737,7 +1737,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 // We don't include the _action.Id here because it's just an opaque guid, and if
                 // you have text logging, you can already use the requestId for correlation.
-                return _action.DisplayName;
+                return _action.DisplayName ?? string.Empty;
             }
 
             IEnumerator IEnumerable.GetEnumerator()

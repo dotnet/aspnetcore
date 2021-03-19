@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or set the content representing the body of the response.
         /// </summary>
-        public string Content { get; set; }
+        public string? Content { get; set; }
 
         /// <summary>
         /// Gets or sets the Content-Type header for the response.
         /// </summary>
-        public string ContentType { get; set; }
+        public string? ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP status code.

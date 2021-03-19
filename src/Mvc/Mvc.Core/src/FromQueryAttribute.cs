@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Mvc
         public BindingSource BindingSource => BindingSource.Query;
 
         /// <inheritdoc />
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

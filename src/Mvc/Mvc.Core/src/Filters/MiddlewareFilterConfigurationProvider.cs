@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                     Resources.FormatMiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType(configurationType, nameof(configurationType)));
             }
 
-            var instance = Activator.CreateInstance(configurationType);
+            var instance = Activator.CreateInstance(configurationType)!;
             var configureDelegateBuilder = GetConfigureDelegateBuilder(configurationType);
             return configureDelegateBuilder.Build(instance);
         }
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             return new ConfigureBuilder(configureMethod);
         }
 
-        private static MethodInfo FindMethod(Type startupType, Type returnType = null)
+        private static MethodInfo FindMethod(Type startupType, Type returnType)
         {
             var methodName = "Configure";
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                         startupType.FullName));
             }
 
-            if (returnType != null && methodInfo.ReturnType != returnType)
+            if (methodInfo.ReturnType != returnType)
             {
                 throw new InvalidOperationException(
                     Resources.FormatMiddlewareFilter_InvalidConfigureReturnType(
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                                     parameterInfo.ParameterType.FullName,
                                     parameterInfo.Name,
                                     MethodInfo.Name,
-                                    MethodInfo.DeclaringType.FullName),
+                                    MethodInfo.DeclaringType!.FullName),
                                 ex);
                         }
                     }

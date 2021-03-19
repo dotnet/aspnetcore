@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="JsonResult"/> with the given <paramref name="value"/>.
         /// </summary>
         /// <param name="value">The value to format as JSON.</param>
-        public JsonResult(object value)
+        public JsonResult(object? value)
         {
             Value = value;
         }
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// When using <c>Newtonsoft.Json</c>, this should be an instance of <c>JsonSerializerSettings</c>.
         /// </para>
         /// </param>
-        public JsonResult(object value, object serializerSettings)
+        public JsonResult(object? value, object? serializerSettings)
         {
             Value = value;
             SerializerSettings = serializerSettings;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the <see cref="Net.Http.Headers.MediaTypeHeaderValue"/> representing the Content-Type header of the response.
         /// </summary>
-        public string ContentType { get; set; }
+        public string? ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets the serializer settings.
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// When using <c>Newtonsoft.Json</c>, this should be an instance of <c>JsonSerializerSettings</c>.
         /// </para>
         /// </summary>
-        public object SerializerSettings { get; set; }
+        public object? SerializerSettings { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP status code.
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the value to be formatted.
         /// </summary>
-        public object Value { get; set; }
+        public object? Value { get; set; }
 
         /// <inheritdoc />
         public override Task ExecuteResultAsync(ActionContext context)
