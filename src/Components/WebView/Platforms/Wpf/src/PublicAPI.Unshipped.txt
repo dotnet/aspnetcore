@@ -1,4 +1,5 @@
-﻿Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView
+﻿#nullable enable
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.BlazorWebView() -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.Dispose() -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.HostPage.get -> string

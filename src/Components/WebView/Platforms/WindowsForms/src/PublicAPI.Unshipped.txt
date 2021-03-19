@@ -1,4 +1,5 @@
-﻿Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView
+﻿#nullable enable
+Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.BlazorWebView() -> void
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.HostPage.get -> string
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.HostPage.set -> void

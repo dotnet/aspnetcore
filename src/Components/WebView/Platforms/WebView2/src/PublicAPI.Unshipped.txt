@@ -1,4 +1,5 @@
-﻿Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper
+﻿#nullable enable
+Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper
 Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.AcceleratorKeyPressed -> System.EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2AcceleratorKeyPressedEventArgs>
 Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.CoreWebView2.get -> Microsoft.Web.WebView2.Core.CoreWebView2
 Microsoft.AspNetCore.Components.WebView.WebView2.IWebView2Wrapper.EnsureCoreWebView2Async(Microsoft.Web.WebView2.Core.CoreWebView2Environment environment = null) -> System.Threading.Tasks.Task
