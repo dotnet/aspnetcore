@@ -45,8 +45,7 @@ namespace Templates.Test.Helpers
             bool usePublishedAppHost = false,
             ILogger logger = null)
         {
-            _developmentCertificate = cert ?? throw new ArgumentNullException(nameof(cert));
-
+            _developmentCertificate = cert;
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
             {
