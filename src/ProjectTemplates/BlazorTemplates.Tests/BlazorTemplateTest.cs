@@ -22,8 +22,7 @@ namespace Templates.Test
     {
         public const int BUILDCREATEPUBLISH_PRIORITY = -1000;
 
-        public BlazorTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
-            : base(output)
+        public BlazorTemplateTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
         }
