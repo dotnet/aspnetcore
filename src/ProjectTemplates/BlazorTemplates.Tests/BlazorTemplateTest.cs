@@ -43,7 +43,7 @@ namespace Templates.Test
             BrowserContextInfo = new ContextInformation(LoggerFactory);
         }
 
-        public async Task InitializeAsync() => Task.CompletedTask;
+        public Task InitializeAsync() => Task.CompletedTask;
 
         public Task DisposeAsync() => BrowserManager.DisposeAsync();
 
