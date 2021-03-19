@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Certificates.Generation;
 
 namespace Templates.Test.Helpers
 {
-    public class DevelopmentCertificate
+    public readonly struct DevelopmentCertificate
     {
         public DevelopmentCertificate(string certificatePath, string certificatePassword, string certificateThumbprint)
         {
@@ -16,9 +16,9 @@ namespace Templates.Test.Helpers
             CertificateThumbprint = certificateThumbprint;
         }
 
-        public string CertificatePath { get; }
-        public string CertificatePassword { get; }
-        public string CertificateThumbprint { get; }
+        public readonly string CertificatePath { get; }
+        public readonly string CertificatePassword { get; }
+        public readonly string CertificateThumbprint { get; }
 
         public static DevelopmentCertificate Create(string workingDirectory)
         {
