@@ -7,7 +7,6 @@
     <PackageTags>aspnetcore;authentication;AzureADB2C</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <NoWarn>RS0016</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
