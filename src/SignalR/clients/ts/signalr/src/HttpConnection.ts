@@ -472,8 +472,6 @@ export class HttpConnection implements IConnection {
 
         if (this._connectionState === ConnectionState.Disconnected) {
             this._logger.log(LogLevel.Debug, `Call to HttpConnection.stopConnection(${error}) was ignored because the connection is already in the disconnected state.`);
-            // Make sure HttpConnection.stop() won't be blocked on the promise
-            this._stopPromiseResolver();
             return;
         }
 
