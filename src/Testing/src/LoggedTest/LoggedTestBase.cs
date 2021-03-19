@@ -99,9 +99,10 @@ namespace Microsoft.AspNetCore.Testing
         public virtual Task InitializeAsync(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
             Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
-            return Task.CompletedTask;
+            return InitializeCoreAsync(context);
         }
-
+        
+        protected virtual Task InitializeCoreAsync(TestContext context) => Task.CompletedTask;
         public virtual void Dispose()
         {
             if (_testLog == null)
