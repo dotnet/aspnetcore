@@ -35,6 +35,7 @@ namespace Templates.Test.Helpers
         internal ProcessEx Process { get; }
 
         public AspNetProcess(
+            DevelopmentCertificate cert,
             ITestOutputHelper output,
             string workingDirectory,
             string dllPath,
@@ -42,10 +43,9 @@ namespace Templates.Test.Helpers
             bool published,
             bool hasListeningUri = true,
             bool usePublishedAppHost = false,
-            ILogger logger = null,
-            DevelopmentCertificate cert = null)
+            ILogger logger = null)
         {
-            _developmentCertificate = cert ?? throw new ArgumentNullException(nameof(cert)); //DevelopmentCertificate.Create(workingDirectory);
+            _developmentCertificate = cert ?? throw new ArgumentNullException(nameof(cert));
 
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
