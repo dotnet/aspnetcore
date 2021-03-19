@@ -19,7 +19,7 @@
     "Git": "2.22.0",
     "jdk": "11.0.3",
     "vs": {
-      "version": "16.5",
+      "version": "16.8",
       "components": [
         "Microsoft.VisualStudio.Component.VC.ATL",
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
