@@ -366,7 +366,7 @@ DWORD WINAPI FILE_WATCHER::CopyAndShutdown(FILE_WATCHER* watcher)
     // Copy contents before shutdown
     try
     {
-        Environment::CopyToDirectory(watcher->_strDirectoryName.QueryStr(), destination, false, parentDirectory);
+        Environment::CopyToDirectory(watcher->_strDirectoryName.QueryStr(), destination, false, std::filesystem::canonical(parentDirectory));
     }
     catch (...)
     {

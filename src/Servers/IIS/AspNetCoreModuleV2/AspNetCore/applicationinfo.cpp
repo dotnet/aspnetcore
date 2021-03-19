@@ -304,7 +304,7 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
         }
 
         shadowCopyPath = shadowCopyPath / directoryNameStr;
-        HRESULT hr = Environment::CopyToDirectory(physicalPath, shadowCopyPath, options.QueryCleanShadowCopyDirectory(), shadowCopyBaseDirectory.path().parent_path());
+        HRESULT hr = Environment::CopyToDirectory(physicalPath, shadowCopyPath, options.QueryCleanShadowCopyDirectory(), std::filesystem::canonical(shadowCopyBaseDirectory.path()));
         if (hr != S_OK)
         {
             return std::wstring();
