@@ -92,6 +92,7 @@ namespace Templates.Test
         private void LogBrowserManagerMessage(WriteContext context)
         {
             TestOutputHelper.WriteLine(context.Message);
+            Output.WriteLine(context.Message);
         }
 
         protected async Task<Project> CreateBuildPublishAsync(string projectName, string auth = null, string[] args = null, string targetFramework = null, bool serverProject = false, bool onlyCreate = false)
