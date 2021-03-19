@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -1635,6 +1636,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31057")]
         public async Task RequestTrailers_CanReadTrailersFromRequest()
         {
             string testValue = null;
@@ -1651,8 +1653,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             var requestStream = await InitializeConnectionAndStreamsAsync(async c =>
             {
-                var data = new byte[1024];
-                await c.Request.Body.ReadAsync(data);
+                await c.Request.Body.DrainAsync(default);
 
                 testValue = c.Request.GetTrailer("TestName");
             });
