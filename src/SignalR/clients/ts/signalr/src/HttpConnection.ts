@@ -52,7 +52,7 @@ export class HttpConnection implements IConnection {
     private transport?: ITransport;
     private _startInternalPromise?: Promise<void>;
     private _stopPromise?: Promise<void>;
-    private _stopPromiseResolver!: (value?: PromiseLike<void>) => void;
+    private _stopPromiseResolver: (value?: PromiseLike<void>) => void = () => {};
     private _stopError?: Error;
     private _accessTokenFactory?: () => string | Promise<string>;
     private _sendQueue?: TransportSendQueue;
@@ -294,9 +294,9 @@ export class HttpConnection implements IConnection {
             this._logger.log(LogLevel.Error, "Failed to start the connection: " + e);
             this._connectionState = ConnectionState.Disconnected;
             this.transport = undefined;
-            if (this._stopPromiseResolver !== undefined) {
-                this._stopPromiseResolver();
-            }
+
+            // if start fails, any active calls to stop assume that start will complete the stop promise
+            this._stopPromiseResolver();
             return Promise.reject(e);
         }
     }
