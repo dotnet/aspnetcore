@@ -1685,6 +1685,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
 
             await requestStream.SendHeadersAsync(headers, endStream: false);
+
+            // The app no-ops quickly. Wait for it here so it's not a race with the error response.
+            await requestStream.ExpectHeadersAsync();
+
             await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("Hello world"));
             await requestStream.SendHeadersAsync(trailers, endStream: false);
             await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("This is invalid."));
