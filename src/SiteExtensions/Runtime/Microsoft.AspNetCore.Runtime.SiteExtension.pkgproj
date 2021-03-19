@@ -16,6 +16,8 @@
     <NoSemVer20>true</NoSemVer20>
   </PropertyGroup>
 
+  <Import Project="..\..\..\src\Servers\IIS\build\assets.props" />
+
   <ItemGroup>
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
@@ -41,7 +43,9 @@
   <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
       <Content Include="$(DotNetUnpackFolder)\**\*.*" Exclude="$(DotNetUnpackFolder)\**\.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
-      <Content Include="%(NativeContent.Identity)" PackagePath="content\ancm\%(NativeContent.HandlerPath)" />
+      <Content Include="%(ShimComponents.DllLocation)"
+            Pack="true"
+            PackagePath="content\ancm\%(NativeContent.HandlerPath)" />
     </ItemGroup>
   </Target>
 
