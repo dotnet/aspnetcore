@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)-windows</TargetFramework>
@@ -9,6 +9,10 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WebviewAppShared\WebviewAppShared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

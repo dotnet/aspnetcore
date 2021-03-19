@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject AppState AppState
+@using WebviewAppShared
 
 <h3>Hello, world!</h3>
 
@@ -7,6 +8,9 @@
 
 <button @onclick="IncrementCount">Increment</button>
 <button @onclick="TriggerException">Throw</button>
+
+<p>This is a shared component</p>
+<SharedComponent />
 
 @code {
     void IncrementCount()
