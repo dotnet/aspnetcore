@@ -9,6 +9,7 @@
     <AssemblyName>dotnet-install-blazoraot</AssemblyName>
     <PackageId>dotnet-install-blazoraot</PackageId>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RemoveDevicePlatformSupport>true</RemoveDevicePlatformSupport>
     <!-- Set this to false because there's nothing to reference here. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
