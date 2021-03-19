@@ -180,8 +180,8 @@
     has a chance to set $(RemoveDevicePlatformSupport) and long after @(SupportedPlatforms) is initialized.
   -->
   <ItemGroup Condition=" '$(RemoveDevicePlatformSupport)' == 'true' ">
-    <SupportedPlatforms Remove="Android" />
-    <SupportedPlatforms Remove="iOS" />
+    <SupportedPlatform Remove="Android" />
+    <SupportedPlatform Remove="iOS" />
   </ItemGroup>
 
   <Target Name="_CopySymbolsToArtifacts">
