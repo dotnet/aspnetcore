@@ -19,8 +19,8 @@ namespace Templates.Test
     [TestCaseOrderer("Templates.Test.PriorityOrderer", "BlazorTemplates.Tests")]
     public class BlazorServerTemplateTest : BlazorTemplateTest
     {
-        public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper testOutputHelper)
-            : base(projectFactory, testOutputHelper)
+        public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory)
+            : base(projectFactory)
         {
         }
 
