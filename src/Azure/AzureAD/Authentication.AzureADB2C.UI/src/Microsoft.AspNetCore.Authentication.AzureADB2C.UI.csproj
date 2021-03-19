@@ -6,7 +6,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageTags>aspnetcore;authentication;AzureADB2C</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
