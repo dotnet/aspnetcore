@@ -26,8 +26,8 @@ namespace Templates.Test
     [TestCaseOrderer("Templates.Test.PriorityOrderer", "BlazorTemplates.Tests")]
     public class BlazorWasmTemplateTest : BlazorTemplateTest
     {
-        public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper testOutputHelper)
-            : base(projectFactory, testOutputHelper) { }
+        public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory)
+            : base(projectFactory) { }
 
         public override string ProjectType { get; } = "blazorwasm";
 
