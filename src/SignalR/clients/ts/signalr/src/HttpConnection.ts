@@ -61,7 +61,7 @@ export class HttpConnection implements IConnection {
     private transport?: ITransport;
     private startInternalPromise?: Promise<void>;
     private stopPromise?: Promise<void>;
-    private stopPromiseResolver!: (value?: PromiseLike<void>) => void;
+    private stopPromiseResolver: (value?: PromiseLike<void>) => void = () => {};
     private stopError?: Error;
     private accessTokenFactory?: () => string | Promise<string>;
     private sendQueue?: TransportSendQueue;
@@ -208,7 +208,6 @@ export class HttpConnection implements IConnection {
             this.transport = undefined;
         } else {
             this.logger.log(LogLevel.Debug, "HttpConnection.transport is undefined in HttpConnection.stop() because start() failed.");
-            this.stopConnection();
         }
     }
 
@@ -288,6 +287,9 @@ export class HttpConnection implements IConnection {
             this.logger.log(LogLevel.Error, "Failed to start the connection: " + e);
             this.connectionState = ConnectionState.Disconnected;
             this.transport = undefined;
+
+            // if start fails, any active calls to stop assume that start will complete the stop promise
+            this.stopPromiseResolver();
             return Promise.reject(e);
         }
     }
