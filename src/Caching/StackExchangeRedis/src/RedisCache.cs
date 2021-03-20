@@ -199,6 +199,8 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     {
                         _connection = ConnectionMultiplexer.Connect(_options.Configuration);
                     }
+
+                    TryRegisterProfiler();
                     _cache = _connection.GetDatabase();
                 }
             }
@@ -232,12 +234,21 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                         _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);
                     }
 
+                    TryRegisterProfiler();
                     _cache = _connection.GetDatabase();
                 }
             }
             finally
             {
                 _connectionLock.Release();
+            }
+        }
+
+        private void TryRegisterProfiler()
+        {
+            if (_connection != null && _options.ProfilingSession != null)
+            {
+                _connection.RegisterProfiler(_options.ProfilingSession);
             }
         }
 
