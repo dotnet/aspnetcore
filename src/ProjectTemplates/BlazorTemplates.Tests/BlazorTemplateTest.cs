@@ -50,9 +50,9 @@ namespace Templates.Test
 
         protected async override Task InitializeCoreAsync(TestContext context)
         {
-            TestSink.MessageLogged += LogMessage;
             BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), LoggerFactory);
             BrowserContextInfo = new ContextInformation(LoggerFactory);
+            _output = new TestOutputLogger(Logger);
         }
 
         public Task InitializeAsync() => Task.CompletedTask;
@@ -86,11 +86,6 @@ namespace Templates.Test
             }
 
             return builder.Build();
-        }
-
-        private void LogMessage(WriteContext context)
-        {
-            Output.WriteLine(context.Message);
         }
 
         protected async Task<Project> CreateBuildPublishAsync(string projectName, string auth = null, string[] args = null, string targetFramework = null, bool serverProject = false, bool onlyCreate = false)
