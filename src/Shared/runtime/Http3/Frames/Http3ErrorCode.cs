@@ -52,38 +52,42 @@ namespace System.Net.Http
         /// </summary>
         IdError = 0x108,
         /// <summary>
-        /// H3_SETTINGS_ERROR (0x10A):
-        /// An endpoint detected an error in the payload of a SETTINGS frame: a duplicate setting was detected,
-        /// a client-only setting was sent by a server, or a server-only setting by a client.
+        /// H3_SETTINGS_ERROR (0x109):
+        /// An endpoint detected an error in the payload of a SETTINGS frame.
         /// </summary>
         SettingsError = 0x109,
         /// <summary>
-        /// H3_MISSING_SETTINGS (0x10B):
+        /// H3_MISSING_SETTINGS (0x10A):
         /// No SETTINGS frame was received at the beginning of the control stream.
         /// </summary>
         MissingSettings = 0x10a,
         /// <summary>
-        /// H3_REQUEST_REJECTED (0x10C):
+        /// H3_REQUEST_REJECTED (0x10B):
         /// A server rejected a request without performing any application processing.
         /// </summary>
         RequestRejected = 0x10b,
         /// <summary>
-        /// H3_REQUEST_CANCELLED (0x10D):
+        /// H3_REQUEST_CANCELLED (0x10C):
         /// The request or its response (including pushed response) is cancelled.
         /// </summary>
         RequestCancelled = 0x10c,
         /// <summary>
-        /// H3_REQUEST_INCOMPLETE (0x10E):
-        /// The client?s stream terminated without containing a fully-formed request.
+        /// H3_REQUEST_INCOMPLETE (0x10D):
+        /// The client's stream terminated without containing a fully-formed request.
         /// </summary>
         RequestIncomplete = 0x10d,
         /// <summary>
-        /// H3_CONNECT_ERROR (0x110):
+        /// H3_MESSAGE_ERROR (0x10E):
+        /// An HTTP message was malformed and cannot be processed.
+        /// </summary>
+        MessageError = 0x10e,
+        /// <summary>
+        /// H3_CONNECT_ERROR (0x10F):
         /// The connection established in response to a CONNECT request was reset or abnormally closed.
         /// </summary>
         ConnectError = 0x10f,
         /// <summary>
-        /// H3_VERSION_FALLBACK (0x111):
+        /// H3_VERSION_FALLBACK (0x110):
         /// The requested operation cannot be served over HTTP/3. The peer should retry over HTTP/1.1.
         /// </summary>
         VersionFallback = 0x110,
