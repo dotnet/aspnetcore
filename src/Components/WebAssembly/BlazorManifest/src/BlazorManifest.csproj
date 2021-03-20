@@ -17,9 +17,6 @@
         MicrosoftNETRuntimeMonoAOTCompilerTaskVersion=$(MicrosoftNETRuntimeMonoAOTCompilerTaskVersion);
         MicrosoftNETRuntimeWebAssemblySdkVersion=$(MicrosoftNETRuntimeWebAssemblySdkVersion);
         MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion=$(MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion);
-        MicrosoftNETRuntimeEmscripten2012NodeVersion=$(MicrosoftNETRuntimeEmscripten2012Nodewinx64Version);
-        MicrosoftNETRuntimeEmscripten2012PythonVersion=$(MicrosoftNETRuntimeEmscripten2012Pythonwinx64Version);
-        MicrosoftNETRuntimeEmscripten2012SdkVersion=$(MicrosoftNETRuntimeEmscripten2012Sdkwinx64Version);
       </_WorkloadManifestProperties>
 
       <WorkloadManifestPath>$(IntermediateOutputPath)WorkloadManifest.json</WorkloadManifestPath>
