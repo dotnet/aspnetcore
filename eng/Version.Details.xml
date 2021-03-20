@@ -285,6 +285,18 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0f64b267ac0552f07b06f18103581b880c8c53c6</Sha>
     </Dependency>
+     <Dependency Name="Microsoft.NET.Runtime.Emscripten.2.0.12.Node.win-x64" Version="6.0.0-preview.3.21167.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>0f64b267ac0552f07b06f18103581b880c8c53c6</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NET.Runtime.Emscripten.2.0.12.Python.win-x64" Version="6.0.0-preview.3.21167.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>0f64b267ac0552f07b06f18103581b880c8c53c6</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.win-x64" Version="6.0.0-preview.3.21167.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>0f64b267ac0552f07b06f18103581b880c8c53c6</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="6.0.0-preview.3.21167.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0f64b267ac0552f07b06f18103581b880c8c53c6</Sha>
