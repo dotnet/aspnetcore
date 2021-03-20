@@ -318,7 +318,7 @@ namespace Templates.Test.Helpers
             return File.ReadAllText(Path.Combine(TemplateOutputDir, path));
         }
 
-        internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments)
+        internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments, ITestOutputHelper output = null)
         {
             output = output ?? Output;
             await DotNetNewLock.WaitAsync();
