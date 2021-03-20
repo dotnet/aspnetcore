@@ -27,7 +27,7 @@ namespace Templates.Test.Helpers
         {
             await TemplatePackageInstaller.EnsureTemplatingEngineInitializedAsync(output);
             // Different tests may have different output helpers, so need to fix up the output to write to the correct log
-            if (_project.TryGetValue(projectKey, out var project))
+            if (_projects.TryGetValue(projectKey, out var project))
             {
                 project.Output = output;
                 return project;
