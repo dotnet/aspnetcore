@@ -50,6 +50,7 @@ namespace Templates.Test
 
         protected async override Task InitializeCoreAsync(TestContext context)
         {
+            TestSink.MessageLogged += LogMessage;
             BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), LoggerFactory);
             BrowserContextInfo = new ContextInformation(LoggerFactory);
         }
@@ -87,9 +88,8 @@ namespace Templates.Test
             return builder.Build();
         }
 
-        private void LogBrowserManagerMessage(WriteContext context)
+        private void LogMessage(WriteContext context)
         {
-            TestOutputHelper.WriteLine(context.Message);
             Output.WriteLine(context.Message);
         }
 
