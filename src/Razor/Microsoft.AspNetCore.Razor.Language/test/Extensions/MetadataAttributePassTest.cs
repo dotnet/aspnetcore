@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language.Components;
@@ -379,6 +379,60 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             Assert.NotNull(checksum.Checksum); // Not verifying the checksum here
             Assert.Equal("SHA1", checksum.ChecksumAlgorithm);
             Assert.Equal("/Foo/Import.cshtml", checksum.Identifier);
+        }
+
+        [Fact]
+        public void Execute_SuppressMetadataSourceChecksumAttributes_DoesNotGenerateSourceChecksumAttributes()
+        {
+            // Arrange
+            var engine = CreateEngine();
+            var pass = new MetadataAttributePass()
+            {
+                Engine = engine,
+            };
+
+            var sourceDocument = TestRazorSourceDocument.Create("", new RazorSourceDocumentProperties(null, "Foo\\Bar.cshtml"));
+            var import = TestRazorSourceDocument.Create("@using System", new RazorSourceDocumentProperties(null, "Foo\\Import.cshtml"));
+            var codeDocument = RazorCodeDocument.Create(sourceDocument, new[] { import, });
+
+            var irDocument = new DocumentIntermediateNode()
+            {
+                DocumentKind = "test",
+                Options = RazorCodeGenerationOptions.Create(o => o.SuppressMetadataSourceChecksumAttributes = true),
+            };
+            var builder = IntermediateNodeBuilder.Create(irDocument);
+            var @namespace = new NamespaceDeclarationIntermediateNode
+            {
+                Annotations =
+                {
+                    [CommonAnnotations.PrimaryNamespace] = CommonAnnotations.PrimaryNamespace,
+                },
+                Content = "Some.Namespace"
+            };
+            builder.Push(@namespace);
+            var @class = new ClassDeclarationIntermediateNode
+            {
+                Annotations =
+                {
+                    [CommonAnnotations.PrimaryClass] = CommonAnnotations.PrimaryClass,
+                },
+                ClassName = "Test",
+            };
+            builder.Add(@class);
+
+            // Act
+            pass.Execute(codeDocument, irDocument);
+
+            // Assert
+            Assert.Equal(2, irDocument.Children.Count);
+
+            var item = Assert.IsType<RazorCompiledItemAttributeIntermediateNode>(irDocument.Children[0]);
+            Assert.Equal("/Foo/Bar.cshtml", item.Identifier);
+            Assert.Equal("test", item.Kind);
+            Assert.Equal("Some.Namespace.Test", item.TypeName);
+
+            var child = Assert.Single(@namespace.Children);
+            Assert.IsType<ClassDeclarationIntermediateNode>(child);
         }
 
         private static RazorEngine CreateEngine()
