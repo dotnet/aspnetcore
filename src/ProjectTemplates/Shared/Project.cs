@@ -40,6 +40,7 @@ namespace Templates.Test.Helpers
         public string TemplateOutputDir { get; set; }
         public string TargetFramework { get; set; } = GetAssemblyMetadata("Test.DefaultTargetFramework");
         public string RuntimeIdentifier { get; set; } = string.Empty;
+        public static DevelopmentCertificate DevCert { get; } = DevelopmentCertificate.Create(AppContext.BaseDirectory);
 
         public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework, RuntimeIdentifier);
         public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, RuntimeIdentifier, "publish");
@@ -183,7 +184,7 @@ namespace Templates.Test.Helpers
             }
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
-            return new AspNetProcess(output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri, logger: logger);
+            return new AspNetProcess(DevCert, output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri, logger: logger);
         }
 
         internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true, bool usePublishedAppHost = false, ITestOutputHelper output = null)
@@ -199,7 +200,7 @@ namespace Templates.Test.Helpers
             };
 
             var projectDll = Path.Combine(TemplatePublishDir, $"{ProjectName}.dll");
-            return new AspNetProcess(output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri, usePublishedAppHost: usePublishedAppHost);
+            return new AspNetProcess(DevCert, output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri, usePublishedAppHost: usePublishedAppHost);
         }
 
         internal async Task<ProcessResult> RunDotNetEfCreateMigrationAsync(string migrationName, ITestOutputHelper output = null)

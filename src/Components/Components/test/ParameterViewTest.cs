@@ -348,6 +348,67 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
         }
 
+        [Fact]
+        public void Clone_EmptyParameterView()
+        {
+            // Arrange
+            var initial = ParameterView.Empty;
+
+            // Act
+            var cloned = initial.Clone();
+
+            // Assert
+            Assert.Empty(ToEnumerable(cloned));
+        }
+
+        [Fact]
+        public void Clone_ParameterViewSingleParameter()
+        {
+            // Arrange
+            var attribute1Value = new object();
+            var initial = new ParameterView(ParameterViewLifetime.Unbound, new[]
+            {
+                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
+            }, 0);
+
+
+            // Act
+            var cloned = initial.Clone();
+
+            // Assert
+            Assert.Collection(
+                ToEnumerable(cloned),
+                p => AssertParameter("attribute 1", attribute1Value, expectedIsCascading: false));
+        }
+
+        [Fact]
+        public void Clone_ParameterPreservesOrder()
+        {
+            // Arrange
+            var attribute1Value = new object();
+            var attribute2Value = new object();
+            var attribute3Value = new object();
+            var initial = new ParameterView(ParameterViewLifetime.Unbound, new[]
+            {
+                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
+                 RenderTreeFrame.Attribute(1, "attribute 2", attribute2Value),
+                 RenderTreeFrame.Attribute(1, "attribute 3", attribute3Value),
+            }, 0);
+
+
+            // Act
+            var cloned = initial.Clone();
+
+            // Assert
+            Assert.Collection(
+                ToEnumerable(cloned),
+                p => AssertParameter("attribute 1", attribute1Value, expectedIsCascading: false),
+                p => AssertParameter("attribute 2", attribute2Value, expectedIsCascading: false),
+                p => AssertParameter("attribute 3", attribute3Value, expectedIsCascading: false));
+        }
+
         private Action<ParameterValue> AssertParameter(string expectedName, object expectedValue, bool expectedIsCascading)
         {
             return parameter =>

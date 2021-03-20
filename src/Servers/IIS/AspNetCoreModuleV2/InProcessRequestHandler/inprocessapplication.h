@@ -145,6 +145,8 @@ private:
     std::thread                     m_clrThread;
     // Thread tracking the CLR thread, this one is always joined on shutdown
     std::thread                     m_workerThread;
+    // Thread for cleaning up existing shadow copy folders
+    std::thread                     m_folderCleanupThread;
     // The event that gets triggered when managed initialization is complete
     HandleWrapper<NullHandleTraits> m_pInitializeEvent;
     // The event that gets triggered when worker thread should exit
@@ -177,6 +179,7 @@ private:
     std::shared_ptr<StringStreamRedirectionOutput> m_stringRedirectionOutput;
 
     inline static const LPCSTR      s_exeLocationParameterName = "InProcessExeLocation";
+    inline static const LPCSTR      s_shadowCopyDirectoryName = "ShadowCopyDirectory";
 
     VOID
     UnexpectedThreadExit(const ExecuteClrContext& context) const;

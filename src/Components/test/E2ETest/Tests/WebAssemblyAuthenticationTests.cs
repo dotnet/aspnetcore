@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(link, page);
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             FirstTimeRegister(userName, password);
 
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(link, page);
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
 
             FirstTimeRegister(userName, password);
 
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Log in"), "/Identity/Account/Login");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             FirstTimeRegister(userName, password);
 
             ClickAndNavigate(By.PartialLinkText("Make admin"), "/new-admin");
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             RegisterCore(userName, password);
             CompleteProfileDetails();
 
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("User"), "/Identity/Account/Login");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             FirstTimeRegister(userName, password);
 
             Browser.Contains("user", () => Browser.Url);
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             RegisterCore(userName, password);
             CompleteProfileDetails();
 
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             RegisterCore(userName, password);
             CompleteProfileDetails();
 
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             RegisterCore(userName, password);
             CompleteProfileDetails();
 
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = $"[PLACEHOLDER]-1a";
             RegisterCore(userName, password);
             CompleteProfileDetails();
             ValidateLoggedIn(userName);

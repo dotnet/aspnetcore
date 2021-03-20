@@ -6,9 +6,7 @@
       https://github.com/MicrosoftEdge/WebView2Feedback/issues/710 -->
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)-windows</TargetFrameworks>
     <Description>WebView2 wrappers for BlazorWebView components on Windows.</Description>
-    <IsShippingPackage>false</IsShippingPackage>
-    <!-- TODO: REMOVE -->
-    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

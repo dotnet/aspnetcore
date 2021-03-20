@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             JSRuntime.AttachToWebView(ipcSender);
 
             var loggerFactory = services.GetRequiredService<ILoggerFactory>();
-            Renderer = new WebViewRenderer(services, dispatcher, ipcSender, loggerFactory);
+            Renderer = new WebViewRenderer(services, dispatcher, ipcSender, loggerFactory, JSRuntime.ElementReferenceContext);
         }
 
         public void Dispose()

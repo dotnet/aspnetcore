@@ -1,4 +1,5 @@
-﻿Microsoft.AspNetCore.Components.WebView.WebViewManager
+﻿#nullable enable
+Microsoft.AspNetCore.Components.WebView.WebViewManager
 Microsoft.AspNetCore.Components.WebView.WebViewManager.AddRootComponentAsync(System.Type! componentType, string! selector, Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.WebView.WebViewManager.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 Microsoft.AspNetCore.Components.WebView.WebViewManager.Dispose() -> void
