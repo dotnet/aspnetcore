@@ -718,8 +718,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0)
         {
-            var transportPipeOptions = options.TransportPipeOptions!;
-            var appPipeOptions = options.AppPipeOptions!;
+            var transportPipeOptions = options.TransportPipeOptions;
+            var appPipeOptions = options.AppPipeOptions;
 
             return _manager.CreateConnection(transportPipeOptions, appPipeOptions, clientProtocolVersion);
         }
