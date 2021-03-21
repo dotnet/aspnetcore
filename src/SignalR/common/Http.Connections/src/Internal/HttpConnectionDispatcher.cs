@@ -718,8 +718,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0)
         {
-            var transportPipeOptions = new PipeOptions(pauseWriterThreshold: options.TransportMaxBufferSize, resumeWriterThreshold: options.TransportMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
-            var appPipeOptions = new PipeOptions(pauseWriterThreshold: options.ApplicationMaxBufferSize, resumeWriterThreshold: options.ApplicationMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
+            var transportPipeOptions = options.TransportPipeOptions!;
+            var appPipeOptions = options.AppPipeOptions!;
+
             return _manager.CreateConnection(transportPipeOptions, appPipeOptions, clientProtocolVersion);
         }
 
