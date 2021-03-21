@@ -56,10 +56,8 @@ namespace Templates.Test.Helpers
             bool noHttps = false,
             string[] args = null,
             // Used to set special options in MSBuild
-            IDictionary<string, string> environmentVariables = null,
-            ITestOutputHelper output = null)
+            IDictionary<string, string> environmentVariables = null)
         {
-            output = output ?? Output;
             var hiveArg = $"--debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
             var argString = $"new {templateName} {hiveArg}";
             environmentVariables ??= new Dictionary<string, string>();
@@ -103,51 +101,48 @@ namespace Templates.Test.Helpers
             await DotNetNewLock.WaitAsync();
             try
             {
-                output.WriteLine("Acquired DotNetNewLock");
-                using var execution = ProcessEx.Run(output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+                Output.WriteLine("Acquired DotNetNewLock");
+                using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
                 await execution.Exited;
                 return new ProcessResult(execution);
             }
             finally
             {
                 DotNetNewLock.Release();
-                output.WriteLine("Released DotNetNewLock");
+                Output.WriteLine("Released DotNetNewLock");
             }
         }
 
-        internal async Task<ProcessResult> RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true, ITestOutputHelper output = null)
+        internal async Task<ProcessResult> RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
         {
-            output = output ?? Output;
-            output.WriteLine("Publishing ASP.NET Core application...");
+            Output.WriteLine("Publishing ASP.NET Core application...");
 
             // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
             // should avoid any global contention and we can execute a build or publish in a lock-free way
 
             var restoreArgs = noRestore ? "--no-restore" : null;
 
-            using var result = ProcessEx.Run(output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish {restoreArgs} -c Release /bl {additionalArgs}", packageOptions);
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish {restoreArgs} -c Release /bl {additionalArgs}", packageOptions);
             await result.Exited;
             CaptureBinLogOnFailure(result);
             return new ProcessResult(result);
         }
 
-        internal async Task<ProcessResult> RunDotNetBuildAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, ITestOutputHelper output = null)
+        internal async Task<ProcessResult> RunDotNetBuildAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null)
         {
-            output = output ?? Output;
-            output.WriteLine("Building ASP.NET Core application...");
+            Output.WriteLine("Building ASP.NET Core application...");
 
             // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
             // should avoid any global contention and we can execute a build or publish in a lock-free way
 
-            using var result = ProcessEx.Run(output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl {additionalArgs}", packageOptions);
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl {additionalArgs}", packageOptions);
             await result.Exited;
             CaptureBinLogOnFailure(result);
             return new ProcessResult(result);
         }
 
-        internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true, ILogger logger = null, ITestOutputHelper output = null)
+        internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true, ILogger logger = null)
         {
-            output = output ?? Output;
             var environment = new Dictionary<string, string>
             {
                 ["ASPNETCORE_URLS"] = _urls,
@@ -170,26 +165,25 @@ namespace Templates.Test.Helpers
 
                 if (updated == original)
                 {
-                    output.WriteLine("applicationUrl is not specified in launchSettings.json");
+                    Output.WriteLine("applicationUrl is not specified in launchSettings.json");
                 }
                 else
                 {
-                    output.WriteLine("Updating applicationUrl in launchSettings.json");
+                    Output.WriteLine("Updating applicationUrl in launchSettings.json");
                     File.WriteAllText(launchSettingsJson, updated);
                 }
             }
             else
             {
-                output.WriteLine("No launchSettings.json found to update.");
+                Output.WriteLine("No launchSettings.json found to update.");
             }
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
-            return new AspNetProcess(DevCert, output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri, logger: logger);
+            return new AspNetProcess(DevCert, Output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri, logger: logger);
         }
 
-        internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true, bool usePublishedAppHost = false, ITestOutputHelper output = null)
+        internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true, bool usePublishedAppHost = false)
         {
-            output = output ?? Output;
             var environment = new Dictionary<string, string>
             {
                 ["ASPNETCORE_URLS"] = _urls,
@@ -200,12 +194,11 @@ namespace Templates.Test.Helpers
             };
 
             var projectDll = Path.Combine(TemplatePublishDir, $"{ProjectName}.dll");
-            return new AspNetProcess(DevCert, output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri, usePublishedAppHost: usePublishedAppHost);
+            return new AspNetProcess(DevCert, Output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri, usePublishedAppHost: usePublishedAppHost);
         }
 
-        internal async Task<ProcessResult> RunDotNetEfCreateMigrationAsync(string migrationName, ITestOutputHelper output = null)
+        internal async Task<ProcessResult> RunDotNetEfCreateMigrationAsync(string migrationName)
         {
-            output = output ?? Output;
             var args = $"--verbose --no-build migrations add {migrationName}";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
@@ -213,7 +206,7 @@ namespace Templates.Test.Helpers
             await DotNetNewLock.WaitAsync();
             try
             {
-                output.WriteLine("Acquired DotNetNewLock");
+                Output.WriteLine("Acquired DotNetNewLock");
                 var command = DotNetMuxer.MuxerPathOrDefault();
                 if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
                 {
@@ -224,20 +217,19 @@ namespace Templates.Test.Helpers
                     command = "dotnet-ef";
                 }
 
-                using var result = ProcessEx.Run(output, TemplateOutputDir, command, args);
+                using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
                 await result.Exited;
                 return new ProcessResult(result);
             }
             finally
             {
                 DotNetNewLock.Release();
-                output.WriteLine("Released DotNetNewLock");
+                Output.WriteLine("Released DotNetNewLock");
             }
         }
 
-        internal async Task<ProcessResult> RunDotNetEfUpdateDatabaseAsync(ITestOutputHelper output = null)
+        internal async Task<ProcessResult> RunDotNetEfUpdateDatabaseAsync()
         {
-            output = output ?? Output;
             var assembly = typeof(ProjectFactoryFixture).Assembly;
 
             var args = "--verbose --no-build database update";
@@ -247,7 +239,7 @@ namespace Templates.Test.Helpers
             await DotNetNewLock.WaitAsync();
             try
             {
-                output.WriteLine("Acquired DotNetNewLock");
+                Output.WriteLine("Acquired DotNetNewLock");
                 var command = DotNetMuxer.MuxerPathOrDefault();
                 if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
                 {
@@ -258,14 +250,14 @@ namespace Templates.Test.Helpers
                     command = "dotnet-ef";
                 }
                 
-                using var result = ProcessEx.Run(output, TemplateOutputDir, command, args);
+                using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
                 await result.Exited;
                 return new ProcessResult(result);
             }
             finally
             {
                 DotNetNewLock.Release();
-                output.WriteLine("Released DotNetNewLock");
+                Output.WriteLine("Released DotNetNewLock");
             }
         }
 
@@ -318,9 +310,8 @@ namespace Templates.Test.Helpers
             return File.ReadAllText(Path.Combine(TemplateOutputDir, path));
         }
 
-        internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments, ITestOutputHelper output = null)
+        internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments)
         {
-            output = output ?? Output;
             await DotNetNewLock.WaitAsync();
             try
             {
