@@ -232,9 +232,6 @@ namespace Templates.Test
 
                 await aspNetProcess.AssertPagesOk(pages);
             }
-            
-            // Look at logs
-            Assert.True(false);
         }
 
         [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/25103")]
