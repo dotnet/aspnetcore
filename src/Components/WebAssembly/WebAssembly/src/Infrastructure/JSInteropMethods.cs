@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
             }
 
             // Remove this once there's a runtime API to subscribe to.
-            typeof(ComponentBase).Assembly.GetType("Microsoft.AspNetCore.Components.HotReload.HotReloadManager")!.GetMethod("DeltaApplied", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, null);
+            typeof(ComponentBase).Assembly.GetType("Microsoft.AspNetCore.Components.HotReload.HotReloadManager")!.GetMethod("DeltaApplied", BindingFlags.Public | BindingFlags.Static)!.Invoke(null, null);
         }
     }
 }
