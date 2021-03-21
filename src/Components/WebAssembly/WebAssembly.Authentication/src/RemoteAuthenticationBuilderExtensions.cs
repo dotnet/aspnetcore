@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TAccountClaimsPrincipalFactory">The new user factory type.</typeparam>
         /// <param name="builder">The <see cref="IRemoteAuthenticationBuilder{RemoteAuthenticationState, Account}"/>.</param>
         /// <returns>The <see cref="IRemoteAuthenticationBuilder{RemoteAuthenticationState, Account}"/>.</returns>
-        public static IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> AddAccountClaimsPrincipalFactory<TAccountClaimsPrincipalFactory>(
+        public static IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> AddAccountClaimsPrincipalFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TAccountClaimsPrincipalFactory>(
             this IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> builder)
             where TAccountClaimsPrincipalFactory : AccountClaimsPrincipalFactory<RemoteUserAccount> => builder.AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, RemoteUserAccount, TAccountClaimsPrincipalFactory>();
     }
