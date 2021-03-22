@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>Components.EToETests</TestGroupName>
+    <_DefaultProjectFilter>$(MSBuildProjectDirectory)\..\..\..</_DefaultProjectFilter>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <BaseOutputPath />
@@ -60,6 +61,39 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\WebAssemblyComponentSerializationSettings.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\WebAssemblyComponentMarker.cs" />
   </ItemGroup>
+
+  <!-- Copied from E2E testing props to resolve content test roots -->
+  <Target Name="_ResolveTestProjectReferences" DependsOnTargets="ResolveReferences">
+    <PropertyGroup>
+      <_DefaultProjectRoot>$([System.IO.Path]::GetFullPath($(_DefaultProjectFilter)))</_DefaultProjectRoot>
+    </PropertyGroup>
+    <ItemGroup>
+      <_ContentRootProjectReferences
+        Include="@(ReferencePath)"
+        Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND $([System.String]::Copy(%(ReferencePath.MSBuildSourceProjectFile)).StartsWith('$(_DefaultProjectRoot)'))" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="_ResolveTestProjectReferences">
+    <ItemGroup>
+      <_ContentRootMetadata
+        Condition="'%(_ContentRootProjectReferences.Identity)' != ''"
+        Include="%(_ContentRootProjectReferences.Identity)"
+        AssemblyName="%(_ContentRootProjectReferences.FusionName)"
+        ContentRootPath="$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))"
+        ContentRootTest="$([System.IO.Path]::GetFileName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))"
+        Priority="0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AssemblyAttribute
+        Condition=" '%(_ContentRootMetadata.Identity)' != '' "
+        Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>TestAssemblyApplication[%(_ContentRootMetadata.AssemblyName)]</_Parameter1>
+        <_Parameter2>%(_ContentRootMetadata.ContentRootPath)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <None Update="xunit.runner.json">
