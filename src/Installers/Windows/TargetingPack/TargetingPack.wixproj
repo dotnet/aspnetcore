@@ -63,7 +63,9 @@
   <Target Name="ExtractIntermediateTargetingPack" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <TargetingPackHarvestRoot Condition="'$(TargetingPackHarvestRoot)' == ''">$(InstallersOutputPath)</TargetingPackHarvestRoot>
-      <IntermediateTargetingPackZip>$(TargetingPackHarvestRoot)aspnetcore-targeting-pack-$(TargetingPackVersionPrefix).zip</IntermediateTargetingPackZip>
+      <TargetingPackZipVersion>$(TargetingPackVersionPrefix)</TargetingPackZipVersion>
+      <TargetingPackZipVersion Condition="'$(VersionSuffix)' != ''">$(TargetingPackZipVersion)-$(VersionSuffix)</TargetingPackZipVersion>
+      <IntermediateTargetingPackZip>$(TargetingPackHarvestRoot)aspnetcore-targeting-pack-$(TargetingPackZipVersion).zip</IntermediateTargetingPackZip>
     </PropertyGroup>
 
     <Unzip SourceFiles="$(IntermediateTargetingPackZip)" DestinationFolder="$(HarvestSource)" />
