@@ -29,7 +29,7 @@ steps:
     sendParams: $(Build.SourcesDirectory)/eng/common/performance/${{ parameters.ProjectFile }} /restore /t:Test /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog
     displayName: ${{ parameters.DisplayNamePrefix }}
     condition: ${{ parameters.condition }}
-    continueOnError: ${{ parameters.continueOnError }}
+    shouldContinueOnError: ${{ parameters.continueOnError }}
     environment:
       BuildConfig: $(_BuildConfig)
       HelixSource: ${{ parameters.HelixSource }}
