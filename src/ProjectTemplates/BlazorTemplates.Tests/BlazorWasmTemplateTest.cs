@@ -125,8 +125,6 @@ namespace Templates.Test
             {
                 EnsureBrowserAvailable(browserKind);
             }
-            
-            Assert.True(1 == 0);
         }
 
         private static async Task AssertCompressionFormat(AspNetProcess aspNetProcess, string expectedEncoding)
