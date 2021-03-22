@@ -82,12 +82,12 @@ namespace Templates.Test
         // If this test is quarantined, BlazorWasmHostedTemplate_Works must be quarantined as well
         [Theory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
         [InlineData(BrowserKind.Chromium)]
-        public async Task BlazorWasmTemplate_CreateBuildPublish_Hosted()
+        public async Task BlazorWasmTemplate_CreateBuildPublish_Hosted(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + BrowserKind.Chromium, Output);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
