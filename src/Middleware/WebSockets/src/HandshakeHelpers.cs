@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.WebSockets
         /// <summary>
         /// Gets request headers needed process the handshake on the server.
         /// </summary>
-        public static readonly IEnumerable<string> NeededHeaders = new[]
+        public static readonly string[] NeededHeaders = new[]
         {
             HeaderNames.Upgrade,
             HeaderNames.Connection,
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.WebSockets
         };
 
         // Verify Method, Upgrade, Connection, version,  key, etc..
-        public static bool CheckSupportedWebSocketRequest(string method, IEnumerable<KeyValuePair<string, string>> headers)
+        public static bool CheckSupportedWebSocketRequest(string method, List<KeyValuePair<string, string>> headers)
         {
             bool validUpgrade = false, validConnection = false, validKey = false, validVersion = false;
 
