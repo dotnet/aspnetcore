@@ -201,7 +201,7 @@ namespace Templates.Test
             => CreateBuildPublishAsync("blazorhostedpwa", args: new[] { "--hosted", "--pwa" }, serverProject: true);
 
         // This test depends on BlazorWasmTemplate_CreateBuildPublish_HostedPwa running first
-        [Theory, TestPriority]
+        [Theory]
         [InlineData(BrowserKind.Chromium)]
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
