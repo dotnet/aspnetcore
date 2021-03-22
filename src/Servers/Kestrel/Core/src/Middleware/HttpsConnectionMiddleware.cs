@@ -133,8 +133,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         public async Task OnConnectionAsync(ConnectionContext context)
         {
-            await Task.Yield();
-
             if (context.Features.Get<ITlsConnectionFeature>() != null)
             {
                 await _next(context);

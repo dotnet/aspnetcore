@@ -26,8 +26,8 @@ namespace Templates.Test
     [TestCaseOrderer("Templates.Test.PriorityOrderer", "BlazorTemplates.Tests")]
     public class BlazorWasmTemplateTest : BlazorTemplateTest
     {
-        public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper TestOutputHelper)
-            : base(projectFactory, TestOutputHelper) { }
+        public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory)
+            : base(projectFactory) { }
 
         public override string ProjectType { get; } = "blazorwasm";
 
@@ -46,14 +46,14 @@ namespace Templates.Test
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandalone" + browserKind, TestOutputHelper);
+            var project = await ProjectFactory.GetOrCreateProject("blazorstandalone" + browserKind, Output);
 
             await BuildAndRunTest(project.ProjectName, project, browserKind);
 
             var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
             using (serveProcess)
             {
-                TestOutputHelper.WriteLine($"Opening browser at {listeningUri}...");
+                Output.WriteLine($"Opening browser at {listeningUri}...");
                 if (BrowserManager.IsAvailable(browserKind))
                 {
                     await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
@@ -80,7 +80,7 @@ namespace Templates.Test
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + BrowserKind.Chromium, TestOutputHelper);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + BrowserKind.Chromium, Output);
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
@@ -99,7 +99,7 @@ namespace Templates.Test
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, TestOutputHelper);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);
 
             var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -152,7 +152,7 @@ namespace Templates.Test
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", TestOutputHelper);
+            var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", Output);
 
             await BuildAndRunTest(project.ProjectName, project, browserKind);
 
@@ -162,7 +162,7 @@ namespace Templates.Test
             {
                 var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
                 await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-                TestOutputHelper.WriteLine($"Opening browser at {listeningUri}...");
+                Output.WriteLine($"Opening browser at {listeningUri}...");
                 var page = await NavigateToPage(browser, listeningUri);
                 using (serveProcess)
                 {
@@ -192,7 +192,7 @@ namespace Templates.Test
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", TestOutputHelper);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", Output);
 
             var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -281,11 +281,15 @@ namespace Templates.Test
         [Theory]
         [InlineData(BrowserKind.Chromium)]
         //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30820")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
             => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
 
         private async Task CreateBuildPublishIndividualAuthProject(BrowserKind browserKind, bool useLocalDb)
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await CreateBuildPublishAsync("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""),
                 args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
 
@@ -327,7 +331,7 @@ namespace Templates.Test
 
         private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(BrowserKind browserKind, bool useLocalDb)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""), TestOutputHelper);
+            var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""), Output);
 
             var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -373,7 +377,7 @@ namespace Templates.Test
         [InlineData(BrowserKind.Chromium, Skip = "https://github.com/dotnet/aspnetcore/issues/28596")]
         public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual" + browserKind, TestOutputHelper);
+            var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual" + browserKind, Output);
 
             // We don't want to test the auth flow as we don't have the required settings to talk to a third-party IdP
             // but we want to make sure that we are able to run the app without errors.
@@ -384,7 +388,7 @@ namespace Templates.Test
             var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
             using (serveProcess)
             {
-                TestOutputHelper.WriteLine($"Opening browser at {listeningUri}...");
+                Output.WriteLine($"Opening browser at {listeningUri}...");
                 await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
                 var page = await NavigateToPage(browser, listeningUri);
                 await TestBasicNavigation(project.ProjectName, page);
@@ -599,7 +603,7 @@ namespace Templates.Test
         {
             var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
 
-            TestOutputHelper.WriteLine("Running dotnet serve on published TestOutputHelper...");
+            Output.WriteLine("Running dotnet serve on published output...");
             var developmentCertificate = DevelopmentCertificate.Create(project.TemplateOutputDir);
             var args = $"-S --pfx \"{developmentCertificate.CertificatePath}\" --pfx-pwd \"{developmentCertificate.CertificatePassword}\" --port 0";
             var command = DotNetMuxer.MuxerPathOrDefault();

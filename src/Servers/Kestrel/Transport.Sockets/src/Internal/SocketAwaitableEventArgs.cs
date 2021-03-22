@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketAwaitableEventArgs : SocketAsyncEventArgs, ICriticalNotifyCompletion
+    internal class SocketAwaitableEventArgs : SocketAsyncEventArgs, ICriticalNotifyCompletion
     {
         private static readonly Action _callbackCompleted = () => { };
 

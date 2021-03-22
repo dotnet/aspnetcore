@@ -334,7 +334,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Encrypting using a null encryptor; secret information isn't being protected.");
             _usingEphemeralDataProtectionProvider = LoggerMessage.Define(
                 eventId: new EventId(45, "UsingEphemeralDataProtectionProvider"),
-                logLevel: LogLevel.Warning,
+                logLevel: LogLevel.Information,
                 formatString: "Using ephemeral data protection provider. Payloads will be undecipherable upon application shutdown.");
             _existingCachedKeyRingIsExpiredRefreshing = LoggerMessage.Define(
                 eventId: new EventId(46, "ExistingCachedKeyRingIsExpiredRefreshing"),

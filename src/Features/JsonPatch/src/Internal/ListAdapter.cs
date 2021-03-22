@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (!TryConvertValue(value, typeArgument, segment, out var convertedValue, out errorMessage))
+            if (!TryConvertValue(value, typeArgument, segment, contractResolver, out var convertedValue, out errorMessage))
             {
                 return false;
             }
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (!TryConvertValue(value, typeArgument, segment, out var convertedValue, out errorMessage))
+            if (!TryConvertValue(value, typeArgument, segment, contractResolver, out var convertedValue, out errorMessage))
             {
                 return false;
             }
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (!TryConvertValue(value, typeArgument, segment, out var convertedValue, out errorMessage))
+            if (!TryConvertValue(value, typeArgument, segment, contractResolver, out var convertedValue, out errorMessage))
             {
                 return false;
             }
@@ -235,7 +235,24 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             out object convertedValue,
             out string errorMessage)
         {
-            var conversionResult = ConversionResultProvider.ConvertTo(originalValue, listTypeArgument);
+            return TryConvertValue(
+                originalValue,
+                listTypeArgument,
+                segment,
+                null,
+                out convertedValue,
+                out errorMessage);
+        }
+
+        protected virtual bool TryConvertValue(
+            object originalValue,
+            Type listTypeArgument,
+            string segment,
+            IContractResolver contractResolver,
+            out object convertedValue,
+            out string errorMessage)
+        {
+            var conversionResult = ConversionResultProvider.ConvertTo(originalValue, listTypeArgument, contractResolver);
             if (!conversionResult.CanBeConverted)
             {
                 convertedValue = null;

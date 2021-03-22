@@ -50,18 +50,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 for (var i = 0; i < _settingsCount; i++)
                 {
                     var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
+                    // https://github.com/aspnet/KestrelHttpServer/issues/2573
+                    var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
 
                     _settings[i] = new Settings
                     {
                         Scheduler = transportScheduler,
                         InputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
-                        OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false)
+                        OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
+                        SocketSenderPool = new SocketSenderPool(awaiterScheduler)
                     };
                 }
             }
             else
             {
                 var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
+                // https://github.com/aspnet/KestrelHttpServer/issues/2573
+                var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
 
                 var directScheduler = new Settings[]
                 {
@@ -69,7 +74,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     {
                         Scheduler = transportScheduler,
                         InputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
-                        OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false)
+                        OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
+                        SocketSenderPool = new SocketSenderPool(awaiterScheduler)
                     }
                 };
 
@@ -155,6 +161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         _memoryPool,
                         setting.Scheduler,
                         _trace,
+                        setting.SocketSenderPool,
                         setting.InputOptions,
                         setting.OutputOptions,
                         waitForData: _options.WaitForDataBeforeAllocatingBuffer);
@@ -199,6 +206,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
             // Dispose the memory pool
             _memoryPool.Dispose();
+
+            // Dispose any pooled senders
+            foreach (var setting in _settings)
+            {
+                setting.SocketSenderPool.Dispose();
+            }
+
             return default;
         }
 
@@ -207,6 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             public PipeScheduler Scheduler { get; init; } = default!;
             public PipeOptions InputOptions { get; init; } = default!;
             public PipeOptions OutputOptions { get; init; } = default!;
+            public SocketSenderPool SocketSenderPool { get; init; } = default!;
         }
     }
 }

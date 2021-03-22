@@ -32,6 +32,8 @@ namespace RunTests
                 {
                     keepGoing = await runner.InstallPlaywrightAsync();
                 }
+#else                
+                Console.WriteLine("Playwright install skipped.");
 #endif
 
                 runner.DisplayContents();

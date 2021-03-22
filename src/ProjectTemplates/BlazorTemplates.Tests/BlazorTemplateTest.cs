@@ -18,12 +18,11 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public abstract class BlazorTemplateTest : LoggedTestBase, IAsyncLifetime
+    public abstract class BlazorTemplateTest : LoggedTest, IAsyncLifetime
     {
         public const int BUILDCREATEPUBLISH_PRIORITY = -1000;
 
-        public BlazorTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
-            : base(output)
+        public BlazorTemplateTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
         }
@@ -32,36 +31,31 @@ namespace Templates.Test
         public ContextInformation BrowserContextInfo { get; protected set; }
         public BrowserManager BrowserManager { get; private set; }
 
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
+        {
+            get
+            {
+                if (_output == null)
+                {
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
+            }
+        }
+        
         public abstract string ProjectType { get; }
         private static readonly bool _isCIEnvironment =
             !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild"));
 
-        public async Task InitializeAsync()
+        protected async override Task InitializeCoreAsync(TestContext context)
         {
-            var testSink = new TestSink();
-            testSink.MessageLogged += LogMessage;
-            var factory = new TestLoggerFactory(testSink, enabled: true);
-
-            void LogMessage(WriteContext ctx)
-            {
-                TestOutputHelper.WriteLine($"{MapLogLevel(ctx)}: [Browser]{ctx.Message}");
-
-                static string MapLogLevel(WriteContext obj) => obj.LogLevel switch
-                {
-                    LogLevel.Trace => "trace",
-                    LogLevel.Debug => "dbug",
-                    LogLevel.Information => "info",
-                    LogLevel.Warning => "warn",
-                    LogLevel.Error => "error",
-                    LogLevel.Critical => "crit",
-                    LogLevel.None => "info",
-                    _ => "info"
-                };
-            }
-
-            BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), factory);
-            BrowserContextInfo = new ContextInformation(factory);
+            BrowserManager = await BrowserManager.CreateAsync(CreateConfiguration(), LoggerFactory);
+            BrowserContextInfo = new ContextInformation(LoggerFactory);
+            _output = new TestOutputLogger(Logger);
         }
+
+        public Task InitializeAsync() => Task.CompletedTask;
 
         public Task DisposeAsync() => BrowserManager.DisposeAsync();
 
@@ -94,17 +88,12 @@ namespace Templates.Test
             return builder.Build();
         }
 
-        private void LogBrowserManagerMessage(WriteContext context)
-        {
-            TestOutputHelper.WriteLine(context.Message);
-        }
-
         protected async Task<Project> CreateBuildPublishAsync(string projectName, string auth = null, string[] args = null, string targetFramework = null, bool serverProject = false, bool onlyCreate = false)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-            var project = await ProjectFactory.GetOrCreateProject(projectName, TestOutputHelper);
+            var project = await ProjectFactory.GetOrCreateProject(projectName, Output);
             if (targetFramework != null)
             {
                 project.TargetFramework = targetFramework;

@@ -27,6 +27,7 @@ using_mono=false
 wasm_runtime_loc=
 using_wasm=false
 use_latest_dotnet=false
+logical_machine=
 
 while (($# > 0)); do
   lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
@@ -53,6 +54,10 @@ while (($# > 0)); do
       ;;
     --compilationmode)
       compilation_mode=$2
+      shift 2
+      ;;
+    --logicalmachine)
+      logical_machine=$2
       shift 2
       ;;
     --repository)
@@ -179,19 +184,6 @@ queue=Ubuntu.1804.Amd64.Open
 creator=$BUILD_DEFINITIONNAME
 helix_source_prefix="pr"
 
-if [[ "$compare" == true ]]; then
-  extra_benchmark_dotnet_arguments=
-  perflab_arguments=
-
-  # No open queues for arm64
-  if [[ "$architecture" = "arm64" ]]; then
-    echo "Compare not available for arm64"
-    exit 1
-  fi
-
-  queue=Ubuntu.1804.Amd64.Tiger.Perf.Open
-fi
-
 if [[ "$internal" == true ]]; then
     perflab_arguments="--upload-to-perflab-container"
     helix_source_prefix="official"
@@ -201,7 +193,11 @@ if [[ "$internal" == true ]]; then
     if [[ "$architecture" = "arm64" ]]; then
         queue=Ubuntu.1804.Arm64.Perf
     else
-        queue=Ubuntu.1804.Amd64.Tiger.Perf
+        if [[ "$logical_machine" = "perfowl" ]]; then
+            queue=Ubuntu.1804.Amd64.Owl.Perf
+        else
+            queue=Ubuntu.1804.Amd64.Tiger.Perf
+        fi
     fi
 
     if [[ "$alpine" = "true" ]]; then

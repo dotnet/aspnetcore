@@ -38,6 +38,10 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   Blazor._internal.InputFile = WasmInputFile;
 
+  Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDeta: string) => {
+    DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDeta);
+  };
+
   // Configure JS interop
   Blazor._internal.invokeJSFromDotNet = invokeJSFromDotNet;
 

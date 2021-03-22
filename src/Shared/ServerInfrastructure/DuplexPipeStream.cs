@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Buffers;
+using Microsoft.AspNetCore.Internal;
 
 #nullable enable
 
@@ -90,20 +91,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             WriteAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
 
-        public override async Task WriteAsync(byte[]? buffer, int offset, int count, CancellationToken cancellationToken)
+        public override Task WriteAsync(byte[]? buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            if (buffer != null)
-            {
-                _output.Write(new ReadOnlySpan<byte>(buffer, offset, count));
-            }
-
-            await _output.FlushAsync(cancellationToken);
+            return _output.WriteAsync(buffer.AsMemory(offset, count), cancellationToken).GetAsTask();
         }
 
-        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
-            _output.Write(source.Span);
-            await _output.FlushAsync(cancellationToken);
+            return _output.WriteAsync(source, cancellationToken).GetAsValueTask();
         }
 
         public override void Flush()
@@ -113,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            return WriteAsync(null, 0, 0, cancellationToken);
+            return _output.FlushAsync(cancellationToken).GetAsTask();
         }
 
         private async ValueTask<int> ReadAsyncInternal(Memory<byte> destination, CancellationToken cancellationToken)
