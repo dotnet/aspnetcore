@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 var page = await browser.NewPageAsync();
                 await page.GoToAsync(_devHostServerFixture.RootUri + "/subdir/api/data");
 
-                var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
+/*                var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
                     (await page.WaitForEventAsync(PageEvent.WebSocket)).WebSocket;
 
                 // Receive render batch
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
                 await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
 
-                await page.WaitForSelectorAsync("ul");
+                await page.WaitForSelectorAsync("ul");*/
 
                 await page.CloseAsync();
             }
