@@ -2,6 +2,7 @@
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
 * text=auto
+THIS IS JUST A TEST and WONT BE MERGED
 
 ###############################################################################
 # Make sh files under the build directory always have LF as line endings
