@@ -176,7 +176,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25929")]
         public void PreventDefault_DotNotApplyByDefault()
         {
             var appElement = Browser.MountTestComponent<EventPreventDefaultComponent>();
@@ -185,7 +184,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27397")]
         public void InputEvent_RespondsOnKeystrokes()
         {
             Browser.MountTestComponent<InputEventComponent>();
@@ -203,7 +201,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23757")]
         public void InputEvent_RespondsOnKeystrokes_EvenIfUpdatesAreLaggy()
         {
             // This test doesn't mean much on WebAssembly - it just shows that even if the CPU is locked
