@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Diagnostics
@@ -20,7 +21,9 @@ namespace Microsoft.AspNetCore.Diagnostics
             LoggerMessage.Define(LogLevel.Error, new EventId(3, "Exception"), "An exception was thrown attempting to execute the error handler.");
 
         private static readonly Action<ILogger, Exception?> _errorHandlerNotFound =
-            LoggerMessage.Define(LogLevel.Warning, new EventId(4, "HandlerNotFound"), "No exception handler was found, rethrowing original exception.");
+            LoggerMessage.Define(LogLevel.Warning, new EventId(4, "HandlerNotFound"), $"The exception handler configured on {nameof(ExceptionHandlerOptions)} produced a 404 status response. " +
+                $"An InvalidOperationException containing the original exception will be thrown since this is often due to a misconfigured {nameof(ExceptionHandlerOptions.ExceptionHandlingPath)}. " +
+                $"If the exception handler should be allowed to return 404 status responses, {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} must be set to true.");
 
         // DeveloperExceptionPageMiddleware
         private static readonly Action<ILogger, Exception?> _responseStartedErrorPageMiddleware =

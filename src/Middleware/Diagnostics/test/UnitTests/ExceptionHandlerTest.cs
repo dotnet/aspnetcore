@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         [Fact]
-        public async Task ExceptionHandlerNotFound_RethrowsOriginalError()
+        public async Task ExceptionHandlerNotFound_ThrowsIOEWithOriginalError()
         {
             var sink = new TestSink(TestSink.EnableWithTypeName<ExceptionHandlerMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
@@ -500,9 +500,14 @@ namespace Microsoft.AspNetCore.Diagnostics
                                 httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                             }
 
-                            // The original exception is thrown
+                            // Invalid operation exception
                             Assert.NotNull(exception);
-                            Assert.Equal("Something bad happened.", exception.Message);
+                            Assert.Equal($"No exception handler was found, see inner exception for details of original exception. If an exception should not be thrown for 404 responses, set {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} to true.", exception.Message);
+
+                            // The original exception is inner exception
+                            Assert.NotNull(exception.InnerException);
+                            Assert.IsType<ApplicationException>(exception.InnerException);
+                            Assert.Equal("Something bad happened.", exception.InnerException.Message);
 
                         });
 
@@ -520,7 +525,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                         {
                             innerAppBuilder.Run(httpContext =>
                             {
-                                throw new InvalidOperationException("Something bad happened.");
+                                throw new ApplicationException("Something bad happened.");
                             });
                         });
                     });
@@ -539,7 +544,9 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.Contains(sink.Writes, w =>
                 w.LogLevel == LogLevel.Warning
                 && w.EventId == 4
-                && w.Message == "No exception handler was found, rethrowing original exception.");
+                && w.Message == $"The exception handler configured on {nameof(ExceptionHandlerOptions)} produced a 404 status response. " +
+                $"An InvalidOperationException containing the original exception will be thrown since this is often due to a misconfigured {nameof(ExceptionHandlerOptions.ExceptionHandlingPath)}. " +
+                $"If the exception handler should be allowed to return 404 status responses, {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} must be set to true.");
         }
 
         [Fact]
