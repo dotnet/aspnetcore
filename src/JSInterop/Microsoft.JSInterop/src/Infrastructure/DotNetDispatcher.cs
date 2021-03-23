@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Text;
@@ -325,14 +324,16 @@ namespace Microsoft.JSInterop.Infrastructure
             static Dictionary<string, (MethodInfo, Type[])> ScanTypeForCallableMethods(Type type)
             {
                 var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
-                var invokableMethods = type
-                    .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(method => !method.ContainsGenericParameters && method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
 
-                foreach (var method in invokableMethods)
+                foreach (var method in type.GetMethods(BindingFlags.Instance | BindingFlags.Public))
                 {
+                    if (method.ContainsGenericParameters || !method.IsDefined(typeof(JSInvokableAttribute), inherit: false))
+                    {
+                        continue;
+                    }
+
                     var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name!;
-                    var parameterTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
+                    var parameterTypes = GetParameterTypes(method);
 
                     if (result.ContainsKey(identifier))
                     {
@@ -356,27 +357,49 @@ namespace Microsoft.JSInterop.Infrastructure
             // TODO: Consider looking first for assembly-level attributes (i.e., if there are any,
             // only use those) to avoid scanning, especially for framework assemblies.
             var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
-            var invokableMethods = GetRequiredLoadedAssembly(assemblyKey)
-                .GetExportedTypes()
-                .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static))
-                .Where(method => !method.ContainsGenericParameters && method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
-            foreach (var method in invokableMethods)
+            var exportedTypes = GetRequiredLoadedAssembly(assemblyKey).GetExportedTypes();
+            foreach (var type in exportedTypes)
             {
-                var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name;
-                var parameterTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
-
-                if (result.ContainsKey(identifier))
+                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
                 {
-                    throw new InvalidOperationException($"The assembly '{assemblyKey.AssemblyName}' contains more than one " +
-                        $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
-                        $"assembly must have different identifiers. You can pass a custom identifier as a parameter to " +
-                        $"the [JSInvokable] attribute.");
-                }
+                    if (method.ContainsGenericParameters || !method.IsDefined(typeof(JSInvokableAttribute), inherit: false))
+                    {
+                        continue;
+                    }
 
-                result.Add(identifier, (method, parameterTypes));
+                    var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name;
+                    var parameterTypes = GetParameterTypes(method);
+
+                    if (result.ContainsKey(identifier))
+                    {
+                        throw new InvalidOperationException($"The assembly '{assemblyKey.AssemblyName}' contains more than one " +
+                            $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
+                            $"assembly must have different identifiers. You can pass a custom identifier as a parameter to " +
+                            $"the [JSInvokable] attribute.");
+                    }
+
+                    result.Add(identifier, (method, parameterTypes));
+                }
             }
 
             return result;
+        }
+
+        private static Type[] GetParameterTypes(MethodInfo method)
+        {
+            var parameters = method.GetParameters();
+            if (parameters.Length == 0)
+            {
+                return Type.EmptyTypes;
+            }
+
+            var parameterTypes = new Type[parameters.Length];
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                parameterTypes[i] = parameters[i].ParameterType;
+            }
+
+            return parameterTypes;
         }
 
         private static Assembly GetRequiredLoadedAssembly(AssemblyKey assemblyKey)

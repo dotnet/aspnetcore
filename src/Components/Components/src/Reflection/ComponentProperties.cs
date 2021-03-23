@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -160,7 +159,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
             }
         }
 
-        internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties([DynamicallyAccessedMembers(Component)] Type targetType)
+        internal static MemberAssignment.PropertyEnumerable GetCandidateBindableProperties([DynamicallyAccessedMembers(Component)] Type targetType)
             => MemberAssignment.GetPropertiesIncludingInherited(targetType, _bindablePropertyFlags);
 
         [DoesNotReturn]
@@ -215,19 +214,23 @@ namespace Microsoft.AspNetCore.Components.Reflection
             throw new InvalidOperationException(
                 $"The property '{parameterName}' on component type '{targetType.FullName}' cannot be set explicitly " +
                 $"when also used to capture unmatched values. Unmatched values:" + Environment.NewLine +
-                string.Join(Environment.NewLine, unmatched.Keys.OrderBy(k => k)));
+                string.Join(Environment.NewLine, unmatched.Keys));
         }
 
         [DoesNotReturn]
         private static void ThrowForMultipleCaptureUnmatchedValuesParameters([DynamicallyAccessedMembers(Component)] Type targetType)
         {
             // We don't care about perf here, we want to report an accurate and useful error.
-            var propertyNames = targetType
-                .GetProperties(_bindablePropertyFlags)
-                .Where(p => p.GetCustomAttribute<ParameterAttribute>()?.CaptureUnmatchedValues == true)
-                .Select(p => p.Name)
-                .OrderBy(p => p)
-                .ToArray();
+            var propertyNames = new List<string>();
+            foreach (var property in targetType.GetProperties(_bindablePropertyFlags))
+            {
+                if (property.GetCustomAttribute<ParameterAttribute>()?.CaptureUnmatchedValues == true)
+                {
+                    propertyNames.Add(property.Name);
+                }
+            }
+
+            propertyNames.Sort(StringComparer.Ordinal);
 
             throw new InvalidOperationException(
                 $"Multiple properties were found on component type '{targetType.FullName}' with " +
