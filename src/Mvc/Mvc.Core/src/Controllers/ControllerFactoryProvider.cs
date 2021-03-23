@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
     internal class ControllerFactoryProvider : IControllerFactoryProvider
     {
         private readonly IControllerActivatorProvider _activatorProvider;
-        private readonly Func<ControllerContext, object> _factoryCreateController;
-        private readonly Action<ControllerContext, object> _factoryReleaseController;
-        private readonly Func<ControllerContext, object, ValueTask> _factoryReleaseControllerAsync;
+        private readonly Func<ControllerContext, object>? _factoryCreateController;
+        private readonly Action<ControllerContext, object>? _factoryReleaseController;
+        private readonly Func<ControllerContext, object, ValueTask>? _factoryReleaseControllerAsync;
         private readonly IControllerPropertyActivator[] _propertyActivators;
 
         public ControllerFactoryProvider(
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             return CreateController;
         }
 
-        public Action<ControllerContext, object> CreateControllerReleaser(ControllerActionDescriptor descriptor)
+        public Action<ControllerContext, object>? CreateControllerReleaser(ControllerActionDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             return _activatorProvider.CreateReleaser(descriptor);
         }
 
-        public Func<ControllerContext, object, ValueTask> CreateAsyncControllerReleaser(ControllerActionDescriptor descriptor)
+        public Func<ControllerContext, object, ValueTask>? CreateAsyncControllerReleaser(ControllerActionDescriptor descriptor)
         {
             if (descriptor == null)
             {

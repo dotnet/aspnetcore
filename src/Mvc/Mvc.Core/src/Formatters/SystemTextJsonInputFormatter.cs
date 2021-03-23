@@ -70,14 +70,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var httpContext = context.HttpContext;
             var (inputStream, usesTranscodingStream) = GetInputStream(httpContext, encoding);
 
-            object model;
+            object? model;
             try
             {
                 model = await JsonSerializer.DeserializeAsync(inputStream, context.ModelType, SerializerOptions);
             }
             catch (JsonException jsonException)
             {
-                var path = jsonException.Path;
+                var path = jsonException.Path ?? string.Empty;
 
                 var modelStateException = WrapExceptionForModelState(jsonException);
 
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private static class Log
         {
             private static readonly Action<ILogger, string, Exception> _jsonInputFormatterException;
-            private static readonly Action<ILogger, string, Exception> _jsonInputSuccess;
+            private static readonly Action<ILogger, string?, Exception?> _jsonInputSuccess;
 
             static Log()
             {
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     LogLevel.Debug,
                     new EventId(1, "SystemTextJsonInputException"),
                     "JSON input formatter threw an exception: {Message}");
-                _jsonInputSuccess = LoggerMessage.Define<string>(
+                _jsonInputSuccess = LoggerMessage.Define<string?>(
                     LogLevel.Debug,
                     new EventId(2, "SystemTextJsonInputSuccess"),
                     "JSON input formatter succeeded, deserializing to type '{TypeName}'");

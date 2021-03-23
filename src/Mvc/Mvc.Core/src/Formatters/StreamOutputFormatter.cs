@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            using (var valueAsStream = ((Stream)context.Object))
+            using (var valueAsStream = ((Stream)context.Object!))
             {
                 var response = context.HttpContext.Response;
 

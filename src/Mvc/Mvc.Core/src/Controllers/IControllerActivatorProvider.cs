@@ -23,19 +23,24 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// </summary>
         /// <param name="descriptor">The <see cref="ControllerActionDescriptor"/>.</param>
         /// <returns>The delegate used to dispose the activated controller.</returns>
-        Action<ControllerContext, object> CreateReleaser(ControllerActionDescriptor descriptor);
+        Action<ControllerContext, object>? CreateReleaser(ControllerActionDescriptor descriptor);
 
         /// <summary>
         /// Creates an <see cref="Action"/> that releases a controller.
         /// </summary>
         /// <param name="descriptor">The <see cref="ControllerActionDescriptor"/>.</param>
         /// <returns>The delegate used to dispose the activated controller.</returns>
-        Func<ControllerContext, object, ValueTask> CreateAsyncReleaser(ControllerActionDescriptor descriptor)
+        Func<ControllerContext, object, ValueTask>? CreateAsyncReleaser(ControllerActionDescriptor descriptor)
         {
             var releaser = CreateReleaser(descriptor);
+            if (releaser is null)
+            {
+                return static (_, _) => default;
+            }
+
             return (context, controller) =>
             {
-                releaser(context, controller);
+                releaser.Invoke(context, controller);
                 return default;
             };
         }

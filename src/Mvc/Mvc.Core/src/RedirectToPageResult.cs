@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// provided.
         /// </summary>
         /// <param name="pageName">The page to redirect to.</param>
-        public RedirectToPageResult(string pageName)
+        public RedirectToPageResult(string? pageName)
             : this(pageName, routeValues: null)
         {
         }
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="pageName">The page to redirect to.</param>
         /// <param name="pageHandler">The page handler to redirect to.</param>
-        public RedirectToPageResult(string pageName, string pageHandler)
+        public RedirectToPageResult(string? pageName, string? pageHandler)
             : this(pageName, pageHandler, routeValues: null)
         {
         }
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="pageName">The page to redirect to.</param>
         /// <param name="routeValues">The parameters for the route.</param>
-        public RedirectToPageResult(string pageName, object routeValues)
+        public RedirectToPageResult(string? pageName, object? routeValues)
             : this(pageName, pageHandler: null, routeValues: routeValues, permanent: false)
         {
         }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="pageName">The page to redirect to.</param>
         /// <param name="pageHandler">The page handler to redirect to.</param>
         /// <param name="routeValues">The parameters for the route.</param>
-        public RedirectToPageResult(string pageName, string pageHandler, object routeValues)
+        public RedirectToPageResult(string? pageName, string? pageHandler, object? routeValues)
             : this(pageName, pageHandler, routeValues, permanent: false)
         {
         }
@@ -70,9 +70,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The parameters for the page.</param>
         /// <param name="permanent">If set to true, makes the redirect permanent (301). Otherwise a temporary redirect is used (302).</param>
         public RedirectToPageResult(
-            string pageName,
-            string pageHandler,
-            object routeValues,
+            string? pageName,
+            string? pageHandler,
+            object? routeValues,
             bool permanent)
             : this(pageName, pageHandler, routeValues, permanent, fragment: null)
         {
@@ -87,9 +87,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="permanent">If set to true, makes the redirect permanent (301). Otherwise a temporary redirect is used (302).</param>
         /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
         public RedirectToPageResult(
-            string pageName,
-            string pageHandler,
-            object routeValues,
+            string? pageName,
+            string? pageHandler,
+            object? routeValues,
             bool permanent,
             bool preserveMethod)
             : this(pageName, pageHandler, routeValues, permanent, preserveMethod, fragment: null)
@@ -105,10 +105,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The parameters for the route.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         public RedirectToPageResult(
-            string pageName,
-            string pageHandler,
-            object routeValues,
-            string fragment)
+            string? pageName,
+            string? pageHandler,
+            object? routeValues,
+            string? fragment)
             : this(pageName, pageHandler, routeValues, permanent: false, fragment: fragment)
         {
         }
@@ -123,14 +123,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="permanent">If set to true, makes the redirect permanent (301). Otherwise a temporary redirect is used (302).</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         public RedirectToPageResult(
-            string pageName,
-            string pageHandler,
-            object routeValues,
+            string? pageName,
+            string? pageHandler,
+            object? routeValues,
             bool permanent,
-            string fragment)
+            string? fragment)
             : this(pageName, pageHandler, routeValues, permanent, preserveMethod: false, fragment: fragment)
         {
-
         }
 
         /// <summary>
@@ -144,12 +143,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         public RedirectToPageResult(
-            string pageName,
-            string pageHandler,
-            object routeValues,
+            string? pageName,
+            string? pageHandler,
+            object? routeValues,
             bool permanent,
             bool preserveMethod,
-            string fragment)
+            string? fragment)
         {
             PageName = pageName;
             PageHandler = pageHandler;
@@ -162,22 +161,22 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper" /> used to generate URLs.
         /// </summary>
-        public IUrlHelper UrlHelper { get; set; }
+        public IUrlHelper? UrlHelper { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the page to route to.
         /// </summary>
-        public string PageName { get; set; }
+        public string? PageName { get; set; }
 
         /// <summary>
         /// Gets or sets the page handler to redirect to.
         /// </summary>
-        public string PageHandler { get; set; }
+        public string? PageHandler { get; set; }
 
         /// <summary>
         /// Gets or sets the route data to use for generating the URL.
         /// </summary>
-        public RouteValueDictionary RouteValues { get; set; }
+        public RouteValueDictionary? RouteValues { get; set; }
 
         /// <summary>
         /// Gets or sets an indication that the redirect is permanent.
@@ -192,17 +191,17 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the fragment to add to the URL.
         /// </summary>
-        public string Fragment { get; set; }
+        public string? Fragment { get; set; }
 
         /// <summary>
         /// Gets or sets the protocol for the URL, such as "http" or "https".
         /// </summary>
-        public string Protocol { get; set; }
+        public string? Protocol { get; set; }
 
         /// <summary>
         /// Gets or sets the host name of the URL.
         /// </summary>
-        public string Host { get; set; }
+        public string? Host { get; set; }
 
         /// <inheritdoc />
         public override Task ExecuteResultAsync(ActionContext context)

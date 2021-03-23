@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class ControllerContext : ActionContext
     {
-        private IList<IValueProviderFactory> _valueProviderFactories;
+        private IList<IValueProviderFactory>? _valueProviderFactories;
 
         /// <summary>
         /// Creates a new <see cref="ControllerContext"/>.
