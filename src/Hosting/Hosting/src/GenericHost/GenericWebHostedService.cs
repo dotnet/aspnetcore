@@ -5,23 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Hosting.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.StackTrace.Sources;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -126,7 +119,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var address in addresses)
                 {
-                    LifetimeLogger.LogInformation("Now listening on: {address}", address);
+                    LifetimeLogger.ListeningOnAddress(address);
                 }
             }
 
@@ -134,7 +127,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var assembly in Options.WebHostOptions.GetFinalHostingStartupAssemblies())
                 {
-                    Logger.LogDebug("Loaded hosting startup assembly {assemblyName}", assembly);
+                    Logger.StartupAssemblyLoaded(assembly);
                 }
             }
 
