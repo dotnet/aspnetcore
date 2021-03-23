@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27374")]
         public void CachesResourcesAfterFirstLoad()
         {
             // On the first load, we have to fetch everything
@@ -68,7 +67,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20154")]
         public void IncrementallyUpdatesCache()
         {
             // Perform a first load to populate the cache
