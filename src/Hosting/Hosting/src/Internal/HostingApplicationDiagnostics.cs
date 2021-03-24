@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Hosting
     {
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
-        private const string ActivityName = "Microsoft.AspNetCore.Hosting.HttpRequestIn";
-        private const string ActivityStartKey = ActivityName + ".Start";
-        private const string ActivityStopKey = ActivityName + ".Stop";
+        public static readonly string ActivityName = "Microsoft.AspNetCore.Hosting.HttpRequestIn";
+        private static readonly string ActivityStartKey = ActivityName + ".Start";
+        private static readonly string ActivityStopKey = ActivityName + ".Stop";
 
         private const string DeprecatedDiagnosticsBeginRequestKey = "Microsoft.AspNetCore.Hosting.BeginRequest";
         private const string DeprecatedDiagnosticsEndRequestKey = "Microsoft.AspNetCore.Hosting.EndRequest";

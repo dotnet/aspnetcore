@@ -87,6 +87,36 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             hostingApplication.DisposeContext(context, null);
         }
 
+        [Fact]
+        public void IActivityFeatureIsCreated()
+        {
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = activitySource => (activitySource.Name == "Microsoft.AspNetCore.Hosting" ||
+                                                    activitySource.Name == "DummySource"),
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            var hostingApplication = CreateApplication();
+            var httpContext = new DefaultHttpContext();
+            var context = hostingApplication.CreateContext(httpContext.Features);
+
+            var activityFeature = context.HttpContext.Features.Get<IActivityFeature>();
+            Assert.NotNull(activityFeature);
+            Assert.NotNull(activityFeature.Activity);
+            var initialActivity = Activity.Current;
+
+            // Create nested dummy Activity
+            using var _ = new ActivitySource("DummySource").StartActivity("DummyActivity");
+
+            Assert.Equal(initialActivity, activityFeature.Activity);
+            Assert.NotEqual(Activity.Current, activityFeature.Activity);
+
+            // Act/Assert
+            hostingApplication.DisposeContext(context, null);
+        }
+
         private static HostingApplication CreateApplication(IHttpContextFactory httpContextFactory = null, bool useHttpContextAccessor = false)
         {
             var services = new ServiceCollection();
