@@ -102,6 +102,8 @@ namespace Templates.Test.Helpers
             try
             {
                 Output.WriteLine("Acquired DotNetNewLock");
+                // Temporary while investigating why this process occasionally never runs or exits on Debian 9
+                environmentVariables.Add("COREHOST_TRACE", "1");
                 using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
                 await execution.Exited;
                 return new ProcessResult(execution);
@@ -249,7 +251,7 @@ namespace Templates.Test.Helpers
                 {
                     command = "dotnet-ef";
                 }
-                
+
                 using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
                 await result.Exited;
                 return new ProcessResult(result);
