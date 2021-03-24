@@ -12,17 +12,17 @@ There are two modes for hosting application with IIS: in-process and out-of-proc
 
 The following contains a description of the sub-directories.
 
-- `[AspNetCoreModuleV2](AspNetCoreModuleV2/)`: Contains all native code that is part of the [ASP.NET Core Module](https://docs.microsoft.com/aspnet/core/host-and-deploy/aspnet-core-module?view=aspnetcore-5.0).
-- `[AspNetCoreModuleV2/AspNetCore](AspNetCoreModuleV2/AspNetCore/)`: Contains the ASP.NET Core Module shim, a minimal layer for IIS to interact with the in-process and out-of-process modules.
-- `[AspNetCoreModuleV2/CommonLib](AspNetCoreModuleV2/CommonLib/)`: Contains common code shared between all native components.
-- `[AspNetCoreModuleV2/CommonLibTests](AspNetCoreModuleV2/CommonLibTests/)`: Contains native tests for the ASP.NET Core Module.
-- `[AspNetCoreModuleV2/IISLib](AspNetCoreModuleV2/IISLib/)`: Contains common code for interactions with IIS.
-- `[AspNetCoreModuleV2/InProcessRequestHandler](AspNetCoreModuleV2/InProcessRequestHandler/)`: Contains native code for in-process hosting.
-- `[AspNetCoreModuleV2/OutOfProcessRequestHandler](AspNetCoreModuleV2/OutOfProcessRequestHandler/)`: Contains native code for out-of-process hosting.
-- `[AspNetCoreModuleV2/RequestHandlerLib](AspNetCoreModuleV2/RequestHandlerLib/)`: Contains shared code between in-process and out-of-process hosting.
-- `[IIS](IIS/)`: Contains managed code for hosting ASP.NET Core with in-process hosting.
-- `[IISIntegration](IISIntegration/)`: Contains managed code for hosting ASP.NET Core with out-of-process hosting.
-- `[IntegrationTesting.IIS](IntegrationTesting.IIS/)`: Contains testing infrastructure for starting IIS and IISExpress.
+- [AspNetCoreModuleV2/](AspNetCoreModuleV2/): Contains all native code that is part of the [ASP.NET Core Module/](https://docs.microsoft.com/aspnet/core/host-and-deploy/aspnet-core-module?view=aspnetcore-5.0).
+- [AspNetCoreModuleV2/AspNetCore/](AspNetCoreModuleV2/AspNetCore/): Contains the ASP.NET Core Module shim, a minimal layer for IIS to interact with the in-process and out-of-process modules.
+- [AspNetCoreModuleV2/CommonLib/](AspNetCoreModuleV2/CommonLib/): Contains common code shared between all native components.
+- [AspNetCoreModuleV2/CommonLibTests/](AspNetCoreModuleV2/CommonLibTests/): Contains native tests for the ASP.NET Core Module.
+- [AspNetCoreModuleV2/IISLib/](AspNetCoreModuleV2/IISLib/): Contains common code for interactions with IIS.
+- [AspNetCoreModuleV2/InProcessRequestHandler/](AspNetCoreModuleV2/InProcessRequestHandler/): Contains native code for in-process hosting.
+- [AspNetCoreModuleV2/OutOfProcessRequestHandler/](AspNetCoreModuleV2/OutOfProcessRequestHandler/): Contains native code for out-of-process hosting.
+- [AspNetCoreModuleV2/RequestHandlerLib/](AspNetCoreModuleV2/RequestHandlerLib/): Contains shared code between in-process and out-of-process hosting.
+- [IIS/](IIS/): Contains managed code for hosting ASP.NET Core with in-process hosting.
+- [IISIntegration/](IISIntegration/): Contains managed code for hosting ASP.NET Core with out-of-process hosting.
+- [IntegrationTesting.IIS/](IntegrationTesting.IIS/): Contains testing infrastructure for starting IIS and IISExpress.
 
 ## Development Setup
 

@@ -6,12 +6,12 @@ Kestrel is our cross-platform web server that is included and enabled by default
 
 The following contains a description of the sub-directories.
 
-- `[Core](Core/)`: Contains the main server implementation for Kestrel.
-- `[Kestrel](Kestrel/)`: Contains the public API exposed to use Kestrel.
-- `[test](test/)`: Contains End to End tests for Kestrel.
-- `[Transport.Libuv](Transport.Libuv/)`: Contains the obsolete Libuv transport for connection management.
-- `[Transport.Quic](Transport.Quic/)`: Contains the QUIC transport for connection management.
-- `[Transport.Sockets](Transport.Sockets/)`:Contains the Sockets transport for connection management.
+- [Core/](Core/): Contains the main server implementation for Kestrel.
+- [Kestrel/](Kestrel/): Contains the public API exposed to use Kestrel.
+- [test/](test/): Contains End to End tests for Kestrel.
+- [Transport.Sockets/](Transport.Sockets/):Contains the Sockets transport for connection management.
+- [Transport.Quic/](Transport.Quic/): Contains the QUIC transport for connection management.
+- [Transport.Libuv/](Transport.Libuv/): Contains the obsolete Libuv transport for connection management.
 
 ## Development Setup
 
