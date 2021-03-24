@@ -8,10 +8,10 @@ Documentation for ASP.NET Core HttpSys can be found in the [ASP.NET Core HTTP.sy
 
 This folder contains all relevant code for the HttpSys Web Server implementation.
 
-- `src/`: Contains all production code for the HttpSys Web Server.
-- `src/NativeInterop`: Contains the native interop layer between managed and native code.
-- `src/RequestProcessing`: Contains request and response processing code.
-- `samples`: Contains samples showing how to use HTTP.sys.
+- `[src/](src/)`: Contains all production code for the HttpSys Web Server.
+- `[src/NativeInterop](src/NativeInterop)`: Contains the native interop layer between managed and native code.
+- `[src/RequestProcessing](src/RequestProcessing)`: Contains request and response processing code.
+- `[samples](samples/)`: Contains samples showing how to use HTTP.sys.
 
 ## Development Setup
 
