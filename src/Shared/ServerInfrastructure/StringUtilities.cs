@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe static bool BytesOrdinalEqualsStringAndAscii(string previousValue, ReadOnlySpan<byte> newValue)
+        public static bool BytesOrdinalEqualsStringAndAscii(string previousValue, ReadOnlySpan<byte> newValue)
         {
             // previousValue is a previously materialized string which *must* have already passed validation.
             Debug.Assert(IsValidHeaderString(previousValue));
@@ -412,8 +412,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // This isn't problematic as we know the maximum length is max string length (from test above)
             // which is a signed value so half the size of the unsigned pointer value so we can safely add
             // a Vector<byte>.Count to it without overflowing.
-            var count = (IntPtr)newValue.Length;
-            var offset = (IntPtr)0;
+            var count = (nint)newValue.Length;
+            var offset = (nint)0;
 
             // Get references to the first byte in the span, and the first char in the string.
             ref var bytes = ref MemoryMarshal.GetReference(newValue);
@@ -422,12 +422,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             do
             {
                 // If Vector not-accelerated or remaining less than vector size
-                if (!Vector.IsHardwareAccelerated || (byte*)(offset + Vector<byte>.Count) > (byte*)count)
+                if (!Vector.IsHardwareAccelerated || (offset + Vector<byte>.Count) > count)
                 {
                     if (IntPtr.Size == 8) // Use Intrinsic switch for branch elimination
                     {
                         // 64-bit: Loop longs by default
-                        while ((byte*)(offset + sizeof(long)) <= (byte*)count)
+                        while ((offset + sizeof(long)) <= count)
                         {
                             if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
                                     ref Unsafe.Add(ref str, offset),
@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                             offset += sizeof(long);
                         }
-                        if ((byte*)(offset + sizeof(int)) <= (byte*)count)
+                        if ((offset + sizeof(int)) <= count)
                         {
                             if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
                                 ref Unsafe.Add(ref str, offset),
@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     else
                     {
                         // 32-bit: Loop ints by default
-                        while ((byte*)(offset + sizeof(int)) <= (byte*)count)
+                        while ((offset + sizeof(int)) <= count)
                         {
                             if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
                                 ref Unsafe.Add(ref str, offset),
@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                             offset += sizeof(int);
                         }
                     }
-                    if ((byte*)(offset + sizeof(short)) <= (byte*)count)
+                    if ((offset + sizeof(short)) <= count)
                     {
                         if (!WidenTwoAsciiBytesToUtf16AndCompareToChars(
                             ref Unsafe.Add(ref str, offset),
@@ -479,7 +479,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                         offset += sizeof(short);
                     }
-                    if ((byte*)offset < (byte*)count)
+                    if (offset < count)
                     {
                         var ch = (char)Unsafe.Add(ref bytes, offset);
                         if (((ch & 0x80) != 0) || Unsafe.Add(ref str, offset) != ch)
@@ -527,11 +527,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     }
 
                     offset += Vector<byte>.Count;
-                } while ((byte*)(offset + Vector<byte>.Count) <= (byte*)count);
+                } while ((offset + Vector<byte>.Count) <= count);
 
                 // Vector path done, loop back to do non-Vector
                 // If is a exact multiple of vector size, bail now
-            } while ((byte*)offset < (byte*)count);
+            } while (offset < count);
 
             // If we get here (input is exactly a multiple of Vector length) then there are no inequalities via widening;
             // so the input bytes are both ascii and a match to the string if it was converted via Encoding.ASCII.GetString(...)
@@ -651,7 +651,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return ((value & 0x8080u) == 0);
         }
 
-        private unsafe static bool IsValidHeaderString(string value)
+        private static bool IsValidHeaderString(string value)
         {
             // Method for Debug.Assert to ensure BytesOrdinalEqualsStringAndAscii
             // is not called with an unvalidated string comparitor.
