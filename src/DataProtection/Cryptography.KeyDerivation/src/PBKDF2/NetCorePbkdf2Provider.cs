@@ -55,10 +55,7 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
             }
 
             var passwordBytes = Encoding.UTF8.GetBytes(password);
-            using (var rfc = new Rfc2898DeriveBytes(passwordBytes, salt, iterationCount, algorithmName))
-            {
-                return rfc.GetBytes(numBytesRequested);
-            }
+            return Rfc2898DeriveBytes.Pbkdf2(passwordBytes, salt, iterationCount, algorithmName, numBytesRequested);
         }
     }
 }
