@@ -8,7 +8,7 @@ Documentation for ASP.NET Core IIS can be found in the [ASP.NET Core IIS Docs](h
 
 This folder contains all relevant code for the IIS Web Server implementation.
 
-There are two modes for hosting application with IIS: in-process and out-of-process. In-process will run all managed code inside of the IIS worker process, while out-of-process will use IIS as a reverse-proxy to a dotnet app running Kestrel.
+There are two modes for hosting application with IIS: in-process and out-of-process. In-process will run all managed code inside of the IIS worker process, while out-of-process will use IIS as a reverse-proxy to a dotnet process running Kestrel.
 
 The following contains a description of the sub-directories.
 
