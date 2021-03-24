@@ -359,5 +359,35 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var output = writer.GenerateCode();
             Assert.Equal("public static global::System.String MyString { get; set; }" + Environment.NewLine, output);
         }
+
+        [Fact]
+        public void CSharpCodeWriter_RespectTabSetting()
+        {
+            // Arrange
+            var writer = new CodeWriter(Environment.NewLine, tabSize: 4, indentWithTabs: true);
+
+            // Act
+            writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<string>());
+            writer.WriteField(Array.Empty<string>(), Array.Empty<string>(), "int", "f");
+
+            // Assert
+            var output = writer.GenerateCode();
+            Assert.Equal("class C" + Environment.NewLine + "{" + Environment.NewLine + "\tint f;" + Environment.NewLine, output);
+        }
+
+        [Fact]
+        public void CSharpCodeWriter_RespectSpaceSetting()
+        {
+            // Arrange
+            var writer = new CodeWriter(Environment.NewLine, tabSize: 4, indentWithTabs: false);
+
+            // Act
+            writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<string>());
+            writer.WriteField(Array.Empty<string>(), Array.Empty<string>(), "int", "f");
+
+            // Assert
+            var output = writer.GenerateCode();
+            Assert.Equal("class C" + Environment.NewLine + "{" + Environment.NewLine + "    int f;" + Environment.NewLine, output);
+        }
     }
 }

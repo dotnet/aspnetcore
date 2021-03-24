@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public CodeWriter Indent(int size)
         {
-            if (size == 0 && Length != 0 && this[Length - 1] != '\n')
+            if (size == 0 || (Length != 0 && this[Length - 1] != '\n'))
             {
                 return this;
             }
