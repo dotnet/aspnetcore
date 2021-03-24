@@ -1,9 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.IndentSize.get -> int
 Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.IndentWithTabs.get -> bool
-Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.TabSize.get -> int
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.CascadingGenericTypeParameter() -> void
-~Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.CodeWriter(string newLine, int tabSize, bool indentWithTabs) -> void
+~Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.CodeWriter(string newLine, bool indentWithTabs, int indentSize) -> void
 ~Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.Indent(int size) -> Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeNames.get -> System.Collections.Generic.IReadOnlyCollection<string>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeNames.set -> void

@@ -18,15 +18,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         private int _currentLineIndex;
         private int _currentLineCharacterIndex;
 
-        public CodeWriter() : this(Environment.NewLine, 4, false)
+        public CodeWriter() : this(Environment.NewLine, false, 4)
         {
         }
 
-        public CodeWriter(string newLine, int tabSize, bool indentWithTabs)
+        public CodeWriter(string newLine, bool indentWithTabs, int indentSize)
         {
             NewLine = newLine;
 
-            TabSize = tabSize;
+            IndentSize = indentSize;
             IndentWithTabs = indentWithTabs;
             _builder = new StringBuilder();
         }
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public int TabSize { get; }
+        public int IndentSize { get; }
 
         public bool IndentWithTabs { get; }
 
@@ -85,14 +85,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 // Avoid writing directly to the StringBuilder here, that will throw off the manual indexing 
                 // done by the base class.
-                var tabs = size / TabSize;
+                var tabs = size / IndentSize;
                 actualSize += tabs;
                 for (var i = 0; i < tabs; i++)
                 {
                     _builder.Append("\t");
                 }
 
-                var spaces = size % TabSize;
+                var spaces = size % IndentSize;
                 actualSize += spaces;
                 for (var i = 0; i < spaces; i++)
                 {
