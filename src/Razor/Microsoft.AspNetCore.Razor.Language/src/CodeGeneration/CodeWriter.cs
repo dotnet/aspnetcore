@@ -18,9 +18,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         private int _currentLineIndex;
         private int _currentLineCharacterIndex;
 
-        public CodeWriter()
+        public CodeWriter() : this(Environment.NewLine, 4, false)
         {
-            NewLine = Environment.NewLine;
+        }
+
+        public CodeWriter(string newLine, int tabSize, bool indentWithTabs)
+        {
+            NewLine = newLine;
+
+            TabSize = tabSize;
+            IndentWithTabs = indentWithTabs;
             _builder = new StringBuilder();
         }
 
@@ -47,6 +54,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
+        public int TabSize { get; }
+
+        public bool IndentWithTabs { get; }
+
         public SourceLocation Location => new SourceLocation(_absoluteIndex, _currentLineIndex, _currentLineCharacterIndex);
 
         public char this[int index]
@@ -62,16 +73,43 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        // Internal for testing.
-        internal CodeWriter Indent(int size)
+        public CodeWriter Indent(int size)
         {
-            if (Length == 0 || this[Length - 1] == '\n')
+            if (size == 0 && Length != 0 && this[Length - 1] != '\n')
             {
-                _builder.Append(' ', size);
-
-                _currentLineCharacterIndex += size;
-                _absoluteIndex += size;
+                return this;
             }
+
+            var actualSize = 0;
+            if (IndentWithTabs)
+            {
+                // Avoid writing directly to the StringBuilder here, that will throw off the manual indexing 
+                // done by the base class.
+                var tabs = size / TabSize;
+                actualSize += tabs;
+                for (var i = 0; i < tabs; i++)
+                {
+                    _builder.Append("\t");
+                }
+
+                var spaces = size % TabSize;
+                actualSize += spaces;
+                for (var i = 0; i < spaces; i++)
+                {
+                    _builder.Append(" ");
+                }
+            }
+            else
+            {
+                actualSize = size;
+                for (var i = 0; i < size; i++)
+                {
+                    _builder.Append(" ");
+                }
+            }
+
+            _currentLineCharacterIndex += actualSize;
+            _absoluteIndex += actualSize;
 
             return this;
         }
