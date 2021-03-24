@@ -544,9 +544,9 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.Contains(sink.Writes, w =>
                 w.LogLevel == LogLevel.Warning
                 && w.EventId == 4
-                && w.Message == $"The exception handler configured on {nameof(ExceptionHandlerOptions)} produced a 404 status response. " +
-                $"An InvalidOperationException containing the original exception will be thrown since this is often due to a misconfigured {nameof(ExceptionHandlerOptions.ExceptionHandlingPath)}. " +
-                $"If the exception handler should be allowed to return 404 status responses, {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} must be set to true.");
+                && w.Message == $"The exception handler configured on ExceptionHandlerOptions produced a 404 status response. " +
+                $"An InvalidOperationException containing the original exception will be thrown since this is often due to a misconfigured ExceptionHandlingPath. " +
+                $"If the exception handler should be allowed to return 404 status responses, AllowStatusCode404Response must be set to true.");
         }
 
         [Fact]
