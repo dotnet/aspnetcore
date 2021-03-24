@@ -54,8 +54,7 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
                     throw new ArgumentOutOfRangeException();
             }
 
-            var passwordBytes = Encoding.UTF8.GetBytes(password);
-            return Rfc2898DeriveBytes.Pbkdf2(passwordBytes, salt, iterationCount, algorithmName, numBytesRequested);
+            return Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterationCount, algorithmName, numBytesRequested);
         }
     }
 }
