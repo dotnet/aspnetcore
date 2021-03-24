@@ -1,8 +1,8 @@
 # HttpSys
 
-ASP.NET Core HttpSys Web Server is a web server that uses the [Windows Hypertext Transfer Protocol Stack](https://docs.microsoft.com/en-us/iis/get-started/introduction-to-iis/introduction-to-iis-architecture#hypertext-transfer-protocol-stack-httpsys).
+ASP.NET Core HttpSys Web Server is a web server that uses the [Windows Hypertext Transfer Protocol Stack](https://docs.microsoft.com/iis/get-started/introduction-to-iis/introduction-to-iis-architecture#hypertext-transfer-protocol-stack-httpsys).
 
-Documentation for ASP.NET Core HttpSys can be found in the [ASP.NET Core HTTP.sys Docs](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/httpsys).
+Documentation for ASP.NET Core HttpSys can be found in the [ASP.NET Core HTTP.sys Docs](https://docs.microsoft.com/aspnet/core/fundamentals/servers/httpsys).
 
 ## Description
 
