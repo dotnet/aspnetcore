@@ -551,7 +551,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 _writer = writer;
                 _autoSpace = autoSpace;
-                _indentSize = writer.IndentSize;
+                _indentSize = writer.TabSize;
                 _startIndent = -1; // Set in WriteStartScope
 
                 WriteStartScope();

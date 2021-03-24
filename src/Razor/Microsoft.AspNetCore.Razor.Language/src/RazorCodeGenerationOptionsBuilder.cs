@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public virtual string FileKind => null;
 
-        public abstract int TabSize { get; set; }
-
         public abstract int IndentSize { get; set; }
 
         public abstract bool IndentWithTabs { get; set; }

@@ -18,16 +18,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         private int _currentLineIndex;
         private int _currentLineCharacterIndex;
 
-        public CodeWriter() : this(Environment.NewLine, false, 4, 4)
+        public CodeWriter() : this(Environment.NewLine, false, 4)
         {
         }
 
-        public CodeWriter(string newLine, bool indentWithTabs, int tabSize, int indentSize)
+        public CodeWriter(string newLine, bool indentWithTabs, int tabSize)
         {
             NewLine = newLine;
             IndentWithTabs = indentWithTabs;
             TabSize = tabSize;
-            IndentSize = indentSize;
             _builder = new StringBuilder();
         }
 
@@ -57,8 +56,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public bool IndentWithTabs { get; }
 
         public int TabSize { get; }
-
-        public int IndentSize { get; }
 
         public SourceLocation Location => new SourceLocation(_absoluteIndex, _currentLineIndex, _currentLineCharacterIndex);
 

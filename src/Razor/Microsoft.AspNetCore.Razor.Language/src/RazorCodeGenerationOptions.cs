@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             return new DefaultRazorCodeGenerationOptions(
                 indentWithTabs: false,
-                tabSize: 4,
                 indentSize: 4,
                 designTime: false,
                 suppressChecksum: false,
@@ -26,7 +25,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             return new DefaultRazorCodeGenerationOptions(
                 indentWithTabs: false,
-                tabSize: 4,
                 indentSize: 4,
                 designTime: true,
                 rootNamespace: null,
@@ -72,8 +70,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract bool DesignTime { get; }
 
         public abstract bool IndentWithTabs { get; }
-
-        public abstract int TabSize { get; }
 
         public abstract int IndentSize { get; }
 

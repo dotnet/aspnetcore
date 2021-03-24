@@ -7,7 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         public DefaultRazorCodeGenerationOptions(
             bool indentWithTabs,
-            int tabSize,
             int indentSize, 
             bool designTime,
             string rootNamespace,
@@ -18,7 +17,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             bool omitMinimizedComponentAttributeValues)
         {
             IndentWithTabs = indentWithTabs;
-            TabSize = tabSize;
             IndentSize = indentSize;
             DesignTime = designTime;
             RootNamespace = rootNamespace;
@@ -32,8 +30,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override bool DesignTime { get; }
 
         public override bool IndentWithTabs { get; }
-
-        public override int TabSize { get; }
 
         public override int IndentSize { get; }
 
