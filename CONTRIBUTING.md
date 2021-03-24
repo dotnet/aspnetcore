@@ -26,11 +26,13 @@ Our team members also monitor several other discussion forums:
 * [ASP.NET Core forum](https://forums.asp.net/1255.aspx/1?ASP+NET+5)
 * [Stack Overflow](https://stackoverflow.com/) with the [`asp.net-core`](https://stackoverflow.com/questions/tagged/asp.net-core), [`asp.net-core-mvc`](https://stackoverflow.com/questions/tagged/asp.net-core-mvc), or [`entity-framework-core`](https://stackoverflow.com/questions/tagged/entity-framework-core) tags.
 
-## Contributing code and content
+## How to submit a PR 
 
 We are always happy to see PRs from community members both for bug fixes as well as new features.
 To help you be successful we've put together a few simple rules to follow when you prepare to contribute to our codebase:
-1. **Start from an issue, not PR**
+
+**Finding an issue to work on**
+
   Over the years we've seen many PRs targeting areas of the framework, which we didn't plan to expand further at the time.
   In all these cases we had to say `no` to those PRs and close them. That, obviously, is not a great outcome for us. And it's especially bad for the contributor, as they've spent a lot of effort preparing the change.
   To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with `help wanted` label. You can find all these issues at: [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted).
@@ -38,13 +40,34 @@ To help you be successful we've put together a few simple rules to follow when y
 
     Within that set, we have additionally marked issues which are good candidates for first-time contributors. Those do not require too much familiarity with the framework and are more novice-friendly. Those are marked with `good first issue` label. The full list of such issues can be found at [https://aka.ms/aspnet/goodfirstissues](https://aka.ms/aspnet/goodfirstissues).
   If there is some other area not included here where you want to contribute to, first open an issue to describe the problem you are trying to solve and state that you're willing to contribute a fix for it. We will then discuss in that issue, whether we think it belongs in the platform and the best approach to solve it.
-2. **Discuss the design with the team before actually working on a fix**
+  
+**Before writing code**
+
   This can save you a lot of time. We've seen PRs, where customers would solve an issue in a way, which either wouldn't fit into the framework because of how it's designed or it would change the framework in a way, which is not something we'd like to do. To avoid these situations, we encourage customers to discuss the preferred design with the team first. To do so, file a new `design proposal` issue, link to the issue you'd like to address and provide detailed information about how you'd like to solve a specific problem. We triage issues peridocially and it will not take long for a team member to engage with you on that proposal.
   When you get an agreement from our team members that the design proposal you have is solid, then go ahead and prepare the PR.
   To file a design proposal, look for the relevant issue in the `New issue` page or simply click [this link](https://github.com/dotnet/aspnetcore/issues/new?assignees=&labels=design-proposal&template=4_design_proposal.md):
   ![image](https://user-images.githubusercontent.com/34246760/107969904-41b9ae80-6f65-11eb-8b84-d15e7d94753b.png)
   
-By following the guidance provided above, you will greatly increase chances for your PR to be accepted and merged.
+**Before submitting the pull request**
+
+Before submitting a pull request, make sure that it checks the following requirements:
+
+- You find an existing issue with the "help-wanted" label or discuss with the team to agree on adding a new issue with that label
+- You post a high-level description of how it will be implemented, and receive a positive acknowledgement from the team before getting too committed to the approach or investing too much effort implementing it
+- You add test coverage following existing patterns within the codebase
+- Your code matches the existing syntax conventions within the codebase
+- Your PR is small, focused, and avoids making unrelated changes
+  
+If your pull request contains any of the below, it's less likely to be merged.
+
+- Changes that break backward compatibility
+- Changes that are only wanted by one person/company. Changes need to benefit a large enough proportion of ASP.NET developers.
+- Changes that add entirely new feature areas without prior agreement
+- Changes that are mostly about refactoring existing code or code style
+- Very large PRs that would take hours to review (remember, we're trying to help lots of people at once). For larger work areas, please discuss with us to find ways of breaking it down into smaller, incremental pieces that can go into separate PRs.
+
+**During pull request review**
+A core contributor will review your pull request and provide feedback. To ensure that there is not a large backlog of inactive PRs, the pull request will be marked as stale after two weeks of no activity. After another four days, it will be closed.
 
 ### Resources to help you get started
 Here are some resources to help you get started on how to contribute code or new content.
