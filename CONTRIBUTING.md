@@ -52,16 +52,16 @@ To help you be successful we've put together a few simple rules to follow when y
 
 Before submitting a pull request, make sure that it checks the following requirements:
 
-- You find an existing issue with the "help-wanted" label or discuss with the Blazor team to agree on adding a new issue with that label
+- You find an existing issue with the "help-wanted" label or discuss with the team to agree on adding a new issue with that label
 - You post a high-level description of how it will be implemented, and receive a positive acknowledgement from the team before getting too committed to the approach or investing too much effort implementing it
 - You add test coverage following existing patterns within the codebase
 - Your code matches the existing syntax conventions within the codebase
 - Your PR is small, focused, and avoids making unrelated changes
   
-If you're pull request contains any of the below, it's less likely to be merged.
+If your pull request contains any of the below, it's less likely to be merged.
 
 - Changes that break backward compatibility
-- Changes that are only wanted by one person/company. Changes need to benefit a large enough proportion of all Blazor developers.
+- Changes that are only wanted by one person/company. Changes need to benefit a large enough proportion of ASP.NET developers.
 - Changes that add entirely new feature areas without prior agreement
 - Changes that are mostly about refactoring existing code or code style
 - Very large PRs that would take hours to review (remember, we're trying to help lots of people at once). For larger work areas, please discuss with us to find ways of breaking it down into smaller, incremental pieces that can go into separate PRs.
