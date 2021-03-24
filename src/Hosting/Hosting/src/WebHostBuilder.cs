@@ -283,9 +283,8 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddSingleton<IConfiguration>(_ => configuration);
             _context.Configuration = configuration;
 
-            var listener = new DiagnosticListener("Microsoft.AspNetCore");
-            services.AddSingleton<DiagnosticListener>(listener);
-            services.AddSingleton<DiagnosticSource>(listener);
+            services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
+            services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
 
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, DefaultHttpContextFactory>();
