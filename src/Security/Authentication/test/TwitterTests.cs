@@ -36,8 +36,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
         protected override void ConfigureDefaults(TwitterOptions o)
         {
-            o.ConsumerKey = "whatever";
-            o.ConsumerSecret = "whatever";
+            o.ConsumerKey = "PLACEHOLDER";
+            o.ConsumerSecret = "PLACEHOLDER";
             o.SignInScheme = "auth1";
         }
 
