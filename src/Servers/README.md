@@ -13,7 +13,7 @@ This folder contains all servers implementations related abstractions for ASP.NE
 - `Kestrel`: Contains the implementation of the Kestrel Web Server.
 - `IIS`: Cotnains all code for the IIS Web Server and ASP.NET Core Module.
 - `HttpSys`: Contains all code for the HTTP.sys Web Server.
-- `Connections.Abstractions`: A set of abstractions for creating and using Connections; used in Kestrel.
+- `Connections.Abstractions`: A set of abstractions for creating and using Connections; used in the server implementations and SignalR.
 
 ## More Information
 
