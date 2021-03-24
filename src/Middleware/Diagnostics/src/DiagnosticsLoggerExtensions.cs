@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         private static readonly Action<ILogger, Exception?> _errorHandlerNotFound =
             LoggerMessage.Define(LogLevel.Warning, new EventId(4, "HandlerNotFound"), $"The exception handler configured on {nameof(ExceptionHandlerOptions)} produced a 404 status response. " +
                 $"An InvalidOperationException containing the original exception will be thrown since this is often due to a misconfigured {nameof(ExceptionHandlerOptions.ExceptionHandlingPath)}. " +
-                $"If the exception handler should be allowed to return 404 status responses, {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} must be set to true.");
+                $"If the exception handler is expected to return 404 status responses then set {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} to true.");
 
         // DeveloperExceptionPageMiddleware
         private static readonly Action<ILogger, Exception?> _responseStartedErrorPageMiddleware =
