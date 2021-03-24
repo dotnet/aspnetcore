@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace System.Net.Http.HPack
 {
-    internal partial class HPackEncoder
+    internal class DynamicHPackEncoder
     {
         public const int DefaultHeaderTableSize = 4096;
 
@@ -22,7 +22,7 @@ namespace System.Net.Http.HPack
         private bool _pendingTableSizeUpdate;
         private EncoderHeaderEntry? _removed;
 
-        public HPackEncoder(bool allowDynamicCompression = true, uint maxHeaderTableSize = DefaultHeaderTableSize)
+        public DynamicHPackEncoder(bool allowDynamicCompression = true, uint maxHeaderTableSize = DefaultHeaderTableSize)
         {
             _allowDynamicCompression = allowDynamicCompression;
             _maxHeaderTableSize = maxHeaderTableSize;
@@ -54,7 +54,7 @@ namespace System.Net.Http.HPack
             // Check if there is a table size update that should be encoded
             if (_pendingTableSizeUpdate)
             {
-                bool success = EncodeDynamicTableSizeUpdate((int)_maxHeaderTableSize, buffer, out length);
+                bool success = HPackEncoder.EncodeDynamicTableSizeUpdate((int)_maxHeaderTableSize, buffer, out length);
                 _pendingTableSizeUpdate = false;
                 return success;
             }
@@ -73,16 +73,16 @@ namespace System.Net.Http.HPack
                 int index = ResolveDynamicTableIndex(staticTableIndex, name);
 
                 return index == -1
-                    ? EncodeLiteralHeaderFieldNeverIndexingNewName(name, value, buffer, out bytesWritten)
-                    : EncodeLiteralHeaderFieldNeverIndexing(index, value, buffer, out bytesWritten);
+                    ? HPackEncoder.EncodeLiteralHeaderFieldNeverIndexingNewName(name, value, buffer, out bytesWritten)
+                    : HPackEncoder.EncodeLiteralHeaderFieldNeverIndexing(index, value, buffer, out bytesWritten);
             }
 
             // No dynamic table. Only use the static table.
             if (!_allowDynamicCompression || _maxHeaderTableSize == 0 || encodingHint == HeaderEncodingHint.IgnoreIndex)
             {
                 return staticTableIndex == -1
-                    ? EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out bytesWritten)
-                    : EncodeLiteralHeaderFieldWithoutIndexing(staticTableIndex, value, buffer, out bytesWritten);
+                    ? HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out bytesWritten)
+                    : HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexing(staticTableIndex, value, buffer, out bytesWritten);
             }
 
             // Header is greater than the maximum table size.
@@ -92,8 +92,8 @@ namespace System.Net.Http.HPack
                 int index = ResolveDynamicTableIndex(staticTableIndex, name);
 
                 return index == -1
-                    ? EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out bytesWritten)
-                    : EncodeLiteralHeaderFieldWithoutIndexing(index, value, buffer, out bytesWritten);
+                    ? HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexingNewName(name, value, buffer, out bytesWritten)
+                    : HPackEncoder.EncodeLiteralHeaderFieldWithoutIndexing(index, value, buffer, out bytesWritten);
             }
 
             return EncodeDynamicHeader(buffer, staticTableIndex, name, value, out bytesWritten);
@@ -117,7 +117,7 @@ namespace System.Net.Http.HPack
             {
                 // Already exists in dynamic table. Write index.
                 int index = CalculateDynamicTableIndex(headerField.Index);
-                return EncodeIndexedHeaderField(index, buffer, out bytesWritten);
+                return HPackEncoder.EncodeIndexedHeaderField(index, buffer, out bytesWritten);
             }
             else
             {
@@ -126,8 +126,8 @@ namespace System.Net.Http.HPack
 
                 int index = ResolveDynamicTableIndex(staticTableIndex, name);
                 bool success = index == -1
-                    ? EncodeLiteralHeaderFieldIndexingNewName(name, value, buffer, out bytesWritten)
-                    : EncodeLiteralHeaderFieldIndexing(index, value, buffer, out bytesWritten);
+                    ? HPackEncoder.EncodeLiteralHeaderFieldIndexingNewName(name, value, buffer, out bytesWritten)
+                    : HPackEncoder.EncodeLiteralHeaderFieldIndexing(index, value, buffer, out bytesWritten);
 
                 if (success)
                 {

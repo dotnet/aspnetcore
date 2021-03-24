@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         private MemoryPool<byte> _memoryPool;
         private HttpRequestHeaders _httpRequestHeaders;
         private Http2Connection _connection;
-        private HPackEncoder _hpackEncoder;
+        private DynamicHPackEncoder _hpackEncoder;
         private Http2HeadersEnumerator _requestHeadersEnumerator;
         private int _currentStreamId;
         private byte[] _headersBuffer;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             _httpRequestHeaders.HeaderAuthority = new StringValues("localhost:80");
 
             _headersBuffer = new byte[1024 * 16];
-            _hpackEncoder = new HPackEncoder();
+            _hpackEncoder = new DynamicHPackEncoder();
 
             var serviceContext = TestContextFactory.CreateServiceContext(
                 serverOptions: new KestrelServerOptions(),
