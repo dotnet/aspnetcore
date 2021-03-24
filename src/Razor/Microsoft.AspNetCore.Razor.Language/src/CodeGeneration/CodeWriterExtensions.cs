@@ -544,14 +544,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             private CodeWriter _writer;
             private bool _autoSpace;
-            private int _indentSize;
+            private int _tabSize;
             private int _startIndent;
 
             public CSharpCodeWritingScope(CodeWriter writer, bool autoSpace = true)
             {
                 _writer = writer;
                 _autoSpace = autoSpace;
-                _indentSize = writer.TabSize;
+                _tabSize = writer.TabSize;
                 _startIndent = -1; // Set in WriteStartScope
 
                 WriteStartScope();
@@ -567,7 +567,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 TryAutoSpace(" ");
 
                 _writer.WriteLine("{");
-                _writer.CurrentIndent += _indentSize;
+                _writer.CurrentIndent += _tabSize;
                 _startIndent = _writer.CurrentIndent;
             }
 
@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 // Ensure the scope hasn't been modified
                 if (_writer.CurrentIndent == _startIndent)
                 {
-                    _writer.CurrentIndent -= _indentSize;
+                    _writer.CurrentIndent -= _tabSize;
                 }
 
                 _writer.WriteLine("}");
