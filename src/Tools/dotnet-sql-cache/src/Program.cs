@@ -101,7 +101,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                         "The file to write the result to.",
                         CommandOptionType.SingleValue);
 
-                    var idempontentOption = command.Option(
+                    var idempotentOption = command.Option(
                         "-i|--idempotent",
                         "Generates a script that can be used on a database that already has the table.",
                         CommandOptionType.NoValue);
@@ -121,7 +121,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
 
                         _schemaName = schemaNameArg.Value;
                         _tableName = tableNameArg.Value;
-                        _idempotent = idempontentOption.HasValue();
+                        _idempotent = idempotentOption.HasValue();
                         if (outputOption.HasValue())
                         {
                             _outputPath = outputOption.Value();
