@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         internal readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
         internal readonly HPackDecoder _hpackDecoder;
-        internal readonly HPackEncoder _hpackEncoder;
+        internal readonly DynamicHPackEncoder _hpackEncoder;
         private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
         internal readonly TimeoutControl _timeoutControl;
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public Http2TestBase()
         {
             _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
-            _hpackEncoder = new HPackEncoder();
+            _hpackEncoder = new DynamicHPackEncoder();
 
             _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
             _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };

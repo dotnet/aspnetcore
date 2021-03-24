@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
     public class HPackHeaderWriterBenchmark
     {
         private Http2HeadersEnumerator _http2HeadersEnumerator;
-        private HPackEncoder _hpackEncoder;
+        private DynamicHPackEncoder _hpackEncoder;
         private HttpResponseHeaders _knownResponseHeaders;
         private HttpResponseHeaders _unknownResponseHeaders;
         private byte[] _buffer;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         public void GlobalSetup()
         {
             _http2HeadersEnumerator = new Http2HeadersEnumerator();
-            _hpackEncoder = new HPackEncoder();
+            _hpackEncoder = new DynamicHPackEncoder();
             _buffer = new byte[1024 * 1024];
 
             _knownResponseHeaders = new HttpResponseHeaders
