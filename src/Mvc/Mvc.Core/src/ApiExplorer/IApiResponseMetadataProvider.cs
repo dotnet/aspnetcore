@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// Gets the optimistic return type of the action.
         /// </summary>
-        Type Type { get; }
+        Type? Type { get; }
 
         /// <summary>
         /// Gets the HTTP status code of the response.

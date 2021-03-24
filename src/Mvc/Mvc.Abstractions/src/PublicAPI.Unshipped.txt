@@ -39,8 +39,27 @@
 *REMOVED*virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionArguments.get -> System.Collections.Generic.IDictionary<string!, object!>!
 *REMOVED*virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructorInvoker.get -> System.Func<object![]!, object!>?
 *REMOVED*virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ContainerMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
+*REMOVED*Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.RouteValues.get -> System.Collections.Generic.IDictionary<string!, string!>!
+*REMOVED*Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.BindingInfo.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo!
+*REMOVED*Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem.Constraint.get -> Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint!
+*REMOVED*Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate.ActionSelectorCandidate(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! action, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint!>! constraints) -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint!>!
+*REMOVED*Microsoft.AspNetCore.Mvc.Filters.FilterItem.Filter.get -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!
+*REMOVED*Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata.BinderType.get -> System.Type!
+*REMOVED*Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider.Name.get -> string!
+*REMOVED*Microsoft.AspNetCore.Mvc.Routing.AttributeRouteInfo.Name.get -> string!
+*REMOVED*static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Success(object! model) -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
+*REMOVED*static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.SuccessAsync(object! model) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
+Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.RouteValues.get -> System.Collections.Generic.IDictionary<string!, string?>!
+Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.BindingInfo.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo?
+Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem.Constraint.get -> Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint?
+Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate.ActionSelectorCandidate(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! action, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint!>? constraints) -> void
+Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint!>?
 Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionExecutingContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>! filters, System.Collections.Generic.IDictionary<string!, object?>! actionArguments, object! controller) -> void
+Microsoft.AspNetCore.Mvc.Filters.FilterItem.Filter.get -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata?
 Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext.OutputFormatterWriteContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Func<System.IO.Stream!, System.Text.Encoding!, System.IO.TextWriter!>! writerFactory, System.Type? objectType, object? object) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata.BinderType.get -> System.Type?
+Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider.Name.get -> string?
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.SetModelValue(string! key, object? rawValue, string? attemptedValue) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.this[string! key].get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry?
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientValidatorItem.ClientValidatorItem(object? validatorMetadata) -> void
@@ -53,6 +72,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.ValidationEntry
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.ValidationEntry(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! metadata, string! key, object? model) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorItem.Validator.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidator?
 Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.ValueProviderResult(Microsoft.Extensions.Primitives.StringValues values, System.Globalization.CultureInfo? culture) -> void
+Microsoft.AspNetCore.Mvc.Routing.AttributeRouteInfo.Name.get -> string?
 abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.BinderModelName.get -> string?
 abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource?
 abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.EnterNestedScope(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! modelMetadata, string! fieldName, string! modelName, object? model) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope
@@ -75,6 +95,8 @@ abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.PropertyGetter.get 
 abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.PropertySetter.get -> System.Action<object!, object?>?
 abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.SimpleDisplayProperty.get -> string?
 abstract Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.TemplateHint.get -> string?
+static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Success(object? model) -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
+static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.SuccessAsync(object? model) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.Result.get -> Microsoft.AspNetCore.Mvc.IActionResult?
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionArguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructorInvoker.get -> System.Func<object?[]!, object!>?

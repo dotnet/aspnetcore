@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         // Add the connection limit middleware
                         multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options.EndpointConfig).ConfigureAwait(false);
+                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options).ConfigureAwait(false);
                     }
 
                     // Add the HTTP middleware as the terminal connection middleware

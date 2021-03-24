@@ -11,8 +11,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class RazorPageDocumentClassifierPass : DocumentClassifierPassBase
     {
+        private bool _useConsolidatedMvcViews = false;
+
         public static readonly string RazorPageDocumentKind = "mvc.1.0.razor-page";
         public static readonly string RouteTemplateKey = "RouteTemplate";
+
+        public RazorPageDocumentClassifierPass() : this(false) { }
+
+        public RazorPageDocumentClassifierPass(bool useConsolidatedMvcViews)
+        {
+            _useConsolidatedMvcViews = useConsolidatedMvcViews;
+        }
 
         private static readonly RazorProjectEngine LeadingDirectiveParsingEngine = RazorProjectEngine.Create(
             RazorConfiguration.Create(RazorLanguageVersion.Version_3_0, "leading-directive-parser", Array.Empty<RazorExtension>()),
@@ -50,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             if (!codeDocument.TryComputeNamespace(fallbackToRootNamespace: false, out var namespaceName))
             {
-                @namespace.Content = "AspNetCore";
+                @namespace.Content = _useConsolidatedMvcViews ? "AspNetCoreGeneratedDocument" : "AspNetCore";
             }
             else
             {
@@ -71,7 +80,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             @class.BaseType = "global::Microsoft.AspNetCore.Mvc.RazorPages.Page";
             @class.Modifiers.Clear();
-            @class.Modifiers.Add("public");
+            if (_useConsolidatedMvcViews)
+            {
+                @class.Modifiers.Add("internal");
+                @class.Modifiers.Add("sealed");
+            }
+            else
+            {
+                @class.Modifiers.Add("public");
+            }
 
             method.MethodName = "ExecuteAsync";
             method.Modifiers.Clear();

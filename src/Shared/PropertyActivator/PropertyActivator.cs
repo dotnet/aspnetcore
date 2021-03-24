@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Linq;
 using System.Reflection;
@@ -91,7 +93,7 @@ namespace Microsoft.Extensions.Internal
 
             if (!includeNonPublic)
             {
-                properties = properties.Where(property => property.SetMethod.IsPublic);
+                properties = properties.Where(property => property.SetMethod is { IsPublic: true });
             }
 
             return properties.Select(createActivateInfo).ToArray();

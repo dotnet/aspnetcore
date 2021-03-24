@@ -668,21 +668,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return streamContext;
         }
 
-        private void ReturnStream(Http2Stream stream)
-        {
-            // We're conservative about what streams we can reuse.
-            // If there is a chance the stream is still in use then don't attempt to reuse it.
-            Debug.Assert(stream.CanReuse);
-
-            if (StreamPool.Count < MaxStreamPoolSize)
-            {
-                // This property is used to remove unused streams from the pool
-                stream.DrainExpirationTicks = SystemClock.UtcNowTicks + StreamPoolExpiryTicks;
-
-                StreamPool.Push(stream);
-            }
-        }
-
         private Task ProcessPriorityFrameAsync()
         {
             if (_currentHeadersStream != null)
@@ -1181,12 +1166,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private void RemoveStream(Http2Stream stream)
         {
             _streams.Remove(stream.StreamId);
-            if (stream.CanReuse)
+
+            if (stream.CanReuse && StreamPool.Count < MaxStreamPoolSize)
             {
-                ReturnStream(stream);
+                // Pool and reuse the stream if it finished in a graceful state and there is space in the pool.
+
+                // This property is used to remove unused streams from the pool
+                stream.DrainExpirationTicks = SystemClock.UtcNowTicks + StreamPoolExpiryTicks;
+
+                StreamPool.Push(stream);
             }
             else
             {
+                // Stream didn't complete gracefully or pool is full.
                 stream.Dispose();
             }
         }

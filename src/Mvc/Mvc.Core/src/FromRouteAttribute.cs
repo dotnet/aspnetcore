@@ -20,6 +20,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// The <see cref="HttpRequest.RouteValues"/> name.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

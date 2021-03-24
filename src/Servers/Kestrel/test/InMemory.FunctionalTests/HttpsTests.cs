@@ -7,9 +7,12 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -62,7 +65,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25542")]
-
         public async Task UseHttpsWithAsyncCallbackDoeNotFallBackToDefaultCert()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -402,6 +404,123 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
             Assert.Equal(2, loggerProvider.FilterLogger.LastEventId);
             Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
+        }
+
+        [Fact]
+        public async Task Http3_UseHttpsNoArgsWithDefaultCertificate_UseDefaultCertificate()
+        {
+            var serverOptions = CreateServerOptions();
+            serverOptions.DefaultCertificate = _x509Certificate2;
+
+            IFeatureCollection bindFeatures = null;
+            var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+            multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
+            {
+                bindFeatures = features;
+            };
+
+            var testContext = new TestServiceContext(LoggerFactory);
+            testContext.ServerOptions = serverOptions;
+            await using (var server = new TestServer(context => Task.CompletedTask,
+                testContext,
+                serverOptions =>
+                {
+                    serverOptions.ListenLocalhost(5001, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http3;
+                        listenOptions.UseHttps();
+                    });
+                },
+                services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+                }))
+            {
+            }
+
+            Assert.NotNull(bindFeatures);
+
+            var sslOptions = bindFeatures.Get<SslServerAuthenticationOptions>();
+            Assert.NotNull(sslOptions);
+            Assert.Equal(_x509Certificate2, sslOptions.ServerCertificate);
+        }
+
+        [Fact]
+        public async Task Http3_NoUseHttp3_NoSslServerOptions()
+        {
+            var serverOptions = CreateServerOptions();
+            serverOptions.DefaultCertificate = _x509Certificate2;
+
+            IFeatureCollection bindFeatures = null;
+            var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+            multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
+            {
+                bindFeatures = features;
+            };
+
+            var testContext = new TestServiceContext(LoggerFactory);
+            testContext.ServerOptions = serverOptions;
+            await using (var server = new TestServer(context => Task.CompletedTask,
+                testContext,
+                serverOptions =>
+                {
+                    serverOptions.ListenLocalhost(5001, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http3;
+                    });
+                },
+                services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+                }))
+            {
+            }
+
+            Assert.NotNull(bindFeatures);
+
+            var sslOptions = bindFeatures.Get<SslServerAuthenticationOptions>();
+            Assert.Null(sslOptions);
+        }
+
+        [Fact]
+        public async Task Http3_UseHttp3Callback_NoSslServerOptions()
+        {
+            var serverOptions = CreateServerOptions();
+            serverOptions.DefaultCertificate = _x509Certificate2;
+
+            IFeatureCollection bindFeatures = null;
+            var multiplexedConnectionListenerFactory = new MockMultiplexedConnectionListenerFactory();
+            multiplexedConnectionListenerFactory.OnBindAsync = (ep, features) =>
+            {
+                bindFeatures = features;
+            };
+
+            var testContext = new TestServiceContext(LoggerFactory);
+            testContext.ServerOptions = serverOptions;
+            await using (var server = new TestServer(context => Task.CompletedTask,
+                testContext,
+                serverOptions =>
+                {
+                    serverOptions.ListenLocalhost(5001, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http3;
+                        listenOptions.UseHttps((SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken) =>
+                        {
+                            return ValueTask.FromResult((new SslServerAuthenticationOptions()));
+                        }, state: null);
+                    });
+                },
+                services =>
+                {
+                    services.AddSingleton<IMultiplexedConnectionListenerFactory>(multiplexedConnectionListenerFactory);
+                }))
+            {
+            }
+
+            Assert.NotNull(bindFeatures);
+
+            var sslOptions = bindFeatures.Get<SslServerAuthenticationOptions>();
+            Assert.Null(sslOptions);
         }
 
         [Fact]

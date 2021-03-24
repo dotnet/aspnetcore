@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,7 +47,15 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
             async Task InitializeCore()
             {
-                Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory/*, debug: "pw:api"*/);
+                var driverPath = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
+                if (!string.IsNullOrEmpty(driverPath)) 
+                {
+                    Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath, debug: "pw:api");
+                }
+                else
+                {
+                    Playwright = await PlaywrightSharp.Playwright.CreateAsync(_loggerFactory, debug: "pw:api");
+                }
                 foreach (var (browserName, options) in _browserManagerConfiguration.BrowserOptions)
                 {
                     if (!_launchBrowsers.ContainsKey(browserName))

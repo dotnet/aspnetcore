@@ -30,11 +30,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         /// <summary>
         /// Gets the name of the <see cref="ApplicationPart"/>.
         /// </summary>
-        public override string Name => Assembly.GetName().Name;
+        public override string Name => Assembly.GetName().Name!;
 
         /// <inheritdoc />
         public IEnumerable<TypeInfo> Types => Assembly.DefinedTypes;
-
-        
     }
 }

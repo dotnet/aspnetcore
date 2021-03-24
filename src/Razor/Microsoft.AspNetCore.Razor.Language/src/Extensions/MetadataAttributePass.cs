@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -89,6 +89,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             if (insert == null)
             {
                 // Can't find a place to put the attributes, just bail.
+                return;
+            }
+
+            if (documentNode.Options.SuppressMetadataSourceChecksumAttributes)
+            {
+                // Checksum attributes are turned off (or options not populated), nothing to do.
                 return;
             }
 

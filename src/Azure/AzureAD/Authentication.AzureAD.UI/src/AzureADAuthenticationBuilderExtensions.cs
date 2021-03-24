@@ -198,34 +198,12 @@ namespace Microsoft.AspNetCore.Authentication
 
         private static void AddAdditionalMvcApplicationParts(IServiceCollection services)
         {
-            var additionalParts = GetAdditionalParts();
             var mvcBuilder = services
                 .AddMvc()
                 .ConfigureApplicationPartManager(apm =>
                 {
-                    foreach (var part in additionalParts)
-                    {
-                        if (!apm.ApplicationParts.Any(ap => HasSameName(ap.Name, part.Name)))
-                        {
-                            apm.ApplicationParts.Add(part);
-                        }
-                    }
-
                     apm.FeatureProviders.Add(new AzureADAccountControllerFeatureProvider());
                 });
-
-            bool HasSameName(string left, string right) => string.Equals(left, right, StringComparison.Ordinal);
-        }
-
-        private static IEnumerable<ApplicationPart> GetAdditionalParts()
-        {
-            var thisAssembly = typeof(AzureADAuthenticationBuilderExtensions).Assembly;
-            var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(thisAssembly, throwOnError: true);
-
-            foreach (var reference in relatedAssemblies)
-            {
-                yield return new CompiledRazorAssemblyPart(reference);
-            }
         }
     }
 }

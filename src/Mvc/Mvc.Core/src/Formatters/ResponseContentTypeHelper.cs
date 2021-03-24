@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -29,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="resolvedContentType">The content type to be used for the response content type header</param>
         /// <param name="resolvedContentTypeEncoding">Encoding to be used for writing the response</param>
         public static void ResolveContentTypeAndEncoding(
-            string actionResultContentType,
+            string? actionResultContentType,
             string httpResponseContentType,
             string defaultContentType,
             out string resolvedContentType,

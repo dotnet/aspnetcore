@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -146,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     var endpoint = candidate.Endpoint;
                     var actionDescriptor = endpoint.Metadata.GetMetadata<ActionDescriptor>();
 
-                    IReadOnlyList<IActionConstraint> constraints = Array.Empty<IActionConstraint>();
+                    IReadOnlyList<IActionConstraint>? constraints = Array.Empty<IActionConstraint>();
                     if (actionDescriptor != null)
                     {
                         constraints = _actionConstraintCache.GetActionConstraints(httpContext, actionDescriptor);

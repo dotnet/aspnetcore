@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -43,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public virtual string GetFormat(ActionContext context)
+        public virtual string? GetFormat(ActionContext context)
         {
             if (context.RouteData.Values.TryGetValue("format", out var obj))
             {
@@ -155,14 +154,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 return;
             }
 
-            if (!(context.Result is ObjectResult objectResult))
+            if (context.Result is not ObjectResult objectResult)
             {
                 return;
             }
 
             // If the action sets a single content type, then it takes precedence over the user
             // supplied content type based on format mapping.
-            if ((objectResult.ContentTypes != null && objectResult.ContentTypes.Count == 1) ||
+            if (objectResult.ContentTypes.Count == 1 ||
                 !string.IsNullOrEmpty(context.HttpContext.Response.ContentType))
             {
                 _logger.CannotApplyFormatFilterContentType(format);
@@ -171,7 +170,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var contentType = _options.FormatterMappings.GetMediaTypeMappingForFormat(format);
             objectResult.ContentTypes.Clear();
-            objectResult.ContentTypes.Add(contentType);
+            if (!string.IsNullOrEmpty(contentType))
+            {
+                objectResult.ContentTypes.Add(contentType);
+            }
         }
 
         /// <inheritdoc />

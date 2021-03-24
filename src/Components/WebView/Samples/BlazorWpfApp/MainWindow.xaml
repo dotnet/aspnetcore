@@ -10,6 +10,7 @@
     <DockPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Background="CadetBlue">
             <Label>This is native WPF UI</Label>
+            <Button Click="Button_Click" Margin="4" Padding="4">Check counter</Button>
         </StackPanel>
         <blazor:BlazorWebView HostPage="wwwroot\index.html" Services="{StaticResource services}">
             <blazor:BlazorWebView.RootComponents>
