@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                             // Invalid operation exception
                             Assert.NotNull(exception);
-                            Assert.Equal($"No exception handler was found, see inner exception for details of original exception. If an exception should not be thrown for 404 responses, set {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} to true.", exception.Message);
+                            Assert.Equal("No exception handler was found, see inner exception for details of original exception. If an exception should not be thrown for 404 responses, set AllowStatusCode404Response to true.", exception.Message);
 
                             // The original exception is inner exception
                             Assert.NotNull(exception.InnerException);
