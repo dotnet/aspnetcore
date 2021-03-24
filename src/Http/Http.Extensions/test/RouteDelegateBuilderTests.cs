@@ -22,7 +22,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
-    public class MapActionExpressionTreeBuilderTest
+    public class RouteDelegateBuilderTests
     {
         public static IEnumerable<object[]> NoResult
         {
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues[specifiedName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<int>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues[unmatchedName] = unmatchedRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<int>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Query = query;
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<int>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers[customHeaderName] = originalHeaderParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<int>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
             httpContext.Request.Body = new MemoryStream(requestBodyBytes);
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "0";
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
 
             await Assert.ThrowsAsync<JsonException>(() => requestDelegate(httpContext));
         }
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "0";
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "0";
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<BodyStruct>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<BodyStruct>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -414,7 +414,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -450,7 +450,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<Todo>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -485,7 +485,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Form = form;
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<int>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<int>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -551,7 +551,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<int>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -571,8 +571,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
             void TestAction([FromBody] int value1, [FromForm] int value2) { }
             void TestActionWithFlippedParams([FromForm] int value1, [FromBody] int value2) { }
 
-            Assert.Throws<InvalidOperationException>(() => MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int, int>)TestAction));
-            Assert.Throws<InvalidOperationException>(() => MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int, int>)TestActionWithFlippedParams));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateBuilder.BuildRequestDelegate((Action<int, int>)TestAction));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateBuilder.BuildRequestDelegate((Action<int, int>)TestActionWithFlippedParams));
         }
 
         [Fact]
@@ -580,7 +580,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             void TestAction([FromBody] int value1, [FromBody] int value2) { }
 
-            Assert.Throws<InvalidOperationException>(() => MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<int, int>)TestAction));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateBuilder.BuildRequestDelegate((Action<int, int>)TestAction));
         }
 
         [Fact]
@@ -600,7 +600,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<MyService>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<MyService>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -619,7 +619,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<HttpContext>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<HttpContext>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -639,7 +639,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<IFormCollection>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<IFormCollection>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -662,7 +662,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 RequestAborted = cts.Token
             };
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate((Action<CancellationToken>)TestAction);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate((Action<CancellationToken>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -706,7 +706,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 
@@ -755,7 +755,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 
@@ -798,7 +798,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 
@@ -839,7 +839,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 
@@ -880,7 +880,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var responseBodyStream = new MemoryStream();
             httpContext.Response.Body = responseBodyStream;
 
-            var requestDelegate = MapActionExpressionTreeBuilder.BuildRequestDelegate(@delegate);
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate(@delegate);
 
             await requestDelegate(httpContext);
 

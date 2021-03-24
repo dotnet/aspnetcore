@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Builder
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Builder
             const int defaultOrder = 0;
 
             var builder = new RouteEndpointBuilder(
-                MapActionExpressionTreeBuilder.BuildRequestDelegate(action),
+                RequestDelegateBuilder.BuildRequestDelegate(action),
                 pattern,
                 defaultOrder)
             {

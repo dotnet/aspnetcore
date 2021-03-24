@@ -24,7 +24,6 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
-    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

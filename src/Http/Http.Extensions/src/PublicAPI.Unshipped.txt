@@ -152,6 +152,7 @@ Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Set(string! name, object? valu
 Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetCookie.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue!>!
 Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetCookie.set -> void
 Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetList<T>(string! name, System.Collections.Generic.IList<T>? values) -> void
+Microsoft.AspNetCore.Http.RequestDelegateBuilder
 override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.ToString() -> string!
 static Microsoft.AspNetCore.Http.Extensions.HttpRequestMultipartExtensions.GetMultipartBoundary(this Microsoft.AspNetCore.Http.HttpRequest! request) -> string!
@@ -168,6 +169,7 @@ static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.AppendList<T>(th
 static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpRequest! request) -> Microsoft.AspNetCore.Http.Headers.RequestHeaders!
 static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpResponse! response) -> Microsoft.AspNetCore.Http.Headers.ResponseHeaders!
 static Microsoft.AspNetCore.Http.HttpContextServerVariableExtensions.GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext! context, string! variableName) -> string?
+static Microsoft.AspNetCore.Http.RequestDelegateBuilder.BuildRequestDelegate(System.Delegate! action) -> Microsoft.AspNetCore.Http.RequestDelegate!
 static Microsoft.AspNetCore.Http.ResponseExtensions.Clear(this Microsoft.AspNetCore.Http.HttpResponse! response) -> void
 static Microsoft.AspNetCore.Http.ResponseExtensions.Redirect(this Microsoft.AspNetCore.Http.HttpResponse! response, string! location, bool permanent, bool preserveMethod) -> void
 static Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, Microsoft.Extensions.FileProviders.IFileInfo! file, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
