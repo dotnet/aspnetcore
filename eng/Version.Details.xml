@@ -299,6 +299,7 @@
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.21167.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>0ca849f0b71866b007fedaaa938cee63f8d056a6</Sha>
+      <SourceBuild RepoName="arcade" ManagedOnly="true"/>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="6.0.0-beta.21167.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
