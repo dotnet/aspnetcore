@@ -8,7 +8,7 @@ The following contains a description of the sub-directories.
 
 - `Core`: Contains the main server implementation for Kestrel.
 - `Kestrel`: Contains the public API exposed to use Kestrel.
-- `Transport.Libuv`: Contains the Libuv transport for connection management.
+- `Transport.Libuv`: Contains the obsolete Libuv transport for connection management.
 - `Transport.Quic`: Contains the QUIC transport for connection management.
 - `Transport.Sockets`:Contains the Sockets transport for connection management.
 
