@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override string FileKind { get; }
 
+        public override int TabSize { get; set; } = 4;
+
         public override int IndentSize { get; set; } = 4;
 
         public override bool IndentWithTabs { get; set; }
@@ -45,6 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             return new DefaultRazorCodeGenerationOptions(
                 IndentWithTabs,
+                TabSize,
                 IndentSize,
                 DesignTime,
                 RootNamespace,

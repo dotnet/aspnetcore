@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_RespectTabSetting()
         {
             // Arrange
-            var writer = new CodeWriter(Environment.NewLine, indentSize: 4, indentWithTabs: true);
+            var writer = new CodeWriter(Environment.NewLine, indentWithTabs: true, tabSize: 4, indentSize: 4);
 
             // Act
             writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<string>());
@@ -376,10 +376,25 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         [Fact]
+        public void CSharpCodeWriter_RespectTabSetting_ModifyTabSize()
+        {
+            // Arrange
+            var writer = new CodeWriter(Environment.NewLine, indentWithTabs: true, tabSize: 2, indentSize: 4);
+
+            // Act
+            writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<string>());
+            writer.WriteField(Array.Empty<string>(), Array.Empty<string>(), "int", "f");
+
+            // Assert
+            var output = writer.GenerateCode();
+            Assert.Equal("class C" + Environment.NewLine + "{" + Environment.NewLine + "\t\tint f;" + Environment.NewLine, output);
+        }
+
+        [Fact]
         public void CSharpCodeWriter_RespectSpaceSetting()
         {
             // Arrange
-            var writer = new CodeWriter(Environment.NewLine, indentSize: 4, indentWithTabs: false);
+            var writer = new CodeWriter(Environment.NewLine, indentWithTabs: false, tabSize: 4, indentSize: 4);
 
             // Act
             writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<string>());
@@ -394,7 +409,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_RespectSpaceSetting_ModifyIndentSize()
         {
             // Arrange
-            var writer = new CodeWriter(Environment.NewLine, indentSize: 8, indentWithTabs: false);
+            var writer = new CodeWriter(Environment.NewLine, indentWithTabs: false, tabSize: 4, indentSize: 7);
 
             // Act
             writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<string>());
@@ -402,7 +417,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             // Assert
             var output = writer.GenerateCode();
-            Assert.Equal("class C" + Environment.NewLine + "{" + Environment.NewLine + "        int f;" + Environment.NewLine, output);
+            Assert.Equal("class C" + Environment.NewLine + "{" + Environment.NewLine + "       int f;" + Environment.NewLine, output);
         }
     }
 }

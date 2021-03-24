@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     }
                     else if (@char == '\t')
                     {
-                        spaceCount += writer.IndentSize;
+                        spaceCount += writer.TabSize;
                     }
                     else
                     {
