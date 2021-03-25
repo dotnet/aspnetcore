@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload.RootElement);
                 context.RunClaimActions();
                 await Events.CreatingTicket(context);
-                return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
+                return new AuthenticationTicket(context.Principal!, context.Properties, Scheme.Name);
             }
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             var state = Options.StateDataFormat.Protect(properties);
             queryStrings.Add("state", state);
 
-            var authorizationEndpoint = QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings);
+            var authorizationEndpoint = QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings!);
             return authorizationEndpoint;
         }
 
@@ -84,10 +84,10 @@ namespace Microsoft.AspNetCore.Authentication.Google
             IDictionary<string, string> queryStrings,
             AuthenticationProperties properties,
             string name,
-            Func<T, string> formatter,
+            Func<T, string?> formatter,
             T defaultValue)
         {
-            string value = null;
+            string? value;
             var parameterValue = properties.GetParameter<T>(name);
             if (parameterValue != null)
             {
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             IDictionary<string, string> queryStrings,
             AuthenticationProperties properties,
             string name,
-            string defaultValue = null)
+            string? defaultValue = null)
             => AddQueryString(queryStrings, properties, name, x => x, defaultValue);
     }
 }

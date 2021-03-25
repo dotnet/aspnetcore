@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="protectedText">The data protected value.</param>
         /// <returns>An instance of <typeparamref name="TData"/>.</returns>
         [return: MaybeNull]
-        TData Unprotect(string protectedText);
+        TData Unprotect(string? protectedText);
 
         /// <summary>
         /// Unprotects the specified <paramref name="protectedText"/> using the specified <paramref name="purpose"/>.
@@ -41,6 +41,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="purpose">The purpose.</param>
         /// <returns>An instance of <typeparamref name="TData"/>.</returns>
         [return: MaybeNull]
-        TData Unprotect(string protectedText, string? purpose);
+        TData Unprotect(string? protectedText, string? purpose);
     }
 }
