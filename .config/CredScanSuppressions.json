@@ -14,6 +14,10 @@
       "_justification": "This is a fake password used in test code."
     },
     {
+      "placeholder": "testpassword",
+      "_justification": "This is a fake password used in test code."
+    },
+    {
       "placeholder": "AAABAgMEBQYHCAkKCwwNDg+ukCEMDf0yyQ29NYubggE=",
       "_justification": "This is a fake password hash used in test code."
     },
