@@ -82,6 +82,7 @@ namespace Templates.Test
         // If this test is quarantined, BlazorWasmHostedTemplate_Works must be quarantined as well
         [Theory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
         [InlineData(BrowserKind.Chromium)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmTemplate_CreateBuildPublish_Hosted(BrowserKind browserKind)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
