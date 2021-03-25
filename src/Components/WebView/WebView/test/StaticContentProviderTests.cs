@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 
             // Act
             Assert.True(scp.TryGetResponseContent(
-                requestUri: appBase + "folder/file.css",
+                requestUri: appBase + cssFilePath,
                 allowFallbackOnHostPage: false,
                 out var statusCode,
                 out var statusMessage,
