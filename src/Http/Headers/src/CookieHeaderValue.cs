@@ -165,19 +165,30 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
+        /// <summary>
+        /// Attempts to parse the sequence of values into a dictionary of cookies using string parsing rules.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <param name="store"></param>
+        /// <param name="enableCookieNameEncoding"></param>
+        /// <returns></returns>
+        public static bool TryParseIntoDictionary(StringValues inputs, Dictionary<string, string> store, bool enableCookieNameEncoding)
+        {
+            return MultipleValueParser.TryParseValues(inputs, strict: false, store, enableCookieNameEncoding);
+        }
+
         // name=value; name="value"
-        internal static bool TryGetCookieLength(StringSegment input, ref int offset, [NotNullWhen(true)] out CookieHeaderValue? parsedValue)
+        internal static bool TryGetCookieLength(StringSegment input, ref int offset, [NotNullWhen(true)] out (StringSegment, StringSegment)? parsedValue)
         {
             Contract.Requires(offset >= 0);
 
             parsedValue = null;
+            (StringSegment, StringSegment) result = default;
 
             if (StringSegment.IsNullOrEmpty(input) || (offset >= input.Length))
             {
                 return false;
             }
-
-            var result = new CookieHeaderValue();
 
             // The caller should have already consumed any leading whitespace, commas, etc..
 
@@ -189,7 +200,8 @@ namespace Microsoft.Net.Http.Headers
             {
                 return false;
             }
-            result._name = input.Subsegment(offset, itemLength);
+
+            result.Item1 = input.Subsegment(offset, itemLength);
             offset += itemLength;
 
             // = (no spaces)
@@ -200,7 +212,7 @@ namespace Microsoft.Net.Http.Headers
 
             // value or "quoted value"
             // The value may be empty
-            result._value = GetCookieValue(input, ref offset);
+            result.Item2 = GetCookieValue(input, ref offset);
 
             parsedValue = result;
             return true;

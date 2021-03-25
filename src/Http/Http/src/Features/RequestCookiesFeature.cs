@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 if (_parsedValues == null || _original != current)
                 {
                     _original = current;
-                    _parsedValues = RequestCookieCollection.Parse(current.ToArray());
+                    _parsedValues = RequestCookieCollection.Parse(current);
                 }
 
                 return _parsedValues;

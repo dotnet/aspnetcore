@@ -2,5 +2,6 @@
 *REMOVED*Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag) -> void
 Microsoft.Net.Http.Headers.MediaTypeHeaderValue.MatchesMediaType(Microsoft.Extensions.Primitives.StringSegment otherMediaType) -> bool
 Microsoft.Net.Http.Headers.RangeConditionHeaderValue.RangeConditionHeaderValue(Microsoft.Net.Http.Headers.EntityTagHeaderValue! entityTag) -> void
+static Microsoft.Net.Http.Headers.CookieHeaderValue.TryParseIntoDictionary(Microsoft.Extensions.Primitives.StringValues inputs, System.Collections.Generic.Dictionary<string!, string!>! store, bool enableCookieNameEncoding) -> bool
 static readonly Microsoft.Net.Http.Headers.HeaderNames.Baggage -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ProxyConnection -> string!
