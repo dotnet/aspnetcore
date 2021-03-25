@@ -175,6 +175,15 @@
     <BuildDependsOn>$(BuildDependsOn);_CopySymbolsToArtifacts</BuildDependsOn>
   </PropertyGroup>
 
+  <!--
+    Where necessary, do not pretend we support iOS or Android. This file is imported after project
+    has a chance to set $(RemoveDevicePlatformSupport) and long after @(SupportedPlatforms) is initialized.
+  -->
+  <ItemGroup Condition=" '$(RemoveDevicePlatformSupport)' == 'true' ">
+    <SupportedPlatform Remove="Android" />
+    <SupportedPlatform Remove="iOS" />
+  </ItemGroup>
+
   <Target Name="_CopySymbolsToArtifacts">
     <Copy SourceFiles="$([System.IO.Path]::ChangeExtension('$(TargetPath)', 'pdb'))"
         DestinationFolder="$(SymbolsOutputPath)$(TargetFramework)"
