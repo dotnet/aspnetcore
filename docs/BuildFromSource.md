@@ -159,7 +159,7 @@ to open the .sln file or one of the project specific .slnf files to work on the 
    > branch, we regularly update the versions of .NET Core SDK required to build the repo.
    > You will need to restart Visual Studio every time we update the .NET Core SDK.
 
-> :bulb: Rerunning the above command or, perhaps, the quicker `.\build.cmd -noBuildNative -noBuildManaged` may be
+> :bulb: Re-running the above command or, perhaps, the quicker `.\eng\build.cmd -noBuildNative -noBuildManaged` may be
 > necessary after switching branches, especially if the `$(DefaultNetCoreTargetFramework)` value changes.
 
 Typically, you want to focus on a single project within this large repo. For example,
@@ -222,7 +222,7 @@ code .
 
 ### Building on command-line
 
-When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](using-dotnet-on-command-line-in-this-repo).
+When developing in VS Code, you'll need to use the `eng\build.cmd` or `eng\build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](using-dotnet-on-command-line-in-this-repo).
 
 The source code in this repo is divided into directories for each project area. Each directory will typically contain a `src` directory that contains the source files for a project and a `test` directory that contains the test projects and assets within a project.
 
@@ -233,13 +233,13 @@ To build a code change associated with a modification, run the build script in t
 On Windows, you can run the command script:
 
 ```powershell
-.\build.cmd
+.\eng\build.cmd
 ```
 
 On macOS/Linux, you can run the shell script:
 
 ```bash
-./build.sh
+./eng/build.sh
 ```
 
 By default, all of the C# projects are built. Some C# projects require NodeJS to be installed to compile JavaScript assets which are then checked in as source. If NodeJS is detected on the path, the NodeJS projects will be compiled as part of building C# projects. If NodeJS is not detected on the path, the JavaScript assets checked in previously will be used instead. To disable building NodeJS projects, specify `-noBuildNodeJS` or `--no-build-nodejs` on the command line.
@@ -272,46 +272,46 @@ source ./activate.sh
 
 ### Running tests on command-line
 
-Tests are not run by default. When invoking a `build.cmd`/`build.sh` script, use the `-test` option to run tests in addition to building.
+Tests are not run by default. When invoking a `eng\build.cmd`/`eng/build.sh` script, use the `-test` option to run tests in addition to building.
 
 On Windows:
 
 ```powershell
-.\build.cmd -test
+.\eng\build.cmd -test
 ```
 
 On macOS/Linux:
 
 ```bash
-./build.sh --test
+./eng/build.sh --test
 ```
 
-> :bulb: If you're working on changes for a particular subset of the project, you might not want to execute the entire test suite. Instead, only run the tests within the subdirectory where changes were made. This can be accomplished by passing the `projects` property like so: `.\build.cmd -test -projects .\src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj`.
+> :bulb: If you're working on changes for a particular subset of the project, you might not want to execute the entire test suite. Instead, only run the tests within the subdirectory where changes were made. This can be accomplished by passing the `projects` property like so: `.\eng\build.cmd -test -projects .\src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj`.
 
 ### Building a subset of the code
 
-When working in the repository, you'll typically be focused on one project area, such as Blazor and SignalR. In that case, it's easier to use the `build.cmd` and `build.sh` that are available in each subfolder. When invoked in a subfolder on Windows:
+When working in the repository, you'll typically be focused on one project area, such as Blazor and SignalR. In that case, it's easier to use the `eng\build.cmd` and `eng/build.sh` that are available in each subfolder. When invoked in a subfolder on Windows:
 
 ```ps1
-.\build.cmd
+.\eng\build.cmd
 ```
 
 Or on macOS or Linux:
 
 ```bash
-./build.sh
+./eng/build.sh
 ```
 
-> :bulb: Before using the `build.cmd` or `build.sh` at the top-level or in a subfolder, you will need to make sure that [the dependencies documented above](#step-2-install-pre-requisites) have been installed.
+> :bulb: Before using the `eng\build.cmd` or `eng\build.sh` at the top-level or in a subfolder, you will need to make sure that [the dependencies documented above](#step-2-install-pre-requisites) have been installed.
 
-These scripts will build and test the projects within a specific directory. Furthermore, you can use flags on `build.cmd`/`.sh` to build subsets based on language type, like C++, TypeScript, or C#. Run `build.sh --help` or `build.cmd -help` for details.
+These scripts will build and test the projects within a specific directory. Furthermore, you can use flags on `eng\build.cmd`/`.sh` to build subsets based on language type, like C++, TypeScript, or C#. Run `eng\build.sh --help` or `eng\build.cmd -help` for details.
 
 ### Build properties
 
 Additional properties can be added as an argument in the form `/property:$name=$value`, or `/p:$name=$value` for short. For example:
 
 ```powershell
-.\build.cmd -Configuration Release
+.\eng\build.cmd -Configuration Release
 ```
 
 Common properties include:
@@ -331,12 +331,12 @@ If you need to make changes to a .resx file, run `dotnet msbuild t:/Resgen <path
 After building ASP.NET Core from source, you will need to install and use your local version of ASP.NET Core.
 See ["Artifacts"](./Artifacts.md) for more explanation of the different folders produced by a build.
 
-Building installers does not run as part of `build.cmd` run without parameters, so you should opt-in for building them:
+Building installers does not run as part of `eng\build.cmd` run without parameters, so you should opt-in for building them:
 
 ```powershell
-.\build.cmd -all -pack -arch x64
-.\build.cmd -all -pack -arch x86 -noBuildJava
-.\build.cmd -buildInstallers
+.\eng\build.cmd -all -pack -arch x64
+.\eng\build.cmd -all -pack -arch x86 -noBuildJava
+.\eng\build.cmd -buildInstallers
 ```
 
 *Note*: Additional build steps listed above aren't necessary on Linux or macOS.
