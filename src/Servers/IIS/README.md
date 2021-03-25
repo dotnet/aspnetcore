@@ -2,7 +2,7 @@
 
 ASP.NET Core IIS Web Server is a flexible secure managed Web Server to be hosted with IIS on Windows.
 
-Documentation for ASP.NET Core IIS can be found in the [ASP.NET Core IIS Docs](https://docs.microsoft.com/aspnet/core/fundamentals/servers/iis/).
+Documentation for ASP.NET Core IIS can be found in the [ASP.NET Core IIS Docs](https://docs.microsoft.com/aspnet/core/host-and-deploy/iis).
 
 ## Description
 
