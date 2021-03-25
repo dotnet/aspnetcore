@@ -16,7 +16,6 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    [TestCaseOrderer("Templates.Test.PriorityOrderer", "BlazorTemplates.Tests")]
     public class BlazorServerTemplateTest : BlazorTemplateTest
     {
         public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory)
@@ -172,7 +171,7 @@ namespace Templates.Test
             Assert.Equal(5, (await page.QuerySelectorAllAsync("p+table>tbody>tr")).Count());
         }
 
-        [Theory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
+        [Theory]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", null)]

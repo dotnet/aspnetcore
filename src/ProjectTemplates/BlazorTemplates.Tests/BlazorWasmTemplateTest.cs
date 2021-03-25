@@ -23,7 +23,6 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    [TestCaseOrderer("Templates.Test.PriorityOrderer", "BlazorTemplates.Tests")]
     public class BlazorWasmTemplateTest : BlazorTemplateTest
     {
         public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory)
