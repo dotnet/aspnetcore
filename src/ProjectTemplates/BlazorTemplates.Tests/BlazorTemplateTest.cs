@@ -110,7 +110,7 @@ namespace Templates.Test
                     targetProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
                 }
 
-                var publishResult = await targetProject.RunDotNetPublishAsync(noRestore: !serverProject);
+                var publishResult = await targetProject.RunDotNetPublishAsync(noRestore: false);
                 Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", targetProject, publishResult));
 
                 // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
