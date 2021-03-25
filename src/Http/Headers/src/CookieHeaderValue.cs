@@ -174,7 +174,7 @@ namespace Microsoft.Net.Http.Headers
         /// <returns></returns>
         public static bool TryParseIntoDictionary(StringValues inputs, Dictionary<string, string> store, bool enableCookieNameEncoding)
         {
-            return MultipleValueParser.TryParseValues(inputs, strict: false, store, enableCookieNameEncoding);
+            return MultipleValueParser.TryParseValues(inputs, store, enableCookieNameEncoding);
         }
 
         // name=value; name="value"
