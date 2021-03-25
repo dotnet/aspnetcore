@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private bool _writerComplete;
 
         // Internal for testing
-        internal ValueTask _dataWriteProcessingTask;
+        internal Task _dataWriteProcessingTask;
         internal bool _disposed;
 
         /// <summary>The core logic for the IValueTaskSource implementation.</summary>
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // The minimum output data rate is enforced at the connection level by Http2FrameWriter.
             _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl: null, _log);
 
-            _dataWriteProcessingTask = ProcessDataWrites().Preserve();
+            _dataWriteProcessingTask = ProcessDataWrites();
         }
 
         public void StreamReset()
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
         }
 
-        private async ValueTask ProcessDataWrites()
+        private async Task ProcessDataWrites()
         {
             // ProcessDataWrites runs for the lifetime of the Http2OutputProducer, and is designed to be reused by multiple streams.
             // When Http2OutputProducer is no longer used (e.g. a stream is aborted and will no longer be used, or the connection is closed)
