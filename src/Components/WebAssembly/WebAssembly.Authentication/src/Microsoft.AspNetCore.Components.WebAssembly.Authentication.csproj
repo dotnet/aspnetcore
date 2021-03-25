@@ -18,6 +18,10 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+  </ItemGroup>
+
   <PropertyGroup>
     <YarnWorkingDir>$(MSBuildThisFileDirectory)Interop\</YarnWorkingDir>
     <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
