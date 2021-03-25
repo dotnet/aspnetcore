@@ -26,19 +26,12 @@ namespace Templates.Test
 
         public override string ProjectType { get; } = "blazorserver";
 
-        // This test is required to run before BlazorServerTemplateWorks_NoAuth to create and build the project
-        // If this test is quarantined, BlazorServerTemplateWorks_NoAuth must be quarantined as well
-        [Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
-        public Task BlazorServerTemplate_CreateBuildPublish_NoAuth()
-            => CreateBuildPublishAsync("blazorservernoauth" + BrowserKind.Chromium.ToString());
-
-        // This tests depends on BlazorServerTemplate_CreateBuildPublish_NoAuth running first
         [Theory]
         [InlineData(BrowserKind.Chromium)]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30761")]
         public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorservernoauth" + browserKind, Output);
+            var project = await CreateBuildPublishAsync("blazorservernoauth" + browserKind);
 
             await using var browser = BrowserManager.IsAvailable(browserKind) ?
                 await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo) :
@@ -86,24 +79,16 @@ namespace Templates.Test
             }
         }
 
-        // This test is required to run before BlazorServerTemplateWorks_IndividualAuth to create and build the project
-        // If this test is quarantined, BlazorServerTemplateWorks_IndividualAuth must be quarantined as well
-        [Theory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
-        [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
-        public Task BlazorServerTemplate_CreateBuildPublish_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
-            => CreateBuildPublishAsync("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""));
-
         public static IEnumerable<object[]> BlazorServerTemplateWorks_IndividualAuthData =>
                 BrowserManager.WithBrowsers(new[] { BrowserKind.Chromium }, true, false);
 
-        // This tests depends on BlazorServerTemplate_CreateBuildPublish_IndividualAuth running first
         [Theory]
         [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30807")]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
         public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""), Output);
+            var project = await CreateBuildPublishAsync("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""));
 
             var browser = !BrowserManager.IsAvailable(browserKind) ?
                 null :

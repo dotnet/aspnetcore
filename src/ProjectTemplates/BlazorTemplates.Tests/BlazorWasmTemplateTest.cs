@@ -31,26 +31,16 @@ namespace Templates.Test
 
         public override string ProjectType { get; } = "blazorwasm";
 
-        // This test is required to run before BlazorWasmStandaloneTemplate_Works to create and build the project
-        // If this test is quarantined, BlazorWasmStandaloneTemplate_Works must be quarantined as well
-        [Theory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
+        [Theory]
         [InlineData(BrowserKind.Chromium)]
-        public async Task BlazorWasmTemplate_CreateBuildPublish_Standalone(BrowserKind browserKind)
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
+        public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
         {
             var project = await CreateBuildPublishAsync("blazorstandalone" + browserKind);
 
             // The service worker assets manifest isn't generated for non-PWA projects
             var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
             Assert.False(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "Non-PWA templates should not produce service-worker-assets.js");
-        }
-
-        // This test depends on BlazorWasmTemplate_CreateBuildPublish_Standalone running first
-        [Theory]
-        [InlineData(BrowserKind.Chromium)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
-        public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
-        {
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandalone" + browserKind, Output);
 
             await BuildAndRunTest(project.ProjectName, project, browserKind);
 
@@ -78,36 +68,12 @@ namespace Templates.Test
             return page;
         }
 
-        // This test is required to run before BlazorWasmHostedTemplate_Works to create and build the project
-        // If this test is quarantined, BlazorWasmHostedTemplate_Works must be quarantined as well
-        [Theory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
-        [InlineData(BrowserKind.Chromium)]
-        public async Task BlazorWasmTemplate_CreateBuildPublish_Hosted(BrowserKind browserKind)
-        {
-            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
-            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
-
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);
-            var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
-
-            var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
-
-            var publishResult = await serverProject.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", serverProject, publishResult));
-
-            var buildResult = await serverProject.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", serverProject, buildResult));        
-        }
-            // => CreateBuildPublishAsync("blazorhosted" + BrowserKind.Chromium, args: new[] { "--hosted" }, serverProject: true);
-
-        // This test depends on BlazorWasmTemplate_CreateBuildPublish_Hosted running first
         [Theory]
         [InlineData(BrowserKind.Chromium)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorhosted" + browserKind, Output);
+            var project = await CreateBuildPublishAsync("blazorhosted" + BrowserKind.Chromium, args: new[] { "--hosted" }, serverProject: true);
 
             var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -151,19 +117,12 @@ namespace Templates.Test
             Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
         }
 
-        // This test is required to run before BlazorWasmStandalonePwaTemplate_Works to create and build the project
-        // If this test is quarantined, BlazorWasmStandalonePwaTemplate_Works must be quarantined as well
-        [Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
-        public Task BlazorWasmTemplate_CreateBuildPublish_StandalonePwa()
-            => CreateBuildPublishAsync("blazorstandalonepwa", args: new[] { "--pwa" });
-
-        // This test depends on BlazorWasmTemplate_CreateBuildPublish_StandalonePwa running first
         [Theory]
         [InlineData(BrowserKind.Chromium)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", Output);
+            var project = await CreateBuildPublishAsync("blazorstandalonepwa", args: new[] { "--pwa" });
 
             await BuildAndRunTest(project.ProjectName, project, browserKind);
 
@@ -194,19 +153,12 @@ namespace Templates.Test
             }
         }
 
-        // This test is required to run before BlazorWasmHostedPwaTemplate_Works to create and build the project
-        // If this test is quarantined, BlazorWasmHostedPwaTemplate_Works must be quarantined as well
-        [Fact, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
-        public Task BlazorWasmTemplate_CreateBuildPublish_HostedPwa()
-            => CreateBuildPublishAsync("blazorhostedpwa", args: new[] { "--hosted", "--pwa" }, serverProject: true);
-
-        // This test depends on BlazorWasmTemplate_CreateBuildPublish_HostedPwa running first
         [Theory]
         [InlineData(BrowserKind.Chromium)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
         public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", Output);
+            var project = await CreateBuildPublishAsync("blazorhostedpwa", args: new[] { "--hosted", "--pwa" }, serverProject: true);
 
             var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -272,40 +224,24 @@ namespace Templates.Test
             Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
         }
 
-        // This test is required to run before BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB to create and build the project
-        // If this test is quarantined, BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB must be quarantined as well
-        [ConditionalTheory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
-        [InlineData(BrowserKind.Chromium)]
-        //// LocalDB doesn't work on non Windows platforms
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public Task BlazorWasmTemplate_CreateBuildPublish_IndividualAuthLocalDb(BrowserKind browserKind)
-            => CreateBuildPublishIndividualAuthProject(browserKind, useLocalDb: true);
-
-        // This test depends on BlazorWasmTemplate_CreateBuildPublish_IndividualAuthLocalDb running first
         [ConditionalTheory]
         [InlineData(BrowserKind.Chromium)]
-        //// LocalDB doesn't work on non Windows platforms
+        // LocalDB doesn't work on non Windows platforms
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30700")]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30700")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
             => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
 
-        // This test is required to run before BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB to create and build the project
-        // If this test is quarantined, BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB must be quarantined as well
-        [ConditionalTheory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
-        [InlineData(BrowserKind.Chromium)]
-        public Task BlazorWasmTemplate_CreateBuildPublish_IndividualAuthNoLocalDb(BrowserKind browserKind)
-            => CreateBuildPublishIndividualAuthProject(browserKind, useLocalDb: false);
 
         // This test depends on BlazorWasmTemplate_CreateBuildPublish_IndividualAuthNoLocalDb running first
         [Theory]
         [InlineData(BrowserKind.Chromium)]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30820")]
+        //[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30820")]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
             => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
 
-        private async Task CreateBuildPublishIndividualAuthProject(BrowserKind browserKind, bool useLocalDb)
+        private async Task<Project> CreateBuildPublishIndividualAuthProject(BrowserKind browserKind, bool useLocalDb)
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
             Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
@@ -347,11 +283,13 @@ namespace Templates.Test
                 var dbUpdateResult = await serverProject.RunDotNetEfUpdateDatabaseAsync();
                 Assert.True(0 == dbUpdateResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", serverProject, dbUpdateResult));
             }
+
+            return project;
         }
 
         private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(BrowserKind browserKind, bool useLocalDb)
         {
-            var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""), Output);
+            var project = await CreateBuildPublishIndividualAuthProject(browserKind, useLocalDb: true);
 
             var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -381,12 +319,11 @@ namespace Templates.Test
             }
         }
 
-        // This test is required to run before BlazorWasmStandaloneTemplate_IndividualAuth_Works to create and build the project
-        // If this test is quarantined, BlazorWasmStandaloneTemplate_IndividualAuth_Works must be quarantined as well
-        [Theory, TestPriority(BUILDCREATEPUBLISH_PRIORITY)]
-        [InlineData(BrowserKind.Chromium)]
-        public Task BlazorWasmStandaloneTemplate_CreateBuildPublish_IndividualAuth(BrowserKind browserKind)
-            => CreateBuildPublishAsync("blazorstandaloneindividual" + browserKind, args: new[] {
+        [Theory]
+        [InlineData(BrowserKind.Chromium, Skip = "https://github.com/dotnet/aspnetcore/issues/28596")]
+        public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works(BrowserKind browserKind)
+        {
+            var project = await CreateBuildPublishAsync("blazorstandaloneindividual" + browserKind, args: new[] {
                 "-au",
                 "Individual",
                 "--authority",
@@ -394,13 +331,6 @@ namespace Templates.Test
                 "--client-id",
                 "sample-client-id"
             });
-
-        // This test depends on BlazorWasmStandaloneTemplate_CreateBuildPublish_IndividualAuth running first
-        [Theory]
-        [InlineData(BrowserKind.Chromium, Skip = "https://github.com/dotnet/aspnetcore/issues/28596")]
-        public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works(BrowserKind browserKind)
-        {
-            var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual" + browserKind, Output);
 
             // We don't want to test the auth flow as we don't have the required settings to talk to a third-party IdP
             // but we want to make sure that we are able to run the app without errors.
