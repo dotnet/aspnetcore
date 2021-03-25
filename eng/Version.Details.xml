@@ -265,11 +265,11 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0f64b267ac0552f07b06f18103581b880c8c53c6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Version="6.0.0-preview.3.21167.1">
+    <Dependency Name="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Version="6.0.0-preview.3.21174.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0f64b267ac0552f07b06f18103581b880c8c53c6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Runtime.WebAssembly.Sdk" Version="6.0.0-preview.3.21167.1">
+    <Dependency Name="Microsoft.NET.Runtime.WebAssembly.Sdk" Version="6.0.0-preview.3.21174.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0f64b267ac0552f07b06f18103581b880c8c53c6</Sha>
     </Dependency>
@@ -281,9 +281,21 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0f64b267ac0552f07b06f18103581b880c8c53c6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="6.0.0-preview.3.21167.1">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="6.0.0-preview.3.21174.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0f64b267ac0552f07b06f18103581b880c8c53c6</Sha>
+    </Dependency>
+     <Dependency Name="Microsoft.NET.Runtime.Emscripten.2.0.12.Node.win-x64" Version="6.0.0-preview.3.21174.2">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>bcc7e0e0ce1758322015675356efc121b211e312</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NET.Runtime.Emscripten.2.0.12.Python.win-x64" Version="6.0.0-preview.3.21174.2">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>bcc7e0e0ce1758322015675356efc121b211e312</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.win-x64" Version="6.0.0-preview.3.21174.2">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>bcc7e0e0ce1758322015675356efc121b211e312</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="6.0.0-preview.3.21167.1">
       <Uri>https://github.com/dotnet/runtime</Uri>

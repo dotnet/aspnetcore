@@ -68,9 +68,12 @@
     <MicrosoftExtensionsDependencyModelVersion>6.0.0-preview.3.21167.1</MicrosoftExtensionsDependencyModelVersion>
     <MicrosoftNETCoreAppRefVersion>6.0.0-preview.3.21167.1</MicrosoftNETCoreAppRefVersion>
     <MicrosoftNETCoreAppRuntimewinx64Version>6.0.0-preview.3.21167.1</MicrosoftNETCoreAppRuntimewinx64Version>
-    <MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>6.0.0-preview.3.21167.1</MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>
-    <MicrosoftNETRuntimeWebAssemblySdkVersion>6.0.0-preview.3.21167.1</MicrosoftNETRuntimeWebAssemblySdkVersion>
-    <MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>6.0.0-preview.3.21167.1</MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>
+    <MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>6.0.0-preview.3.21174.2</MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>
+    <MicrosoftNETRuntimeWebAssemblySdkVersion>6.0.0-preview.3.21174.2</MicrosoftNETRuntimeWebAssemblySdkVersion>
+    <MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>6.0.0-preview.3.21174.2</MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>
+    <MicrosoftNETRuntimeEmscripten2012Nodewinx64Version>6.0.0-preview.3.21174.2</MicrosoftNETRuntimeEmscripten2012Nodewinx64Version>
+    <MicrosoftNETRuntimeEmscripten2012Pythonwinx64Version>6.0.0-preview.3.21174.2</MicrosoftNETRuntimeEmscripten2012Pythonwinx64Version>
+    <MicrosoftNETRuntimeEmscripten2012Sdkwinx64Version>6.0.0-preview.3.21174.2</MicrosoftNETRuntimeEmscripten2012Sdkwinx64Version>
     <MicrosoftNETCoreBrowserDebugHostTransportVersion>6.0.0-preview.3.21167.1</MicrosoftNETCoreBrowserDebugHostTransportVersion>
     <MicrosoftWin32RegistryVersion>6.0.0-preview.3.21167.1</MicrosoftWin32RegistryVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>6.0.0-preview.3.21167.1</MicrosoftExtensionsCachingAbstractionsVersion>
