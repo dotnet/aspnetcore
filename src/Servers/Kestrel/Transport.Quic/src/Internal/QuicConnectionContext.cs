@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         private readonly IQuicTrace _log;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
-        private ValueTask _closeTask;
+        private Task? _closeTask;
 
         public long Error { get; set; }
 
@@ -55,15 +55,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         {
             try
             {
-                if (_closeTask != default)
-                {
-                    _closeTask  = _connection.CloseAsync(errorCode: 0);
-                    await _closeTask;
-                }
-                else
-                {
-                    await _closeTask;
-                }
+                _closeTask ??= _connection.CloseAsync(errorCode: 0).AsTask();
+                await _closeTask;
             }
             catch (Exception ex)
             {
@@ -78,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         public override void Abort(ConnectionAbortedException abortReason)
         {
             // dedup calls to abort here.
-            _closeTask = _connection.CloseAsync(errorCode: Error);
+            _closeTask = _connection.CloseAsync(errorCode: Error).AsTask();
         }
 
         public override async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)

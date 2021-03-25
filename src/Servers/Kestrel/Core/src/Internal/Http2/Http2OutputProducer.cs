@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // The minimum output data rate is enforced at the connection level by Http2FrameWriter.
             _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl: null, _log);
 
-            _dataWriteProcessingTask = ProcessDataWrites();
+            _dataWriteProcessingTask = ProcessDataWrites().Preserve();
         }
 
         public void StreamReset()

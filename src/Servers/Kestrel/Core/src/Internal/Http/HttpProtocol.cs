@@ -917,7 +917,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ((IHeaderDictionary)HttpRequestHeaders).TryGetValue(HeaderNames.Expect, out var expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
-                Output.Write100ContinueAsync().GetAwaiter().GetResult();
+                ValueTask<FlushResult> vt = Output.Write100ContinueAsync();
+                if (vt.IsCompleted)
+                {
+                    vt.GetAwaiter().GetResult();
+                }
+                else
+                {
+                    vt.AsTask().GetAwaiter().GetResult();
+                }
             }
         }
 
@@ -1049,6 +1057,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 return WriteSuffixAwaited(writeTask);
             }
+
+            writeTask.GetAwaiter().GetResult();
 
             _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
 

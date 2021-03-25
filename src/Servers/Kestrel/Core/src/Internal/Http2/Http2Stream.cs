@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         if (!errored)
                         {
                             // Don't block on IO. This never faults.
-                            _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
+                            _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR).Preserve();
                         }
                         RequestBodyPipe.Writer.Complete();
                     }
@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             DecrementActiveClientStreamCount();
             // Don't block on IO. This never faults.
-            _ = _http2Output.WriteRstStreamAsync(error);
+            _ = _http2Output.WriteRstStreamAsync(error).Preserve();
 
             AbortCore(abortReason);
         }
