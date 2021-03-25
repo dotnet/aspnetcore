@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -22,7 +23,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
-    public class RouteDelegateBuilderTests
+    public class RequestDelegateBuilderTests
     {
         public static IEnumerable<object[]> NoResult
         {
@@ -90,6 +91,98 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.True(httpContext.Items["invoked"] as bool?);
+        }
+
+        private static void StaticTestActionBasicReflection(HttpContext httpContext)
+        {
+            httpContext.Items.Add("invoked", true);
+        }
+
+        [Fact]
+        public async Task StaticMethodInfoOverloadWorksWithBasicReflection()
+        {
+            var methodInfo = typeof(RequestDelegateBuilderTests).GetMethod(
+                nameof(StaticTestActionBasicReflection),
+                BindingFlags.NonPublic | BindingFlags.Static,
+                new[] { typeof(HttpContext) });
+
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate(methodInfo!);
+
+            var httpContext = new DefaultHttpContext();
+
+            await requestDelegate(httpContext);
+
+            Assert.True(httpContext.Items["invoked"] as bool?);
+        }
+
+        private class TestNonStaticActionClass
+        {
+            private readonly object _invokedValue;
+
+            public TestNonStaticActionClass(object invokedValue)
+            {
+                _invokedValue = invokedValue;
+            }
+
+            private void NonStaticTestAction(HttpContext httpContext)
+            {
+                httpContext.Items.Add("invoked", _invokedValue);
+            }
+        }
+
+        [Fact]
+        public async Task NonStaticMethodInfoOverloadWorksWithBasicReflection()
+        {
+            var methodInfo = typeof(TestNonStaticActionClass).GetMethod(
+                "NonStaticTestAction",
+                BindingFlags.NonPublic | BindingFlags.Instance,
+                new[] { typeof(HttpContext) });
+
+            var invoked = false;
+
+            object GetTarget()
+            {
+                if (!invoked)
+                {
+                    invoked = true;
+                    return new TestNonStaticActionClass(1);
+                }
+
+                return new TestNonStaticActionClass(2);
+            }
+
+            var requestDelegate = RequestDelegateBuilder.BuildRequestDelegate(methodInfo!, _ => GetTarget());
+
+            var httpContext = new DefaultHttpContext();
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(1, httpContext.Items["invoked"]);
+
+            httpContext = new DefaultHttpContext();
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(2, httpContext.Items["invoked"]);
+        }
+
+        [Fact]
+        public void BuildRequestDelegateThrowsArgumentNullExceptions()
+        {
+            var methodInfo = typeof(RequestDelegateBuilderTests).GetMethod(
+                nameof(StaticTestActionBasicReflection),
+                BindingFlags.NonPublic | BindingFlags.Static,
+                new[] { typeof(HttpContext) });
+
+            var exNullAction = Assert.Throws<ArgumentNullException>(() => RequestDelegateBuilder.BuildRequestDelegate(action: null!));
+            var exNullMethodInfo1 = Assert.Throws<ArgumentNullException>(() => RequestDelegateBuilder.BuildRequestDelegate(methodInfo: null!));
+            var exNullMethodInfo2 = Assert.Throws<ArgumentNullException>(() => RequestDelegateBuilder.BuildRequestDelegate(methodInfo: null!, _ => 0));
+            var exNullTargetFactory = Assert.Throws<ArgumentNullException>(() => RequestDelegateBuilder.BuildRequestDelegate(methodInfo!, targetFactory: null!));
+
+            Assert.Equal("action", exNullAction.ParamName);
+            Assert.Equal("methodInfo", exNullMethodInfo1.ParamName);
+            Assert.Equal("methodInfo", exNullMethodInfo2.ParamName);
+            Assert.Equal("targetFactory", exNullTargetFactory.ParamName);
         }
 
         public static IEnumerable<object[]> FromRouteResult

@@ -53,6 +53,80 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The <see cref="RequestDelegate"/></returns>
         public static RequestDelegate BuildRequestDelegate(Delegate action)
         {
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            var targetExpression = action.Target switch
+            {
+                { } => Expression.Convert(TargetArg, action.Target.GetType()),
+                null => null,
+            };
+
+            var untargetedRequestDelegate = BuildRequestDelegate(action.Method, targetExpression);
+
+            return httpContext =>
+            {
+                return untargetedRequestDelegate(action.Target, httpContext);
+            };
+        }
+
+        /// <summary>
+        /// Builds a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
+        /// </summary>
+        /// <param name="methodInfo">A static request handler with any number of custom parameters that often produces a response with its return value.</param>
+        /// <returns>The <see cref="RequestDelegate"/></returns>
+        public static RequestDelegate BuildRequestDelegate(MethodInfo methodInfo)
+        {
+            if (methodInfo is null)
+            {
+                throw new ArgumentNullException(nameof(methodInfo));
+            }
+
+            var untargetedRequestDelegate = BuildRequestDelegate(methodInfo, targetExpression: null);
+
+            return httpContext =>
+            {
+                return untargetedRequestDelegate(null, httpContext);
+            };
+        }
+
+
+        /// <summary>
+        /// Builds a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
+        /// </summary>
+        /// <param name="methodInfo">A request handler with any number of custom parameters that often produces a response with its return value.</param>
+        /// <param name="targetFactory">Creates the <see langword="this"/> for the non-static method. If the </param>
+        /// <returns>The <see cref="RequestDelegate"/></returns>
+        public static RequestDelegate BuildRequestDelegate(MethodInfo methodInfo, Func<HttpContext, object> targetFactory)
+        {
+            if (methodInfo is null)
+            {
+                throw new ArgumentNullException(nameof(methodInfo));
+            }
+
+            if (targetFactory is null)
+            {
+                throw new ArgumentNullException(nameof(targetFactory));
+            }
+
+            if (methodInfo.DeclaringType is null)
+            {
+                throw new ArgumentException($"A {nameof(targetFactory)} was provided, but {nameof(methodInfo)} does not have a Declaring type.");
+            }
+
+            var targetExpression = Expression.Convert(TargetArg, methodInfo.DeclaringType);
+            var untargetedRequestDelegate = BuildRequestDelegate(methodInfo, targetExpression);
+
+            return httpContext =>
+            {
+                return untargetedRequestDelegate(targetFactory(httpContext), httpContext);
+            };
+        }
+
+        private static Func<object?, HttpContext, Task> BuildRequestDelegate(MethodInfo methodInfo, Expression? targetExpression)
+        {
             // Non void return type
 
             // Task Invoke(HttpContext httpContext)
@@ -69,8 +143,6 @@ namespace Microsoft.AspNetCore.Http
             //     return default;
             // }
 
-            var method = action.Method;
-
             var consumeBodyDirectly = false;
             var consumeBodyAsForm = false;
             Type? bodyType = null;
@@ -79,7 +151,7 @@ namespace Microsoft.AspNetCore.Http
             // This argument represents the deserialized body returned from IHttpRequestReader
             // when the method has a FromBody attribute declared
 
-            var methodParameters = method.GetParameters();
+            var methodParameters = methodInfo.GetParameters();
             var args = new List<Expression>(methodParameters.Length);
 
             foreach (var parameter in methodParameters)
@@ -163,18 +235,17 @@ namespace Microsoft.AspNetCore.Http
 
             MethodCallExpression methodCall;
 
-            if (action.Target is null)
+            if (targetExpression is null)
             {
-                methodCall = Expression.Call(method, args);
+                methodCall = Expression.Call(methodInfo, args);
             }
             else
             {
-                var castedTarget = Expression.Convert(TargetArg, action.Target.GetType());
-                methodCall = Expression.Call(castedTarget, method, args);
+                methodCall = Expression.Call(targetExpression, methodInfo, args);
             }
 
             // Exact request delegate match
-            if (method.ReturnType == typeof(void))
+            if (methodInfo.ReturnType == typeof(void))
             {
                 var bodyExpressions = new List<Expression>
                 {
@@ -184,22 +255,22 @@ namespace Microsoft.AspNetCore.Http
 
                 body = Expression.Block(bodyExpressions);
             }
-            else if (AwaitableInfo.IsTypeAwaitable(method.ReturnType, out var info))
+            else if (AwaitableInfo.IsTypeAwaitable(methodInfo.ReturnType, out var info))
             {
-                if (method.ReturnType == typeof(Task))
+                if (methodInfo.ReturnType == typeof(Task))
                 {
                     body = methodCall;
                 }
-                else if (method.ReturnType == typeof(ValueTask))
+                else if (methodInfo.ReturnType == typeof(ValueTask))
                 {
                     body = Expression.Call(
                                         ExecuteValueTaskMethodInfo,
                                         methodCall);
                 }
-                else if (method.ReturnType.IsGenericType &&
-                         method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+                else if (methodInfo.ReturnType.IsGenericType &&
+                         methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
                 {
-                    var typeArg = method.ReturnType.GetGenericArguments()[0];
+                    var typeArg = methodInfo.ReturnType.GetGenericArguments()[0];
 
                     if (typeof(IResult).IsAssignableFrom(typeArg))
                     {
@@ -227,10 +298,10 @@ namespace Microsoft.AspNetCore.Http
                         }
                     }
                 }
-                else if (method.ReturnType.IsGenericType &&
-                         method.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+                else if (methodInfo.ReturnType.IsGenericType &&
+                         methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
                 {
-                    var typeArg = method.ReturnType.GetGenericArguments()[0];
+                    var typeArg = methodInfo.ReturnType.GetGenericArguments()[0];
 
                     if (typeof(IResult).IsAssignableFrom(typeArg))
                     {
@@ -261,18 +332,18 @@ namespace Microsoft.AspNetCore.Http
                 else
                 {
                     // TODO: Handle custom awaitables
-                    throw new NotSupportedException($"Unsupported return type: {method.ReturnType}");
+                    throw new NotSupportedException($"Unsupported return type: {methodInfo.ReturnType}");
                 }
             }
-            else if (typeof(IResult).IsAssignableFrom(method.ReturnType))
+            else if (typeof(IResult).IsAssignableFrom(methodInfo.ReturnType))
             {
                 body = Expression.Call(methodCall, ResultWriteResponseAsync, HttpContextParameter);
             }
-            else if (method.ReturnType == typeof(string))
+            else if (methodInfo.ReturnType == typeof(string))
             {
                 body = Expression.Call(StringResultWriteResponseAsync, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
             }
-            else if (method.ReturnType.IsValueType)
+            else if (methodInfo.ReturnType.IsValueType)
             {
                 var box = Expression.TypeAs(methodCall, typeof(object));
                 body = Expression.Call(JsonResultWriteResponseAsync, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
@@ -364,10 +435,7 @@ namespace Microsoft.AspNetCore.Http
                 requestDelegate = invoker;
             }
 
-            return httpContext =>
-            {
-                return requestDelegate(action.Target, httpContext);
-            };
+            return requestDelegate;
         }
 
         private static ILogger GetLogger(HttpContext httpContext)
