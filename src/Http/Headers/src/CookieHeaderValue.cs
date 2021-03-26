@@ -165,120 +165,6 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
-        // name=value; name="value"
-        internal static bool TryGetCookieLength(StringSegment input, ref int offset, [NotNullWhen(true)] out StringSegment? parsedName, [NotNullWhen(true)] out StringSegment? parsedValue)
-        {
-            Contract.Requires(offset >= 0);
-
-            parsedName = null;
-            parsedValue = null;
-
-            if (StringSegment.IsNullOrEmpty(input) || (offset >= input.Length))
-            {
-                return false;
-            }
-
-            // The caller should have already consumed any leading whitespace, commas, etc..
-
-            // Name=value;
-
-            // Name
-            var itemLength = HttpRuleParser.GetTokenLength(input, offset);
-            if (itemLength == 0)
-            {
-                return false;
-            }
-
-            parsedName = input.Subsegment(offset, itemLength);
-            offset += itemLength;
-
-            // = (no spaces)
-            if (!ReadEqualsSign(input, ref offset))
-            {
-                return false;
-            }
-
-            // value or "quoted value"
-            // The value may be empty
-            parsedValue = GetCookieValue(input, ref offset);
-
-            return true;
-        }
-
-        // cookie-value      = *cookie-octet / ( DQUOTE* cookie-octet DQUOTE )
-        // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
-        //                     ; US-ASCII characters excluding CTLs, whitespace DQUOTE, comma, semicolon, and backslash
-        internal static StringSegment GetCookieValue(StringSegment input, ref int offset)
-        {
-            Contract.Requires(offset >= 0);
-            Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - offset)));
-
-            var startIndex = offset;
-
-            if (offset >= input.Length)
-            {
-                return StringSegment.Empty;
-            }
-            var inQuotes = false;
-
-            if (input[offset] == '"')
-            {
-                inQuotes = true;
-                offset++;
-            }
-
-            while (offset < input.Length)
-            {
-                var c = input[offset];
-                if (!IsCookieValueChar(c))
-                {
-                    break;
-                }
-
-                offset++;
-            }
-
-            if (inQuotes)
-            {
-                if (offset == input.Length || input[offset] != '"')
-                {
-                    // Missing final quote
-                    return StringSegment.Empty;
-                }
-                offset++;
-            }
-
-            int length = offset - startIndex;
-            if (offset > startIndex)
-            {
-                return input.Subsegment(startIndex, length);
-            }
-
-            return StringSegment.Empty;
-        }
-
-        private static bool ReadEqualsSign(StringSegment input, ref int offset)
-        {
-            // = (no spaces)
-            if (offset >= input.Length || input[offset] != '=')
-            {
-                return false;
-            }
-            offset++;
-            return true;
-        }
-
-        // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
-        //                     ; US-ASCII characters excluding CTLs, whitespace DQUOTE, comma, semicolon, and backslash
-        private static bool IsCookieValueChar(char c)
-        {
-            if (c < 0x21 || c > 0x7E)
-            {
-                return false;
-            }
-            return !(c == '"' || c == ',' || c == ';' || c == '\\');
-        }
-
         internal static void CheckNameFormat(StringSegment name, string parameterName)
         {
             if (name == null)
@@ -300,7 +186,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             var offset = 0;
-            var result = GetCookieValue(value, ref offset);
+            var result = CookieHeaderParserShared.GetCookieValue(value, ref offset);
             if (result.Length != value.Length)
             {
                 throw new ArgumentException("Invalid cookie value: " + value, parameterName);
