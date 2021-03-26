@@ -45,6 +45,11 @@ namespace Microsoft.AspNetCore.Components
             => _renderer != null;
 
         /// <summary>
+        /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a hot-reload change.
+        /// </summary>
+        public bool IsHotReloading => _renderer.IsHotReloading;
+
+        /// <summary>
         /// Notifies the renderer that the component should be rendered.
         /// </summary>
         /// <param name="renderFragment">The content that should be rendered.</param>

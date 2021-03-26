@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Components
     /// Optional base class for components. Alternatively, components may
     /// implement <see cref="IComponent"/> directly.
     /// </summary>
-    public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRender, IReceiveHotReloadContext
+    public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRender
     {
         private readonly RenderFragment _renderFragment;
         private RenderHandle _renderHandle;
@@ -30,7 +29,6 @@ namespace Microsoft.AspNetCore.Components
         private bool _hasNeverRendered = true;
         private bool _hasPendingQueuedRender;
         private bool _hasCalledOnAfterRender;
-        private HotReloadContext? _hotReloadContext;
 
         /// <summary>
         /// Constructs an instance of <see cref="ComponentBase"/>.
@@ -104,7 +102,7 @@ namespace Microsoft.AspNetCore.Components
                 return;
             }
 
-            if (_hasNeverRendered || ShouldRender() || (_hotReloadContext?.IsHotReloading ?? false))
+            if (_hasNeverRendered || ShouldRender() || _renderHandle.IsHotReloading)
             {
                 _hasPendingQueuedRender = true;
 
@@ -330,11 +328,6 @@ namespace Microsoft.AspNetCore.Components
             // reason we have OnAfterRenderAsync is so that the developer doesn't
             // have to use "async void" and do their own exception handling in
             // the case where they want to start an async task.
-        }
-
-        void IReceiveHotReloadContext.Receive(HotReloadContext context)
-        {
-            _hotReloadContext = context;
         }
     }
 }
