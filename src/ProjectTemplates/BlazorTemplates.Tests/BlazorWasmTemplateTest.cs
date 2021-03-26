@@ -288,7 +288,7 @@ namespace Templates.Test
 
         private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(BrowserKind browserKind, bool useLocalDb)
         {
-            var project = await CreateBuildPublishIndividualAuthProject(browserKind, useLocalDb: true);
+            var project = await CreateBuildPublishIndividualAuthProject(browserKind, useLocalDb: useLocalDb);
 
             var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
