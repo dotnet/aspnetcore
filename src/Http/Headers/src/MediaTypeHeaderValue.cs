@@ -646,9 +646,7 @@ namespace Microsoft.Net.Http.Headers
             }
             else
             {
-                var forwardSlashCharacter = ForwardSlashCharacter;
-                var forwardSlash = MemoryMarshal.CreateReadOnlySpan(ref forwardSlashCharacter, 1);
-                mediaType = string.Concat(input.AsSpan().Slice(startIndex, typeLength), forwardSlash, input.AsSpan().Slice(current, subtypeLength));
+                mediaType = string.Concat(input.AsSpan().Slice(startIndex, typeLength), "/", input.AsSpan().Slice(current, subtypeLength));
             }
 
             return mediaTypeLength;

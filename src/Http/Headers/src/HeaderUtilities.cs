@@ -16,7 +16,6 @@ namespace Microsoft.Net.Http.Headers
     /// </summary>
     public static class HeaderUtilities
     {
-        private static readonly int _int64MaxStringLength = 19;
         private static readonly int _qualityValueMaxCharCount = 10; // Little bit more permissive than RFC7231 5.3.1
         private const string QualityName = "q";
         internal const string BytesUnit = "bytes";
@@ -514,18 +513,7 @@ namespace Microsoft.Net.Http.Headers
                 return "0";
             }
 
-            var position = _int64MaxStringLength;
-            Span<char> charBuffer = stackalloc char[_int64MaxStringLength];
-
-            do
-            {
-                var (quotient, rem) = Math.DivRem(value, 10);
-                charBuffer[--position] = (char)(0x30 + rem); // 0x30 = '0'
-                value = quotient;
-            }
-            while (value != 0);
-
-            return new string(charBuffer.Slice(position));
+            return ((ulong)value).ToString(NumberFormatInfo.InvariantInfo);
         }
 
         /// <summary>
