@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         private int _currentLineIndex;
         private int _currentLineCharacterIndex;
 
-        public CodeWriter() : this(Environment.NewLine, false, 4)
+        public CodeWriter() : this(Environment.NewLine, indentWithTabs: false, tabSize: 4)
         {
         }
 
