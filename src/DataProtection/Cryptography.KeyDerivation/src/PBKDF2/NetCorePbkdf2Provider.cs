@@ -3,6 +3,7 @@
 
 #if NETCOREAPP
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
@@ -54,8 +55,10 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
                     throw new ArgumentOutOfRangeException();
             }
 
-            Span<byte> bytes = stackalloc byte[password.Length];
-            Encoding.UTF8.GetBytes(password.AsSpan(), bytes);
+            var maxBytes = Encoding.UTF8.GetMaxByteCount(password.Length);
+            Span<byte> bytes = (maxBytes < 256) ? stackalloc byte[maxBytes] : ArrayPool<byte>.Shared.Rent(maxBytes);
+            var byteCount = Encoding.UTF8.GetBytes(password.AsSpan(), bytes);
+            bytes.Slice(byteCount);
             return Rfc2898DeriveBytes.Pbkdf2(bytes, salt, iterationCount, algorithmName, numBytesRequested);
         }
     }
