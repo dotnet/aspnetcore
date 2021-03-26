@@ -399,7 +399,7 @@ namespace Microsoft.Net.Http.Headers
                 result = 0;
                 return false;
             }
-            return long.TryParse(value.Buffer.AsSpan().Slice(value.Offset, value.Length), NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
+            return long.TryParse(value.AsSpan(), NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
         }
 
         // Strict and fast RFC7231 5.3.1 Quality value parser (and without memory allocation)

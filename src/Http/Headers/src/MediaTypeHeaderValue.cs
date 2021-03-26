@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
@@ -645,19 +646,9 @@ namespace Microsoft.Net.Http.Headers
             }
             else
             {
-                // Equivalent to: input.Substring(startIndex, typeLength) + ForwardSlashCharacter + input.Substring(current, subtypeLength);
-                // but saves an unnecessary string allocation
-                mediaType = string.Create(typeLength + subtypeLength + 1, (input, startIndex, typeLength, subtypeLength, current), static (span, state) =>
-                {
-                    var (input, startIndex, typeLength, subtypeLength, current) = state;
-                    var segment = input.AsSpan();
-                    segment.Slice(startIndex, typeLength).CopyTo(span);
-
-                    span[typeLength] = ForwardSlashCharacter;
-
-                    span = span.Slice(typeLength + 1);
-                    segment.Slice(current, subtypeLength).CopyTo(span);
-                });
+                var forwardSlashCharacter = ForwardSlashCharacter;
+                var forwardSlash = MemoryMarshal.CreateReadOnlySpan(ref forwardSlashCharacter, 1);
+                mediaType = string.Concat(input.AsSpan().Slice(startIndex, typeLength), forwardSlash, input.AsSpan().Slice(current, subtypeLength));
             }
 
             return mediaTypeLength;
