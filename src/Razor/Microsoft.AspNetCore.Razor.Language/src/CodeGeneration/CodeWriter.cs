@@ -86,25 +86,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 // done by the base class.
                 var tabs = size / TabSize;
                 actualSize += tabs;
-                for (var i = 0; i < tabs; i++)
-                {
-                    _builder.Append("\t");
-                }
+                _builder.Append('\t', tabs);
 
                 var spaces = size % TabSize;
                 actualSize += spaces;
-                for (var i = 0; i < spaces; i++)
-                {
-                    _builder.Append(" ");
-                }
+                _builder.Append(' ', spaces);
             }
             else
             {
                 actualSize = size;
-                for (var i = 0; i < size; i++)
-                {
-                    _builder.Append(" ");
-                }
+                _builder.Append(' ', size);
             }
 
             _currentLineCharacterIndex += actualSize;
