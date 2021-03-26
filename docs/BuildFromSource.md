@@ -224,7 +224,7 @@ code .
 
 When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](using-dotnet-on-command-line-in-this-repo).
 
-> :warning: Most of the time, you will want to build a particular project instead of the entire repository. It's faster and will allow you to focus on a particular area of concern. If you need to build all code in the repo for any reason, you can use the top-levle build script located under `eng\build.cmd` or `eng\build.sh`.
+> :warning: Most of the time, you will want to build a particular project instead of the entire repository. It's faster and will allow you to focus on a particular area of concern. If you need to build all code in the repo for any reason, you can use the top-level build script located under `eng\build.cmd` or `eng\build.sh`.
 
 The source code in this repo is divided into directories for each project area. Each directory will typically contain a `src` directory that contains the source files for a project and a `test` directory that contains the test projects and assets within a project.
 
