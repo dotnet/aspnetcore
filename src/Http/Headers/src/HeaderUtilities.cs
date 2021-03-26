@@ -325,7 +325,7 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
-        private static unsafe bool TryParseNonNegativeInt64FromHeaderValue(int startIndex, string headerValue, out long result)
+        private static bool TryParseNonNegativeInt64FromHeaderValue(int startIndex, string headerValue, out long result)
         {
             // Trim leading whitespace
             startIndex += HttpRuleParser.GetWhitespaceLength(headerValue, startIndex);
@@ -366,7 +366,7 @@ namespace Microsoft.Net.Http.Headers
         /// result will be overwritten.
         /// </param>
         /// <returns><see langword="true" /> if parsing succeeded; otherwise, <see langword="false" />.</returns>
-        public static unsafe bool TryParseNonNegativeInt32(StringSegment value, out int result)
+        public static bool TryParseNonNegativeInt32(StringSegment value, out int result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
             {
@@ -374,32 +374,7 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            result = 0;
-            fixed (char* ptr = value.Buffer)
-            {
-                var ch = (ushort*)ptr + value.Offset;
-                var end = ch + value.Length;
-
-                ushort digit = 0;
-                while (ch < end && (digit = (ushort)(*ch - 0x30)) <= 9)
-                {
-                    // Check for overflow
-                    if ((result = result * 10 + digit) < 0)
-                    {
-                        result = 0;
-                        return false;
-                    }
-
-                    ch++;
-                }
-
-                if (ch != end)
-                {
-                    result = 0;
-                    return false;
-                }
-                return true;
-            }
+            return int.TryParse(value.Buffer.AsSpan().Slice(value.Offset, value.Length), NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
         }
 
         /// <summary>
@@ -417,40 +392,14 @@ namespace Microsoft.Net.Http.Headers
         /// originally supplied in result will be overwritten.
         /// </param>
         /// <returns><see langword="true" /> if parsing succeeded; otherwise, <see langword="false" />.</returns>
-        public static unsafe bool TryParseNonNegativeInt64(StringSegment value, out long result)
+        public static bool TryParseNonNegativeInt64(StringSegment value, out long result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
             {
                 result = 0;
                 return false;
             }
-
-            result = 0;
-            fixed (char* ptr = value.Buffer)
-            {
-                var ch = (ushort*)ptr + value.Offset;
-                var end = ch + value.Length;
-
-                ushort digit = 0;
-                while (ch < end && (digit = (ushort)(*ch - 0x30)) <= 9)
-                {
-                    // Check for overflow
-                    if ((result = result * 10 + digit) < 0)
-                    {
-                        result = 0;
-                        return false;
-                    }
-
-                    ch++;
-                }
-
-                if (ch != end)
-                {
-                    result = 0;
-                    return false;
-                }
-                return true;
-            }
+            return long.TryParse(value.Buffer.AsSpan().Slice(value.Offset, value.Length), NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
         }
 
         // Strict and fast RFC7231 5.3.1 Quality value parser (and without memory allocation)
@@ -553,7 +502,7 @@ namespace Microsoft.Net.Http.Headers
         /// <returns>
         /// The string representation of the value of this instance, consisting of a sequence of digits ranging from 0 to 9 with no leading zeroes.
         /// </returns>
-        public unsafe static string FormatNonNegativeInt64(long value)
+        public static string FormatNonNegativeInt64(long value)
         {
             if (value < 0)
             {
@@ -566,18 +515,17 @@ namespace Microsoft.Net.Http.Headers
             }
 
             var position = _int64MaxStringLength;
-            char* charBuffer = stackalloc char[_int64MaxStringLength];
+            Span<char> charBuffer = stackalloc char[_int64MaxStringLength];
 
             do
             {
-                // Consider using Math.DivRem() if available
-                var quotient = value / 10;
-                charBuffer[--position] = (char)(0x30 + (value - quotient * 10)); // 0x30 = '0'
+                var (quotient, rem) = Math.DivRem(value, 10);
+                charBuffer[--position] = (char)(0x30 + rem); // 0x30 = '0'
                 value = quotient;
             }
             while (value != 0);
 
-            return new string(charBuffer, position, _int64MaxStringLength - position);
+            return new string(charBuffer.Slice(position));
         }
 
         /// <summary>

@@ -645,7 +645,19 @@ namespace Microsoft.Net.Http.Headers
             }
             else
             {
-                mediaType = input.Substring(startIndex, typeLength) + ForwardSlashCharacter + input.Substring(current, subtypeLength);
+                // Equivalent to: input.Substring(startIndex, typeLength) + ForwardSlashCharacter + input.Substring(current, subtypeLength);
+                // but saves an unnecessary string allocation
+                mediaType = string.Create(typeLength + subtypeLength + 1, (input, startIndex, typeLength, subtypeLength, current), static (span, state) =>
+                {
+                    var (input, startIndex, typeLength, subtypeLength, current) = state;
+                    var segment = input.Buffer.AsSpan(input.Offset);
+                    segment.Slice(startIndex, typeLength).CopyTo(span);
+
+                    span[typeLength] = ForwardSlashCharacter;
+
+                    span = span.Slice(typeLength + 1);
+                    segment.Slice(current, subtypeLength).CopyTo(span);
+                });
             }
 
             return mediaTypeLength;

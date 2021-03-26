@@ -532,19 +532,11 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // Encode using MIME encoding
-        private unsafe string EncodeMime(StringSegment input)
+        private string EncodeMime(StringSegment input)
         {
-            fixed (char* chars = input.Buffer)
-            {
-                var byteCount = Encoding.UTF8.GetByteCount(chars + input.Offset, input.Length);
-                var buffer = new byte[byteCount];
-                fixed (byte* bytes = buffer)
-                {
-                    Encoding.UTF8.GetBytes(chars + input.Offset, input.Length, bytes, byteCount);
-                }
-                var encodedName = Convert.ToBase64String(buffer);
-                return "=?utf-8?B?" + encodedName + "?=";
-            }
+            var buffer = Encoding.UTF8.GetBytes(input.Buffer);
+            var encodedName = Convert.ToBase64String(buffer);
+            return string.Concat("=?utf-8?B?", encodedName, "?=");
         }
 
         // Attempt to decode MIME encoded strings
