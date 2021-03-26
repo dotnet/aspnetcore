@@ -5,7 +5,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+<<<<<<< HEAD
 using Microsoft.Extensions.Primitives;
+=======
+using System.Linq;
+using Microsoft.AspNetCore.Routing;
+>>>>>>> 41cfee2cfe (Trying routevaluedict)
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
@@ -19,21 +24,24 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private Dictionary<string, string>? Store { get; set; }
-
-        public RequestCookieCollection()
-        {
-        }
+        private RouteValueDictionary Store { get; set; }
 
         public RequestCookieCollection(Dictionary<string, string> store)
         {
-            Store = store;
+            Store = new RouteValueDictionary();
+            //Store = RouteValueDictionary.FromArray(store.ToArray());
+            //Store = new RouteValueDictionary(;
         }
 
-        public RequestCookieCollection(int capacity)
+        public RequestCookieCollection()
         {
-            Store = new Dictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
+            Store = new RouteValueDictionary();
         }
+
+        //public RequestCookieCollection(int capacity)
+        //{
+        //    Store = new RouteValueDictionary(capacity);
+        //}
 
         public string? this[string key]
         {
@@ -121,7 +129,9 @@ namespace Microsoft.AspNetCore.Http
                 value = null;
                 return false;
             }
-            return Store.TryGetValue(key, out value);
+            var res = Store.TryGetValue(key, out var objValue);
+            value = objValue as string;
+            return res;
         }
 
         /// <summary>
@@ -172,10 +182,10 @@ namespace Microsoft.AspNetCore.Http
         public struct Enumerator : IEnumerator<KeyValuePair<string, string>>
         {
             // Do NOT make this readonly, or MoveNext will not work
-            private Dictionary<string, string>.Enumerator _dictionaryEnumerator;
+            private RouteValueDictionary.Enumerator _dictionaryEnumerator;
             private bool _notEmpty;
 
-            internal Enumerator(Dictionary<string, string>.Enumerator dictionaryEnumerator)
+            internal Enumerator(RouteValueDictionary.Enumerator dictionaryEnumerator)
             {
                 _dictionaryEnumerator = dictionaryEnumerator;
                 _notEmpty = true;
@@ -197,7 +207,7 @@ namespace Microsoft.AspNetCore.Http
                     if (_notEmpty)
                     {
                         var current = _dictionaryEnumerator.Current;
-                        return new KeyValuePair<string, string>(current.Key, current.Value);
+                        return new KeyValuePair<string, string>(current.Key, (string)current.Value!);
                     }
                     return default(KeyValuePair<string, string>);
                 }
