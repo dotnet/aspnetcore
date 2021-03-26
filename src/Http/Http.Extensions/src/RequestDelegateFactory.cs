@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="action">A request handler with any number of custom parameters that often produces a response with its return value.</param>
         /// <returns>The <see cref="RequestDelegate"/></returns>
-        public static RequestDelegate Build(Delegate action)
+        public static RequestDelegate Create(Delegate action)
         {
             if (action is null)
             {
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="methodInfo">A static request handler with any number of custom parameters that often produces a response with its return value.</param>
         /// <returns>The <see cref="RequestDelegate"/></returns>
-        public static RequestDelegate Build(MethodInfo methodInfo)
+        public static RequestDelegate Create(MethodInfo methodInfo)
         {
             if (methodInfo is null)
             {
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="methodInfo">A request handler with any number of custom parameters that often produces a response with its return value.</param>
         /// <param name="targetFactory">Creates the <see langword="this"/> for the non-static method.</param>
         /// <returns>The <see cref="RequestDelegate"/></returns>
-        public static RequestDelegate Build(MethodInfo methodInfo, Func<HttpContext, object> targetFactory)
+        public static RequestDelegate Create(MethodInfo methodInfo, Func<HttpContext, object> targetFactory)
         {
             if (methodInfo is null)
             {
