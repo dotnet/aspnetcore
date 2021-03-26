@@ -650,7 +650,7 @@ namespace Microsoft.Net.Http.Headers
                 mediaType = string.Create(typeLength + subtypeLength + 1, (input, startIndex, typeLength, subtypeLength, current), static (span, state) =>
                 {
                     var (input, startIndex, typeLength, subtypeLength, current) = state;
-                    var segment = input.Buffer.AsSpan(input.Offset);
+                    var segment = input.AsSpan();
                     segment.Slice(startIndex, typeLength).CopyTo(span);
 
                     span[typeLength] = ForwardSlashCharacter;

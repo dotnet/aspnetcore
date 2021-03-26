@@ -374,7 +374,7 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            return int.TryParse(value.Buffer.AsSpan().Slice(value.Offset, value.Length), NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
+            return int.TryParse(value.AsSpan(), NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
         }
 
         /// <summary>

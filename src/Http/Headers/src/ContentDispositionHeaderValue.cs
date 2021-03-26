@@ -534,7 +534,7 @@ namespace Microsoft.Net.Http.Headers
         // Encode using MIME encoding
         private string EncodeMime(StringSegment input)
         {
-            var buffer = Encoding.UTF8.GetBytes(input.Buffer);
+            var buffer = Encoding.UTF8.GetBytes(new ReadOnlySequence<char>(input.AsMemory()));
             var encodedName = Convert.ToBase64String(buffer);
             return string.Concat("=?utf-8?B?", encodedName, "?=");
         }
