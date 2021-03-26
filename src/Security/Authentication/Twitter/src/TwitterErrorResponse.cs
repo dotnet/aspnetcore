@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 {
     internal class TwitterErrorResponse
     {
-        public List<TwitterError> Errors { get; set; }
+        public List<TwitterError>? Errors { get; set; }
     }
 }

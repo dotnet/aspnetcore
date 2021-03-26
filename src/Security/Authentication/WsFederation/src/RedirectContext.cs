@@ -23,13 +23,13 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
             HttpContext context,
             AuthenticationScheme scheme,
             WsFederationOptions options,
-            AuthenticationProperties properties)
+            AuthenticationProperties? properties)
             : base(context, scheme, options, properties) { }
 
         /// <summary>
         /// The <see cref="WsFederationMessage"/> used to compose the redirect.
         /// </summary>
-        public WsFederationMessage ProtocolMessage { get; set; }
+        public WsFederationMessage ProtocolMessage { get; set; } = default!;
 
         /// <summary>
         /// If true, will skip any default logic for this redirect.
