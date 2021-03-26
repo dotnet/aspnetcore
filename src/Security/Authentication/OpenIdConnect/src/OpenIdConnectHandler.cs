@@ -1015,7 +1015,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             foreach (var nonceKey in Request.Cookies.Keys)
             {
-                if (Options.NonceCookie.Name != null && nonceKey.StartsWith(Options.NonceCookie.Name, StringComparison.Ordinal))
+                if (Options.NonceCookie.Name is string name && nonceKey.StartsWith(name, StringComparison.Ordinal))
                 {
                     try
                     {
