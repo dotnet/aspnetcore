@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public void Dispose()
         {
-            DisposeAsync().GetAwaiter().GetResult();
+            DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
 
         public async ValueTask DisposeAsync()

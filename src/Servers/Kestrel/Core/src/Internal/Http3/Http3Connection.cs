@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 if (TryClose())
                 {
-                    SendGoAway(_highestOpenedStreamId);
+                    SendGoAway(_highestOpenedStreamId).Preserve();
                 }
 
                 _errorCodeFeature.Error = (long)errorCode;
@@ -213,10 +213,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             switch (reason)
             {
                 case TimeoutReason.KeepAlive:
-                    SendGoAway(_highestOpenedStreamId);
+                    SendGoAway(_highestOpenedStreamId).Preserve();
                     break;
                 case TimeoutReason.TimeoutFeature:
-                    SendGoAway(_highestOpenedStreamId);
+                    SendGoAway(_highestOpenedStreamId).Preserve();
                     break;
                 case TimeoutReason.RequestHeaders:
                 case TimeoutReason.ReadDataRate:
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 if (_gracefulCloseInitiator == GracefulCloseInitiator.Server && activeRequestCount > 0)
                 {
                     // Go away with largest streamid to initiate graceful shutdown.
-                    SendGoAway(VariableLengthIntegerHelper.EightByteLimit);
+                    SendGoAway(VariableLengthIntegerHelper.EightByteLimit).Preserve();
                 }
             }
 
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     if (TryClose())
                     {
-                        SendGoAway(_highestOpenedStreamId);
+                        SendGoAway(_highestOpenedStreamId).Preserve();
                     }
                 }
                 else
