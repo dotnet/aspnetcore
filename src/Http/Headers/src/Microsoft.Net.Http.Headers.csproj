@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Primitives" />
+    <Compile Include="..\..\Shared\CookieHeaderParserShared.cs" Link="CookieHeaderParserShared.cs" />
   </ItemGroup>
 
 </Project>

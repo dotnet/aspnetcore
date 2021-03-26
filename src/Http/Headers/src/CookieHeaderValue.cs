@@ -165,18 +165,6 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
-        /// <summary>
-        /// Attempts to parse the sequence of values into a dictionary of cookies using string parsing rules.
-        /// </summary>
-        /// <param name="inputs">The values to parse.</param>
-        /// <param name="store"></param>
-        /// <param name="enableCookieNameEncoding"></param>
-        /// <returns></returns>
-        public static bool TryParseIntoDictionary(StringValues inputs, Dictionary<string, string> store, bool enableCookieNameEncoding)
-        {
-            return MultipleValueParser.TryParseValues(inputs, store, enableCookieNameEncoding);
-        }
-
         // name=value; name="value"
         internal static bool TryGetCookieLength(StringSegment input, ref int offset, [NotNullWhen(true)] out StringSegment? parsedName, [NotNullWhen(true)] out StringSegment? parsedValue)
         {

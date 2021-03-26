@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Http
             var collection = new RequestCookieCollection(values.Count);
             var store = collection.Store!;
 
-            if (CookieHeaderValue.TryParseIntoDictionary(values, store, enableCookieNameEncoding))
+            if (CookieHeaderParserShared.TryParseValues(values, store, enableCookieNameEncoding, supportsMultipleValues: true))
             {
                 if (store.Count == 0)
                 {
