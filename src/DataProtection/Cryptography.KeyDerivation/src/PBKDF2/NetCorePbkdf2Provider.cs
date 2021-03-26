@@ -56,9 +56,9 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
             }
 
             var maxBytes = Encoding.UTF8.GetMaxByteCount(password.Length);
-            Span<byte> bytes = (maxBytes < 256) ? stackalloc byte[maxBytes] : ArrayPool<byte>.Shared.Rent(maxBytes);
+            Span<byte> bytes = (maxBytes > 256) ? ArrayPool<byte>.Shared.Rent(maxBytes) : stackalloc byte[256];
             var byteCount = Encoding.UTF8.GetBytes(password.AsSpan(), bytes);
-            bytes.Slice(byteCount);
+            bytes = bytes.Slice(0, byteCount);
             return Rfc2898DeriveBytes.Pbkdf2(bytes, salt, iterationCount, algorithmName, numBytesRequested);
         }
     }
