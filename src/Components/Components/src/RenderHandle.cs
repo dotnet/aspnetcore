@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Components
         [DoesNotReturn]
         private static void ThrowNotInitialized()
         {
-            throw new InvalidOperationException("The render handle has not been initialized.");
+            throw new InvalidOperationException("The render handle is not yet assigned.");
         }
     }
 }
