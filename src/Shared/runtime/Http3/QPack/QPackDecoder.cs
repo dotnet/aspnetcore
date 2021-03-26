@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace System.Net.Http.QPack
 {
-    internal class QPackDecoder : IDisposable
+    internal sealed class QPackDecoder : IDisposable
     {
         private enum State
         {
