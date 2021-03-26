@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -185,7 +186,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             var authorizationParts = new SortedDictionary<string, string>(extraOAuthPairs ?? new Dictionary<string, string>())
             {
-                { "oauth_consumer_key", Options.ConsumerKey },
+                { "oauth_consumer_key", Options.ConsumerKey! },
                 { "oauth_nonce", Guid.NewGuid().ToString("N") },
                 { "oauth_signature_method", "HMAC-SHA1" },
                 { "oauth_timestamp", GenerateTimeStamp() },
@@ -228,7 +229,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             canonicalizedRequestBuilder.Append('&');
             canonicalizedRequestBuilder.Append(Uri.EscapeDataString(parameterString));
 
-            var signature = ComputeSignature(Options.ConsumerSecret, accessToken?.TokenSecret, canonicalizedRequestBuilder.ToString());
+            var signature = ComputeSignature(Options.ConsumerSecret!, accessToken?.TokenSecret, canonicalizedRequestBuilder.ToString());
             authorizationParts.Add("oauth_signature", signature);
 
             var queryString = "";
@@ -382,10 +383,13 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             var errorMessageStringBuilder = new StringBuilder("An error has occurred while calling the Twitter API, error's returned:");
 
-            foreach (var error in errorResponse.Errors)
+            if (errorResponse.Errors != null)
             {
-                errorMessageStringBuilder.Append(Environment.NewLine);
-                errorMessageStringBuilder.Append($"Code: {error.Code}, Message: '{error.Message}'");
+                foreach (var error in errorResponse.Errors)
+                {
+                    errorMessageStringBuilder.Append(Environment.NewLine);
+                    errorMessageStringBuilder.Append($"Code: {error.Code}, Message: '{error.Message}'");
+                }
             }
 
             throw new InvalidOperationException(errorMessageStringBuilder.ToString());
