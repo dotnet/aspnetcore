@@ -178,12 +178,12 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // name=value; name="value"
-        internal static bool TryGetCookieLength(StringSegment input, ref int offset, [NotNullWhen(true)] out (StringSegment, StringSegment)? parsedValue)
+        internal static bool TryGetCookieLength(StringSegment input, ref int offset, [NotNullWhen(true)] out StringSegment? parsedName, [NotNullWhen(true)] out StringSegment? parsedValue)
         {
             Contract.Requires(offset >= 0);
 
+            parsedName = null;
             parsedValue = null;
-            (StringSegment, StringSegment) result = default;
 
             if (StringSegment.IsNullOrEmpty(input) || (offset >= input.Length))
             {
@@ -201,7 +201,7 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            result.Item1 = input.Subsegment(offset, itemLength);
+            parsedName = input.Subsegment(offset, itemLength);
             offset += itemLength;
 
             // = (no spaces)
@@ -212,9 +212,8 @@ namespace Microsoft.Net.Http.Headers
 
             // value or "quoted value"
             // The value may be empty
-            result.Item2 = GetCookieValue(input, ref offset);
+            parsedValue = GetCookieValue(input, ref offset);
 
-            parsedValue = result;
             return true;
         }
 

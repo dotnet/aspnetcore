@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Primitives;
 
@@ -15,8 +16,9 @@ namespace Microsoft.Net.Http.Headers
         {
         }
 
-        public bool TryParseValue(StringSegment value, ref int index, out (StringSegment, StringSegment)? parsedValue)
+        public bool TryParseValue(StringSegment value, ref int index, [NotNullWhen(true)] out StringSegment? parsedName, [NotNullWhen(true)] out StringSegment? parsedValue)
         {
+            parsedName = null;
             parsedValue = null;
 
             // If multiple values are supported (i.e. list of values), then accept an empty string: The header may
@@ -45,7 +47,7 @@ namespace Microsoft.Net.Http.Headers
                 return SupportsMultipleValues;
             }
 
-            if (!CookieHeaderValue.TryGetCookieLength(value, ref current, out var result))
+            if (!CookieHeaderValue.TryGetCookieLength(value, ref current, out parsedName, out parsedValue))
             {
                 return false;
             }
@@ -59,7 +61,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             index = current;
-            parsedValue = result;
+
             return true;
         }
 
@@ -80,16 +82,13 @@ namespace Microsoft.Net.Http.Headers
 
                 while (!string.IsNullOrEmpty(value) && index < value.Length)
                 {
-                    (StringSegment, StringSegment)? output;
-                    if (TryParseValue(value, ref index, out output))
+                    if (TryParseValue(value, ref index, out var parsedName, out var parsedValue))
                     {
                         // The entry may not contain an actual value, like " , "
-                        if (output != null)
+                        if (parsedName != null && parsedValue != null)
                         {
-                            var cookie = output.Value;
-                            var name = enableCookieNameEncoding ? Uri.UnescapeDataString(cookie.Item1.Value) : cookie.Item1.Value;
-                            var valueString = Uri.UnescapeDataString(cookie.Item2.Value);
-                            store[name] = valueString;
+                            var name = enableCookieNameEncoding ? Uri.UnescapeDataString(parsedName.Value.Value) : parsedName.Value.Value;
+                            store[name] = Uri.UnescapeDataString(parsedValue.Value.Value);
                             hasFoundValue = true;
                         }
                     }
@@ -104,21 +103,22 @@ namespace Microsoft.Net.Http.Headers
             return hasFoundValue;
         }
 
-        public override bool TryParseValue(StringSegment value, ref int index, out CookieHeaderValue? parsedValue)
+        public override bool TryParseValue(StringSegment value, ref int index, out CookieHeaderValue? cookieValue)
         {
-            parsedValue = null;
+            cookieValue = null;
 
-            if (!TryParseValue(value, ref index, out var stringSegments))
+            if (!TryParseValue(value, ref index, out var parsedName, out var parsedValue))
             {
                 return false;
             }
 
-            if (stringSegments == null)
+            if (parsedName == null || parsedValue == null)
             {
-                return false;
+                // Successfully parsed, but no values.
+                return true;
             }
 
-            parsedValue = new CookieHeaderValue(stringSegments.Value.Item1, stringSegments.Value.Item2);
+            cookieValue = new CookieHeaderValue(parsedName.Value, parsedValue.Value);
 
             return true;
         }
