@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
@@ -56,31 +57,23 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        public static RequestCookieCollection Parse(IList<string> values)
-            => ParseInternal(values, AppContext.TryGetSwitch(ResponseCookies.EnableCookieNameEncoding, out var enabled) && enabled);
+        public static RequestCookieCollection Parse(StringValues values)
+           => ParseInternal(values, AppContext.TryGetSwitch(ResponseCookies.EnableCookieNameEncoding, out var enabled) && enabled);
 
-        internal static RequestCookieCollection ParseInternal(IList<string> values, bool enableCookieNameEncoding)
+        internal static RequestCookieCollection ParseInternal(StringValues values, bool enableCookieNameEncoding)
         {
             if (values.Count == 0)
             {
                 return Empty;
             }
+            var collection = new RequestCookieCollection(values.Count);
+            var store = collection.Store!;
 
-            if (CookieHeaderValue.TryParseList(values, out var cookies))
+            if (CookieHeaderParserShared.TryParseValues(values, store, enableCookieNameEncoding, supportsMultipleValues: true))
             {
-                if (cookies.Count == 0)
+                if (store.Count == 0)
                 {
                     return Empty;
-                }
-
-                var collection = new RequestCookieCollection(cookies.Count);
-                var store = collection.Store!;
-                for (var i = 0; i < cookies.Count; i++)
-                {
-                    var cookie = cookies[i];
-                    var name = enableCookieNameEncoding ? Uri.UnescapeDataString(cookie.Name.Value) : cookie.Name.Value;
-                    var value = Uri.UnescapeDataString(cookie.Value.Value);
-                    store[name] = value;
                 }
 
                 return collection;
