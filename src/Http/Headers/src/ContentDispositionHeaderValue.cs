@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
@@ -30,6 +31,8 @@ namespace Microsoft.Net.Http.Headers
         private const string SizeString = "size";
         private static readonly char[] QuestionMark = new char[] { '?' };
         private static readonly char[] SingleQuote = new char[] { '\'' };
+        private static ReadOnlySpan<byte> MimePrefix => new byte[] { (byte)'=', (byte)'?', (byte)'u', (byte)'t', (byte)'f', (byte)'-', (byte)'8', (byte)'?', (byte)'B', (byte)'?' };
+        private static ReadOnlySpan<byte> MimeSuffix => new byte[] { (byte)'?', (byte)'=' };
 
         private static readonly HttpHeaderParser<ContentDispositionHeaderValue> Parser
             = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
@@ -534,9 +537,22 @@ namespace Microsoft.Net.Http.Headers
         // Encode using MIME encoding
         private string EncodeMime(StringSegment input)
         {
-            var buffer = Encoding.UTF8.GetBytes(new ReadOnlySequence<char>(input.AsMemory()));
-            var encodedName = Convert.ToBase64String(buffer);
-            return "=?utf-8?B?" + encodedName + "?=";
+            var requiredLength = MimePrefix.Length +
+                Base64.GetMaxEncodedToUtf8Length(Encoding.UTF8.GetByteCount(input.AsSpan())) +
+                MimeSuffix.Length;
+            Span<byte> buffer = requiredLength <= 256
+                ? (stackalloc byte[256]).Slice(0, requiredLength)
+                : new byte[requiredLength];
+
+            MimePrefix.CopyTo(buffer);
+            var bufferContent = buffer.Slice(MimePrefix.Length);
+            var contentLength = Encoding.UTF8.GetBytes(input.AsSpan(), bufferContent);
+
+            Base64.EncodeToUtf8InPlace(bufferContent, contentLength, out var base64ContentLength);
+
+            MimeSuffix.CopyTo(bufferContent.Slice(base64ContentLength));
+
+            return Encoding.UTF8.GetString(buffer.Slice(0, MimePrefix.Length + base64ContentLength + MimeSuffix.Length));
         }
 
         // Attempt to decode MIME encoded strings
