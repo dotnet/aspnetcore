@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private async Task DoReceive()
         {
             Exception? error = null;
-            
+
             try
             {
                 while (true)
