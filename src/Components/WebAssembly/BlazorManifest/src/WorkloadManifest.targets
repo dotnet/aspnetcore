@@ -1,13 +1,18 @@
 <Project>
-    <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)'=='true' AND '$(RunAOTCompilation)' == 'true'">
+    <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">
+        <UsingBrowserRuntimeWorkload Condition="'$(RunAOTCompilation)' == 'true' or '$(UsingMicrosoftNETSdkBlazorWebAssembly)'=='false'" >true</UsingBrowserRuntimeWorkload>
+        <UsingBrowserRuntimeWorkload Condition="'$(UsingBrowserRuntimeWorkload)' == ''" >$(WasmNativeWorkload)</UsingBrowserRuntimeWorkload>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)'=='true' and '$(UsingBrowserRuntimeWorkload)' == 'true'">
+      <WasmGenerateAppBundle>false</WasmGenerateAppBundle>
       <UsingBlazorAOTWorkloadManifest>true</UsingBlazorAOTWorkloadManifest>
     </PropertyGroup>
 
-    <ImportGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)'=='true' AND '$(RunAOTCompilation)' == 'true'">
-      <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
+    <ImportGroup Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'">
+      <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Condition="'$(RunAOTCompilation)' == 'true'" />
       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Runtime.WebAssembly.Sdk" />
       <Import Project="Sdk.props" Sdk="Microsoft.Netcore.App.Runtime.Aot.Cross.browser-wasm" />
-      <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Python" Condition="!$([MSBuild]::IsOsPlatform('Linux'))" />
+      <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Python" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
       <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Node" />
       <Import Project="Sdk.props" Sdk="Microsoft.NET.Runtime.Emscripten.Sdk" />
     </ImportGroup>
