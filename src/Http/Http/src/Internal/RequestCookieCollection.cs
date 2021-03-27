@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
 =======
 using System.Linq;
+using Microsoft.AspNetCore.Internal.Dictionary;
 using Microsoft.AspNetCore.Routing;
 >>>>>>> 41cfee2cfe (Trying routevaluedict)
 using Microsoft.Net.Http.Headers;
@@ -24,24 +25,22 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private RouteValueDictionary Store { get; set; }
+        private SmallCapacityDictionary Store { get; set; }
 
         public RequestCookieCollection(Dictionary<string, string> store)
         {
-            Store = new RouteValueDictionary();
-            //Store = RouteValueDictionary.FromArray(store.ToArray());
-            //Store = new RouteValueDictionary(;
+            Store = new SmallCapacityDictionary(store);
         }
 
         public RequestCookieCollection()
         {
-            Store = new RouteValueDictionary();
+            Store = new SmallCapacityDictionary();
         }
 
-        //public RequestCookieCollection(int capacity)
-        //{
-        //    Store = new RouteValueDictionary(capacity);
-        //}
+        public RequestCookieCollection(int capacity)
+        {
+            Store = new SmallCapacityDictionary(capacity);
+        }
 
         public string? this[string key]
         {

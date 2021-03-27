@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Internal.Dictionarys
+namespace Microsoft.AspNetCore.Internal.Dictionary
 {
     /// <summary>
     /// An <see cref="IDictionary{String, Object}"/> type for route values.
@@ -95,6 +95,17 @@ namespace Microsoft.AspNetCore.Internal.Dictionarys
         public SmallCapacityDictionary()
         {
             _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
+        }
+
+        public SmallCapacityDictionary(Dictionary<string, string> dict)
+        {
+            _backup = dict;
+            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
+        }
+
+        public SmallCapacityDictionary(int capacity)
+        {
+            _arrayStorage = new KeyValuePair<string, object?>[capacity];
         }
 
         /// <summary>
