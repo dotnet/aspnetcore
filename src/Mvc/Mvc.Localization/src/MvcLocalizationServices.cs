@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         public static void AddLocalizationServices(
             IServiceCollection services,
             LanguageViewLocationExpanderFormat format,
-            Action<LocalizationOptions> setupAction)
+            Action<LocalizationOptions>? setupAction)
         {
             AddMvcViewLocalizationServices(services, format);
 

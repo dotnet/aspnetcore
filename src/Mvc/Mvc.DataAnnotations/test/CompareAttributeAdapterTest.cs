@@ -240,17 +240,17 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         private class PropertyDisplayNameModel
         {
             [Display(Name = "MyPropertyDisplayName")]
-            public string MyProperty { get; set; }
+            public string? MyProperty { get; set; }
 
             [Display(Name = "OtherPropertyDisplayName")]
-            public string OtherProperty { get; set; }
+            public string? OtherProperty { get; set; }
         }
 
         private class PropertyNameModel
         {
-            public string MyProperty { get; set; }
+            public string? MyProperty { get; set; }
 
-            public string OtherProperty { get; set; }
+            public string? OtherProperty { get; set; }
         }
     }
 }

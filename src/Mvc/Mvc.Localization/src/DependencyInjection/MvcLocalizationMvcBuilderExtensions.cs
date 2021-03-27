@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcBuilder AddViewLocalization(
             this IMvcBuilder builder,
-            Action<LocalizationOptions> setupAction)
+            Action<LocalizationOptions>? setupAction)
         {
             if (builder == null)
             {
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IMvcBuilder AddViewLocalization(
             this IMvcBuilder builder,
             LanguageViewLocationExpanderFormat format,
-            Action<LocalizationOptions> setupAction)
+            Action<LocalizationOptions>? setupAction)
         {
             if (builder == null)
             {
@@ -125,7 +125,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         public static IMvcBuilder AddMvcLocalization(
             this IMvcBuilder builder,
-            Action<LocalizationOptions> localizationOptionsSetupAction)
+            Action<LocalizationOptions>? localizationOptionsSetupAction)
         {
             if (builder == null)
             {
@@ -181,7 +181,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         public static IMvcBuilder AddMvcLocalization(
             this IMvcBuilder builder,
-            Action<LocalizationOptions> localizationOptionsSetupAction,
+            Action<LocalizationOptions>? localizationOptionsSetupAction,
             LanguageViewLocationExpanderFormat format)
         {
             if (builder == null)
@@ -210,7 +210,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         public static IMvcBuilder AddMvcLocalization(
             this IMvcBuilder builder,
-            Action<MvcDataAnnotationsLocalizationOptions> dataAnnotationsLocalizationOptionsSetupAction)
+            Action<MvcDataAnnotationsLocalizationOptions>? dataAnnotationsLocalizationOptionsSetupAction)
         {
             if (builder == null)
             {
@@ -240,8 +240,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         public static IMvcBuilder AddMvcLocalization(
             this IMvcBuilder builder,
-            Action<LocalizationOptions> localizationOptionsSetupAction,
-            Action<MvcDataAnnotationsLocalizationOptions> dataAnnotationsLocalizationOptionsSetupAction)
+            Action<LocalizationOptions>? localizationOptionsSetupAction,
+            Action<MvcDataAnnotationsLocalizationOptions>? dataAnnotationsLocalizationOptionsSetupAction)
         {
             if (builder == null)
             {
@@ -271,7 +271,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IMvcBuilder AddMvcLocalization(
             this IMvcBuilder builder,
             LanguageViewLocationExpanderFormat format,
-            Action<MvcDataAnnotationsLocalizationOptions> dataAnnotationsLocalizationOptionsSetupAction)
+            Action<MvcDataAnnotationsLocalizationOptions>? dataAnnotationsLocalizationOptionsSetupAction)
         {
             if (builder == null)
             {
@@ -302,9 +302,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         public static IMvcBuilder AddMvcLocalization(
             this IMvcBuilder builder,
-            Action<LocalizationOptions> localizationOptionsSetupAction,
+            Action<LocalizationOptions>? localizationOptionsSetupAction,
             LanguageViewLocationExpanderFormat format,
-            Action<MvcDataAnnotationsLocalizationOptions> dataAnnotationsLocalizationOptionsSetupAction)
+            Action<MvcDataAnnotationsLocalizationOptions>? dataAnnotationsLocalizationOptionsSetupAction)
         {
             if (builder == null)
             {

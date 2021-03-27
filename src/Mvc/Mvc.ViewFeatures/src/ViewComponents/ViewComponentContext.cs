@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -39,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// <param name="writer">The <see cref="TextWriter"/> for writing output.</param>
         public ViewComponentContext(
             ViewComponentDescriptor viewComponentDescriptor,
-            IDictionary<string, object> arguments,
+            IDictionary<string, object?> arguments,
             HtmlEncoder htmlEncoder,
             ViewContext viewContext,
             TextWriter writer)
@@ -88,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// <remarks>
         /// The property setter is provided for unit test purposes only.
         /// </remarks>
-        public IDictionary<string, object> Arguments { get; set; }
+        public IDictionary<string, object?> Arguments { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/>.
@@ -96,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// <remarks>
         /// The property setter is provided for unit test purposes only.
         /// </remarks>
-        public HtmlEncoder HtmlEncoder { get; set; }
+        public HtmlEncoder HtmlEncoder { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ViewComponents.ViewComponentDescriptor"/> for the view component being invoked.

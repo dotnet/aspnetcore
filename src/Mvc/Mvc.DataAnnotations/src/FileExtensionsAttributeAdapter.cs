@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         private readonly string _extensions;
         private readonly string _formattedExtensions;
 
-        public FileExtensionsAttributeAdapter(FileExtensionsAttribute attribute, IStringLocalizer stringLocalizer)
+        public FileExtensionsAttributeAdapter(FileExtensionsAttribute attribute, IStringLocalizer? stringLocalizer)
             : base(attribute, stringLocalizer)
         {
             // Build the extension list based on how the JQuery Validation's 'extension' method expects it
