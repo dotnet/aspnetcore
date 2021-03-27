@@ -19,6 +19,7 @@
     <Compile Include="..\..\Shared\HttpRuleParser.cs" LinkBase="Internal" />
     <Compile Include="..\..\Shared\HttpParseResult.cs" LinkBase="Internal" />
     <Compile Include="..\..\WebUtilities\src\AspNetCoreTempDirectory.cs" LinkBase="Internal" />
+    <Compile Include="..\..\..\Shared\Dictionary\SmallCapacityDictionary.cs" LinkBase="Internal" />
   </ItemGroup>
 
   <ItemGroup>
