@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly MvcOptions _options;
         private readonly MvcNewtonsoftJsonOptions _jsonOptions;
 
-        private ObjectPool<JsonSerializer> _jsonSerializerPool;
+        private ObjectPool<JsonSerializer>? _jsonSerializerPool;
 
         /// <summary>
         /// Initializes a new instance of <see cref="NewtonsoftJsonInputFormatter"/>.
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             var successful = true;
-            Exception exception = null;
+            Exception? exception = null;
             object model;
 
             using (var streamReader = context.ReaderFactory(readStream, encoding))
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
             }
 
-            if (!(exception is JsonException || exception is OverflowException || exception is FormatException))
+            if (exception is not null && exception is not JsonException or OverflowException or FormatException)
             {
                 // At this point we've already recorded all exceptions as an entry in the ModelStateDictionary.
                 // We only need to rethrow an exception if we believe it needs to be handled by something further up
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             return InputFormatterResult.Failure();
 
-            void ErrorHandler(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs eventArgs)
+            void ErrorHandler(object? sender, Newtonsoft.Json.Serialization.ErrorEventArgs eventArgs)
             {
                 successful = false;
 
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 if (addMember)
                 {
                     // Path.Member case (path.Length < member.Length) needs no further checks.
-                    if (path.Length == member.Length)
+                    if (path.Length == member!.Length)
                     {
                         // Add Member in Path.Memb case but not for Path.Path.
                         addMember = !string.Equals(path, member, StringComparison.Ordinal);
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// manage the lifetimes of <see cref="JsonSerializer"/> instances.
         /// </remarks>
         protected virtual void ReleaseJsonSerializer(JsonSerializer serializer)
-            => _jsonSerializerPool.Return(serializer);
+            => _jsonSerializerPool!.Return(serializer);
 
         private ModelMetadata GetPathMetadata(ModelMetadata metadata, string path)
         {
@@ -355,13 +355,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     }
 
                     var propertyName = path.Substring(index, endIndex - index);
-                    if (metadata.Properties[propertyName] == null)
+                    var propertyMetadata = metadata.Properties[propertyName];
+                    if (propertyMetadata is null)
                     {
                         // Odd case but don't throw just because ErrorContext had an odd-looking path.
                         break;
                     }
-
-                    metadata = metadata.Properties[propertyName];
+                    
+                    metadata = propertyMetadata;
                     index = endIndex;
                 }
             }

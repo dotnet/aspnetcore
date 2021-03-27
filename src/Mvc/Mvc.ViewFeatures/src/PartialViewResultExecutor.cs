@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -75,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             var viewEngine = viewResult.ViewEngine ?? ViewEngine;
-            var viewName = viewResult.ViewName ?? GetActionName(actionContext);
+            var viewName = viewResult.ViewName ?? GetActionName(actionContext) ?? string.Empty;
 
             var stopwatch = ValueStopwatch.StartNew();
 
@@ -192,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Logger.PartialViewResultExecuted(result.ViewName, stopwatch.GetElapsedTime());
         }
 
-        private static string GetActionName(ActionContext context)
+        private static string? GetActionName(ActionContext context)
         {
             if (context == null)
             {
@@ -205,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             var actionDescriptor = context.ActionDescriptor;
-            string normalizedValue = null;
+            string? normalizedValue = null;
             if (actionDescriptor.RouteValues.TryGetValue(ActionNameKey, out var value) &&
                 !string.IsNullOrEmpty(value))
             {
