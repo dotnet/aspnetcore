@@ -23,7 +23,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
-    internal class RuntimeViewCompiler : IViewCompiler
+    public class RuntimeViewCompiler : IViewCompiler
     {
         private readonly object _cacheLock = new object();
         private readonly Dictionary<string, CompiledViewDescriptor> _precompiledViews;
@@ -34,6 +34,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         private readonly ILogger _logger;
         private readonly CSharpCompiler _csharpCompiler;
 
+		protected Dictionary<string, CompiledViewDescriptor> PrecompiledViews => _precompiledViews;
+		
         public RuntimeViewCompiler(
             IFileProvider fileProvider,
             RazorProjectEngine projectEngine,
@@ -104,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             }
         }
 
-        public Task<CompiledViewDescriptor> CompileAsync(string relativePath)
+        public virtual Task<CompiledViewDescriptor> CompileAsync(string relativePath)
         {
             if (relativePath == null)
             {
@@ -302,7 +304,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             };
         }
 
-        private IList<IChangeToken> GetExpirationTokens(CompiledViewDescriptor precompiledView)
+        protected virtual IList<IChangeToken> GetExpirationTokens(CompiledViewDescriptor precompiledView)
         {
             var checksums = precompiledView.Item.GetChecksumMetadata();
             var expirationTokens = new List<IChangeToken>(checksums.Count);
@@ -317,7 +319,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             return expirationTokens;
         }
 
-        private void GetChangeTokensFromImports(IList<IChangeToken> expirationTokens, RazorProjectItem projectItem)
+		protected virtual void GetChangeTokensFromImports(IList<IChangeToken> expirationTokens, RazorProjectItem projectItem)
         {
             // OK this means we can do compilation. For now let's just identify the other files we need to watch
             // so we can create the cache entry. Compilation will happen after we release the lock.
@@ -387,12 +389,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 assemblyStream.Seek(0, SeekOrigin.Begin);
                 pdbStream?.Seek(0, SeekOrigin.Begin);
 
-                var assembly = Assembly.Load(assemblyStream.ToArray(), pdbStream?.ToArray());
+				var assembly = LoadAssembly(codeDocument, assemblyStream, pdbStream);
                 _logger.GeneratedCodeToAssemblyCompilationEnd(codeDocument.Source.FilePath, startTimestamp);
 
                 return assembly;
             }
         }
+
+		protected virtual Assembly LoadAssembly(RazorCodeDocument codeDocument, MemoryStream assemblyStream, MemoryStream pdbStream)
+		{
+			return Assembly.Load(assemblyStream.ToArray(), pdbStream?.ToArray());
+		}
 
         private CSharpCompilation CreateCompilation(string compilationContent, string assemblyName)
         {
