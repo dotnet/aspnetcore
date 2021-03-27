@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
         }
 
-        public SocketAwaitableEventArgs SendAsync(Socket socket, in ReadOnlySequence<byte> buffers)
+        public ValueTask<int> SendAsync(Socket socket, in ReadOnlySequence<byte> buffers)
         {
             if (buffers.IsSingleSegment)
             {
@@ -28,12 +29,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             SetBufferList(buffers);
 
-            if (!socket.SendAsync(this))
+            if (socket.SendAsync(this))
             {
-                Complete();
+                return new ValueTask<int>(this, 0);
             }
 
-            return this;
+            var bytesTransferred = BytesTransferred;
+            var error = SocketError;
+
+            return error == SocketError.Success ?
+                new ValueTask<int>(bytesTransferred) :
+               ValueTask.FromException<int>(CreateException(error));
         }
 
         public void Reset()
@@ -53,16 +59,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
         }
 
-        private SocketAwaitableEventArgs SendAsync(Socket socket, ReadOnlyMemory<byte> memory)
+        private ValueTask<int> SendAsync(Socket socket, ReadOnlyMemory<byte> memory)
         {
             SetBuffer(MemoryMarshal.AsMemory(memory));
 
-            if (!socket.SendAsync(this))
+            if (socket.SendAsync(this))
             {
-                Complete();
+                return new ValueTask<int>(this, 0);
             }
 
-            return this;
+            var bytesTransferred = BytesTransferred;
+            var error = SocketError;
+
+            return error == SocketError.Success ?
+                new ValueTask<int>(bytesTransferred) :
+               ValueTask.FromException<int>(CreateException(error));
         }
 
         private void SetBufferList(in ReadOnlySequence<byte> buffer)
