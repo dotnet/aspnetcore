@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._CacheControl = value; 
             }
         }
-        public StringValues HeaderConnection
+        public override StringValues HeaderConnection
         {
             get
             {
@@ -8229,7 +8229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._CacheControl = value; 
             }
         }
-        public StringValues HeaderConnection
+        public override StringValues HeaderConnection
         {
             get
             {

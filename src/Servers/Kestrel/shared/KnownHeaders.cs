@@ -283,7 +283,7 @@ namespace CodeGenerator
         static string AppendHPackSwitchSection(HPackGroup group)
         {
             var header = group.Header;
-            if (header.Identifier == "ContentLength")
+            if (header.Name == HeaderNames.ContentLength)
             {
                 return $@"if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
                     {{
@@ -323,7 +323,7 @@ namespace CodeGenerator
 
             string GenerateIfBody(KnownHeader header, string extraIndent = "")
             {
-                if (header.Identifier == "ContentLength")
+                if (header.Name == HeaderNames.ContentLength)
                 {
                     return $@"
                         {extraIndent}if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
@@ -755,8 +755,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {Each(loop.Headers.Where(header => header.FastCount), header => $@"
         public int {header.Identifier}Count => _headers._{header.Identifier}.Count;")}
         {Each(loop.Headers, header => $@"
-        public StringValues Header{header.Identifier}
-        {{{(header.Identifier == "ContentLength" ? $@"
+        public {(header.Name == HeaderNames.Connection ? "override " : "")}StringValues Header{header.Identifier}
+        {{{(header.Name == HeaderNames.ContentLength ? $@"
             get
             {{
                 StringValues value = default;
@@ -806,7 +806,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
-                    {{{(header.Identifier == "ContentLength" ? @"
+                    {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
                             value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
@@ -822,7 +822,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }}")}
 {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {{{(header.Identifier == "ContentLength" ? @"
+                    {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
                             value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
@@ -851,7 +851,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
-                    {{{(header.Identifier == "ContentLength" ? $@"
+                    {{{(header.Name == HeaderNames.ContentLength ? $@"
                         _contentLength = ParseContentLength(value.ToString());" : $@"
                         {header.SetBit()};
                         _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
@@ -860,7 +860,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }}")}
 {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {{{(header.Identifier == "ContentLength" ? $@"
+                    {{{(header.Name == HeaderNames.ContentLength ? $@"
                         _contentLength = ParseContentLength(value.ToString());" : $@"
                         {header.SetBit()};
                         _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
@@ -882,7 +882,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
-                    {{{(header.Identifier == "ContentLength" ? $@"
+                    {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
                             _contentLength = ParseContentLength(value);
@@ -900,7 +900,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }}")}
     {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {{{(header.Identifier == "ContentLength" ? $@"
+                    {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
                             _contentLength = ParseContentLength(value);
@@ -930,7 +930,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
-                    {{{(header.Identifier == "ContentLength" ? @"
+                    {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
                             _contentLength = null;
@@ -948,7 +948,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }}")}
     {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {{{(header.Identifier == "ContentLength" ? @"
+                    {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
                             _contentLength = null;

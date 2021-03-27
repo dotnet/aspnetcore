@@ -37,6 +37,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
 
+        public override StringValues HeaderConnection { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
         {
             private readonly HttpResponseTrailers _collection;
