@@ -15,13 +15,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal abstract class HttpHeaders : IHeaderDictionary
+    internal abstract partial class HttpHeaders : IHeaderDictionary
     {
         protected long _bits = 0;
         protected long? _contentLength;
         protected bool _isReadOnly;
         protected Dictionary<string, StringValues>? MaybeUnknown;
-        protected Dictionary<string, StringValues> Unknown => MaybeUnknown ?? (MaybeUnknown = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase));
+        protected Dictionary<string, StringValues> Unknown => MaybeUnknown ??= new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
 
         public long? ContentLength
         {
@@ -124,6 +124,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _isReadOnly = false;
             ClearFast();
+        }
+
+        protected static string GetInternedHeaderName(string name)
+        {
+            // Some headers can be very long lived; for example those on a WebSocket connection
+            // so we exchange these for the preallocated strings predefined in HeaderNames
+            if (s_internedHeaderNames.TryGetValue(name, out var internedName))
+            {
+                return internedName;
+            }
+
+            return name;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

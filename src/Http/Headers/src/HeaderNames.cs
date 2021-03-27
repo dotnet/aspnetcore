@@ -65,7 +65,7 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string Authorization = "Authorization";
 
         /// <summary>Gets the <c>baggage</c> HTTP header name.</summary>
-        public static readonly string Baggage = "baggage";
+        public static readonly string Baggage = "Baggage";
 
         /// <summary>Gets the <c>Cache-Control</c> HTTP header name.</summary>
         public static readonly string CacheControl = "Cache-Control";
@@ -166,6 +166,9 @@ namespace Microsoft.Net.Http.Headers
         /// <summary>Gets the <c>Last-Modified</c> HTTP header name.</summary>
         public static readonly string LastModified = "Last-Modified";
 
+        /// <summary>Gets the <c>Link</c> HTTP header name.</summary>
+        public static readonly string Link = "Link";
+
         /// <summary>Gets the <c>Location</c> HTTP header name.</summary>
         public static readonly string Location = "Location";
 
@@ -245,10 +248,10 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string Translate = "Translate";
 
         /// <summary>Gets the <c>traceparent</c> HTTP header name.</summary>
-        public static readonly string TraceParent = "traceparent";
+        public static readonly string TraceParent = "TraceParent";
 
         /// <summary>Gets the <c>tracestate</c> HTTP header name.</summary>
-        public static readonly string TraceState = "tracestate";
+        public static readonly string TraceState = "TraceState";
 
         /// <summary>Gets the <c>Upgrade</c> HTTP header name.</summary>
         public static readonly string Upgrade = "Upgrade";
@@ -274,10 +277,16 @@ namespace Microsoft.Net.Http.Headers
         /// <summary>Gets the <c>WWW-Authenticate</c> HTTP header name.</summary>
         public static readonly string WWWAuthenticate = "WWW-Authenticate";
 
+        /// <summary>Gets the <c>X-Content-Type-Options</c> HTTP header name.</summary>
+        public static readonly string XContentTypeOptions = "X-Content-Type-Options";
+
         /// <summary>Gets the <c>X-Frame-Options</c> HTTP header name.</summary>
         public static readonly string XFrameOptions = "X-Frame-Options";
 
         /// <summary>Gets the <c>X-Requested-With</c> HTTP header name.</summary>
         public static readonly string XRequestedWith = "X-Requested-With";
+
+        /// <summary>Gets the <c>X-XSS-Protection</c> HTTP header name.</summary>
+        public static readonly string XXssProtection = "X-XSS-Protection";
     }
 }
