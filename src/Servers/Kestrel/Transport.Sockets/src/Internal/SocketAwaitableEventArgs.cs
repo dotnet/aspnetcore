@@ -9,6 +9,11 @@ using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
+    // A slimmed down version of https://github.com/dotnet/runtime/blob/82ca681cbac89d813a3ce397e0c665e6c051ed67/src/libraries/System.Net.Sockets/src/System/Net/Sockets/Socket.Tasks.cs#L798 that
+    // 1. Doesn't support any custom scheduling other than the PipeScheduler (no sync context, no task scheduler)
+    // 2. Doesn't do ValueTask validation using the token
+    // 3. Doesn't support usage outside of async/await (doesn't try to capture and restore the execution context)
+    // 4. Doesn't use cancellation tokens
     internal class SocketAwaitableEventArgs : SocketAsyncEventArgs, IValueTaskSource<int>
     {
         private static readonly Action<object?> _continuationCompleted = _ => { };
