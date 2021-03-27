@@ -17,7 +17,7 @@ using DependencyContextCompilationOptions = Microsoft.Extensions.DependencyModel
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
-    internal class CSharpCompiler
+    public class CSharpCompiler
     {
         private readonly RazorReferenceManager _referenceManager;
         private readonly IWebHostEnvironment _hostingEnvironment;

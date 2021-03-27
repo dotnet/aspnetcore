@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
-    internal class RazorReferenceManager
+    public class RazorReferenceManager
     {
         private readonly ApplicationPartManager _partManager;
         private readonly MvcRazorRuntimeCompilationOptions _options;
