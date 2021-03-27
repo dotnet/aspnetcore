@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
-    internal class RuntimeCompilationFileProvider
+    public class RuntimeCompilationFileProvider
     {
         private readonly MvcRazorRuntimeCompilationOptions _options;
         private IFileProvider _compositeFileProvider;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             _options = options.Value;
         }
 
-        public IFileProvider FileProvider
+        public virtual IFileProvider FileProvider
         {
             get
             {
