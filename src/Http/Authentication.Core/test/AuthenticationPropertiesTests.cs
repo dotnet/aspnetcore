@@ -320,22 +320,22 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             props.Parameters.Add("baz", "quux");
 
             var json = JsonSerializer.Serialize(props);
-            props = JsonSerializer.Deserialize<AuthenticationProperties>(json);
+            var deserialized = JsonSerializer.Deserialize<AuthenticationProperties>(json);
 
-            Assert.NotNull(props);
+            Assert.NotNull(deserialized);
 
-            Assert.True(props!.AllowRefresh);
-            Assert.Equal(new DateTimeOffset(2021, 03, 28, 13, 47, 00, TimeSpan.Zero), props.ExpiresUtc);
-            Assert.Equal(new DateTimeOffset(2021, 03, 28, 12, 47, 00, TimeSpan.Zero), props.IssuedUtc);
-            Assert.True(props.IsPersistent);
-            Assert.Equal("/foo/bar", props.RedirectUri);
+            Assert.Equal(props.AllowRefresh, deserialized!.AllowRefresh);
+            Assert.Equal(props.ExpiresUtc, deserialized.ExpiresUtc);
+            Assert.Equal(props.IssuedUtc, deserialized.IssuedUtc);
+            Assert.Equal(props.IsPersistent, deserialized.IsPersistent);
+            Assert.Equal(props.RedirectUri, deserialized.RedirectUri);
 
-            Assert.NotNull(props.Items);
-            Assert.True(props.Items.ContainsKey("foo"));
-            Assert.Equal("bar", props.Items["foo"]);
+            Assert.NotNull(deserialized.Items);
+            Assert.True(deserialized.Items.ContainsKey("foo"));
+            Assert.Equal(props.Items["foo"], deserialized.Items["foo"]);
 
-            Assert.NotNull(props.Parameters);
-            Assert.Equal(0, props.Parameters.Count);
+            Assert.NotNull(deserialized.Parameters);
+            Assert.Equal(0, deserialized.Parameters.Count);
         }
 
         public class MyAuthenticationProperties : AuthenticationProperties
