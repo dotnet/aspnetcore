@@ -169,10 +169,14 @@ namespace {namespaceName}
 
         void IFeatureCollection.Set<TFeature>(TFeature? feature) where TFeature : default
         {{
+            // Using Unsafe.As for the cast due to https://github.com/dotnet/runtime/issues/49614
+            // The type of TFeature is confirmed by the typeof() check and the As cast only accepts
+            // that type; however the Jit does not eliminate a regular cast in a shared generic.
+
             _featureRevision++;{Each(features, feature => $@"
             {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
             {{
-                _current{feature.Name} = ({feature.Name}?)feature;
+                _current{feature.Name} = Unsafe.As<TFeature?, {feature.Name}?>(ref feature);
             }}")}
             else
             {{
