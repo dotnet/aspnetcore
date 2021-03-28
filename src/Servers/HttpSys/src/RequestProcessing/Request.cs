@@ -20,9 +20,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal sealed class Request
     {
-        private static readonly Action<ILogger, Exception?> _errorInReadingCertificate =
-            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorInReadingCertificate, "An error occurred reading the client certificate.");
-
         private X509Certificate2? _clientCert;
         // TODO: https://github.com/aspnet/HttpSysServer/issues/231
         // private byte[] _providedTokenBindingId;
@@ -340,11 +337,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     catch (CryptographicException ce)
                     {
-                        _errorInReadingCertificate(RequestContext.Logger, ce);
+                        Log.ErrorInReadingCertificate(RequestContext.Logger, ce);
                     }
                     catch (SecurityException se)
                     {
-                        _errorInReadingCertificate(RequestContext.Logger, se);
+                        Log.ErrorInReadingCertificate(RequestContext.Logger, se);
                     }
                 }
 
@@ -453,6 +450,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _nativeStream = new RequestStream(RequestContext);
             }
             _nativeStream.SwitchToOpaqueMode();
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, Exception?> _errorInReadingCertificate =
+                LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorInReadingCertificate, "An error occurred reading the client certificate.");
+
+            public static void ErrorInReadingCertificate(ILogger logger, Exception exception)
+            {
+                _errorInReadingCertificate(logger, exception);
+            }
         }
     }
 }
