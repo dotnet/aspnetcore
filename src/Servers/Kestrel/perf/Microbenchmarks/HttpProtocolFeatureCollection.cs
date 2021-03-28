@@ -5,12 +5,9 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Testing;
 
@@ -22,16 +19,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 
         [Benchmark]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpRequestFeature GetViaTypeOf_First()
+        public IHttpRequestFeature GetViaTypeOf_IHttpRequestFeature()
         {
             return (IHttpRequestFeature)_collection[typeof(IHttpRequestFeature)];
         }
 
         [Benchmark]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpRequestFeature GetViaGeneric_First()
+        public IHttpRequestFeature GetViaGeneric_IHttpRequestFeature()
         {
             return _collection.Get<IHttpRequestFeature>();
+        }
+
+        [Benchmark]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IQueryFeature GetViaTypeOf_IQueryFeature()
+        {
+            return (IQueryFeature)_collection[typeof(IQueryFeature)];
+        }
+
+        [Benchmark]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IQueryFeature GetViaGeneric_IQueryFeature()
+        {
+            return _collection.Get<IQueryFeature>();
+        }
+
+        [Benchmark]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpResetFeature GetViaTypeOf_IHttpResetFeature()
+        {
+            return (IHttpResetFeature)_collection[typeof(IHttpResetFeature)];
+        }
+
+        [Benchmark]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpResetFeature GetViaGeneric_IHttpResetFeature()
+        {
+            return _collection.Get<IHttpResetFeature>();
         }
 
         [Benchmark]
