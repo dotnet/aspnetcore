@@ -12,46 +12,50 @@ namespace CodeGenerator
             var alwaysFeatures = new[]
             {
                 "IHttpRequestFeature",
-                "IHttpRequestBodyDetectionFeature",
                 "IHttpResponseFeature",
                 "IHttpResponseBodyFeature",
-                "IRequestBodyPipeFeature",
-                "IHttpRequestIdentifierFeature",
-                "IServiceProvidersFeature",
-                "IHttpRequestLifetimeFeature",
-                "IHttpConnectionFeature",
                 "IRouteValuesFeature",
-                "IEndpointFeature"
+                "IEndpointFeature",
+                "IServiceProvidersFeature"
             };
 
             var commonFeatures = new[]
             {
-                "IHttpAuthenticationFeature",
-                "IHttpRequestTrailersFeature",
+                "IItemsFeature",
                 "IQueryFeature",
                 "IFormFeature",
+                "IHttpAuthenticationFeature",
+                "IHttpRequestIdentifierFeature",
             };
 
             var sometimesFeatures = new[]
             {
-                "IHttpUpgradeFeature",
-                "IHttp2StreamIdFeature",
-                "IHttpResponseTrailersFeature",
-                "IResponseCookiesFeature",
-                "IItemsFeature",
-                "ITlsConnectionFeature",
-                "IHttpWebSocketFeature",
+                "IHttpConnectionFeature",
                 "ISessionFeature",
+                "IResponseCookiesFeature",
+                "IHttpRequestTrailersFeature",
+                "IHttpResponseTrailersFeature",
+                "ITlsConnectionFeature",
+                "IHttpUpgradeFeature",
+                "IHttpWebSocketFeature"
+            };
+            var maybeFeatures = new[]
+            {
+                "IHttp2StreamIdFeature",
+                "IRequestBodyPipeFeature",
+                "IHttpRequestLifetimeFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
+                "IHttpRequestBodyDetectionFeature",
                 "IHttpResetFeature"
             };
 
             var allFeatures = alwaysFeatures
                 .Concat(commonFeatures)
                 .Concat(sometimesFeatures)
+                .Concat(maybeFeatures)
                 .ToArray();
 
             // NOTE: This list MUST always match the set of feature interfaces implemented by HttpProtocol.
@@ -59,20 +63,20 @@ namespace CodeGenerator
             var implementedFeatures = new[]
             {
                 "IHttpRequestFeature",
-                "IHttpRequestBodyDetectionFeature",
                 "IHttpResponseFeature",
                 "IHttpResponseBodyFeature",
-                "IRequestBodyPipeFeature",
-                "IHttpUpgradeFeature",
+                "IRouteValuesFeature",
+                "IEndpointFeature",
                 "IHttpRequestIdentifierFeature",
-                "IHttpRequestLifetimeFeature",
                 "IHttpRequestTrailersFeature",
+                "IHttpUpgradeFeature",
+                "IRequestBodyPipeFeature",
                 "IHttpConnectionFeature",
+                "IHttpRequestLifetimeFeature",
+                "IHttpBodyControlFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpMinRequestBodyDataRateFeature",
-                "IHttpBodyControlFeature",
-                "IRouteValuesFeature",
-                "IEndpointFeature"
+                "IHttpRequestBodyDetectionFeature",
             };
 
             // NOTE: Each item in this list MUST always be reset by each protocol in their OnReset() method

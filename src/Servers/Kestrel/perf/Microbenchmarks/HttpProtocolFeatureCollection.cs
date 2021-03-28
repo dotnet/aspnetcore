@@ -28,13 +28,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             return _collection.Get<IHttpRequestFeature>();
         }
 
-        [Benchmark(Description = "Get<IHttpRequestBodyDetectionFeature>*")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpRequestBodyDetectionFeature Get_IHttpRequestBodyDetectionFeature()
-        {
-            return _collection.Get<IHttpRequestBodyDetectionFeature>();
-        }
-
         [Benchmark(Description = "Get<IHttpResponseFeature>*")]
         [MethodImpl(MethodImplOptions.NoInlining)]
         public IHttpResponseFeature Get_IHttpResponseFeature()
@@ -47,41 +40,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         public IHttpResponseBodyFeature Get_IHttpResponseBodyFeature()
         {
             return _collection.Get<IHttpResponseBodyFeature>();
-        }
-
-        [Benchmark(Description = "Get<IRequestBodyPipeFeature>*")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public IRequestBodyPipeFeature Get_IRequestBodyPipeFeature()
-        {
-            return _collection.Get<IRequestBodyPipeFeature>();
-        }
-
-        [Benchmark(Description = "Get<IHttpRequestIdentifierFeature>*")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpRequestIdentifierFeature Get_IHttpRequestIdentifierFeature()
-        {
-            return _collection.Get<IHttpRequestIdentifierFeature>();
-        }
-
-        [Benchmark(Description = "Get<IServiceProvidersFeature>")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public IServiceProvidersFeature Get_IServiceProvidersFeature()
-        {
-            return _collection.Get<IServiceProvidersFeature>();
-        }
-
-        [Benchmark(Description = "Get<IHttpRequestLifetimeFeature>*")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpRequestLifetimeFeature Get_IHttpRequestLifetimeFeature()
-        {
-            return _collection.Get<IHttpRequestLifetimeFeature>();
-        }
-
-        [Benchmark(Description = "Get<IHttpConnectionFeature>*")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpConnectionFeature Get_IHttpConnectionFeature()
-        {
-            return _collection.Get<IHttpConnectionFeature>();
         }
 
         [Benchmark(Description = "Get<IRouteValuesFeature>*")]
@@ -98,18 +56,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             return _collection.Get<IEndpointFeature>();
         }
 
-        [Benchmark(Description = "Get<IHttpAuthenticationFeature>")]
+        [Benchmark(Description = "Get<IServiceProvidersFeature>")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpAuthenticationFeature Get_IHttpAuthenticationFeature()
+        public IServiceProvidersFeature Get_IServiceProvidersFeature()
         {
-            return _collection.Get<IHttpAuthenticationFeature>();
+            return _collection.Get<IServiceProvidersFeature>();
         }
 
-        [Benchmark(Description = "Get<IHttpRequestTrailersFeature>*")]
+        [Benchmark(Description = "Get<IItemsFeature>")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpRequestTrailersFeature Get_IHttpRequestTrailersFeature()
+        public IItemsFeature Get_IItemsFeature()
         {
-            return _collection.Get<IHttpRequestTrailersFeature>();
+            return _collection.Get<IItemsFeature>();
         }
 
         [Benchmark(Description = "Get<IQueryFeature>")]
@@ -126,25 +84,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             return _collection.Get<IFormFeature>();
         }
 
-        [Benchmark(Description = "Get<IHttpUpgradeFeature>*")]
+        [Benchmark(Description = "Get<IHttpAuthenticationFeature>")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpUpgradeFeature Get_IHttpUpgradeFeature()
+        public IHttpAuthenticationFeature Get_IHttpAuthenticationFeature()
         {
-            return _collection.Get<IHttpUpgradeFeature>();
+            return _collection.Get<IHttpAuthenticationFeature>();
         }
 
-        [Benchmark(Description = "Get<IHttp2StreamIdFeature>")]
+        [Benchmark(Description = "Get<IHttpRequestIdentifierFeature>*")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttp2StreamIdFeature Get_IHttp2StreamIdFeature()
+        public IHttpRequestIdentifierFeature Get_IHttpRequestIdentifierFeature()
         {
-            return _collection.Get<IHttp2StreamIdFeature>();
+            return _collection.Get<IHttpRequestIdentifierFeature>();
         }
 
-        [Benchmark(Description = "Get<IHttpResponseTrailersFeature>")]
+        [Benchmark(Description = "Get<IHttpConnectionFeature>*")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpResponseTrailersFeature Get_IHttpResponseTrailersFeature()
+        public IHttpConnectionFeature Get_IHttpConnectionFeature()
         {
-            return _collection.Get<IHttpResponseTrailersFeature>();
+            return _collection.Get<IHttpConnectionFeature>();
+        }
+
+        [Benchmark(Description = "Get<ISessionFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public ISessionFeature Get_ISessionFeature()
+        {
+            return _collection.Get<ISessionFeature>();
         }
 
         [Benchmark(Description = "Get<IResponseCookiesFeature>")]
@@ -154,11 +119,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             return _collection.Get<IResponseCookiesFeature>();
         }
 
-        [Benchmark(Description = "Get<IItemsFeature>")]
+        [Benchmark(Description = "Get<IHttpRequestTrailersFeature>*")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IItemsFeature Get_IItemsFeature()
+        public IHttpRequestTrailersFeature Get_IHttpRequestTrailersFeature()
         {
-            return _collection.Get<IItemsFeature>();
+            return _collection.Get<IHttpRequestTrailersFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpResponseTrailersFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpResponseTrailersFeature Get_IHttpResponseTrailersFeature()
+        {
+            return _collection.Get<IHttpResponseTrailersFeature>();
         }
 
         [Benchmark(Description = "Get<ITlsConnectionFeature>")]
@@ -168,6 +140,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             return _collection.Get<ITlsConnectionFeature>();
         }
 
+        [Benchmark(Description = "Get<IHttpUpgradeFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpUpgradeFeature Get_IHttpUpgradeFeature()
+        {
+            return _collection.Get<IHttpUpgradeFeature>();
+        }
+
         [Benchmark(Description = "Get<IHttpWebSocketFeature>")]
         [MethodImpl(MethodImplOptions.NoInlining)]
         public IHttpWebSocketFeature Get_IHttpWebSocketFeature()
@@ -175,11 +154,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             return _collection.Get<IHttpWebSocketFeature>();
         }
 
-        [Benchmark(Description = "Get<ISessionFeature>")]
+        [Benchmark(Description = "Get<IHttp2StreamIdFeature>")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public ISessionFeature Get_ISessionFeature()
+        public IHttp2StreamIdFeature Get_IHttp2StreamIdFeature()
         {
-            return _collection.Get<ISessionFeature>();
+            return _collection.Get<IHttp2StreamIdFeature>();
+        }
+
+        [Benchmark(Description = "Get<IRequestBodyPipeFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IRequestBodyPipeFeature Get_IRequestBodyPipeFeature()
+        {
+            return _collection.Get<IRequestBodyPipeFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpRequestLifetimeFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpRequestLifetimeFeature Get_IHttpRequestLifetimeFeature()
+        {
+            return _collection.Get<IHttpRequestLifetimeFeature>();
         }
 
         [Benchmark(Description = "Get<IHttpMaxRequestBodySizeFeature>*")]
@@ -208,6 +201,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         public IHttpBodyControlFeature Get_IHttpBodyControlFeature()
         {
             return _collection.Get<IHttpBodyControlFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpRequestBodyDetectionFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpRequestBodyDetectionFeature Get_IHttpRequestBodyDetectionFeature()
+        {
+            return _collection.Get<IHttpRequestBodyDetectionFeature>();
         }
 
         [Benchmark(Description = "Get<IHttpResetFeature>")]

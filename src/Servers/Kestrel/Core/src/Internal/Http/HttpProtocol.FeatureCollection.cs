@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
@@ -19,19 +17,19 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal partial class HttpProtocol : IHttpRequestFeature,
-                                          IHttpRequestBodyDetectionFeature,
                                           IHttpResponseFeature,
                                           IHttpResponseBodyFeature,
-                                          IRequestBodyPipeFeature,
-                                          IHttpUpgradeFeature,
-                                          IHttpConnectionFeature,
-                                          IHttpRequestLifetimeFeature,
+                                          IRouteValuesFeature,
+                                          IEndpointFeature,
                                           IHttpRequestIdentifierFeature,
                                           IHttpRequestTrailersFeature,
+                                          IHttpUpgradeFeature,
+                                          IRequestBodyPipeFeature,
+                                          IHttpConnectionFeature,
+                                          IHttpRequestLifetimeFeature,
                                           IHttpBodyControlFeature,
                                           IHttpMaxRequestBodySizeFeature,
-                                          IEndpointFeature,
-                                          IRouteValuesFeature
+                                          IHttpRequestBodyDetectionFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
