@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -48,6 +49,15 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <value>Defaults to 30Kb.</value>
         public int InputFormatterMemoryBufferThreshold { get; set; } = 1024 * 30;
+
+        /// <summary>
+        /// Gets or sets a flag to determine whether the value of <see cref="CultureInfo.CurrentCulture"/>
+        /// for the current HTTP request is used for JSON deserialization by <see cref="NewtonsoftJsonInputFormatter"/>.
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="false"/>.
+        /// </value>
+        public bool ReadJsonWithRequestCulture { get; set; }
 
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 

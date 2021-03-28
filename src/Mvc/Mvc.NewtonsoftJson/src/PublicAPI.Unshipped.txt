@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions.ReadJsonWithRequestCulture.get -> bool
+Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions.ReadJsonWithRequestCulture.set -> void
