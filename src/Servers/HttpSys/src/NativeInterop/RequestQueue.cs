@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class RequestQueue
+    internal partial class RequestQueue
     {
         private static readonly int BindingInfoSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (!Created)
             {
-                _logger.LogInformation(LoggerEventIds.AttachedToQueue, "Attached to an existing request queue '{requestQueueName}', some options do not apply.", requestQueueName);
+                Log.AttachedToQueue(_logger, requestQueueName);
             }
         }
 

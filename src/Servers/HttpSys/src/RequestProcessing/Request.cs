@@ -14,11 +14,10 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal sealed class Request
+    internal sealed partial class Request
     {
         private X509Certificate2? _clientCert;
         // TODO: https://github.com/aspnet/HttpSysServer/issues/231
@@ -337,11 +336,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     catch (CryptographicException ce)
                     {
-                        RequestContext.Logger.LogDebug(LoggerEventIds.ErrorInReadingCertificate, ce, "An error occurred reading the client certificate.");
+                        Log.ErrorInReadingCertificate(RequestContext.Logger, ce);
                     }
                     catch (SecurityException se)
                     {
-                        RequestContext.Logger.LogDebug(LoggerEventIds.ErrorInReadingCertificate, se, "An error occurred reading the client certificate.");
+                        Log.ErrorInReadingCertificate(RequestContext.Logger, se);
                     }
                 }
 
