@@ -616,7 +616,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnReset()
         {
-            ResetHttp1Features();
 
             _requestTimedOut = false;
             _requestTargetForm = HttpRequestTarget.Unknown;
@@ -625,6 +624,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestCount++;
 
             MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
+
+            // Reset Http1 Features
+            _currentIHttpMinRequestBodyDataRateFeature = this;
+            _currentIHttpMinResponseDataRateFeature = this;
         }
 
         protected override void OnRequestProcessingEnding()

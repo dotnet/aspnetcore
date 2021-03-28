@@ -9,7 +9,7 @@ namespace CodeGenerator
 {
     public static class FeatureCollectionGenerator
     {
-        public static string GenerateFile(string namespaceName, string className, string[] allFeatures, string[] implementedFeatures, string extraUsings, string fallbackFeatures)
+        public static string GenerateFile(string namespaceName, string className, string[] allFeatures, string[] implementedFeatures, string[] skipResetFeatures, string extraUsings, string fallbackFeatures)
         {
             // NOTE: This list MUST always match the set of feature interfaces implemented by TransportConnection.
             // See also: src/Kestrel/Http/TransportConnection.FeatureCollection.cs
@@ -33,14 +33,14 @@ namespace {namespaceName}
 {{
     internal partial class {className} : IFeatureCollection
     {{{Each(features, feature => $@"
-        private object? _current{feature.Name};")}
+        internal protected {feature.Name}? _current{feature.Name};")}
 
         private int _featureRevision;
 
         private List<KeyValuePair<Type, object>>? MaybeExtra;
 
         private void FastReset()
-        {{{Each(implementedFeatures, feature => $@"
+        {{{Each(implementedFeatures.Where(f => !skipResetFeatures.Contains(f)), feature => $@"
             _current{feature} = this;")}
 {Each(allFeatures.Where(f => !implementedFeatures.Contains(f)), feature => $@"
             _current{feature} = null;")}
@@ -133,7 +133,7 @@ namespace {namespaceName}
 {Each(features, feature => $@"
                 {(feature.Index != 0 ? "else " : "")}if (key == typeof({feature.Name}))
                 {{
-                    _current{feature.Name} = value;
+                    _current{feature.Name} = ({feature.Name}?)value;
                 }}")}
                 else
                 {{
@@ -167,7 +167,7 @@ namespace {namespaceName}
             _featureRevision++;{Each(features, feature => $@"
             {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
             {{
-                _current{feature.Name} = feature;
+                _current{feature.Name} = ({feature.Name}?)feature;
             }}")}
             else
             {{

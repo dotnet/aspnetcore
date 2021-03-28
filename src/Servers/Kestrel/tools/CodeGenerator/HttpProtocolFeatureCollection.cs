@@ -74,7 +74,13 @@ namespace CodeGenerator
                 "IRouteValuesFeature",
                 "IEndpointFeature"
             };
-            
+
+            // NOTE: Each item in this list MUST always be reset by each protocol in their OnReset() method
+            var skipResetFeatures = new[]
+            {
+                "IHttpMinRequestBodyDataRateFeature"
+            };
+
             var usings = $@"
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
@@ -85,6 +91,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;";
                 className: "HttpProtocol",
                 allFeatures: allFeatures,
                 implementedFeatures: implementedFeatures,
+                skipResetFeatures: skipResetFeatures,
                 extraUsings: usings,
                 fallbackFeatures: "ConnectionFeatures");
         }

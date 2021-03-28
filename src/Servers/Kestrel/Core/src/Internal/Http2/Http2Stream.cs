@@ -114,7 +114,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _keepAlive = true;
             _connectionAborted = false;
 
-            ResetHttp2Features();
+            // Reset Http2 Features
+            _currentIHttpMinRequestBodyDataRateFeature = this;
+            _currentIHttp2StreamIdFeature = this;
+            _currentIHttpResponseTrailersFeature = this;
+            _currentIHttpResetFeature = this;
         }
 
         protected override void OnRequestProcessingEnded()

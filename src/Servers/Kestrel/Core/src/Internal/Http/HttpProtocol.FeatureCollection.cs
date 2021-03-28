@@ -255,25 +255,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         Stream IHttpResponseBodyFeature.Stream => ResponseBody;
 
-        protected void ResetHttp1Features()
-        {
-            _currentIHttpMinRequestBodyDataRateFeature = this;
-            _currentIHttpMinResponseDataRateFeature = this;
-        }
-
-        protected void ResetHttp2Features()
-        {
-            _currentIHttp2StreamIdFeature = this;
-            _currentIHttpResponseTrailersFeature = this;
-            _currentIHttpResetFeature = this;
-        }
-
-        protected void ResetHttp3Features()
-        {
-            _currentIHttpResponseTrailersFeature = this;
-            _currentIHttpResetFeature = this;
-        }
-
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
             OnStarting(callback, state);
