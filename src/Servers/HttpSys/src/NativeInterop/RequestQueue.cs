@@ -10,10 +10,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal partial class RequestQueue
+    internal class RequestQueue
     {
         private static readonly int BindingInfoSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
+
+        private static readonly Action<ILogger, string?, Exception?> _attachedToQueue =
+            LoggerMessage.Define<string?>(LogLevel.Information, LoggerEventIds.AttachedToQueue, "Attached to an existing request queue '{RequestQueueName}', some options do not apply.");
 
         private readonly RequestQueueMode _mode;
         private readonly ILogger _logger;
@@ -105,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (!Created)
             {
-                Log.AttachedToQueue(_logger, requestQueueName);
+                _attachedToQueue(_logger, requestQueueName, null);
             }
         }
 
