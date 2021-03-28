@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Connections
             }
         }
 
-        public virtual Socket Socket { get; } = default!;
+        public Socket? Socket { get; }
 
         public override CancellationToken ConnectionClosed { get; set; }
 
