@@ -65,7 +65,7 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string Authorization = "Authorization";
 
         /// <summary>Gets the <c>baggage</c> HTTP header name.</summary>
-        public static readonly string Baggage = "Baggage";
+        public static readonly string Baggage = "baggage";
 
         /// <summary>Gets the <c>Cache-Control</c> HTTP header name.</summary>
         public static readonly string CacheControl = "Cache-Control";
@@ -248,10 +248,10 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string Translate = "Translate";
 
         /// <summary>Gets the <c>traceparent</c> HTTP header name.</summary>
-        public static readonly string TraceParent = "TraceParent";
+        public static readonly string TraceParent = "traceparent";
 
         /// <summary>Gets the <c>tracestate</c> HTTP header name.</summary>
-        public static readonly string TraceState = "TraceState";
+        public static readonly string TraceState = "tracestate";
 
         /// <summary>Gets the <c>Upgrade</c> HTTP header name.</summary>
         public static readonly string Upgrade = "Upgrade";

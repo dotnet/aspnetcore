@@ -387,6 +387,14 @@ namespace CodeGenerator
 
             private string ResolveIdentifier(string name)
             {
+                // Check the 3 lowercase headers
+                switch (name)
+                {
+                    case "baggage": return "Baggage";
+                    case "traceparent": return "TraceParent";
+                    case "tracestate": return "TraceState";
+                }
+
                 var identifier = name.Replace("-", "");
 
                 // Pseudo headers start with a colon. A colon isn't valid in C# names so
