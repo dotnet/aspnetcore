@@ -25,6 +25,7 @@ namespace CodeGenerator
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 {extraUsings}
 
 #nullable enable
@@ -144,10 +145,14 @@ namespace {namespaceName}
 
         TFeature? IFeatureCollection.Get<TFeature>() where TFeature : default
         {{
+            // Using Unsafe.As for the cast due to https://github.com/dotnet/runtime/issues/49614
+            // The type of TFeature is confirmed by the typeof() check and the As cast only accepts
+            // that type; however the Jit does not eliminate a regular cast in a shared generic.
+
             TFeature? feature = default;{Each(features, feature => $@"
             {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
             {{
-                feature = (TFeature?)_current{feature.Name};
+                feature = Unsafe.As<{feature.Name}?, TFeature?>(ref _current{feature.Name});
             }}")}
             else if (MaybeExtra != null)
             {{

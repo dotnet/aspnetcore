@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -164,26 +165,30 @@ namespace Microsoft.AspNetCore.Connections
 
         TFeature? IFeatureCollection.Get<TFeature>() where TFeature : default
         {
+            // Using Unsafe.As for the cast due to https://github.com/dotnet/runtime/issues/49614
+            // The type of TFeature is confirmed by the typeof() check and the As cast only accepts
+            // that type; however the Jit does not eliminate a regular cast in a shared generic.
+
             TFeature? feature = default;
             if (typeof(TFeature) == typeof(IConnectionIdFeature))
             {
-                feature = (TFeature?)_currentIConnectionIdFeature;
+                feature = Unsafe.As<IConnectionIdFeature?, TFeature?>(ref _currentIConnectionIdFeature);
             }
             else if (typeof(TFeature) == typeof(IConnectionTransportFeature))
             {
-                feature = (TFeature?)_currentIConnectionTransportFeature;
+                feature = Unsafe.As<IConnectionTransportFeature?, TFeature?>(ref _currentIConnectionTransportFeature);
             }
             else if (typeof(TFeature) == typeof(IConnectionItemsFeature))
             {
-                feature = (TFeature?)_currentIConnectionItemsFeature;
+                feature = Unsafe.As<IConnectionItemsFeature?, TFeature?>(ref _currentIConnectionItemsFeature);
             }
             else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
-                feature = (TFeature?)_currentIMemoryPoolFeature;
+                feature = Unsafe.As<IMemoryPoolFeature?, TFeature?>(ref _currentIMemoryPoolFeature);
             }
             else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
             {
-                feature = (TFeature?)_currentIConnectionLifetimeFeature;
+                feature = Unsafe.As<IConnectionLifetimeFeature?, TFeature?>(ref _currentIConnectionLifetimeFeature);
             }
             else if (MaybeExtra != null)
             {

@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
@@ -394,118 +395,122 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         TFeature? IFeatureCollection.Get<TFeature>() where TFeature : default
         {
+            // Using Unsafe.As for the cast due to https://github.com/dotnet/runtime/issues/49614
+            // The type of TFeature is confirmed by the typeof() check and the As cast only accepts
+            // that type; however the Jit does not eliminate a regular cast in a shared generic.
+
             TFeature? feature = default;
             if (typeof(TFeature) == typeof(IHttpRequestFeature))
             {
-                feature = (TFeature?)_currentIHttpRequestFeature;
+                feature = Unsafe.As<IHttpRequestFeature?, TFeature?>(ref _currentIHttpRequestFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpRequestBodyDetectionFeature))
             {
-                feature = (TFeature?)_currentIHttpRequestBodyDetectionFeature;
+                feature = Unsafe.As<IHttpRequestBodyDetectionFeature?, TFeature?>(ref _currentIHttpRequestBodyDetectionFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpResponseFeature))
             {
-                feature = (TFeature?)_currentIHttpResponseFeature;
+                feature = Unsafe.As<IHttpResponseFeature?, TFeature?>(ref _currentIHttpResponseFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpResponseBodyFeature))
             {
-                feature = (TFeature?)_currentIHttpResponseBodyFeature;
+                feature = Unsafe.As<IHttpResponseBodyFeature?, TFeature?>(ref _currentIHttpResponseBodyFeature);
             }
             else if (typeof(TFeature) == typeof(IRequestBodyPipeFeature))
             {
-                feature = (TFeature?)_currentIRequestBodyPipeFeature;
+                feature = Unsafe.As<IRequestBodyPipeFeature?, TFeature?>(ref _currentIRequestBodyPipeFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpRequestIdentifierFeature))
             {
-                feature = (TFeature?)_currentIHttpRequestIdentifierFeature;
+                feature = Unsafe.As<IHttpRequestIdentifierFeature?, TFeature?>(ref _currentIHttpRequestIdentifierFeature);
             }
             else if (typeof(TFeature) == typeof(IServiceProvidersFeature))
             {
-                feature = (TFeature?)_currentIServiceProvidersFeature;
+                feature = Unsafe.As<IServiceProvidersFeature?, TFeature?>(ref _currentIServiceProvidersFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpRequestLifetimeFeature))
             {
-                feature = (TFeature?)_currentIHttpRequestLifetimeFeature;
+                feature = Unsafe.As<IHttpRequestLifetimeFeature?, TFeature?>(ref _currentIHttpRequestLifetimeFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpConnectionFeature))
             {
-                feature = (TFeature?)_currentIHttpConnectionFeature;
+                feature = Unsafe.As<IHttpConnectionFeature?, TFeature?>(ref _currentIHttpConnectionFeature);
             }
             else if (typeof(TFeature) == typeof(IRouteValuesFeature))
             {
-                feature = (TFeature?)_currentIRouteValuesFeature;
+                feature = Unsafe.As<IRouteValuesFeature?, TFeature?>(ref _currentIRouteValuesFeature);
             }
             else if (typeof(TFeature) == typeof(IEndpointFeature))
             {
-                feature = (TFeature?)_currentIEndpointFeature;
+                feature = Unsafe.As<IEndpointFeature?, TFeature?>(ref _currentIEndpointFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpAuthenticationFeature))
             {
-                feature = (TFeature?)_currentIHttpAuthenticationFeature;
+                feature = Unsafe.As<IHttpAuthenticationFeature?, TFeature?>(ref _currentIHttpAuthenticationFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpRequestTrailersFeature))
             {
-                feature = (TFeature?)_currentIHttpRequestTrailersFeature;
+                feature = Unsafe.As<IHttpRequestTrailersFeature?, TFeature?>(ref _currentIHttpRequestTrailersFeature);
             }
             else if (typeof(TFeature) == typeof(IQueryFeature))
             {
-                feature = (TFeature?)_currentIQueryFeature;
+                feature = Unsafe.As<IQueryFeature?, TFeature?>(ref _currentIQueryFeature);
             }
             else if (typeof(TFeature) == typeof(IFormFeature))
             {
-                feature = (TFeature?)_currentIFormFeature;
+                feature = Unsafe.As<IFormFeature?, TFeature?>(ref _currentIFormFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpUpgradeFeature))
             {
-                feature = (TFeature?)_currentIHttpUpgradeFeature;
+                feature = Unsafe.As<IHttpUpgradeFeature?, TFeature?>(ref _currentIHttpUpgradeFeature);
             }
             else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
             {
-                feature = (TFeature?)_currentIHttp2StreamIdFeature;
+                feature = Unsafe.As<IHttp2StreamIdFeature?, TFeature?>(ref _currentIHttp2StreamIdFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpResponseTrailersFeature))
             {
-                feature = (TFeature?)_currentIHttpResponseTrailersFeature;
+                feature = Unsafe.As<IHttpResponseTrailersFeature?, TFeature?>(ref _currentIHttpResponseTrailersFeature);
             }
             else if (typeof(TFeature) == typeof(IResponseCookiesFeature))
             {
-                feature = (TFeature?)_currentIResponseCookiesFeature;
+                feature = Unsafe.As<IResponseCookiesFeature?, TFeature?>(ref _currentIResponseCookiesFeature);
             }
             else if (typeof(TFeature) == typeof(IItemsFeature))
             {
-                feature = (TFeature?)_currentIItemsFeature;
+                feature = Unsafe.As<IItemsFeature?, TFeature?>(ref _currentIItemsFeature);
             }
             else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
             {
-                feature = (TFeature?)_currentITlsConnectionFeature;
+                feature = Unsafe.As<ITlsConnectionFeature?, TFeature?>(ref _currentITlsConnectionFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpWebSocketFeature))
             {
-                feature = (TFeature?)_currentIHttpWebSocketFeature;
+                feature = Unsafe.As<IHttpWebSocketFeature?, TFeature?>(ref _currentIHttpWebSocketFeature);
             }
             else if (typeof(TFeature) == typeof(ISessionFeature))
             {
-                feature = (TFeature?)_currentISessionFeature;
+                feature = Unsafe.As<ISessionFeature?, TFeature?>(ref _currentISessionFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpMaxRequestBodySizeFeature))
             {
-                feature = (TFeature?)_currentIHttpMaxRequestBodySizeFeature;
+                feature = Unsafe.As<IHttpMaxRequestBodySizeFeature?, TFeature?>(ref _currentIHttpMaxRequestBodySizeFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpMinRequestBodyDataRateFeature))
             {
-                feature = (TFeature?)_currentIHttpMinRequestBodyDataRateFeature;
+                feature = Unsafe.As<IHttpMinRequestBodyDataRateFeature?, TFeature?>(ref _currentIHttpMinRequestBodyDataRateFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpMinResponseDataRateFeature))
             {
-                feature = (TFeature?)_currentIHttpMinResponseDataRateFeature;
+                feature = Unsafe.As<IHttpMinResponseDataRateFeature?, TFeature?>(ref _currentIHttpMinResponseDataRateFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpBodyControlFeature))
             {
-                feature = (TFeature?)_currentIHttpBodyControlFeature;
+                feature = Unsafe.As<IHttpBodyControlFeature?, TFeature?>(ref _currentIHttpBodyControlFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpResetFeature))
             {
-                feature = (TFeature?)_currentIHttpResetFeature;
+                feature = Unsafe.As<IHttpResetFeature?, TFeature?>(ref _currentIHttpResetFeature);
             }
             else if (MaybeExtra != null)
             {
