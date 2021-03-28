@@ -38,8 +38,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal const string SchemeHttps = "https";
 
         protected BodyControl? _bodyControl;
-        private Stack<KeyValuePair<Func<object, Task>, object>>? _onStarting;
-        private Stack<KeyValuePair<Func<object, Task>, object>>? _onCompleted;
+        // Mutable structs, don't mark as readonly!
+        private EventStack _onStarting = new(0);
+        private EventStack _onCompleted = new(0);
 
         private readonly object _abortLock = new object();
         protected volatile bool _connectionAborted;
@@ -333,8 +334,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Reset()
         {
-            _onStarting?.Clear();
-            _onCompleted?.Clear();
+            _onStarting.Clear();
+            _onCompleted.Clear();
             _routeValues?.Clear();
 
             _requestProcessingStatus = RequestProcessingStatus.RequestPending;
@@ -666,7 +667,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     // already failed. If an OnStarting callback throws we can go through
                     // our normal error handling in ProduceEnd.
                     // https://github.com/aspnet/KestrelHttpServer/issues/43
-                    if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
+                    if (!HasResponseStarted && _applicationException == null && _onStarting.Count > 0)
                     {
                         await FireOnStarting();
                     }
@@ -733,7 +734,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 }
 
-                if (_onCompleted?.Count > 0)
+                if (_onCompleted.Count > 0)
                 {
                     await FireOnCompleted();
                 }
@@ -760,39 +761,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ThrowResponseAlreadyStartedException(nameof(OnStarting));
             }
 
-            if (_onStarting == null)
-            {
-                _onStarting = new Stack<KeyValuePair<Func<object, Task>, object>>();
-            }
             _onStarting.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
         public void OnCompleted(Func<object, Task> callback, object state)
         {
-            if (_onCompleted == null)
-            {
-                _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
-            }
             _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
         protected Task FireOnStarting()
         {
-            var onStarting = _onStarting;
-            if (onStarting?.Count > 0)
+            if (_onStarting.Count > 0)
             {
-                return ProcessEvents(this, onStarting);
+                return ProcessEvents(this);
             }
 
             return Task.CompletedTask;
 
-            static async Task ProcessEvents(HttpProtocol protocol, Stack<KeyValuePair<Func<object, Task>, object>> events)
+            static async Task ProcessEvents(HttpProtocol protocol)
             {
                 // Try/Catch is outside the loop as any error that occurs is before the request starts.
                 // So we want to report it as an ApplicationError to fail the request and not process more events.
                 try
                 {
-                    while (events.TryPop(out var entry))
+                    while (protocol._onStarting.TryPop(out var entry))
                     {
                         await entry.Key.Invoke(entry.Value);
                     }
@@ -804,30 +796,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected Task FireOnCompleted()
+        protected async Task FireOnCompleted()
         {
-            var onCompleted = _onCompleted;
-            if (onCompleted?.Count > 0)
+            // Try/Catch is inside the loop as any error that occurs is after the request has finished.
+            // So we will just log it and keep processing the events, as the completion has already happened.
+            while (_onCompleted.TryPop(out var entry))
             {
-                return ProcessEvents(this, onCompleted);
-            }
-
-            return Task.CompletedTask;
-
-            static async Task ProcessEvents(HttpProtocol protocol, Stack<KeyValuePair<Func<object, Task>, object>> events)
-            {
-                // Try/Catch is inside the loop as any error that occurs is after the request has finished.
-                // So we will just log it and keep processing the events, as the completion has already happened.
-                while (events.TryPop(out var entry))
+                try
                 {
-                    try
-                    {
-                        await entry.Key.Invoke(entry.Value);
-                    }
-                    catch (Exception ex)
-                    {
-                        protocol.Log.ApplicationError(protocol.ConnectionId, protocol.TraceIdentifier, ex);
-                    }
+                    await entry.Key.Invoke(entry.Value);
+                }
+                catch (Exception ex)
+                {
+                    Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
                 }
             }
         }

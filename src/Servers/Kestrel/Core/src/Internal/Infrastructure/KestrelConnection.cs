@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private List<(Action<object> handler, object state)>? _heartbeatHandlers;
         private readonly object _heartbeatLock = new object();
 
-        private Stack<KeyValuePair<Func<object, Task>, object>>? _onCompleted;
+        private EventStack _onCompleted = new(0);
         private bool _completed;
 
         private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
@@ -81,10 +81,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 throw new InvalidOperationException("The connection is already complete.");
             }
 
-            if (_onCompleted == null)
-            {
-                _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
-            }
             _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
@@ -96,26 +92,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
 
             _completed = true;
-            var onCompleted = _onCompleted;
 
-            if (onCompleted == null || onCompleted.Count == 0)
+            if (_onCompleted.Count == 0)
             {
                 return Task.CompletedTask;
             }
 
-            return CompleteAsyncMayAwait(onCompleted);
+            return CompleteAsyncMayAwait();
         }
 
-        private Task CompleteAsyncMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        private Task CompleteAsyncMayAwait()
         {
-            while (onCompleted.TryPop(out var entry))
+            while (_onCompleted.TryPop(out var entry))
             {
                 try
                 {
                     var task = entry.Key.Invoke(entry.Value);
                     if (!task.IsCompletedSuccessfully)
                     {
-                        return CompleteAsyncAwaited(task, onCompleted);
+                        return CompleteAsyncAwaited(task);
                     }
                 }
                 catch (Exception ex)
@@ -127,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return Task.CompletedTask;
         }
 
-        private async Task CompleteAsyncAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        private async Task CompleteAsyncAwaited(Task currentTask)
         {
             try
             {
@@ -138,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
             }
 
-            while (onCompleted.TryPop(out var entry))
+            while (_onCompleted.TryPop(out var entry))
             {
                 try
                 {
