@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             catch (Win32Exception exception)
             {
                 statusCode = (uint)exception.NativeErrorCode;
-                Log.DisconnectRegistrationCreateDisconnectTokenError(_logger, exception);
+                Log.CreateDisconnectTokenError(_logger, exception);
             }
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING &&

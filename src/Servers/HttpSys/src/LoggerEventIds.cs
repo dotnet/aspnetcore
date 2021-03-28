@@ -51,5 +51,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public static EventId ListenerStopError = new EventId(45, "ListenerStopError");
         public static EventId ListenerDisposing = new EventId(46, "ListenerDisposing");
         public static EventId RequestValidationFailed = new EventId(47, "RequestValidationFailed");
+        public static EventId CreateDisconnectTokenError = new EventId(48, "CreateDisconnectTokenError");
     }
 }

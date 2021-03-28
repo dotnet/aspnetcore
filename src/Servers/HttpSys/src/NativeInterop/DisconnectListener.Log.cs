@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             private static readonly Action<ILogger, Exception?> _disconnectHandlerError =
                 LoggerMessage.Define(LogLevel.Error, LoggerEventIds.DisconnectHandlerError, "CreateDisconnectToken Callback");
 
-            private static readonly Action<ILogger, Exception?> _disconnectRegistrationCreateDisconnectTokenError =
-                LoggerMessage.Define(LogLevel.Error, LoggerEventIds.DisconnectRegistrationError, "CreateDisconnectToken");
+            private static readonly Action<ILogger, Exception?> _createDisconnectTokenError =
+                LoggerMessage.Define(LogLevel.Error, LoggerEventIds.CreateDisconnectTokenError, "CreateDisconnectToken");
 
             private static readonly Action<ILogger, Exception?> _disconnectRegistrationError =
                 LoggerMessage.Define(LogLevel.Error, LoggerEventIds.DisconnectRegistrationError, "Unable to register for disconnect notifications.");
@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _disconnectRegistrationError(logger, exception);
             }
 
-            public static void DisconnectRegistrationCreateDisconnectTokenError(ILogger logger, Exception exception)
+            public static void CreateDisconnectTokenError(ILogger logger, Exception exception)
             {
-                _disconnectRegistrationCreateDisconnectTokenError(logger, exception);
+                _createDisconnectTokenError(logger, exception);
             }
 
             public static void DisconnectTriggered(ILogger logger, ulong connectionId)
