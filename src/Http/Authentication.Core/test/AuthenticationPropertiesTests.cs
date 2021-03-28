@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Core.Test
@@ -300,6 +301,41 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             props.Items["foo"] = "BAR";
             Assert.Null(props.GetBool("foo"));
             Assert.Equal("BAR", props.Items["foo"]);
+        }
+
+        [Fact]
+        public void Roundtrip_Serializes_With_SystemTextJson()
+        {
+            var props = new AuthenticationProperties()
+            {
+                AllowRefresh = true,
+                ExpiresUtc = new DateTimeOffset(2021, 03, 28, 13, 47, 00, TimeSpan.Zero),
+                IssuedUtc = new DateTimeOffset(2021, 03, 28, 12, 47, 00, TimeSpan.Zero),
+                IsPersistent = true,
+                RedirectUri = "/foo/bar"
+            };
+
+            props.Items.Add("foo", "bar");
+
+            props.Parameters.Add("baz", "quux");
+
+            var json = JsonSerializer.Serialize(props);
+            props = JsonSerializer.Deserialize<AuthenticationProperties>(json);
+
+            Assert.NotNull(props);
+
+            Assert.True(props!.AllowRefresh);
+            Assert.Equal(new DateTimeOffset(2021, 03, 28, 13, 47, 00, TimeSpan.Zero), props.ExpiresUtc);
+            Assert.Equal(new DateTimeOffset(2021, 03, 28, 12, 47, 00, TimeSpan.Zero), props.IssuedUtc);
+            Assert.True(props.IsPersistent);
+            Assert.Equal("/foo/bar", props.RedirectUri);
+
+            Assert.NotNull(props.Items);
+            Assert.True(props.Items.ContainsKey("foo"));
+            Assert.Equal("bar", props.Items["foo"]);
+
+            Assert.NotNull(props.Parameters);
+            Assert.Equal(0, props.Parameters.Count);
         }
 
         public class MyAuthenticationProperties : AuthenticationProperties
