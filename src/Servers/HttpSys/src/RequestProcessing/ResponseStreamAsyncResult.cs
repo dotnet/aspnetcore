@@ -8,11 +8,10 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal unsafe class ResponseStreamAsyncResult : IAsyncResult, IDisposable
+    internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposable
     {
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
@@ -233,18 +232,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (asyncResult._cancellationToken.IsCancellationRequested)
                     {
-                        logger.LogDebug(LoggerEventIds.WriteCancelled,$"FlushAsync.IOCompleted; Write cancelled with error code: {errorCode}");
+                        Log.WriteCancelled(logger, errorCode);
                         asyncResult.Cancel(asyncResult._responseStream.ThrowWriteExceptions);
                     }
                     else if (asyncResult._responseStream.ThrowWriteExceptions)
                     {
                         var exception = new IOException(string.Empty, new HttpSysException((int)errorCode));
-                        logger.LogError(LoggerEventIds.WriteError, exception, "FlushAsync.IOCompleted");
+                        Log.WriteError(logger, exception);
                         asyncResult.Fail(exception);
                     }
                     else
                     {
-                        logger.LogDebug(LoggerEventIds.WriteErrorIgnored, $"FlushAsync.IOCompleted; Ignored write exception: {errorCode}");
+                        Log.WriteErrorIgnored(logger, errorCode);
                         asyncResult.FailSilently();
                     }
                 }
@@ -267,7 +266,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                logger.LogError(LoggerEventIds.WriteError, e, "FlushAsync.IOCompleted");
+                Log.WriteError(logger, e);
                 asyncResult.Fail(e);
             }
         }
