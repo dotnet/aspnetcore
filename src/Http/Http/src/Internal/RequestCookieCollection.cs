@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Http
 
         public RequestCookieCollection(int capacity)
         {
-            Store = new SmallCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase, capacity);
+            Store = new SmallCapacityDictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
         }
 
         public RequestCookieCollection(Dictionary<string, string> store)
