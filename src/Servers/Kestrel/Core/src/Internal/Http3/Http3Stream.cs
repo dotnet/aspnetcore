@@ -577,7 +577,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override void OnReset()
         {
-            ResetHttp3Features();
+            // Reset Http3 Features
+            _currentIHttpMinRequestBodyDataRateFeature = this;
+            _currentIHttpResponseTrailersFeature = this;
+            _currentIHttpResetFeature = this;
         }
 
         protected override void ApplicationAbort() => ApplicationAbort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication), Http3ErrorCode.InternalError);

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
@@ -18,23 +16,11 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal partial class HttpProtocol : IHttpRequestFeature,
-                                          IHttpRequestBodyDetectionFeature,
-                                          IHttpResponseFeature,
-                                          IHttpResponseBodyFeature,
-                                          IRequestBodyPipeFeature,
-                                          IHttpUpgradeFeature,
-                                          IHttpConnectionFeature,
-                                          IHttpRequestLifetimeFeature,
-                                          IHttpRequestIdentifierFeature,
-                                          IHttpRequestTrailersFeature,
-                                          IHttpBodyControlFeature,
-                                          IHttpMaxRequestBodySizeFeature,
-                                          IEndpointFeature,
-                                          IRouteValuesFeature
+    internal partial class HttpProtocol
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol class implementation,
-        // then the list of `implementedFeatures` in the generated code project MUST also be updated.
+        // then the list of `implementedFeatures` in the generated code project MUST also be updated first
+        // and the code generator re-reun, which will change the interface list.
         // See also: tools/CodeGenerator/HttpProtocolFeatureCollection.cs
 
         string IHttpRequestFeature.Protocol
@@ -254,25 +240,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         Stream IHttpResponseBodyFeature.Stream => ResponseBody;
-
-        protected void ResetHttp1Features()
-        {
-            _currentIHttpMinRequestBodyDataRateFeature = this;
-            _currentIHttpMinResponseDataRateFeature = this;
-        }
-
-        protected void ResetHttp2Features()
-        {
-            _currentIHttp2StreamIdFeature = this;
-            _currentIHttpResponseTrailersFeature = this;
-            _currentIHttpResetFeature = this;
-        }
-
-        protected void ResetHttp3Features()
-        {
-            _currentIHttpResponseTrailersFeature = this;
-            _currentIHttpResetFeature = this;
-        }
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
