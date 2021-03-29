@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Builds <see cref="RequestDelegate"/> implementations from <see cref="Delegate"/> request handlers.
+    /// Creates <see cref="RequestDelegate"/> implementations from <see cref="Delegate"/> request handlers.
     /// </summary>
     public static class RequestDelegateFactory
     {
@@ -47,10 +47,10 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.RequestAborted));
 
         /// <summary>
-        /// Builds a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
+        /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
         /// </summary>
         /// <param name="action">A request handler with any number of custom parameters that often produces a response with its return value.</param>
-        /// <returns>The <see cref="RequestDelegate"/></returns>
+        /// <returns>The <see cref="RequestDelegate"/>.</returns>
         public static RequestDelegate Create(Delegate action)
         {
             if (action is null)
@@ -60,11 +60,11 @@ namespace Microsoft.AspNetCore.Http
 
             var targetExpression = action.Target switch
             {
-                { } => Expression.Convert(TargetArg, action.Target.GetType()),
+                object => Expression.Convert(TargetArg, action.Target.GetType()),
                 null => null,
             };
 
-            var untargetedRequestDelegate = BuildRequestDelegate(action.Method, targetExpression);
+            var untargetedRequestDelegate = CreateRequestDelegate(action.Method, targetExpression);
 
             return httpContext =>
             {
@@ -73,10 +73,10 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Builds a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
+        /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
         /// </summary>
         /// <param name="methodInfo">A static request handler with any number of custom parameters that often produces a response with its return value.</param>
-        /// <returns>The <see cref="RequestDelegate"/></returns>
+        /// <returns>The <see cref="RequestDelegate"/>.</returns>
         public static RequestDelegate Create(MethodInfo methodInfo)
         {
             if (methodInfo is null)
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(methodInfo));
             }
 
-            var untargetedRequestDelegate = BuildRequestDelegate(methodInfo, targetExpression: null);
+            var untargetedRequestDelegate = CreateRequestDelegate(methodInfo, targetExpression: null);
 
             return httpContext =>
             {
@@ -93,11 +93,11 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Builds a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
+        /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
         /// </summary>
         /// <param name="methodInfo">A request handler with any number of custom parameters that often produces a response with its return value.</param>
         /// <param name="targetFactory">Creates the <see langword="this"/> for the non-static method.</param>
-        /// <returns>The <see cref="RequestDelegate"/></returns>
+        /// <returns>The <see cref="RequestDelegate"/>.</returns>
         public static RequestDelegate Create(MethodInfo methodInfo, Func<HttpContext, object> targetFactory)
         {
             if (methodInfo is null)
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var targetExpression = Expression.Convert(TargetArg, methodInfo.DeclaringType);
-            var untargetedRequestDelegate = BuildRequestDelegate(methodInfo, targetExpression);
+            var untargetedRequestDelegate = CreateRequestDelegate(methodInfo, targetExpression);
 
             return httpContext =>
             {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Http
             };
         }
 
-        private static Func<object?, HttpContext, Task> BuildRequestDelegate(MethodInfo methodInfo, Expression? targetExpression)
+        private static Func<object?, HttpContext, Task> CreateRequestDelegate(MethodInfo methodInfo, Expression? targetExpression)
         {
             // Non void return type
 
