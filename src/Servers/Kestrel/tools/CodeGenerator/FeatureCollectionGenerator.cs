@@ -33,8 +33,13 @@ using System.Runtime.CompilerServices;
 namespace {namespaceName}
 {{
     internal partial class {className} : IFeatureCollection
-    {{{Each(features, feature => $@"
-        internal protected {feature.Name}? _current{feature.Name};")}
+    {{
+        // Implemented features{Each(implementedFeatures.Where(f => !skipResetFeatures.Contains(f)), feature => $@"
+        internal protected {feature}? _current{feature};")}{Each(implementedFeatures.Where(f => skipResetFeatures.Contains(f)), feature => $@"
+        internal protected {feature}? _current{feature};")}
+
+        // Other reserved feature slots{Each(allFeatures.Where(f => !implementedFeatures.Contains(f)), feature => $@"
+        internal protected {feature}? _current{feature};")}
 
         private int _featureRevision;
 

@@ -16,33 +16,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal partial class HttpProtocol : IFeatureCollection
     {
+        // Implemented features
         internal protected IHttpRequestFeature? _currentIHttpRequestFeature;
         internal protected IHttpResponseFeature? _currentIHttpResponseFeature;
         internal protected IHttpResponseBodyFeature? _currentIHttpResponseBodyFeature;
         internal protected IRouteValuesFeature? _currentIRouteValuesFeature;
         internal protected IEndpointFeature? _currentIEndpointFeature;
+        internal protected IHttpRequestIdentifierFeature? _currentIHttpRequestIdentifierFeature;
+        internal protected IHttpRequestTrailersFeature? _currentIHttpRequestTrailersFeature;
+        internal protected IHttpUpgradeFeature? _currentIHttpUpgradeFeature;
+        internal protected IRequestBodyPipeFeature? _currentIRequestBodyPipeFeature;
+        internal protected IHttpConnectionFeature? _currentIHttpConnectionFeature;
+        internal protected IHttpRequestLifetimeFeature? _currentIHttpRequestLifetimeFeature;
+        internal protected IHttpBodyControlFeature? _currentIHttpBodyControlFeature;
+        internal protected IHttpMaxRequestBodySizeFeature? _currentIHttpMaxRequestBodySizeFeature;
+        internal protected IHttpRequestBodyDetectionFeature? _currentIHttpRequestBodyDetectionFeature;
+        internal protected IHttpMinRequestBodyDataRateFeature? _currentIHttpMinRequestBodyDataRateFeature;
+
+        // Other reserved feature slots
         internal protected IServiceProvidersFeature? _currentIServiceProvidersFeature;
         internal protected IItemsFeature? _currentIItemsFeature;
         internal protected IQueryFeature? _currentIQueryFeature;
         internal protected IFormFeature? _currentIFormFeature;
         internal protected IHttpAuthenticationFeature? _currentIHttpAuthenticationFeature;
-        internal protected IHttpRequestIdentifierFeature? _currentIHttpRequestIdentifierFeature;
-        internal protected IHttpConnectionFeature? _currentIHttpConnectionFeature;
         internal protected ISessionFeature? _currentISessionFeature;
         internal protected IResponseCookiesFeature? _currentIResponseCookiesFeature;
-        internal protected IHttpRequestTrailersFeature? _currentIHttpRequestTrailersFeature;
         internal protected IHttpResponseTrailersFeature? _currentIHttpResponseTrailersFeature;
         internal protected ITlsConnectionFeature? _currentITlsConnectionFeature;
-        internal protected IHttpUpgradeFeature? _currentIHttpUpgradeFeature;
         internal protected IHttpWebSocketFeature? _currentIHttpWebSocketFeature;
         internal protected IHttp2StreamIdFeature? _currentIHttp2StreamIdFeature;
-        internal protected IRequestBodyPipeFeature? _currentIRequestBodyPipeFeature;
-        internal protected IHttpRequestLifetimeFeature? _currentIHttpRequestLifetimeFeature;
-        internal protected IHttpMaxRequestBodySizeFeature? _currentIHttpMaxRequestBodySizeFeature;
-        internal protected IHttpMinRequestBodyDataRateFeature? _currentIHttpMinRequestBodyDataRateFeature;
         internal protected IHttpMinResponseDataRateFeature? _currentIHttpMinResponseDataRateFeature;
-        internal protected IHttpBodyControlFeature? _currentIHttpBodyControlFeature;
-        internal protected IHttpRequestBodyDetectionFeature? _currentIHttpRequestBodyDetectionFeature;
         internal protected IHttpResetFeature? _currentIHttpResetFeature;
 
         private int _featureRevision;
@@ -182,6 +185,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIQueryFeature;
                 }
+                else if (key == typeof(IRequestBodyPipeFeature))
+                {
+                    feature = _currentIRequestBodyPipeFeature;
+                }
                 else if (key == typeof(IFormFeature))
                 {
                     feature = _currentIFormFeature;
@@ -229,10 +236,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IHttp2StreamIdFeature))
                 {
                     feature = _currentIHttp2StreamIdFeature;
-                }
-                else if (key == typeof(IRequestBodyPipeFeature))
-                {
-                    feature = _currentIRequestBodyPipeFeature;
                 }
                 else if (key == typeof(IHttpRequestLifetimeFeature))
                 {
@@ -306,6 +309,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _currentIQueryFeature = (IQueryFeature?)value;
                 }
+                else if (key == typeof(IRequestBodyPipeFeature))
+                {
+                    _currentIRequestBodyPipeFeature = (IRequestBodyPipeFeature?)value;
+                }
                 else if (key == typeof(IFormFeature))
                 {
                     _currentIFormFeature = (IFormFeature?)value;
@@ -353,10 +360,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IHttp2StreamIdFeature))
                 {
                     _currentIHttp2StreamIdFeature = (IHttp2StreamIdFeature?)value;
-                }
-                else if (key == typeof(IRequestBodyPipeFeature))
-                {
-                    _currentIRequestBodyPipeFeature = (IRequestBodyPipeFeature?)value;
                 }
                 else if (key == typeof(IHttpRequestLifetimeFeature))
                 {
@@ -432,6 +435,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 feature = Unsafe.As<IQueryFeature?, TFeature?>(ref _currentIQueryFeature);
             }
+            else if (typeof(TFeature) == typeof(IRequestBodyPipeFeature))
+            {
+                feature = Unsafe.As<IRequestBodyPipeFeature?, TFeature?>(ref _currentIRequestBodyPipeFeature);
+            }
             else if (typeof(TFeature) == typeof(IFormFeature))
             {
                 feature = Unsafe.As<IFormFeature?, TFeature?>(ref _currentIFormFeature);
@@ -479,10 +486,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
             {
                 feature = Unsafe.As<IHttp2StreamIdFeature?, TFeature?>(ref _currentIHttp2StreamIdFeature);
-            }
-            else if (typeof(TFeature) == typeof(IRequestBodyPipeFeature))
-            {
-                feature = Unsafe.As<IRequestBodyPipeFeature?, TFeature?>(ref _currentIRequestBodyPipeFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpRequestLifetimeFeature))
             {
@@ -564,6 +567,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIQueryFeature = Unsafe.As<TFeature?, IQueryFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IRequestBodyPipeFeature))
+            {
+                _currentIRequestBodyPipeFeature = Unsafe.As<TFeature?, IRequestBodyPipeFeature?>(ref feature);
+            }
             else if (typeof(TFeature) == typeof(IFormFeature))
             {
                 _currentIFormFeature = Unsafe.As<TFeature?, IFormFeature?>(ref feature);
@@ -611,10 +618,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
             {
                 _currentIHttp2StreamIdFeature = Unsafe.As<TFeature?, IHttp2StreamIdFeature?>(ref feature);
-            }
-            else if (typeof(TFeature) == typeof(IRequestBodyPipeFeature))
-            {
-                _currentIRequestBodyPipeFeature = Unsafe.As<TFeature?, IRequestBodyPipeFeature?>(ref feature);
             }
             else if (typeof(TFeature) == typeof(IHttpRequestLifetimeFeature))
             {
@@ -684,6 +687,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 yield return new KeyValuePair<Type, object>(typeof(IQueryFeature), _currentIQueryFeature);
             }
+            if (_currentIRequestBodyPipeFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IRequestBodyPipeFeature), _currentIRequestBodyPipeFeature);
+            }
             if (_currentIFormFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IFormFeature), _currentIFormFeature);
@@ -731,10 +738,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttp2StreamIdFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IHttp2StreamIdFeature), _currentIHttp2StreamIdFeature);
-            }
-            if (_currentIRequestBodyPipeFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(typeof(IRequestBodyPipeFeature), _currentIRequestBodyPipeFeature);
             }
             if (_currentIHttpRequestLifetimeFeature != null)
             {

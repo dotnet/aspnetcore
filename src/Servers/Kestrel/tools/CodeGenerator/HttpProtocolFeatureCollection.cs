@@ -23,6 +23,7 @@ namespace CodeGenerator
             {
                 "IItemsFeature",
                 "IQueryFeature",
+                "IRequestBodyPipeFeature",
                 "IFormFeature",
                 "IHttpAuthenticationFeature",
                 "IHttpRequestIdentifierFeature",
@@ -42,7 +43,6 @@ namespace CodeGenerator
             var maybeFeatures = new[]
             {
                 "IHttp2StreamIdFeature",
-                "IRequestBodyPipeFeature",
                 "IHttpRequestLifetimeFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpMinRequestBodyDataRateFeature",

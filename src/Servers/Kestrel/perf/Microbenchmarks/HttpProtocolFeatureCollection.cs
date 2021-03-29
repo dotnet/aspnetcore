@@ -77,6 +77,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             return _collection.Get<IQueryFeature>();
         }
 
+        [Benchmark(Description = "Get<IRequestBodyPipeFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IRequestBodyPipeFeature Get_IRequestBodyPipeFeature()
+        {
+            return _collection.Get<IRequestBodyPipeFeature>();
+        }
+
         [Benchmark(Description = "Get<IFormFeature>")]
         [MethodImpl(MethodImplOptions.NoInlining)]
         public IFormFeature Get_IFormFeature()
@@ -159,13 +166,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         public IHttp2StreamIdFeature Get_IHttp2StreamIdFeature()
         {
             return _collection.Get<IHttp2StreamIdFeature>();
-        }
-
-        [Benchmark(Description = "Get<IRequestBodyPipeFeature>*")]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public IRequestBodyPipeFeature Get_IRequestBodyPipeFeature()
-        {
-            return _collection.Get<IRequestBodyPipeFeature>();
         }
 
         [Benchmark(Description = "Get<IHttpRequestLifetimeFeature>*")]

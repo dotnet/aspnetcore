@@ -15,11 +15,14 @@ namespace Microsoft.AspNetCore.Connections
 {
     internal partial class TransportConnection : IFeatureCollection
     {
+        // Implemented features
         internal protected IConnectionIdFeature? _currentIConnectionIdFeature;
         internal protected IConnectionTransportFeature? _currentIConnectionTransportFeature;
         internal protected IConnectionItemsFeature? _currentIConnectionItemsFeature;
         internal protected IMemoryPoolFeature? _currentIMemoryPoolFeature;
         internal protected IConnectionLifetimeFeature? _currentIConnectionLifetimeFeature;
+
+        // Other reserved feature slots
 
         private int _featureRevision;
 
