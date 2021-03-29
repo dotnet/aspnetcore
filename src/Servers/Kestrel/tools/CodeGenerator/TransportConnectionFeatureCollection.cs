@@ -29,7 +29,6 @@ using Microsoft.AspNetCore.Http.Features;";
                 className: "TransportConnection",
                 allFeatures: features,
                 implementedFeatures: features,
-                skipResetFeatures: Array.Empty<string>(),
                 extraUsings: usings,
                 fallbackFeatures: null);
         }

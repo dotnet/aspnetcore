@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected IHttpBodyControlFeature? _currentIHttpBodyControlFeature;
         internal protected IHttpMaxRequestBodySizeFeature? _currentIHttpMaxRequestBodySizeFeature;
         internal protected IHttpRequestBodyDetectionFeature? _currentIHttpRequestBodyDetectionFeature;
-        internal protected IHttpMinRequestBodyDataRateFeature? _currentIHttpMinRequestBodyDataRateFeature;
 
         // Other reserved feature slots
         internal protected IServiceProvidersFeature? _currentIServiceProvidersFeature;
@@ -59,6 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected ITlsConnectionFeature? _currentITlsConnectionFeature;
         internal protected IHttpWebSocketFeature? _currentIHttpWebSocketFeature;
         internal protected IHttp2StreamIdFeature? _currentIHttp2StreamIdFeature;
+        internal protected IHttpMinRequestBodyDataRateFeature? _currentIHttpMinRequestBodyDataRateFeature;
         internal protected IHttpMinResponseDataRateFeature? _currentIHttpMinResponseDataRateFeature;
         internal protected IHttpResetFeature? _currentIHttpResetFeature;
 
@@ -94,6 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentITlsConnectionFeature = null;
             _currentIHttpWebSocketFeature = null;
             _currentIHttp2StreamIdFeature = null;
+            _currentIHttpMinRequestBodyDataRateFeature = null;
             _currentIHttpMinResponseDataRateFeature = null;
             _currentIHttpResetFeature = null;
         }

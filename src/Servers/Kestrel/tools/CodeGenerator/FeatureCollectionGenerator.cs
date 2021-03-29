@@ -9,7 +9,7 @@ namespace CodeGenerator
 {
     public static class FeatureCollectionGenerator
     {
-        public static string GenerateFile(string namespaceName, string className, string[] allFeatures, string[] implementedFeatures, string[] skipResetFeatures, string extraUsings, string fallbackFeatures)
+        public static string GenerateFile(string namespaceName, string className, string[] allFeatures, string[] implementedFeatures, string extraUsings, string fallbackFeatures)
         {
             // NOTE: This list MUST always match the set of feature interfaces implemented by TransportConnection.
             // See also: src/Kestrel/Http/TransportConnection.FeatureCollection.cs
@@ -32,11 +32,10 @@ using System.Runtime.CompilerServices;
 
 namespace {namespaceName}
 {{
-    internal partial class {className} : IFeatureCollection{Each(implementedFeatures.Where(f => !skipResetFeatures.Contains(f)), feature => $@",
+    internal partial class {className} : IFeatureCollection{Each(implementedFeatures, feature => $@",
                               {new string(' ', className.Length)}{feature}")}
     {{
-        // Implemented features{Each(implementedFeatures.Where(f => !skipResetFeatures.Contains(f)), feature => $@"
-        internal protected {feature}? _current{feature};")}{Each(implementedFeatures.Where(f => skipResetFeatures.Contains(f)), feature => $@"
+        // Implemented features{Each(implementedFeatures, feature => $@"
         internal protected {feature}? _current{feature};")}{(allFeatures.Where(f => !implementedFeatures.Contains(f)).FirstOrDefault() is not null ? @"
 
         // Other reserved feature slots" : "")}{Each(allFeatures.Where(f => !implementedFeatures.Contains(f)), feature => $@"
@@ -47,7 +46,7 @@ namespace {namespaceName}
         private List<KeyValuePair<Type, object>>? MaybeExtra;
 
         private void FastReset()
-        {{{Each(implementedFeatures.Where(f => !skipResetFeatures.Contains(f)), feature => $@"
+        {{{Each(implementedFeatures, feature => $@"
             _current{feature} = this;")}
 {Each(allFeatures.Where(f => !implementedFeatures.Contains(f)), feature => $@"
             _current{feature} = null;")}

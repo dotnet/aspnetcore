@@ -36,7 +36,6 @@ using Microsoft.AspNetCore.Http.Features;";
                 className: "TransportMultiplexedConnection",
                 allFeatures: allFeatures,
                 implementedFeatures: implementedFeatures,
-                skipResetFeatures: Array.Empty<string>(),
                 extraUsings: usings,
                 fallbackFeatures: null);
         }
