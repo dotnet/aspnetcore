@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
@@ -31,8 +32,9 @@ namespace Microsoft.Net.Http.Headers
         private const string SizeString = "size";
         private static readonly char[] QuestionMark = new char[] { '?' };
         private static readonly char[] SingleQuote = new char[] { '\'' };
-        private static ReadOnlySpan<byte> MimePrefix => new byte[] { (byte)'=', (byte)'?', (byte)'u', (byte)'t', (byte)'f', (byte)'-', (byte)'8', (byte)'?', (byte)'B', (byte)'?' };
-        private static ReadOnlySpan<byte> MimeSuffix => new byte[] { (byte)'?', (byte)'=' };
+        private static readonly char[] EscapeChars = new char[] { '\\', '"' };
+        private static ReadOnlySpan<byte> MimePrefix => new byte[] { (byte)'"', (byte)'=', (byte)'?', (byte)'u', (byte)'t', (byte)'f', (byte)'-', (byte)'8', (byte)'?', (byte)'B', (byte)'?' };
+        private static ReadOnlySpan<byte> MimeSuffix => new byte[] { (byte)'?', (byte)'=', (byte)'"' };
 
         private static readonly HttpHeaderParser<ContentDispositionHeaderValue> Parser
             = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
@@ -469,8 +471,10 @@ namespace Microsoft.Net.Http.Headers
 
             if (RequiresEncoding(result))
             {
-                needsQuotes = true; // Encoded data must always be quoted, the equals signs are invalid in tokens
-                result = EncodeMime(result); // =?utf-8?B?asdfasdfaesdf?=
+                // EncodeMimeWithQuotes will Base64 encode any quotes in the input, and surround the payload in quotes
+                // so there is no need to add quotes
+                needsQuotes = false;
+                result = EncodeMimeWithQuotes(result); // "=?utf-8?B?asdfasdfaesdf?="
             }
             else if (!needsQuotes && HttpRuleParser.GetTokenLength(result, 0) != result.Length)
             {
@@ -479,8 +483,11 @@ namespace Microsoft.Net.Http.Headers
 
             if (needsQuotes)
             {
-                // '\' and '"' must be escaped in a quoted string
-                result = result.ToString().Replace(@"\", @"\\").Replace(@"""", @"\""");
+                if (result.IndexOfAny(EscapeChars) != -1)
+                {
+                    // '\' and '"' must be escaped in a quoted string
+                    result = result.ToString().Replace(@"\", @"\\").Replace(@"""", @"\""");
+                }
                 // Re-add quotes "value"
                 result = string.Format(CultureInfo.InvariantCulture, "\"{0}\"", result);
             }
@@ -534,11 +541,27 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetBase64Length(int inputLength)
+        {
+            // Copied from https://github.com/dotnet/runtime/blob/82ca681cbac89d813a3ce397e0c665e6c051ed67/src/libraries/System.Private.CoreLib/src/System/Convert.cs#L2530
+            long outlen = ((long)inputLength) / 3 * 4;          // the base length - we want integer division here.
+            outlen += ((inputLength % 3) != 0) ? 4 : 0;         // at most 4 more chars for the remainder
+
+            if (outlen > int.MaxValue)
+            {
+                throw new OutOfMemoryException();
+            }
+
+            return (int)outlen;
+        }
+
         // Encode using MIME encoding
-        private string EncodeMime(StringSegment input)
+        // And adds surrounding quotes, Encoded data must always be quoted, the equals signs are invalid in tokens
+        private string EncodeMimeWithQuotes(StringSegment input)
         {
             var requiredLength = MimePrefix.Length +
-                Base64.GetMaxEncodedToUtf8Length(Encoding.UTF8.GetByteCount(input.AsSpan())) +
+                GetBase64Length(Encoding.UTF8.GetByteCount(input.AsSpan())) +
                 MimeSuffix.Length;
             Span<byte> buffer = requiredLength <= 256
                 ? (stackalloc byte[256]).Slice(0, requiredLength)
