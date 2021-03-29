@@ -334,6 +334,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             Assert.True(deserialized.Items.ContainsKey("foo"));
             Assert.Equal(props.Items["foo"], deserialized.Items["foo"]);
 
+            // Ensure that parameters are not round-tripped
             Assert.NotNull(deserialized.Parameters);
             Assert.Equal(0, deserialized.Parameters.Count);
         }
