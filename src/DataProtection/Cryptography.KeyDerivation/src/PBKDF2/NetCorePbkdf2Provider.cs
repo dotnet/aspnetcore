@@ -3,7 +3,6 @@
 
 #if NETCOREAPP
 using System;
-using System.Buffers;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
