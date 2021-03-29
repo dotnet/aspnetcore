@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var httpContext = new DefaultHttpContext();
             var context = hostingApplication.CreateContext(httpContext.Features);
 
-            var activityFeature = context.HttpContext.Features.Get<IActivityFeature>();
+            var activityFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
             Assert.NotNull(activityFeature);
             Assert.NotNull(activityFeature.Activity);
             var initialActivity = Activity.Current;

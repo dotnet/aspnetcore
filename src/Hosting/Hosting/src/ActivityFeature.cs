@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Http.Features;
 namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
-    /// Default implementation for <see cref="IActivityFeature"/>.
+    /// Default implementation for <see cref="IHttpActivityFeature"/>.
     /// </summary>
-    internal class ActivityFeature : IActivityFeature
+    internal class ActivityFeature : IHttpActivityFeature
     {
         private const int _maxActivityDepth = 5;
         private Activity? _cachedActivity = null;

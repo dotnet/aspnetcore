@@ -6,3 +6,5 @@
 *REMOVED*~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.AspNetCore.Http.IHttpContextAccessor? httpContextAccessor) -> void
 *REMOVED*~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory! serviceScopeFactory) -> void
 *REMOVED*~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory! serviceScopeFactory, Microsoft.AspNetCore.Http.IHttpContextAccessor? httpContextAccessor) -> void
+Microsoft.AspNetCore.Http.Features.IHttpActivityFeature
+Microsoft.AspNetCore.Http.Features.IHttpActivityFeature.Activity.get -> System.Diagnostics.Activity?

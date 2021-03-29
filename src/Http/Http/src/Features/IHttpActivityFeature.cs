@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Hosting
+namespace Microsoft.AspNetCore.Http.Features
 {
     /// <summary>
     /// Feature to access the <see cref="Activity"/> associated with a request
     /// </summary>
-    public interface IActivityFeature
+    public interface IHttpActivityFeature
     {
         /// <summary>
         /// Returns the <see cref="Activity"/>  associated with the current request if available 
