@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
-    public class RuntimeCompilationAssemblyLoader : IRuntimeCompilationAssemblyLoader
+    internal class RuntimeCompilationAssemblyLoader : IRuntimeCompilationAssemblyLoader
     {
         public Assembly Load(RazorCodeDocument codeDocument, MemoryStream assemblyStream, MemoryStream pdbStream)
         {
