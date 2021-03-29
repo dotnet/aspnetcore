@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    Log.RequestProcessError(Logger, ex);
+                    RequestContextLog.RequestProcessError(Logger, ex);
                     if (context != null)
                     {
                         application.DisposeContext(context, ex);
@@ -85,14 +85,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (messagePump.DecrementOutstandingRequest() == 0 && messagePump.Stopping)
                     {
-                        Log.RequestsDrained(Logger);
+                        RequestContextLog.RequestsDrained(Logger);
                         messagePump.SetShutdownSignal();
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.RequestError(Logger, ex);
+                RequestContextLog.RequestError(Logger, ex);
                 Abort();
             }
         }
