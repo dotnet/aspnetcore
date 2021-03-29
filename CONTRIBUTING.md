@@ -37,9 +37,9 @@ To help you be successful we've put together a few simple rules to follow when y
   In all these cases we had to say `no` to those PRs and close them. That, obviously, is not a great outcome for us. And it's especially bad for the contributor, as they've spent a lot of effort preparing the change.
   To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with `help wanted` label. You can find all these issues at: [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted).
   
-
-    Within that set, we have additionally marked issues which are good candidates for first-time contributors. Those do not require too much familiarity with the framework and are more novice-friendly. Those are marked with `good first issue` label. The full list of such issues can be found at [https://aka.ms/aspnet/goodfirstissues](https://aka.ms/aspnet/goodfirstissues).
-  If there is some other area not included here where you want to contribute to, first open an issue to describe the problem you are trying to solve and state that you're willing to contribute a fix for it. We will then discuss in that issue, whether we think it belongs in the platform and the best approach to solve it.
+Within that set, we have additionally marked issues which are good candidates for first-time contributors. Those do not require too much familiarity with the framework and are more novice-friendly. Those are marked with `good first issue` label. The full list of such issues can be found at [https://aka.ms/aspnet/goodfirstissues](https://aka.ms/aspnet/goodfirstissues).
+  
+If there is some other area not included here where you want to contribute to, first open an issue to describe the problem you are trying to solve and state that you're willing to contribute a fix for it. We will then discuss in that issue, whether we think it belongs in the platform and the best approach to solve it.
   
 **Before writing code**
 
