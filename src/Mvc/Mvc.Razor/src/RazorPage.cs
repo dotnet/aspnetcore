@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private bool _renderedBody;
         private bool _ignoreBody;
-        private HashSet<string> _ignoredSections;
+        private HashSet<string>? _ignoredSections;
 
         /// <summary>
         /// An <see cref="HttpContext"/> representing the current request execution.
         /// </summary>
-        public HttpContext Context => ViewContext?.HttpContext;
+        public HttpContext Context => ViewContext?.HttpContext!;
 
         /// <summary>
         /// In a Razor layout page, renders the portion of a content page that is not within a named section.
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>The method writes to the <see cref="RazorPageBase.Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
-        public HtmlString RenderSection(string name)
+        public HtmlString? RenderSection(string name)
         {
             if (name == null)
             {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>The method writes to the <see cref="RazorPageBase.Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
-        public HtmlString RenderSection(string name, bool required)
+        public HtmlString? RenderSection(string name, bool required)
         {
             if (name == null)
             {
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>The method writes to the <see cref="RazorPageBase.Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
-        public Task<HtmlString> RenderSectionAsync(string name)
+        public Task<HtmlString?> RenderSectionAsync(string name)
         {
             if (name == null)
             {
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// value does not represent the rendered content.</remarks>
         /// <exception cref="InvalidOperationException">if <paramref name="required"/> is <c>true</c> and the section
         /// was not registered using the <c>@section</c> in the Razor page.</exception>
-        public Task<HtmlString> RenderSectionAsync(string name, bool required)
+        public Task<HtmlString?> RenderSectionAsync(string name, bool required)
         {
             if (name == null)
             {
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return RenderSectionAsyncCore(name, required);
         }
 
-        private async Task<HtmlString> RenderSectionAsyncCore(string sectionName, bool required)
+        private async Task<HtmlString?> RenderSectionAsyncCore(string sectionName, bool required)
         {
             if (_renderedSections.Contains(sectionName))
             {

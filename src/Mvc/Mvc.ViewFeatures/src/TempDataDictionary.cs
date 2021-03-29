@@ -279,7 +279,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private sealed class TempDataDictionaryEnumerator : IEnumerator<KeyValuePair<string, object?>>
         {
-            private readonly Dictionary<string, object?>.Enumerator _enumerator;
+            // Do not make this readonly. This prevents MoveNext from functioning.
+            private Dictionary<string, object?>.Enumerator _enumerator;
             private readonly TempDataDictionary _tempData;
 
             public TempDataDictionaryEnumerator(TempDataDictionary tempData)

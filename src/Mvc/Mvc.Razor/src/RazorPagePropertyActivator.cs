@@ -33,12 +33,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             // In the absence of a model on the current type, we'll attempt to use ViewDataDictionary<object> on the current type.
             var viewDataDictionaryModelType = declaredModelType ?? typeof(object);
 
-            if (viewDataDictionaryModelType != null)
-            {
-                _viewDataDictionaryType = typeof(ViewDataDictionary<>).MakeGenericType(viewDataDictionaryModelType);
-                _rootFactory = ViewDataDictionaryFactory.CreateFactory(viewDataDictionaryModelType);
-                _nestedFactory = ViewDataDictionaryFactory.CreateNestedFactory(viewDataDictionaryModelType);
-            }
+            _viewDataDictionaryType = typeof(ViewDataDictionary<>).MakeGenericType(viewDataDictionaryModelType);
+            _rootFactory = ViewDataDictionaryFactory.CreateFactory(viewDataDictionaryModelType);
+            _nestedFactory = ViewDataDictionaryFactory.CreateNestedFactory(viewDataDictionaryModelType);
 
             _propertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(
                 pageType,
@@ -54,11 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (_viewDataDictionaryType != null)
-            {
-                context.ViewData = CreateViewDataDictionary(context);
-            }
-
+            context.ViewData = CreateViewDataDictionary(context);
             for (var i = 0; i < _propertyActivators.Length; i++)
             {
                 var activateInfo = _propertyActivators[i];
@@ -137,15 +130,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         public class PropertyValueAccessors
         {
-            public Func<ViewContext, object> UrlHelperAccessor { get; set; }
+            public Func<ViewContext, object> UrlHelperAccessor { get; init; } = default!;
 
-            public Func<ViewContext, object> JsonHelperAccessor { get; set; }
+            public Func<ViewContext, object> JsonHelperAccessor { get; init; } = default!;
 
-            public Func<ViewContext, object> DiagnosticSourceAccessor { get; set; }
+            public Func<ViewContext, object> DiagnosticSourceAccessor { get; init; } = default!;
 
-            public Func<ViewContext, object> HtmlEncoderAccessor { get; set; }
+            public Func<ViewContext, object> HtmlEncoderAccessor { get; init; } = default!;
 
-            public Func<ViewContext, object> ModelExpressionProviderAccessor { get; set; }
+            public Func<ViewContext, object> ModelExpressionProviderAccessor { get; init; } = default!;
         }
     }
 }

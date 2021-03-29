@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,25 +11,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     {
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
-        private static readonly Action<ILogger, string, Exception> _generatedCodeToAssemblyCompilationStart;
-        private static readonly Action<ILogger, string, double, Exception> _generatedCodeToAssemblyCompilationEnd;
+        private static readonly Action<ILogger, string, Exception?> _generatedCodeToAssemblyCompilationStart;
+        private static readonly Action<ILogger, string, double, Exception?> _generatedCodeToAssemblyCompilationEnd;
 
-        private static readonly Action<ILogger, string, Exception> _viewCompilerStartCodeGeneration;
-        private static readonly Action<ILogger, string, double, Exception> _viewCompilerEndCodeGeneration;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerLocatedCompiledView;
-        private static readonly Action<ILogger, Exception> _viewCompilerNoCompiledViewsFound;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerLocatedCompiledViewForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerRecompilingCompiledView;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerCouldNotFindFileToCompileForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerFoundFileToCompileForPath;
-        private static readonly Action<ILogger, string, Exception> _viewCompilerInvalidatingCompiledFile;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerStartCodeGeneration;
+        private static readonly Action<ILogger, string, double, Exception?> _viewCompilerEndCodeGeneration;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerLocatedCompiledView;
+        private static readonly Action<ILogger, Exception?> _viewCompilerNoCompiledViewsFound;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerLocatedCompiledViewForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerCouldNotFindFileToCompileForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerFoundFileToCompileForPath;
+        private static readonly Action<ILogger, string, Exception?> _viewCompilerInvalidatingCompiledFile;
 
-        private static readonly Action<ILogger, string, string, Exception> _viewLookupCacheMiss;
-        private static readonly Action<ILogger, string, string, Exception> _viewLookupCacheHit;
-        private static readonly Action<ILogger, string, Exception> _precompiledViewFound;
+        private static readonly Action<ILogger, string, string?, Exception?> _viewLookupCacheMiss;
+        private static readonly Action<ILogger, string, string?, Exception?> _viewLookupCacheHit;
+        private static readonly Action<ILogger, string, Exception?> _precompiledViewFound;
 
-        private static readonly Action<ILogger, string, Exception> _tagHelperComponentInitialized;
-        private static readonly Action<ILogger, string, Exception> _tagHelperComponentProcessed;
+        private static readonly Action<ILogger, string, Exception?> _tagHelperComponentInitialized;
+        private static readonly Action<ILogger, string, Exception?> _tagHelperComponentProcessed;
 
 
         static MvcRazorLoggerExtensions()
@@ -59,11 +58,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 new EventId(5, "ViewCompilerLocatedCompiledViewForPath"),
                 "Located compiled view for view at path '{Path}'.");
 
-            _viewCompilerRecompilingCompiledView = LoggerMessage.Define<string>(
-                LogLevel.Trace,
-                new EventId(6, "ViewCompilerRecompilingCompiledView"),
-                "Invalidating compiled view for view at path '{Path}'.");
-
             _viewCompilerCouldNotFindFileToCompileForPath = LoggerMessage.Define<string>(
                 LogLevel.Trace,
                 new EventId(7, "ViewCompilerCouldNotFindFileAtPath"),
@@ -79,12 +73,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 new EventId(9, "ViewCompilerInvalidingCompiledFile"),
                 "Invalidating compiled view at path '{Path}' with a file since the checksum did not match.");
 
-            _viewLookupCacheMiss = LoggerMessage.Define<string, string>(
+            _viewLookupCacheMiss = LoggerMessage.Define<string, string?>(
                 LogLevel.Debug,
                 new EventId(1, "ViewLookupCacheMiss"),
                 "View lookup cache miss for view '{ViewName}' in controller '{ControllerName}'.");
 
-            _viewLookupCacheHit = LoggerMessage.Define<string, string>(
+            _viewLookupCacheHit = LoggerMessage.Define<string, string?>(
                 LogLevel.Debug,
                 new EventId(2, "ViewLookupCacheHit"),
                 "View lookup cache hit for view '{ViewName}' in controller '{ControllerName}'.");
@@ -161,12 +155,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _viewCompilerInvalidatingCompiledFile(logger, path, null);
         }
 
-        public static void ViewLookupCacheMiss(this ILogger logger, string viewName, string controllerName)
+        public static void ViewLookupCacheMiss(this ILogger logger, string viewName, string? controllerName)
         {
             _viewLookupCacheMiss(logger, viewName, controllerName, null);
         }
 
-        public static void ViewLookupCacheHit(this ILogger logger, string viewName, string controllerName)
+        public static void ViewLookupCacheHit(this ILogger logger, string viewName, string? controllerName)
         {
             _viewLookupCacheHit(logger, viewName, controllerName, null);
         }

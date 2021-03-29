@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
             }
 
-            if (exception is not null && exception is not JsonException or OverflowException or FormatException)
+            if (exception is not null && exception is not (JsonException or OverflowException or FormatException))
             {
                 // At this point we've already recorded all exceptions as an entry in the ModelStateDictionary.
                 // We only need to rethrow an exception if we believe it needs to be handled by something further up
