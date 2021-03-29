@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -13,23 +12,24 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
     /// <summary>
     /// An <see cref="IDictionary{String, Object}"/> type for route values.
     /// </summary>
-    internal class SmallCapacityDictionary : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
+    internal class SmallCapacityDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue> where TKey : notnull
     {
         // Threshold for size of array to use.
         private static readonly int DefaultArrayThreshold = 4;
 
-        internal KeyValuePair<string, object?>[] _arrayStorage;
+        internal KeyValuePair<TKey, TValue>[] _arrayStorage;
         private int _count;
-        private Dictionary<string, object?>? _backup;
+        private Dictionary<TKey, TValue>? _backup;
         private int _threshold = DefaultArrayThreshold;
+        private IEqualityComparer<TKey> _comparer;
 
         /// <summary>
-        /// Creates a new <see cref="SmallCapacityDictionary"/> from the provided array.
+        /// Creates a new <see cref="SmallCapacityDictionary{TKey, TValue}"/> from the provided array.
         /// The new instance will take ownership of the array, and may mutate it.
         /// </summary>
         /// <param name="items">The items array.</param>
-        /// <returns>A new <see cref="SmallCapacityDictionary"/>.</returns>
-        public static SmallCapacityDictionary FromArray(KeyValuePair<string, object?>[] items)
+        /// <returns>A new <see cref="SmallCapacityDictionary{TKey, TValue}"/>.</returns>
+        public static SmallCapacityDictionary<TKey, TValue> FromArray(KeyValuePair<TKey, TValue>[] items)
         {
             if (items == null)
             {
@@ -39,13 +39,13 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             if (items.Length > DefaultArrayThreshold)
             {
                 // Don't use dictionary for large arrays.
-                var dict = new Dictionary<string, object?>();
+                var dict = new Dictionary<TKey, TValue>();
                 foreach (var item in items)
                 {
                     dict[item.Key] = item.Value;
                 }
 
-                return new SmallCapacityDictionary()
+                return new SmallCapacityDictionary<TKey, TValue>()
                 {
                     _backup = dict
                 };
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 }
             }
 
-            return new SmallCapacityDictionary()
+            return new SmallCapacityDictionary<TKey, TValue>()
             {
                 _arrayStorage = items!,
                 _count = start,
@@ -90,26 +90,38 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         /// <summary>
-        /// Creates an empty <see cref="SmallCapacityDictionary"/>.
+        /// Creates an empty <see cref="SmallCapacityDictionary{TKey, TValue}"/>.
         /// </summary>
         public SmallCapacityDictionary()
         {
-            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
+            _comparer = EqualityComparer<TKey>.Default;
+            _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
         }
 
-        public SmallCapacityDictionary(Dictionary<string, string> dict)
+        public SmallCapacityDictionary(Dictionary<TKey, TValue> dict)
         {
             _backup = dict;
-            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
+            _comparer = EqualityComparer<TKey>.Default;
+
+            _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
         }
 
-        public SmallCapacityDictionary(int capacity)
+        public SmallCapacityDictionary(IEqualityComparer<TKey> comparer)
         {
-            _arrayStorage = new KeyValuePair<string, object?>[capacity];
+            if (comparer is not null && comparer != EqualityComparer<TKey>.Default) // first check for null to avoid forcing default comparer instantiation unnecessarily
+            {
+                _comparer = comparer;
+            }
+            else
+            {
+                _comparer = EqualityComparer<TKey>.Default;
+            }
+
+            _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
         }
 
         /// <summary>
-        /// Creates a <see cref="SmallCapacityDictionary"/> initialized with the specified <paramref name="values"/>.
+        /// Creates a <see cref="SmallCapacityDictionary{TKey, TValue}"/> initialized with the specified <paramref name="values"/>.
         /// </summary>
         /// <param name="values">An object to initialize the dictionary. The value can be of type
         /// <see cref="IDictionary{TKey, TValue}"/> or <see cref="IReadOnlyDictionary{TKey, TValue}"/>
@@ -121,30 +133,13 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// property names are keys, and property values are the values, and copied into the dictionary.
         /// Only public instance non-index properties are considered.
         /// </remarks>
-        public SmallCapacityDictionary(object? values)
+        public SmallCapacityDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values)
         {
-            if (values is SmallCapacityDictionary dictionary)
-            {
-                var count = dictionary._count;
-                if (count > 0)
-                {
-                    var other = dictionary._arrayStorage;
-                    var storage = new KeyValuePair<string, object?>[count];
-                    Array.Copy(other, 0, storage, 0, count);
-                    _arrayStorage = storage;
-                    _count = count;
-                }
-                else
-                {
-                    _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
-                }
+            _comparer = EqualityComparer<TKey>.Default;
 
-                return;
-            }
-
-            if (values is IEnumerable<KeyValuePair<string, object>> keyValueEnumerable)
+            if (values is IEnumerable<KeyValuePair<TKey, TValue>> keyValueEnumerable)
             {
-                _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
+                _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
 
                 foreach (var kvp in keyValueEnumerable)
                 {
@@ -154,23 +149,11 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 return;
             }
 
-            if (values is IEnumerable<KeyValuePair<string, string>> stringValueEnumerable)
-            {
-                _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
-
-                foreach (var kvp in stringValueEnumerable)
-                {
-                    Add(kvp.Key, kvp.Value);
-                }
-
-                return;
-            }
-
-            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
+            _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
         }
 
         /// <inheritdoc />
-        public object? this[string key]
+        public TValue this[TKey key]
         {
             get
             {
@@ -180,6 +163,12 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 }
 
                 TryGetValue(key, out var value);
+
+                if (value == null)
+                {
+                    ThrowKeyNotFoundException(nameof(key));
+                }
+
                 return value;
             }
 
@@ -205,22 +194,14 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                         _backup[key] = value;
                         return;
                     }
-                    _arrayStorage[_count++] = new KeyValuePair<string, object?>(key, value);
+                    _arrayStorage[_count++] = new KeyValuePair<TKey, TValue>(key, value);
                 }
                 else
                 {
-                    _arrayStorage[index] = new KeyValuePair<string, object?>(key, value);
+                    _arrayStorage[index] = new KeyValuePair<TKey, TValue>(key, value);
                 }
             }
         }
-
-        /// <summary>
-        /// Gets the comparer for this dictionary.
-        /// </summary>
-        /// <remarks>
-        /// This will always be a reference to <see cref="StringComparer.OrdinalIgnoreCase"/>
-        /// </remarks>
-        public IEqualityComparer<string> Comparer => StringComparer.OrdinalIgnoreCase;
 
         /// <inheritdoc />
         public int Count
@@ -236,10 +217,19 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         /// <inheritdoc />
-        bool ICollection<KeyValuePair<string, object?>>.IsReadOnly => false;
+        public IEqualityComparer<TKey> Comparer
+        {
+            get
+            {
+                return _comparer ?? EqualityComparer<TKey>.Default;
+            }
+        }
 
         /// <inheritdoc />
-        public ICollection<string> Keys
+        bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
+
+        /// <inheritdoc />
+        public ICollection<TKey> Keys
         {
             get
             {
@@ -249,7 +239,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 }
 
                 var array = _arrayStorage;
-                var keys = new string[_count];
+                var keys = new TKey[_count];
                 for (var i = 0; i < keys.Length; i++)
                 {
                     keys[i] = array[i].Key;
@@ -259,10 +249,10 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             }
         }
 
-        IEnumerable<string> IReadOnlyDictionary<string, object?>.Keys => Keys;
+        IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => Keys;
 
         /// <inheritdoc />
-        public ICollection<object?> Values
+        public ICollection<TValue> Values
         {
             get
             {
@@ -272,7 +262,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 }
 
                 var array = _arrayStorage;
-                var values = new object?[_count];
+                var values = new TValue[_count];
                 for (var i = 0; i < values.Length; i++)
                 {
                     values[i] = array[i].Value;
@@ -282,14 +272,14 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             }
         }
 
-        IEnumerable<object?> IReadOnlyDictionary<string, object?>.Values => Values;
+        IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => Values;
 
         /// <inheritdoc />
-        void ICollection<KeyValuePair<string, object?>>.Add(KeyValuePair<string, object?> item)
+        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
         {
             if (_backup != null)
             {
-                ((ICollection<KeyValuePair<string, object?>>)_backup).Add(item);
+                ((ICollection<KeyValuePair<TKey, TValue>>)_backup).Add(item);
                 return;
             }
 
@@ -297,7 +287,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         /// <inheritdoc />
-        public void Add(string key, object? value)
+        public void Add(TKey key, TValue value)
         {
             if (key == null)
             {
@@ -320,10 +310,10 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
 
             if (ContainsKeyArray(key))
             {
-                throw new ArgumentException($"An element with the key '{nameof(key)}' already exists in the {nameof(SmallCapacityDictionary)}.");
+                throw new ArgumentException($"An element with the key '{nameof(key)}' already exists in the {nameof(SmallCapacityDictionary<TKey, TValue>)}.");
             }
 
-            _arrayStorage[_count] = new KeyValuePair<string, object?>(key, value);
+            _arrayStorage[_count] = new KeyValuePair<TKey, TValue>(key, value);
             _count++;
         }
 
@@ -345,18 +335,18 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         /// <inheritdoc />
-        bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item)
+        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
             if (_backup != null)
             {
-                return ((ICollection<KeyValuePair<string, object?>>)_backup).Contains(item);
+                return ((ICollection<KeyValuePair<TKey, TValue>>)_backup).Contains(item);
             }
 
             return TryGetValue(item.Key, out var value) && EqualityComparer<object>.Default.Equals(value, item.Value);
         }
 
         /// <inheritdoc />
-        public bool ContainsKey(string key)
+        public bool ContainsKey(TKey key)
         {
             if (key == null)
             {
@@ -372,14 +362,14 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ContainsKeyCore(string key)
+        private bool ContainsKeyCore(TKey key)
         {
             return ContainsKeyArray(key);
         }
 
         /// <inheritdoc />
-        void ICollection<KeyValuePair<string, object?>>.CopyTo(
-            KeyValuePair<string, object?>[] array,
+        void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(
+            KeyValuePair<TKey, TValue>[] array,
             int arrayIndex)
         {
             if (array == null)
@@ -420,7 +410,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         /// <inheritdoc />
-        IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator()
+        IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
         {
             if (_backup != null)
             {
@@ -442,11 +432,11 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         /// <inheritdoc />
-        bool ICollection<KeyValuePair<string, object?>>.Remove(KeyValuePair<string, object?> item)
+        bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
             if (_backup != null)
             {
-                return ((ICollection<KeyValuePair<string, object?>>)_backup).Remove(item);
+                return ((ICollection<KeyValuePair<TKey, TValue>>)_backup).Remove(item);
             }
 
             if (Count == 0)
@@ -456,7 +446,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
 
             var index = FindIndex(item.Key);
             var array = _arrayStorage;
-            if (index >= 0 && EqualityComparer<object>.Default.Equals(array[index].Value, item.Value))
+            if (index >= 0 && EqualityComparer<TValue>.Default.Equals(array[index].Value, item.Value))
             {
                 Array.Copy(array, index + 1, array, index, _count - index);
                 _count--;
@@ -468,7 +458,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         /// <inheritdoc />
-        public bool Remove(string key)
+        public bool Remove(TKey key)
         {
             if (key == null)
             {
@@ -500,14 +490,14 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         /// <summary>
-        /// Attempts to remove and return the value that has the specified key from the <see cref="SmallCapacityDictionary"/>.
+        /// Attempts to remove and return the value that has the specified key from the <see cref="SmallCapacityDictionary{TKey, TValue}"/>.
         /// </summary>
         /// <param name="key">The key of the element to remove and return.</param>
-        /// <param name="value">When this method returns, contains the object removed from the <see cref="SmallCapacityDictionary"/>, or <c>null</c> if key does not exist.</param>
+        /// <param name="value">When this method returns, contains the object removed from the <see cref="SmallCapacityDictionary{TKey, TValue}"/>, or <c>null</c> if key does not exist.</param>
         /// <returns>
         /// <c>true</c> if the object was removed successfully; otherwise, <c>false</c>.
         /// </returns>
-        public bool Remove(string key, out object? value)
+        public bool Remove(TKey key, out TValue? value)
         {
             if (key == null)
             {
@@ -548,7 +538,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <returns>Returns <c>true</c> if the value was added. Returns <c>false</c> if the key was already present.</returns>
-        public bool TryAdd(string key, object? value)
+        public bool TryAdd(TKey key, TValue value)
         {
             if (key == null)
             {
@@ -566,13 +556,13 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             }
 
             EnsureCapacity(Count + 1);
-            _arrayStorage[Count] = new KeyValuePair<string, object?>(key, value);
+            _arrayStorage[Count] = new KeyValuePair<TKey, TValue>(key, value);
             _count++;
             return true;
         }
 
         /// <inheritdoc />
-        public bool TryGetValue(string key, out object? value)
+        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             if (key == null)
             {
@@ -594,6 +584,12 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             throw new ArgumentNullException("key");
         }
 
+        [DoesNotReturn]
+        private static void ThrowKeyNotFoundException(string keyName)
+        {
+            throw new KeyNotFoundException($"The given key '{keyName}' was not present in the dictionary.");
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EnsureCapacity(int capacity)
         {
@@ -606,18 +602,19 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             {
                 if (capacity < DefaultArrayThreshold)
                 {
-                    _backup = new Dictionary<string, object?>(capacity);
+                    _backup = new Dictionary<TKey, TValue>(capacity);
                     foreach (var item in _arrayStorage)
                     {
                         _backup[item.Key] = item.Value;
                     }
+
                     // Don't use _count or _arrayStorage anymore
                     // TODO clear arrays here?
                 }
                 else
                 {
                     capacity = _arrayStorage.Length == 0 ? DefaultArrayThreshold : _arrayStorage.Length * 2;
-                    var array = new KeyValuePair<string, object?>[capacity];
+                    var array = new KeyValuePair<TKey, TValue>[capacity];
                     if (_count > 0)
                     {
                         Array.Copy(_arrayStorage, 0, array, 0, _count);
@@ -629,7 +626,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int FindIndex(string key)
+        private int FindIndex(TKey key)
         {
             // Generally the bounds checking here will be elided by the JIT because this will be called
             // on the same code path as EnsureCapacity.
@@ -638,7 +635,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
 
             for (var i = 0; i < count; i++)
             {
-                if (string.Equals(array[i].Key, key, StringComparison.OrdinalIgnoreCase))
+                if (_comparer.Equals(array[i].Key, key))
                 {
                     return i;
                 }
@@ -648,7 +645,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryFindItem(string key, out object? value)
+        private bool TryFindItem(TKey key, out TValue? value)
         {
             var array = _arrayStorage;
             var count = _count;
@@ -658,7 +655,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             {
                 for (var i = 0; i < count; i++)
                 {
-                    if (string.Equals(array[i].Key, key, StringComparison.OrdinalIgnoreCase))
+                    if (_comparer.Equals(array[i].Key, key))
                     {
                         value = array[i].Value;
                         return true;
@@ -666,12 +663,12 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 }
             }
 
-            value = null;
+            value = default;
             return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ContainsKeyArray(string key)
+        private bool ContainsKeyArray(TKey key)
         {
             var array = _arrayStorage;
             var count = _count;
@@ -681,7 +678,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             {
                 for (var i = 0; i < count; i++)
                 {
-                    if (string.Equals(array[i].Key, key, StringComparison.OrdinalIgnoreCase))
+                    if (_comparer.Equals(array[i].Key, key))
                     {
                         return true;
                     }
@@ -692,16 +689,16 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         }
 
         /// <inheritdoc />
-        public struct Enumerator : IEnumerator<KeyValuePair<string, object?>>
+        public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
         {
-            private readonly SmallCapacityDictionary _dictionary;
+            private readonly SmallCapacityDictionary<TKey, TValue> _dictionary;
             private int _index;
 
             /// <summary>
             /// Instantiates a new enumerator with the values provided in <paramref name="dictionary"/>.
             /// </summary>
-            /// <param name="dictionary">A <see cref="SmallCapacityDictionary"/>.</param>
-            public Enumerator(SmallCapacityDictionary dictionary)
+            /// <param name="dictionary">A <see cref="SmallCapacityDictionary{TKey, TValue}"/>.</param>
+            public Enumerator(SmallCapacityDictionary<TKey, TValue> dictionary)
             {
                 if (dictionary == null)
                 {
@@ -715,7 +712,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             }
 
             /// <inheritdoc />
-            public KeyValuePair<string, object?> Current { get; private set; }
+            public KeyValuePair<TKey, TValue> Current { get; private set; }
 
             object IEnumerator.Current => Current;
 

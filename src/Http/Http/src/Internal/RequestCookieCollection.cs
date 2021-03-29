@@ -25,21 +25,16 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private SmallCapacityDictionary Store { get; set; }
+        private SmallCapacityDictionary<string, string> Store { get; set; }
 
         public RequestCookieCollection(Dictionary<string, string> store)
         {
-            Store = new SmallCapacityDictionary(store);
+            Store = new SmallCapacityDictionary<string, string>(store);
         }
 
         public RequestCookieCollection()
         {
-            Store = new SmallCapacityDictionary();
-        }
-
-        public RequestCookieCollection(int capacity)
-        {
-            Store = new SmallCapacityDictionary(capacity);
+            Store = new SmallCapacityDictionary<string, string>();
         }
 
         public string? this[string key]
@@ -181,10 +176,10 @@ namespace Microsoft.AspNetCore.Http
         public struct Enumerator : IEnumerator<KeyValuePair<string, string>>
         {
             // Do NOT make this readonly, or MoveNext will not work
-            private RouteValueDictionary.Enumerator _dictionaryEnumerator;
+            private SmallCapacityDictionary<string, string>.Enumerator _dictionaryEnumerator;
             private bool _notEmpty;
 
-            internal Enumerator(RouteValueDictionary.Enumerator dictionaryEnumerator)
+            internal Enumerator(SmallCapacityDictionary<string, string>.Enumerator dictionaryEnumerator)
             {
                 _dictionaryEnumerator = dictionaryEnumerator;
                 _notEmpty = true;
