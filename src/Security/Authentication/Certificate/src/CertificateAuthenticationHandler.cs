@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                 // Invoke the failed handler if validation failed, before updating the cache
                 if (result.Failure != null)
                 {
-                    var authenticationFailedContext = await HandleFailureAsync(ex);
+                    var authenticationFailedContext = await HandleFailureAsync(result.Failure);
                     if (authenticationFailedContext.Result != null)
                     {
                         result = authenticationFailedContext.Result;
