@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Web.WebView2.Core;
@@ -73,7 +75,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
                 if (TryGetResponseContent(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
                 {
-                    eventArgs.Response = environment.CreateWebResourceResponse(content, statusCode, statusMessage, headers);
+                    var headerString = GetHeaderString(headers);
+                    eventArgs.Response = environment.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
                 }
             };
 
@@ -93,6 +96,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
             _webview.CoreWebView2.WebMessageReceived += (sender, eventArgs)
                 => MessageReceived(new Uri(eventArgs.Source), eventArgs.TryGetWebMessageAsString());
         }
+
+        private static string GetHeaderString(IDictionary<string, string> headers) =>
+            string.Join(Environment.NewLine, headers.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
 
         private void ApplyDefaultWebViewSettings()
         {
