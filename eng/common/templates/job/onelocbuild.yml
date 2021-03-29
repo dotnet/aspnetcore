@@ -46,16 +46,19 @@ jobs:
 
     - task: OneLocBuild@2
       displayName: OneLocBuild
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
       inputs:
         locProj: Localize/LocProject.json
         outDir: $(Build.ArtifactStagingDirectory)
         lclSource: ${{ parameters.LclSource }}
         lclPackageId: ${{ parameters.LclPackageId }}
         isCreatePrSelected: ${{ parameters.CreatePr }}
-        repoType: ${{ parameters.RepoType }}
-        gitHubPatVariable: "${{ parameters.GithubPat }}"
         packageSourceAuth: patAuth
         patVariable: ${{ parameters.CeapexPat }}
+        ${{ if eq(parameters.RepoType, 'gitHub') }}:
+          repoType: ${{ parameters.RepoType }}
+          gitHubPatVariable: "${{ parameters.GithubPat }}"
       condition: always()
 
     - task: PublishBuildArtifacts@1
