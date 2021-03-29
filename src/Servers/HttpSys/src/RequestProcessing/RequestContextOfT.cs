@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
+using Log = Microsoft.AspNetCore.Server.HttpSys.RequestContextLog;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    RequestContextLog.RequestProcessError(Logger, ex);
+                    Log.RequestProcessError(Logger, ex);
                     if (context != null)
                     {
                         application.DisposeContext(context, ex);
@@ -85,14 +86,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (messagePump.DecrementOutstandingRequest() == 0 && messagePump.Stopping)
                     {
-                        RequestContextLog.RequestsDrained(Logger);
+                        Log.RequestsDrained(Logger);
                         messagePump.SetShutdownSignal();
                     }
                 }
             }
             catch (Exception ex)
             {
-                RequestContextLog.RequestError(Logger, ex);
+                Log.RequestError(Logger, ex);
                 Abort();
             }
         }
