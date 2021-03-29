@@ -33,11 +33,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         private readonly IMemoryCache _cache;
         private readonly ILogger _logger;
         private readonly CSharpCompiler _csharpCompiler;
+        private readonly IRuntimeCompilationAssemblyLoader _assemblyLoader;
 
         public RuntimeViewCompiler(
             IFileProvider fileProvider,
             RazorProjectEngine projectEngine,
             CSharpCompiler csharpCompiler,
+            IRuntimeCompilationAssemblyLoader assemblyLoader,
             IList<CompiledViewDescriptor> precompiledViews,
             ILogger logger)
         {
@@ -56,6 +58,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 throw new ArgumentNullException(nameof(csharpCompiler));
             }
 
+            if (assemblyLoader == null)
+            {
+                throw new ArgumentNullException(nameof(assemblyLoader));
+            }
+
             if (precompiledViews == null)
             {
                 throw new ArgumentNullException(nameof(precompiledViews));
@@ -69,6 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             _fileProvider = fileProvider;
             _projectEngine = projectEngine;
             _csharpCompiler = csharpCompiler;
+            _assemblyLoader = assemblyLoader;
             _logger = logger;
 
 
@@ -387,7 +395,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 assemblyStream.Seek(0, SeekOrigin.Begin);
                 pdbStream?.Seek(0, SeekOrigin.Begin);
 
-                var assembly = Assembly.Load(assemblyStream.ToArray(), pdbStream?.ToArray());
+                var assembly = _assemblyLoader.Load(codeDocument, assemblyStream.ToArray(), pdbStream?.ToArray());
                 _logger.GeneratedCodeToAssemblyCompilationEnd(codeDocument.Source.FilePath, startTimestamp);
 
                 return assembly;

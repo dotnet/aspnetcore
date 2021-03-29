@@ -99,6 +99,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddSingleton<IRuntimeCompilationFileProvider, RuntimeCompilationFileProvider>();
+            services.TryAddSingleton<IRuntimeCompilationAssemblyLoader, RuntimeCompilationAssemblyLoader>();
             services.TryAddSingleton<RazorReferenceManager>();
             services.TryAddSingleton<CSharpCompiler>();
 
