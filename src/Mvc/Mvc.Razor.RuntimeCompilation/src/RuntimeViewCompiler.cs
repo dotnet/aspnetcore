@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 assemblyStream.Seek(0, SeekOrigin.Begin);
                 pdbStream?.Seek(0, SeekOrigin.Begin);
 
-                var assembly = _assemblyLoader.Load(codeDocument, assemblyStream.ToArray(), pdbStream?.ToArray());
+                var assembly = _assemblyLoader.Load(codeDocument, assemblyStream, pdbStream);
                 _logger.GeneratedCodeToAssemblyCompilationEnd(codeDocument.Source.FilePath, startTimestamp);
 
                 return assembly;

@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             _applicationPartManager = applicationPartManager;
             _razorProjectEngine = razorProjectEngine;
             _csharpCompiler = csharpCompiler;
+            _assemblyLoader = assemblyLoader;
             _fileProvider = fileProvider;
 
             _logger = loggerFactory.CreateLogger<RuntimeViewCompiler>();
