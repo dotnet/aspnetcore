@@ -98,7 +98,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, PageLoaderMatcherPolicy>());
             }
 
-            services.TryAddSingleton<RuntimeCompilationFileProvider>();
+            services.TryAddSingleton<IRuntimeCompilationFileProvider, RuntimeCompilationFileProvider>();
             services.TryAddSingleton<RazorReferenceManager>();
             services.TryAddSingleton<CSharpCompiler>();
 

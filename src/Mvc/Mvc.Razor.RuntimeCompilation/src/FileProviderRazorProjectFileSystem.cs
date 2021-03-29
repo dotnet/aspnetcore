@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     internal class FileProviderRazorProjectFileSystem : RazorProjectFileSystem
     {
         private const string RazorFileExtension = ".cshtml";
-        private readonly RuntimeCompilationFileProvider _fileProvider;
+        private readonly IRuntimeCompilationFileProvider _fileProvider;
         private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public FileProviderRazorProjectFileSystem(RuntimeCompilationFileProvider fileProvider, IWebHostEnvironment hostingEnvironment)
+        public FileProviderRazorProjectFileSystem(IRuntimeCompilationFileProvider fileProvider, IWebHostEnvironment hostingEnvironment)
         {
             if (fileProvider == null)
             {

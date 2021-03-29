@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         private readonly RazorProjectEngine _razorProjectEngine;
         private readonly ApplicationPartManager _applicationPartManager;
         private readonly CSharpCompiler _csharpCompiler;
-        private readonly RuntimeCompilationFileProvider _fileProvider;
+        private readonly IRuntimeCompilationFileProvider _fileProvider;
         private readonly ILogger<RuntimeViewCompiler> _logger;
         private readonly Func<IViewCompiler> _createCompiler;
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         public RuntimeViewCompilerProvider(
             ApplicationPartManager applicationPartManager,
             RazorProjectEngine razorProjectEngine,
-            RuntimeCompilationFileProvider fileProvider,
+            IRuntimeCompilationFileProvider fileProvider,
             CSharpCompiler csharpCompiler,
             ILoggerFactory loggerFactory)
         {
