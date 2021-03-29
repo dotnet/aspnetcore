@@ -9,5 +9,9 @@
       <method signature="System.Void CaptureRootComponentForHotReload(Microsoft.AspNetCore.Components.ParameterView,Microsoft.AspNetCore.Components.Rendering.ComponentState)" body="stub" />
       <method signature="System.Void DisposeForHotReload()" body="stub" />
     </type>
+    <!-- Avoid any overhead in RenderHandle.IsHotReloading by aggressively trimming it -->
+    <type fullname="Microsoft.AspNetCore.Components.RenderHandle">
+       <method signature="System.Boolean get_IsHotReloading()" body="stub" value="false" />
+    </Type>
   </assembly>
 </linker>
