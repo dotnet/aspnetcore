@@ -127,9 +127,14 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             {
                 _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
             }
-            else
+            else if (capacity <= DefaultArrayThreshold)
             {
                 _arrayStorage = new KeyValuePair<TKey, TValue>[capacity];
+            }
+            else
+            {
+                _backup = new Dictionary<TKey, TValue>(capacity: 10);
+                _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
             }
         }
 

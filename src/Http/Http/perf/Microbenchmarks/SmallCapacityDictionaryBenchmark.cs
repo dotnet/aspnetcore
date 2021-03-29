@@ -5,17 +5,21 @@ using System;
 using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Internal.Dictionary;
-using Microsoft.Extensions.Primitives;
+
 namespace Microsoft.AspNetCore.Http
 {
     public class SmallCapacityDictionaryBenchmark
     {
         private SmallCapacityDictionary<string, string> _smallCapDict;
         private SmallCapacityDictionary<string, string> _smallCapDictFour;
+        private SmallCapacityDictionary<string, string> _smallCapDictTen;
         private Dictionary<string, string> _dict;
         private Dictionary<string, string> _dictFour;
+        private Dictionary<string, string> _dictTen;
+
         private KeyValuePair<string, string> _oneValue;
         private List<KeyValuePair<string, string>> _fourValues;
+        private List<KeyValuePair<string, string>> _tenValues;
 
         [IterationSetup]
         public void Setup()
@@ -30,10 +34,26 @@ namespace Microsoft.AspNetCore.Http
                 new KeyValuePair<string, string>("g", "h"),
             };
 
+            _tenValues = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("a", "b"),
+                new KeyValuePair<string, string>("c", "d"),
+                new KeyValuePair<string, string>("e", "f"),
+                new KeyValuePair<string, string>("g", "h"),
+                new KeyValuePair<string, string>("i", "j"),
+                new KeyValuePair<string, string>("k", "l"),
+                new KeyValuePair<string, string>("m", "n"),
+                new KeyValuePair<string, string>("o", "p"),
+                new KeyValuePair<string, string>("q", "r"),
+                new KeyValuePair<string, string>("s", "t"),
+            };
+
             _smallCapDict = new SmallCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase, capacity: 1);
             _smallCapDictFour = new SmallCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase, capacity: 4);
+            _smallCapDictTen = new SmallCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase, capacity: 10);
             _dict = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
             _dictFour = new Dictionary<string, string>(4, StringComparer.OrdinalIgnoreCase);
+            _dictTen = new Dictionary<string, string>(10, StringComparer.OrdinalIgnoreCase);
         }
 
         [Benchmark]
@@ -71,6 +91,26 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Benchmark]
+        public void TenValues_SmallDict()
+        {
+            foreach (var val in _tenValues)
+            {
+                _smallCapDictTen[val.Key] = val.Value;
+                _ = _smallCapDictTen[val.Key];
+            }
+        }
+
+        [Benchmark]
+        public void TenValues_Dict()
+        {
+            foreach (var val in _tenValues)
+            {
+                _dictTen[val.Key] = val.Value;
+                _ = _dictTen[val.Key];
+            }
+        }
+
+        [Benchmark]
         public void SmallDict()
         {
             _ = new SmallCapacityDictionary<string, string>(capacity: 1);
@@ -82,5 +122,29 @@ namespace Microsoft.AspNetCore.Http
             _ = new Dictionary<string, string>(capacity: 1);
         }
 
+
+        [Benchmark]
+        public void SmallDictFour()
+        {
+            _ = new SmallCapacityDictionary<string, string>(capacity: 4);
+        }
+
+        [Benchmark]
+        public void DictFour()
+        {
+            _ = new Dictionary<string, string>(capacity: 4);
+        }
+
+        [Benchmark]
+        public void SmallDictTen()
+        {
+            _ = new SmallCapacityDictionary<string, string>(capacity: 10);
+        }
+
+        [Benchmark]
+        public void DictTen()
+        {
+            _ = new Dictionary<string, string>(capacity: 10);
+        }
     }
 }
