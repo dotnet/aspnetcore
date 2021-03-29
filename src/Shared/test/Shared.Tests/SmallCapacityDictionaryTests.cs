@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var dict = new SmallCapacityDictionary<string, string>(IEnumerableStringValuePairData);
 
             // Assert
-            Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
+            Assert.IsType<KeyValuePair<string, string>[]>(dict._arrayStorage);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
                 kvp => { Assert.Equal("First Name", kvp.Key); Assert.Equal("James", kvp.Value); },
@@ -103,16 +103,13 @@ namespace Microsoft.AspNetCore.Routing.Tests
         [Fact]
         public void CreateFromIEnumerableKeyValuePair_ThrowsExceptionForDuplicateKey()
         {
-            // Arrange
-            var values = new List<KeyValuePair<string, object?>>()
-            {
-                new KeyValuePair<string, object?>("name", "Billy"),
-                new KeyValuePair<string, object?>("Name", "Joey"),
-            };
-
-            // Act & Assert
+            // Arrange, Act & Assert
             ExceptionAssert.ThrowsArgument(
-                () => SmallCapacityDictionary<string, object?>.FromArray(values.ToArray()),
+                () => new SmallCapacityDictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
+                {
+                    {  "name", "Billy" },
+                    {  "Name", "Joey" }
+                },
                 "key",
                 $"An element with the key 'Name' already exists in the {nameof(SmallCapacityDictionary<string, object?>)}.");
         }
@@ -129,7 +126,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
-                () => new SmallCapacityDictionary<string, string>(values),
+                () => new SmallCapacityDictionary<string, string>(values, StringComparer.OrdinalIgnoreCase),
                 "key",
                 $"An element with the key 'Name' already exists in the {nameof(SmallCapacityDictionary<string, object>)}.");
         }
@@ -150,7 +147,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IsReadOnly_False()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>();
+            var dict = new SmallCapacityDictionary<string, object>();
 
             // Act
             var result = ((ICollection<KeyValuePair<string, object?>>)dict).IsReadOnly;
@@ -186,51 +183,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
-        public void IndexGet_backup_NoMatch_ReturnsNull()
-        {
-            // Arrange
-            var dict = new SmallCapacityDictionary<string, object>();
-
-            dict.Add("age", 30);
-            // Act
-            var value = dict["key"];
-
-            // Assert
-            Assert.Null(value);
-            Assert.NotNull(dict._backup);
-        }
-
-        [Fact]
-        public void IndexGet_backup_Match_ReturnsValue()
-        {
-            // Arrange
-            var dict = new SmallCapacityDictionary<string, string>();
-            dict.Add("key", "value");
-
-            // Act
-            var value = dict["key"];
-
-            // Assert
-            Assert.Equal("value", value);
-            Assert.NotNull(dict._backup);
-        }
-
-        [Fact]
-        public void IndexGet_backup_MatchIgnoreCase_ReturnsValue()
-        {
-            // Arrange
-            var dict = new SmallCapacityDictionary<string, string>();
-            dict.Add("key", "value");
-
-            // Act
-            var value = dict["kEy"];
-
-            // Assert
-            Assert.Equal("value", value);
-            Assert.NotNull(dict._backup);
-        }
-
-        [Fact]
         public void IndexGet_ArrayStorage_NoMatch_ReturnsNull()
         {
             // Arrange
@@ -249,7 +201,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IndexGet_ListStorage_Match_ReturnsValue()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>()
             {
                 { "key", "value" },
             };
@@ -266,7 +218,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IndexGet_ListStorage_MatchIgnoreCase_ReturnsValue()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
             {
                 { "key", "value" },
             };
@@ -296,7 +248,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IndexSet_EmptyStorage_UpgradesToList()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>();
+            var dict = new SmallCapacityDictionary<string, object>();
 
             // Act
             dict["key"] = "value";
@@ -325,21 +277,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
-        public void IndexSet_backup_MatchIgnoreCase_SetsValue()
-        {
-            // Arrange
-            var dict = new SmallCapacityDictionary<string, string>();
-            dict.Add("key", "value");
-
-            // Act
-            dict["kEy"] = "value";
-
-            // Assert
-            Assert.Collection(dict, kvp => { Assert.Equal("kEy", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-        }
-
-        [Fact]
         public void IndexSet_ListStorage_NoMatch_AddsValue()
         {
             // Arrange
@@ -363,7 +300,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IndexSet_ListStorage_Match_SetsValue()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>()
             {
                 { "key", "value" },
             };
@@ -380,7 +317,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IndexSet_ListStorage_MatchIgnoreCase_SetsValue()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>()
             {
                 { "key", "value" },
             };
@@ -808,7 +745,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_KeyValuePair_True()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>()
             {
                 { "key", "value" },
             };
@@ -828,7 +765,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_KeyValuePair_True_CaseInsensitive()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
             {
                 { "key", "value" },
             };
@@ -848,7 +785,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_KeyValuePair_False()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>()
             {
                 { "key", "value" },
             };
@@ -869,7 +806,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_KeyValuePair_False_ValueComparisonIsDefault()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>()
             {
                 { "key", "value" },
             };
@@ -915,7 +852,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_ListStorage_False()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>()
             {
                 { "key", "value" },
             };
@@ -933,7 +870,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_ListStorage_True()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>()
             {
                 { "key", "value" },
             };
@@ -951,7 +888,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_ListStorage_True_CaseInsensitive()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
             {
                 { "key", "value" },
             };
@@ -998,7 +935,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_KeyAndOutValue_ListStorage_False()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>()
             {
                 { "key", "value" },
             };
@@ -1038,7 +975,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         {
             // Arrange
             object value = "value";
-            var dict = new SmallCapacityDictionary<string, object>()
+            var dict = new SmallCapacityDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
             {
                 { "key", value }
             };
@@ -1183,35 +1120,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
-        public void TryAdd_ArrayStorage_CanAddWithResize()
-        {
-            // Arrange
-            var dict = new SmallCapacityDictionary<string, object>()
-            {
-                { "key0", "value0" },
-                { "key1", "value1" },
-                { "key2", "value2" },
-                { "key3", "value3" },
-            };
-
-            // Act
-            var result = dict.TryAdd("key4", "value4");
-
-            // Assert
-            Assert.True(result);
-            Assert.Collection(
-                dict._arrayStorage,
-                kvp => Assert.Equal(new KeyValuePair<string, object?>("key0", "value0"), kvp),
-                kvp => Assert.Equal(new KeyValuePair<string, object?>("key1", "value1"), kvp),
-                kvp => Assert.Equal(new KeyValuePair<string, object?>("key2", "value2"), kvp),
-                kvp => Assert.Equal(new KeyValuePair<string, object?>("key3", "value3"), kvp),
-                kvp => Assert.Equal(new KeyValuePair<string, object?>("key4", "value4"), kvp),
-                kvp => Assert.Equal(default, kvp),
-                kvp => Assert.Equal(default, kvp),
-                kvp => Assert.Equal(default, kvp));
-        }
-
-        [Fact]
         public void TryAdd_ArrayStorage_DoesNotAddWhenKeyIsPresent()
         {
             // Arrange
@@ -1265,7 +1173,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void TryGetValue_ListStorage_False()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>()
             {
                 { "key", "value" },
             };
@@ -1283,7 +1191,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void TryGetValue_ListStorage_True()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>()
             {
                 { "key", "value" },
             };
@@ -1301,7 +1209,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void TryGetValue_ListStorage_True_CaseInsensitive()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>()
+            var dict = new SmallCapacityDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
             {
                 { "key", "value" },
             };
@@ -1316,10 +1224,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
-        public void ListStorage_DynamicallyAdjustsCapacity()
+        public void ListStorage_SwitchesToDictionaryAfter4()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>();
+            var dict = new SmallCapacityDictionary<string, object>();
 
             // Act 1
             dict.Add("key", "value");
@@ -1336,14 +1244,16 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert 2
             storage = Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-            Assert.Equal(8, storage.Length);
+            Assert.Equal(4, storage.Length);
+
+            Assert.Equal(8, dict.Count);
         }
 
         [Fact]
         public void ListStorage_RemoveAt_RearrangesInnerArray()
         {
             // Arrange
-            var dict = new SmallCapacityDictionary<string, string>();
+            var dict = new SmallCapacityDictionary<string, object>();
             dict.Add("key", "value");
             dict.Add("key2", "value2");
             dict.Add("key3", "value3");
@@ -1396,42 +1306,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Empty(dictionary);
-        }
-
-        [Fact]
-        public void FromArray_RemovesGapsInArray()
-        {
-            // Arrange
-            var array = new KeyValuePair<string, object?>[]
-            {
-                new KeyValuePair<string, object?>(null!, null),
-                new KeyValuePair<string, object?>("a", 0),
-                new KeyValuePair<string, object?>(null!, null),
-                new KeyValuePair<string, object?>(null!, null),
-                new KeyValuePair<string, object?>("b", 1),
-                new KeyValuePair<string, object?>("c", 2),
-                new KeyValuePair<string, object?>("d", 3),
-                new KeyValuePair<string, object?>(null!, null),
-            };
-
-            // Act - calling From should modify the array
-            var dictionary = SmallCapacityDictionary<string, object>.FromArray(array);
-
-            // Assert
-            Assert.Equal(4, dictionary.Count);
-            Assert.Equal(
-                new KeyValuePair<string, object?>[]
-                {
-                    new KeyValuePair<string, object?>("d", 3),
-                    new KeyValuePair<string, object?>("a", 0),
-                    new KeyValuePair<string, object?>("c", 2),
-                    new KeyValuePair<string, object?>("b", 1),
-                    new KeyValuePair<string, object?>(null!, null),
-                    new KeyValuePair<string, object?>(null!, null),
-                    new KeyValuePair<string, object?>(null!, null),
-                    new KeyValuePair<string, object?>(null!, null),
-                },
-                array);
         }
 
         private void AssertEmptyArrayStorage(SmallCapacityDictionary<string, string> value)

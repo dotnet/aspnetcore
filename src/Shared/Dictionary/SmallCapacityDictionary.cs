@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.AspNetCore.Internal.Dictionary
 {
     /// <summary>
-    /// An <see cref="IDictionary{String, Object}"/> type for route values.
+    /// An <see cref="IDictionary{String, Object}"/> type to hold a small amount of items (4 or less in the common case).
     /// </summary>
     internal class SmallCapacityDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue> where TKey : notnull
     {
@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// The new instance will take ownership of the array, and may mutate it.
         /// </summary>
         /// <param name="items">The items array.</param>
+        /// <param name="comparer"></param>
         /// <returns>A new <see cref="SmallCapacityDictionary{TKey, TValue}"/>.</returns>
         public static SmallCapacityDictionary<TKey, TValue> FromArray(KeyValuePair<TKey, TValue>[] items, IEqualityComparer<TKey>? comparer = null)
         {
@@ -39,11 +40,14 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
 
             if (items.Length > DefaultArrayThreshold)
             {
-                // Don't use dictionary for large arrays.
-                var dict = new Dictionary<TKey, TValue>(comparer);
+                // Use dictionary for large arrays.
+                var dict = new Dictionary<TKey, TValue>(items.Length, comparer);
                 foreach (var item in items)
                 {
-                    dict[item.Key] = item.Value;
+                    if (item.Key != null)
+                    {
+                        dict[item.Key] = item.Value;
+                    }
                 }
 
                 return new SmallCapacityDictionary<TKey, TValue>(comparer)
@@ -153,23 +157,16 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// property names are keys, and property values are the values, and copied into the dictionary.
         /// Only public instance non-index properties are considered.
         /// </remarks>
-        public SmallCapacityDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values)
+        public SmallCapacityDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values, IEqualityComparer<TKey> comparer = null, int capacity = 0)
         {
-            _comparer = EqualityComparer<TKey>.Default;
+            _comparer = comparer ?? EqualityComparer<TKey>.Default;
 
-            if (values is IEnumerable<KeyValuePair<TKey, TValue>> keyValueEnumerable)
+            _arrayStorage = new KeyValuePair<TKey, TValue>[capacity];
+
+            foreach (var kvp in values)
             {
-                _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
-
-                foreach (var kvp in keyValueEnumerable)
-                {
-                    Add(kvp.Key, kvp.Value);
-                }
-
-                return;
+                Add(kvp.Key, kvp.Value);
             }
-
-            _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
         }
 
         /// <inheritdoc />
@@ -183,11 +180,6 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 }
 
                 TryGetValue(key, out var value);
-
-                if (value == null)
-                {
-                    ThrowKeyNotFoundException(nameof(key));
-                }
 
                 return value;
             }
@@ -602,12 +594,6 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         private static void ThrowArgumentNullExceptionForKey()
         {
             throw new ArgumentNullException("key");
-        }
-
-        [DoesNotReturn]
-        private static void ThrowKeyNotFoundException(string keyName)
-        {
-            throw new KeyNotFoundException($"The given key '{keyName}' was not present in the dictionary.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
