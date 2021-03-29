@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         internal KeyValuePair<TKey, TValue>[] _arrayStorage;
         private int _count;
         private Dictionary<TKey, TValue>? _backup;
-        private int _threshold = DefaultArrayThreshold;
         private IEqualityComparer<TKey> _comparer;
 
         /// <summary>
@@ -93,20 +92,27 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// Creates an empty <see cref="SmallCapacityDictionary{TKey, TValue}"/>.
         /// </summary>
         public SmallCapacityDictionary()
+            : this(EqualityComparer<TKey>.Default, 0)
         {
-            _comparer = EqualityComparer<TKey>.Default;
-            _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
         }
 
         public SmallCapacityDictionary(Dictionary<TKey, TValue> dict)
+            : this(EqualityComparer<TKey>.Default, 0)
         {
             _backup = dict;
-            _comparer = EqualityComparer<TKey>.Default;
-
-            _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
         }
 
         public SmallCapacityDictionary(IEqualityComparer<TKey> comparer)
+            : this(comparer, 0)
+        {
+        }
+
+        public SmallCapacityDictionary(int capacity)
+            : this(EqualityComparer<TKey>.Default, capacity)
+        {
+        }
+
+        public SmallCapacityDictionary(IEqualityComparer<TKey> comparer, int capacity)
         {
             if (comparer is not null && comparer != EqualityComparer<TKey>.Default) // first check for null to avoid forcing default comparer instantiation unnecessarily
             {
@@ -117,7 +123,14 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 _comparer = EqualityComparer<TKey>.Default;
             }
 
-            _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
+            if (capacity == 0)
+            {
+                _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
+            }
+            else
+            {
+                _arrayStorage = new KeyValuePair<TKey, TValue>[capacity];
+            }
         }
 
         /// <summary>

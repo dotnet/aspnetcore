@@ -5,13 +5,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-<<<<<<< HEAD
 using Microsoft.Extensions.Primitives;
-=======
-using System.Linq;
 using Microsoft.AspNetCore.Internal.Dictionary;
-using Microsoft.AspNetCore.Routing;
->>>>>>> 41cfee2cfe (Trying routevaluedict)
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
@@ -27,14 +22,19 @@ namespace Microsoft.AspNetCore.Http
 
         private SmallCapacityDictionary<string, string> Store { get; set; }
 
+        public RequestCookieCollection()
+        {
+            Store = new SmallCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public RequestCookieCollection(int capacity)
+        {
+            Store = new SmallCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase, capacity);
+        }
+
         public RequestCookieCollection(Dictionary<string, string> store)
         {
             Store = new SmallCapacityDictionary<string, string>(store);
-        }
-
-        public RequestCookieCollection()
-        {
-            Store = new SmallCapacityDictionary<string, string>();
         }
 
         public string? this[string key]
