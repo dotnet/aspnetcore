@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
 
         internal KeyValuePair<TKey, TValue>[] _arrayStorage;
         private int _count;
-        private Dictionary<TKey, TValue>? _backup;
+        internal Dictionary<TKey, TValue>? _backup;
         private IEqualityComparer<TKey> _comparer;
 
         /// <summary>
@@ -28,23 +28,25 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// </summary>
         /// <param name="items">The items array.</param>
         /// <returns>A new <see cref="SmallCapacityDictionary{TKey, TValue}"/>.</returns>
-        public static SmallCapacityDictionary<TKey, TValue> FromArray(KeyValuePair<TKey, TValue>[] items)
+        public static SmallCapacityDictionary<TKey, TValue> FromArray(KeyValuePair<TKey, TValue>[] items, IEqualityComparer<TKey>? comparer = null)
         {
             if (items == null)
             {
                 throw new ArgumentNullException(nameof(items));
             }
 
+            comparer = comparer ?? EqualityComparer<TKey>.Default;
+
             if (items.Length > DefaultArrayThreshold)
             {
                 // Don't use dictionary for large arrays.
-                var dict = new Dictionary<TKey, TValue>();
+                var dict = new Dictionary<TKey, TValue>(comparer);
                 foreach (var item in items)
                 {
                     dict[item.Key] = item.Value;
                 }
 
-                return new SmallCapacityDictionary<TKey, TValue>()
+                return new SmallCapacityDictionary<TKey, TValue>(comparer)
                 {
                     _backup = dict
                 };
@@ -328,7 +330,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
 
             if (ContainsKeyArray(key))
             {
-                throw new ArgumentException($"An element with the key '{nameof(key)}' already exists in the {nameof(SmallCapacityDictionary<TKey, TValue>)}.");
+                throw new ArgumentException($"An element with the key '{key}' already exists in the {nameof(SmallCapacityDictionary<TKey, TValue>)}.", nameof(key));
             }
 
             _arrayStorage[_count] = new KeyValuePair<TKey, TValue>(key, value);
@@ -618,7 +620,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         {
             if (_arrayStorage.Length < capacity)
             {
-                if (capacity < DefaultArrayThreshold)
+                if (capacity > DefaultArrayThreshold)
                 {
                     _backup = new Dictionary<TKey, TValue>(capacity);
                     foreach (var item in _arrayStorage)
@@ -747,13 +749,15 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             public bool MoveNext()
             {
                 var dictionary = _dictionary;
+                if (dictionary._arrayStorage.Length >= _index)
+                {
+                    return false;
+                }
 
-                // The uncommon case is that the propertyStorage is in use
                 Current = dictionary._arrayStorage[_index];
                 _index++;
                 return true;
             }
-
 
             /// <inheritdoc />
             public void Reset()
