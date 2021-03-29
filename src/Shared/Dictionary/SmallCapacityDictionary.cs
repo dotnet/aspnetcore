@@ -98,27 +98,27 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// Creates an empty <see cref="SmallCapacityDictionary{TKey, TValue}"/>.
         /// </summary>
         public SmallCapacityDictionary()
-            : this(EqualityComparer<TKey>.Default, 0)
+            : this(0, EqualityComparer<TKey>.Default)
         {
         }
 
         public SmallCapacityDictionary(Dictionary<TKey, TValue> dict)
-            : this(EqualityComparer<TKey>.Default, 0)
+            : this(0, EqualityComparer<TKey>.Default)
         {
             _backup = dict;
         }
 
         public SmallCapacityDictionary(IEqualityComparer<TKey> comparer)
-            : this(comparer, 0)
+            : this(0, comparer)
         {
         }
 
         public SmallCapacityDictionary(int capacity)
-            : this(EqualityComparer<TKey>.Default, capacity)
+            : this(capacity, EqualityComparer<TKey>.Default)
         {
         }
 
-        public SmallCapacityDictionary(IEqualityComparer<TKey> comparer, int capacity)
+        public SmallCapacityDictionary(int capacity, IEqualityComparer<TKey> comparer)
         {
             if (comparer is not null && comparer != EqualityComparer<TKey>.Default) // first check for null to avoid forcing default comparer instantiation unnecessarily
             {
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// property names are keys, and property values are the values, and copied into the dictionary.
         /// Only public instance non-index properties are considered.
         /// </remarks>
-        public SmallCapacityDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values, IEqualityComparer<TKey> comparer = null, int capacity = 0)
+        public SmallCapacityDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values, IEqualityComparer<TKey> comparer, int capacity)
         {
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
 
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
 
                 TryGetValue(key, out var value);
 
-                return value;
+                return value!;
             }
 
             set
