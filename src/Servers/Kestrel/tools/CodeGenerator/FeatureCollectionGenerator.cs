@@ -32,13 +32,14 @@ using System.Runtime.CompilerServices;
 
 namespace {namespaceName}
 {{
-    internal partial class {className} : IFeatureCollection
+    internal partial class {className} : IFeatureCollection{Each(implementedFeatures.Where(f => !skipResetFeatures.Contains(f)), feature => $@",
+                              {new string(' ', className.Length)}{feature}")}
     {{
         // Implemented features{Each(implementedFeatures.Where(f => !skipResetFeatures.Contains(f)), feature => $@"
         internal protected {feature}? _current{feature};")}{Each(implementedFeatures.Where(f => skipResetFeatures.Contains(f)), feature => $@"
-        internal protected {feature}? _current{feature};")}
+        internal protected {feature}? _current{feature};")}{(allFeatures.Where(f => !implementedFeatures.Contains(f)).FirstOrDefault() is not null ? @"
 
-        // Other reserved feature slots{Each(allFeatures.Where(f => !implementedFeatures.Contains(f)), feature => $@"
+        // Other reserved feature slots" : "")}{Each(allFeatures.Where(f => !implementedFeatures.Contains(f)), feature => $@"
         internal protected {feature}? _current{feature};")}
 
         private int _featureRevision;

@@ -14,7 +14,21 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal partial class HttpProtocol : IFeatureCollection
+    internal partial class HttpProtocol : IFeatureCollection,
+                                          IHttpRequestFeature,
+                                          IHttpResponseFeature,
+                                          IHttpResponseBodyFeature,
+                                          IRouteValuesFeature,
+                                          IEndpointFeature,
+                                          IHttpRequestIdentifierFeature,
+                                          IHttpRequestTrailersFeature,
+                                          IHttpUpgradeFeature,
+                                          IRequestBodyPipeFeature,
+                                          IHttpConnectionFeature,
+                                          IHttpRequestLifetimeFeature,
+                                          IHttpBodyControlFeature,
+                                          IHttpMaxRequestBodySizeFeature,
+                                          IHttpRequestBodyDetectionFeature
     {
         // Implemented features
         internal protected IHttpRequestFeature? _currentIHttpRequestFeature;

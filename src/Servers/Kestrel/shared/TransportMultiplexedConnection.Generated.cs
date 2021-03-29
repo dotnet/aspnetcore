@@ -13,7 +13,11 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {
-    internal partial class TransportMultiplexedConnection : IFeatureCollection
+    internal partial class TransportMultiplexedConnection : IFeatureCollection,
+                                                            IConnectionIdFeature,
+                                                            IConnectionItemsFeature,
+                                                            IMemoryPoolFeature,
+                                                            IConnectionLifetimeFeature
     {
         // Implemented features
         internal protected IConnectionIdFeature? _currentIConnectionIdFeature;

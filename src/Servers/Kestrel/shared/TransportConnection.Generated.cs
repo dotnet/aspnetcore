@@ -13,7 +13,12 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {
-    internal partial class TransportConnection : IFeatureCollection
+    internal partial class TransportConnection : IFeatureCollection,
+                                                 IConnectionIdFeature,
+                                                 IConnectionTransportFeature,
+                                                 IConnectionItemsFeature,
+                                                 IMemoryPoolFeature,
+                                                 IConnectionLifetimeFeature
     {
         // Implemented features
         internal protected IConnectionIdFeature? _currentIConnectionIdFeature;
@@ -21,8 +26,6 @@ namespace Microsoft.AspNetCore.Connections
         internal protected IConnectionItemsFeature? _currentIConnectionItemsFeature;
         internal protected IMemoryPoolFeature? _currentIMemoryPoolFeature;
         internal protected IConnectionLifetimeFeature? _currentIConnectionLifetimeFeature;
-
-        // Other reserved feature slots
 
         private int _featureRevision;
 
