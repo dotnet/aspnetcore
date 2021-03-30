@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         {
             // Arrange
             // Act
-            var dict = new SmallCapacityDictionary<string, string>(dict: null);
+            var dict = new SmallCapacityDictionary<string, string>();
 
             // Assert
             Assert.Empty(dict);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void CreateFromIEnumerableStringValuePair_CopiesValues()
         {
             // Arrange & Act
-            var dict = new SmallCapacityDictionary<string, string>(IEnumerableStringValuePairData, StringComparer.OrdinalIgnoreCase, capacity: 3);
+            var dict = new SmallCapacityDictionary<string, string>(IEnumerableStringValuePairData, capacity: 3, StringComparer.OrdinalIgnoreCase);
 
             // Assert
             Assert.IsType<KeyValuePair<string, string>[]>(dict._arrayStorage);
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
-                () => new SmallCapacityDictionary<string, string>(values, StringComparer.OrdinalIgnoreCase, capacity: 3),
+                () => new SmallCapacityDictionary<string, string>(values, capacity: 3, StringComparer.OrdinalIgnoreCase),
                 "key",
                 $"An element with the key 'Name' already exists in the {nameof(SmallCapacityDictionary<string, object>)}.");
         }

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// The new instance will take ownership of the array, and may mutate it.
         /// </summary>
         /// <param name="items">The items array.</param>
-        /// <param name="comparer"></param>
+        /// <param name="comparer">Equality comparison.</param>
         /// <returns>A new <see cref="SmallCapacityDictionary{TKey, TValue}"/>.</returns>
         public static SmallCapacityDictionary<TKey, TValue> FromArray(KeyValuePair<TKey, TValue>[] items, IEqualityComparer<TKey>? comparer = null)
         {
@@ -102,22 +102,29 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         {
         }
 
-        public SmallCapacityDictionary(Dictionary<TKey, TValue> dict)
-            : this(0, EqualityComparer<TKey>.Default)
-        {
-            _backup = dict;
-        }
-
+        /// <summary>
+        /// Creates a <see cref="SmallCapacityDictionary{TKey, TValue}"/>.
+        /// </summary>
+        /// <param name="comparer">Equality comparison.</param>
         public SmallCapacityDictionary(IEqualityComparer<TKey> comparer)
             : this(0, comparer)
         {
         }
 
+        /// <summary>
+        /// Creates a <see cref="SmallCapacityDictionary{TKey, TValue}"/>.
+        /// </summary>
+        /// <param name="capacity">Initial capacity.</param>
         public SmallCapacityDictionary(int capacity)
             : this(capacity, EqualityComparer<TKey>.Default)
         {
         }
 
+        /// <summary>
+        /// Creates a <see cref="SmallCapacityDictionary{TKey, TValue}"/>.
+        /// </summary>
+        /// <param name="capacity">Initial capacity.</param>
+        /// <param name="comparer">Equality comparison.</param>
         public SmallCapacityDictionary(int capacity, IEqualityComparer<TKey> comparer)
         {
             if (comparer is not null && comparer != EqualityComparer<TKey>.Default) // first check for null to avoid forcing default comparer instantiation unnecessarily
@@ -151,13 +158,9 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// <see cref="IDictionary{TKey, TValue}"/> or <see cref="IReadOnlyDictionary{TKey, TValue}"/>
         /// or an object with public properties as key-value pairs.
         /// </param>
-        /// <remarks>
-        /// If the value is a dictionary or other <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{String, Object}"/>,
-        /// then its entries are copied. Otherwise the object is interpreted as a set of key-value pairs where the
-        /// property names are keys, and property values are the values, and copied into the dictionary.
-        /// Only public instance non-index properties are considered.
-        /// </remarks>
-        public SmallCapacityDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values, IEqualityComparer<TKey> comparer, int capacity)
+        /// <param name="comparer">Equality comparison.</param>
+        /// <param name="capacity">Initial capacity.</param>
+        public SmallCapacityDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values, int capacity, IEqualityComparer<TKey> comparer)
         {
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
 
