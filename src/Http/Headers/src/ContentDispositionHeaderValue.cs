@@ -544,16 +544,18 @@ namespace Microsoft.Net.Http.Headers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetBase64Length(int inputLength)
         {
-            // Copied from https://github.com/dotnet/runtime/blob/82ca681cbac89d813a3ce397e0c665e6c051ed67/src/libraries/System.Private.CoreLib/src/System/Convert.cs#L2530
-            long outlen = ((long)inputLength) / 3 * 4;          // the base length - we want integer division here.
-            outlen += ((inputLength % 3) != 0) ? 4 : 0;         // at most 4 more chars for the remainder
+            // Based on https://github.com/dotnet/runtime/blob/ac21254184f5a6cec884d8d4049c80d905170b38/src/libraries/System.Memory/src/System/Buffers/Text/Base64Encoder.cs#L150
 
-            if (outlen > int.MaxValue)
+            const int MaximumEncodeLength = (int.MaxValue / 4) * 3; // 1610612733
+
+            if ((uint)inputLength <= MaximumEncodeLength)
             {
-                throw new OutOfMemoryException();
+                return ((inputLength + 2) / 3) * 4;
             }
 
-            return (int)outlen;
+            Throw();
+            static void Throw() => throw new OutOfMemoryException();
+            throw null!;
         }
 
         // Encode using MIME encoding
