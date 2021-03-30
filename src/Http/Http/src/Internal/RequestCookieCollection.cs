@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.Internal.Dictionary;
 using Microsoft.Net.Http.Headers;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Http
 
         public RequestCookieCollection(Dictionary<string, string> store)
         {
-            Store = new SmallCapacityDictionary<string, string>(store);
+            Store = new SmallCapacityDictionary<string, string>(store.ToList(), capacity: store.Count, StringComparer.OrdinalIgnoreCase);
         }
 
         public string? this[string key]
