@@ -341,7 +341,7 @@ export class HttpConnection implements IConnection {
                     errorMessage = errorMessage + " Either this is not a SignalR endpoint or there is a proxy blocking the connection.";
                 }
             }
-            this.logger.log(LogLevel.Error, errorMessage);
+            this._logger.log(LogLevel.Error, errorMessage);
 
             return Promise.reject(new Error(errorMessage));
         }

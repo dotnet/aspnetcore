@@ -90,9 +90,9 @@ export class ServerSentEventsTransport implements ITransport {
 
                 // @ts-ignore: not using event on purpose
                 eventSource.onerror = (e: Event) => {
-                    const error = new Error("Error occurred while starting EventSource");
+                    // EventSource doesn't give any useful information about server side closes.
                     if (opened) {
-                        this._close(error);
+                        this._close();
                     } else {
                         reject(new Error("EventSource failed to connect. The connection could not be found on the server,"
                         + " either the connection ID is not present on the server, or a proxy is refusing/buffering the connection."

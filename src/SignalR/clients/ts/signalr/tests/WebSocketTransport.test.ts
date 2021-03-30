@@ -63,7 +63,8 @@ describe("WebSocketTransport", () => {
 
             await expect(connectPromise)
                 .rejects
-                .toThrow("There was an error with the transport.");
+                .toThrow("WebSocket failed to connect. The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, " +
+                "the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.");
             expect(connectComplete).toBe(false);
         });
     });
@@ -89,7 +90,8 @@ describe("WebSocketTransport", () => {
 
             await expect(connectPromise)
                 .rejects
-                .toThrow("There was an error with the transport.");
+                .toThrow("WebSocket failed to connect. The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, " +
+                "the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.");
             expect(connectComplete).toBe(false);
             expect(closeCalled).toBe(false);
         });
@@ -340,8 +342,8 @@ describe("WebSocketTransport", () => {
             expect(closeCalled).toBe(false);
             expect(error!).toBeUndefined();
 
-            TestWebSocket.webSocket.onerror(new TestEvent());
-            await expect(connectPromise).rejects.toThrow("There was an error with the transport.");
+            await expect(connectPromise).rejects.toThrow("WebSocket failed to connect. The connection could not be found on the server, " +
+            "either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.");
         });
     });
 });

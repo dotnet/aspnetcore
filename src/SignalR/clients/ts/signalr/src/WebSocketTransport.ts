@@ -94,7 +94,7 @@ export class WebSocketTransport implements ITransport {
                     error = "There was an error with the transport";
                 }
 
-                this.logger.log(LogLevel.Information, `(WebSockets transport) ${error}.`);
+                this._logger.log(LogLevel.Information, `(WebSockets transport) ${error}.`);
             };
 
             webSocket.onmessage = (message: MessageEvent) => {
@@ -126,7 +126,7 @@ export class WebSocketTransport implements ITransport {
                         + " If you have multiple servers check that sticky sessions are enabled.";
                     }
 
-                    reject(error);
+                    reject(new Error(error));
                 }
             };
         });
@@ -166,7 +166,7 @@ export class WebSocketTransport implements ITransport {
         this._logger.log(LogLevel.Trace, "(WebSockets transport) socket closed.");
         if (this.onclose) {
             if (this._isCloseEvent(event) && (event.wasClean === false || event.code !== 1000)) {
-                this.onclose(new Error(`WebSocket closed with status code: ${event.code} (${event.reason}).`));
+                this.onclose(new Error(`WebSocket closed with status code: ${event.code} (${event.reason || "no reason given"}).`));
             } else if (event instanceof Error) {
                 this.onclose(event);
             } else {
