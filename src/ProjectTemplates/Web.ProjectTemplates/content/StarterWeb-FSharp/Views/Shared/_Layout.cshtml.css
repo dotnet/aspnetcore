@@ -24,17 +24,6 @@ a.navbar-brand {
     border-color: #1861ac;
   }
   
-  /* Sticky footer styles
-  -------------------------------------------------- */
-  html {
-    font-size: 14px;
-  }
-  @media (min-width: 768px) {
-    html {
-      font-size: 16px;
-    }
-  }
-  
   .border-top {
     border-top: 1px solid #e5e5e5;
   }
@@ -53,15 +42,6 @@ a.navbar-brand {
   
   /* Sticky footer styles
   -------------------------------------------------- */
-  html {
-    position: relative;
-    min-height: 100%;
-  }
-  
-  body {
-    /* Margin bottom by footer height */
-    margin-bottom: 60px;
-  }
   .footer {
     position: absolute;
     bottom: 0;
