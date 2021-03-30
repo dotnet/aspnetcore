@@ -7,7 +7,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http.HPack;
+using System.Reflection;
 using System.Text;
+using Microsoft.Net.Http.Headers;
 
 namespace CodeGenerator
 {
@@ -22,94 +24,94 @@ namespace CodeGenerator
         {
             var requestPrimaryHeaders = new[]
             {
-                "Accept",
-                "Connection",
-                "Host",
-                "User-Agent"
+                HeaderNames.Accept,
+                HeaderNames.Connection,
+                HeaderNames.Host,
+                HeaderNames.UserAgent
             };
             var responsePrimaryHeaders = new[]
             {
-                "Connection",
-                "Date",
-                "Content-Type",
-                "Server",
-                "Content-Length",
+                HeaderNames.Connection,
+                HeaderNames.Date,
+                HeaderNames.ContentType,
+                HeaderNames.Server,
+                HeaderNames.ContentLength,
             };
             var commonHeaders = new[]
             {
-                "Cache-Control",
-                "Connection",
-                "Date",
-                "Grpc-Encoding",
-                "Keep-Alive",
-                "Pragma",
-                "Trailer",
-                "Transfer-Encoding",
-                "Upgrade",
-                "Via",
-                "Warning",
-                "Allow",
-                "Content-Type",
-                "Content-Encoding",
-                "Content-Language",
-                "Content-Location",
-                "Content-MD5",
-                "Content-Range",
-                "Expires",
-                "Last-Modified"
+                HeaderNames.CacheControl,
+                HeaderNames.Connection,
+                HeaderNames.Date,
+                HeaderNames.GrpcEncoding,
+                HeaderNames.KeepAlive,
+                HeaderNames.Pragma,
+                HeaderNames.Trailer,
+                HeaderNames.TransferEncoding,
+                HeaderNames.Upgrade,
+                HeaderNames.Via,
+                HeaderNames.Warning,
+                HeaderNames.Allow,
+                HeaderNames.ContentType,
+                HeaderNames.ContentEncoding,
+                HeaderNames.ContentLanguage,
+                HeaderNames.ContentLocation,
+                HeaderNames.ContentMD5,
+                HeaderNames.ContentRange,
+                HeaderNames.Expires,
+                HeaderNames.LastModified
             };
             // http://www.w3.org/TR/cors/#syntax
             var corsRequestHeaders = new[]
             {
-                "Origin",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers",
+                HeaderNames.Origin,
+                HeaderNames.AccessControlRequestMethod,
+                HeaderNames.AccessControlRequestHeaders,
             };
             var requestHeadersExistence = new[]
             {
-                "Connection",
-                "Transfer-Encoding",
+                HeaderNames.Connection,
+                HeaderNames.TransferEncoding,
             };
             var requestHeadersCount = new[]
             {
-                "Host"
+                HeaderNames.Host
             };
             RequestHeaders = commonHeaders.Concat(new[]
             {
-                ":authority",
-                ":method",
-                ":path",
-                ":scheme",
-                "Accept",
-                "Accept-Charset",
-                "Accept-Encoding",
-                "Accept-Language",
-                "Authorization",
-                "Cookie",
-                "Expect",
-                "From",
-                "Grpc-Accept-Encoding",
-                "Grpc-Timeout",
-                "Host",
-                "If-Match",
-                "If-Modified-Since",
-                "If-None-Match",
-                "If-Range",
-                "If-Unmodified-Since",
-                "Max-Forwards",
-                "Proxy-Authorization",
-                "Referer",
-                "Range",
-                "TE",
-                "Translate",
-                "User-Agent",
-                "DNT",
-                "Upgrade-Insecure-Requests",
-                "Request-Id",
-                "Correlation-Context",
-                "TraceParent",
-                "TraceState",
-                "Baggage"
+                HeaderNames.Authority,
+                HeaderNames.Method,
+                HeaderNames.Path,
+                HeaderNames.Scheme,
+                HeaderNames.Accept,
+                HeaderNames.AcceptCharset,
+                HeaderNames.AcceptEncoding,
+                HeaderNames.AcceptLanguage,
+                HeaderNames.Authorization,
+                HeaderNames.Cookie,
+                HeaderNames.Expect,
+                HeaderNames.From,
+                HeaderNames.GrpcAcceptEncoding,
+                HeaderNames.GrpcTimeout,
+                HeaderNames.Host,
+                HeaderNames.IfMatch,
+                HeaderNames.IfModifiedSince,
+                HeaderNames.IfNoneMatch,
+                HeaderNames.IfRange,
+                HeaderNames.IfUnmodifiedSince,
+                HeaderNames.MaxForwards,
+                HeaderNames.ProxyAuthorization,
+                HeaderNames.Referer,
+                HeaderNames.Range,
+                HeaderNames.TE,
+                HeaderNames.Translate,
+                HeaderNames.UserAgent,
+                HeaderNames.DNT,
+                HeaderNames.UpgradeInsecureRequests,
+                HeaderNames.RequestId,
+                HeaderNames.CorrelationContext,
+                HeaderNames.TraceParent,
+                HeaderNames.TraceState,
+                HeaderNames.Baggage
             })
             .Concat(corsRequestHeaders)
             .Select((header, index) => new KnownHeader
@@ -122,50 +124,50 @@ namespace CodeGenerator
             })
             .Concat(new[] { new KnownHeader
             {
-                Name = "Content-Length",
+                Name = HeaderNames.ContentLength,
                 Index = -1,
-                PrimaryHeader = requestPrimaryHeaders.Contains("Content-Length")
+                PrimaryHeader = requestPrimaryHeaders.Contains(HeaderNames.ContentLength)
             }})
             .ToArray();
 
             var responseHeadersExistence = new[]
             {
-                "Connection",
-                "Server",
-                "Date",
-                "Transfer-Encoding"
+                HeaderNames.Connection,
+                HeaderNames.Server,
+                HeaderNames.Date,
+                HeaderNames.TransferEncoding
             };
             var enhancedHeaders = new[]
             {
-                "Connection",
-                "Server",
-                "Date",
-                "Transfer-Encoding"
+                HeaderNames.Connection,
+                HeaderNames.Server,
+                HeaderNames.Date,
+                HeaderNames.TransferEncoding
             };
             // http://www.w3.org/TR/cors/#syntax
             var corsResponseHeaders = new[]
             {
-                "Access-Control-Allow-Credentials",
-                "Access-Control-Allow-Headers",
-                "Access-Control-Allow-Methods",
-                "Access-Control-Allow-Origin",
-                "Access-Control-Expose-Headers",
-                "Access-Control-Max-Age",
+                HeaderNames.AccessControlAllowCredentials,
+                HeaderNames.AccessControlAllowHeaders,
+                HeaderNames.AccessControlAllowMethods,
+                HeaderNames.AccessControlAllowOrigin,
+                HeaderNames.AccessControlExposeHeaders,
+                HeaderNames.AccessControlMaxAge,
             };
             ResponseHeaders = commonHeaders.Concat(new[]
             {
-                "Accept-Ranges",
-                "Age",
-                "Alt-Svc",
-                "ETag",
-                "Location",
-                "Proxy-Authenticate",
-                "Proxy-Connection",
-                "Retry-After",
-                "Server",
-                "Set-Cookie",
-                "Vary",
-                "WWW-Authenticate",
+                HeaderNames.AcceptRanges,
+                HeaderNames.Age,
+                HeaderNames.AltSvc,
+                HeaderNames.ETag,
+                HeaderNames.Location,
+                HeaderNames.ProxyAuthenticate,
+                HeaderNames.ProxyConnection,
+                HeaderNames.RetryAfter,
+                HeaderNames.Server,
+                HeaderNames.SetCookie,
+                HeaderNames.Vary,
+                HeaderNames.WWWAuthenticate,
             })
             .Concat(corsResponseHeaders)
             .Select((header, index) => new KnownHeader
@@ -178,18 +180,18 @@ namespace CodeGenerator
             })
             .Concat(new[] { new KnownHeader
             {
-                Name = "Content-Length",
+                Name = HeaderNames.ContentLength,
                 Index = 63,
-                EnhancedSetter = enhancedHeaders.Contains("Content-Length"),
-                PrimaryHeader = responsePrimaryHeaders.Contains("Content-Length")
+                EnhancedSetter = enhancedHeaders.Contains(HeaderNames.ContentLength),
+                PrimaryHeader = responsePrimaryHeaders.Contains(HeaderNames.ContentLength)
             }})
             .ToArray();
 
             ResponseTrailers = new[]
             {
-                "ETag",
-                "Grpc-Message",
-                "Grpc-Status"
+                HeaderNames.ETag,
+                HeaderNames.GrpcMessage,
+                HeaderNames.GrpcStatus
             }
             .Select((header, index) => new KnownHeader
             {
@@ -203,11 +205,11 @@ namespace CodeGenerator
 
             var invalidH2H3ResponseHeaders = new[]
             {
-                "Connection",
-                "Transfer-Encoding",
-                "Keep-Alive",
-                "Upgrade",
-                "Proxy-Connection"
+                HeaderNames.Connection,
+                HeaderNames.TransferEncoding,
+                HeaderNames.KeepAlive,
+                HeaderNames.Upgrade,
+                HeaderNames.ProxyConnection
             };
 
             InvalidH2H3ResponseHeadersBits = ResponseHeaders
@@ -280,7 +282,7 @@ namespace CodeGenerator
         static string AppendHPackSwitchSection(HPackGroup group)
         {
             var header = group.Header;
-            if (header.Identifier == "ContentLength")
+            if (header.Name == HeaderNames.ContentLength)
             {
                 return $@"if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
                     {{
@@ -320,7 +322,7 @@ namespace CodeGenerator
 
             string GenerateIfBody(KnownHeader header, string extraIndent = "")
             {
-                if (header.Identifier == "ContentLength")
+                if (header.Name == HeaderNames.ContentLength)
                 {
                     return $@"
                         {extraIndent}if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
@@ -384,6 +386,14 @@ namespace CodeGenerator
 
             private string ResolveIdentifier(string name)
             {
+                // Check the 3 lowercase headers
+                switch (name)
+                {
+                    case "baggage": return "Baggage";
+                    case "traceparent": return "TraceParent";
+                    case "tracestate": return "TraceState";
+                }
+
                 var identifier = name.Replace("-", "");
 
                 // Pseudo headers start with a colon. A colon isn't valid in C# names so
@@ -732,6 +742,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Unknown,{Each(allHeaderNames, n => @"
         " + n + ",")}
     }}
+
+    internal partial class HttpHeaders
+    {{
+        {GetHeaderLookup()}
+    }}
 {Each(loops, loop => $@"
     internal partial class {loop.ClassName}
     {{{(loop.Bytes != null ?
@@ -747,8 +762,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {Each(loop.Headers.Where(header => header.FastCount), header => $@"
         public int {header.Identifier}Count => _headers._{header.Identifier}.Count;")}
         {Each(loop.Headers, header => $@"
-        public StringValues Header{header.Identifier}
-        {{{(header.Identifier == "ContentLength" ? $@"
+        public {(header.Name == HeaderNames.Connection ? "override " : "")}StringValues Header{header.Identifier}
+        {{{(header.Name == HeaderNames.ContentLength ? $@"
             get
             {{
                 StringValues value = default;
@@ -798,7 +813,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
-                    {{{(header.Identifier == "ContentLength" ? @"
+                    {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
                             value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
@@ -814,7 +829,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }}")}
 {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {{{(header.Identifier == "ContentLength" ? @"
+                    {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
                             value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
@@ -843,7 +858,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
-                    {{{(header.Identifier == "ContentLength" ? $@"
+                    {{{(header.Name == HeaderNames.ContentLength ? $@"
                         _contentLength = ParseContentLength(value.ToString());" : $@"
                         {header.SetBit()};
                         _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
@@ -852,7 +867,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }}")}
 {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {{{(header.Identifier == "ContentLength" ? $@"
+                    {{{(header.Name == HeaderNames.ContentLength ? $@"
                         _contentLength = ParseContentLength(value.ToString());" : $@"
                         {header.SetBit()};
                         _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
@@ -874,7 +889,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
-                    {{{(header.Identifier == "ContentLength" ? $@"
+                    {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
                             _contentLength = ParseContentLength(value);
@@ -892,7 +907,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }}")}
     {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {{{(header.Identifier == "ContentLength" ? $@"
+                    {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
                             _contentLength = ParseContentLength(value);
@@ -922,7 +937,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
-                    {{{(header.Identifier == "ContentLength" ? @"
+                    {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
                             _contentLength = null;
@@ -940,7 +955,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }}")}
     {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
                     if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {{{(header.Identifier == "ContentLength" ? @"
+                    {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
                             _contentLength = null;
@@ -1198,6 +1213,15 @@ $@"        private void Clear(long bitsToClear)
         }}
     }}
 ")}}}";
+        }
+
+        private static string GetHeaderLookup()
+        {
+            var headerNameFields = typeof(HeaderNames).GetFields(BindingFlags.Static | BindingFlags.Public);
+            return @$"private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>({headerNameFields.Length}, StringComparer.OrdinalIgnoreCase)
+        {{{Each(headerNameFields, (f) => @"
+            HeaderNames." + f.Name + ",")}
+        }};";
         }
 
         private static IEnumerable<HPackGroup> GroupHPack(KnownHeader[] headers)

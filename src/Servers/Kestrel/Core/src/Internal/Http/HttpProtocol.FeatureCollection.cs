@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;
             ReasonPhrase = "Switching Protocols";
-            ResponseHeaders[HeaderNames.Connection] = "Upgrade";
+            ResponseHeaders[HeaderNames.Connection] = HeaderNames.Upgrade;
 
             await FlushAsync();
 

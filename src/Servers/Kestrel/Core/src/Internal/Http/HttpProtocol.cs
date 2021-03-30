@@ -1122,7 +1122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_keepAlive &&
                 hasConnection &&
-                (HttpHeaders.ParseConnection(responseHeaders.HeaderConnection) & ConnectionOptions.KeepAlive) == 0)
+                (HttpHeaders.ParseConnection(responseHeaders) & ConnectionOptions.KeepAlive) == 0)
             {
                 _keepAlive = false;
             }
