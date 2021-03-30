@@ -18,15 +18,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         private int _currentLineIndex;
         private int _currentLineCharacterIndex;
 
-        public CodeWriter() : this(Environment.NewLine, indentWithTabs: false, tabSize: 4)
+        public CodeWriter() : this(Environment.NewLine, RazorCodeGenerationOptions.CreateDefault())
         {
         }
 
-        public CodeWriter(string newLine, bool indentWithTabs, int tabSize)
+        public CodeWriter(string newLine, RazorCodeGenerationOptions options)
         {
             NewLine = newLine;
-            IndentWithTabs = indentWithTabs;
-            TabSize = tabSize;
+            IndentWithTabs = options.IndentWithTabs;
+            TabSize = options.IndentSize;
             _builder = new StringBuilder();
         }
 

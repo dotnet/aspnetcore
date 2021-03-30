@@ -364,7 +364,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_RespectTabSetting()
         {
             // Arrange
-            var writer = new CodeWriter(Environment.NewLine, indentWithTabs: true, tabSize: 4);
+            var options = RazorCodeGenerationOptions.Create(o =>
+            {
+                o.IndentWithTabs = true;
+                o.IndentSize = 4;
+            });
+
+            var writer = new CodeWriter(Environment.NewLine, options);
 
             // Act
             writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<string>());
@@ -379,7 +385,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_RespectSpaceSetting()
         {
             // Arrange
-            var writer = new CodeWriter(Environment.NewLine, indentWithTabs: false, tabSize: 4);
+            var options = RazorCodeGenerationOptions.Create(o =>
+            {
+                o.IndentWithTabs = false;
+                o.IndentSize = 4;
+            });
+
+            var writer = new CodeWriter(Environment.NewLine, options);
 
             // Act
             writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<string>());

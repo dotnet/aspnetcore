@@ -3,7 +3,7 @@ Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.IndentWithTabs.get
 Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.TabSize.get -> int
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.CascadingGenericTypeParameter() -> void
-~Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.CodeWriter(string newLine, bool indentWithTabs, int tabSize) -> void
+~Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.CodeWriter(string newLine, Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptions options) -> void
 ~Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.Indent(int size) -> Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeNames.get -> System.Collections.Generic.IReadOnlyCollection<string>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeNames.set -> void

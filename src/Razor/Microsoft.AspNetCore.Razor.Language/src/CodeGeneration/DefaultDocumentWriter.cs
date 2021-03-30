@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
 
             var context = new DefaultCodeRenderingContext(
-                new CodeWriter(Environment.NewLine, _options.IndentWithTabs, _options.IndentSize),
+                new CodeWriter(Environment.NewLine, _options),
                 _codeTarget.CreateNodeWriter(),
                 codeDocument,
                 documentNode,
