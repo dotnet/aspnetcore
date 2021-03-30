@@ -19,6 +19,10 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public sealed class DefaultHttpContext : HttpContext
     {
+        // The initial size of the feature collection when using the default constructor; based on number of common features
+        // https://github.com/dotnet/aspnetcore/issues/31249
+        private const int DefaultFeatureCollectionSize = 10;
+
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IItemsFeature> _newItemsFeature = f => new ItemsFeature();
         private readonly static Func<DefaultHttpContext, IServiceProvidersFeature> _newServiceProvidersFeature = context => new RequestServicesFeature(context, context.ServiceScopeFactory);
@@ -44,7 +48,7 @@ namespace Microsoft.AspNetCore.Http
         /// Initializes a new instance of the <see cref="DefaultHttpContext"/> class.
         /// </summary>
         public DefaultHttpContext()
-            : this(new FeatureCollection(10))
+            : this(new FeatureCollection(DefaultFeatureCollectionSize))
         {
             Features.Set<IHttpRequestFeature>(new HttpRequestFeature());
             Features.Set<IHttpResponseFeature>(new HttpResponseFeature());
