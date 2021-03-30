@@ -9,7 +9,6 @@ using System.Linq;
 using System.Net.Http.HPack;
 using System.Reflection;
 using System.Text;
-
 using Microsoft.Net.Http.Headers;
 
 namespace CodeGenerator
