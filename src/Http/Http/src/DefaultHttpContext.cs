@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http
         /// Initializes a new instance of the <see cref="DefaultHttpContext"/> class.
         /// </summary>
         public DefaultHttpContext()
-            : this(new FeatureCollection())
+            : this(new FeatureCollection(10))
         {
             Features.Set<IHttpRequestFeature>(new HttpRequestFeature());
             Features.Set<IHttpResponseFeature>(new HttpResponseFeature());
