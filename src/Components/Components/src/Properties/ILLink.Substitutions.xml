@@ -12,6 +12,6 @@
     <!-- Avoid any overhead in RenderHandle.IsHotReloading by aggressively trimming it -->
     <type fullname="Microsoft.AspNetCore.Components.RenderHandle">
        <method signature="System.Boolean get_IsHotReloading()" body="stub" value="false" />
-    </Type>
+    </type>
   </assembly>
 </linker>
