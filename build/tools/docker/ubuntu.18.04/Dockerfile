@@ -4,7 +4,7 @@
 #
 
 # Dockerfile that creates a container suitable to build dotnet-cli
-FROM ubuntu:14.04
+FROM ubuntu:18.04
 
 # Misc Dependencies for build
 RUN apt-get update && \
@@ -15,9 +15,10 @@ RUN apt-get update && \
         sudo \
         libunwind8 \
         libkrb5-3 \
-        libicu52 \
+        libicu60 \
         liblttng-ust0 \
         libssl1.0.0 \
+        locales \
         zlib1g \
         libuuid1 \
         debhelper \
@@ -29,7 +30,8 @@ RUN apt-get update && \
         lldb-3.6 \
         wget && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    locale-gen "en_US.UTF-8"
 
 # Use clang as c++ compiler
 RUN update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-3.5 100
@@ -39,6 +41,11 @@ RUN update-alternatives --set c++ /usr/bin/clang++-3.5
 ARG USER_ID=0
 RUN useradd -m code_executor -u ${USER_ID} -g sudo
 RUN echo 'code_executor ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Preset well-known locale
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
 
 # With the User Change, we need to change permissions on these directories
 RUN chmod -R a+rwx /usr/local
