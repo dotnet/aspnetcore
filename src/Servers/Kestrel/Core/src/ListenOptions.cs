@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Experimental;
@@ -176,9 +177,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return app;
         }
 
-        internal virtual async Task BindAsync(AddressBindContext context)
+        internal virtual async Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
         {
-            await AddressBinder.BindEndpointAsync(this, context).ConfigureAwait(false);
+            await AddressBinder.BindEndpointAsync(this, context, cancellationToken).ConfigureAwait(false);
             context.Addresses.Add(GetDisplayName());
         }
     }

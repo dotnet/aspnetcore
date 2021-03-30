@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 ServiceContext.Heartbeat?.Start();
 
-                async Task OnBind(ListenOptions options)
+                async Task OnBind(ListenOptions options, CancellationToken onBindCancellationToken)
                 {
                     // INVESTIGATE: For some reason, MsQuic needs to bind before
                     // sockets for it to successfully listen. It also seems racy.
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         // Add the connection limit middleware
                         multiplexedConnectionDelegate = EnforceConnectionLimit(multiplexedConnectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options).ConfigureAwait(false);
+                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, multiplexedConnectionDelegate, options, onBindCancellationToken).ConfigureAwait(false);
                     }
 
                     // Add the HTTP middleware as the terminal connection middleware
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         // Add the connection limit middleware
                         connectionDelegate = EnforceConnectionLimit(connectionDelegate, Options.Limits.MaxConcurrentConnections, Trace);
 
-                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, connectionDelegate, options.EndpointConfig).ConfigureAwait(false);
+                        options.EndPoint = await _transportManager.BindAsync(options.EndPoint, connectionDelegate, options.EndpointConfig, onBindCancellationToken).ConfigureAwait(false);
                     }
                 }
 
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 Options.ConfigurationLoader?.Load();
 
-                await AddressBinder.BindAsync(Options.ListenOptions, AddressBindContext!).ConfigureAwait(false);
+                await AddressBinder.BindAsync(Options.ListenOptions, AddressBindContext!, cancellationToken).ConfigureAwait(false);
                 _configChangedRegistration = reloadToken?.RegisterChangeCallback(TriggerRebind, this);
             }
             finally
@@ -342,8 +342,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     {
                         try
                         {
-                            // TODO: This should probably be canceled by the _stopCts too, but we don't currently support bind cancellation even in StartAsync().
-                            await listenOption.BindAsync(AddressBindContext!).ConfigureAwait(false);
+                            await listenOption.BindAsync(AddressBindContext!, _stopCts.Token).ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
