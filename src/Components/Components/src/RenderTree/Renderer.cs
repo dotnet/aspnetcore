@@ -33,7 +33,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
         private readonly ILogger<Renderer> _logger;
         private readonly ComponentFactory _componentFactory;
-        private HotReloadContext _hotReloadContext;
         private HotReloadEnvironment? _hotReloadEnvironment;
         private List<(ComponentState, ParameterView)>? _rootComponents;
 
@@ -102,8 +101,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private void InitializeHotReload(IServiceProvider serviceProvider)
         {
-            _hotReloadContext = new();
-
             // HotReloadEnvironment is a test-specific feature and may not be available in a running app. We'll fallback to the default instance
             // if the test fixture does not provide one.
             _hotReloadEnvironment = serviceProvider.GetService<HotReloadEnvironment>() ?? HotReloadEnvironment.Instance;
@@ -131,7 +128,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         protected internal ElementReferenceContext? ElementReferenceContext { get; protected set; }
 
-        internal HotReloadContext HotReloadContext => _hotReloadContext;
+        /// <summary>
+        /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a hot-reload change.
+        /// </summary>
+        internal bool IsHotReloading { get; private set; }
 
         private async void RenderRootComponentsOnHotReload()
         {
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     return;
                 }
 
-                HotReloadContext.IsHotReloading = true;
+                IsHotReloading = true;
                 try
                 {
                     foreach (var (componentState, initialParameters) in _rootComponents)
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 }
                 finally
                 {
-                    HotReloadContext.IsHotReloading = false;
+                    IsHotReloading = false;
                 }
             });
         }
@@ -164,20 +164,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <returns>The component instance.</returns>
         protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
         {
-            var component = _componentFactory.InstantiateComponent(_serviceProvider, componentType);
-            InstatiateComponentForHotReload(component);
-            return component;
-        }
-
-        /// <remarks>
-        /// Intentionally authored as a separate method call so we can trim this code.
-        /// </remarks>
-        private void InstatiateComponentForHotReload(IComponent component)
-        {
-            if (_hotReloadEnvironment is not null && _hotReloadEnvironment.IsHotReloadEnabled && component is IReceiveHotReloadContext receiveHotReloadContext)
-            {
-                receiveHotReloadContext.Receive(HotReloadContext);
-            }
+            return _componentFactory.InstantiateComponent(_serviceProvider, componentType);
         }
 
         /// <summary>
