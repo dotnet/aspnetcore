@@ -1218,7 +1218,7 @@ $@"        private void Clear(long bitsToClear)
         private static string GetHeaderLookup()
         {
             var headerNameFields = typeof(HeaderNames).GetFields(BindingFlags.Static | BindingFlags.Public);
-            return @$"protected readonly static HashSet<string> s_internedHeaderNames = new HashSet<string>({headerNameFields.Length}, StringComparer.OrdinalIgnoreCase)
+            return @$"private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>({headerNameFields.Length}, StringComparer.OrdinalIgnoreCase)
         {{{Each(headerNameFields, (f) => @"
             HeaderNames." + f.Name + ",")}
         }};";

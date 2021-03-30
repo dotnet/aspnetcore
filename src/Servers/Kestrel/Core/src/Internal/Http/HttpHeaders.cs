@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // Some headers can be very long lived; for example those on a WebSocket connection
             // so we exchange these for the preallocated strings predefined in HeaderNames
-            if (s_internedHeaderNames.TryGetValue(name, out var internedName))
+            if (_internedHeaderNames.TryGetValue(name, out var internedName))
             {
                 return internedName;
             }

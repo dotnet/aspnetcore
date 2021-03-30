@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
     internal partial class HttpHeaders
     {
-        protected readonly static HashSet<string> s_internedHeaderNames = new HashSet<string>(93, StringComparer.OrdinalIgnoreCase)
+        private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>(93, StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.Accept,
             HeaderNames.AcceptCharset,
