@@ -558,6 +558,24 @@ describe("hubConnection", () => {
                 }
             });
 
+            it("can get error from unauthorized hub connection", async (done) => {
+                try {
+                    const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/authorizedhub").build();
+
+                    hubConnection.onclose((error) => {
+                        expect(error).toBe(undefined);
+                        done();
+                    });
+
+                    await hubConnection.start();
+
+                    fail("shouldn't reach here");
+                } catch (err) {
+                    expect(err).toEqual(new Error("Failed to complete negotiation with the server: Error: Unauthorized: Status code '401'"));
+                    done();
+                }
+            });
+
             if (transportType !== HttpTransportType.LongPolling) {
                 it("terminates if no messages received within timeout interval", async (done) => {
                     const hubConnection = getConnectionBuilder(transportType).build();

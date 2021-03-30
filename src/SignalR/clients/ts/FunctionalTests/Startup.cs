@@ -197,6 +197,17 @@ namespace FunctionalTests
                 await next.Invoke();
             });
 
+            app.Use((context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/bad-negotiate"))
+                {
+                    context.Response.StatusCode = 400;
+                    return context.Response.WriteAsync("Some response from server");
+                }
+
+                return next();
+            });
+
             app.UseRouting();
 
             // Custom CORS to allow any origin + credentials (which isn't allowed by the CORS spec)

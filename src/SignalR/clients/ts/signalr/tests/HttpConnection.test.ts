@@ -1125,7 +1125,6 @@ describe("HttpConnection", () => {
             await TestWebSocket.webSocketSet;
             await TestWebSocket.webSocket.closeSet;
             TestWebSocket.webSocket.onclose(new TestEvent());
-            // TestWebSocket.webSocket.onerror(new TestEvent());
 
             try {
                 await startPromise;
