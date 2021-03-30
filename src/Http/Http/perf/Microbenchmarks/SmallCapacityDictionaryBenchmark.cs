@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Http
                 new KeyValuePair<string, string>("s", "t"),
             };
 
-            _smallCapDict = new SmallCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase, capacity: 1);
-            _smallCapDictFour = new SmallCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase, capacity: 4);
-            _smallCapDictTen = new SmallCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase, capacity: 10);
+            _smallCapDict = new SmallCapacityDictionary<string, string>(capacity: 1, StringComparer.OrdinalIgnoreCase);
+            _smallCapDictFour = new SmallCapacityDictionary<string, string>(capacity: 4, StringComparer.OrdinalIgnoreCase);
+            _smallCapDictTen = new SmallCapacityDictionary<string, string>(capacity: 10, StringComparer.OrdinalIgnoreCase);
             _dict = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
             _dictFour = new Dictionary<string, string>(4, StringComparer.OrdinalIgnoreCase);
             _dictTen = new Dictionary<string, string>(10, StringComparer.OrdinalIgnoreCase);
