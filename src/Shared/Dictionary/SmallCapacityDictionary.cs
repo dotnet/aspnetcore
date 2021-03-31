@@ -347,6 +347,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
 
             Array.Clear(_arrayStorage, 0, _count);
             _count = 0;
+            _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
         }
 
         /// <inheritdoc />
@@ -738,7 +739,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             public bool MoveNext()
             {
                 var dictionary = _dictionary;
-                if (dictionary._arrayStorage.Length <= _index)
+                if (dictionary._count <= _index)
                 {
                     return false;
                 }
