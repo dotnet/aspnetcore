@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// The default constructor is provided for unit test purposes only.
         /// </remarks>
 #nullable disable warnings
+        // This is a unit-test only constructor where no property is initialized. We'll avoid having to
+        // using null-forgiveness operator by skipping nullable warnings on this constructor.
         public ViewContext()
         {
             ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), ModelState);
