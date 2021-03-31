@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
     "".redirect"": ""/foo/bar"",
     ""foo"": ""bar""
   }
-}", json);
+}", json, ignoreLineEndingDifferences: true);
         }
 
         public class MyAuthenticationProperties : AuthenticationProperties
