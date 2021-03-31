@@ -359,6 +359,36 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             Assert.Equal(0, deserialized.Parameters.Count);
         }
 
+        [Fact]
+        public void Serialization_Is_Minimised_With_SystemTextJson()
+        {
+            var props = new AuthenticationProperties()
+            {
+                AllowRefresh = true,
+                ExpiresUtc = new DateTimeOffset(2021, 03, 28, 13, 47, 00, TimeSpan.Zero),
+                IssuedUtc = new DateTimeOffset(2021, 03, 28, 12, 47, 00, TimeSpan.Zero),
+                IsPersistent = true,
+                RedirectUri = "/foo/bar"
+            };
+
+            props.Items.Add("foo", "bar");
+
+            var options = new JsonSerializerOptions() { WriteIndented = true }; // Indented for readability if test fails
+            var json = JsonSerializer.Serialize(props, options);
+
+            // Verify that the payload doesn't duplicate the properties backed by Items
+            Assert.Equal(@"{
+  ""Items"": {
+    "".refresh"": ""True"",
+    "".expires"": ""Sun, 28 Mar 2021 13:47:00 GMT"",
+    "".issued"": ""Sun, 28 Mar 2021 12:47:00 GMT"",
+    "".persistent"": """",
+    "".redirect"": ""/foo/bar"",
+    ""foo"": ""bar""
+  }
+}", json);
+        }
+
         public class MyAuthenticationProperties : AuthenticationProperties
         {
             public new DateTimeOffset? GetDateTimeOffset(string key)
