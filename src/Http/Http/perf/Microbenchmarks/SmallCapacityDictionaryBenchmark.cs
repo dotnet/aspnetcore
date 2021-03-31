@@ -8,11 +8,11 @@ using Microsoft.AspNetCore.Internal.Dictionary;
 
 namespace Microsoft.AspNetCore.Http
 {
-    public class SmallCapacityDictionaryBenchmark
+    public class AdaptiveCapacityDictionaryBenchmark
     {
-        private SmallCapacityDictionary<string, string> _smallCapDict;
-        private SmallCapacityDictionary<string, string> _smallCapDictFour;
-        private SmallCapacityDictionary<string, string> _smallCapDictTen;
+        private AdaptiveCapacityDictionary<string, string> _smallCapDict;
+        private AdaptiveCapacityDictionary<string, string> _smallCapDictFour;
+        private AdaptiveCapacityDictionary<string, string> _smallCapDictTen;
         private Dictionary<string, string> _dict;
         private Dictionary<string, string> _dictFour;
         private Dictionary<string, string> _dictTen;
@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Http
                 new KeyValuePair<string, string>("s", "t"),
             };
 
-            _smallCapDict = new SmallCapacityDictionary<string, string>(capacity: 1, StringComparer.OrdinalIgnoreCase);
-            _smallCapDictFour = new SmallCapacityDictionary<string, string>(capacity: 4, StringComparer.OrdinalIgnoreCase);
-            _smallCapDictTen = new SmallCapacityDictionary<string, string>(capacity: 10, StringComparer.OrdinalIgnoreCase);
+            _smallCapDict = new AdaptiveCapacityDictionary<string, string>(capacity: 1, StringComparer.OrdinalIgnoreCase);
+            _smallCapDictFour = new AdaptiveCapacityDictionary<string, string>(capacity: 4, StringComparer.OrdinalIgnoreCase);
+            _smallCapDictTen = new AdaptiveCapacityDictionary<string, string>(capacity: 10, StringComparer.OrdinalIgnoreCase);
             _dict = new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase);
             _dictFour = new Dictionary<string, string>(4, StringComparer.OrdinalIgnoreCase);
             _dictTen = new Dictionary<string, string>(10, StringComparer.OrdinalIgnoreCase);
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Http
         [Benchmark]
         public void SmallDict()
         {
-            _ = new SmallCapacityDictionary<string, string>(capacity: 1);
+            _ = new AdaptiveCapacityDictionary<string, string>(capacity: 1);
         }
 
         [Benchmark]
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Http
         [Benchmark]
         public void SmallDictFour()
         {
-            _ = new SmallCapacityDictionary<string, string>(capacity: 4);
+            _ = new AdaptiveCapacityDictionary<string, string>(capacity: 4);
         }
 
         [Benchmark]
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Http
         [Benchmark]
         public void SmallDictTen()
         {
-            _ = new SmallCapacityDictionary<string, string>(capacity: 10);
+            _ = new AdaptiveCapacityDictionary<string, string>(capacity: 10);
         }
 
         [Benchmark]

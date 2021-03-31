@@ -21,21 +21,21 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private SmallCapacityDictionary<string, string> Store { get; set; }
+        private AdaptiveCapacityDictionary<string, string> Store { get; set; }
 
         public RequestCookieCollection()
         {
-            Store = new SmallCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Store = new AdaptiveCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         public RequestCookieCollection(int capacity)
         {
-            Store = new SmallCapacityDictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
+            Store = new AdaptiveCapacityDictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
         }
 
         public RequestCookieCollection(Dictionary<string, string> store)
         {
-            Store = new SmallCapacityDictionary<string, string>(store.ToList(), capacity: store.Count, StringComparer.OrdinalIgnoreCase);
+            Store = new AdaptiveCapacityDictionary<string, string>(store.ToList(), capacity: store.Count, StringComparer.OrdinalIgnoreCase);
         }
 
         public string? this[string key]
@@ -177,10 +177,10 @@ namespace Microsoft.AspNetCore.Http
         public struct Enumerator : IEnumerator<KeyValuePair<string, string>>
         {
             // Do NOT make this readonly, or MoveNext will not work
-            private SmallCapacityDictionary<string, string>.Enumerator _dictionaryEnumerator;
+            private AdaptiveCapacityDictionary<string, string>.Enumerator _dictionaryEnumerator;
             private bool _notEmpty;
 
-            internal Enumerator(SmallCapacityDictionary<string, string>.Enumerator dictionaryEnumerator)
+            internal Enumerator(AdaptiveCapacityDictionary<string, string>.Enumerator dictionaryEnumerator)
             {
                 _dictionaryEnumerator = dictionaryEnumerator;
                 _notEmpty = true;
