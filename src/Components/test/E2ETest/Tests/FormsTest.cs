@@ -572,6 +572,24 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
         }
 
+        [Fact]
+        public void EditFormSubscriptionsAreRemovedOnDisposal()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Remove the old form and add a new one
+            appElement.FindElement(By.Id("recreate-edit-form")).Click();
+            Browser.Equal("Recreated form", () => appElement.FindElement(By.CssSelector(".submission-log-entry:last-of-type")).Text);
+
+            // Verify there's still only one copy of each validation message
+            var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
+            nameInput.SendKeys("Bert\t");
+            nameInput.Clear();
+            nameInput.SendKeys("\t");
+            Browser.Equal(new[] { "Enter a name" }, messagesAccessor);
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))
