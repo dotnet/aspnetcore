@@ -11,6 +11,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <!-- Disable the default runtimeconfig.json in favor of the one that we create which contains the correct
+    framework references. Workaround for issues launching Blazor WASM apps with IIS Express. -->
     <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
 
@@ -19,6 +21,21 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
+
+  <Target Name="_CreateRuntimeConfig" BeforeTargets="CoreBuild">
+    <PropertyGroup>
+      <_RuntimeConfigProperties>
+        MicrosoftAspNetCoreAppVersion=$(MicrosoftAspNetCoreAppVersion);
+      </_RuntimeConfigProperties>
+
+      <_RuntimeConfigPath>$(PublishDir)blazor-devserver.runtimeconfig.json</_RuntimeConfigPath>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate
+      TemplateFile="blazor-devserver.runtimeconfig.json.in"
+      Properties="$(_RuntimeConfigProperties)"
+      OutputPath="$(_RuntimeConfigPath)" />
+  </Target>
 
   <!-- Pack settings -->
   <PropertyGroup>
