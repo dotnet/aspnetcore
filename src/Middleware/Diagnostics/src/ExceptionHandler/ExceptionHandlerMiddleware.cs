@@ -142,9 +142,9 @@ namespace Microsoft.AspNetCore.Diagnostics
                     return;
                 }
 
-                _logger.ErrorHandlerNotFound();
-
-                edi = ExceptionDispatchInfo.Capture(new InvalidOperationException($"No exception handler was found, see inner exception for details of original exception. If an exception should not be thrown for 404 responses, set {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} to true.", edi.SourceException));
+                edi = ExceptionDispatchInfo.Capture(new InvalidOperationException($"The exception handler configured on {nameof(ExceptionHandlerOptions)} produced a 404 status response. " +
+                $"An {nameof(InvalidOperationException)} containing the original exception will be thrown since this is often due to a misconfigured {nameof(ExceptionHandlerOptions.ExceptionHandlingPath)}. " +
+                $"If the exception handler is expected to return 404 status responses then set {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} to true.", edi.SourceException));
             }
             catch (Exception ex2)
             {

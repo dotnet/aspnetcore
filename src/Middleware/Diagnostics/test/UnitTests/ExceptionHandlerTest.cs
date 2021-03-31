@@ -471,18 +471,11 @@ namespace Microsoft.AspNetCore.Diagnostics
         [Fact]
         public async Task ExceptionHandlerNotFound_ThrowsIOEWithOriginalError()
         {
-            var sink = new TestSink(TestSink.EnableWithTypeName<ExceptionHandlerMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-
             using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
                     .UseTestServer()
-                    .ConfigureServices(services =>
-                    {
-                        services.AddSingleton<ILoggerFactory>(loggerFactory);
-                    })
                     .Configure(app =>
                     {
                         app.Use(async (httpContext, next) =>
@@ -502,7 +495,9 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                             // Invalid operation exception
                             Assert.NotNull(exception);
-                            Assert.Equal("No exception handler was found, see inner exception for details of original exception. If an exception should not be thrown for 404 responses, set AllowStatusCode404Response to true.", exception.Message);
+                            Assert.Equal("The exception handler configured on ExceptionHandlerOptions produced a 404 status response. " +
+                "An InvalidOperationException containing the original exception will be thrown since this is often due to a misconfigured ExceptionHandlingPath. " +
+                "If the exception handler is expected to return 404 status responses then set AllowStatusCode404Response to true.", exception.Message);
 
                             // The original exception is inner exception
                             Assert.NotNull(exception.InnerException);
@@ -540,13 +535,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
             }
-
-            Assert.Contains(sink.Writes, w =>
-                w.LogLevel == LogLevel.Warning
-                && w.EventId == 4
-                && w.Message == $"The exception handler configured on ExceptionHandlerOptions produced a 404 status response. " +
-                $"An InvalidOperationException containing the original exception will be thrown since this is often due to a misconfigured ExceptionHandlingPath. " +
-                $"If the exception handler should be allowed to return 404 status responses, AllowStatusCode404Response must be set to true.");
         }
 
         [Fact]
