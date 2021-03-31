@@ -48,11 +48,11 @@
             Airline:
             <br>
             @foreach (var airline in (Airline[])Enum.GetValues(typeof(Airline)))
-                {
+            {
                 <InputRadio Value="airline" extra="additional" />
                 @airline.ToString();
                 <br>
-                }
+            }
         </InputRadioGroup>
     </p>
     <p class="nested-radio-group">
@@ -92,8 +92,7 @@
     <ValidationSummary />
 </EditForm>
 
-<ul>@foreach (var entry in submissionLog)
-{<li class="submission-log-entry">@entry</li>}</ul>
+<ul>@foreach (var entry in submissionLog) { <li class="submission-log-entry">@entry</li> }</ul>
 
 <button id="toggle-dataannotations" @onclick="ToggleDataAnnotations">Toggle DataAnnotations support</button>
 

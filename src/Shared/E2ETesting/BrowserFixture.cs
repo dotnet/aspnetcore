@@ -143,7 +143,8 @@ namespace Microsoft.AspNetCore.E2ETesting
             // Force language to english for tests
             opts.AddUserProfilePreference("intl.accept_languages", "en");
 
-            if (!Debugger.IsAttached && !string.Equals(Environment.GetEnvironmentVariable("E2E_TEST_VISIBLE"), "true", StringComparison.OrdinalIgnoreCase))
+            if (!Debugger.IsAttached &&
+                !string.Equals(Environment.GetEnvironmentVariable("E2E_TEST_VISIBLE"), "true", StringComparison.OrdinalIgnoreCase))
             {
                 opts.AddArgument("--headless");
             }
