@@ -2298,7 +2298,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private static void Validation_InifnitelyRecursiveModel_ValidationOnTopLevelParameterMethod([Required] RecursiveModel model) { }
 
+#pragma warning disable CS8907 // Parameter is unread. Did you forget to use it to initialize the property with that name?
         private record RecordTypeWithValidatorsOnProperties(string Property1)
+#pragma warning restore CS8907 // Parameter is unread. Did you forget to use it to initialize the property with that name?
         {
             [Required]
             public string Property1 { get; init; }
@@ -2335,7 +2337,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(expected, ex.Message);
         }
 
+#pragma warning disable CS8907 // Parameter is unread. Did you forget to use it to initialize the property with that name?
         private record RecordTypeWithValidatorsOnPropertiesAndParameters([Required] string Property1)
+#pragma warning restore CS8907 // Parameter is unread. Did you forget to use it to initialize the property with that name?
         {
             [Required]
             public string Property1 { get; init; }
@@ -2372,7 +2376,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(expected, ex.Message);
         }
 
+#pragma warning disable CS8907 // Parameter is unread. Did you forget to use it to initialize the property with that name?
         private record RecordTypeWithValidatorsOnMixOfPropertiesAndParameters([Required] string Property1, string Property2)
+#pragma warning restore CS8907 // Parameter is unread. Did you forget to use it to initialize the property with that name?
         {
             [Required]
             public string Property2 { get; init; }
