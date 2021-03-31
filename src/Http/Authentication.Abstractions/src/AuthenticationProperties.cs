@@ -65,11 +65,13 @@ namespace Microsoft.AspNetCore.Authentication
         /// Collection of parameters that are passed to the authentication handler. These are not intended for
         /// serialization or persistence, only for flowing data between call sites.
         /// </summary>
+        [JsonIgnore]
         public IDictionary<string, object?> Parameters { get; }
 
         /// <summary>
         /// Gets or sets whether the authentication session is persisted across multiple requests.
         /// </summary>
+        [JsonIgnore]
         public bool IsPersistent
         {
             get => GetString(IsPersistentKey) != null;
@@ -79,6 +81,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets the full path or absolute URI to be used as an http redirect response value.
         /// </summary>
+        [JsonIgnore]
         public string? RedirectUri
         {
             get => GetString(RedirectUriKey);
@@ -88,6 +91,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets the time at which the authentication ticket was issued.
         /// </summary>
+        [JsonIgnore]
         public DateTimeOffset? IssuedUtc
         {
             get => GetDateTimeOffset(IssuedUtcKey);
@@ -97,6 +101,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets the time at which the authentication ticket expires.
         /// </summary>
+        [JsonIgnore]
         public DateTimeOffset? ExpiresUtc
         {
             get => GetDateTimeOffset(ExpiresUtcKey);
@@ -106,6 +111,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets if refreshing the authentication session should be allowed.
         /// </summary>
+        [JsonIgnore]
         public bool? AllowRefresh
         {
             get => GetBool(RefreshKey);
