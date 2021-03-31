@@ -652,7 +652,6 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             var array = _arrayStorage;
             var count = _count;
 
-            // Elide bounds check for indexing.
             if ((uint)count <= (uint)array.Length)
             {
                 for (var i = 0; i < count; i++)
@@ -677,7 +676,6 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             var array = _arrayStorage;
             var count = _count;
 
-            // Elide bounds check for indexing.
             if ((uint)count <= (uint)array.Length)
             {
                 for (var i = 0; i < count; i++)
