@@ -105,6 +105,21 @@ namespace Microsoft.AspNetCore.Testing
                 serverAddressesFeature,
                 serverOptions,
                 logger,
+                (listenOptions, cancellationToken) => createBinding(listenOptions));
+
+            return context;
+        }
+
+        public static AddressBindContext CreateAddressBindContext(
+            ServerAddressesFeature serverAddressesFeature,
+            KestrelServerOptions serverOptions,
+            ILogger logger,
+            Func<ListenOptions, CancellationToken, Task> createBinding)
+        {
+            var context = new AddressBindContext(
+                serverAddressesFeature,
+                serverOptions,
+                logger,
                 createBinding);
 
             return context;

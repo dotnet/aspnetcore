@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     /// <summary>
     /// An HTTP server wrapping the Http.Sys APIs that accepts requests.
     /// </summary>
-    internal class HttpSysListener : IDisposable
+    internal partial class HttpSysListener : IDisposable
     {
         // Win8# 559317 fixed a bug in Http.sys's HttpReceiveClientCertificate method.
         // Without this fix IOCP callbacks were not being called although ERROR_IO_PENDING was
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _requestQueue?.Dispose();
                 _urlGroup?.Dispose();
                 _serverSession?.Dispose();
-                Logger.LogError(LoggerEventIds.HttpSysListenerCtorError, exception, ".Ctor");
+                Log.HttpSysListenerCtorError(Logger, exception);
                 throw;
             }
         }
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             CheckDisposed();
 
-            Logger.LogTrace(LoggerEventIds.ListenerStarting, "Starting the listener.");
+            Log.ListenerStarting(Logger);
 
             // Make sure there are no race conditions between Start/Stop/Abort/Close/Dispose.
             // Start needs to setup all resources. Abort/Stop must not interfere while Start is
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // Make sure the HttpListener instance can't be used if Start() failed.
                     _state = State.Disposed;
                     DisposeInternal();
-                    Logger.LogError(LoggerEventIds.ListenerStartError, exception, "Start");
+                    Log.ListenerStartError(Logger, exception);
                     throw;
                 }
             }
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Logger.LogTrace(LoggerEventIds.ListenerStopping, "Stopping the listener.");
+                    Log.ListenerStopping(Logger);
 
                     // If this instance created the queue then remove the URL prefixes before shutting down.
                     if (_requestQueue.Created)
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception exception)
             {
-                Logger.LogError(LoggerEventIds.ListenerStopError, exception, "Stop");
+                Log.ListenerStopError(Logger, exception);
                 throw;
             }
         }
@@ -238,14 +238,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         return;
                     }
-                    Logger.LogTrace(LoggerEventIds.ListenerDisposing, "Disposing the listener.");
+                    Log.ListenerDisposing(Logger);
 
                     Stop();
                     DisposeInternal();
                 }
                 catch (Exception exception)
                 {
-                    Logger.LogError(LoggerEventIds.ListenerDisposeError, exception, "Dispose");
+                    Log.ListenerDisposeError(Logger, exception);
                     throw;
                 }
                 finally
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception ex)
             {
-                Logger.LogError(LoggerEventIds.RequestValidationFailed, ex, "Error validating request {RequestId}", requestMemory.RequestId);
+                Log.RequestValidationFailed(Logger, ex, requestMemory.RequestId);
                 return false;
             }
 

@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
@@ -645,7 +646,7 @@ namespace Microsoft.Net.Http.Headers
             }
             else
             {
-                mediaType = input.Substring(startIndex, typeLength) + ForwardSlashCharacter + input.Substring(current, subtypeLength);
+                mediaType = string.Concat(input.AsSpan().Slice(startIndex, typeLength), "/", input.AsSpan().Slice(current, subtypeLength));
             }
 
             return mediaTypeLength;

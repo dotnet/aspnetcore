@@ -36,7 +36,7 @@ steps:
 
     ${{ coalesce(parameters.platform.buildScript, './build.sh') }} --ci \
       --configuration $buildConfig \
-      --restore --build --pack --publish \
+      --restore --build --pack --publish -bl \
       $officialBuildArgs \
       $targetRidArgs \
       /p:SourceBuildNonPortable=${{ parameters.platform.nonPortable }} \

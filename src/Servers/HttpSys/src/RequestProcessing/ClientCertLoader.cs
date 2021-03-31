@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     // This class is used to load the client certificate on-demand.  Because client certs are optional, all
     // failures are handled internally and reported via ClientCertException or ClientCertError.
-    internal unsafe sealed class ClientCertLoader : IAsyncResult, IDisposable
+    internal unsafe sealed partial class ClientCertLoader : IAsyncResult, IDisposable
     {
         private const uint CertBoblSize = 1500;
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(WaitCallback);
@@ -400,13 +400,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER)
                     {
-                        logger.LogError(LoggerEventIds.ChannelBindingUnSupported, "GetChannelBindingFromTls; Channel binding is not supported.");
+                        Log.ChannelBindingUnsupported(logger);
                         return null; // old schannel library which doesn't support CBT
                     }
                     else
                     {
                         // It's up to the consumer to fail if the missing ChannelBinding matters to them.
-                        logger.LogError(LoggerEventIds.ChannelBindingMissing, new HttpSysException((int)statusCode), "GetChannelBindingFromTls");
+                        Log.ChannelBindingMissing(logger, new HttpSysException((int)statusCode));
                         break;
                     }
                 }

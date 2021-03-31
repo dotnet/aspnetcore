@@ -625,7 +625,7 @@ namespace Microsoft.AspNetCore.SignalR
                 // If the transport channel is full, this will fail, but that's OK because
                 // adding a Ping message when the transport is full is unnecessary since the
                 // transport is still in the process of sending frames.
-                _ = TryWritePingAsync();
+                _ = TryWritePingAsync().Preserve();
 
                 // We only update the timestamp here, because updating on each sent message is bad for performance
                 // There can be a lot of sent messages per 15 seconds

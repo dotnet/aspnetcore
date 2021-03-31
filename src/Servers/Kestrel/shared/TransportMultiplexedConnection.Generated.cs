@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -12,13 +13,20 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {
-    internal partial class TransportMultiplexedConnection : IFeatureCollection
+    internal partial class TransportMultiplexedConnection : IFeatureCollection,
+                                                            IConnectionIdFeature,
+                                                            IConnectionItemsFeature,
+                                                            IMemoryPoolFeature,
+                                                            IConnectionLifetimeFeature
     {
-        private object? _currentIConnectionIdFeature;
-        private object? _currentIConnectionTransportFeature;
-        private object? _currentIConnectionItemsFeature;
-        private object? _currentIMemoryPoolFeature;
-        private object? _currentIConnectionLifetimeFeature;
+        // Implemented features
+        internal protected IConnectionIdFeature? _currentIConnectionIdFeature;
+        internal protected IConnectionItemsFeature? _currentIConnectionItemsFeature;
+        internal protected IMemoryPoolFeature? _currentIMemoryPoolFeature;
+        internal protected IConnectionLifetimeFeature? _currentIConnectionLifetimeFeature;
+
+        // Other reserved feature slots
+        internal protected IConnectionTransportFeature? _currentIConnectionTransportFeature;
 
         private int _featureRevision;
 
@@ -27,11 +35,11 @@ namespace Microsoft.AspNetCore.Connections
         private void FastReset()
         {
             _currentIConnectionIdFeature = this;
-            _currentIConnectionTransportFeature = this;
             _currentIConnectionItemsFeature = this;
             _currentIMemoryPoolFeature = this;
             _currentIConnectionLifetimeFeature = this;
 
+            _currentIConnectionTransportFeature = null;
         }
 
         // Internal for testing
@@ -137,23 +145,23 @@ namespace Microsoft.AspNetCore.Connections
 
                 if (key == typeof(IConnectionIdFeature))
                 {
-                    _currentIConnectionIdFeature = value;
+                    _currentIConnectionIdFeature = (IConnectionIdFeature?)value;
                 }
                 else if (key == typeof(IConnectionTransportFeature))
                 {
-                    _currentIConnectionTransportFeature = value;
+                    _currentIConnectionTransportFeature = (IConnectionTransportFeature?)value;
                 }
                 else if (key == typeof(IConnectionItemsFeature))
                 {
-                    _currentIConnectionItemsFeature = value;
+                    _currentIConnectionItemsFeature = (IConnectionItemsFeature?)value;
                 }
                 else if (key == typeof(IMemoryPoolFeature))
                 {
-                    _currentIMemoryPoolFeature = value;
+                    _currentIMemoryPoolFeature = (IMemoryPoolFeature?)value;
                 }
                 else if (key == typeof(IConnectionLifetimeFeature))
                 {
-                    _currentIConnectionLifetimeFeature = value;
+                    _currentIConnectionLifetimeFeature = (IConnectionLifetimeFeature?)value;
                 }
                 else
                 {
@@ -164,26 +172,30 @@ namespace Microsoft.AspNetCore.Connections
 
         TFeature? IFeatureCollection.Get<TFeature>() where TFeature : default
         {
+            // Using Unsafe.As for the cast due to https://github.com/dotnet/runtime/issues/49614
+            // The type of TFeature is confirmed by the typeof() check and the As cast only accepts
+            // that type; however the Jit does not eliminate a regular cast in a shared generic.
+
             TFeature? feature = default;
             if (typeof(TFeature) == typeof(IConnectionIdFeature))
             {
-                feature = (TFeature?)_currentIConnectionIdFeature;
+                feature = Unsafe.As<IConnectionIdFeature?, TFeature?>(ref _currentIConnectionIdFeature);
             }
             else if (typeof(TFeature) == typeof(IConnectionTransportFeature))
             {
-                feature = (TFeature?)_currentIConnectionTransportFeature;
+                feature = Unsafe.As<IConnectionTransportFeature?, TFeature?>(ref _currentIConnectionTransportFeature);
             }
             else if (typeof(TFeature) == typeof(IConnectionItemsFeature))
             {
-                feature = (TFeature?)_currentIConnectionItemsFeature;
+                feature = Unsafe.As<IConnectionItemsFeature?, TFeature?>(ref _currentIConnectionItemsFeature);
             }
             else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
-                feature = (TFeature?)_currentIMemoryPoolFeature;
+                feature = Unsafe.As<IMemoryPoolFeature?, TFeature?>(ref _currentIMemoryPoolFeature);
             }
             else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
             {
-                feature = (TFeature?)_currentIConnectionLifetimeFeature;
+                feature = Unsafe.As<IConnectionLifetimeFeature?, TFeature?>(ref _currentIConnectionLifetimeFeature);
             }
             else if (MaybeExtra != null)
             {
@@ -195,26 +207,30 @@ namespace Microsoft.AspNetCore.Connections
 
         void IFeatureCollection.Set<TFeature>(TFeature? feature) where TFeature : default
         {
+            // Using Unsafe.As for the cast due to https://github.com/dotnet/runtime/issues/49614
+            // The type of TFeature is confirmed by the typeof() check and the As cast only accepts
+            // that type; however the Jit does not eliminate a regular cast in a shared generic.
+
             _featureRevision++;
             if (typeof(TFeature) == typeof(IConnectionIdFeature))
             {
-                _currentIConnectionIdFeature = feature;
+                _currentIConnectionIdFeature = Unsafe.As<TFeature?, IConnectionIdFeature?>(ref feature);
             }
             else if (typeof(TFeature) == typeof(IConnectionTransportFeature))
             {
-                _currentIConnectionTransportFeature = feature;
+                _currentIConnectionTransportFeature = Unsafe.As<TFeature?, IConnectionTransportFeature?>(ref feature);
             }
             else if (typeof(TFeature) == typeof(IConnectionItemsFeature))
             {
-                _currentIConnectionItemsFeature = feature;
+                _currentIConnectionItemsFeature = Unsafe.As<TFeature?, IConnectionItemsFeature?>(ref feature);
             }
             else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
-                _currentIMemoryPoolFeature = feature;
+                _currentIMemoryPoolFeature = Unsafe.As<TFeature?, IMemoryPoolFeature?>(ref feature);
             }
             else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
             {
-                _currentIConnectionLifetimeFeature = feature;
+                _currentIConnectionLifetimeFeature = Unsafe.As<TFeature?, IConnectionLifetimeFeature?>(ref feature);
             }
             else
             {

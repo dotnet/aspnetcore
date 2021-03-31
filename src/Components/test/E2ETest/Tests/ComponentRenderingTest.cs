@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void CanRenderTextOnlyComponent()
         {
             var appElement = Browser.MountTestComponent<TextOnlyComponent>();

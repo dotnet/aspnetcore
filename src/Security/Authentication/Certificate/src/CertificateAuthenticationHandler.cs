@@ -79,6 +79,17 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                 }
 
                 var result = await ValidateCertificateAsync(clientCertificate);
+
+                // Invoke the failed handler if validation failed, before updating the cache
+                if (result.Failure != null)
+                {
+                    var authenticationFailedContext = await HandleFailureAsync(result.Failure);
+                    if (authenticationFailedContext.Result != null)
+                    {
+                        result = authenticationFailedContext.Result;
+                    }
+                }
+                
                 if (_cache != null)
                 {
                     _cache.Put(Context, clientCertificate, result);
@@ -87,12 +98,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             }
             catch (Exception ex)
             {
-                var authenticationFailedContext = new CertificateAuthenticationFailedContext(Context, Scheme, Options)
-                {
-                    Exception = ex
-                };
-
-                await Events.AuthenticationFailed(authenticationFailedContext);
+                var authenticationFailedContext = await HandleFailureAsync(ex);
                 if (authenticationFailedContext.Result != null)
                 {
                     return authenticationFailedContext.Result;
@@ -100,6 +106,17 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
 
                 throw;
             }
+        }
+
+        private async Task<CertificateAuthenticationFailedContext> HandleFailureAsync(Exception error)
+        {
+            var authenticationFailedContext = new CertificateAuthenticationFailedContext(Context, Scheme, Options)
+            {
+                Exception = error
+            };
+
+            await Events.AuthenticationFailed(authenticationFailedContext);
+            return authenticationFailedContext;
         }
 
         private async Task<AuthenticateResult> ValidateCertificateAsync(X509Certificate2 clientCertificate)

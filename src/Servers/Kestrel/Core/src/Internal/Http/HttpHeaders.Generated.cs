@@ -99,6 +99,106 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         WWWAuthenticate,
     }
 
+    internal partial class HttpHeaders
+    {
+        private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>(93, StringComparer.OrdinalIgnoreCase)
+        {
+            HeaderNames.Accept,
+            HeaderNames.AcceptCharset,
+            HeaderNames.AcceptEncoding,
+            HeaderNames.AcceptLanguage,
+            HeaderNames.AcceptRanges,
+            HeaderNames.AccessControlAllowCredentials,
+            HeaderNames.AccessControlAllowHeaders,
+            HeaderNames.AccessControlAllowMethods,
+            HeaderNames.AccessControlAllowOrigin,
+            HeaderNames.AccessControlExposeHeaders,
+            HeaderNames.AccessControlMaxAge,
+            HeaderNames.AccessControlRequestHeaders,
+            HeaderNames.AccessControlRequestMethod,
+            HeaderNames.Age,
+            HeaderNames.Allow,
+            HeaderNames.AltSvc,
+            HeaderNames.Authority,
+            HeaderNames.Authorization,
+            HeaderNames.Baggage,
+            HeaderNames.CacheControl,
+            HeaderNames.Connection,
+            HeaderNames.ContentDisposition,
+            HeaderNames.ContentEncoding,
+            HeaderNames.ContentLanguage,
+            HeaderNames.ContentLength,
+            HeaderNames.ContentLocation,
+            HeaderNames.ContentMD5,
+            HeaderNames.ContentRange,
+            HeaderNames.ContentSecurityPolicy,
+            HeaderNames.ContentSecurityPolicyReportOnly,
+            HeaderNames.ContentType,
+            HeaderNames.CorrelationContext,
+            HeaderNames.Cookie,
+            HeaderNames.Date,
+            HeaderNames.DNT,
+            HeaderNames.ETag,
+            HeaderNames.Expires,
+            HeaderNames.Expect,
+            HeaderNames.From,
+            HeaderNames.GrpcAcceptEncoding,
+            HeaderNames.GrpcEncoding,
+            HeaderNames.GrpcMessage,
+            HeaderNames.GrpcStatus,
+            HeaderNames.GrpcTimeout,
+            HeaderNames.Host,
+            HeaderNames.KeepAlive,
+            HeaderNames.IfMatch,
+            HeaderNames.IfModifiedSince,
+            HeaderNames.IfNoneMatch,
+            HeaderNames.IfRange,
+            HeaderNames.IfUnmodifiedSince,
+            HeaderNames.LastModified,
+            HeaderNames.Link,
+            HeaderNames.Location,
+            HeaderNames.MaxForwards,
+            HeaderNames.Method,
+            HeaderNames.Origin,
+            HeaderNames.Path,
+            HeaderNames.Pragma,
+            HeaderNames.ProxyAuthenticate,
+            HeaderNames.ProxyAuthorization,
+            HeaderNames.ProxyConnection,
+            HeaderNames.Range,
+            HeaderNames.Referer,
+            HeaderNames.RetryAfter,
+            HeaderNames.RequestId,
+            HeaderNames.Scheme,
+            HeaderNames.SecWebSocketAccept,
+            HeaderNames.SecWebSocketKey,
+            HeaderNames.SecWebSocketProtocol,
+            HeaderNames.SecWebSocketVersion,
+            HeaderNames.Server,
+            HeaderNames.SetCookie,
+            HeaderNames.Status,
+            HeaderNames.StrictTransportSecurity,
+            HeaderNames.TE,
+            HeaderNames.Trailer,
+            HeaderNames.TransferEncoding,
+            HeaderNames.Translate,
+            HeaderNames.TraceParent,
+            HeaderNames.TraceState,
+            HeaderNames.Upgrade,
+            HeaderNames.UpgradeInsecureRequests,
+            HeaderNames.UserAgent,
+            HeaderNames.Vary,
+            HeaderNames.Via,
+            HeaderNames.Warning,
+            HeaderNames.WebSocketSubProtocols,
+            HeaderNames.WWWAuthenticate,
+            HeaderNames.XContentTypeOptions,
+            HeaderNames.XFrameOptions,
+            HeaderNames.XRequestedWith,
+            HeaderNames.XXssProtection,
+        };
+    }
+
     internal partial class HttpRequestHeaders
     {
         private HeaderReferences _headers;
@@ -125,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._CacheControl = value; 
             }
         }
-        public StringValues HeaderConnection
+        public override StringValues HeaderConnection
         {
             get
             {
@@ -8129,7 +8229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._CacheControl = value; 
             }
         }
-        public StringValues HeaderConnection
+        public override StringValues HeaderConnection
         {
             get
             {

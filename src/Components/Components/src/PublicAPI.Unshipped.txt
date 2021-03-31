@@ -8,11 +8,6 @@ Microsoft.AspNetCore.Components.ComponentApplicationState.PersistAsJson<TValue>(
 Microsoft.AspNetCore.Components.ComponentApplicationState.PersistState(string! key, byte[]! value) -> void
 Microsoft.AspNetCore.Components.ComponentApplicationState.TryTakeAsJson<TValue>(string! key, out TValue? instance) -> bool
 Microsoft.AspNetCore.Components.ComponentApplicationState.TryTakePersistedState(string! key, out byte[]? value) -> bool
-Microsoft.AspNetCore.Components.HotReload.HotReloadContext
-Microsoft.AspNetCore.Components.HotReload.HotReloadContext.HotReloadContext() -> void
-Microsoft.AspNetCore.Components.HotReload.HotReloadContext.IsHotReloading.get -> bool
-Microsoft.AspNetCore.Components.HotReload.IReceiveHotReloadContext
-Microsoft.AspNetCore.Components.HotReload.IReceiveHotReloadContext.Receive(Microsoft.AspNetCore.Components.HotReload.HotReloadContext! context) -> void
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.ComponentApplicationLifetime(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime!>! logger) -> void
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.PersistStateAsync(Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore! store, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer) -> System.Threading.Tasks.Task!
@@ -21,6 +16,7 @@ Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.State.get 
 Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore
 Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore.GetPersistedStateAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string!, byte[]!>!>!
 Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore.PersistStateAsync(System.Collections.Generic.IReadOnlyDictionary<string!, byte[]!>! state) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.RenderHandle.IsHotReloading.get -> bool
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Dispose() -> void
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void

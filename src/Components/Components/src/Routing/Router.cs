@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             _locationAbsolute = args.Location;
             if (_renderHandle.IsInitialized && Routes != null)
             {
-                _ = RunOnNavigateAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), args.IsNavigationIntercepted);
+                _ = RunOnNavigateAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), args.IsNavigationIntercepted).Preserve();
             }
         }
 

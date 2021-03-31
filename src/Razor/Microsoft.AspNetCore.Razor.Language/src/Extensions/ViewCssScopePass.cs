@@ -42,7 +42,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 if (child is IntermediateToken token && token.IsHtml)
                 {
                     var content = token.Content;
-                    if (content.StartsWith("<", StringComparison.Ordinal) && !content.StartsWith("</", StringComparison.Ordinal))
+                    var isValidToken = content.StartsWith("<", StringComparison.Ordinal) && !content.StartsWith("</", StringComparison.Ordinal) && !content.StartsWith("<!", StringComparison.Ordinal);
+                    if (isValidToken)
                     {
                         node.Children.Insert(i + 1, new IntermediateToken()
                         {

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core default HTTP feature implementations.</Description>
@@ -15,6 +15,9 @@
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" Link="Internal\StreamCopyOperationInternal.cs" />
+    <Compile Include="..\..\Shared\CookieHeaderParserShared.cs" Link="Internal\CookieHeaderParserShared.cs" />
+    <Compile Include="..\..\Shared\HttpRuleParser.cs" LinkBase="Internal" />
+    <Compile Include="..\..\Shared\HttpParseResult.cs" LinkBase="Internal" />
     <Compile Include="..\..\WebUtilities\src\AspNetCoreTempDirectory.cs" LinkBase="Internal" />
   </ItemGroup>
 

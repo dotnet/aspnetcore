@@ -72,3 +72,9 @@ charset = utf-8-bom
 [*.{cs,vb}]
 # CA1305: Specify IFormatProvider
 dotnet_diagnostic.CA1305.severity = error
+
+[*.{cs,vb}]
+# CA2012: Use ValueTask correctly
+dotnet_diagnostic.CA2012.severity = warning
+[**/{test,perf}/**.{cs,vb}]
+dotnet_diagnostic.CA2012.severity = suggestion

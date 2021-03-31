@@ -11,24 +11,26 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Routing.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    internal static class MapActionExpressionTreeBuilder
+    /// <summary>
+    /// Creates <see cref="RequestDelegate"/> implementations from <see cref="Delegate"/> request handlers.
+    /// </summary>
+    public static class RequestDelegateFactory
     {
         private static readonly MethodInfo ChangeTypeMethodInfo = GetMethodInfo<Func<object, Type, object>>((value, type) => Convert.ChangeType(value, type, CultureInfo.InvariantCulture));
-        private static readonly MethodInfo ExecuteTaskOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteTaskOfStringMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueTaskOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueTaskMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueTaskOfStringMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteTaskResultOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueResultTaskOfTMethodInfo = typeof(MapActionExpressionTreeBuilder).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteTaskOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteTaskOfStringMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskOfStringMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteTaskResultOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueResultTaskOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo GetRequiredServiceMethodInfo = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
         private static readonly MethodInfo ResultWriteResponseAsync = typeof(IResult).GetMethod(nameof(IResult.ExecuteAsync), BindingFlags.Public | BindingFlags.Instance)!;
         private static readonly MethodInfo StringResultWriteResponseAsync = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
@@ -44,7 +46,85 @@ namespace Microsoft.AspNetCore.Routing.Internal
         private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.Response));
         private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.RequestAborted));
 
-        public static RequestDelegate BuildRequestDelegate(Delegate action)
+        /// <summary>
+        /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
+        /// </summary>
+        /// <param name="action">A request handler with any number of custom parameters that often produces a response with its return value.</param>
+        /// <returns>The <see cref="RequestDelegate"/>.</returns>
+        public static RequestDelegate Create(Delegate action)
+        {
+            if (action is null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            var targetExpression = action.Target switch
+            {
+                object => Expression.Convert(TargetArg, action.Target.GetType()),
+                null => null,
+            };
+
+            var untargetedRequestDelegate = CreateRequestDelegate(action.Method, targetExpression);
+
+            return httpContext =>
+            {
+                return untargetedRequestDelegate(action.Target, httpContext);
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
+        /// </summary>
+        /// <param name="methodInfo">A static request handler with any number of custom parameters that often produces a response with its return value.</param>
+        /// <returns>The <see cref="RequestDelegate"/>.</returns>
+        public static RequestDelegate Create(MethodInfo methodInfo)
+        {
+            if (methodInfo is null)
+            {
+                throw new ArgumentNullException(nameof(methodInfo));
+            }
+
+            var untargetedRequestDelegate = CreateRequestDelegate(methodInfo, targetExpression: null);
+
+            return httpContext =>
+            {
+                return untargetedRequestDelegate(null, httpContext);
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
+        /// </summary>
+        /// <param name="methodInfo">A request handler with any number of custom parameters that often produces a response with its return value.</param>
+        /// <param name="targetFactory">Creates the <see langword="this"/> for the non-static method.</param>
+        /// <returns>The <see cref="RequestDelegate"/>.</returns>
+        public static RequestDelegate Create(MethodInfo methodInfo, Func<HttpContext, object> targetFactory)
+        {
+            if (methodInfo is null)
+            {
+                throw new ArgumentNullException(nameof(methodInfo));
+            }
+
+            if (targetFactory is null)
+            {
+                throw new ArgumentNullException(nameof(targetFactory));
+            }
+
+            if (methodInfo.DeclaringType is null)
+            {
+                throw new ArgumentException($"A {nameof(targetFactory)} was provided, but {nameof(methodInfo)} does not have a Declaring type.");
+            }
+
+            var targetExpression = Expression.Convert(TargetArg, methodInfo.DeclaringType);
+            var untargetedRequestDelegate = CreateRequestDelegate(methodInfo, targetExpression);
+
+            return httpContext =>
+            {
+                return untargetedRequestDelegate(targetFactory(httpContext), httpContext);
+            };
+        }
+
+        private static Func<object?, HttpContext, Task> CreateRequestDelegate(MethodInfo methodInfo, Expression? targetExpression)
         {
             // Non void return type
 
@@ -62,8 +142,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
             //     return default;
             // }
 
-            var method = action.Method;
-
             var consumeBodyDirectly = false;
             var consumeBodyAsForm = false;
             Type? bodyType = null;
@@ -72,7 +150,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             // This argument represents the deserialized body returned from IHttpRequestReader
             // when the method has a FromBody attribute declared
 
-            var methodParameters = method.GetParameters();
+            var methodParameters = methodInfo.GetParameters();
             var args = new List<Expression>(methodParameters.Length);
 
             foreach (var parameter in methodParameters)
@@ -156,18 +234,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             MethodCallExpression methodCall;
 
-            if (action.Target is null)
+            if (targetExpression is null)
             {
-                methodCall = Expression.Call(method, args);
+                methodCall = Expression.Call(methodInfo, args);
             }
             else
             {
-                var castedTarget = Expression.Convert(TargetArg, action.Target.GetType());
-                methodCall = Expression.Call(castedTarget, method, args);
+                methodCall = Expression.Call(targetExpression, methodInfo, args);
             }
 
             // Exact request delegate match
-            if (method.ReturnType == typeof(void))
+            if (methodInfo.ReturnType == typeof(void))
             {
                 var bodyExpressions = new List<Expression>
                 {
@@ -177,22 +254,22 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
                 body = Expression.Block(bodyExpressions);
             }
-            else if (AwaitableInfo.IsTypeAwaitable(method.ReturnType, out var info))
+            else if (AwaitableInfo.IsTypeAwaitable(methodInfo.ReturnType, out var info))
             {
-                if (method.ReturnType == typeof(Task))
+                if (methodInfo.ReturnType == typeof(Task))
                 {
                     body = methodCall;
                 }
-                else if (method.ReturnType == typeof(ValueTask))
+                else if (methodInfo.ReturnType == typeof(ValueTask))
                 {
                     body = Expression.Call(
                                         ExecuteValueTaskMethodInfo,
                                         methodCall);
                 }
-                else if (method.ReturnType.IsGenericType &&
-                         method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+                else if (methodInfo.ReturnType.IsGenericType &&
+                         methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
                 {
-                    var typeArg = method.ReturnType.GetGenericArguments()[0];
+                    var typeArg = methodInfo.ReturnType.GetGenericArguments()[0];
 
                     if (typeof(IResult).IsAssignableFrom(typeArg))
                     {
@@ -220,10 +297,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
                         }
                     }
                 }
-                else if (method.ReturnType.IsGenericType &&
-                         method.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+                else if (methodInfo.ReturnType.IsGenericType &&
+                         methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
                 {
-                    var typeArg = method.ReturnType.GetGenericArguments()[0];
+                    var typeArg = methodInfo.ReturnType.GetGenericArguments()[0];
 
                     if (typeof(IResult).IsAssignableFrom(typeArg))
                     {
@@ -254,18 +331,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 else
                 {
                     // TODO: Handle custom awaitables
-                    throw new NotSupportedException($"Unsupported return type: {method.ReturnType}");
+                    throw new NotSupportedException($"Unsupported return type: {methodInfo.ReturnType}");
                 }
             }
-            else if (typeof(IResult).IsAssignableFrom(method.ReturnType))
+            else if (typeof(IResult).IsAssignableFrom(methodInfo.ReturnType))
             {
                 body = Expression.Call(methodCall, ResultWriteResponseAsync, HttpContextParameter);
             }
-            else if (method.ReturnType == typeof(string))
+            else if (methodInfo.ReturnType == typeof(string))
             {
                 body = Expression.Call(StringResultWriteResponseAsync, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
             }
-            else if (method.ReturnType.IsValueType)
+            else if (methodInfo.ReturnType.IsValueType)
             {
                 var box = Expression.TypeAs(methodCall, typeof(object));
                 body = Expression.Call(JsonResultWriteResponseAsync, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
@@ -357,10 +434,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 requestDelegate = invoker;
             }
 
-            return httpContext =>
-            {
-                return requestDelegate(action.Target, httpContext);
-            };
+            return requestDelegate;
         }
 
         private static ILogger GetLogger(HttpContext httpContext)

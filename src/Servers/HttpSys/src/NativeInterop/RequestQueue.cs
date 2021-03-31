@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (!Created)
             {
-                _logger.LogInformation(LoggerEventIds.AttachedToQueue, "Attached to an existing request queue '{requestQueueName}', some options do not apply.", requestQueueName);
+                Log.AttachedToQueue(_logger, requestQueueName);
             }
         }
 
@@ -205,6 +205,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (_disposed)
             {
                 throw new ObjectDisposedException(this.GetType().FullName);
+            }
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string?, Exception?> _attachedToQueue =
+                LoggerMessage.Define<string?>(LogLevel.Information, LoggerEventIds.AttachedToQueue, "Attached to an existing request queue '{RequestQueueName}', some options do not apply.");
+
+            public static void AttachedToQueue(ILogger logger, string? requestQueueName)
+            {
+                _attachedToQueue(logger, requestQueueName, null);
             }
         }
     }

@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// <summary>
         /// Gets or sets the Twitter request token.
         /// </summary>
-        public string Token { get; set; }
+        public string Token { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the Twitter token secret.
         /// </summary>
-        public string TokenSecret { get; set; }
+        public string TokenSecret { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets whether the callback was confirmed.
@@ -26,6 +26,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// <summary>
         /// Gets or sets a property bag for common authentication properties.
         /// </summary>
-        public AuthenticationProperties Properties { get; set; }
+        public AuthenticationProperties Properties { get; set; } = default!;
     }
 }

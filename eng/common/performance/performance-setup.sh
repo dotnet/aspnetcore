@@ -17,6 +17,7 @@ kind="micro"
 llvm=false
 monointerpreter=false
 monoaot=false
+monoaot_path=
 run_categories="Libraries Runtime"
 csproj="src\benchmarks\micro\MicroBenchmarks.csproj"
 configurations="CompliationMode=$compilation_mode RunKind=$kind"
@@ -107,7 +108,8 @@ while (($# > 0)); do
       ;;
     --monoaot)
       monoaot=true
-      shift 1
+      monoaot_path=$2
+      shift 2
       ;;
     --monodotnet)
       mono_dotnet=$2
@@ -230,6 +232,11 @@ if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "true" ]]; then
     extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoInterpreter NoMono"
 fi
 
+if [[ "$monoaot" == "true" ]]; then
+    configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoAOT"
+fi
+
 common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations --architecture $architecture"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
 
@@ -239,7 +246,7 @@ if [[ "$run_from_perf_repo" = true ]]; then
     performance_directory=$workitem_directory
     setup_arguments="--perf-hash $commit_sha $common_setup_arguments"
 else
-    git clone --branch master --depth 1 --quiet https://github.com/dotnet/performance $performance_directory
+    git clone --branch main --depth 1 --quiet https://github.com/dotnet/performance $performance_directory
     
     docs_directory=$performance_directory/docs
     mv $docs_directory $workitem_directory
@@ -252,10 +259,16 @@ if [[ "$wasm_runtime_loc" != "" ]]; then
     extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --wasmMainJS \$HELIX_CORRELATION_PAYLOAD/dotnet-wasm/runtime-test.js --wasmEngine /home/helixbot/.jsvu/v8 --customRuntimePack \$HELIX_CORRELATION_PAYLOAD/dotnet-wasm"
 fi
 
-if [[ "$mono_dotnet" != "" ]]; then
+if [[ "$mono_dotnet" != "" ]] && [[ "$monoaot" == "false" ]]; then
     using_mono=true
     mono_dotnet_path=$payload_directory/dotnet-mono
     mv $mono_dotnet $mono_dotnet_path
+fi
+
+if [[ "$monoaot" == "true" ]]; then
+    monoaot_dotnet_path=$payload_directory/monoaot
+    mv $monoaot_path $monoaot_dotnet_path
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --runtimes monoaotllvm --aotcompilerpath \$HELIX_CORRELATION_PAYLOAD/monoaot/sgen/mini/mono-sgen --customruntimepack \$HELIX_CORRELATION_PAYLOAD/monoaot/pack --aotcompilermode llvm"
 fi
 
 if [[ "$use_core_run" = true ]]; then

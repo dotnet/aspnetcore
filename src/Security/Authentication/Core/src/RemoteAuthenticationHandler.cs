@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Authentication
             ticket.Properties.RedirectUri = null;
 
             // Mark which provider produced this identity so we can cross-check later in HandleAuthenticateAsync
-            ticketContext.Properties.Items[AuthSchemeKey] = Scheme.Name;
+            ticketContext.Properties!.Items[AuthSchemeKey] = Scheme.Name;
 
             await Events.TicketReceived(ticketContext);
 

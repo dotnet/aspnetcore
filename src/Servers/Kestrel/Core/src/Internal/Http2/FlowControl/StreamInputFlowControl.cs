@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             if (streamWindowUpdateSize > 0)
             {
                 // Writing with the FrameWriter should only fail if given a canceled token, so just fire and forget.
-                _ = _frameWriter.WriteWindowUpdateAsync(StreamId, streamWindowUpdateSize);
+                _ = _frameWriter.WriteWindowUpdateAsync(StreamId, streamWindowUpdateSize).Preserve();
             }
 
             UpdateConnectionWindow(bytes);
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             if (connectionWindowUpdateSize > 0)
             {
                 // Writing with the FrameWriter should only fail if given a canceled token, so just fire and forget.
-                _ = _frameWriter.WriteWindowUpdateAsync(0, connectionWindowUpdateSize);
+                _ = _frameWriter.WriteWindowUpdateAsync(0, connectionWindowUpdateSize).Preserve();
             }
         }
     }

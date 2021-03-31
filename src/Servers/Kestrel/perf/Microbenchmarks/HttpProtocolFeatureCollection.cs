@@ -5,12 +5,13 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+
 using BenchmarkDotNet.Attributes;
+
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Testing;
 
@@ -20,45 +21,205 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
     {
         private readonly IFeatureCollection _collection;
 
-        [Benchmark]
+        [Benchmark(Description = "Get<IHttpRequestFeature>*")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpRequestFeature GetViaTypeOf_First()
-        {
-            return (IHttpRequestFeature)_collection[typeof(IHttpRequestFeature)];
-        }
-
-        [Benchmark]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public IHttpRequestFeature GetViaGeneric_First()
+        public IHttpRequestFeature Get_IHttpRequestFeature()
         {
             return _collection.Get<IHttpRequestFeature>();
         }
 
-        [Benchmark]
+        [Benchmark(Description = "Get<IHttpResponseFeature>*")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public object GetViaTypeOf_Custom()
+        public IHttpResponseFeature Get_IHttpResponseFeature()
         {
-            return (IHttpCustomFeature)_collection[typeof(IHttpCustomFeature)];
+            return _collection.Get<IHttpResponseFeature>();
         }
 
-        [Benchmark]
+        [Benchmark(Description = "Get<IHttpResponseBodyFeature>*")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public object GetViaGeneric_Custom()
+        public IHttpResponseBodyFeature Get_IHttpResponseBodyFeature()
         {
-            return _collection.Get<IHttpCustomFeature>();
+            return _collection.Get<IHttpResponseBodyFeature>();
         }
 
-
-        [Benchmark]
+        [Benchmark(Description = "Get<IRouteValuesFeature>*")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public object GetViaTypeOf_NotFound()
+        public IRouteValuesFeature Get_IRouteValuesFeature()
         {
-            return (IHttpNotFoundFeature)_collection[typeof(IHttpNotFoundFeature)];
+            return _collection.Get<IRouteValuesFeature>();
         }
 
-        [Benchmark]
+        [Benchmark(Description = "Get<IEndpointFeature>*")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public object GetViaGeneric_NotFound()
+        public IEndpointFeature Get_IEndpointFeature()
+        {
+            return _collection.Get<IEndpointFeature>();
+        }
+
+        [Benchmark(Description = "Get<IServiceProvidersFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IServiceProvidersFeature Get_IServiceProvidersFeature()
+        {
+            return _collection.Get<IServiceProvidersFeature>();
+        }
+
+        [Benchmark(Description = "Get<IItemsFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IItemsFeature Get_IItemsFeature()
+        {
+            return _collection.Get<IItemsFeature>();
+        }
+
+        [Benchmark(Description = "Get<IQueryFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IQueryFeature Get_IQueryFeature()
+        {
+            return _collection.Get<IQueryFeature>();
+        }
+
+        [Benchmark(Description = "Get<IRequestBodyPipeFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IRequestBodyPipeFeature Get_IRequestBodyPipeFeature()
+        {
+            return _collection.Get<IRequestBodyPipeFeature>();
+        }
+
+        [Benchmark(Description = "Get<IFormFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IFormFeature Get_IFormFeature()
+        {
+            return _collection.Get<IFormFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpAuthenticationFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpAuthenticationFeature Get_IHttpAuthenticationFeature()
+        {
+            return _collection.Get<IHttpAuthenticationFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpRequestIdentifierFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpRequestIdentifierFeature Get_IHttpRequestIdentifierFeature()
+        {
+            return _collection.Get<IHttpRequestIdentifierFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpConnectionFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpConnectionFeature Get_IHttpConnectionFeature()
+        {
+            return _collection.Get<IHttpConnectionFeature>();
+        }
+
+        [Benchmark(Description = "Get<ISessionFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public ISessionFeature Get_ISessionFeature()
+        {
+            return _collection.Get<ISessionFeature>();
+        }
+
+        [Benchmark(Description = "Get<IResponseCookiesFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IResponseCookiesFeature Get_IResponseCookiesFeature()
+        {
+            return _collection.Get<IResponseCookiesFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpRequestTrailersFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpRequestTrailersFeature Get_IHttpRequestTrailersFeature()
+        {
+            return _collection.Get<IHttpRequestTrailersFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpResponseTrailersFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpResponseTrailersFeature Get_IHttpResponseTrailersFeature()
+        {
+            return _collection.Get<IHttpResponseTrailersFeature>();
+        }
+
+        [Benchmark(Description = "Get<ITlsConnectionFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public ITlsConnectionFeature Get_ITlsConnectionFeature()
+        {
+            return _collection.Get<ITlsConnectionFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpUpgradeFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpUpgradeFeature Get_IHttpUpgradeFeature()
+        {
+            return _collection.Get<IHttpUpgradeFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpWebSocketFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpWebSocketFeature Get_IHttpWebSocketFeature()
+        {
+            return _collection.Get<IHttpWebSocketFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttp2StreamIdFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttp2StreamIdFeature Get_IHttp2StreamIdFeature()
+        {
+            return _collection.Get<IHttp2StreamIdFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpRequestLifetimeFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpRequestLifetimeFeature Get_IHttpRequestLifetimeFeature()
+        {
+            return _collection.Get<IHttpRequestLifetimeFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpMaxRequestBodySizeFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpMaxRequestBodySizeFeature Get_IHttpMaxRequestBodySizeFeature()
+        {
+            return _collection.Get<IHttpMaxRequestBodySizeFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpMinRequestBodyDataRateFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpMinRequestBodyDataRateFeature Get_IHttpMinRequestBodyDataRateFeature()
+        {
+            return _collection.Get<IHttpMinRequestBodyDataRateFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpMinResponseDataRateFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpMinResponseDataRateFeature Get_IHttpMinResponseDataRateFeature()
+        {
+            return _collection.Get<IHttpMinResponseDataRateFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpBodyControlFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpBodyControlFeature Get_IHttpBodyControlFeature()
+        {
+            return _collection.Get<IHttpBodyControlFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpRequestBodyDetectionFeature>*")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpRequestBodyDetectionFeature Get_IHttpRequestBodyDetectionFeature()
+        {
+            return _collection.Get<IHttpRequestBodyDetectionFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpResetFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpResetFeature Get_IHttpResetFeature()
+        {
+            return _collection.Get<IHttpResetFeature>();
+        }
+
+        [Benchmark(Description = "Get<IHttpNotFoundFeature>")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public IHttpNotFoundFeature Get_IHttpNotFoundFeature()
         {
             return _collection.Get<IHttpNotFoundFeature>();
         }
@@ -89,11 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             _collection = http1Connection;
         }
 
-        private interface IHttpCustomFeature
-        {
-        }
-
-        private interface IHttpNotFoundFeature
+        public interface IHttpNotFoundFeature
         {
         }
     }

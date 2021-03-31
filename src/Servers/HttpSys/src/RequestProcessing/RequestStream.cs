@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -14,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class RequestStream : Stream
+    internal partial class RequestStream : Stream
     {
         private const int MaxReadSize = 0x20000; // http.sys recommends we limit reads to 128k
 
@@ -167,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
                 {
                     Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(LoggerEventIds.ErrorWhileRead, exception, "Read");
+                    Log.ErrorWhileRead(Logger, exception);
                     Abort();
                     throw exception;
                 }
@@ -244,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                Logger.LogError(LoggerEventIds.ErrorWhenReadBegun, e, "BeginRead");
+                Log.ErrorWhenReadBegun(Logger, e);
                 asyncResult.Dispose();
                 throw;
             }
@@ -260,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 else
                 {
                     Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(LoggerEventIds.ErrorWhenReadBegun, exception, "BeginRead");
+                    Log.ErrorWhenReadBegun(Logger, exception);
                     Abort();
                     throw exception;
                 }
@@ -367,7 +366,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 asyncResult.Dispose();
                 Abort();
-                Logger.LogError(LoggerEventIds.ErrorWhenReadAsync, e, "ReadAsync");
+                Log.ErrorWhenReadAsync(Logger, e);
                 throw;
             }
 
@@ -388,7 +387,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 else
                 {
                     Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(LoggerEventIds.ErrorWhenReadAsync, exception, "ReadAsync");
+                    Log.ErrorWhenReadAsync(Logger, exception);
                     Abort();
                     throw exception;
                 }

@@ -71,9 +71,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            // ValueTask uses .GetAwaiter().GetResult() if necessary
-            // https://github.com/dotnet/corefx/blob/f9da3b4af08214764a51b2331f3595ffaf162abe/src/System.Threading.Tasks.Extensions/src/System/Threading/Tasks/ValueTask.cs#L156
-            return ReadAsyncInternal(new Memory<byte>(buffer, offset, count), default).Result;
+            ValueTask<int> vt = ReadAsyncInternal(new Memory<byte>(buffer, offset, count), default);
+            return vt.IsCompleted ?
+                vt.Result :
+                vt.AsTask().GetAwaiter().GetResult();
         }
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)

@@ -272,7 +272,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21520")]
         public async Task MissingAuthority_200Status()
         {
             var headers = new[]
@@ -1749,6 +1748,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(nameof(Http3FrameType.Settings))]
         [InlineData(nameof(Http3FrameType.CancelPush))]
         [InlineData(nameof(Http3FrameType.GoAway))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31388")]
         public async Task UnexpectedRequestFrame(string frameType)
         {
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);

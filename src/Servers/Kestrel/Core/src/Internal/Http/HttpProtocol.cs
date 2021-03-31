@@ -917,7 +917,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ((IHeaderDictionary)HttpRequestHeaders).TryGetValue(HeaderNames.Expect, out var expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
-                Output.Write100ContinueAsync().GetAwaiter().GetResult();
+                ValueTask<FlushResult> vt = Output.Write100ContinueAsync();
+                if (vt.IsCompleted)
+                {
+                    vt.GetAwaiter().GetResult();
+                }
+                else
+                {
+                    vt.AsTask().GetAwaiter().GetResult();
+                }
             }
         }
 
@@ -1050,6 +1058,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return WriteSuffixAwaited(writeTask);
             }
 
+            writeTask.GetAwaiter().GetResult();
+
             _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
 
             if (_keepAlive)
@@ -1112,7 +1122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_keepAlive &&
                 hasConnection &&
-                (HttpHeaders.ParseConnection(responseHeaders.HeaderConnection) & ConnectionOptions.KeepAlive) == 0)
+                (HttpHeaders.ParseConnection(responseHeaders) & ConnectionOptions.KeepAlive) == 0)
             {
                 _keepAlive = false;
             }
