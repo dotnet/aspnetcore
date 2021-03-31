@@ -8,8 +8,10 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// Adds Data Annotations validation support to an <see cref="EditContext"/>.
     /// </summary>
-    public class DataAnnotationsValidator : ComponentBase
+    public class DataAnnotationsValidator : ComponentBase, IDisposable
     {
+        private IDisposable? _subscriptions;
+
         [CascadingParameter] EditContext? CurrentEditContext { get; set; }
 
         /// <inheritdoc />
@@ -22,7 +24,20 @@ namespace Microsoft.AspNetCore.Components.Forms
                     $"inside an EditForm.");
             }
 
-            CurrentEditContext.AddDataAnnotationsValidation();
+            _subscriptions = CurrentEditContext.EnableDataAnnotationsValidation();
+        }
+
+        /// <inheritdoc/>
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
+        void IDisposable.Dispose()
+        {
+            _subscriptions?.Dispose();
+            _subscriptions = null;
+
+            Dispose(disposing: true);
         }
     }
 }
