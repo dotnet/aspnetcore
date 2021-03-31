@@ -28,6 +28,8 @@
 *REMOVED*static Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.DefaultKeyStorageDirectory.get -> System.IO.DirectoryInfo!
 *REMOVED*static Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.DefaultRegistryKey.get -> Microsoft.Win32.RegistryKey!
 *REMOVED*virtual Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateResolver.ResolveCertificate(string! thumbprint) -> System.Security.Cryptography.X509Certificates.X509Certificate2!
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.RevokeAllKeys(System.DateTimeOffset revocationDate, string! reason = null) -> void
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.RevokeKey(System.Guid keyId, string! reason = null) -> void
 Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.AuthenticatedEncryptorFactory.CreateEncryptorInstance(Microsoft.AspNetCore.DataProtection.KeyManagement.IKey! key) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor?
 Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.CngCbcAuthenticatedEncryptorFactory.CreateEncryptorInstance(Microsoft.AspNetCore.DataProtection.KeyManagement.IKey! key) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor?
 Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.CngGcmAuthenticatedEncryptorFactory.CreateEncryptorInstance(Microsoft.AspNetCore.DataProtection.KeyManagement.IKey! key) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor?

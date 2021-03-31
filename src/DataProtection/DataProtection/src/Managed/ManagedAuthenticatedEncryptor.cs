@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
 
                         // Step 4: Validate the MAC provided as part of the payload.
 
-                        if (!CryptoUtil.TimeConstantBuffersAreEqual(correctHash, 0, correctHash.Length, protectedPayload.Array, macOffset, eofOffset - macOffset))
+                        if (!CryptoUtil.TimeConstantBuffersAreEqual(correctHash, 0, correctHash.Length, protectedPayload.Array!, macOffset, eofOffset - macOffset))
                         {
                             throw Error.CryptCommon_PayloadInvalid(); // integrity check failure
                         }
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                             var outputStream = new MemoryStream();
                             using (var cryptoStream = new CryptoStream(outputStream, cryptoTransform, CryptoStreamMode.Write))
                             {
-                                cryptoStream.Write(protectedPayload.Array, ciphertextOffset, macOffset - ciphertextOffset);
+                                cryptoStream.Write(protectedPayload.Array!, ciphertextOffset, macOffset - ciphertextOffset);
                                 cryptoStream.FlushFinalBlock();
 
                                 // At this point, outputStream := { plaintext }, and we're done!
