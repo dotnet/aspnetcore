@@ -496,7 +496,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                             // Invalid operation exception
                             Assert.NotNull(exception);
                             Assert.Equal("The exception handler configured on ExceptionHandlerOptions produced a 404 status response. " +
-                "An InvalidOperationException containing the original exception will be thrown since this is often due to a misconfigured ExceptionHandlingPath. " +
+                "This InvalidOperationException containing the original exception was thrown since this is often due to a misconfigured ExceptionHandlingPath. " +
                 "If the exception handler is expected to return 404 status responses then set AllowStatusCode404Response to true.", exception.Message);
 
                             // The original exception is inner exception
