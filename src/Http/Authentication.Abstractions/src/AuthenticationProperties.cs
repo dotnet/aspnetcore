@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Initializes a new instance of the <see cref="AuthenticationProperties"/> class.
         /// </summary>
         /// <param name="items">State values dictionary to use.</param>
+        [JsonConstructor]
         public AuthenticationProperties(IDictionary<string, string?> items)
             : this(items, parameters: null)
         { }
