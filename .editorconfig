@@ -70,6 +70,11 @@ end_of_line = lf
 charset = utf-8-bom
 
 [*.{cs,vb}]
+
+# IDE0073: File header
+dotnet_diagnostic.IDE0073.severity = error
+file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.
+
 # CA1305: Specify IFormatProvider
 dotnet_diagnostic.CA1305.severity = error
 
