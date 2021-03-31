@@ -320,6 +320,12 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             props.Parameters.Add("baz", "quux");
 
             var json = JsonSerializer.Serialize(props);
+
+            // Verify that Parameters was not serialized
+            Assert.NotNull(json);
+            Assert.DoesNotContain("baz", json);
+            Assert.DoesNotContain("quux", json);
+
             var deserialized = JsonSerializer.Deserialize<AuthenticationProperties>(json);
 
             Assert.NotNull(deserialized);
@@ -336,6 +342,20 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
 
             // Ensure that parameters are not round-tripped
             Assert.NotNull(deserialized.Parameters);
+            Assert.Equal(0, deserialized.Parameters.Count);
+        }
+
+        [Fact]
+        public void Parameters_Is_Not_Deserialized_With_SystemTextJson()
+        {
+            var json = @"{""Parameters"":{""baz"":""quux""}}";
+
+            var deserialized = JsonSerializer.Deserialize<AuthenticationProperties>(json);
+
+            Assert.NotNull(deserialized);
+
+            // Ensure that parameters is not deserialized from a raw payload
+            Assert.NotNull(deserialized!.Parameters);
             Assert.Equal(0, deserialized.Parameters.Count);
         }
 

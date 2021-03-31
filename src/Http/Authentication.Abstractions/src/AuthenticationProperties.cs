@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Collection of parameters that are passed to the authentication handler. These are not intended for
         /// serialization or persistence, only for flowing data between call sites.
         /// </summary>
+        [JsonIgnore]
         public IDictionary<string, object?> Parameters { get; }
 
         /// <summary>
