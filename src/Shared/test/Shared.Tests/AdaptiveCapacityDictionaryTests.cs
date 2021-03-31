@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Internal.Dictionary;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Tests
+namespace Microsoft.AspNetCore.Internal.Dictionary.Tests
 {
     public class AdaptiveCapacityDictionaryTests
     {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.Empty(dict);
             Assert.Empty(dict._arrayStorage);
-            Assert.Null(dict._backup);
+            Assert.Null(dict._dictionaryStorage);
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.Empty(dict);
             Assert.Empty(dict._arrayStorage);
-            Assert.Null(dict._backup);
+            Assert.Null(dict._dictionaryStorage);
         }
 
         public static KeyValuePair<string, object>[] IEnumerableKeyValuePairData
@@ -255,24 +255,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
-            Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-        }
-
-        [Fact]
-        public void IndexSet_backup_NoMatch_AddsValue()
-        {
-            // Arrange
-            var dict = new AdaptiveCapacityDictionary<string, object>();
-            dict.Add("age", 30);
-
-            // Act
-            dict["key"] = "value";
-
-            // Assert
-            Assert.Collection(
-                dict.OrderBy(kvp => kvp.Key),
-                kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
-                kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
             Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
         }
 
@@ -559,7 +541,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             // Assert
             Assert.Empty(dict);
             Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-            Assert.Null(dict._backup);
+            Assert.Null(dict._dictionaryStorage);
         }
 
         [Fact]
@@ -1244,7 +1226,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert 2
             storage = Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-            Assert.Equal(4, storage.Length);
+            Assert.Empty(storage);
 
             Assert.Equal(5, dict.Count);
         }
