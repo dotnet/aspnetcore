@@ -113,9 +113,10 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             public void Dispose()
             {
+                _messages.Clear();
                 _editContext.OnFieldChanged -= OnFieldChanged;
                 _editContext.OnValidationRequested -= OnValidationRequested;
-                _messages.Clear();
+                _editContext.NotifyValidationStateChanged();
             }
 
             private static bool TryGetValidatableProperty(in FieldIdentifier fieldIdentifier, [NotNullWhen(true)] out PropertyInfo? propertyInfo)

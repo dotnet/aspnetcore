@@ -1,101 +1,101 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
-@if (showForm)
-{
-    <EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
+<EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
+    @if (enableDataAnnotationsSupport)
+    {
         <DataAnnotationsValidator />
+    }
 
-        <p class="name">
-            Name: <InputText @bind-Value="person.Name" placeholder="Enter your name" />
-        </p>
-        <p class="email">
-            Email: <InputText @bind-Value="person.Email" />
-            <ValidationMessage For="@(() => person.Email)" />
-        </p>
-        <p class="confirm-email">
-            Email: <InputText @bind-Value="person.ConfirmEmail" />
-            <ValidationMessage For="@(() => person.ConfirmEmail)" />
-        </p>
-        <p class="age">
-            Age (years): <InputNumber @bind-Value="person.AgeInYears" placeholder="Enter your age" />
-        </p>
-        <p class="height">
-            Height (optional): <InputNumber @bind-Value="person.OptionalHeight" />
-        </p>
-        <p class="description">
-            Description: <InputTextArea @bind-Value="person.Description" placeholder="Tell us about yourself" />
-        </p>
-        <p class="renewal-date">
-            Renewal date: <InputDate @bind-Value="person.RenewalDate" placeholder="Enter the date" />
-        </p>
-        <p class="expiry-date">
-            Expiry date (optional): <InputDate @bind-Value="person.OptionalExpiryDate" />
-        </p>
-        <p class="ticket-class">
-            Ticket class:
-            <InputSelect @bind-Value="person.TicketClass" size="4">
-                <option>(select)</option>
-                <option value="@TicketClass.Economy">Economy class</option>
-                <option value="@TicketClass.Premium">Premium class</option>
-                <option value="@TicketClass.First">First class</option>
-            </InputSelect>
-            <span id="selected-ticket-class">@person.TicketClass</span>
-        </p>
-        <p class="airline">
-            <InputRadioGroup @bind-Value="person.Airline">
-                Airline:
+    <p class="name">
+        Name: <InputText @bind-Value="person.Name" placeholder="Enter your name" />
+    </p>
+    <p class="email">
+        Email: <InputText @bind-Value="person.Email" />
+        <ValidationMessage For="@(() => person.Email)" />
+    </p>
+    <p class="confirm-email">
+        Email: <InputText @bind-Value="person.ConfirmEmail" />
+        <ValidationMessage For="@(() => person.ConfirmEmail)" />
+    </p>
+    <p class="age">
+        Age (years): <InputNumber @bind-Value="person.AgeInYears" placeholder="Enter your age" />
+    </p>
+    <p class="height">
+        Height (optional): <InputNumber @bind-Value="person.OptionalHeight" />
+    </p>
+    <p class="description">
+        Description: <InputTextArea @bind-Value="person.Description" placeholder="Tell us about yourself" />
+    </p>
+    <p class="renewal-date">
+        Renewal date: <InputDate @bind-Value="person.RenewalDate" placeholder="Enter the date" />
+    </p>
+    <p class="expiry-date">
+        Expiry date (optional): <InputDate @bind-Value="person.OptionalExpiryDate" />
+    </p>
+    <p class="ticket-class">
+        Ticket class:
+        <InputSelect @bind-Value="person.TicketClass" size="4">
+            <option>(select)</option>
+            <option value="@TicketClass.Economy">Economy class</option>
+            <option value="@TicketClass.Premium">Premium class</option>
+            <option value="@TicketClass.First">First class</option>
+        </InputSelect>
+        <span id="selected-ticket-class">@person.TicketClass</span>
+    </p>
+    <p class="airline">
+        <InputRadioGroup @bind-Value="person.Airline">
+            Airline:
+            <br>
+            @foreach (var airline in (Airline[])Enum.GetValues(typeof(Airline)))
+                {
+                <InputRadio Value="airline" extra="additional" />
+                @airline.ToString();
                 <br>
-                @foreach (var airline in (Airline[])Enum.GetValues(typeof(Airline)))
-                    {
-                    <InputRadio Value="airline" extra="additional" />
-                    @airline.ToString();
-                    <br>
-                    }
+                }
+        </InputRadioGroup>
+    </p>
+    <p class="nested-radio-group">
+        Pick one color and one country:
+        <InputRadioGroup Name="country" @bind-Value="person.Country">
+            <InputRadioGroup Name="color" @bind-Value="person.FavoriteColor">
+                <InputRadio Name="color" Value="Color.Red" />red<br>
+                <InputRadio Name="country" Value="Country.Japan" />japan<br>
+                <InputRadio Name="color" Value="Color.Green" />green<br>
+                <InputRadio Name="country" Value="Country.Yemen" />yemen<br>
+                <InputRadio Name="color" Value="Color.Blue" />blue<br>
+                <InputRadio Name="country" Value="Country.Latvia" />latvia<br>
+                <InputRadio Name="color" Value="Color.Orange" />orange<br>
             </InputRadioGroup>
-        </p>
-        <p class="nested-radio-group">
-            Pick one color and one country:
-            <InputRadioGroup Name="country" @bind-Value="person.Country">
-                <InputRadioGroup Name="color" @bind-Value="person.FavoriteColor">
-                    <InputRadio Name="color" Value="Color.Red" />red<br>
-                    <InputRadio Name="country" Value="Country.Japan" />japan<br>
-                    <InputRadio Name="color" Value="Color.Green" />green<br>
-                    <InputRadio Name="country" Value="Country.Yemen" />yemen<br>
-                    <InputRadio Name="color" Value="Color.Blue" />blue<br>
-                    <InputRadio Name="country" Value="Country.Latvia" />latvia<br>
-                    <InputRadio Name="color" Value="Color.Orange" />orange<br>
-                </InputRadioGroup>
-            </InputRadioGroup>
-        </p>
-        <p class="socks">
-            Socks color: <InputText @bind-Value="person.SocksColor" />
-        </p>
-        <p class="accepts-terms">
-            Accepts terms: <InputCheckbox @bind-Value="person.AcceptsTerms" title="You have to check this" />
-        </p>
-        <p class="is-evil">
-            Is evil: <InputCheckbox @bind-Value="person.IsEvil" />
-        </p>
-        <p class="username">
-            Username (optional): <InputText @bind-Value="person.Username" />
-            <button type="button" @onclick="@TriggerAsyncValidationError">Trigger async error</button>
-        </p>
+        </InputRadioGroup>
+    </p>
+    <p class="socks">
+        Socks color: <InputText @bind-Value="person.SocksColor" />
+    </p>
+    <p class="accepts-terms">
+        Accepts terms: <InputCheckbox @bind-Value="person.AcceptsTerms" title="You have to check this" />
+    </p>
+    <p class="is-evil">
+        Is evil: <InputCheckbox @bind-Value="person.IsEvil" />
+    </p>
+    <p class="username">
+        Username (optional): <InputText @bind-Value="person.Username" />
+        <button type="button" @onclick="@TriggerAsyncValidationError">Trigger async error</button>
+    </p>
 
-        <button type="submit">Submit</button>
+    <button type="submit">Submit</button>
 
-        <p class="model-errors">
-            <ValidationSummary Model="person" />
-        </p>
+    <p class="model-errors">
+        <ValidationSummary Model="person" />
+    </p>
 
-        <ValidationSummary />
-    </EditForm>
-}
+    <ValidationSummary />
+</EditForm>
 
 <ul>@foreach (var entry in submissionLog)
 {<li class="submission-log-entry">@entry</li>}</ul>
 
-<button id="recreate-edit-form" @onclick="RecreateEditForm">Recreate EditForm</button>
+<button id="toggle-dataannotations" @onclick="ToggleDataAnnotations">Toggle DataAnnotations support</button>
 
 @code {
     protected virtual bool UseExperimentalValidator => false;
@@ -103,7 +103,7 @@
     Person person = new Person();
     EditContext editContext;
     ValidationMessageStore customValidationMessageStore;
-    bool showForm = true;
+    bool enableDataAnnotationsSupport = true;
 
     protected override void OnInitialized()
     {
@@ -195,14 +195,9 @@
         });
     }
 
-    async Task RecreateEditForm()
+    void ToggleDataAnnotations()
     {
-        // This is to show that, if a form is removed and a new one is added,
-        // the subscriptions related to the old one are cleared.
-        // Represents the bug reported at https://github.com/dotnet/aspnetcore/issues/31027
-        showForm = false;
-        await Task.Delay(1);
-        showForm = true;
-        submissionLog.Add("Recreated form");
+        enableDataAnnotationsSupport = !enableDataAnnotationsSupport;
+        submissionLog.Add($"DataAnnotations support is now {(enableDataAnnotationsSupport ? "enabled" : "disabled")}");
     }
 }
