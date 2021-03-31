@@ -738,7 +738,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             public bool MoveNext()
             {
                 var dictionary = _dictionary;
-                if (dictionary._arrayStorage.Length >= _index)
+                if (dictionary._arrayStorage.Length <= _index)
                 {
                     return false;
                 }

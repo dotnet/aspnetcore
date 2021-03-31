@@ -1246,7 +1246,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             storage = Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
             Assert.Equal(4, storage.Length);
 
-            Assert.Equal(8, dict.Count);
+            Assert.Equal(5, dict.Count);
         }
 
         [Fact]
