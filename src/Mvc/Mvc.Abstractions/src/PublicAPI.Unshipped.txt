@@ -50,6 +50,7 @@
 *REMOVED*Microsoft.AspNetCore.Mvc.Routing.AttributeRouteInfo.Name.get -> string!
 *REMOVED*static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Success(object! model) -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
 *REMOVED*static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.SuccessAsync(object! model) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
+*REMOVED*Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationResult.ModelValidationResult(string! memberName, string! message) -> void
 Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor.RouteValues.get -> System.Collections.Generic.IDictionary<string!, string?>!
 Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.BindingInfo.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo?
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintItem.Constraint.get -> Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint?
@@ -101,3 +102,4 @@ virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext.Result.get -> Mic
 virtual Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext.ActionArguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructorInvoker.get -> System.Func<object?[]!, object!>?
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ContainerMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata?
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationResult.ModelValidationResult(string? memberName, string? message) -> void

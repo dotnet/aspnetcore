@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -27,34 +29,34 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// When <c>null</c>, defaults to <see cref="ControllerActionDescriptor.ActionName"/>.
         /// </remarks>
-        public string ViewName { get; set; }
+        public string? ViewName { get; set; }
 
         /// <summary>
         /// Gets the view data model.
         /// </summary>
-        public object Model => ViewData?.Model;
+        public object? Model => ViewData?.Model;
 
         /// <summary>
         /// Gets or sets the <see cref="ViewDataDictionary"/> for this result.
         /// </summary>
-        public ViewDataDictionary ViewData { get; set; }
+        public ViewDataDictionary ViewData { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ITempDataDictionary"/> for this result.
         /// </summary>
-        public ITempDataDictionary TempData { get; set; }
+        public ITempDataDictionary TempData { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="IViewEngine"/> used to locate views.
         /// </summary>
         /// <remarks>When <c>null</c>, an instance of <see cref="ICompositeViewEngine"/> from
         /// <c>ActionContext.HttpContext.RequestServices</c> is used.</remarks>
-        public IViewEngine ViewEngine { get; set; }
+        public IViewEngine? ViewEngine { get; set; }
 
         /// <summary>
         /// Gets or sets the Content-Type header for the response.
         /// </summary>
-        public string ContentType { get; set; }
+        public string? ContentType { get; set; }
 
         /// <inheritdoc />
         public override async Task ExecuteResultAsync(ActionContext context)

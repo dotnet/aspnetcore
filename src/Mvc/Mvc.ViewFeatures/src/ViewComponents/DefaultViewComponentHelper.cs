@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         private readonly IViewComponentInvokerFactory _invokerFactory;
         private readonly IViewComponentSelector _selector;
         private readonly IViewBufferScope _viewBufferScope;
-        private ViewContext _viewContext;
+        private ViewContext _viewContext = default!;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultViewComponentHelper"/>.
@@ -41,8 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             HtmlEncoder htmlEncoder,
             IViewComponentSelector selector,
             IViewComponentInvokerFactory invokerFactory,
-            IViewBufferScope viewBufferScope
-            )
+            IViewBufferScope viewBufferScope)
         {
             if (descriptorProvider == null)
             {
@@ -88,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         }
 
         /// <inheritdoc />
-        public Task<IHtmlContent> InvokeAsync(string name, object arguments)
+        public Task<IHtmlContent> InvokeAsync(string name, object? arguments)
         {
             if (name == null)
             {
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         }
 
         /// <inheritdoc />
-        public Task<IHtmlContent> InvokeAsync(Type componentType, object arguments)
+        public Task<IHtmlContent> InvokeAsync(Type componentType, object? arguments)
         {
             if (componentType == null)
             {
@@ -126,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             for (var i = 0; i < descriptors.Items.Count; i++)
             {
                 var descriptor = descriptors.Items[i];
-                if (descriptor.TypeInfo == componentType?.GetTypeInfo())
+                if (descriptor.TypeInfo == componentType.GetTypeInfo())
                 {
                     return descriptor;
                 }
@@ -140,15 +141,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         }
 
         // Internal for testing
-        internal IDictionary<string, object> GetArgumentDictionary(ViewComponentDescriptor descriptor, object arguments)
+        internal IDictionary<string, object?> GetArgumentDictionary(ViewComponentDescriptor descriptor, object? arguments)
         {
             if (arguments != null)
             {
                 if (descriptor.Parameters.Count == 1 && descriptor.Parameters[0].ParameterType.IsAssignableFrom(arguments.GetType()))
                 {
-                    return new Dictionary<string, object>(capacity: 1, comparer: StringComparer.OrdinalIgnoreCase)
+                    return new Dictionary<string, object?>(capacity: 1, comparer: StringComparer.OrdinalIgnoreCase)
                     {
-                        { descriptor.Parameters[0].Name, arguments }
+                        { descriptor.Parameters[0].Name!, arguments }
                     };
                 }
             }
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             return PropertyHelper.ObjectToDictionary(arguments);
         }
 
-        private async Task<IHtmlContent> InvokeCoreAsync(ViewComponentDescriptor descriptor, object arguments)
+        private async Task<IHtmlContent> InvokeCoreAsync(ViewComponentDescriptor descriptor, object? arguments)
         {
             var argumentDictionary = GetArgumentDictionary(descriptor, arguments);
 

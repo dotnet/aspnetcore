@@ -54,14 +54,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         /// Activates the <see cref="ViewContext"/> property of all the <see cref="ITagHelperComponentManager.Components"/>.
         /// </summary>
         [HtmlAttributeNotBound]
-        public ITagHelperComponentPropertyActivator PropertyActivator { get; set; }
+        public ITagHelperComponentPropertyActivator PropertyActivator { get; set; } = default!;
 
         /// <summary>
         /// The <see cref="ViewContext"/>.
         /// </summary>
         [ViewContext]
         [HtmlAttributeNotBound]
-        public ViewContext ViewContext { get; set; }
+        public ViewContext ViewContext { get; set; } = default!;
 
         /// <inheritdoc />
         public override void Init(TagHelperContext context)
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                 component.Init(context);
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.TagHelperComponentInitialized(component.GetType().FullName);
+                    _logger.TagHelperComponentInitialized(component.GetType().FullName!);
                 }
             }
         }
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                 await component.ProcessAsync(context, output);
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.TagHelperComponentProcessed(component.GetType().FullName);
+                    _logger.TagHelperComponentProcessed(component.GetType().FullName!);
                 }
             }
         }

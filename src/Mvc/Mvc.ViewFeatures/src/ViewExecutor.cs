@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -102,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// Gets the <see cref="ITempDataDictionaryFactory"/>.
         /// </summary>
-        protected ITempDataDictionaryFactory TempDataFactory { get; }
+        protected ITempDataDictionaryFactory? TempDataFactory { get; }
 
         /// <summary>
         /// Gets the default <see cref="IViewEngine"/>.
@@ -112,12 +114,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// Gets the <see cref="MvcViewOptions"/>.
         /// </summary>
-        protected MvcViewOptions ViewOptions { get; }
+        protected MvcViewOptions? ViewOptions { get; }
 
         /// <summary>
         /// Gets the <see cref="IModelMetadataProvider"/>.
         /// </summary>
-        protected IModelMetadataProvider ModelMetadataProvider { get; }
+        protected IModelMetadataProvider? ModelMetadataProvider { get; }
 
         /// <summary>
         /// Gets the <see cref="IHttpResponseStreamWriterFactory"/>.
@@ -144,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IView view,
             ViewDataDictionary viewData,
             ITempDataDictionary tempData,
-            string contentType,
+            string? contentType,
             int? statusCode)
         {
             if (actionContext == null)
@@ -207,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <returns>A <see cref="Task"/> which will complete when view execution is completed.</returns>
         protected async Task ExecuteAsync(
             ViewContext viewContext,
-            string contentType,
+            string? contentType,
             int? statusCode)
         {
             if (viewContext == null)
