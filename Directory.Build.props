@@ -220,6 +220,7 @@
 
     <ArchiveExtension>.tar.gz</ArchiveExtension>
     <ArchiveExtension Condition="'$(TargetOsName)' == 'win'">.zip</ArchiveExtension>
+    <UserRuntimeConfig Condition="'$(IsTestProject)' == 'true'">$(RepoRoot)eng\runtimeconfig.template.json</UserRuntimeConfig>
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.props" />
