@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -22,35 +24,35 @@ namespace Microsoft.AspNetCore.Mvc
     [ViewComponent]
     public abstract class ViewComponent
     {
-        private IUrlHelper _url;
-        private dynamic _viewBag;
-        private ViewComponentContext _viewComponentContext;
-        private ICompositeViewEngine _viewEngine;
+        private IUrlHelper? _url;
+        private dynamic? _viewBag;
+        private ViewComponentContext? _viewComponentContext;
+        private ICompositeViewEngine? _viewEngine;
 
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/>.
         /// </summary>
-        public HttpContext HttpContext => ViewContext?.HttpContext;
+        public HttpContext HttpContext => ViewContext?.HttpContext!;
 
         /// <summary>
         /// Gets the <see cref="HttpRequest"/>.
         /// </summary>
-        public HttpRequest Request => ViewContext?.HttpContext?.Request;
+        public HttpRequest Request => ViewContext?.HttpContext?.Request!;
 
         /// <summary>
         /// Gets the <see cref="IPrincipal"/> for the current user.
         /// </summary>
-        public IPrincipal User => ViewContext?.HttpContext?.User;
+        public IPrincipal User => ViewContext?.HttpContext?.User!;
 
         /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> for the current user.
         /// </summary>
-        public ClaimsPrincipal UserClaimsPrincipal => ViewContext?.HttpContext?.User;
+        public ClaimsPrincipal UserClaimsPrincipal => ViewContext?.HttpContext?.User!;
 
         /// <summary>
         /// Gets the <see cref="RouteData"/> for the current request.
         /// </summary>
-        public RouteData RouteData => ViewContext?.RouteData;
+        public RouteData RouteData => ViewContext?.RouteData!;
 
         /// <summary>
         /// Gets the view bag.
@@ -71,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the <see cref="ModelStateDictionary"/>.
         /// </summary>
-        public ModelStateDictionary ModelState => ViewData?.ModelState;
+        public ModelStateDictionary ModelState => ViewData?.ModelState!;
 
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper"/>.
@@ -85,10 +87,10 @@ namespace Microsoft.AspNetCore.Mvc
                     // May be null in unit-testing scenarios.
                     var services = ViewComponentContext.ViewContext?.HttpContext?.RequestServices;
                     var factory = services?.GetRequiredService<IUrlHelperFactory>();
-                    _url = factory?.GetUrlHelper(ViewComponentContext.ViewContext);
+                    _url = factory?.GetUrlHelper(ViewComponentContext.ViewContext!);
                 }
 
-                return _url;
+                return _url!;
             }
             set
             {
@@ -157,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc
                     _viewEngine = services?.GetRequiredService<ICompositeViewEngine>();
                 }
 
-                return _viewEngine;
+                return _viewEngine!;
             }
             set
             {
@@ -199,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="viewName">The name of the partial view to render.</param>
         /// <returns>A <see cref="ViewViewComponentResult"/>.</returns>
-        public ViewViewComponentResult View(string viewName)
+        public ViewViewComponentResult View(string? viewName)
         {
             return View(viewName, ViewData.Model);
         }
@@ -209,7 +211,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="model">The model object for the view.</param>
         /// <returns>A <see cref="ViewViewComponentResult"/>.</returns>
-        public ViewViewComponentResult View<TModel>(TModel model)
+        public ViewViewComponentResult View<TModel>(TModel? model)
         {
             return View(viewName: null, model: model);
         }
@@ -220,9 +222,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="viewName">The name of the partial view to render.</param>
         /// <param name="model">The model object for the view.</param>
         /// <returns>A <see cref="ViewViewComponentResult"/>.</returns>
-        public ViewViewComponentResult View<TModel>(string viewName, TModel model)
+        public ViewViewComponentResult View<TModel>(string? viewName, TModel? model)
         {
-            var viewData = new ViewDataDictionary<TModel>(ViewData, model);
+            var viewData = new ViewDataDictionary<TModel?>(ViewData, model);
             return new ViewViewComponentResult
             {
                 ViewEngine = ViewEngine,

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
     /// </summary>
     internal class DataTypeAttributeAdapter : AttributeAdapterBase<DataTypeAttribute>
     {
-        public DataTypeAttributeAdapter(DataTypeAttribute attribute, string ruleName, IStringLocalizer stringLocalizer)
+        public DataTypeAttributeAdapter(DataTypeAttribute attribute, string ruleName, IStringLocalizer? stringLocalizer)
             : base(attribute, stringLocalizer)
         {
             if (string.IsNullOrEmpty(ruleName))

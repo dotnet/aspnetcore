@@ -129,14 +129,22 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             var exceptions = new List<Exception>();
+            var processed = new HashSet<Assembly>();
+
             _hostingStartupWebHostBuilder = new HostingStartupWebHostBuilder(this);
 
             // Execute the hosting startup assemblies
-            foreach (var assemblyName in webHostOptions.GetFinalHostingStartupAssemblies().Distinct(StringComparer.OrdinalIgnoreCase))
+            foreach (var assemblyName in webHostOptions.GetFinalHostingStartupAssemblies())
             {
                 try
                 {
                     var assembly = Assembly.Load(new AssemblyName(assemblyName));
+
+                    if (!processed.Add(assembly))
+                    {
+                        // Already processed, skip it
+                        continue;
+                    }
 
                     foreach (var attribute in assembly.GetCustomAttributes<HostingStartupAttribute>())
                     {

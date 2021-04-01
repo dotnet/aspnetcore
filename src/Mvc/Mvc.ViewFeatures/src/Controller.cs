@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -16,9 +18,9 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public abstract class Controller : ControllerBase, IActionFilter, IAsyncActionFilter, IDisposable
     {
-        private ITempDataDictionary _tempData;
-        private DynamicViewData _viewBag;
-        private ViewDataDictionary _viewData;
+        private ITempDataDictionary? _tempData;
+        private DynamicViewData? _viewBag;
+        private ViewDataDictionary? _viewData;
 
         /// <summary>
         /// Gets or sets <see cref="ViewDataDictionary"/> used by <see cref="ViewResult"/> and <see cref="ViewBag"/>.
@@ -46,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc
                     _viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), ControllerContext.ModelState);
                 }
 
-                return _viewData;
+                return _viewData!;
             }
             set
             {
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc
                     _tempData = factory?.GetTempData(HttpContext);
                 }
 
-                return _tempData;
+                return _tempData!;
             }
             set
             {
@@ -117,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="viewName">The name or path of the view that is rendered to the response.</param>
         /// <returns>The created <see cref="ViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ViewResult View(string viewName)
+        public virtual ViewResult View(string? viewName)
         {
             return View(viewName, model: ViewData.Model);
         }
@@ -129,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="model">The model that is rendered by the view.</param>
         /// <returns>The created <see cref="ViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ViewResult View(object model)
+        public virtual ViewResult View(object? model)
         {
             return View(viewName: null, model: model);
         }
@@ -142,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="model">The model that is rendered by the view.</param>
         /// <returns>The created <see cref="ViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ViewResult View(string viewName, object model)
+        public virtual ViewResult View(string? viewName, object? model)
         {
             ViewData.Model = model;
 
@@ -170,7 +172,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="viewName">The name or path of the partial view that is rendered to the response.</param>
         /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual PartialViewResult PartialView(string viewName)
+        public virtual PartialViewResult PartialView(string? viewName)
         {
             return PartialView(viewName, model: ViewData.Model);
         }
@@ -182,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="model">The model that is rendered by the partial view.</param>
         /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual PartialViewResult PartialView(object model)
+        public virtual PartialViewResult PartialView(object? model)
         {
             return PartialView(viewName: null, model: model);
         }
@@ -195,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="model">The model that is rendered by the partial view.</param>
         /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
         [NonAction]
-        public virtual PartialViewResult PartialView(string viewName, object model)
+        public virtual PartialViewResult PartialView(string? viewName, object? model)
         {
             ViewData.Model = model;
 
@@ -247,7 +249,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </param>
         /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ViewComponentResult ViewComponent(string componentName, object arguments)
+        public virtual ViewComponentResult ViewComponent(string componentName, object? arguments)
         {
             return new ViewComponentResult
             {
@@ -270,7 +272,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </param>
         /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ViewComponentResult ViewComponent(Type componentType, object arguments)
+        public virtual ViewComponentResult ViewComponent(Type componentType, object? arguments)
         {
             return new ViewComponentResult
             {
@@ -289,7 +291,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="JsonResult"/> that serializes the specified <paramref name="data"/>
         /// to JSON format for the response.</returns>
         [NonAction]
-        public virtual JsonResult Json(object data)
+        public virtual JsonResult Json(object? data)
         {
             return new JsonResult(data);
         }
@@ -312,7 +314,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>Callers should cache an instance of serializer settings to avoid
         /// recreating cached data with each call.</remarks>
         [NonAction]
-        public virtual JsonResult Json(object data, object serializerSettings)
+        public virtual JsonResult Json(object? data, object? serializerSettings)
         {
             return new JsonResult(data, serializerSettings);
         }

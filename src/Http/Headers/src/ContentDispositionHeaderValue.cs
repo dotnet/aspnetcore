@@ -541,27 +541,12 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetBase64Length(int inputLength)
-        {
-            // Copied from https://github.com/dotnet/runtime/blob/82ca681cbac89d813a3ce397e0c665e6c051ed67/src/libraries/System.Private.CoreLib/src/System/Convert.cs#L2530
-            long outlen = ((long)inputLength) / 3 * 4;          // the base length - we want integer division here.
-            outlen += ((inputLength % 3) != 0) ? 4 : 0;         // at most 4 more chars for the remainder
-
-            if (outlen > int.MaxValue)
-            {
-                throw new OutOfMemoryException();
-            }
-
-            return (int)outlen;
-        }
-
         // Encode using MIME encoding
         // And adds surrounding quotes, Encoded data must always be quoted, the equals signs are invalid in tokens
         private string EncodeMimeWithQuotes(StringSegment input)
         {
             var requiredLength = MimePrefix.Length +
-                GetBase64Length(Encoding.UTF8.GetByteCount(input.AsSpan())) +
+                Base64.GetMaxEncodedToUtf8Length(Encoding.UTF8.GetByteCount(input.AsSpan())) +
                 MimeSuffix.Length;
             Span<byte> buffer = requiredLength <= 256
                 ? (stackalloc byte[256]).Slice(0, requiredLength)
