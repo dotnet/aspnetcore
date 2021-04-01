@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Internal
     internal class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue> where TKey : notnull
     {
         // Threshold for size of array to use.
-        private static readonly int DefaultArrayThreshold = 4;
+        private static readonly int DefaultArrayThreshold = 10;
 
         internal KeyValuePair<TKey, TValue>[]? _arrayStorage;
         private int _count;
@@ -123,6 +123,7 @@ namespace Microsoft.AspNetCore.Internal
                 {
                     ThrowArgumentNullExceptionForKey();
                 }
+
                 if (_arrayStorage != null)
                 {
                     var index = FindIndex(key);
@@ -140,6 +141,7 @@ namespace Microsoft.AspNetCore.Internal
                     {
                         _arrayStorage[index] = new KeyValuePair<TKey, TValue>(key, value);
                     }
+                    return;
                 }
 
                 _dictionaryStorage![key] = value;
@@ -228,6 +230,7 @@ namespace Microsoft.AspNetCore.Internal
             if (_arrayStorage != null)
             {
                 Add(item.Key, item.Value);
+                return;
             }
 
             ((ICollection<KeyValuePair<TKey, TValue>>)_dictionaryStorage!).Add(item);
@@ -260,15 +263,11 @@ namespace Microsoft.AspNetCore.Internal
 
                 _arrayStorage[_count] = new KeyValuePair<TKey, TValue>(key, value);
                 _count++;
-            }
-
-            if (_dictionaryStorage != null)
-            {
-                _dictionaryStorage.Add(key, value);
                 return;
             }
 
-            
+            _dictionaryStorage!.Add(key, value);
+            return;
         }
 
         /// <inheritdoc />
@@ -524,14 +523,13 @@ namespace Microsoft.AspNetCore.Internal
                 ThrowArgumentNullExceptionForKey();
             }
 
-            if (_dictionaryStorage != null)
+            if (_arrayStorage != null)
             {
-                return _dictionaryStorage.TryGetValue(key, out value);
+                return TryFindItem(key, out value);
             }
 
-            return TryFindItem(key, out value);
+            return _dictionaryStorage!.TryGetValue(key, out value);
         }
-
 
         [DoesNotReturn]
         private static void ThrowArgumentNullExceptionForKey()
@@ -576,6 +574,7 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int FindIndex(TKey key)
         {
@@ -589,7 +588,7 @@ namespace Microsoft.AspNetCore.Internal
 
             for (var i = 0; i < count; i++)
             {
-                if (_comparer.Equals(array![i].Key, key))
+                if (_comparer.Equals(array[i].Key, key))
                 {
                     return i;
                 }
@@ -604,14 +603,18 @@ namespace Microsoft.AspNetCore.Internal
             Debug.Assert(_dictionaryStorage == null);
             Debug.Assert(_arrayStorage != null);
 
-            var storage = _arrayStorage.AsSpan(0, _count);
+            var array = _arrayStorage;
+            var count = _count;
 
-            foreach (ref var item in storage)
+            if ((uint)count <= (uint)array.Length)
             {
-                if (_comparer.Equals(item.Key, key))
+                for (var i = 0; i < count; i++)
                 {
-                    value = item.Value;
-                    return true;
+                    if (_comparer.Equals(array[i].Key, key))
+                    {
+                        value = array[i].Value;
+                        return true;
+                    }
                 }
             }
 
@@ -625,13 +628,17 @@ namespace Microsoft.AspNetCore.Internal
             Debug.Assert(_dictionaryStorage == null);
             Debug.Assert(_arrayStorage != null);
 
-            var storage = _arrayStorage.AsSpan(0, _count);
+            var array = _arrayStorage;
+            var count = _count;
 
-            foreach (ref var item in storage)
+            if ((uint)count <= (uint)array.Length)
             {
-                if (_comparer.Equals(item.Key, key))
+                for (var i = 0; i < count; i++)
                 {
-                    return true;
+                    if (_comparer.Equals(array[i].Key, key))
+                    {
+                        return true;
+                    }
                 }
             }
 

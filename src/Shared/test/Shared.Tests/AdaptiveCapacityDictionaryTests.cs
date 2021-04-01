@@ -1206,7 +1206,7 @@ namespace Microsoft.AspNetCore.Internal.Tests
         }
 
         [Fact]
-        public void ListStorage_SwitchesToDictionaryAfter4_Add()
+        public void ListStorage_SwitchesToDictionaryAfter10_Add()
         {
             // Arrange
             var dict = new AdaptiveCapacityDictionary<string, object>();
@@ -1216,23 +1216,27 @@ namespace Microsoft.AspNetCore.Internal.Tests
 
             // Assert 1
             var storage = Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-            Assert.Equal(4, storage.Length);
+            Assert.Equal(10, storage.Length);
 
             // Act 2
             dict.Add("key2", "value2");
             dict.Add("key3", "value3");
             dict.Add("key4", "value4");
             dict.Add("key5", "value5");
+            dict.Add("key6", "value2");
+            dict.Add("key7", "value3");
+            dict.Add("key8", "value4");
+            dict.Add("key9", "value5");
+            dict.Add("key10", "value2");
+            dict.Add("key11", "value3");
 
             // Assert 2
-            storage = Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-            Assert.Empty(storage);
-
+            Assert.Null(dict._arrayStorage);
             Assert.Equal(5, dict.Count);
         }
 
         [Fact]
-        public void ListStorage_SwitchesToDictionaryAfter4_TryAdd()
+        public void ListStorage_SwitchesToDictionaryAfter10_TryAdd()
         {
             // Arrange
             var dict = new AdaptiveCapacityDictionary<string, object>();
@@ -1242,23 +1246,27 @@ namespace Microsoft.AspNetCore.Internal.Tests
 
             // Assert 1
             var storage = Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-            Assert.Equal(4, storage.Length);
+            Assert.Equal(10, storage.Length);
 
             // Act 2
             dict.TryAdd("key2", "value2");
             dict.TryAdd("key3", "value3");
             dict.TryAdd("key4", "value4");
             dict.TryAdd("key5", "value5");
+            dict.TryAdd("key6", "value2");
+            dict.TryAdd("key7", "value3");
+            dict.TryAdd("key8", "value4");
+            dict.TryAdd("key9", "value5");
+            dict.TryAdd("key10", "value2");
+            dict.TryAdd("key11", "value3");
 
             // Assert 2
-            storage = Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-            Assert.Empty(storage);
-
-            Assert.Equal(5, dict.Count);
+            Assert.Null(dict._arrayStorage);
+            Assert.Equal(11, dict.Count);
         }
 
         [Fact]
-        public void ListStorage_SwitchesToDictionaryAfter4_Index()
+        public void ListStorage_SwitchesToDictionaryAfter10_Index()
         {
             // Arrange
             var dict = new AdaptiveCapacityDictionary<string, object>();
@@ -1268,19 +1276,24 @@ namespace Microsoft.AspNetCore.Internal.Tests
 
             // Assert 1
             var storage = Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-            Assert.Equal(4, storage.Length);
+            Assert.Equal(10, storage.Length);
 
             // Act 2
             dict["key1"] = "value";
             dict["key2"] = "value";
             dict["key3"] = "value";
             dict["key4"] = "value";
+            dict["key5"] = "value";
+            dict["key6"] = "value";
+            dict["key7"] = "value";
+            dict["key8"] = "value";
+            dict["key9"] = "value";
+            dict["key10"] = "value";
 
             // Assert 2
             storage = Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
-            Assert.Empty(storage);
-
-            Assert.Equal(5, dict.Count);
+            Assert.Null(dict._arrayStorage);
+            Assert.Equal(11, dict.Count);
         }
 
         [Fact]
