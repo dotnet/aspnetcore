@@ -31,7 +31,6 @@
       "src\\Security\\Authentication\\OpenIdConnect\\src\\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj",
       "src\\Security\\Authentication\\OAuth\\src\\Microsoft.AspNetCore.Authentication.OAuth.csproj",
       "src\\Security\\Authentication\\Core\\src\\Microsoft.AspNetCore.Authentication.csproj",
-      "src\\Azure\\AzureAD\\samples\\AzureADSample\\AzureADSample.csproj",
       "src\\Security\\Authentication\\Cookies\\src\\Microsoft.AspNetCore.Authentication.Cookies.csproj",
       "src\\Security\\Authentication\\JwtBearer\\src\\Microsoft.AspNetCore.Authentication.JwtBearer.csproj"
     ]
