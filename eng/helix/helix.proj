@@ -30,8 +30,7 @@
     <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' != 'AnyCPU'">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
-
-  <!-- Specify the runtime we need -->
+  <!-- Specify the runtime we need which will be included as a correlation payload -->
   <ItemGroup>
     <!--
       When the targeting pack builds, it has exactly the same version as the shared framework. Passing
