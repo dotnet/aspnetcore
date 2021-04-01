@@ -46,11 +46,6 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             public DataAnnotationsEventSubscriptions(EditContext editContext)
             {
-                if (editContext == null)
-                {
-                    throw new ArgumentNullException(nameof(editContext));
-                }
-
                 _editContext = editContext ?? throw new ArgumentNullException(nameof(editContext));
                 _messages = new ValidationMessageStore(_editContext);
 
