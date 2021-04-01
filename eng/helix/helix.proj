@@ -30,6 +30,19 @@
     <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' != 'AnyCPU'">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
+
+  <!-- Specify the runtime we need -->
+  <ItemGroup>
+    <!--
+      When the targeting pack builds, it has exactly the same version as the shared framework. Passing
+      SharedFxVersion because that's needed even when the targeting pack isn't building.
+      Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
+    -->    
+    <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
+      <PackageType>runtime</PackageType>
+    </AdditionalDotNetPackage>
+  </ItemGroup>
+  
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
     <HelixType>ci</HelixType>
     <!-- Creator is not valid for internal queues -->
