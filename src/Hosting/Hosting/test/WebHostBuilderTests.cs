@@ -903,6 +903,27 @@ namespace Microsoft.AspNetCore.Hosting
             using (var host = builder.Build())
             {
                 Assert.Equal("1", builder.GetSetting("testhostingstartup1"));
+                Assert.Equal("1", builder.GetSetting("testhostingstartup1_calls"));
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
+        public void Build_RunsDeduplicatedHostingStartupAssembliesIfSpecified(IWebHostBuilder builder)
+        {
+            var fullName = typeof(TestStartupAssembly1.TestHostingStartup1).Assembly.FullName;
+            var name = typeof(TestStartupAssembly1.TestHostingStartup1).Assembly.GetName().Name;
+
+            builder = builder
+                .CaptureStartupErrors(false)
+                .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, fullName + ";" + name)
+                .Configure(app => { })
+                .UseServer(new TestServer());
+
+            using (var host = builder.Build())
+            {
+                Assert.Equal("1", builder.GetSetting("testhostingstartup1"));
+                Assert.Equal("1", builder.GetSetting("testhostingstartup1_calls"));
             }
         }
 
