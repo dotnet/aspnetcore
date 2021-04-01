@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         public RazorPagePropertyActivator(
             Type pageType,
-            Type declaredModelType,
+            Type? declaredModelType,
             IModelMetadataProvider metadataProvider,
             PropertyValueAccessors propertyValueAccessors)
         {
