@@ -23,8 +23,8 @@ namespace Microsoft.AspNetCore.Components.Routing
     public class Router : IComponent, IHandleAfterRender, IDisposable
     {
         static readonly char[] _queryOrHashStartChar = new[] { '?', '#' };
-        static readonly ReadOnlyDictionary<string, object> _emptyParametersDictionary
-            = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
+        static readonly IReadOnlyDictionary<string, object> _emptyParametersDictionary
+            = new Dictionary<string, object>();
 
         RenderHandle _renderHandle;
         string _baseUri;
