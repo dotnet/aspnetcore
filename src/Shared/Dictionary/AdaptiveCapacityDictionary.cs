@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Internal.Dictionary
+namespace Microsoft.AspNetCore.Internal
 {
     /// <summary>
     /// An <see cref="IDictionary{String, Object}"/> type to hold a small amount of items (4 or less in the common case).
@@ -18,70 +18,10 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         // Threshold for size of array to use.
         private static readonly int DefaultArrayThreshold = 4;
 
-        internal KeyValuePair<TKey, TValue>[] _arrayStorage;
+        internal KeyValuePair<TKey, TValue>[]? _arrayStorage;
         private int _count;
         internal Dictionary<TKey, TValue>? _dictionaryStorage;
         private IEqualityComparer<TKey> _comparer;
-
-        /// <summary>
-        /// Creates a new <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/> from the provided array.
-        /// The new instance will take ownership of the array, and may mutate it.
-        /// </summary>
-        /// <param name="items">The items array.</param>
-        /// <param name="comparer">Equality comparison.</param>
-        /// <returns>A new <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/>.</returns>
-        public static AdaptiveCapacityDictionary<TKey, TValue> FromArray(KeyValuePair<TKey, TValue>[] items, IEqualityComparer<TKey>? comparer = null)
-        {
-            if (items == null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            comparer = comparer ?? EqualityComparer<TKey>.Default;
-
-            if (items.Length > DefaultArrayThreshold)
-            {
-                // Use dictionary for large arrays.
-                return new AdaptiveCapacityDictionary<TKey, TValue>(items, capacity: items.Length,comparer);
-            }
-
-            // We need to compress the array by removing non-contiguous items. We
-            // typically have a very small number of items to process. We don't need
-            // to preserve order.
-            var start = 0;
-            var end = items.Length - 1;
-
-            // We walk forwards from the beginning of the array and fill in 'null' slots.
-            // We walk backwards from the end of the array end move items in non-null' slots
-            // into whatever start is pointing to. O(n)
-            while (start <= end)
-            {
-                if (items[start].Key != null)
-                {
-                    start++;
-                }
-                else if (items[end].Key != null)
-                {
-                    // Swap this item into start and advance
-                    items[start] = items[end];
-                    items[end] = default;
-                    start++;
-                    end--;
-                }
-                else
-                {
-                    // Both null, we need to hold on 'start' since we
-                    // still need to fill it with something.
-                    end--;
-                }
-            }
-
-            return new AdaptiveCapacityDictionary<TKey, TValue>()
-            {
-                _arrayStorage = items!,
-                _count = start,
-            };
-        }
 
         /// <summary>
         /// Creates an empty <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/>.
@@ -147,9 +87,10 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// <see cref="IDictionary{TKey, TValue}"/> or <see cref="IReadOnlyDictionary{TKey, TValue}"/>
         /// or an object with public properties as key-value pairs.
         /// </param>
+        /// <remarks>This constructor is unoptimized and primarily used for tests.</remarks>
         /// <param name="comparer">Equality comparison.</param>
         /// <param name="capacity">Initial capacity.</param>
-        public AdaptiveCapacityDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values, int capacity, IEqualityComparer<TKey> comparer)
+        internal AdaptiveCapacityDictionary(IEnumerable<KeyValuePair<TKey, TValue>> values, int capacity, IEqualityComparer<TKey> comparer)
         {
             _comparer = comparer ?? EqualityComparer<TKey>.Default;
 
@@ -182,28 +123,27 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 {
                     ThrowArgumentNullExceptionForKey();
                 }
-
-                if (_dictionaryStorage != null)
+                if (_arrayStorage != null)
                 {
-                    _dictionaryStorage[key] = value;
-                    return;
-                }
-
-                var index = FindIndex(key);
-                if (index < 0)
-                {
-                    EnsureCapacity(_count + 1);
-                    if (_dictionaryStorage != null)
+                    var index = FindIndex(key);
+                    if (index < 0)
                     {
-                        _dictionaryStorage[key] = value;
-                        return;
+                        EnsureCapacity(_count + 1);
+                        if (_dictionaryStorage != null)
+                        {
+                            _dictionaryStorage[key] = value;
+                            return;
+                        }
+                        _arrayStorage[_count++] = new KeyValuePair<TKey, TValue>(key, value);
                     }
-                    _arrayStorage[_count++] = new KeyValuePair<TKey, TValue>(key, value);
+                    else
+                    {
+                        _arrayStorage[index] = new KeyValuePair<TKey, TValue>(key, value);
+                    }
                 }
-                else
-                {
-                    _arrayStorage[index] = new KeyValuePair<TKey, TValue>(key, value);
-                }
+
+                _dictionaryStorage![key] = value;
+                return;
             }
         }
 
@@ -237,19 +177,21 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         {
             get
             {
-                if (_dictionaryStorage != null)
+                if (_arrayStorage != null)
                 {
-                    return _dictionaryStorage.Keys;
+                    // TODO if common operation, make keys and values
+                    // in separate arrays to avoid copying.
+                    var array = _arrayStorage;
+                    var keys = new TKey[_count];
+                    for (var i = 0; i < keys.Length; i++)
+                    {
+                        keys[i] = array[i].Key;
+                    }
+
+                    return keys;
                 }
 
-                var array = _arrayStorage;
-                var keys = new TKey[_count];
-                for (var i = 0; i < keys.Length; i++)
-                {
-                    keys[i] = array[i].Key;
-                }
-
-                return keys;
+                return _dictionaryStorage!.Keys;
             }
         }
 
@@ -260,19 +202,21 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         {
             get
             {
-                if (_dictionaryStorage != null)
+                if (_arrayStorage != null)
                 {
-                    return _dictionaryStorage.Values;
+                    // TODO if common operation, make keys and values
+                    // in separate arrays to avoid copying.
+                    var array = _arrayStorage;
+                    var values = new TValue[_count];
+                    for (var i = 0; i < values.Length; i++)
+                    {
+                        values[i] = array[i].Value;
+                    }
+
+                    return values;
                 }
 
-                var array = _arrayStorage;
-                var values = new TValue[_count];
-                for (var i = 0; i < values.Length; i++)
-                {
-                    values[i] = array[i].Value;
-                }
-
-                return values;
+                return _dictionaryStorage!.Values;
             }
         }
 
@@ -281,13 +225,13 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// <inheritdoc />
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
         {
-            if (_dictionaryStorage != null)
+            if (_arrayStorage != null)
             {
-                ((ICollection<KeyValuePair<TKey, TValue>>)_dictionaryStorage).Add(item);
-                return;
+                Add(item.Key, item.Value);
             }
 
-            Add(item.Key, item.Value);
+            ((ICollection<KeyValuePair<TKey, TValue>>)_dictionaryStorage!).Add(item);
+            return;
         }
 
         /// <inheritdoc />
@@ -298,27 +242,33 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 ThrowArgumentNullExceptionForKey();
             }
 
+            if (_arrayStorage != null)
+            {
+                EnsureCapacity(_count + 1);
+
+                if (_dictionaryStorage != null)
+                {
+                    Debug.Assert(_arrayStorage == null);
+                    _dictionaryStorage.Add(key, value);
+                    return;
+                }
+
+                if (ContainsKeyArray(key))
+                {
+                    throw new ArgumentException($"An element with the key '{key}' already exists in the {nameof(AdaptiveCapacityDictionary<TKey, TValue>)}.", nameof(key));
+                }
+
+                _arrayStorage[_count] = new KeyValuePair<TKey, TValue>(key, value);
+                _count++;
+            }
+
             if (_dictionaryStorage != null)
             {
                 _dictionaryStorage.Add(key, value);
                 return;
             }
 
-            EnsureCapacity(_count + 1);
-
-            if (_dictionaryStorage != null)
-            {
-                _dictionaryStorage.Add(key, value);
-                return;
-            }
-
-            if (ContainsKeyArray(key))
-            {
-                throw new ArgumentException($"An element with the key '{key}' already exists in the {nameof(AdaptiveCapacityDictionary<TKey, TValue>)}.", nameof(key));
-            }
-
-            _arrayStorage[_count] = new KeyValuePair<TKey, TValue>(key, value);
-            _count++;
+            
         }
 
         /// <inheritdoc />
@@ -333,10 +283,11 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             {
                 return;
             }
-
-            Array.Clear(_arrayStorage, 0, _count);
-            _count = 0;
-            _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
+            if (_arrayStorage != null)
+            {
+                Array.Clear(_arrayStorage, 0, _count);
+                _count = 0;
+            }
         }
 
         /// <inheritdoc />
@@ -387,25 +338,19 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             }
 
-            if (_dictionaryStorage != null)
+            if (_arrayStorage != null)
             {
-                var i = 0;
-                foreach (var kvp in _dictionaryStorage)
+                if (Count == 0)
                 {
-                    array[i] = kvp;
-                    i++;
+                    return;
                 }
 
+                var storage = _arrayStorage;
+                Array.Copy(storage, 0, array, arrayIndex, _count);
                 return;
             }
 
-            if (Count == 0)
-            {
-                return;
-            }
-
-            var storage = _arrayStorage;
-            Array.Copy(storage, 0, array, arrayIndex, _count);
+            ((ICollection<KeyValuePair<TKey, TValue>>)_dictionaryStorage!).CopyTo(array, arrayIndex);
         }
 
         /// <inheritdoc />
@@ -439,27 +384,27 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         /// <inheritdoc />
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
-            if (_dictionaryStorage != null)
+            if (_arrayStorage != null)
             {
-                return ((ICollection<KeyValuePair<TKey, TValue>>)_dictionaryStorage).Remove(item);
-            }
+                if (Count == 0)
+                {
+                    return false;
+                }
 
-            if (Count == 0)
-            {
+                var index = FindIndex(item.Key);
+                var array = _arrayStorage;
+                if (index >= 0 && EqualityComparer<TValue>.Default.Equals(array[index].Value, item.Value))
+                {
+                    Array.Copy(array, index + 1, array, index, _count - index);
+                    _count--;
+                    array[_count] = default;
+                    return true;
+                }
+
                 return false;
             }
 
-            var index = FindIndex(item.Key);
-            var array = _arrayStorage;
-            if (index >= 0 && EqualityComparer<TValue>.Default.Equals(array[index].Value, item.Value))
-            {
-                Array.Copy(array, index + 1, array, index, _count - index);
-                _count--;
-                array[_count] = default;
-                return true;
-            }
-
-            return false;
+             return ((ICollection<KeyValuePair<TKey, TValue>>)_dictionaryStorage!).Remove(item);
         }
 
         /// <inheritdoc />
@@ -470,28 +415,28 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 ThrowArgumentNullExceptionForKey();
             }
 
-            if (_dictionaryStorage != null)
+            if (_arrayStorage != null)
             {
-                return _dictionaryStorage.Remove(key);
-            }
+                if (Count == 0)
+                {
+                    return false;
+                }
 
-            if (Count == 0)
-            {
+                var index = FindIndex(key);
+                if (index >= 0)
+                {
+                    _count--;
+                    var array = _arrayStorage;
+                    Array.Copy(array, index + 1, array, index, _count - index);
+                    array[_count] = default;
+
+                    return true;
+                }
+
                 return false;
             }
 
-            var index = FindIndex(key);
-            if (index >= 0)
-            {
-                _count--;
-                var array = _arrayStorage;
-                Array.Copy(array, index + 1, array, index, _count - index);
-                array[_count] = default;
-
-                return true;
-            }
-
-            return false;
+            return _dictionaryStorage!.Remove(key);
         }
 
         /// <summary>
@@ -509,31 +454,31 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 ThrowArgumentNullExceptionForKey();
             }
 
-            if (_dictionaryStorage != null)
+            if (_arrayStorage != null)
             {
-                return _dictionaryStorage.Remove(key, out value);
-            }
+                if (_count == 0)
+                {
+                    value = default;
+                    return false;
+                }
 
-            if (_count == 0)
-            {
+                var index = FindIndex(key);
+                if (index >= 0)
+                {
+                    _count--;
+                    var array = _arrayStorage;
+                    value = array[index].Value;
+                    Array.Copy(array, index + 1, array, index, _count - index);
+                    array[_count] = default;
+
+                    return true;
+                }
+
                 value = default;
                 return false;
             }
 
-            var index = FindIndex(key);
-            if (index >= 0)
-            {
-                _count--;
-                var array = _arrayStorage;
-                value = array[index].Value;
-                Array.Copy(array, index + 1, array, index, _count - index);
-                array[_count] = default;
-
-                return true;
-            }
-
-            value = default;
-            return false;
+            return _dictionaryStorage!.Remove(key, out value);
         }
 
         /// <summary>
@@ -549,20 +494,26 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                 ThrowArgumentNullExceptionForKey();
             }
 
-            if (_dictionaryStorage != null)
+            if (_arrayStorage != null)
             {
-                return _dictionaryStorage.TryAdd(key, value);
+                if (ContainsKeyCore(key))
+                {
+                    return false;
+                }
+
+                EnsureCapacity(Count + 1);
+
+                if (_dictionaryStorage != null)
+                {
+                    return _dictionaryStorage.TryAdd(key, value);
+                }
+
+                _arrayStorage[Count] = new KeyValuePair<TKey, TValue>(key, value);
+                _count++;
+                return true;
             }
 
-            if (ContainsKeyCore(key))
-            {
-                return false;
-            }
-
-            EnsureCapacity(Count + 1);
-            _arrayStorage[Count] = new KeyValuePair<TKey, TValue>(key, value);
-            _count++;
-            return true;
+            return _dictionaryStorage!.TryAdd(key, value);
         }
 
         /// <inheritdoc />
@@ -596,6 +547,8 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
 
         private void EnsureCapacitySlow(int capacity)
         {
+            Debug.Assert(_arrayStorage != null);
+
             if (_arrayStorage.Length < capacity)
             {
                 if (capacity > DefaultArrayThreshold)
@@ -607,7 +560,7 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
                     }
 
                     // Clear array storage.
-                    _arrayStorage = Array.Empty<KeyValuePair<TKey, TValue>>();
+                    _arrayStorage = null;
                 }
                 else
                 {
@@ -629,13 +582,14 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             // Generally the bounds checking here will be elided by the JIT because this will be called
             // on the same code path as EnsureCapacity.
             Debug.Assert(_dictionaryStorage == null);
+            Debug.Assert(_arrayStorage != null);
 
             var array = _arrayStorage;
             var count = _count;
 
             for (var i = 0; i < count; i++)
             {
-                if (_comparer.Equals(array[i].Key, key))
+                if (_comparer.Equals(array![i].Key, key))
                 {
                     return i;
                 }
@@ -648,19 +602,16 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         private bool TryFindItem(TKey key, out TValue? value)
         {
             Debug.Assert(_dictionaryStorage == null);
+            Debug.Assert(_arrayStorage != null);
 
-            var array = _arrayStorage;
-            var count = _count;
+            var storage = _arrayStorage.AsSpan(0, _count);
 
-            if ((uint)count <= (uint)array.Length)
+            foreach (ref var item in storage)
             {
-                for (var i = 0; i < count; i++)
+                if (_comparer.Equals(item.Key, key))
                 {
-                    if (_comparer.Equals(array[i].Key, key))
-                    {
-                        value = array[i].Value;
-                        return true;
-                    }
+                    value = item.Value;
+                    return true;
                 }
             }
 
@@ -672,18 +623,15 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
         private bool ContainsKeyArray(TKey key)
         {
             Debug.Assert(_dictionaryStorage == null);
+            Debug.Assert(_arrayStorage != null);
 
-            var array = _arrayStorage;
-            var count = _count;
+            var storage = _arrayStorage.AsSpan(0, _count);
 
-            if ((uint)count <= (uint)array.Length)
+            foreach (ref var item in storage)
             {
-                for (var i = 0; i < count; i++)
+                if (_comparer.Equals(item.Key, key))
                 {
-                    if (_comparer.Equals(array[i].Key, key))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -731,12 +679,17 @@ namespace Microsoft.AspNetCore.Internal.Dictionary
             public bool MoveNext()
             {
                 var dictionary = _dictionary;
+                if (_dictionary._arrayStorage == null)
+                {
+                    return false;
+                }
+
                 if (dictionary._count <= _index)
                 {
                     return false;
                 }
 
-                Current = dictionary._arrayStorage[_index];
+                Current = dictionary._arrayStorage![_index];
                 _index++;
                 return true;
             }

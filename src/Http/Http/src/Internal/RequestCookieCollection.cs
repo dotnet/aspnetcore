@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
-using Microsoft.AspNetCore.Internal.Dictionary;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Net.Http.Headers;
 using System.Linq;
 
