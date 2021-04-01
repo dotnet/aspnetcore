@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.False(editContext.Validate());
             Assert.NotEmpty(editContext.GetValidationMessages());
 
-            // Act/Assert 2: when wer're detached
+            // Act/Assert 2: when we're detached
             subscription.Dispose();
             Assert.True(editContext.Validate());
             Assert.Empty(editContext.GetValidationMessages());
