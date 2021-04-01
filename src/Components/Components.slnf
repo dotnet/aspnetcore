@@ -34,7 +34,7 @@
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Client\\Wasm.Authentication.Client.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Shared\\Wasm.Authentication.Shared.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Server\\Wasm.Authentication.Server.csproj",
-      "src\\Components\\WebAssembly\\testassets\\WasmLinkerTest\\WasmLinkerTest.csproj",
+      "src\\Components\\WebAssembly\\testassets\\WasmLinkerTest.csproj",
       "src\\Components\\Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
       "src\\Components\\Web\\test\\Microsoft.AspNetCore.Components.Web.Tests.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\Driver\\Wasm.Performance.Driver.csproj",
