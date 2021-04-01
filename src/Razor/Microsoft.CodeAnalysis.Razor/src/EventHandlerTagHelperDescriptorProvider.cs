@@ -34,6 +34,12 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
+            var targetAssembly = context.Items.GetTargetAssembly();
+            if (targetAssembly is not null && !SymbolEqualityComparer.Default.Equals(targetAssembly, eventHandlerAttribute.ContainingAssembly))
+            {
+                return;
+            }
+
             var eventHandlerData = GetEventHandlerData(context, compilation, eventHandlerAttribute);
 
             foreach (var tagHelper in CreateEventHandlerTagHelpers(eventHandlerData))
