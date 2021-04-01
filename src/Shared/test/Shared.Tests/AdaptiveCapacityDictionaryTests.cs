@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Internal.Dictionary;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
