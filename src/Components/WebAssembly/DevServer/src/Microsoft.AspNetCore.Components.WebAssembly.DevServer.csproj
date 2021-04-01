@@ -25,10 +25,10 @@
   <Target Name="_CreateRuntimeConfig" BeforeTargets="CoreBuild">
     <PropertyGroup>
       <_RuntimeConfigProperties>
-        MicrosoftAspNetCoreAppVersion=$(MicrosoftAspNetCoreAppVersion);
+        SharedFxVersion=$(SharedFxVersion);
       </_RuntimeConfigProperties>
 
-      <_RuntimeConfigPath>$(PublishDir)blazor-devserver.runtimeconfig.json</_RuntimeConfigPath>
+      <_RuntimeConfigPath>$(IntermediateOutputPath)blazor-devserver.runtimeconfig.json</_RuntimeConfigPath>
     </PropertyGroup>
 
     <GenerateFileFromTemplate
@@ -46,6 +46,7 @@
 
   <ItemGroup>
     <NuspecProperty Include="publishDir=$(PublishDir)" />
+    <NuspecProperty Include="objDir=$(IntermediateOutputPath)" />
     <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
   </ItemGroup>
 
