@@ -39,8 +39,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         class DataAnnotationsEventSubscriptions : IDisposable
         {
-            private static ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> _propertyInfoCache
-                = new ConcurrentDictionary<(Type, string), PropertyInfo?>();
+            private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> _propertyInfoCache = new();
 
             private readonly EditContext _editContext;
             private readonly ValidationMessageStore _messages;
