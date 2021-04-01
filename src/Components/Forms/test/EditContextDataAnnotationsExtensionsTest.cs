@@ -13,15 +13,17 @@ namespace Microsoft.AspNetCore.Components.Forms
         public void CannotUseNullEditContext()
         {
             var editContext = (EditContext)null;
-            var ex = Assert.Throws<ArgumentNullException>(() => editContext.AddDataAnnotationsValidation());
+            var ex = Assert.Throws<ArgumentNullException>(() => editContext.EnableDataAnnotationsValidation());
             Assert.Equal("editContext", ex.ParamName);
         }
 
         [Fact]
-        public void ReturnsEditContextForChaining()
+        public void ObsoleteApiReturnsEditContextForChaining()
         {
             var editContext = new EditContext(new object());
+#pragma warning disable 0618
             var returnValue = editContext.AddDataAnnotationsValidation();
+#pragma warning restore 0618
             Assert.Same(editContext, returnValue);
         }
 
@@ -30,7 +32,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Arrange
             var model = new TestModel { IntFrom1To100 = 101 };
-            var editContext = new EditContext(model).AddDataAnnotationsValidation();
+            var editContext = new EditContext(model);
+            editContext.EnableDataAnnotationsValidation();
 
             // Act
             var isValid = editContext.Validate();
@@ -59,7 +62,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Arrange
             var model = new TestModel { IntFrom1To100 = 101 };
-            var editContext = new EditContext(model).AddDataAnnotationsValidation();
+            var editContext = new EditContext(model);
+            editContext.EnableDataAnnotationsValidation();
 
             // Act/Assert 1: Initially invalid
             Assert.False(editContext.Validate());
@@ -75,7 +79,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Arrange
             var model = new TestModel { IntFrom1To100 = 101 };
-            var editContext = new EditContext(model).AddDataAnnotationsValidation();
+            var editContext = new EditContext(model);
+            editContext.EnableDataAnnotationsValidation();
             var onValidationStateChangedCount = 0;
             editContext.OnValidationStateChanged += (sender, eventArgs) => onValidationStateChangedCount++;
 
@@ -102,7 +107,8 @@ namespace Microsoft.AspNetCore.Components.Forms
             // Arrange
             var model = new TestModel { IntFrom1To100 = 101 };
             var independentTopLevelModel = new object(); // To show we can validate things on any model, not just the top-level one
-            var editContext = new EditContext(independentTopLevelModel).AddDataAnnotationsValidation();
+            var editContext = new EditContext(independentTopLevelModel);
+            editContext.EnableDataAnnotationsValidation();
             var onValidationStateChangedCount = 0;
             var requiredStringIdentifier = new FieldIdentifier(model, nameof(TestModel.RequiredString));
             var intFrom1To100Identifier = new FieldIdentifier(model, nameof(TestModel.IntFrom1To100));
@@ -141,7 +147,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         public void IgnoresFieldChangesThatDoNotCorrespondToAValidatableProperty(string fieldName)
         {
             // Arrange
-            var editContext = new EditContext(new TestModel()).AddDataAnnotationsValidation();
+            var editContext = new EditContext(new TestModel());
+            editContext.EnableDataAnnotationsValidation();
             var onValidationStateChangedCount = 0;
             editContext.OnValidationStateChanged += (sender, eventArgs) => onValidationStateChangedCount++;
 
@@ -152,6 +159,24 @@ namespace Microsoft.AspNetCore.Components.Forms
             // Act/Assert: For sanity, observe that we would have validated if it was a validatable property
             editContext.NotifyFieldChanged(editContext.Field(nameof(TestModel.RequiredString)));
             Assert.Equal(1, onValidationStateChangedCount);
+        }
+
+        [Fact]
+        public void CanDetachFromEditContext()
+        {
+            // Arrange
+            var model = new TestModel { IntFrom1To100 = 101 };
+            var editContext = new EditContext(model);
+            var subscription = editContext.EnableDataAnnotationsValidation();
+
+            // Act/Assert 1: when we're attached
+            Assert.False(editContext.Validate());
+            Assert.NotEmpty(editContext.GetValidationMessages());
+
+            // Act/Assert 2: when wer're detached
+            subscription.Dispose();
+            Assert.True(editContext.Validate());
+            Assert.Empty(editContext.GetValidationMessages());
         }
 
         class TestModel
