@@ -361,7 +361,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                         // Odd case but don't throw just because ErrorContext had an odd-looking path.
                         break;
                     }
-                    
                     metadata = propertyMetadata;
                     index = endIndex;
                 }

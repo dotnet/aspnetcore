@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var result = await base.ReadRequestBodyAsync(context, encoding);
             if (!result.HasError)
             {
-                if (result.Model is IJsonPatchDocument jsonPatchDocument && SerializerSettings.ContractResolver != null)
+                if (result.Model is IJsonPatchDocument jsonPatchDocument && SerializerSettings.ContractResolver is not  null)
                 {
                     jsonPatchDocument.ContractResolver = SerializerSettings.ContractResolver;
                 }

@@ -58,6 +58,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 new EventId(5, "ViewCompilerLocatedCompiledViewForPath"),
                 "Located compiled view for view at path '{Path}'.");
 
+            // 6, ViewCompilerRecompilingCompiledView - removed
+
             _viewCompilerCouldNotFindFileToCompileForPath = LoggerMessage.Define<string>(
                 LogLevel.Trace,
                 new EventId(7, "ViewCompilerCouldNotFindFileAtPath"),

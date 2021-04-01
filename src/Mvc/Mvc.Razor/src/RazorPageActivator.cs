@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 var modelType = providedModelType;
                 if (modelType == null)
                 {
-                    modelType = pageType.GetRuntimeProperty(ModelPropertyName)?.PropertyType!;
+                    modelType = pageType.GetRuntimeProperty(ModelPropertyName)?.PropertyType;
                 }
 
                 propertyActivator = new RazorPagePropertyActivator(
