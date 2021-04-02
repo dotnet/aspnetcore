@@ -185,68 +185,30 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal("targetFactory", exNullTargetFactory.ParamName);
         }
 
-        public static IEnumerable<object[]> FromRouteResult
-        {
-            get
-            {
-                void TestAction(HttpContext httpContext, [FromRoute] int value)
-                {
-                    StoreInput(httpContext, value);
-                };
-
-                Task TaskTestAction(HttpContext httpContext, [FromRoute] int value)
-                {
-                    StoreInput(httpContext, value);
-                    return Task.CompletedTask;
-                }
-
-                ValueTask ValueTaskTestAction(HttpContext httpContext, [FromRoute] int value)
-                {
-                    StoreInput(httpContext, value);
-                    return ValueTask.CompletedTask;
-                }
-
-                return new List<object[]>
-                {
-                    new object[] { (Action<HttpContext, int>)TestAction },
-                    new object[] { (Func<HttpContext, int, Task>)TaskTestAction },
-                    new object[] { (Func<HttpContext, int, ValueTask>)ValueTaskTestAction },
-                };
-            }
-        }
         private static void StoreInput(HttpContext httpContext, object value)
         {
             httpContext.Items.Add("input", value);
         }
 
-        [Theory]
-        [MemberData(nameof(FromRouteResult))]
-        public async Task RequestDelegatePopulatesFromRouteParameterBasedOnParameterName(Delegate @delegate)
+        [Fact]
+        public async Task RequestDelegatePopulatesFromRouteParameterBasedOnParameterName()
         {
             const string paramName = "value";
             const int originalRouteParam = 42;
 
+            void TestAction(HttpContext httpContext, [FromRoute] int value)
+            {
+                StoreInput(httpContext, value);
+            }
+
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestAction);
 
             await requestDelegate(httpContext);
 
             Assert.Equal(originalRouteParam, httpContext.Items["input"] as int?);
-        }
-
-        public static IEnumerable<object[]> FromRouteOptionalResult
-        {
-            get
-            {
-                return new List<object[]>
-                {
-                    new object[] { (Action<HttpContext, int>)TestAction },
-                    new object[] { (Func<HttpContext, int, Task>)TaskTestAction },
-                    new object[] { (Func<HttpContext, int, ValueTask>)ValueTaskTestAction }
-                };
-            }
         }
 
         private static void TestAction(HttpContext httpContext, [FromRoute] int value = 42)
@@ -254,34 +216,20 @@ namespace Microsoft.AspNetCore.Routing.Internal
             StoreInput(httpContext, value);
         }
 
-        private static Task TaskTestAction(HttpContext httpContext, [FromRoute] int value = 42)
-        {
-            StoreInput(httpContext, value);
-            return Task.CompletedTask;
-        }
-
-        private static ValueTask ValueTaskTestAction(HttpContext httpContext, [FromRoute] int value = 42)
-        {
-            StoreInput(httpContext, value);
-            return ValueTask.CompletedTask;
-        }
-
-        [Theory]
-        [MemberData(nameof(FromRouteOptionalResult))]
-        public async Task RequestDelegatePopulatesFromRouteOptionalParameter(Delegate @delegate)
+        [Fact]
+        public async Task RequestDelegatePopulatesFromRouteOptionalParameter()
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestAction);
 
             await requestDelegate(httpContext);
 
             Assert.Equal(42, httpContext.Items["input"] as int?);
         }
 
-        [Theory]
-        [MemberData(nameof(FromRouteOptionalResult))]
-        public async Task RequestDelegatePopulatesFromRouteOptionalParameterBasedOnParameterName(Delegate @delegate)
+        [Fact]
+        public async Task RequestDelegatePopulatesFromRouteOptionalParameterBasedOnParameterName()
         {
             const string paramName = "value";
             const int originalRouteParam = 47;
@@ -290,7 +238,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestAction);
 
             await requestDelegate(httpContext);
 
