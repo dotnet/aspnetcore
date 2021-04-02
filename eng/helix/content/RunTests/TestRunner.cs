@@ -205,8 +205,15 @@ namespace RunTests
                 if (File.Exists(Options.AspNetRef))
                 {
                     var refPath = $"{Options.DotnetRoot}/packs/Microsoft.AspNetCore.App.Ref/{Options.RuntimeVersion}";
-                    Console.WriteLine($"Found AspNetRef: {Options.AspNetRef}, extracting to {refPath}");
-                    ZipFile.ExtractToDirectory(Options.AspNetRef, refPath);
+                    if (Directory.Exists(refPath))
+                    {
+                        Console.WriteLine($"AspNetRef install skipped: {refPath} already exists.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Found AspNetRef: {Options.AspNetRef}, extracting to {refPath}");
+                        ZipFile.ExtractToDirectory(Options.AspNetRef, refPath);
+                    }
 
                     DisplayContents(refPath);
                 }
