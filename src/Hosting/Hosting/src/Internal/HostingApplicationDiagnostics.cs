@@ -24,16 +24,15 @@ namespace Microsoft.AspNetCore.Hosting
         private const string DeprecatedDiagnosticsEndRequestKey = "Microsoft.AspNetCore.Hosting.EndRequest";
         private const string DiagnosticsUnhandledExceptionKey = "Microsoft.AspNetCore.Hosting.UnhandledException";
 
-        private const string ActivitySourceName = "Microsoft.AspNetCore.Hosting";
-        private static readonly ActivitySource _activitySource = new ActivitySource(ActivitySourceName);
-
+        private readonly ActivitySource _activitySource;
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger _logger;
 
-        public HostingApplicationDiagnostics(ILogger logger, DiagnosticListener diagnosticListener)
+        public HostingApplicationDiagnostics(ILogger logger, DiagnosticListener diagnosticListener, ActivitySource activitySource)
         {
             _logger = logger;
             _diagnosticListener = diagnosticListener;
+            _activitySource = activitySource;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
