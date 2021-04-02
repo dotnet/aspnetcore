@@ -91,11 +91,9 @@ namespace PackageBaselineGenerator
             var baselineVersion = input.Root.Attribute("Version").Value;
 
             // Baseline and .NET Core versions always align in non-preview releases.
-            // But, NuspecReader reports netcoreapp5.0 instead of net5.0. We use net5.0 in Baseline.Designer.props.
             var parsedVersion = Version.Parse(baselineVersion);
             var defaultTarget = ((parsedVersion.Major < 5) ? "netcoreapp" : "net") +
                 $"{parsedVersion.Major}.{parsedVersion.Minor}";
-            var matchTarget = $"netcoreapp{parsedVersion.Major}.{parsedVersion.Minor}";
 
             var doc = new XDocument(
                 new XComment(" Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. "),
@@ -154,7 +152,7 @@ namespace PackageBaselineGenerator
                         var targetCondition = $"'$(TargetFramework)' == '{group.TargetFramework.GetShortFolderName()}'";
                         if (string.Equals(
                             group.TargetFramework.GetShortFolderName(),
-                            matchTarget,
+                            defaultTarget,
                             StringComparison.OrdinalIgnoreCase))
                         {
                             targetCondition =
