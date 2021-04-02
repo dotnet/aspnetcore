@@ -185,11 +185,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal("targetFactory", exNullTargetFactory.ParamName);
         }
 
-        private static void StoreInput(HttpContext httpContext, object value)
-        {
-            httpContext.Items.Add("input", value);
-        }
-
         [Fact]
         public async Task RequestDelegatePopulatesFromRouteParameterBasedOnParameterName()
         {
@@ -198,7 +193,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             void TestAction(HttpContext httpContext, [FromRoute] int value)
             {
-                StoreInput(httpContext, value);
+                httpContext.Items.Add("input", value);
             }
 
             var httpContext = new DefaultHttpContext();
@@ -208,12 +203,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(originalRouteParam, httpContext.Items["input"] as int?);
+            Assert.Equal(originalRouteParam, httpContext.Items["input"]);
         }
 
         private static void TestAction(HttpContext httpContext, [FromRoute] int value = 42)
         {
-            StoreInput(httpContext, value);
+            httpContext.Items.Add("input", value);
         }
 
         [Fact]
@@ -225,7 +220,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(42, httpContext.Items["input"] as int?);
+            Assert.Equal(42, httpContext.Items["input"]);
         }
 
         [Fact]
@@ -242,7 +237,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(47, httpContext.Items["input"] as int?);
+            Assert.Equal(47, httpContext.Items["input"]);
         }
 
         [Fact]
@@ -290,6 +285,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             Assert.Equal(0, deserializedRouteParam);
         }
+
+        // Insert new RouteValueTests.
 
         [Fact]
         public async Task RequestDelegatePopulatesFromQueryParameterBasedOnParameterName()
@@ -624,16 +621,33 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int, int>)TestAction));
         }
 
-        [Fact]
-        public async Task RequestDelegatePopulatesFromServiceParameterBasedOnParameterType()
+        public static object[][] FromServiceParameter
+        {
+            get
+            {
+                void TestExplicitFromService(HttpContext httpContext, [FromService] MyService myService)
+                {
+                    httpContext.Items.Add("service", myService);
+                }
+
+                void TestImpliedFromService(HttpContext httpContext, MyService myService)
+                {
+                    httpContext.Items.Add("service", myService);
+                }
+
+                return new[]
+                {
+                    new[] { (Action<HttpContext, MyService>)TestExplicitFromService },
+                    new[] { (Action<HttpContext, MyService>)TestImpliedFromService },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(FromServiceParameter))]
+        public async Task RequestDelegatePopulatesFromServiceParameterBasedOnParameterType(Delegate @delegate)
         {
             var myOriginalService = new MyService();
-            MyService? injectedService = null;
-
-            void TestAction([FromService] MyService myService)
-            {
-                injectedService = myService;
-            }
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(myOriginalService);
@@ -641,11 +655,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<MyService>)TestAction);
+            var requestDelegate = RequestDelegateFactory.Create((Action<MyService>)@delegate);
 
             await requestDelegate(httpContext);
 
-            Assert.Same(myOriginalService, injectedService);
+            Assert.Same(myOriginalService, httpContext.Items["service"]);
         }
 
         [Fact]
