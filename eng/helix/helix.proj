@@ -42,7 +42,7 @@
       Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
     <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
     -->
-    <AdditionalDotNetPackage Include="6.0.0-preview.3.21167.1">
+    <AdditionalDotNetPackage Include="6.0.0-preview.4.21201.1">
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
   </ItemGroup>
