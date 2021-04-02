@@ -37,9 +37,9 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 { "OutputPath", outputPath },
                 {
                     "SerializedMetadata",
-                    $"Identity={identity}|FirstForGenerator=true|" +
-                    $"CodeGenerator=NSwagCSharp|OutputPath={outputPath}|Namespace={@namespace}|" +
-                    $"OriginalItemSpec={identity}|ClassName=NSwagClient"
+                    $"Identity={identity}|CodeGenerator=NSwagCSharp|" +
+                    $"OriginalItemSpec={identity}|FirstForGenerator=true|" +
+                    $"OutputPath={outputPath}|ClassName=NSwagClient|Namespace={@namespace}"
                 },
             };
 
@@ -95,9 +95,9 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 { "OutputPath", outputPath },
                 {
                     "SerializedMetadata",
-                    $"Identity={identity}|FirstForGenerator=true|" +
-                    $"CodeGenerator=NSwagCSharp|OutputPath={outputPath}|Namespace={@namespace}|" +
-                    $"OriginalItemSpec={identity}|ClassName={className}"
+                    $"Identity={identity}|CodeGenerator=NSwagCSharp|" +
+                    $"ClassName={className}|OriginalItemSpec={identity}|FirstForGenerator=true|" +
+                    $"OutputPath={outputPath}|Namespace={@namespace}"
                 },
             };
 
@@ -153,9 +153,9 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 { "OutputPath", outputPath },
                 {
                     "SerializedMetadata",
-                    $"Identity={identity}|FirstForGenerator=true|" +
-                    $"CodeGenerator=NSwagCSharp|OutputPath={outputPath}|Namespace={@namespace}|" +
-                    $"OriginalItemSpec={identity}|ClassName=NSwagClient"
+                    $"Identity={identity}|CodeGenerator=NSwagCSharp|" +
+                    $"Namespace={@namespace}|OriginalItemSpec={identity}|FirstForGenerator=true|" +
+                    $"OutputPath={outputPath}|ClassName=NSwagClient"
                 },
             };
 
@@ -211,9 +211,9 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 { "OutputPath", outputPath },
                 {
                     "SerializedMetadata",
-                    $"Identity={identity}|FirstForGenerator=true|" +
-                    $"CodeGenerator=NSwagCSharp|OutputPath={outputPath}|Namespace={@namespace}|" +
-                    $"OriginalItemSpec={identity}|ClassName={className}"
+                    $"Identity={identity}|CodeGenerator=NSwagCSharp|" +
+                    $"OutputPath={outputPath}|OriginalItemSpec={identity}|FirstForGenerator=true|" +
+                    $"ClassName={className}|Namespace={@namespace}"
                 },
             };
 
@@ -361,9 +361,9 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 { "OutputPath", expectedOutputPath },
                 {
                     "SerializedMetadata",
-                    $"Identity={identity}|FirstForGenerator=true|" +
-                    $"CodeGenerator=NSwagCSharp|OutputPath={expectedOutputPath}|Namespace={@namespace}|" +
-                    $"OriginalItemSpec={identity}|ClassName={className}"
+                    $"Identity={identity}|CodeGenerator=NSwagCSharp|" +
+                    $"OutputPath={expectedOutputPath}|OriginalItemSpec={identity}|FirstForGenerator=true|" +
+                    $"ClassName={className}|Namespace={@namespace}"
                 },
             };
 
@@ -424,9 +424,9 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 { "OutputPath", expectedOutputPath },
                 {
                     "SerializedMetadata",
-                    $"Identity={identity}|FirstForGenerator=true|" +
-                    $"CodeGenerator=NSwagCSharp|OutputPath={expectedOutputPath}|Namespace={@namespace}|" +
-                    $"OriginalItemSpec={identity}|ClassName={className}"
+                    $"Identity={identity}|CodeGenerator=NSwagCSharp|" +
+                    $"OutputPath={expectedOutputPath}|OriginalItemSpec={identity}|FirstForGenerator=true|" +
+                    $"ClassName={className}|Namespace={@namespace}"
                 },
             };
 
@@ -491,9 +491,9 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 { "OutputPath", outputPath1 },
                 {
                     "SerializedMetadata",
-                    $"Identity={identity12}|FirstForGenerator=true|" +
-                    $"CodeGenerator={codeGenerator13}|OutputPath={outputPath1}|Namespace={@namespace}|" +
-                    $"OriginalItemSpec={identity12}|ClassName={className12}"
+                    $"Identity={identity12}|CodeGenerator={codeGenerator13}|" +
+                    $"OriginalItemSpec={identity12}|FirstForGenerator=true|" +
+                    $"OutputPath={outputPath1}|ClassName={className12}|Namespace={@namespace}"
                 },
             };
             var expectedMetadata2 = new SortedDictionary<string, string>(StringComparer.Ordinal)
@@ -506,9 +506,9 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 { "OutputPath", outputPath2 },
                 {
                     "SerializedMetadata",
-                    $"Identity={identity12}|FirstForGenerator=true|" +
-                    $"CodeGenerator={codeGenerator2}|OutputPath={outputPath2}|Namespace={@namespace}|" +
-                    $"OriginalItemSpec={identity12}|ClassName={className12}"
+                    $"Identity={identity12}|CodeGenerator={codeGenerator2}|" +
+                    $"OriginalItemSpec={identity12}|FirstForGenerator=true|" +
+                    $"OutputPath={outputPath2}|ClassName={className12}|Namespace={@namespace}"
                 },
             };
             var expectedMetadata3 = new SortedDictionary<string, string>(StringComparer.Ordinal)
@@ -521,9 +521,9 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 { "OutputPath", outputPath3 },
                 {
                     "SerializedMetadata",
-                    $"Identity={identity3}|FirstForGenerator=false|" +
-                    $"CodeGenerator={codeGenerator13}|OutputPath={outputPath3}|Namespace={@namespace}|" +
-                    $"OriginalItemSpec={identity3}|ClassName={className3}"
+                    $"Identity={identity3}|CodeGenerator={codeGenerator13}|" +
+                    $"OriginalItemSpec={identity3}|FirstForGenerator=false|" +
+                    $"OutputPath={outputPath3}|ClassName={className3}|Namespace={@namespace}"
                 },
             };
 
