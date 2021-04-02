@@ -40,8 +40,9 @@
       When the targeting pack builds, it has exactly the same version as the shared framework. Passing
       SharedFxVersion because that's needed even when the targeting pack isn't building.
       Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
-    -->    
     <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
+    -->
+    <AdditionalDotNetPackage Include="6.0.0-preview.3.21167.1">
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
   </ItemGroup>
