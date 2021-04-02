@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-dotnet_sdk_version="$2"
-dotnet_runtime_version="$3"
-helixQueue="$5"
-installPlaywright="${10}"
+helixQueue="$3"
+installPlaywright="$8"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -81,8 +79,8 @@ exit_code=0
 echo "Restore: dotnet restore RunTests/RunTests.csproj --ignore-failed-sources"
 dotnet restore RunTests/RunTests.csproj --ignore-failed-sources
 
-echo "Running tests: dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $helixQueue --arch $6 --quarantined $7 --ef $8 --helixTimeout $9"
-dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $helixQueue --arch $6 --quarantined $7 --ef $8 --helixTimeout $9
+echo "Running tests: dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --ef $6 --helixTimeout $7"
+dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --ef $6 --helixTimeout $7
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 
