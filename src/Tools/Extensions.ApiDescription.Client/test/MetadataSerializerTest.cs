@@ -185,10 +185,10 @@ namespace Microsoft.Extensions.ApiDescription.Client
             };
 
             var input = new TaskItem(identity, metadata);
-            var expectedResult = $"Identity={identity}|FirstForGenerator=true|" +
-                "Options=|CodeGenerator=NSwagCSharp|" +
-                "OutputPath=C:\\dd\\dnx\\AspNetCore\\artifacts\\obj\\ConsoleClient\\azureMonitorClient.cs|" +
-                "Namespace=ConsoleClient|OriginalItemSpec=../files/azureMonitor.json|ClassName=azureMonitorClient";
+            var expectedResult = $"Identity={identity}|ClassName=azureMonitorClient|" +
+                "CodeGenerator=NSwagCSharp|FirstForGenerator=true|Namespace=ConsoleClient|" +
+                "Options=|OriginalItemSpec=../files/azureMonitor.json|" +
+                "OutputPath=C:\\dd\\dnx\\AspNetCore\\artifacts\\obj\\ConsoleClient\\azureMonitorClient.cs";
 
             // Act
             var result = MetadataSerializer.SerializeMetadata(input);
