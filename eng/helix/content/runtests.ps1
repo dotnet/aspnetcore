@@ -1,7 +1,5 @@
 param(
     [string]$Target,
-    [string]$SdkVersion,
-    [string]$RuntimeVersion,
     [string]$AspRuntimeVersion,
     [string]$Queue,
     [string]$Arch,
