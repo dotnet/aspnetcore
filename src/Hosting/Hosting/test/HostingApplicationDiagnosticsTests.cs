@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             hostingApplication.CreateContext(features);
             Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
 
-            var expectedBaggage = new []
+            var expectedBaggage = new[]
             {
                 KeyValuePair.Create("Key1","value1"),
                 KeyValuePair.Create("Key2","value2"),
@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         private static HostingApplication CreateApplication(out FeatureCollection features,
-            DiagnosticListener diagnosticListener = null, ILogger logger = null, Action<DefaultHttpContext> configure = null)
+            DiagnosticListener diagnosticListener = null, ActivitySource activitySource = null, ILogger logger = null, Action<DefaultHttpContext> configure = null)
         {
             var httpContextFactory = new Mock<IHttpContextFactory>();
 
@@ -548,6 +548,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 ctx => Task.CompletedTask,
                 logger ?? new NullScopeLogger(),
                 diagnosticListener ?? new NoopDiagnosticListener(),
+                activitySource ?? new ActivitySource("Microsoft.AspNetCore"),
                 httpContextFactory.Object);
 
             return hostingApplication;
