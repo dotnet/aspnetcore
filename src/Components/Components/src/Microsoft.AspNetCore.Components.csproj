@@ -30,7 +30,6 @@
   <ItemGroup>
     <SuppressBaselineReference Include="Microsoft.AspNetCore.Components.Analyzers" InNuspecFile="true" />
     <SuppressBaselineReference Include="Microsoft.AspNetCore.Authorization" InNuspecFile="true" />
-    <SuppressBaselineReference Include="Microsoft.JSInterop" Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' " />
   </ItemGroup>
 
   <ItemGroup>
