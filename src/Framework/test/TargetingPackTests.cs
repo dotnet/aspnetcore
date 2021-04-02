@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore
             _targetingPackTfm = TestData.GetDefaultNetCoreTargetFramework();
             var root = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) ?
                 TestData.GetTestDataValue("TargetingPackLayoutRoot") :
-                Environment.GetEnvironmentVariable("DOTNET_ROOT");
+                Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
             _targetingPackRoot = Path.Combine(
                 root,
                 "packs",
