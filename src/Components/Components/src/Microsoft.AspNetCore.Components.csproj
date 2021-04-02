@@ -28,7 +28,8 @@
       Major.Minor during previews. After RTM (and baseline updates), remove suppressions entirely.
   -->
   <ItemGroup>
-    <SuppressBaselineReference Include="Microsoft.JSInterop" Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' " />
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Components.Analyzers" InNuspecFile="true" />
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Authorization" InNuspecFile="true" />
   </ItemGroup>
 
   <ItemGroup>
