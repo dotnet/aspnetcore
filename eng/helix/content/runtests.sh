@@ -11,6 +11,10 @@ YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# Prevent fallback to global .NET locations. This ensures our tests use the shared frameworks we specify and don't rollforward to something else that might be installed on the machine
+export DOTNET_MULTILEVEL_LOOKUP=0
+export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+
 export PATH="$PATH:$DIR/node/bin"
 
 # Set playwright stuff
