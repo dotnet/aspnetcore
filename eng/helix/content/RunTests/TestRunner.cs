@@ -122,7 +122,7 @@ namespace RunTests
             {
                 if (File.Exists(Options.AspNetRuntime))
                 {
-                    var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
+                    var appRuntimePath = $"{Options.HELIX_WORKITEM_ROOT}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
                     Console.WriteLine($"Creating directory: {appRuntimePath}");
                     Directory.CreateDirectory(appRuntimePath);
                     Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
@@ -204,7 +204,7 @@ namespace RunTests
             {
                 if (File.Exists(Options.AspNetRef))
                 {
-                    var refPath = $"{Options.DotnetRoot}/packs/Microsoft.AspNetCore.App.Ref/{Options.RuntimeVersion}";
+                    var refPath = $"{Options.HELIX_WORKITEM_ROOT}/packs/Microsoft.AspNetCore.App.Ref/{Options.RuntimeVersion}";
                     if (Directory.Exists(refPath))
                     {
                         Console.WriteLine($"AspNetRef install skipped: {refPath} already exists.");
