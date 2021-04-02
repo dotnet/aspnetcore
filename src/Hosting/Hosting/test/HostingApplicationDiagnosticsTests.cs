@@ -493,17 +493,18 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.True(Activity.Current.Recorded);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30582")]
+        [Fact]
         public void ActivityListenersAreCalled()
         {
             var hostingApplication = CreateApplication(out var features);
+            var parentSpanId = "";
             using var listener = new ActivityListener
             {
                 ShouldListenTo = activitySource => true,
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
                 ActivityStarted = activity =>
                 {
-                    Assert.Equal("0123456789abcdef", Activity.Current.ParentSpanId.ToHexString());
+                    parentSpanId = Activity.Current.ParentSpanId.ToHexString();
                 }
             };
 
@@ -518,7 +519,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                     {"baggage", "Key1=value1, Key2=value2"}
                 }
             });
+
             hostingApplication.CreateContext(features);
+            Assert.Equal("0123456789abcdef", parentSpanId);
         }
 
 
