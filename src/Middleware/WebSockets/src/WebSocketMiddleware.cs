@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.WebSockets
                                     interestingHeaders.Add(new KeyValuePair<string, string>(headerName, value));
                                 }
                             }
-                            _isWebSocketRequest = HandshakeHelpers.CheckSupportedWebSocketRequest(_context.Request.Method, interestingHeaders, requestHeaders);
+                            _isWebSocketRequest = CheckSupportedWebSocketRequest(_context.Request.Method, interestingHeaders, requestHeaders);
                         }
                     }
                     return _isWebSocketRequest.Value;
@@ -164,6 +164,61 @@ namespace Microsoft.AspNetCore.WebSockets
                 Stream opaqueTransport = await _upgradeFeature.UpgradeAsync(); // Sets status code to 101
 
                 return WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
+            }
+
+            public static bool CheckSupportedWebSocketRequest(string method, List<KeyValuePair<string, string>> interestingHeaders, IHeaderDictionary requestHeaders)
+            {
+                bool validUpgrade = false, validConnection = false, validKey = false, validVersion = false;
+
+                if (!string.Equals("GET", method, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                foreach (var pair in interestingHeaders)
+                {
+                    if (string.Equals(HeaderNames.Connection, pair.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.Equals(HeaderNames.Upgrade, pair.Value, StringComparison.OrdinalIgnoreCase))
+                        {
+                            validConnection = true;
+                        }
+                    }
+                    else if (string.Equals(HeaderNames.Upgrade, pair.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.Equals(Constants.Headers.UpgradeWebSocket, pair.Value, StringComparison.OrdinalIgnoreCase))
+                        {
+                            validUpgrade = true;
+                        }
+                    }
+                    else if (string.Equals(HeaderNames.SecWebSocketVersion, pair.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.Equals(Constants.Headers.SupportedVersion, pair.Value, StringComparison.OrdinalIgnoreCase))
+                        {
+                            validVersion = true;
+                        }
+                    }
+                    else if (string.Equals(HeaderNames.SecWebSocketKey, pair.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        validKey = HandshakeHelpers.IsRequestKeyValid(pair.Value);
+                    }
+                }
+
+                // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
+                if (validConnection && requestHeaders[HeaderNames.Connection].Count == 1)
+                {
+                    requestHeaders[HeaderNames.Connection] = HeaderNames.Upgrade;
+                }
+                if (validUpgrade && requestHeaders[HeaderNames.Upgrade].Count == 1)
+                {
+                    requestHeaders[HeaderNames.Upgrade] = Constants.Headers.UpgradeWebSocket;
+                }
+                if (validVersion && requestHeaders[HeaderNames.SecWebSocketVersion].Count == 1)
+                {
+                    requestHeaders[HeaderNames.SecWebSocketVersion] = Constants.Headers.SupportedVersion;
+                }
+
+                return validConnection && validUpgrade && validVersion && validKey;
             }
         }
     }
