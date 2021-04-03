@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Connections
                 }
                 else if (key == typeof(IConnectionSocketFeature))
                 {
-                    _currentIConnectionSocketFeature = value;
+                    _currentIConnectionSocketFeature = (IConnectionSocketFeature?)value;
                 }
                 else
                 {
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Connections
             }
             else if (typeof(TFeature) == typeof(IConnectionSocketFeature))
             {
-                feature = (TFeature?)_currentIConnectionSocketFeature;
+                feature = Unsafe.As<IConnectionSocketFeature?, TFeature?>(ref _currentIConnectionSocketFeature);
             }
             else if (MaybeExtra != null)
             {
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Connections
             }
             else if (typeof(TFeature) == typeof(IConnectionSocketFeature))
             {
-                _currentIConnectionSocketFeature = feature;
+                _currentIConnectionSocketFeature = Unsafe.As<TFeature?, IConnectionSocketFeature?>(ref feature);
             }
             else
             {
