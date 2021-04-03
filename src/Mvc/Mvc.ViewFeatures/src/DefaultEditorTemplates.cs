@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var viewBufferScope = serviceProvider.GetRequiredService<IViewBufferScope>();
 
             var content = new HtmlContentBuilder(modelExplorer.Metadata.Properties.Count);
-            foreach (var propertyExplorer in modelExplorer.PropertiesInternal.AsSpan())
+            foreach (var propertyExplorer in modelExplorer.PropertiesInternal)
             {
                 var propertyMetadata = propertyExplorer.Metadata;
                 if (!ShouldShow(propertyExplorer, templateInfo))
@@ -476,26 +476,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             public override void Write(char[] buffer, int index, int count)
             {
-                if (count > 0)
-                {
-                    HasContent = true;
-                }
+                HasContent |= count > 0;
             }
 
             public override void Write(ReadOnlySpan<char> buffer)
             {
-                if (!buffer.IsEmpty)
-                {
-                    HasContent = true;
-                }
+                HasContent |= buffer.IsEmpty;
             }
 
             public override void Write(string value)
             {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    HasContent = true;
-                }
+                HasContent |= !string.IsNullOrEmpty(value);
             }
         }
 

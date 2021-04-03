@@ -57,8 +57,17 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 return null;
             }
 
-            var parameters = actionDescriptor.Parameters as List<ParameterDescriptor> ?? actionDescriptor.Parameters.ToList();
-            var properties = actionDescriptor.BoundProperties as List<ParameterDescriptor> ?? actionDescriptor.BoundProperties.ToList();
+            var parameters = actionDescriptor.Parameters switch
+            {
+                List<ParameterDescriptor> list => list.ToArray(),
+                _ => actionDescriptor.Parameters.ToArray()
+            };
+
+            var properties = actionDescriptor.BoundProperties switch
+            {
+                List<ParameterDescriptor> list => list.ToArray(),
+                _ => actionDescriptor.BoundProperties.ToArray()
+            };
 
             return Bind;
 
@@ -72,8 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
 
                 Debug.Assert(valueProvider is not null);
 
-                var parameterCount = parameters.Count;
-                for (var i = 0; i < parameterCount; i++)
+                for (var i = 0; i < parameters.Length; i++)
                 {
                     var parameter = parameters[i];
                     var bindingInfo = parameterBindingInfo![i];
@@ -99,8 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                     }
                 }
 
-                var propertyCount = properties.Count;
-                for (var i = 0; i < propertyCount; i++)
+                for (var i = 0; i < properties.Length; i++)
                 {
                     var property = properties[i];
                     var bindingInfo = propertyBindingInfo![i];

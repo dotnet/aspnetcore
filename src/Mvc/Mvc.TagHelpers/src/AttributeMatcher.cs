@@ -49,11 +49,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var allAttributes = context.AllAttributes;
             // Read interface .Count once rather than per iteration
             var allAttributesCount = allAttributes.Count;
-            foreach (var modeInfo in modeInfos.AsSpan())
+            foreach (var modeInfo in modeInfos)
             {
                 var requiredAttributes = modeInfo.Attributes;
                 // If there are fewer attributes present than required, one or more of them must be missing.
-                if (allAttributesCount >= requiredAttributes.Length && 
+                if (allAttributesCount >= requiredAttributes.Length &&
                     !HasMissingAttributes(allAttributes, requiredAttributes) &&
                     compare(result, modeInfo.Mode) <= 0)
                 {
