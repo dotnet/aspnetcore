@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new NavigationException(absoluteUriString);
             }
 
-            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
+            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad).Preserve();
         }
 
         private static class Log

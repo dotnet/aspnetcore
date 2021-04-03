@@ -45,7 +45,8 @@ interface IBlazor {
     readSatelliteAssemblies?: () => System_Array<System_Object>,
     getLazyAssemblies?: any
     dotNetCriticalError?: any
-    getSatelliteAssemblies?: any
+    getSatelliteAssemblies?: any,
+    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void
   }
 }
 

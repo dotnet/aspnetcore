@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public CreatedAtRouteResult(object routeValues, [ActionResultObjectValue] object value)
+        public CreatedAtRouteResult(object? routeValues, [ActionResultObjectValue] object? value)
             : this(routeName: null, routeValues: routeValues, value: value)
         {
         }
@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="value">The value to format in the entity body.</param>
         public CreatedAtRouteResult(
-            string routeName,
-            object routeValues,
-            [ActionResultObjectValue] object value)
+            string? routeName,
+            object? routeValues,
+            [ActionResultObjectValue] object? value)
             : base(value)
         {
             RouteName = routeName;
@@ -52,17 +52,17 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper" /> used to generate URLs.
         /// </summary>
-        public IUrlHelper UrlHelper { get; set; }
+        public IUrlHelper? UrlHelper { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the route to use for generating the URL.
         /// </summary>
-        public string RouteName { get; set; }
+        public string? RouteName { get; set; }
 
         /// <summary>
         /// Gets or sets the route data to use for generating the URL.
         /// </summary>
-        public RouteValueDictionary RouteValues { get; set; }
+        public RouteValueDictionary? RouteValues { get; set; }
 
         /// <inheritdoc />
         public override void OnFormatting(ActionContext context)

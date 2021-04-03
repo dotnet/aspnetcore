@@ -1,18 +1,21 @@
 ﻿@page "/"
+@inject AppState AppState
+@using WebviewAppShared
 
 <h3>Hello, world!</h3>
 
-<p>The current count is <strong>@count</strong></p>
+<p>The current count is <strong>@AppState.Counter</strong></p>
 
 <button @onclick="IncrementCount">Increment</button>
 <button @onclick="TriggerException">Throw</button>
 
-@code {
-    int count;
+<p>This is a shared component</p>
+<SharedComponent />
 
+@code {
     void IncrementCount()
     {
-        count++;
+        AppState.Counter++;
     }
 
     void TriggerException()

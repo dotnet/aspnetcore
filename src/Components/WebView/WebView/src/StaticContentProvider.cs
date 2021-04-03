@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Components.WebView
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.WebView
             _hostPageRelativePath = hostPageRelativePath ?? throw new ArgumentNullException(nameof(hostPageRelativePath));
         }
 
-        public bool TryGetResponseContent(string requestUri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out string headers)
+        public bool TryGetResponseContent(string requestUri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
         {
             var fileUri = new Uri(requestUri);
             if (_appBaseUri.IsBaseOf(fileUri))
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.WebView
                 if (fileInfo.Exists)
                 {
                     content = fileInfo.CreateReadStream();
-                    contentType = GetResponseContentTypeOrDefault(fileInfo.PhysicalPath);
+                    contentType = GetResponseContentTypeOrDefault(fileInfo.Name);
                     return true;
                 }
             }
@@ -108,7 +108,11 @@ namespace Microsoft.AspNetCore.Components.WebView
             ? matchedContentType
             : "application/octet-stream";
 
-        private static string GetResponseHeaders(string contentType)
-            => $"Content-Type: {contentType}{Environment.NewLine}Cache-Control: no-cache, max-age=0, must-revalidate, no-store";
+        private static IDictionary<string, string> GetResponseHeaders(string contentType)
+            => new Dictionary<string, string>()
+            {
+                { "Content-Type", contentType },
+                { "Cache-Control", "no-cache, max-age=0, must-revalidate, no-store" },
+            };
     }
 }

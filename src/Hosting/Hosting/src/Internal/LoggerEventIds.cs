@@ -18,5 +18,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static readonly EventId HostedServiceStopException = new EventId(10, "HostedServiceStopException");
         public static readonly EventId HostingStartupAssemblyException = new EventId(11, "HostingStartupAssemblyException");
         public static readonly EventId ServerShutdownException = new EventId(12, "ServerShutdownException");
+        public static readonly EventId HostingStartupAssemblyLoaded = new EventId(13, "HostingStartupAssemblyLoaded");
+        public static readonly EventId ServerListeningOnAddresses = new EventId(14, "ServerListeningOnAddresses");
     }
 }

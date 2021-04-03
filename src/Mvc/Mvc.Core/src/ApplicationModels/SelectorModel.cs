@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// The <see cref="AttributeRouteModel"/>.
         /// </summary>
-        public AttributeRouteModel AttributeRouteModel { get; set; }
+        public AttributeRouteModel? AttributeRouteModel { get; set; }
 
         /// <summary>
         /// The list of <see cref="IActionConstraintMetadata"/>.

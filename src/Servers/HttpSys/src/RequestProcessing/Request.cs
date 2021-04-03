@@ -337,11 +337,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     catch (CryptographicException ce)
                     {
-                        RequestContext.Logger.LogDebug(LoggerEventIds.ErrorInReadingCertificate, ce, "An error occurred reading the client certificate.");
+                        Log.ErrorInReadingCertificate(RequestContext.Logger, ce);
                     }
                     catch (SecurityException se)
                     {
-                        RequestContext.Logger.LogDebug(LoggerEventIds.ErrorInReadingCertificate, se, "An error occurred reading the client certificate.");
+                        Log.ErrorInReadingCertificate(RequestContext.Logger, se);
                     }
                 }
 
@@ -450,6 +450,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _nativeStream = new RequestStream(RequestContext);
             }
             _nativeStream.SwitchToOpaqueMode();
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, Exception?> _errorInReadingCertificate =
+                LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorInReadingCertificate, "An error occurred reading the client certificate.");
+
+            public static void ErrorInReadingCertificate(ILogger logger, Exception exception)
+            {
+                _errorInReadingCertificate(logger, exception);
+            }
         }
     }
 }

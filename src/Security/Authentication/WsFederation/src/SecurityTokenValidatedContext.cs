@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// <summary>
         /// The <see cref="WsFederationMessage"/> received on this request.
         /// </summary>
-        public WsFederationMessage ProtocolMessage { get; set; }
+        public WsFederationMessage ProtocolMessage { get; set; } = default!;
 
         /// <summary>
         /// The <see cref="SecurityToken"/> that was validated.
         /// </summary>
-        public SecurityToken SecurityToken { get; set; }
+        public SecurityToken? SecurityToken { get; set; }
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Authentication
 {
     /// <summary>
-    /// Created per request to handle authentication for to a particular scheme.
+    /// Created per request to handle authentication for a particular scheme.
     /// </summary>
     public interface IAuthenticationHandler
     {

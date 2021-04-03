@@ -1,6 +1,7 @@
 #nullable enable
 *REMOVED*static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object!>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 *REMOVED*virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo! fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
+*REMOVED*readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.RemovedAttributeName -> string!
 Microsoft.AspNetCore.Components.ComponentApplicationState
 Microsoft.AspNetCore.Components.ComponentApplicationState.OnPersisting -> Microsoft.AspNetCore.Components.ComponentApplicationState.OnPersistingCallback!
 Microsoft.AspNetCore.Components.ComponentApplicationState.OnPersistingCallback
@@ -16,6 +17,7 @@ Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.State.get 
 Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore
 Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore.GetPersistedStateAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string!, byte[]!>!>!
 Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore.PersistStateAsync(System.Collections.Generic.IReadOnlyDictionary<string!, byte[]!>! state) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.RenderHandle.IsHotReloading.get -> bool
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.Dispose() -> void
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
@@ -34,4 +36,4 @@ Microsoft.AspNetCore.Components.RenderTree.Renderer.GetEventArgsType(ulong event
 override Microsoft.AspNetCore.Components.LayoutComponentBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
-*REMOVED*readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.RemovedAttributeName -> string
+readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit.RemovedAttributeName -> string?

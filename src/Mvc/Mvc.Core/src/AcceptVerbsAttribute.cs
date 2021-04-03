@@ -48,10 +48,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// The route template. May be null.
         /// </summary>
-        public string Route { get; set; }
+        public string? Route { get; set; }
 
         /// <inheritdoc />
-        string IRouteTemplateProvider.Template => Route;
+        string? IRouteTemplateProvider.Template => Route;
 
         /// <summary>
         /// Gets the route order. The order determines the order of route execution. Routes with a lower
@@ -69,6 +69,6 @@ namespace Microsoft.AspNetCore.Mvc
         int? IRouteTemplateProvider.Order => _order;
 
         /// <inheritdoc />
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

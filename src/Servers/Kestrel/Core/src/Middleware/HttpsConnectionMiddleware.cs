@@ -133,8 +133,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         public async Task OnConnectionAsync(ConnectionContext context)
         {
-            await Task.Yield();
-
             if (context.Features.Get<ITlsConnectionFeature>() != null)
             {
                 await _next(context);
@@ -411,7 +409,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 pool: memoryPool,
                 bufferSize: memoryPool.GetMinimumSegmentSize(),
                 minimumReadSize: memoryPool.GetMinimumAllocSize(),
-                leaveOpen: true
+                leaveOpen: true,
+                useZeroByteReads: true
             );
 
             var outputPipeOptions = new StreamPipeWriterOptions

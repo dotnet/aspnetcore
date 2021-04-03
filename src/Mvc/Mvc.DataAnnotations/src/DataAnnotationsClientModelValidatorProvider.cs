@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
     internal class DataAnnotationsClientModelValidatorProvider : IClientModelValidatorProvider
     {
         private readonly IOptions<MvcDataAnnotationsLocalizationOptions> _options;
-        private readonly IStringLocalizerFactory _stringLocalizerFactory;
+        private readonly IStringLocalizerFactory? _stringLocalizerFactory;
         private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         public DataAnnotationsClientModelValidatorProvider(
             IValidationAttributeAdapterProvider validationAttributeAdapterProvider,
             IOptions<MvcDataAnnotationsLocalizationOptions> options,
-            IStringLocalizerFactory stringLocalizerFactory)
+            IStringLocalizerFactory? stringLocalizerFactory)
         {
             if (validationAttributeAdapterProvider == null)
             {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             {
                 throw new ArgumentNullException(nameof(context));
             }
-            IStringLocalizer stringLocalizer = null;
+            IStringLocalizer? stringLocalizer = null;
             if (_options.Value.DataAnnotationLocalizerProvider != null && _stringLocalizerFactory != null)
             {
                 // This will pass first non-null type (either containerType or modelType) to delegate.

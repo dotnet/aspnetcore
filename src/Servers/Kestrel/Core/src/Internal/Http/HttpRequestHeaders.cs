@@ -121,13 +121,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void SetValueUnknown(string key, StringValues value)
         {
-            Unknown[key] = value;
+            Unknown[GetInternedHeaderName(key)] = value;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool AddValueUnknown(string key, StringValues value)
         {
-            Unknown.Add(key, value);
+            Unknown.Add(GetInternedHeaderName(key), value);
             // Return true, above will throw and exit for false
             return true;
         }
@@ -135,6 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.NoInlining)]
         private unsafe void AppendUnknownHeaders(string name, string valueString)
         {
+            name = GetInternedHeaderName(name);
             Unknown.TryGetValue(name, out var existing);
             Unknown[name] = AppendValue(existing, valueString);
         }

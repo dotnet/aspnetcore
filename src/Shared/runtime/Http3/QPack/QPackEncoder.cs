@@ -9,7 +9,7 @@ using System.Text;
 
 namespace System.Net.Http.QPack
 {
-    internal class QPackEncoder
+    internal sealed class QPackEncoder
     {
         private IEnumerator<KeyValuePair<string, string>>? _enumerator;
 

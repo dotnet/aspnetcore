@@ -505,7 +505,7 @@ namespace Microsoft.AspNetCore.Components
         /// </param>
         /// <returns>The formatted value.</returns>
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-        public static object? FormatValue<T>(T value, CultureInfo? culture = null)
+        public static object? FormatValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T value, CultureInfo? culture = null)
         {
             var formatter = FormatterDelegateCache.Get<T>();
             return formatter(value, culture);
@@ -1270,7 +1270,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
         /// <param name="value">The converted value.</param>
         /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
-        public static bool TryConvertTo<T>(object? obj, CultureInfo? culture, [MaybeNullWhen(false)] out T value)
+        public static bool TryConvertTo<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(object? obj, CultureInfo? culture, [MaybeNullWhen(false)] out T value)
         {
             var converter = ParserDelegateCache.Get<T>();
             return converter(obj, culture, out value);
@@ -1280,7 +1280,7 @@ namespace Microsoft.AspNetCore.Components
         {
             private readonly static ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
 
-            public static BindFormatter<T> Get<T>()
+            public static BindFormatter<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
             {
                 if (!_cache.TryGetValue(typeof(T), out var formatter))
                 {
@@ -1377,7 +1377,7 @@ namespace Microsoft.AspNetCore.Components
                 return (BindFormatter<T>)formatter;
             }
 
-            private static BindFormatter<T> MakeTypeConverterFormatter<T>()
+            private static BindFormatter<T> MakeTypeConverterFormatter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
             {
                 var typeConverter = TypeDescriptor.GetConverter(typeof(T));
                 if (typeConverter == null || !typeConverter.CanConvertTo(typeof(string)))
@@ -1409,7 +1409,7 @@ namespace Microsoft.AspNetCore.Components
                 "ReflectionAnalysis",
                 "IL2060:MakeGenericMethod",
                 Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
-            public static BindParser<T> Get<T>()
+            public static BindParser<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
             {
                 if (!_cache.TryGetValue(typeof(T), out var parser))
                 {
@@ -1514,7 +1514,7 @@ namespace Microsoft.AspNetCore.Components
                 return (BindParser<T>)parser;
             }
 
-            private static BindParser<T> MakeTypeConverterConverter<T>()
+            private static BindParser<T> MakeTypeConverterConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
             {
                 var typeConverter = TypeDescriptor.GetConverter(typeof(T));
                 if (typeConverter == null || !typeConverter.CanConvertFrom(typeof(string)))

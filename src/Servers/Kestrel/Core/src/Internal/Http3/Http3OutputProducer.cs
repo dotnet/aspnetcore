@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _pipeReader = pipe.Reader;
 
             _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl: null, log);
-            _dataWriteProcessingTask = ProcessDataWrites();
+            _dataWriteProcessingTask = ProcessDataWrites().Preserve();
         }
 
         public void Dispose()

@@ -11,7 +11,9 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -270,7 +272,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21520")]
         public async Task MissingAuthority_200Status()
         {
             var headers = new[]
@@ -760,7 +761,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
 
-            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.RequestCancelled, CoreStrings.FormatHttp3StreamResetByApplication(Http3ErrorCode.RequestCancelled));
+            await requestStream.WaitForStreamErrorAsync(
+                Http3ErrorCode.RequestCancelled,
+                CoreStrings.FormatHttp3StreamResetByApplication(Http3Formatting.ToFormattedErrorCode(Http3ErrorCode.RequestCancelled)));
         }
 
         [Fact]
@@ -1541,7 +1544,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var decodedTrailers = await requestStream.ExpectHeadersAsync();
             Assert.Equal("Custom Value", decodedTrailers["CustomName"]);
 
-            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.NoError, expectedErrorMessage: "The HTTP/3 stream was reset by the application with error code NoError.");
+            await requestStream.WaitForStreamErrorAsync(
+                Http3ErrorCode.NoError,
+                expectedErrorMessage: "The HTTP/3 stream was reset by the application with error code H3_NO_ERROR.");
 
             clientTcs.SetResult(0);
             await appTcs.Task;
@@ -1609,7 +1614,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var decodedTrailers = await requestStream.ExpectHeadersAsync();
             Assert.Equal("Custom Value", decodedTrailers["CustomName"]);
 
-            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.NoError, expectedErrorMessage: "The HTTP/3 stream was reset by the application with error code NoError.");
+            await requestStream.WaitForStreamErrorAsync(
+                Http3ErrorCode.NoError,
+                expectedErrorMessage: "The HTTP/3 stream was reset by the application with error code H3_NO_ERROR.");
 
             clientTcs.SetResult(0);
             await appTcs.Task;
@@ -1622,10 +1629,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("This is invalid."));
 
-            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.UnexpectedFrame, expectedErrorMessage: "The client sent a DATA frame before the HEADERS frame.");
+            await requestStream.WaitForStreamErrorAsync(
+                Http3ErrorCode.UnexpectedFrame,
+                expectedErrorMessage: CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders);
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31057")]
         public async Task RequestTrailers_CanReadTrailersFromRequest()
         {
             string testValue = null;
@@ -1642,8 +1652,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             var requestStream = await InitializeConnectionAndStreamsAsync(async c =>
             {
-                var data = new byte[1024];
-                await c.Request.Body.ReadAsync(data);
+                await c.Request.Body.DrainAsync(default);
 
                 testValue = c.Request.GetTrailer("TestName");
             });
@@ -1676,11 +1685,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
 
             await requestStream.SendHeadersAsync(headers, endStream: false);
+
+            // The app no-ops quickly. Wait for it here so it's not a race with the error response.
+            await requestStream.ExpectHeadersAsync();
+
             await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("Hello world"));
             await requestStream.SendHeadersAsync(trailers, endStream: false);
             await requestStream.SendDataAsync(Encoding.UTF8.GetBytes("This is invalid."));
 
-            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.UnexpectedFrame, expectedErrorMessage: "The client sent a Data frame after trailing HEADERS.");
+            await requestStream.WaitForStreamErrorAsync(
+                Http3ErrorCode.UnexpectedFrame,
+                expectedErrorMessage: CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data)));
         }
 
         [Fact]
@@ -1726,6 +1741,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Stream not ended after trailing headers.
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => readTrailersTcs.Task).DefaultTimeout();
             Assert.Equal("The request trailers are not available yet. They may not be available until the full request body is read.", ex.Message);
+        }
+
+        [Theory]
+        [InlineData(nameof(Http3FrameType.MaxPushId))]
+        [InlineData(nameof(Http3FrameType.Settings))]
+        [InlineData(nameof(Http3FrameType.CancelPush))]
+        [InlineData(nameof(Http3FrameType.GoAway))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31388")]
+        public async Task UnexpectedRequestFrame(string frameType)
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
+
+            var frame = new Http3RawFrame();
+            frame.Type = Enum.Parse<Http3FrameType>(frameType);
+            await requestStream.SendFrameAsync(frame, Memory<byte>.Empty);
+
+            await requestStream.WaitForStreamErrorAsync(
+                Http3ErrorCode.UnexpectedFrame,
+                expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(frame.FormattedType));
+
+            await WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
+                expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(frame.FormattedType));
+        }
+
+        [Theory]
+        [InlineData(nameof(Http3FrameType.PushPromise))]
+        public async Task UnexpectedServerFrame(string frameType)
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
+
+            var frame = new Http3RawFrame();
+            frame.Type = Enum.Parse<Http3FrameType>(frameType);
+            await requestStream.SendFrameAsync(frame, Memory<byte>.Empty);
+
+            await requestStream.WaitForStreamErrorAsync(
+                Http3ErrorCode.UnexpectedFrame,
+                expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(frame.FormattedType));
         }
     }
 }

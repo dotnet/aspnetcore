@@ -63,7 +63,7 @@ If you're reading this, you probably already have Git installed to support cloni
 
 #### [NodeJS](https://nodejs.org) on Windows
 
-Building the repo requires version 10.14.2 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
+Building the repo requires version 10.17.0 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
 
 #### [Yarn](https://yarnpkg.com/) on Windows
 
@@ -224,6 +224,8 @@ code .
 
 When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](using-dotnet-on-command-line-in-this-repo).
 
+> :warning: Most of the time, you will want to build a particular project instead of the entire repository. It's faster and will allow you to focus on a particular area of concern. If you need to build all code in the repo for any reason, you can use the top-level build script located under `eng\build.cmd` or `eng\build.sh`.
+
 The source code in this repo is divided into directories for each project area. Each directory will typically contain a `src` directory that contains the source files for a project and a `test` directory that contains the test projects and assets within a project.
 
 Some projects, like the `Components` project or the `Razor` project, might contain additional subdirectories.
@@ -241,6 +243,8 @@ On macOS/Linux, you can run the shell script:
 ```bash
 ./build.sh
 ```
+
+> :bulb: Before using the `build.cmd` or `build.sh` at the top-level or in a subfolder, you will need to make sure that [the dependencies documented above](#step-2-install-pre-requisites) have been installed.
 
 By default, all of the C# projects are built. Some C# projects require NodeJS to be installed to compile JavaScript assets which are then checked in as source. If NodeJS is detected on the path, the NodeJS projects will be compiled as part of building C# projects. If NodeJS is not detected on the path, the JavaScript assets checked in previously will be used instead. To disable building NodeJS projects, specify `-noBuildNodeJS` or `--no-build-nodejs` on the command line.
 
@@ -287,24 +291,6 @@ On macOS/Linux:
 ```
 
 > :bulb: If you're working on changes for a particular subset of the project, you might not want to execute the entire test suite. Instead, only run the tests within the subdirectory where changes were made. This can be accomplished by passing the `projects` property like so: `.\build.cmd -test -projects .\src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj`.
-
-### Building a subset of the code
-
-When working in the repository, you'll typically be focused on one project area, such as Blazor and SignalR. In that case, it's easier to use the `build.cmd` and `build.sh` that are available in each subfolder. When invoked in a subfolder on Windows:
-
-```ps1
-.\build.cmd
-```
-
-Or on macOS or Linux:
-
-```bash
-./build.sh
-```
-
-> :bulb: Before using the `build.cmd` or `build.sh` at the top-level or in a subfolder, you will need to make sure that [the dependencies documented above](#step-2-install-pre-requisites) have been installed.
-
-These scripts will build and test the projects within a specific directory. Furthermore, you can use flags on `build.cmd`/`.sh` to build subsets based on language type, like C++, TypeScript, or C#. Run `build.sh --help` or `build.cmd -help` for details.
 
 ### Build properties
 

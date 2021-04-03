@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// A dropdown selection component.
     /// </summary>
-    public class InputSelect<TValue> : InputBase<TValue>
+    public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
     {
         /// <summary>
         /// Gets or sets the child content to be rendering inside the select element.

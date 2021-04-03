@@ -1,6 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components;
 <CascadingValue Value="Name" Name="Name" IsFixed=true>
-    <Router AppAssembly="@typeof(ComponentsApp.App.App).Assembly" PreferExactMatches="true">
+    <Router AppAssembly="@typeof(ComponentsApp.App.App).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         </Found>

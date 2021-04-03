@@ -7,10 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Experimental;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -35,27 +37,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private ConnectionManager ConnectionManager => _serviceContext.ConnectionManager;
         private IKestrelTrace Trace => _serviceContext.Log;
 
-        public async Task<EndPoint> BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig? endpointConfig)
+        public async Task<EndPoint> BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig? endpointConfig, CancellationToken cancellationToken)
         {
             if (_transportFactory is null)
             {
                 throw new InvalidOperationException($"Cannot bind with {nameof(ConnectionDelegate)} no {nameof(IConnectionListenerFactory)} is registered.");
             }
 
-            var transport = await _transportFactory.BindAsync(endPoint).ConfigureAwait(false);
+            var transport = await _transportFactory.BindAsync(endPoint, cancellationToken).ConfigureAwait(false);
             StartAcceptLoop(new GenericConnectionListener(transport), c => connectionDelegate(c), endpointConfig);
             return transport.EndPoint;
         }
 
-        public async Task<EndPoint> BindAsync(EndPoint endPoint, MultiplexedConnectionDelegate multiplexedConnectionDelegate, EndpointConfig? endpointConfig)
+        public async Task<EndPoint> BindAsync(EndPoint endPoint, MultiplexedConnectionDelegate multiplexedConnectionDelegate, ListenOptions listenOptions, CancellationToken cancellationToken)
         {
             if (_multiplexedTransportFactory is null)
             {
                 throw new InvalidOperationException($"Cannot bind with {nameof(MultiplexedConnectionDelegate)} no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
             }
 
-            var transport = await _multiplexedTransportFactory.BindAsync(endPoint).ConfigureAwait(false);
-            StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), endpointConfig);
+            var features = new FeatureCollection();
+
+            if (listenOptions.HttpsOptions != null)
+            {
+                // TODO Set other relevant values on options
+                var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
+                {
+                    ServerCertificate = listenOptions.HttpsOptions.ServerCertificate
+                };
+
+                features.Set(sslServerAuthenticationOptions);
+            }
+
+            var transport = await _multiplexedTransportFactory.BindAsync(endPoint, features, cancellationToken).ConfigureAwait(false);
+            StartAcceptLoop(new GenericMultiplexedConnectionListener(transport), c => multiplexedConnectionDelegate(c), listenOptions.EndpointConfig);
             return transport.EndPoint;
         }
 

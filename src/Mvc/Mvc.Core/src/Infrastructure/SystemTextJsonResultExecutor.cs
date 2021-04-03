@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
 
 using System;
 using System.Runtime.ExceptionServices;
@@ -152,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                new EventId(2, "BufferingAsyncEnumerable"),
                "Buffering IAsyncEnumerable instance of type '{Type}'.");
 
-            public static void JsonResultExecuting(ILogger logger, object value)
+            public static void JsonResultExecuting(ILogger logger, object? value)
             {
                 if (logger.IsEnabled(LogLevel.Information))
                 {

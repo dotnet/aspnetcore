@@ -45,11 +45,16 @@ namespace RunTests
 
 #if INSTALLPLAYWRIGHT
                 // Playwright will download and look for browsers to this directory
-                var playwrightBrowsers = Path.Combine(helixDir, "ms-playwright");
+                var playwrightBrowsers = Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH");
                 Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
                 EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
+                var playrightDriver = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
+                Console.WriteLine($"Setting PLAYWRIGHT_DRIVER_PATH: {playrightDriver}");
+                EnvironmentVariables.Add("PLAYWRIGHT_DRIVER_PATH", playrightDriver);
+#else
+                Console.WriteLine($"Skipping setting PLAYWRIGHT_BROWSERS_PATH");
 #endif
-    
+
                 Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
                 Directory.CreateDirectory(nugetRestore);
 
@@ -95,8 +100,9 @@ namespace RunTests
         {
             try
             {
-                Console.WriteLine($"Installing Playwright to {EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]}");
-                await Playwright.InstallAsync(EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"]);
+                Console.WriteLine($"Installing Playwright to Browsers: {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")} Driver: {Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH")}");
+                await Playwright.InstallAsync(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"), Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH"));
+                DisplayContents(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"));
                 return true;
             }
             catch (Exception e)
@@ -106,7 +112,7 @@ namespace RunTests
             }
         }
 #endif
-        
+
         public async Task<bool> InstallAspNetAppIfNeededAsync()
         {
             try
@@ -170,7 +176,7 @@ namespace RunTests
                         errorDataReceived: Console.Error.WriteLine,
                         throwOnError: false,
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-                    
+
                     // ';' is the path separator on Windows, and ':' on Unix
                     Options.Path += OperatingSystem.IsWindows() ? ";" : ":";
                     Options.Path += $"{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
@@ -341,9 +347,7 @@ namespace RunTests
                     // Combine the directory name + log name for the copied log file name to avoid overwriting duplicate test names in different test projects
                     var logName = $"{Path.GetFileName(Path.GetDirectoryName(file))}_{Path.GetFileName(file)}";
                     Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName)}");
-                    // Need to copy to HELIX_WORKITEM_UPLOAD_ROOT and HELIX_WORKITEM_UPLOAD_ROOT/../ in order for Azure Devops attachments to link properly and for Helix to store the logs
                     File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName));
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", logName));
                 }
             }
             else
@@ -357,9 +361,7 @@ namespace RunTests
                 {
                     var fileName = Path.GetFileName(file);
                     Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
-                    // Need to copy to HELIX_WORKITEM_UPLOAD_ROOT and HELIX_WORKITEM_UPLOAD_ROOT/../ in order for Azure Devops attachments to link properly and for Helix to store the logs
                     File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", fileName));
                 }
             }
             else

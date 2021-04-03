@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Mvc.Filters
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             _index = 0;
         }
 
-        public FilterCursorItem<TFilter, TFilterAsync> GetNextFilter<TFilter, TFilterAsync>()
+        public FilterCursorItem<TFilter?, TFilterAsync?> GetNextFilter<TFilter, TFilterAsync>()
             where TFilter : class
             where TFilterAsync : class
         {
@@ -52,11 +52,11 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
                 if (filter != null || filterAsync != null)
                 {
-                    return new FilterCursorItem<TFilter, TFilterAsync>(filter, filterAsync);
+                    return new FilterCursorItem<TFilter?, TFilterAsync?>(filter, filterAsync);
                 }
             }
 
-            return default(FilterCursorItem<TFilter, TFilterAsync>);
+            return default(FilterCursorItem<TFilter?, TFilterAsync?>);
         }
     }
 }

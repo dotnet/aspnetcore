@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
@@ -12,6 +12,8 @@
     <Reference Include="Microsoft.AspNetCore.Components.Forms" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
+    <Reference Include="Microsoft.Authentication.WebAssembly.Msal" />
     <Reference Include="Microsoft.JSInterop" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
   </ItemGroup>
@@ -19,9 +21,7 @@
     <PropertyGroup>
       <LibrariesTrimmedArtifactsPath>$(TargetDir)wasm-linked\</LibrariesTrimmedArtifactsPath>
       <!-- Link all assemblies -->
-      <ILLinkArgs>$(ILLinkArgs) -c link</ILLinkArgs>
-      <ILLinkArgs>$(ILLinkArgs) -u link</ILLinkArgs>
-      <ILLinkArgs>$(ILLinkArgs) -b true</ILLinkArgs>
+      <ILLinkArgs>$(ILLinkArgs) --action link</ILLinkArgs>
       <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' == 'true'">$(ILLinkArgs) --generate-warning-suppressions xml</ILLinkArgs>
     </PropertyGroup>
     <ItemGroup>
@@ -50,6 +50,7 @@
         OutputDirectory="$(LibrariesTrimmedArtifactsPath)"
         ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'))"
         ExtraArgs="$(ILLinkArgs)"
+        TrimMode="link"
         ToolExe="$(_DotNetHostFileName)"
         ToolPath="$(_DotNetHostDirectory)" />
 

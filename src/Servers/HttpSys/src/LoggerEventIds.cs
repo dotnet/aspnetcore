@@ -25,12 +25,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public static EventId RegisteringPrefix = new EventId(19, "RegisteringPrefix");
         public static EventId UnregisteringPrefix = new EventId(20, "UnregisteringPrefix");
         public static EventId CloseUrlGroupError = new EventId(21, "CloseUrlGroupError");
-        public static EventId ChannelBindingUnSupported = new EventId(22, "ChannelBindingUnSupported");
+        public static EventId ChannelBindingUnsupported = new EventId(22, "ChannelBindingUnSupported");
         public static EventId ChannelBindingMissing = new EventId(23, "ChannelBindingMissing");
         public static EventId RequestError = new EventId(24, "RequestError");
         public static EventId ErrorInReadingCertificate = new EventId(25, "ErrorInReadingCertificate");
         public static EventId ChannelBindingNeedsHttps = new EventId(26, "ChannelBindingNeedsHttps");
-        public static EventId ChannelBindingRetrived = new EventId(27, "ChannelBindingRetrived");
+        public static EventId ChannelBindingRetrieved = new EventId(27, "ChannelBindingRetrived");
         public static EventId AbortError = new EventId(28, "AbortError");
         public static EventId ErrorWhileRead = new EventId(29, "ErrorWhileRead");
         public static EventId ErrorWhenReadBegun = new EventId(30, "ErrorWhenReadBegun");
@@ -51,5 +51,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public static EventId ListenerStopError = new EventId(45, "ListenerStopError");
         public static EventId ListenerDisposing = new EventId(46, "ListenerDisposing");
         public static EventId RequestValidationFailed = new EventId(47, "RequestValidationFailed");
+        public static EventId CreateDisconnectTokenError = new EventId(48, "CreateDisconnectTokenError");
     }
 }

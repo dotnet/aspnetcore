@@ -45,6 +45,7 @@ jobs:
             buildId: $(AzDOBuildId)
             artifactName: ${{ artifactName }}
             downloadPath: $(Build.ArtifactStagingDirectory)\artifacts
+            checkDownloadedFiles: true
     - ${{ if eq(parameters.artifactNames, '') }}:
       - task: DownloadBuildArtifacts@0
         displayName: Download Build Artifacts
@@ -57,6 +58,7 @@ jobs:
           downloadType: specific files
           itemPattern: "**"
           downloadPath: $(Build.ArtifactStagingDirectory)\artifacts
+          checkDownloadedFiles: true
   - powershell: eng/common/sdl/extract-artifact-packages.ps1
       -InputPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts
       -ExtractPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts

@@ -24,7 +24,6 @@ namespace System.Net.Http
         GoAway = 0x7,
         ReservedHttp2WindowUpdate = 0x8,
         ReservedHttp2Continuation = 0x9,
-        MaxPushId = 0xD,
-        DuplicatePush = 0xE
+        MaxPushId = 0xD
     }
 }

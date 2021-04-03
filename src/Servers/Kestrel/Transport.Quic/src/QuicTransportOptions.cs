@@ -28,21 +28,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
         public string? Alpn { get; set; }
 
         /// <summary>
-        /// The certificate that MsQuic will use.
-        /// </summary>
-        public X509Certificate2? Certificate { get; set; }
-
-        /// <summary>
-        /// Optional path to certificate file to configure the security configuration.
-        /// </summary>
-        public string? CertificateFilePath { get; set; }
-
-        /// <summary>
-        /// Optional path to private key file to configure the security configuration.
-        /// </summary>
-        public string? PrivateKeyFilePath { get; set; }
-
-        /// <summary>
         /// Sets the idle timeout for connections and streams.
         /// </summary>
         public TimeSpan IdleTimeout { get; set; }

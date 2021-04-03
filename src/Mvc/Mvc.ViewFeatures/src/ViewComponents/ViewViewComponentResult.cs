@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,27 +24,27 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         private const string ViewPathFormat = "Components/{0}/{1}";
         private const string DefaultViewName = "Default";
 
-        private DiagnosticListener _diagnosticListener;
+        private DiagnosticListener? _diagnosticListener;
 
         /// <summary>
         /// Gets or sets the view name.
         /// </summary>
-        public string ViewName { get; set; }
+        public string? ViewName { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ViewDataDictionary"/>.
         /// </summary>
-        public ViewDataDictionary ViewData { get; set; }
+        public ViewDataDictionary? ViewData { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ITempDataDictionary"/> instance.
         /// </summary>
-        public ITempDataDictionary TempData { get; set; }
+        public ITempDataDictionary TempData { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ViewEngine"/>.
         /// </summary>
-        public IViewEngine ViewEngine { get; set; }
+        public IViewEngine? ViewEngine { get; set; }
 
         /// <summary>
         /// Locates and renders a view specified by <see cref="ViewName"/>. If <see cref="ViewName"/> is <c>null</c>,
@@ -80,12 +82,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             var viewContext = context.ViewContext;
             var isNullOrEmptyViewName = string.IsNullOrEmpty(ViewName);
 
-            ViewEngineResult result = null;
-            IEnumerable<string> originalLocations = null;
+            ViewEngineResult? result = null;
+            IEnumerable<string>? originalLocations = null;
             if (!isNullOrEmptyViewName)
             {
                 // If view name was passed in is already a path, the view engine will handle this.
-                result = viewEngine.GetView(viewContext.ExecutingFilePath, ViewName, isMainPage: false);
+                result = viewEngine.GetView(viewContext.ExecutingFilePath, ViewName!, isMainPage: false);
                 originalLocations = result.SearchedLocations;
             }
 
@@ -112,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 result = viewEngine.FindView(viewContext, qualifiedViewName, isMainPage: false);
             }
 
-            var view = result.EnsureSuccessful(originalLocations).View;
+            var view = result.EnsureSuccessful(originalLocations).View!;
             using (view as IDisposable)
             {
                 if (_diagnosticListener == null)

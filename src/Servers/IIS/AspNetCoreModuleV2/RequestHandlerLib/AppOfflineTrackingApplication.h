@@ -15,7 +15,8 @@ public:
         : APPLICATION(application),
         m_applicationPath(application.GetApplicationPhysicalPath()),
         m_fileWatcher(nullptr),
-        m_fAppOfflineProcessed(false)
+        m_fAppOfflineProcessed(false),
+        m_shutdownTimeout(120000) // default to 2 minutes
     {
     }
 
@@ -37,6 +38,10 @@ public:
     VOID
     OnAppOffline();
 
+    // TODO protected
+    bool                                         m_detectedAppOffline;
+    std::wstring                                 m_shadowCopyDirectory;
+    DWORD                                        m_shutdownTimeout;
 private:
     HRESULT
     StartMonitoringAppOflineImpl();

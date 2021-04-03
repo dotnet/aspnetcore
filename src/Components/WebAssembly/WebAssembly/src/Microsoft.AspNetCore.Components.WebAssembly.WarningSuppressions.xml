@@ -23,6 +23,12 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.ApplyHotReloadDelta(System.String,System.Byte[],System.Byte[])</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader.&lt;LoadAssembliesInClientAsync&gt;d__8.MoveNext</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
@@ -42,6 +48,12 @@
       <argument>IL2072</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.WebAssemblyComponentParameterDeserializer.DeserializeParameters(System.Collections.Generic.IList{Microsoft.AspNetCore.Components.ComponentParameter},System.Collections.Generic.IList{System.Object})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2075</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.ApplyHotReloadDelta(System.String,System.Byte[],System.Byte[])</property>
     </attribute>
   </assembly>
 </linker>

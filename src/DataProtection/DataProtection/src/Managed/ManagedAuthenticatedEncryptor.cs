@@ -229,12 +229,12 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                                 macOffset = eofOffset - _validationAlgorithmDigestLengthInBytes;
                             }
 
-                            correctHash = hashAlgorithm.ComputeHash(protectedPayload.Array, ivOffset, macOffset - ivOffset);
+                            correctHash = hashAlgorithm.ComputeHash(protectedPayload.Array!, ivOffset, macOffset - ivOffset);
                         }
 
                         // Step 4: Validate the MAC provided as part of the payload.
 
-                        if (!CryptoUtil.TimeConstantBuffersAreEqual(correctHash, 0, correctHash.Length, protectedPayload.Array, macOffset, eofOffset - macOffset))
+                        if (!CryptoUtil.TimeConstantBuffersAreEqual(correctHash, 0, correctHash.Length, protectedPayload.Array!, macOffset, eofOffset - macOffset))
                         {
                             throw Error.CryptCommon_PayloadInvalid(); // integrity check failure
                         }
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                             var outputStream = new MemoryStream();
                             using (var cryptoStream = new CryptoStream(outputStream, cryptoTransform, CryptoStreamMode.Write))
                             {
-                                cryptoStream.Write(protectedPayload.Array, ciphertextOffset, macOffset - ciphertextOffset);
+                                cryptoStream.Write(protectedPayload.Array!, ciphertextOffset, macOffset - ciphertextOffset);
                                 cryptoStream.FlushFinalBlock();
 
                                 // At this point, outputStream := { plaintext }, and we're done!
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                                 var mac = validationAlgorithm.ComputeHash(underlyingBuffer, KEY_MODIFIER_SIZE_IN_BYTES, checked((int)outputStream.Length - KEY_MODIFIER_SIZE_IN_BYTES));
                                 outputStream.Write(mac, 0, mac.Length);
 
-                                // At this point, outputStream := { keyModifier || IV || ciphertext || MAC(IV || ciphertext) } 
+                                // At this point, outputStream := { keyModifier || IV || ciphertext || MAC(IV || ciphertext) }
                                 // And we're done!
                                 return outputStream.ToArray();
                             }

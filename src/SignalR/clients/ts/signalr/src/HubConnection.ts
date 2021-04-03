@@ -768,7 +768,11 @@ export class HubConnection {
                 this._logger.log(LogLevel.Information, `Reconnect attempt failed because of error '${e}'.`);
 
                 if (this._connectionState !== HubConnectionState.Reconnecting) {
-                    this._logger.log(LogLevel.Debug, "Connection left the reconnecting state during reconnect attempt. Done reconnecting.");
+                    this._logger.log(LogLevel.Debug, `Connection moved to the '${this._connectionState}' from the reconnecting state during reconnect attempt. Done reconnecting.`);
+                    // The TypeScript compiler thinks that connectionState must be Connected here. The TypeScript compiler is wrong.
+                    if (this._connectionState as any === HubConnectionState.Disconnecting) {
+                        this._completeClose();
+                    }
                     return;
                 }
 

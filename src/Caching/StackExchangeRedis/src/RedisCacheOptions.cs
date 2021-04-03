@@ -1,9 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
+using StackExchange.Redis.Profiling;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis
 {
@@ -27,6 +28,11 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         /// The Redis instance name.
         /// </summary>
         public string InstanceName { get; set; }
+
+        /// <summary>
+        /// The Redis profiling session
+        /// </summary>
+        public Func<ProfilingSession> ProfilingSession { get; set; }
 
         RedisCacheOptions IOptions<RedisCacheOptions>.Value
         {

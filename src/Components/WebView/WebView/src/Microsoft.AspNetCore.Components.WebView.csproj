@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -15,6 +15,10 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebView.Test" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx" ExcludeFromManifest="true" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" LinkBase="Shared" />
@@ -28,10 +32,10 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
-    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
     <Reference Include="Microsoft.Extensions.Logging" />
 
     <ProjectReference

@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class AddressBinder
     {
-        public static async Task BindAsync(IEnumerable<ListenOptions> listenOptions, AddressBindContext context)
+        public static async Task BindAsync(IEnumerable<ListenOptions> listenOptions, AddressBindContext context, CancellationToken cancellationToken)
         {
             var strategy = CreateStrategy(
                 listenOptions.ToArray(),
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             context.ServerOptions.OptionsInUse.Clear();
             context.Addresses.Clear();
 
-            await strategy.BindAsync(context).ConfigureAwait(false);
+            await strategy.BindAsync(context, cancellationToken).ConfigureAwait(false);
         }
 
         private static IStrategy CreateStrategy(ListenOptions[] listenOptions, string[] addresses, bool preferAddresses)
@@ -86,11 +87,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return true;
         }
 
-        internal static async Task BindEndpointAsync(ListenOptions endpoint, AddressBindContext context)
+        internal static async Task BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
         {
             try
             {
-                await context.CreateBinding(endpoint).ConfigureAwait(false);
+                await context.CreateBinding(endpoint, cancellationToken).ConfigureAwait(false);
             }
             catch (AddressInUseException ex)
             {
@@ -144,16 +145,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private interface IStrategy
         {
-            Task BindAsync(AddressBindContext context);
+            Task BindAsync(AddressBindContext context, CancellationToken cancellationToken);
         }
 
         private class DefaultAddressStrategy : IStrategy
         {
-            public async Task BindAsync(AddressBindContext context)
+            public async Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
             {
                 var httpDefault = ParseAddress(Constants.DefaultServerAddress, out _);
                 context.ServerOptions.ApplyEndpointDefaults(httpDefault);
-                await httpDefault.BindAsync(context).ConfigureAwait(false);
+                await httpDefault.BindAsync(context, cancellationToken).ConfigureAwait(false);
 
                 // Conditional https default, only if a cert is available
                 var httpsDefault = ParseAddress(Constants.DefaultServerHttpsAddress, out _);
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 if (httpsDefault.IsTls || httpsDefault.TryUseHttps())
                 {
-                    await httpsDefault.BindAsync(context).ConfigureAwait(false);
+                    await httpsDefault.BindAsync(context, cancellationToken).ConfigureAwait(false);
                     context.Logger.LogDebug(CoreStrings.BindingToDefaultAddresses,
                         Constants.DefaultServerAddress, Constants.DefaultServerHttpsAddress);
                 }
@@ -180,12 +181,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
             }
 
-            public override Task BindAsync(AddressBindContext context)
+            public override Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
             {
                 var joined = string.Join(", ", _addresses);
                 context.Logger.LogInformation(CoreStrings.OverridingWithPreferHostingUrls, nameof(IServerAddressesFeature.PreferHostingUrls), joined);
 
-                return base.BindAsync(context);
+                return base.BindAsync(context, cancellationToken);
             }
         }
 
@@ -199,12 +200,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 _originalAddresses = originalAddresses;
             }
 
-            public override Task BindAsync(AddressBindContext context)
+            public override Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
             {
                 var joined = string.Join(", ", _originalAddresses);
                 context.Logger.LogWarning(CoreStrings.OverridingWithKestrelOptions, joined);
 
-                return base.BindAsync(context);
+                return base.BindAsync(context, cancellationToken);
             }
         }
 
@@ -217,11 +218,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 _endpoints = endpoints;
             }
 
-            public virtual async Task BindAsync(AddressBindContext context)
+            public virtual async Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
             {
                 foreach (var endpoint in _endpoints)
                 {
-                    await endpoint.BindAsync(context).ConfigureAwait(false);
+                    await endpoint.BindAsync(context, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -235,7 +236,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 _addresses = addresses;
             }
 
-            public virtual async Task BindAsync(AddressBindContext context)
+            public virtual async Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
             {
                 foreach (var address in _addresses)
                 {
@@ -247,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         options.UseHttps();
                     }
 
-                    await options.BindAsync(context).ConfigureAwait(false);
+                    await options.BindAsync(context, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

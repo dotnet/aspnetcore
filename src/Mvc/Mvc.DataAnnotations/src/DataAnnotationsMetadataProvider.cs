@@ -2,15 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Localization;
@@ -34,14 +30,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         private const string NullableContextAttributeFullName = "System.Runtime.CompilerServices.NullableContextAttribute";
         private const string NullableContextFlagsFieldName = "Flag";
 
-        private readonly IStringLocalizerFactory _stringLocalizerFactory;
+        private readonly IStringLocalizerFactory? _stringLocalizerFactory;
         private readonly MvcOptions _options;
         private readonly MvcDataAnnotationsLocalizationOptions _localizationOptions;
 
         public DataAnnotationsMetadataProvider(
             MvcOptions options,
             IOptions<MvcDataAnnotationsLocalizationOptions> localizationOptions,
-            IStringLocalizerFactory stringLocalizerFactory)
+            IStringLocalizerFactory? stringLocalizerFactory)
         {
             if (options == null)
             {
@@ -120,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             }
 
             var containerType = context.Key.ContainerType ?? context.Key.ModelType;
-            IStringLocalizer localizer = null;
+            IStringLocalizer? localizer = null;
             if (_stringLocalizerFactory != null && _localizationOptions.DataAnnotationLocalizerProvider != null)
             {
                 localizer = _localizationOptions.DataAnnotationLocalizerProvider(containerType, _stringLocalizerFactory);
@@ -201,20 +197,20 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 var groupedDisplayNamesAndValues = new List<KeyValuePair<EnumGroupAndName, string>>();
                 var namesAndValues = new Dictionary<string, string>();
 
-                IStringLocalizer enumLocalizer = null;
+                IStringLocalizer? enumLocalizer = null;
                 if (_stringLocalizerFactory != null && _localizationOptions.DataAnnotationLocalizerProvider != null)
                 {
                     enumLocalizer = _localizationOptions.DataAnnotationLocalizerProvider(underlyingType, _stringLocalizerFactory);
                 }
 
                 var enumFields = Enum.GetNames(underlyingType)
-                    .Select(name => underlyingType.GetField(name))
+                    .Select(name => underlyingType.GetField(name)!)
                     .OrderBy(field => field.GetCustomAttribute<DisplayAttribute>(inherit: false)?.GetOrder() ?? 1000);
 
                 foreach (var field in enumFields)
                 {
                     var groupName = GetDisplayGroup(field);
-                    var value = ((Enum)field.GetValue(obj: null)).ToString("d");
+                    var value = ((Enum)field.GetValue(obj: null)!).ToString("d");
 
                     groupedDisplayNamesAndValues.Add(new KeyValuePair<EnumGroupAndName, string>(
                         new EnumGroupAndName(
@@ -271,9 +267,9 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             }
 
             // Order
-            if (displayAttribute?.GetOrder() != null)
+            if (displayAttribute?.GetOrder() is int order)
             {
-                displayMetadata.Order = displayAttribute.GetOrder().Value;
+                displayMetadata.Order = order;
             }
 
             // Placeholder
@@ -374,7 +370,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                         // The only way we could arrive here is if the ModelMetadata was constructed using the non-default provider.
                         // We'll cursorily examine the attributes on the property, but not the ContainerType to make a decision about it's nullability.
 
-                        if (HasNullableAttribute(context.PropertyAttributes, out var propertyHasNullableAttribute))
+                        if (HasNullableAttribute(context.PropertyAttributes!, out var propertyHasNullableAttribute))
                         {
                             addInferredRequiredAttribute = propertyHasNullableAttribute;
                         }
@@ -382,17 +378,17 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                     else
                     {
                         addInferredRequiredAttribute = IsNullableReferenceType(
-                            property.DeclaringType,
+                            property.DeclaringType!,
                             member: null,
-                            context.PropertyAttributes);
+                            context.PropertyAttributes!);
                     }
                 }
                 else if (context.Key.MetadataKind == ModelMetadataKind.Parameter)
                 {
                     addInferredRequiredAttribute = IsNullableReferenceType(
-                        context.Key.ParameterInfo?.Member.ReflectedType,
+                        context.Key.ParameterInfo!.Member.ReflectedType,
                         context.Key.ParameterInfo.Member,
-                        context.ParameterAttributes);
+                        context.ParameterAttributes!);
                 }
                 else
                 {
@@ -431,7 +427,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             }
         }
 
-        private static string GetDisplayName(FieldInfo field, IStringLocalizer stringLocalizer)
+        private static string GetDisplayName(FieldInfo field, IStringLocalizer? stringLocalizer)
         {
             var display = field.GetCustomAttribute<DisplayAttribute>(inherit: false);
             if (display != null)
@@ -466,7 +462,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             return string.Empty;
         }
 
-        internal static bool IsNullableReferenceType(Type containingType, MemberInfo member, IEnumerable<object> attributes)
+        internal static bool IsNullableReferenceType(Type? containingType, MemberInfo? member, IEnumerable<object> attributes)
         {
             if (HasNullableAttribute(attributes, out var result))
             {
@@ -508,8 +504,13 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             return true; // [Nullable] found but type is not an NNRT
         }
 
-        internal static bool IsNullableBasedOnContext(Type containingType, MemberInfo member)
+        internal static bool IsNullableBasedOnContext(Type? containingType, MemberInfo? member)
         {
+            if (containingType is null)
+            {
+                return false;
+            }
+
             // For generic types, inspecting the nullability requirement additionally requires
             // inspecting the nullability constraint on generic type parameters. This is fairly non-triviial
             // so we'll just avoid calculating it. Users should still be able to apply an explicit [Required]

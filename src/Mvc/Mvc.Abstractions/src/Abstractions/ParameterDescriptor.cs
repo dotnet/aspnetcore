@@ -24,6 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// <summary>
         /// Gets or sets the <see cref="ModelBinding.BindingInfo"/> for the parameter.
         /// </summary>
-        public BindingInfo BindingInfo { get; set; } = default!;
+        public BindingInfo? BindingInfo { get; set; }
     }
 }

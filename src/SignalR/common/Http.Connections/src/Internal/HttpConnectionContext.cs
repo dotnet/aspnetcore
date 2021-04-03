@@ -542,7 +542,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             // Jump onto the thread pool thread so blocking user code doesn't block the setup of the
             // connection and transport
-            await AwaitableThreadPool.Yield();
+            await Task.Yield();
 
             // Running this in an async method turns sync exceptions into async ones
             await connectionDelegate(this);

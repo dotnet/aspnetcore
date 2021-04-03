@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Cookie,
         CorrelationContext,
         Date,
-        DNT,
         ETag,
         Expect,
         Expires,
@@ -99,6 +98,106 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         WWWAuthenticate,
     }
 
+    internal partial class HttpHeaders
+    {
+        private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>(93, StringComparer.OrdinalIgnoreCase)
+        {
+            HeaderNames.Accept,
+            HeaderNames.AcceptCharset,
+            HeaderNames.AcceptEncoding,
+            HeaderNames.AcceptLanguage,
+            HeaderNames.AcceptRanges,
+            HeaderNames.AccessControlAllowCredentials,
+            HeaderNames.AccessControlAllowHeaders,
+            HeaderNames.AccessControlAllowMethods,
+            HeaderNames.AccessControlAllowOrigin,
+            HeaderNames.AccessControlExposeHeaders,
+            HeaderNames.AccessControlMaxAge,
+            HeaderNames.AccessControlRequestHeaders,
+            HeaderNames.AccessControlRequestMethod,
+            HeaderNames.Age,
+            HeaderNames.Allow,
+            HeaderNames.AltSvc,
+            HeaderNames.Authority,
+            HeaderNames.Authorization,
+            HeaderNames.Baggage,
+            HeaderNames.CacheControl,
+            HeaderNames.Connection,
+            HeaderNames.ContentDisposition,
+            HeaderNames.ContentEncoding,
+            HeaderNames.ContentLanguage,
+            HeaderNames.ContentLength,
+            HeaderNames.ContentLocation,
+            HeaderNames.ContentMD5,
+            HeaderNames.ContentRange,
+            HeaderNames.ContentSecurityPolicy,
+            HeaderNames.ContentSecurityPolicyReportOnly,
+            HeaderNames.ContentType,
+            HeaderNames.CorrelationContext,
+            HeaderNames.Cookie,
+            HeaderNames.Date,
+            HeaderNames.DNT,
+            HeaderNames.ETag,
+            HeaderNames.Expires,
+            HeaderNames.Expect,
+            HeaderNames.From,
+            HeaderNames.GrpcAcceptEncoding,
+            HeaderNames.GrpcEncoding,
+            HeaderNames.GrpcMessage,
+            HeaderNames.GrpcStatus,
+            HeaderNames.GrpcTimeout,
+            HeaderNames.Host,
+            HeaderNames.KeepAlive,
+            HeaderNames.IfMatch,
+            HeaderNames.IfModifiedSince,
+            HeaderNames.IfNoneMatch,
+            HeaderNames.IfRange,
+            HeaderNames.IfUnmodifiedSince,
+            HeaderNames.LastModified,
+            HeaderNames.Link,
+            HeaderNames.Location,
+            HeaderNames.MaxForwards,
+            HeaderNames.Method,
+            HeaderNames.Origin,
+            HeaderNames.Path,
+            HeaderNames.Pragma,
+            HeaderNames.ProxyAuthenticate,
+            HeaderNames.ProxyAuthorization,
+            HeaderNames.ProxyConnection,
+            HeaderNames.Range,
+            HeaderNames.Referer,
+            HeaderNames.RetryAfter,
+            HeaderNames.RequestId,
+            HeaderNames.Scheme,
+            HeaderNames.SecWebSocketAccept,
+            HeaderNames.SecWebSocketKey,
+            HeaderNames.SecWebSocketProtocol,
+            HeaderNames.SecWebSocketVersion,
+            HeaderNames.Server,
+            HeaderNames.SetCookie,
+            HeaderNames.Status,
+            HeaderNames.StrictTransportSecurity,
+            HeaderNames.TE,
+            HeaderNames.Trailer,
+            HeaderNames.TransferEncoding,
+            HeaderNames.Translate,
+            HeaderNames.TraceParent,
+            HeaderNames.TraceState,
+            HeaderNames.Upgrade,
+            HeaderNames.UpgradeInsecureRequests,
+            HeaderNames.UserAgent,
+            HeaderNames.Vary,
+            HeaderNames.Via,
+            HeaderNames.Warning,
+            HeaderNames.WebSocketSubProtocols,
+            HeaderNames.WWWAuthenticate,
+            HeaderNames.XContentTypeOptions,
+            HeaderNames.XFrameOptions,
+            HeaderNames.XRequestedWith,
+            HeaderNames.XXssProtection,
+        };
+    }
+
     internal partial class HttpRequestHeaders
     {
         private HeaderReferences _headers;
@@ -125,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._CacheControl = value; 
             }
         }
-        public StringValues HeaderConnection
+        public override StringValues HeaderConnection
         {
             get
             {
@@ -907,29 +1006,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._UserAgent = value; 
             }
         }
-        public StringValues HeaderDNT
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x800000000000L) != 0)
-                {
-                    value = _headers._DNT;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x800000000000L;
-                _headers._DNT = value; 
-            }
-        }
         public StringValues HeaderUpgradeInsecureRequests
         {
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x1000000000000L) != 0)
+                if ((_bits & 0x800000000000L) != 0)
                 {
                     value = _headers._UpgradeInsecureRequests;
                 }
@@ -937,7 +1019,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x1000000000000L;
+                _bits |= 0x800000000000L;
                 _headers._UpgradeInsecureRequests = value; 
             }
         }
@@ -946,7 +1028,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x2000000000000L) != 0)
+                if ((_bits & 0x1000000000000L) != 0)
                 {
                     value = _headers._RequestId;
                 }
@@ -954,7 +1036,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x2000000000000L;
+                _bits |= 0x1000000000000L;
                 _headers._RequestId = value; 
             }
         }
@@ -963,7 +1045,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x4000000000000L) != 0)
+                if ((_bits & 0x2000000000000L) != 0)
                 {
                     value = _headers._CorrelationContext;
                 }
@@ -971,7 +1053,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x4000000000000L;
+                _bits |= 0x2000000000000L;
                 _headers._CorrelationContext = value; 
             }
         }
@@ -980,7 +1062,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x8000000000000L) != 0)
+                if ((_bits & 0x4000000000000L) != 0)
                 {
                     value = _headers._TraceParent;
                 }
@@ -988,7 +1070,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x8000000000000L;
+                _bits |= 0x4000000000000L;
                 _headers._TraceParent = value; 
             }
         }
@@ -997,7 +1079,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x10000000000000L) != 0)
+                if ((_bits & 0x8000000000000L) != 0)
                 {
                     value = _headers._TraceState;
                 }
@@ -1005,7 +1087,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x10000000000000L;
+                _bits |= 0x8000000000000L;
                 _headers._TraceState = value; 
             }
         }
@@ -1014,7 +1096,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x20000000000000L) != 0)
+                if ((_bits & 0x10000000000000L) != 0)
                 {
                     value = _headers._Baggage;
                 }
@@ -1022,7 +1104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x20000000000000L;
+                _bits |= 0x10000000000000L;
                 _headers._Baggage = value; 
             }
         }
@@ -1031,7 +1113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x40000000000000L) != 0)
+                if ((_bits & 0x20000000000000L) != 0)
                 {
                     value = _headers._Origin;
                 }
@@ -1039,7 +1121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x40000000000000L;
+                _bits |= 0x20000000000000L;
                 _headers._Origin = value; 
             }
         }
@@ -1048,7 +1130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x80000000000000L) != 0)
+                if ((_bits & 0x40000000000000L) != 0)
                 {
                     value = _headers._AccessControlRequestMethod;
                 }
@@ -1056,7 +1138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x80000000000000L;
+                _bits |= 0x40000000000000L;
                 _headers._AccessControlRequestMethod = value; 
             }
         }
@@ -1065,7 +1147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x100000000000000L) != 0)
+                if ((_bits & 0x80000000000000L) != 0)
                 {
                     value = _headers._AccessControlRequestHeaders;
                 }
@@ -1073,7 +1155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x100000000000000L;
+                _bits |= 0x80000000000000L;
                 _headers._AccessControlRequestHeaders = value; 
             }
         }
@@ -1138,30 +1220,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(HeaderNames.DNT, key))
-                    {
-                        if ((_bits & 0x800000000000L) != 0)
-                        {
-                            value = _headers._DNT;
-                            return true;
-                        }
-                        return false;
-                    }
 
                     if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x200L) != 0)
                         {
                             value = _headers._Via;
-                            return true;
-                        }
-                        return false;
-                    }
-                    if (HeaderNames.DNT.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if ((_bits & 0x800000000000L) != 0)
-                        {
-                            value = _headers._DNT;
                             return true;
                         }
                         return false;
@@ -1326,7 +1390,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.Origin, key))
                     {
-                        if ((_bits & 0x40000000000000L) != 0)
+                        if ((_bits & 0x20000000000000L) != 0)
                         {
                             value = _headers._Origin;
                             return true;
@@ -1372,7 +1436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.Origin.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x40000000000000L) != 0)
+                        if ((_bits & 0x20000000000000L) != 0)
                         {
                             value = _headers._Origin;
                             return true;
@@ -1448,7 +1512,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
-                        if ((_bits & 0x20000000000000L) != 0)
+                        if ((_bits & 0x10000000000000L) != 0)
                         {
                             value = _headers._Baggage;
                             return true;
@@ -1521,7 +1585,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x20000000000000L) != 0)
+                        if ((_bits & 0x10000000000000L) != 0)
                         {
                             value = _headers._Baggage;
                             return true;
@@ -1634,7 +1698,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.RequestId, key))
                     {
-                        if ((_bits & 0x2000000000000L) != 0)
+                        if ((_bits & 0x1000000000000L) != 0)
                         {
                             value = _headers._RequestId;
                             return true;
@@ -1643,7 +1707,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.TraceState, key))
                     {
-                        if ((_bits & 0x10000000000000L) != 0)
+                        if ((_bits & 0x8000000000000L) != 0)
                         {
                             value = _headers._TraceState;
                             return true;
@@ -1689,7 +1753,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.RequestId.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x2000000000000L) != 0)
+                        if ((_bits & 0x1000000000000L) != 0)
                         {
                             value = _headers._RequestId;
                             return true;
@@ -1698,7 +1762,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x10000000000000L) != 0)
+                        if ((_bits & 0x8000000000000L) != 0)
                         {
                             value = _headers._TraceState;
                             return true;
@@ -1720,7 +1784,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.TraceParent, key))
                     {
-                        if ((_bits & 0x8000000000000L) != 0)
+                        if ((_bits & 0x4000000000000L) != 0)
                         {
                             value = _headers._TraceParent;
                             return true;
@@ -1739,7 +1803,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x8000000000000L) != 0)
+                        if ((_bits & 0x4000000000000L) != 0)
                         {
                             value = _headers._TraceParent;
                             return true;
@@ -2124,7 +2188,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.CorrelationContext, key))
                     {
-                        if ((_bits & 0x4000000000000L) != 0)
+                        if ((_bits & 0x2000000000000L) != 0)
                         {
                             value = _headers._CorrelationContext;
                             return true;
@@ -2152,7 +2216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.CorrelationContext.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x4000000000000L) != 0)
+                        if ((_bits & 0x2000000000000L) != 0)
                         {
                             value = _headers._CorrelationContext;
                             return true;
@@ -2188,7 +2252,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.UpgradeInsecureRequests, key))
                     {
-                        if ((_bits & 0x1000000000000L) != 0)
+                        if ((_bits & 0x800000000000L) != 0)
                         {
                             value = _headers._UpgradeInsecureRequests;
                             return true;
@@ -2198,7 +2262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     if (HeaderNames.UpgradeInsecureRequests.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x1000000000000L) != 0)
+                        if ((_bits & 0x800000000000L) != 0)
                         {
                             value = _headers._UpgradeInsecureRequests;
                             return true;
@@ -2211,7 +2275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.AccessControlRequestMethod, key))
                     {
-                        if ((_bits & 0x80000000000000L) != 0)
+                        if ((_bits & 0x40000000000000L) != 0)
                         {
                             value = _headers._AccessControlRequestMethod;
                             return true;
@@ -2221,7 +2285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     if (HeaderNames.AccessControlRequestMethod.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x80000000000000L) != 0)
+                        if ((_bits & 0x40000000000000L) != 0)
                         {
                             value = _headers._AccessControlRequestMethod;
                             return true;
@@ -2234,7 +2298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.AccessControlRequestHeaders, key))
                     {
-                        if ((_bits & 0x100000000000000L) != 0)
+                        if ((_bits & 0x80000000000000L) != 0)
                         {
                             value = _headers._AccessControlRequestHeaders;
                             return true;
@@ -2244,7 +2308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     if (HeaderNames.AccessControlRequestHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x100000000000000L) != 0)
+                        if ((_bits & 0x80000000000000L) != 0)
                         {
                             value = _headers._AccessControlRequestHeaders;
                             return true;
@@ -2287,23 +2351,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _headers._Via = value;
                         return;
                     }
-                    if (ReferenceEquals(HeaderNames.DNT, key))
-                    {
-                        _bits |= 0x800000000000L;
-                        _headers._DNT = value;
-                        return;
-                    }
 
                     if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         _bits |= 0x200L;
                         _headers._Via = value;
-                        return;
-                    }
-                    if (HeaderNames.DNT.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _bits |= 0x800000000000L;
-                        _headers._DNT = value;
                         return;
                     }
                     break;
@@ -2418,7 +2470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.Origin, key))
                     {
-                        _bits |= 0x40000000000000L;
+                        _bits |= 0x20000000000000L;
                         _headers._Origin = value;
                         return;
                     }
@@ -2449,7 +2501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.Origin.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _bits |= 0x40000000000000L;
+                        _bits |= 0x20000000000000L;
                         _headers._Origin = value;
                         return;
                     }
@@ -2501,7 +2553,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
-                        _bits |= 0x20000000000000L;
+                        _bits |= 0x10000000000000L;
                         _headers._Baggage = value;
                         return;
                     }
@@ -2550,7 +2602,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _bits |= 0x20000000000000L;
+                        _bits |= 0x10000000000000L;
                         _headers._Baggage = value;
                         return;
                     }
@@ -2630,13 +2682,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.RequestId, key))
                     {
-                        _bits |= 0x2000000000000L;
+                        _bits |= 0x1000000000000L;
                         _headers._RequestId = value;
                         return;
                     }
                     if (ReferenceEquals(HeaderNames.TraceState, key))
                     {
-                        _bits |= 0x10000000000000L;
+                        _bits |= 0x8000000000000L;
                         _headers._TraceState = value;
                         return;
                     }
@@ -2667,13 +2719,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.RequestId.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _bits |= 0x2000000000000L;
+                        _bits |= 0x1000000000000L;
                         _headers._RequestId = value;
                         return;
                     }
                     if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _bits |= 0x10000000000000L;
+                        _bits |= 0x8000000000000L;
                         _headers._TraceState = value;
                         return;
                     }
@@ -2689,7 +2741,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.TraceParent, key))
                     {
-                        _bits |= 0x8000000000000L;
+                        _bits |= 0x4000000000000L;
                         _headers._TraceParent = value;
                         return;
                     }
@@ -2702,7 +2754,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _bits |= 0x8000000000000L;
+                        _bits |= 0x4000000000000L;
                         _headers._TraceParent = value;
                         return;
                     }
@@ -2968,7 +3020,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.CorrelationContext, key))
                     {
-                        _bits |= 0x4000000000000L;
+                        _bits |= 0x2000000000000L;
                         _headers._CorrelationContext = value;
                         return;
                     }
@@ -2987,7 +3039,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.CorrelationContext.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _bits |= 0x4000000000000L;
+                        _bits |= 0x2000000000000L;
                         _headers._CorrelationContext = value;
                         return;
                     }
@@ -3014,14 +3066,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.UpgradeInsecureRequests, key))
                     {
-                        _bits |= 0x1000000000000L;
+                        _bits |= 0x800000000000L;
                         _headers._UpgradeInsecureRequests = value;
                         return;
                     }
 
                     if (HeaderNames.UpgradeInsecureRequests.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _bits |= 0x1000000000000L;
+                        _bits |= 0x800000000000L;
                         _headers._UpgradeInsecureRequests = value;
                         return;
                     }
@@ -3031,14 +3083,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.AccessControlRequestMethod, key))
                     {
-                        _bits |= 0x80000000000000L;
+                        _bits |= 0x40000000000000L;
                         _headers._AccessControlRequestMethod = value;
                         return;
                     }
 
                     if (HeaderNames.AccessControlRequestMethod.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _bits |= 0x80000000000000L;
+                        _bits |= 0x40000000000000L;
                         _headers._AccessControlRequestMethod = value;
                         return;
                     }
@@ -3048,14 +3100,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.AccessControlRequestHeaders, key))
                     {
-                        _bits |= 0x100000000000000L;
+                        _bits |= 0x80000000000000L;
                         _headers._AccessControlRequestHeaders = value;
                         return;
                     }
 
                     if (HeaderNames.AccessControlRequestHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _bits |= 0x100000000000000L;
+                        _bits |= 0x80000000000000L;
                         _headers._AccessControlRequestHeaders = value;
                         return;
                     }
@@ -3107,16 +3159,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(HeaderNames.DNT, key))
-                    {
-                        if ((_bits & 0x800000000000L) == 0)
-                        {
-                            _bits |= 0x800000000000L;
-                            _headers._DNT = value;
-                            return true;
-                        }
-                        return false;
-                    }
     
                     if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
@@ -3124,16 +3166,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             _bits |= 0x200L;
                             _headers._Via = value;
-                            return true;
-                        }
-                        return false;
-                    }
-                    if (HeaderNames.DNT.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if ((_bits & 0x800000000000L) == 0)
-                        {
-                            _bits |= 0x800000000000L;
-                            _headers._DNT = value;
                             return true;
                         }
                         return false;
@@ -3314,9 +3346,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.Origin, key))
                     {
-                        if ((_bits & 0x40000000000000L) == 0)
+                        if ((_bits & 0x20000000000000L) == 0)
                         {
-                            _bits |= 0x40000000000000L;
+                            _bits |= 0x20000000000000L;
                             _headers._Origin = value;
                             return true;
                         }
@@ -3365,9 +3397,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.Origin.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x40000000000000L) == 0)
+                        if ((_bits & 0x20000000000000L) == 0)
                         {
-                            _bits |= 0x40000000000000L;
+                            _bits |= 0x20000000000000L;
                             _headers._Origin = value;
                             return true;
                         }
@@ -3449,9 +3481,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
-                        if ((_bits & 0x20000000000000L) == 0)
+                        if ((_bits & 0x10000000000000L) == 0)
                         {
-                            _bits |= 0x20000000000000L;
+                            _bits |= 0x10000000000000L;
                             _headers._Baggage = value;
                             return true;
                         }
@@ -3530,9 +3562,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x20000000000000L) == 0)
+                        if ((_bits & 0x10000000000000L) == 0)
                         {
-                            _bits |= 0x20000000000000L;
+                            _bits |= 0x10000000000000L;
                             _headers._Baggage = value;
                             return true;
                         }
@@ -3654,9 +3686,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.RequestId, key))
                     {
-                        if ((_bits & 0x2000000000000L) == 0)
+                        if ((_bits & 0x1000000000000L) == 0)
                         {
-                            _bits |= 0x2000000000000L;
+                            _bits |= 0x1000000000000L;
                             _headers._RequestId = value;
                             return true;
                         }
@@ -3664,9 +3696,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.TraceState, key))
                     {
-                        if ((_bits & 0x10000000000000L) == 0)
+                        if ((_bits & 0x8000000000000L) == 0)
                         {
-                            _bits |= 0x10000000000000L;
+                            _bits |= 0x8000000000000L;
                             _headers._TraceState = value;
                             return true;
                         }
@@ -3715,9 +3747,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.RequestId.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x2000000000000L) == 0)
+                        if ((_bits & 0x1000000000000L) == 0)
                         {
-                            _bits |= 0x2000000000000L;
+                            _bits |= 0x1000000000000L;
                             _headers._RequestId = value;
                             return true;
                         }
@@ -3725,9 +3757,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x10000000000000L) == 0)
+                        if ((_bits & 0x8000000000000L) == 0)
                         {
-                            _bits |= 0x10000000000000L;
+                            _bits |= 0x8000000000000L;
                             _headers._TraceState = value;
                             return true;
                         }
@@ -3749,9 +3781,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.TraceParent, key))
                     {
-                        if ((_bits & 0x8000000000000L) == 0)
+                        if ((_bits & 0x4000000000000L) == 0)
                         {
-                            _bits |= 0x8000000000000L;
+                            _bits |= 0x4000000000000L;
                             _headers._TraceParent = value;
                             return true;
                         }
@@ -3770,9 +3802,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x8000000000000L) == 0)
+                        if ((_bits & 0x4000000000000L) == 0)
                         {
-                            _bits |= 0x8000000000000L;
+                            _bits |= 0x4000000000000L;
                             _headers._TraceParent = value;
                             return true;
                         }
@@ -4192,9 +4224,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.CorrelationContext, key))
                     {
-                        if ((_bits & 0x4000000000000L) == 0)
+                        if ((_bits & 0x2000000000000L) == 0)
                         {
-                            _bits |= 0x4000000000000L;
+                            _bits |= 0x2000000000000L;
                             _headers._CorrelationContext = value;
                             return true;
                         }
@@ -4223,9 +4255,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.CorrelationContext.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x4000000000000L) == 0)
+                        if ((_bits & 0x2000000000000L) == 0)
                         {
-                            _bits |= 0x4000000000000L;
+                            _bits |= 0x2000000000000L;
                             _headers._CorrelationContext = value;
                             return true;
                         }
@@ -4262,9 +4294,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.UpgradeInsecureRequests, key))
                     {
-                        if ((_bits & 0x1000000000000L) == 0)
+                        if ((_bits & 0x800000000000L) == 0)
                         {
-                            _bits |= 0x1000000000000L;
+                            _bits |= 0x800000000000L;
                             _headers._UpgradeInsecureRequests = value;
                             return true;
                         }
@@ -4273,9 +4305,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     
                     if (HeaderNames.UpgradeInsecureRequests.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x1000000000000L) == 0)
+                        if ((_bits & 0x800000000000L) == 0)
                         {
-                            _bits |= 0x1000000000000L;
+                            _bits |= 0x800000000000L;
                             _headers._UpgradeInsecureRequests = value;
                             return true;
                         }
@@ -4287,9 +4319,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.AccessControlRequestMethod, key))
                     {
-                        if ((_bits & 0x80000000000000L) == 0)
+                        if ((_bits & 0x40000000000000L) == 0)
                         {
-                            _bits |= 0x80000000000000L;
+                            _bits |= 0x40000000000000L;
                             _headers._AccessControlRequestMethod = value;
                             return true;
                         }
@@ -4298,9 +4330,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     
                     if (HeaderNames.AccessControlRequestMethod.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x80000000000000L) == 0)
+                        if ((_bits & 0x40000000000000L) == 0)
                         {
-                            _bits |= 0x80000000000000L;
+                            _bits |= 0x40000000000000L;
                             _headers._AccessControlRequestMethod = value;
                             return true;
                         }
@@ -4312,9 +4344,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.AccessControlRequestHeaders, key))
                     {
-                        if ((_bits & 0x100000000000000L) == 0)
+                        if ((_bits & 0x80000000000000L) == 0)
                         {
-                            _bits |= 0x100000000000000L;
+                            _bits |= 0x80000000000000L;
                             _headers._AccessControlRequestHeaders = value;
                             return true;
                         }
@@ -4323,9 +4355,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     
                     if (HeaderNames.AccessControlRequestHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x100000000000000L) == 0)
+                        if ((_bits & 0x80000000000000L) == 0)
                         {
-                            _bits |= 0x100000000000000L;
+                            _bits |= 0x80000000000000L;
                             _headers._AccessControlRequestHeaders = value;
                             return true;
                         }
@@ -4379,16 +4411,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(HeaderNames.DNT, key))
-                    {
-                        if ((_bits & 0x800000000000L) != 0)
-                        {
-                            _bits &= ~0x800000000000L;
-                            _headers._DNT = default(StringValues);
-                            return true;
-                        }
-                        return false;
-                    }
     
                     if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
@@ -4396,16 +4418,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             _bits &= ~0x200L;
                             _headers._Via = default(StringValues);
-                            return true;
-                        }
-                        return false;
-                    }
-                    if (HeaderNames.DNT.Equals(key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if ((_bits & 0x800000000000L) != 0)
-                        {
-                            _bits &= ~0x800000000000L;
-                            _headers._DNT = default(StringValues);
                             return true;
                         }
                         return false;
@@ -4586,9 +4598,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.Origin, key))
                     {
-                        if ((_bits & 0x40000000000000L) != 0)
+                        if ((_bits & 0x20000000000000L) != 0)
                         {
-                            _bits &= ~0x40000000000000L;
+                            _bits &= ~0x20000000000000L;
                             _headers._Origin = default(StringValues);
                             return true;
                         }
@@ -4637,9 +4649,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.Origin.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x40000000000000L) != 0)
+                        if ((_bits & 0x20000000000000L) != 0)
                         {
-                            _bits &= ~0x40000000000000L;
+                            _bits &= ~0x20000000000000L;
                             _headers._Origin = default(StringValues);
                             return true;
                         }
@@ -4721,9 +4733,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
-                        if ((_bits & 0x20000000000000L) != 0)
+                        if ((_bits & 0x10000000000000L) != 0)
                         {
-                            _bits &= ~0x20000000000000L;
+                            _bits &= ~0x10000000000000L;
                             _headers._Baggage = default(StringValues);
                             return true;
                         }
@@ -4802,9 +4814,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x20000000000000L) != 0)
+                        if ((_bits & 0x10000000000000L) != 0)
                         {
-                            _bits &= ~0x20000000000000L;
+                            _bits &= ~0x10000000000000L;
                             _headers._Baggage = default(StringValues);
                             return true;
                         }
@@ -4926,9 +4938,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.RequestId, key))
                     {
-                        if ((_bits & 0x2000000000000L) != 0)
+                        if ((_bits & 0x1000000000000L) != 0)
                         {
-                            _bits &= ~0x2000000000000L;
+                            _bits &= ~0x1000000000000L;
                             _headers._RequestId = default(StringValues);
                             return true;
                         }
@@ -4936,9 +4948,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.TraceState, key))
                     {
-                        if ((_bits & 0x10000000000000L) != 0)
+                        if ((_bits & 0x8000000000000L) != 0)
                         {
-                            _bits &= ~0x10000000000000L;
+                            _bits &= ~0x8000000000000L;
                             _headers._TraceState = default(StringValues);
                             return true;
                         }
@@ -4987,9 +4999,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.RequestId.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x2000000000000L) != 0)
+                        if ((_bits & 0x1000000000000L) != 0)
                         {
-                            _bits &= ~0x2000000000000L;
+                            _bits &= ~0x1000000000000L;
                             _headers._RequestId = default(StringValues);
                             return true;
                         }
@@ -4997,9 +5009,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x10000000000000L) != 0)
+                        if ((_bits & 0x8000000000000L) != 0)
                         {
-                            _bits &= ~0x10000000000000L;
+                            _bits &= ~0x8000000000000L;
                             _headers._TraceState = default(StringValues);
                             return true;
                         }
@@ -5021,9 +5033,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.TraceParent, key))
                     {
-                        if ((_bits & 0x8000000000000L) != 0)
+                        if ((_bits & 0x4000000000000L) != 0)
                         {
-                            _bits &= ~0x8000000000000L;
+                            _bits &= ~0x4000000000000L;
                             _headers._TraceParent = default(StringValues);
                             return true;
                         }
@@ -5042,9 +5054,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x8000000000000L) != 0)
+                        if ((_bits & 0x4000000000000L) != 0)
                         {
-                            _bits &= ~0x8000000000000L;
+                            _bits &= ~0x4000000000000L;
                             _headers._TraceParent = default(StringValues);
                             return true;
                         }
@@ -5464,9 +5476,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (ReferenceEquals(HeaderNames.CorrelationContext, key))
                     {
-                        if ((_bits & 0x4000000000000L) != 0)
+                        if ((_bits & 0x2000000000000L) != 0)
                         {
-                            _bits &= ~0x4000000000000L;
+                            _bits &= ~0x2000000000000L;
                             _headers._CorrelationContext = default(StringValues);
                             return true;
                         }
@@ -5495,9 +5507,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     if (HeaderNames.CorrelationContext.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x4000000000000L) != 0)
+                        if ((_bits & 0x2000000000000L) != 0)
                         {
-                            _bits &= ~0x4000000000000L;
+                            _bits &= ~0x2000000000000L;
                             _headers._CorrelationContext = default(StringValues);
                             return true;
                         }
@@ -5534,9 +5546,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.UpgradeInsecureRequests, key))
                     {
-                        if ((_bits & 0x1000000000000L) != 0)
+                        if ((_bits & 0x800000000000L) != 0)
                         {
-                            _bits &= ~0x1000000000000L;
+                            _bits &= ~0x800000000000L;
                             _headers._UpgradeInsecureRequests = default(StringValues);
                             return true;
                         }
@@ -5545,9 +5557,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     
                     if (HeaderNames.UpgradeInsecureRequests.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x1000000000000L) != 0)
+                        if ((_bits & 0x800000000000L) != 0)
                         {
-                            _bits &= ~0x1000000000000L;
+                            _bits &= ~0x800000000000L;
                             _headers._UpgradeInsecureRequests = default(StringValues);
                             return true;
                         }
@@ -5559,9 +5571,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.AccessControlRequestMethod, key))
                     {
-                        if ((_bits & 0x80000000000000L) != 0)
+                        if ((_bits & 0x40000000000000L) != 0)
                         {
-                            _bits &= ~0x80000000000000L;
+                            _bits &= ~0x40000000000000L;
                             _headers._AccessControlRequestMethod = default(StringValues);
                             return true;
                         }
@@ -5570,9 +5582,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     
                     if (HeaderNames.AccessControlRequestMethod.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x80000000000000L) != 0)
+                        if ((_bits & 0x40000000000000L) != 0)
                         {
-                            _bits &= ~0x80000000000000L;
+                            _bits &= ~0x40000000000000L;
                             _headers._AccessControlRequestMethod = default(StringValues);
                             return true;
                         }
@@ -5584,9 +5596,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (ReferenceEquals(HeaderNames.AccessControlRequestHeaders, key))
                     {
-                        if ((_bits & 0x100000000000000L) != 0)
+                        if ((_bits & 0x80000000000000L) != 0)
                         {
-                            _bits &= ~0x100000000000000L;
+                            _bits &= ~0x80000000000000L;
                             _headers._AccessControlRequestHeaders = default(StringValues);
                             return true;
                         }
@@ -5595,9 +5607,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     
                     if (HeaderNames.AccessControlRequestHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
-                        if ((_bits & 0x100000000000000L) != 0)
+                        if ((_bits & 0x80000000000000L) != 0)
                         {
-                            _bits &= ~0x100000000000000L;
+                            _bits &= ~0x80000000000000L;
                             _headers._AccessControlRequestHeaders = default(StringValues);
                             return true;
                         }
@@ -6085,7 +6097,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x800000000000L) != 0)
             {
-                _headers._DNT = default;
+                _headers._UpgradeInsecureRequests = default;
                 if((tempBits & ~0x800000000000L) == 0)
                 {
                     return;
@@ -6095,7 +6107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x1000000000000L) != 0)
             {
-                _headers._UpgradeInsecureRequests = default;
+                _headers._RequestId = default;
                 if((tempBits & ~0x1000000000000L) == 0)
                 {
                     return;
@@ -6105,7 +6117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x2000000000000L) != 0)
             {
-                _headers._RequestId = default;
+                _headers._CorrelationContext = default;
                 if((tempBits & ~0x2000000000000L) == 0)
                 {
                     return;
@@ -6115,7 +6127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x4000000000000L) != 0)
             {
-                _headers._CorrelationContext = default;
+                _headers._TraceParent = default;
                 if((tempBits & ~0x4000000000000L) == 0)
                 {
                     return;
@@ -6125,7 +6137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x8000000000000L) != 0)
             {
-                _headers._TraceParent = default;
+                _headers._TraceState = default;
                 if((tempBits & ~0x8000000000000L) == 0)
                 {
                     return;
@@ -6135,7 +6147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x10000000000000L) != 0)
             {
-                _headers._TraceState = default;
+                _headers._Baggage = default;
                 if((tempBits & ~0x10000000000000L) == 0)
                 {
                     return;
@@ -6145,7 +6157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x20000000000000L) != 0)
             {
-                _headers._Baggage = default;
+                _headers._Origin = default;
                 if((tempBits & ~0x20000000000000L) == 0)
                 {
                     return;
@@ -6155,7 +6167,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x40000000000000L) != 0)
             {
-                _headers._Origin = default;
+                _headers._AccessControlRequestMethod = default;
                 if((tempBits & ~0x40000000000000L) == 0)
                 {
                     return;
@@ -6165,22 +6177,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x80000000000000L) != 0)
             {
-                _headers._AccessControlRequestMethod = default;
+                _headers._AccessControlRequestHeaders = default;
                 if((tempBits & ~0x80000000000000L) == 0)
                 {
                     return;
                 }
                 tempBits &= ~0x80000000000000L;
-            }
-            
-            if ((tempBits & 0x100000000000000L) != 0)
-            {
-                _headers._AccessControlRequestHeaders = default;
-                if((tempBits & ~0x100000000000000L) == 0)
-                {
-                    return;
-                }
-                tempBits &= ~0x100000000000000L;
             }
             
         }
@@ -6621,7 +6623,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.DNT, _headers._DNT);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.UpgradeInsecureRequests, _headers._UpgradeInsecureRequests);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x1000000000000L) != 0)
@@ -6630,7 +6632,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.UpgradeInsecureRequests, _headers._UpgradeInsecureRequests);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.RequestId, _headers._RequestId);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x2000000000000L) != 0)
@@ -6639,7 +6641,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.RequestId, _headers._RequestId);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.CorrelationContext, _headers._CorrelationContext);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x4000000000000L) != 0)
@@ -6648,7 +6650,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.CorrelationContext, _headers._CorrelationContext);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.TraceParent, _headers._TraceParent);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x8000000000000L) != 0)
@@ -6657,7 +6659,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.TraceParent, _headers._TraceParent);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.TraceState, _headers._TraceState);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x10000000000000L) != 0)
@@ -6666,7 +6668,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.TraceState, _headers._TraceState);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Baggage, _headers._Baggage);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x20000000000000L) != 0)
@@ -6675,7 +6677,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Baggage, _headers._Baggage);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Origin, _headers._Origin);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x40000000000000L) != 0)
@@ -6684,19 +6686,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Origin, _headers._Origin);
-                    ++arrayIndex;
-                }
-                if ((_bits & 0x80000000000000L) != 0)
-                {
-                    if (arrayIndex == array.Length)
-                    {
-                        return false;
-                    }
                     array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestMethod, _headers._AccessControlRequestMethod);
                     ++arrayIndex;
                 }
-                if ((_bits & 0x100000000000000L) != 0)
+                if ((_bits & 0x80000000000000L) != 0)
                 {
                     if (arrayIndex == array.Length)
                     {
@@ -6739,14 +6732,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 3:
-                    var firstTerm3 = (Unsafe.ReadUnaligned<ushort>(ref nameStart) & 0xdfdfu);
-                    if ((firstTerm3 == 0x4e44u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)2) & 0xdfu) == 0x54u))
-                    {
-                        flag = 0x800000000000L;
-                        values = ref _headers._DNT;
-                        nameStr = HeaderNames.DNT;
-                    }
-                    else if ((firstTerm3 == 0x4956u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)2) & 0xdfu) == 0x41u))
+                    if (((Unsafe.ReadUnaligned<ushort>(ref nameStart) & 0xdfdfu) == 0x4956u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)2) & 0xdfu) == 0x41u))
                     {
                         flag = 0x200L;
                         values = ref _headers._Via;
@@ -6816,7 +6802,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     else if ((firstTerm6 == 0x4749524fu) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u))
                     {
-                        flag = 0x40000000000000L;
+                        flag = 0x20000000000000L;
                         values = ref _headers._Origin;
                         nameStr = HeaderNames.Origin;
                     }
@@ -6842,7 +6828,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x47474142u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4741u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
                     {
-                        flag = 0x20000000000000L;
+                        flag = 0x10000000000000L;
                         values = ref _headers._Baggage;
                         nameStr = HeaderNames.Baggage;
                     }
@@ -6927,13 +6913,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d54534555514552uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4449u))
                     {
-                        flag = 0x2000000000000L;
+                        flag = 0x1000000000000L;
                         values = ref _headers._RequestId;
                         nameStr = HeaderNames.RequestId;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x4154534543415254uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4554u))
                     {
-                        flag = 0x10000000000000L;
+                        flag = 0x8000000000000L;
                         values = ref _headers._TraceState;
                         nameStr = HeaderNames.TraceState;
                     }
@@ -6947,7 +6933,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x5241504543415254uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4e45u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)10) & 0xdfu) == 0x54u))
                     {
-                        flag = 0x8000000000000L;
+                        flag = 0x4000000000000L;
                         values = ref _headers._TraceParent;
                         nameStr = HeaderNames.TraceParent;
                     }
@@ -7086,7 +7072,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case 19:
                     if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x54414c4552524f43uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x544e4f432d4e4f49uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x5845u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x54u))
                     {
-                        flag = 0x4000000000000L;
+                        flag = 0x2000000000000L;
                         values = ref _headers._CorrelationContext;
                         nameStr = HeaderNames.CorrelationContext;
                     }
@@ -7114,7 +7100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case 25:
                     if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d45444152475055uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x4552554345534e49uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfdfdfdfdfdfdfffuL) == 0x545345555145522duL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)24) & 0xdfu) == 0x53u))
                     {
-                        flag = 0x1000000000000L;
+                        flag = 0x800000000000L;
                         values = ref _headers._UpgradeInsecureRequests;
                         nameStr = HeaderNames.UpgradeInsecureRequests;
                     }
@@ -7122,7 +7108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case 29:
                     if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x4d2d545345555145uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f485445u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)28) & 0xdfu) == 0x44u))
                     {
-                        flag = 0x80000000000000L;
+                        flag = 0x40000000000000L;
                         values = ref _headers._AccessControlRequestMethod;
                         nameStr = HeaderNames.AccessControlRequestMethod;
                     }
@@ -7130,7 +7116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case 30:
                     if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x482d545345555145uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45444145u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(14 * sizeof(ushort)))) & 0xdfdfu) == 0x5352u))
                     {
-                        flag = 0x100000000000000L;
+                        flag = 0x80000000000000L;
                         values = ref _headers._AccessControlRequestHeaders;
                         nameStr = HeaderNames.AccessControlRequestHeaders;
                     }
@@ -7480,7 +7466,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public StringValues _TE;
             public StringValues _Translate;
             public StringValues _UserAgent;
-            public StringValues _DNT;
             public StringValues _UpgradeInsecureRequests;
             public StringValues _RequestId;
             public StringValues _CorrelationContext;
@@ -7595,26 +7580,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     case 46:
                         goto HeaderUserAgent;
                     case 47:
-                        goto HeaderDNT;
-                    case 48:
                         goto HeaderUpgradeInsecureRequests;
-                    case 49:
+                    case 48:
                         goto HeaderRequestId;
-                    case 50:
+                    case 49:
                         goto HeaderCorrelationContext;
-                    case 51:
+                    case 50:
                         goto HeaderTraceParent;
-                    case 52:
+                    case 51:
                         goto HeaderTraceState;
-                    case 53:
+                    case 52:
                         goto HeaderBaggage;
-                    case 54:
+                    case 53:
                         goto HeaderOrigin;
-                    case 55:
+                    case 54:
                         goto HeaderAccessControlRequestMethod;
-                    case 56:
+                    case 55:
                         goto HeaderAccessControlRequestHeaders;
-                    case 57:
+                    case 56:
                         goto HeaderContentLength;
                     default:
                         goto ExtraHeaders;
@@ -7996,92 +7979,84 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _next = 47;
                         return true;
                     }
-                HeaderDNT: // case 47
+                HeaderUpgradeInsecureRequests: // case 47
                     if ((_bits & 0x800000000000L) != 0)
-                    {
-                        _current = new KeyValuePair<string, StringValues>(HeaderNames.DNT, _collection._headers._DNT);
-                        _currentKnownType = KnownHeaderType.DNT;
-                        _next = 48;
-                        return true;
-                    }
-                HeaderUpgradeInsecureRequests: // case 48
-                    if ((_bits & 0x1000000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.UpgradeInsecureRequests, _collection._headers._UpgradeInsecureRequests);
                         _currentKnownType = KnownHeaderType.UpgradeInsecureRequests;
-                        _next = 49;
+                        _next = 48;
                         return true;
                     }
-                HeaderRequestId: // case 49
-                    if ((_bits & 0x2000000000000L) != 0)
+                HeaderRequestId: // case 48
+                    if ((_bits & 0x1000000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.RequestId, _collection._headers._RequestId);
                         _currentKnownType = KnownHeaderType.RequestId;
-                        _next = 50;
+                        _next = 49;
                         return true;
                     }
-                HeaderCorrelationContext: // case 50
-                    if ((_bits & 0x4000000000000L) != 0)
+                HeaderCorrelationContext: // case 49
+                    if ((_bits & 0x2000000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.CorrelationContext, _collection._headers._CorrelationContext);
                         _currentKnownType = KnownHeaderType.CorrelationContext;
-                        _next = 51;
+                        _next = 50;
                         return true;
                     }
-                HeaderTraceParent: // case 51
-                    if ((_bits & 0x8000000000000L) != 0)
+                HeaderTraceParent: // case 50
+                    if ((_bits & 0x4000000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.TraceParent, _collection._headers._TraceParent);
                         _currentKnownType = KnownHeaderType.TraceParent;
-                        _next = 52;
+                        _next = 51;
                         return true;
                     }
-                HeaderTraceState: // case 52
-                    if ((_bits & 0x10000000000000L) != 0)
+                HeaderTraceState: // case 51
+                    if ((_bits & 0x8000000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.TraceState, _collection._headers._TraceState);
                         _currentKnownType = KnownHeaderType.TraceState;
-                        _next = 53;
+                        _next = 52;
                         return true;
                     }
-                HeaderBaggage: // case 53
-                    if ((_bits & 0x20000000000000L) != 0)
+                HeaderBaggage: // case 52
+                    if ((_bits & 0x10000000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Baggage, _collection._headers._Baggage);
                         _currentKnownType = KnownHeaderType.Baggage;
-                        _next = 54;
+                        _next = 53;
                         return true;
                     }
-                HeaderOrigin: // case 54
-                    if ((_bits & 0x40000000000000L) != 0)
+                HeaderOrigin: // case 53
+                    if ((_bits & 0x20000000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Origin, _collection._headers._Origin);
                         _currentKnownType = KnownHeaderType.Origin;
-                        _next = 55;
+                        _next = 54;
                         return true;
                     }
-                HeaderAccessControlRequestMethod: // case 55
-                    if ((_bits & 0x80000000000000L) != 0)
+                HeaderAccessControlRequestMethod: // case 54
+                    if ((_bits & 0x40000000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestMethod, _collection._headers._AccessControlRequestMethod);
                         _currentKnownType = KnownHeaderType.AccessControlRequestMethod;
-                        _next = 56;
+                        _next = 55;
                         return true;
                     }
-                HeaderAccessControlRequestHeaders: // case 56
-                    if ((_bits & 0x100000000000000L) != 0)
+                HeaderAccessControlRequestHeaders: // case 55
+                    if ((_bits & 0x80000000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestHeaders, _collection._headers._AccessControlRequestHeaders);
                         _currentKnownType = KnownHeaderType.AccessControlRequestHeaders;
-                        _next = 57;
+                        _next = 56;
                         return true;
                     }
-                HeaderContentLength: // case 57
+                HeaderContentLength: // case 56
                     if (_collection._contentLength.HasValue)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
                         _currentKnownType = KnownHeaderType.ContentLength;
-                        _next = 58;
+                        _next = 57;
                         return true;
                     }
                 ExtraHeaders:
@@ -8129,7 +8104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._CacheControl = value; 
             }
         }
-        public StringValues HeaderConnection
+        public override StringValues HeaderConnection
         {
             get
             {

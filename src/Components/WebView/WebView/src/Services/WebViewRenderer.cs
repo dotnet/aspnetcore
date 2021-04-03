@@ -22,11 +22,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             IServiceProvider serviceProvider,
             Dispatcher dispatcher,
             IpcSender ipcSender,
-            ILoggerFactory loggerFactory) :
+            ILoggerFactory loggerFactory,
+            ElementReferenceContext elementReferenceContext) :
             base(serviceProvider, loggerFactory)
         {
             _dispatcher = dispatcher;
             _ipcSender = ipcSender;
+            ElementReferenceContext = elementReferenceContext;
         }
 
         public override Dispatcher Dispatcher => _dispatcher;

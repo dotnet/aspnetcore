@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -48,29 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var basePadding = CalculatePadding();
             var resolvedPadding = Math.Max(basePadding - offset, 0);
 
-            if (context.Options.IndentWithTabs)
-            {
-                // Avoid writing directly to the StringBuilder here, that will throw off the manual indexing 
-                // done by the base class.
-                var tabs = resolvedPadding / context.Options.IndentSize;
-                for (var i = 0; i < tabs; i++)
-                {
-                    writer.Write("\t");
-                }
-
-                var spaces = resolvedPadding % context.Options.IndentSize;
-                for (var i = 0; i < spaces; i++)
-                {
-                    writer.Write(" ");
-                }
-            }
-            else
-            {
-                for (var i = 0; i < resolvedPadding; i++)
-                {
-                    writer.Write(" ");
-                }
-            }
+            writer.Indent(resolvedPadding);
 
             return writer;
 
@@ -86,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     }
                     else if (@char == '\t')
                     {
-                        spaceCount += context.Options.IndentSize;
+                        spaceCount += writer.TabSize;
                     }
                     else
                     {
@@ -569,11 +547,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             private int _tabSize;
             private int _startIndent;
 
-            public CSharpCodeWritingScope(CodeWriter writer, int tabSize = 4, bool autoSpace = true)
+            public CSharpCodeWritingScope(CodeWriter writer, bool autoSpace = true)
             {
                 _writer = writer;
                 _autoSpace = autoSpace;
-                _tabSize = tabSize;
+                _tabSize = writer.TabSize;
                 _startIndent = -1; // Set in WriteStartScope
 
                 WriteStartScope();

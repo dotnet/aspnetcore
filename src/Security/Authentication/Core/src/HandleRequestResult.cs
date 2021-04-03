@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="failure">The failure exception.</param>
         /// <param name="properties">Additional state values for the authentication session.</param>
         /// <returns>The result.</returns>
-        public static new HandleRequestResult Fail(Exception failure, AuthenticationProperties properties)
+        public static new HandleRequestResult Fail(Exception failure, AuthenticationProperties? properties)
         {
             return new HandleRequestResult() { Failure = failure, Properties = properties };
         }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="failureMessage">The failure message.</param>
         /// <param name="properties">Additional state values for the authentication session.</param>
         /// <returns>The result.</returns>
-        public static new HandleRequestResult Fail(string failureMessage, AuthenticationProperties properties)
+        public static new HandleRequestResult Fail(string failureMessage, AuthenticationProperties? properties)
             => Fail(new Exception(failureMessage), properties);
 
         /// <summary>

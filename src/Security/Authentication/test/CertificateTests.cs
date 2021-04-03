@@ -284,6 +284,30 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
+        
+        [Fact]
+        public async Task VerifyValidationFailureCanBeHandled()
+        {
+            var failCalled = false;
+            using var host = await CreateHost(
+                new CertificateAuthenticationOptions
+                {
+                    Events = new CertificateAuthenticationEvents()
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            context.Fail("Validation failed: " + context.Exception);
+                            failCalled = true;
+                            return Task.CompletedTask;
+                        }
+                    }
+                }, Certificates.SignedClient);
+
+            using var server = host.GetTestServer();
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            Assert.True(failCalled);
+        }
 
         [Fact]
         public async Task VerifyClientCertWithUntrustedRootAndTrustedChainEndsUpInForbidden()
@@ -751,7 +775,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 .Build();
 
             await host.StartAsync();
-
 
             var server = host.GetTestServer();
             server.BaseAddress = baseAddress;

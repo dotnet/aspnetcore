@@ -1,9 +1,16 @@
 #nullable enable
+Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.IndentWithTabs.get -> bool
+Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.TabSize.get -> int
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.CascadingGenericTypeParameter() -> void
+~Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.CodeWriter(string newLine, Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptions options) -> void
+~Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.Indent(int size) -> Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeNames.get -> System.Collections.Generic.IReadOnlyCollection<string>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.GenericTypeNames.set -> void
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesCascadingGenericTypes.get -> System.Collections.Generic.Dictionary<string, Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentIntermediateNode.ProvidesCascadingGenericTypes.set -> void
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.get -> System.Collections.Generic.List<Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter>
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.set -> void
+abstract Microsoft.AspNetCore.Razor.Language.RazorConfiguration.UseConsolidatedMvcViews.get -> bool
+*REMOVED*~static Microsoft.AspNetCore.Razor.Language.RazorConfiguration.Create(Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion languageVersion, string configurationName, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Language.RazorExtension> extensions) -> Microsoft.AspNetCore.Razor.Language.RazorConfiguration
+~static Microsoft.AspNetCore.Razor.Language.RazorConfiguration.Create(Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion languageVersion, string configurationName, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Language.RazorExtension> extensions, bool useConsolidatedMvcViews = false) -> Microsoft.AspNetCore.Razor.Language.RazorConfiguration

@@ -3,10 +3,10 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
+    <RemoveDevicePlatformSupport>true</RemoveDevicePlatformSupport>
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
-    <IsWindowsOnlyTest>true</IsWindowsOnlyTest>
     <SkipHelixArm>true</SkipHelixArm>
     <BaseOutputPath />
     <OutputPath />
@@ -45,6 +45,8 @@
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Anglesharp" />
+    <Reference Include="PlaywrightSharp" Condition="'$(TargetOsName)' != 'linux-musl'" />
+    <Reference Include="PlaywrightSharp" ExcludeAssets="build" Condition="'$(TargetOsName)' == 'linux-musl'" />
     <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
@@ -57,4 +59,13 @@
 
   <!-- Shared testing infrastructure for running E2E template tests -->
   <Import Project="..\TestInfrastructure\PrepareForTest.targets" />
+
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(OutputPath).playwright\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)\.playwright\%(_PublishFiles.RecursiveDir)\" />
+  </Target>
+
+
 </Project>

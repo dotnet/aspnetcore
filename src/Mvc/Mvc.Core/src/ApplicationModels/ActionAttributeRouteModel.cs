@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // We also include metadata and action constraints from the controller
             // even when there are no routes, or when an action overrides the route template.
-            SelectorModel additionalSelector = null;
+            SelectorModel? additionalSelector = null;
             if (actionModel.Controller.Selectors.Count > 0)
             {
                 // This logic seems arbitrary but there's a good reason for it.
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        private static void AddActionConstraints(SelectorModel selector, IList<IActionConstraintMetadata> actionConstraints)
+        private static void AddActionConstraints(SelectorModel selector, IList<IActionConstraintMetadata>? actionConstraints)
         {
             if (actionConstraints != null)
             {
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        private static void AddEndpointMetadata(SelectorModel selector, IList<object> controllerMetadata)
+        private static void AddEndpointMetadata(SelectorModel selector, IList<object>? controllerMetadata)
         {
             if (controllerMetadata != null)
             {
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        public static IEnumerable<(AttributeRouteModel route, SelectorModel actionSelector, SelectorModel controllerSelector)> GetAttributeRoutes(ActionModel actionModel)
+        public static IEnumerable<(AttributeRouteModel? route, SelectorModel actionSelector, SelectorModel? controllerSelector)> GetAttributeRoutes(ActionModel actionModel)
         {
             var controllerAttributeRoutes = actionModel.Controller.Selectors
                 .Where(sm => sm.AttributeRouteModel != null)

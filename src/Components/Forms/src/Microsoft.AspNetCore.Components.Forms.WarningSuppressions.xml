@@ -3,6 +3,18 @@
   <assembly fullname="Microsoft.AspNetCore.Components.Forms, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.ValidateField(Microsoft.AspNetCore.Components.Forms.EditContext,Microsoft.AspNetCore.Components.Forms.ValidationMessageStore,Microsoft.AspNetCore.Components.Forms.FieldIdentifier@)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.ValidateModel(Microsoft.AspNetCore.Components.Forms.EditContext,Microsoft.AspNetCore.Components.Forms.ValidationMessageStore)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
       <argument>IL2080</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.TryGetValidatableProperty(Microsoft.AspNetCore.Components.Forms.FieldIdentifier@,System.Reflection.PropertyInfo@)</property>

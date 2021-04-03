@@ -17,7 +17,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class MessagePump : IServer
+    internal partial class MessagePump : IServer
     {
         private readonly ILogger _logger;
         private readonly HttpSysOptions _options;
@@ -87,8 +87,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (_options.UrlPrefixes.Count > 0)
                 {
-                    _logger.LogWarning(LoggerEventIds.ClearedPrefixes, $"Overriding endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true." +
-                        $" Binding to address(es) '{string.Join(", ", _serverAddresses.Addresses)}' instead. ");
+                    Log.ClearedPrefixes(_logger, _serverAddresses.Addresses);
 
                     Listener.Options.UrlPrefixes.Clear();
                 }
@@ -99,12 +98,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (hostingUrlsPresent)
                 {
-                    _logger.LogWarning(LoggerEventIds.ClearedAddresses, $"Overriding address(es) '{string.Join(", ", _serverAddresses.Addresses)}'. " +
-                        $"Binding to endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} instead.");
+                    Log.ClearedAddresses(_logger, _serverAddresses.Addresses);
 
                     _serverAddresses.Addresses.Clear();
                 }
-
             }
             else if (hostingUrlsPresent)
             {
@@ -112,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             else if (Listener.RequestQueue.Created)
             {
-                _logger.LogDebug(LoggerEventIds.BindingToDefault, $"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
+                Log.BindingToDefault(_logger);
 
                 Listener.Options.UrlPrefixes.Add(Constants.DefaultServerAddress);
             }
@@ -207,11 +204,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Debug.Assert(Stopping);
                     if (Stopping)
                     {
-                        _logger.LogDebug(LoggerEventIds.AcceptErrorStopping, exception, "Failed to accept a request, the server is stopping.");
+                        Log.AcceptErrorStopping(_logger, exception);
                     }
                     else
                     {
-                        _logger.LogError(LoggerEventIds.AcceptError, exception, "Failed to accept a request.");
+                        Log.AcceptError(_logger, exception);
                     }
                     continue;
                 }
@@ -223,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     // Request processing failed to be queued in threadpool
                     // Log the error message, release throttle and move on
-                    _logger.LogError(LoggerEventIds.RequestListenerProcessError, ex, "ProcessRequestAsync");
+                    Log.RequestListenerProcessError(_logger, ex);
                 }
             }
             Interlocked.Decrement(ref _acceptorCounts);
@@ -237,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (Interlocked.Exchange(ref _shutdownSignalCompleted, 1) == 0)
                     {
-                        _logger.LogInformation(LoggerEventIds.StopCancelled, "Canceled, terminating " + _outstandingRequests + " request(s).");
+                        Log.StopCancelled(_logger, _outstandingRequests);
                         _shutdownSignal.TrySetResult();
                     }
                 });
@@ -255,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Wait for active requests to drain
                 if (_outstandingRequests > 0)
                 {
-                    _logger.LogInformation(LoggerEventIds.WaitingForRequestsToDrain, "Stopping, waiting for " + _outstandingRequests + " request(s) to drain.");
+                    Log.WaitingForRequestsToDrain(_logger, _outstandingRequests);
                     RegisterCancelation();
                 }
                 else

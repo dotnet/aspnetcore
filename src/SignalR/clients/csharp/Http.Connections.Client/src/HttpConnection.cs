@@ -597,8 +597,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             var httpClient = new HttpClient(httpMessageHandler);
             httpClient.Timeout = HttpClientTimeout;
 
-            // Start with the user agent header
-            httpClient.DefaultRequestHeaders.Add(Constants.UserAgent, Constants.UserAgentHeader);
+            var userSetUserAgent = false;
 
             // Apply any headers configured on the HttpConnectionOptions
             if (_httpConnectionOptions?.Headers != null)
@@ -608,6 +607,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     // Check if the key is User-Agent and remove if empty string then replace if it exists.
                     if (string.Equals(header.Key, Constants.UserAgent, StringComparison.OrdinalIgnoreCase))
                     {
+                        userSetUserAgent = true;
                         if (string.IsNullOrEmpty(header.Value))
                         {
                             httpClient.DefaultRequestHeaders.Remove(header.Key);
@@ -627,6 +627,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
                     }
                 }
+            }
+
+            // Apply default user agent only if user hasn't specified one (empty or not)
+            // Don't pre-emptively set this, some frameworks (mono) have different user agent format rules,
+            // so allowing a user to set an empty one avoids throwing on those frameworks.
+            if (!userSetUserAgent)
+            {
+                httpClient.DefaultRequestHeaders.Add(Constants.UserAgent, Constants.UserAgentHeader);
             }
 
             httpClient.DefaultRequestHeaders.Remove("X-Requested-With");
