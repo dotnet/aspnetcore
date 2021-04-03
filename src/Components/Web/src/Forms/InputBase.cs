@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         void IDisposable.Dispose()
         {
             // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
-            if (EditContext != null)
+            if (EditContext is not null)
             {
                 EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
             }
