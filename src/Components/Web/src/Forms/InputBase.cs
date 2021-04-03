@@ -187,6 +187,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
 
         /// <inheritdoc />
+        [MemberNotNull(nameof(EditContext), nameof(CascadedEditContext))]
         public override Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
@@ -315,7 +316,12 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         void IDisposable.Dispose()
         {
-            EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
+            // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
+            if (EditContext is not null)
+            {
+                EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
+            }
+
             Dispose(disposing: true);
         }
     }
