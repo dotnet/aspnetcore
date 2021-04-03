@@ -242,12 +242,12 @@
     <NewtonsoftJsonBsonVersion>1.0.2</NewtonsoftJsonBsonVersion>
     <NewtonsoftJsonVersion>12.0.2</NewtonsoftJsonVersion>
     <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
-    <PlaywrightSharpVersion>0.191.1</PlaywrightSharpVersion>
+    <PlaywrightSharpVersion>0.192.0</PlaywrightSharpVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
     <PollyVersion>7.1.0</PollyVersion>
-    <SeleniumSupportVersion>4.0.0-beta1</SeleniumSupportVersion>
-    <SeleniumWebDriverChromeDriverVersion>89.0.4389.2300-beta</SeleniumWebDriverChromeDriverVersion>
-    <SeleniumWebDriverVersion>4.0.0-beta1</SeleniumWebDriverVersion>
+    <SeleniumSupportVersion>4.0.0-beta2</SeleniumSupportVersion>
+    <SeleniumWebDriverChromeDriverVersion>90.0.4430.2400-beta</SeleniumWebDriverChromeDriverVersion>
+    <SeleniumWebDriverVersion>4.0.0-beta2</SeleniumWebDriverVersion>
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
     <StackExchangeRedisVersion>2.0.593</StackExchangeRedisVersion>
