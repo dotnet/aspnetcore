@@ -1623,6 +1623,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31501")]
         public async Task DataBeforeHeaders_UnexpectedFrameError()
         {
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
