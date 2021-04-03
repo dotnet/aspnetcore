@@ -76,8 +76,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public override MemoryPool<byte> MemoryPool { get; }
 
-        public override Socket Socket { get; }
-
         public void Start()
         {
             _processingTask = StartAsync();
