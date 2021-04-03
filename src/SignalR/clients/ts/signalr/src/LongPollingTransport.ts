@@ -29,7 +29,7 @@ export class LongPollingTransport implements ITransport {
     public onclose: ((error?: Error) => void) | null;
 
     // This is an internal type, not exported from 'index' so this is really just internal.
-    public get pollAborted() {
+    public get pollAborted(): boolean {
         return this._pollAbort.aborted;
     }
 

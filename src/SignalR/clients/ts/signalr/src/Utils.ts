@@ -119,7 +119,7 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
 }
 
 /** @private */
-export function createLogger(logger?: ILogger | LogLevel) {
+export function createLogger(logger?: ILogger | LogLevel): ILogger {
     if (logger === undefined) {
         return new ConsoleLogger(LogLevel.Information);
     }
