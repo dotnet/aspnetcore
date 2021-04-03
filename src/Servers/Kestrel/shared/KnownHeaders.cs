@@ -85,20 +85,11 @@ namespace CodeGenerator
                 HeaderNames.GrpcEncoding,
                 HeaderNames.KeepAlive,
                 HeaderNames.Pragma,
-                HeaderNames.Trailer,
                 HeaderNames.TransferEncoding,
                 HeaderNames.Upgrade,
                 HeaderNames.Via,
                 HeaderNames.Warning,
-                HeaderNames.Allow,
                 HeaderNames.ContentType,
-                HeaderNames.ContentEncoding,
-                HeaderNames.ContentLanguage,
-                HeaderNames.ContentLocation,
-                HeaderNames.ContentMD5,
-                HeaderNames.ContentRange,
-                HeaderNames.Expires,
-                HeaderNames.LastModified
             };
             // http://www.w3.org/TR/cors/#syntax
             var corsRequestHeaders = new[]
@@ -150,7 +141,7 @@ namespace CodeGenerator
                 HeaderNames.CorrelationContext,
                 HeaderNames.TraceParent,
                 HeaderNames.TraceState,
-                HeaderNames.Baggage
+                HeaderNames.Baggage,
             })
             .Concat(corsRequestHeaders)
             .Select((header, index) => new KnownHeader
@@ -197,6 +188,7 @@ namespace CodeGenerator
             {
                 HeaderNames.AcceptRanges,
                 HeaderNames.Age,
+                HeaderNames.Allow,
                 HeaderNames.AltSvc,
                 HeaderNames.ETag,
                 HeaderNames.Location,
@@ -206,7 +198,15 @@ namespace CodeGenerator
                 HeaderNames.Server,
                 HeaderNames.SetCookie,
                 HeaderNames.Vary,
+                HeaderNames.Expires,
                 HeaderNames.WWWAuthenticate,
+                HeaderNames.ContentRange,
+                HeaderNames.ContentEncoding,
+                HeaderNames.ContentLanguage,
+                HeaderNames.ContentLocation,
+                HeaderNames.ContentMD5,
+                HeaderNames.LastModified,
+                HeaderNames.Trailer,
             })
             .Concat(corsResponseHeaders)
             .Select((header, index) => new KnownHeader
