@@ -10,6 +10,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -40,7 +41,7 @@ namespace Templates.Test
         public CdnScriptTagTests(ITestOutputHelper output)
         {
             _output = output;
-            _httpClient = new HttpClient(new RetryHandler(new HttpClientHandler()));
+            _httpClient = new HttpClient(new RetryHandler(new HttpClientHandler(), _output));
         }
 
         public static IEnumerable<object[]> SubresourceIntegrityCheckData
@@ -98,7 +99,12 @@ namespace Templates.Test
 
         class RetryHandler : DelegatingHandler
         {
-            public RetryHandler(HttpMessageHandler innerHandler) : base(innerHandler) { }
+            private readonly ITestOutputHelper _output;
+
+            public RetryHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : base(innerHandler)
+            {
+                _output = output;
+            }
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
@@ -110,6 +116,11 @@ namespace Templates.Test
                     {
                         return result;
                     }
+                    else
+                    {
+                        _output.WriteLine($"Try {i} failed, returning {result.StatusCode}, '{result.ReasonPhrase}'.");
+                    }
+
                     await Task.Delay(1000);
                 }
                 return result;

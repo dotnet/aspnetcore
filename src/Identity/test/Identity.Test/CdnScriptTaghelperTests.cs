@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEmpty(scriptTags);
 
             var shasum = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            using (var client = new HttpClient(new RetryHandler(new HttpClientHandler() { })))
+            using (var client = new HttpClient(new RetryHandler(new HttpClientHandler(), _output)))
             {
                 foreach (var script in scriptTags)
                 {
@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Identity.Test
                         continue;
                     }
 
+                    _output.WriteLine($"Retrieving script from {script.Src}");
                     using (var resp = await client.GetStreamAsync(script.Src))
                     using (var alg = SHA384.Create())
                     {
@@ -65,7 +66,13 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         class RetryHandler : DelegatingHandler
         {
-            public RetryHandler(HttpMessageHandler innerHandler) : base(innerHandler) { }
+            private readonly ITestOutputHelper _output;
+
+            public RetryHandler(HttpMessageHandler innerHandler, ITestOutputHelper output) : base(innerHandler)
+            {
+                _output = output;
+            }
+
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 HttpResponseMessage result = null;
@@ -76,6 +83,11 @@ namespace Microsoft.AspNetCore.Identity.Test
                     {
                         return result;
                     }
+                    else
+                    {
+                        _output.WriteLine($"Try {i} failed, returning {result.StatusCode}, '{result.ReasonPhrase}'.");
+                    }
+
                     await Task.Delay(1000);
                 }
                 return result;
