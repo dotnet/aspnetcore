@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
         {
             if (objectType != typeof(JsonPatchDocument))
             {
-                throw new ArgumentException(Resources.FormatParameterMustMatchType("objectType", "JsonPatchDocument"), "objectType");
+                throw new ArgumentException(Resources.FormatParameterMustMatchType(nameof(objectType), "JsonPatchDocument"), nameof(objectType));
             }
 
             try
