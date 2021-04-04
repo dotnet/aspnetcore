@@ -697,7 +697,7 @@ namespace Microsoft.AspNetCore.JsonPatch
                 throw new ArgumentNullException(nameof(objectToApplyTo));
             }
 
-            ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, null, new AdapterFactory()));
+            ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, null, AdapterFactory.Default));
         }
 
         /// <summary>
@@ -707,7 +707,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="logErrorAction">Action to log errors</param>
         public void ApplyTo(TModel objectToApplyTo, Action<JsonPatchError> logErrorAction)
         {
-            ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, logErrorAction, new AdapterFactory()), logErrorAction);
+            ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, logErrorAction, AdapterFactory.Default), logErrorAction);
         }
 
         /// <summary>

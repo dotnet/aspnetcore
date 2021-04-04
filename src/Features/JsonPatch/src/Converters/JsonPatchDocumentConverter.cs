@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -13,6 +12,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
 {
     public class JsonPatchDocumentConverter : JsonConverter
     {
+        internal static IContractResolver DefaultContractResolver { get; } = new DefaultContractResolver();
+
         public override bool CanConvert(Type objectType)
         {
             return true;
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
                 serializer.Populate(jObjectReader, targetOperations);
 
                 // container target: the JsonPatchDocument. 
-                var container = new JsonPatchDocument(targetOperations, new DefaultContractResolver());
+                var container = new JsonPatchDocument(targetOperations, DefaultContractResolver);
 
                 return container;
             }

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public ObjectAdapter(
             IContractResolver contractResolver,
             Action<JsonPatchError> logErrorAction):
-            this(contractResolver, logErrorAction, new AdapterFactory())
+            this(contractResolver, logErrorAction, Adapters.AdapterFactory.Default)
         {
         }
 
