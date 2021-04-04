@@ -64,9 +64,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            if (value is IJsonPatchDocument)
+            if (value is IJsonPatchDocument jsonPatchDoc)
             {
-                var jsonPatchDoc = (IJsonPatchDocument)value;
                 var lst = jsonPatchDoc.GetOperations();
 
                 // write out the operations, no envelope
