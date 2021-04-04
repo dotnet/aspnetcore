@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
         IList<Operation> IJsonPatchDocument.GetOperations()
         {
-            var allOps = new List<Operation>();
+            var allOps = new List<Operation>(Operations?.Count ?? 0);
 
             if (Operations != null)
             {
