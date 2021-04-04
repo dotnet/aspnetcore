@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             }
         }
 
-        private JsonPatchError CreateOperationFailedError(object target, string path, Operation operation, string errorMessage)
+        private static JsonPatchError CreateOperationFailedError(object target, string path, Operation operation, string errorMessage)
         {
             return new JsonPatchError(
                 target,
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 errorMessage ?? Resources.FormatCannotPerformOperation(operation.op, path));
         }
 
-        private JsonPatchError CreatePathNotFoundError(object target, string path, Operation operation, string errorMessage)
+        private static JsonPatchError CreatePathNotFoundError(object target, string path, Operation operation, string errorMessage)
         {
             return new JsonPatchError(
                 target,
