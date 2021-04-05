@@ -124,9 +124,8 @@ namespace Microsoft.AspNetCore.Http
                 value = null;
                 return false;
             }
-            var res = Store.TryGetValue(key, out var objValue);
-            value = objValue as string;
-            return res;
+
+            return Store.TryGetValue(key, out value);
         }
 
         /// <summary>

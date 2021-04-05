@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Internal
 {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Internal
     internal class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue> where TKey : notnull
     {
         // Threshold for size of array to use.
-        private static readonly int DefaultArrayThreshold = 10;
+        private const int DefaultArrayThreshold = 10;
 
         internal KeyValuePair<TKey, TValue>[]? _arrayStorage;
         private int _count;
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Internal
         /// <param name="comparer">Equality comparison.</param>
         public AdaptiveCapacityDictionary(int capacity, IEqualityComparer<TKey> comparer)
         {
-            if (comparer is not null && comparer != EqualityComparer<TKey>.Default) // first check for null to avoid forcing default comparer instantiation unnecessarily
+            if (comparer is not null)
             {
                 _comparer = comparer;
             }
@@ -145,31 +146,14 @@ namespace Microsoft.AspNetCore.Internal
                 }
 
                 _dictionaryStorage![key] = value;
-                return;
             }
         }
 
         /// <inheritdoc />
-        public int Count
-        {
-            get
-            {
-                if (_dictionaryStorage != null)
-                {
-                    return _dictionaryStorage.Count;
-                }
-                return _count;
-            }
-        }
+        public int Count => _dictionaryStorage != null ? _dictionaryStorage.Count : _count;
 
         /// <inheritdoc />
-        public IEqualityComparer<TKey> Comparer
-        {
-            get
-            {
-                return _comparer ?? EqualityComparer<TKey>.Default;
-            }
-        }
+        public IEqualityComparer<TKey> Comparer => _comparer;
 
         /// <inheritdoc />
         bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
@@ -267,7 +251,6 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             _dictionaryStorage!.Add(key, value);
-            return;
         }
 
         /// <inheritdoc />
@@ -308,18 +291,12 @@ namespace Microsoft.AspNetCore.Internal
                 ThrowArgumentNullExceptionForKey();
             }
 
-            if (_dictionaryStorage != null)
+            if (_dictionaryStorage is null)
             {
-                return _dictionaryStorage.ContainsKey(key);
+                return ContainsKeyArray(key);
             }
 
-            return ContainsKeyCore(key);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ContainsKeyCore(TKey key)
-        {
-            return ContainsKeyArray(key);
+            return _dictionaryStorage.ContainsKey(key);
         }
 
         /// <inheritdoc />
@@ -495,7 +472,7 @@ namespace Microsoft.AspNetCore.Internal
 
             if (_arrayStorage != null)
             {
-                if (ContainsKeyCore(key))
+                if (ContainsKey(key))
                 {
                     return false;
                 }
@@ -540,6 +517,11 @@ namespace Microsoft.AspNetCore.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EnsureCapacity(int capacity)
         {
+            if (_arrayStorage!.Length < capacity)
+            {
+                return;
+            }
+
             EnsureCapacitySlow(capacity);
         }
 
@@ -547,50 +529,56 @@ namespace Microsoft.AspNetCore.Internal
         {
             Debug.Assert(_arrayStorage != null);
 
-            if (_arrayStorage.Length < capacity)
+            if (capacity > DefaultArrayThreshold)
             {
-                if (capacity > DefaultArrayThreshold)
+                _dictionaryStorage = new Dictionary<TKey, TValue>(capacity);
+                foreach (var item in _arrayStorage)
                 {
-                    _dictionaryStorage = new Dictionary<TKey, TValue>(capacity);
-                    foreach (var item in _arrayStorage)
-                    {
-                        _dictionaryStorage[item.Key] = item.Value;
-                    }
-
-                    // Clear array storage.
-                    _arrayStorage = null;
+                    _dictionaryStorage[item.Key] = item.Value;
                 }
-                else
+
+                // Clear array storage.
+                _arrayStorage = null;
+            }
+            else
+            {
+                capacity = _arrayStorage.Length == 0 ? DefaultArrayThreshold : _arrayStorage.Length * 2;
+                var array = new KeyValuePair<TKey, TValue>[capacity];
+                if (_count > 0)
                 {
-                    capacity = _arrayStorage.Length == 0 ? DefaultArrayThreshold : _arrayStorage.Length * 2;
-                    var array = new KeyValuePair<TKey, TValue>[capacity];
-                    if (_count > 0)
-                    {
-                        Array.Copy(_arrayStorage, 0, array, 0, _count);
-                    }
-
-                    _arrayStorage = array;
+                    Array.Copy(_arrayStorage, 0, array, 0, _count);
                 }
+
+                _arrayStorage = array;
             }
         }
+        private Span<KeyValuePair<TKey, TValue>> ArrayStorageSpan
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                Debug.Assert(_arrayStorage is not null);
+                Debug.Assert(_count <= _arrayStorage.Length);
 
+                ref var r = ref MemoryMarshal.GetArrayDataReference(_arrayStorage);
+                return MemoryMarshal.CreateSpan(ref r, _count);
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int FindIndex(TKey key)
         {
-            // Generally the bounds checking here will be elided by the JIT because this will be called
-            // on the same code path as EnsureCapacity.
             Debug.Assert(_dictionaryStorage == null);
             Debug.Assert(_arrayStorage != null);
 
-            var array = _arrayStorage;
-            var count = _count;
-
-            for (var i = 0; i < count; i++)
+            if (_count > 0)
             {
-                if (_comparer.Equals(array[i].Key, key))
+                for (var i = 0; i < ArrayStorageSpan.Length; ++i)
                 {
-                    return i;
+                    if (_comparer.Equals(ArrayStorageSpan[i].Key, key))
+                    {
+                        return i;
+                    }
                 }
             }
 
@@ -603,16 +591,13 @@ namespace Microsoft.AspNetCore.Internal
             Debug.Assert(_dictionaryStorage == null);
             Debug.Assert(_arrayStorage != null);
 
-            var array = _arrayStorage;
-            var count = _count;
-
-            if ((uint)count <= (uint)array.Length)
+            if (_count > 0)
             {
-                for (var i = 0; i < count; i++)
+                foreach (ref var item in ArrayStorageSpan)
                 {
-                    if (_comparer.Equals(array[i].Key, key))
+                    if (_comparer.Equals(item.Key, key))
                     {
-                        value = array[i].Value;
+                        value = item.Value;
                         return true;
                     }
                 }
@@ -623,27 +608,8 @@ namespace Microsoft.AspNetCore.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ContainsKeyArray(TKey key)
-        {
-            Debug.Assert(_dictionaryStorage == null);
-            Debug.Assert(_arrayStorage != null);
+        private bool ContainsKeyArray(TKey key) => TryFindItem(key, out _);
 
-            var array = _arrayStorage;
-            var count = _count;
-
-            if ((uint)count <= (uint)array.Length)
-            {
-                for (var i = 0; i < count; i++)
-                {
-                    if (_comparer.Equals(array[i].Key, key))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
 
         /// <inheritdoc />
         public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
@@ -686,7 +652,7 @@ namespace Microsoft.AspNetCore.Internal
             public bool MoveNext()
             {
                 var dictionary = _dictionary;
-                if (_dictionary._arrayStorage == null)
+                if (dictionary._arrayStorage == null)
                 {
                     return false;
                 }
@@ -696,7 +662,7 @@ namespace Microsoft.AspNetCore.Internal
                     return false;
                 }
 
-                Current = dictionary._arrayStorage![_index];
+                Current = dictionary._arrayStorage[_index];
                 _index++;
                 return true;
             }

@@ -82,13 +82,13 @@ namespace Microsoft.AspNetCore.Http
         [Benchmark]
         public void OneValue_SmallDict_Get()
         {
-            _smallCapDict.TryGetValue("test", out _);
+            _smallCapDict.TryGetValue("test", out var val);
         }
 
         [Benchmark]
         public void OneValue_Dict_Get()
         {
-            _dict.TryGetValue("test", out _);
+            _dict.TryGetValue("test", out var val);
         }
 
         [Benchmark]
