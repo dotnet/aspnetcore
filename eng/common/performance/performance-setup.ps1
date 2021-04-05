@@ -19,7 +19,8 @@ Param(
     [switch] $Compare,
     [string] $MonoDotnet="",
     [string] $Configurations="CompilationMode=$CompilationMode RunKind=$Kind",
-    [string] $LogicalMachine=""
+    [string] $LogicalMachine="",
+    [switch] $AndroidMono
 )
 
 $RunFromPerformanceRepo = ($Repository -eq "dotnet/performance") -or ($Repository -eq "dotnet-performance")
@@ -41,6 +42,7 @@ if ($Internal) {
         "perftiger" { $Queue = "Windows.10.Amd64.19H1.Tiger.Perf"  }
         "perfowl" { $Queue = "Windows.10.Amd64.20H2.Owl.Perf"  }
         "perfsurf" { $Queue = "Windows.10.Arm64.Perf.Surf"  }
+        "perfpixel4a" { $Queue = "Windows.10.Amd64.Pixel.Perf" }
         Default { $Queue = "Windows.10.Amd64.19H1.Tiger.Perf" }
     }
     $PerfLabArguments = "--upload-to-perflab-container"
@@ -100,6 +102,15 @@ if ($UseCoreRun) {
 if ($UseBaselineCoreRun) {
     $NewBaselineCoreRoot = (Join-Path $PayloadDirectory "Baseline_Core_Root")
     Move-Item -Path $BaselineCoreRootDirectory -Destination $NewBaselineCoreRoot
+}
+
+if ($AndroidMono) {
+    if(!(Test-Path $WorkItemDirectory))
+    {
+        mkdir $WorkItemDirectory
+    }
+    Copy-Item -path "$SourceDirectory\artifacts\bin\AndroidSampleApp\arm64\Release\android-arm64\publish\apk\bin\HelloAndroid.apk" $PayloadDirectory
+    $SetupArguments = $SetupArguments -replace $Architecture, 'arm64'
 }
 
 $DocsDir = (Join-Path $PerformanceDirectory "docs")
