@@ -118,16 +118,7 @@ namespace Microsoft.AspNetCore.WebSockets
                         }
                         else
                         {
-                            var requestHeaders = _context.Request.Headers;
-                            var interestingHeaders = new List<KeyValuePair<string, string>>();
-                            foreach (var headerName in HandshakeHelpers.NeededHeaders)
-                            {
-                                foreach (var value in requestHeaders.GetCommaSeparatedValues(headerName))
-                                {
-                                    interestingHeaders.Add(new KeyValuePair<string, string>(headerName, value));
-                                }
-                            }
-                            _isWebSocketRequest = CheckSupportedWebSocketRequest(_context.Request.Method, interestingHeaders, requestHeaders);
+                            _isWebSocketRequest = CheckSupportedWebSocketRequest(_context.Request.Method, _context.Request.Headers);
                         }
                     }
                     return _isWebSocketRequest.Value;
@@ -148,8 +139,7 @@ namespace Microsoft.AspNetCore.WebSockets
                 }
 
                 TimeSpan keepAliveInterval = _options.KeepAliveInterval;
-                var advancedAcceptContext = acceptContext as ExtendedWebSocketAcceptContext;
-                if (advancedAcceptContext != null)
+                if (acceptContext is ExtendedWebSocketAcceptContext advancedAcceptContext)
                 {
                     if (advancedAcceptContext.KeepAliveInterval.HasValue)
                     {
@@ -166,7 +156,7 @@ namespace Microsoft.AspNetCore.WebSockets
                 return WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
             }
 
-            public static bool CheckSupportedWebSocketRequest(string method, List<KeyValuePair<string, string>> interestingHeaders, IHeaderDictionary requestHeaders)
+            public static bool CheckSupportedWebSocketRequest(string method, IHeaderDictionary requestHeaders)
             {
                 bool validUpgrade = false, validConnection = false, validKey = false, validVersion = false;
 
@@ -175,7 +165,16 @@ namespace Microsoft.AspNetCore.WebSockets
                     return false;
                 }
 
-                foreach (var pair in interestingHeaders)
+                var interestingHeaders = new List<KeyValuePair<string, string>>();
+                foreach (var headerName in HandshakeHelpers.NeededHeaders)
+                {
+                    foreach (var value in requestHeaders.GetCommaSeparatedValues(headerName))
+                    {
+                        interestingHeaders.Add(new KeyValuePair<string, string>(headerName, value));
+                    }
+                }
+
+                foreach (var pair in requestHeaders)
                 {
                     if (string.Equals(HeaderNames.Connection, pair.Key, StringComparison.OrdinalIgnoreCase))
                     {

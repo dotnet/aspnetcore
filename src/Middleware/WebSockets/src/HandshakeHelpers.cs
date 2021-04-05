@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.WebSockets
             // so this can be hardcoded to 60 bytes for the requestKey + static websocket string
             Span<byte> mergedBytes = stackalloc byte[60];
             Encoding.UTF8.GetBytes(requestKey, mergedBytes);
-            EncodedWebSocketKey.CopyTo(mergedBytes.Slice(24));
+            EncodedWebSocketKey.CopyTo(mergedBytes[24..]);
 
             Span<byte> hashedBytes = stackalloc byte[20];
             var written = SHA1.HashData(mergedBytes, hashedBytes);
