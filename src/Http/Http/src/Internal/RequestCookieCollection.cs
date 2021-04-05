@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private IDictionary<string, string> Store { get; set; }
+        private AdaptiveCapacityDictionary<string, string> Store { get; set; }
 
         public RequestCookieCollection()
         {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http
         // For tests
         public RequestCookieCollection(Dictionary<string, string> store)
         {
-            Store = store;
+            Store = new AdaptiveCapacityDictionary<string, string>(store);
         }
 
         public string? this[string key]
@@ -177,10 +177,10 @@ namespace Microsoft.AspNetCore.Http
         public struct Enumerator : IEnumerator<KeyValuePair<string, string>>
         {
             // Do NOT make this readonly, or MoveNext will not work
-            private IEnumerator<KeyValuePair<string, string>> _dictionaryEnumerator;
+            private AdaptiveCapacityDictionary<string, string>.Enumerator _dictionaryEnumerator;
             private bool _notEmpty;
 
-            internal Enumerator(IEnumerator<KeyValuePair<string, string>> dictionaryEnumerator)
+            internal Enumerator(AdaptiveCapacityDictionary<string, string>.Enumerator dictionaryEnumerator)
             {
                 _dictionaryEnumerator = dictionaryEnumerator;
                 _notEmpty = true;

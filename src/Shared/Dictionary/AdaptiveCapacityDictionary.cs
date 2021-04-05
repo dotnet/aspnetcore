@@ -103,6 +103,17 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
+        /// <summary>
+        /// Creates a <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/> initialized with the specified <paramref name="dict"/>.
+        /// </summary>
+        /// <param name="dict">A dictionary to use.
+        /// </param>
+        internal AdaptiveCapacityDictionary(Dictionary<TKey, TValue> dict)
+        {
+            _comparer = dict.Comparer;
+            _dictionaryStorage = dict;
+        }
+
         /// <inheritdoc />
         public TValue this[TKey key]
         {
