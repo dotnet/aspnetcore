@@ -4,8 +4,9 @@
 using System;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Rewrite.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
@@ -34,13 +35,14 @@ namespace Microsoft.AspNetCore.Rewrite
 
         public virtual void ApplyRule(RewriteContext context)
         {
-            var path = context.HttpContext.Request.Path;
-            var pathBase = context.HttpContext.Request.PathBase;
+            var request = context.HttpContext.Request;
+            var path = request.Path;
+            var pathBase = request.PathBase;
 
             Match initMatchResults;
-            if (path == PathString.Empty)
+            if (!path.HasValue)
             {
-                initMatchResults = InitialMatch.Match(path.ToString());
+                initMatchResults = InitialMatch.Match(string.Empty);
             }
             else
             {
@@ -56,30 +58,54 @@ namespace Microsoft.AspNetCore.Rewrite
                 response.StatusCode = StatusCode;
                 context.Result = RuleResult.EndResponse;
 
+                string encodedPath;
+
                 if (string.IsNullOrEmpty(newPath))
                 {
-                    response.Headers[HeaderNames.Location] = pathBase.HasValue ? pathBase.Value : "/";
-                    return;
-                }
-
-                if (newPath.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal) == -1 && newPath[0] != '/')
-                {
-                    newPath = '/' + newPath;
-                }
-
-                var split = newPath.IndexOf('?');
-                if (split >= 0)
-                {
-                    var query = context.HttpContext.Request.QueryString.Add(
-                        QueryString.FromUriComponent(
-                            newPath.Substring(split)));
-                    // not using the HttpContext.Response.redirect here because status codes may be 301, 302, 307, 308
-                    response.Headers[HeaderNames.Location] = pathBase + newPath.Substring(0, split) + query.ToUriComponent();
+                    encodedPath = pathBase.HasValue ? pathBase.Value : "/";
                 }
                 else
                 {
-                    response.Headers[HeaderNames.Location] = pathBase + newPath + context.HttpContext.Request.QueryString.ToUriComponent();
+                    var host = default(HostString);
+                    var schemeSplit = newPath.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
+                    if (schemeSplit >= 0)
+                    {
+                        schemeSplit += Uri.SchemeDelimiter.Length;
+                        var pathSplit = newPath.IndexOf('/', schemeSplit);
+
+                        if (pathSplit == -1)
+                        {
+                            host = new HostString(newPath.Substring(schemeSplit));
+                            newPath = "/";
+                        }
+                        else
+                        {
+                            host = new HostString(newPath.Substring(schemeSplit, pathSplit - schemeSplit));
+                            newPath = newPath.Substring(pathSplit);
+                        }
+                    }
+
+                    if (newPath[0] != '/')
+                    {
+                        newPath = '/' + newPath;
+                    }
+
+                    var resolvedQuery = request.QueryString;
+                    var resolvedPath = newPath;
+                    var querySplit = newPath.IndexOf('?');
+                    if (querySplit >= 0)
+                    {
+                        resolvedQuery = request.QueryString.Add(QueryString.FromUriComponent(newPath.Substring(querySplit)));
+                        resolvedPath = newPath.Substring(0, querySplit);
+                    }
+
+                    encodedPath = host.HasValue
+                        ? UriHelper.BuildAbsolute(request.Scheme, host, pathBase, resolvedPath, resolvedQuery, default)
+                        : UriHelper.BuildRelative(pathBase, resolvedPath, resolvedQuery, default);
                 }
+
+                // not using the HttpContext.Response.redirect here because status codes may be 301, 302, 307, 308
+                response.Headers[HeaderNames.Location] = encodedPath;
 
                 context.Logger.RedirectedRequest(newPath);
             }

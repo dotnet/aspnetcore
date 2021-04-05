@@ -46,10 +46,19 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             Assert.Equal("http://example.com/foo", response);
         }
 
-        [Fact]
-        public async Task CheckRedirectPath()
+        [Theory]
+        [InlineData("(.*)", "http://example.com/$1", null, "path", "http://example.com/path")]
+        [InlineData("(.*)", "http://example.com", null, "", "http://example.com/")]
+        [InlineData("(z*)", "$1", null, "path", "/")]
+        [InlineData("(z*)", "http://example.com/$1", null, "path", "http://example.com/")]
+        [InlineData("(z*)", "$1", "http://example.com/pathBase", "/pathBase/path", "/pathBase")]
+        [InlineData("path/(.*)", "path?value=$1", null, "path/value", "/path?value=value")]
+        [InlineData("path/(.*)", "path?param=$1", null, "path/value?param1=OtherValue", "/path?param1=OtherValue&param=value")]
+        [InlineData("path/(.*)", "http://example.com/pathBase/path?param=$1", "http://example.com/pathBase", "path/value?param1=OtherValue", "http://example.com/pathBase/path?param1=OtherValue&param=value")]
+        [InlineData("path/(.*)", "http://hoψst.com/pÂthBase/path?parãm=$1", "http://example.com/pathBase", "path/value?päram1=OtherValüe", "http://xn--host-cpd.com/p%C3%82thBase/path?p%C3%A4ram1=OtherVal%C3%BCe&parãm=value")]
+        public async Task CheckRedirectPath(string pattern, string replacement, string baseAddress, string requestUrl, string expectedUrl)
         {
-            var options = new RewriteOptions().AddRedirect("(.*)", "http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
+            var options = new RewriteOptions().AddRedirect(pattern, replacement, statusCode: StatusCodes.Status301MovedPermanently);
             using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
@@ -64,10 +73,14 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             await host.StartAsync();
 
             var server = host.GetTestServer();
+            if (!string.IsNullOrEmpty(baseAddress))
+            {
+                server.BaseAddress = new Uri(baseAddress);
+            }
 
-            var response = await server.CreateClient().GetAsync("foo");
+            var response = await server.CreateClient().GetAsync(requestUrl);
 
-            Assert.Equal("http://example.com/foo", response.Headers.Location.OriginalString);
+            Assert.Equal(expectedUrl, response.Headers.Location.OriginalString);
         }
 
         [Fact]
