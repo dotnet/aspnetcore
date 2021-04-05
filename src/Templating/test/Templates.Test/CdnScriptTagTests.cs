@@ -40,7 +40,7 @@ namespace Templates.Test
         public CdnScriptTagTests(ITestOutputHelper output)
         {
             _output = output;
-            _httpClient = new HttpClient();
+            _httpClient = new HttpClient(new RetryHandler(new HttpClientHandler()));
         }
 
         public static IEnumerable<object[]> SubresourceIntegrityCheckData
@@ -94,6 +94,26 @@ namespace Templates.Test
             var fallbackSrcContent = GetFileContentFromArchive(scriptTag, fallbackSrc);
 
             Assert.Equal(RemoveLineEndings(cdnContent), RemoveLineEndings(fallbackSrcContent));
+        }
+
+        class RetryHandler : DelegatingHandler
+        {
+            public RetryHandler(HttpMessageHandler innerHandler) : base(innerHandler) { }
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                HttpResponseMessage result = null;
+                for (var i = 0; i < 10; i++)
+                {
+                    result = await base.SendAsync(request, cancellationToken);
+                    if (result.IsSuccessStatusCode)
+                    {
+                        return result;
+                    }
+                    await Task.Delay(1000);
+                }
+                return result;
+            }
         }
 
         public struct ScriptTag
