@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Http
             Store = new AdaptiveCapacityDictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
         }
 
+        // For tests
         public RequestCookieCollection(Dictionary<string, string> store)
         {
             Store = new AdaptiveCapacityDictionary<string, string>(store.ToList(), capacity: store.Count, StringComparer.OrdinalIgnoreCase);
