@@ -517,7 +517,7 @@ namespace Microsoft.AspNetCore.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EnsureCapacity(int capacity)
         {
-            if (_arrayStorage!.Length < capacity)
+            if (_arrayStorage!.Length >= capacity)
             {
                 return;
             }
