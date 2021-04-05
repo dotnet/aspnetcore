@@ -37,14 +37,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public EventCallback Create(object receiver, Action callback)
+        public EventCallback Create(object receiver, Action callback, bool preventRender = false)
         {
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            return CreateCore(receiver, callback);
+            return CreateCore(receiver, callback, preventRender);
         }
 
         /// <summary>
@@ -54,14 +54,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public EventCallback Create(object receiver, Action<object> callback)
+        public EventCallback Create(object receiver, Action<object> callback, bool preventRender = false)
         {
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            return CreateCore(receiver, callback);
+            return CreateCore(receiver, callback, preventRender);
         }
 
         /// <summary>
@@ -71,14 +71,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public EventCallback Create(object receiver, Func<Task> callback)
+        public EventCallback Create(object receiver, Func<Task> callback, bool preventRender = false)
         {
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            return CreateCore(receiver, callback);
+            return CreateCore(receiver, callback, preventRender);
         }
 
         /// <summary>
@@ -88,14 +88,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public EventCallback Create(object receiver, Func<object, Task> callback)
+        public EventCallback Create(object receiver, Func<object, Task> callback, bool preventRender)
         {
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            return CreateCore(receiver, callback);
+            return CreateCore(receiver, callback, preventRender);
         }
 
         /// <summary>
@@ -105,14 +105,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="callback"></param>
         /// <returns></returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public EventCallback<TValue> Create<TValue>(object receiver, EventCallback callback)
+        public EventCallback<TValue> Create<TValue>(object receiver, EventCallback callback, bool preventRender)
         {
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            return new EventCallback<TValue>(callback.Receiver, callback.Delegate);
+            return new EventCallback<TValue>(callback.Receiver, callback.Delegate, preventRender);
         }
 
         /// <summary>
@@ -139,14 +139,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public EventCallback<TValue> Create<TValue>(object receiver, Action callback)
+        public EventCallback<TValue> Create<TValue>(object receiver, Action callback, bool preventRender = false)
         {
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            return CreateCore<TValue>(receiver, callback);
+            return CreateCore<TValue>(receiver, callback, preventRender);
         }
 
         /// <summary>
@@ -156,14 +156,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public EventCallback<TValue> Create<TValue>(object receiver, Action<TValue> callback)
+        public EventCallback<TValue> Create<TValue>(object receiver, Action<TValue> callback, bool preventRender = false)
         {
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            return CreateCore<TValue>(receiver, callback);
+            return CreateCore<TValue>(receiver, callback, preventRender);
         }
 
         /// <summary>
@@ -173,14 +173,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public EventCallback<TValue> Create<TValue>(object receiver, Func<Task> callback)
+        public EventCallback<TValue> Create<TValue>(object receiver, Func<Task> callback, bool preventRender = false)
         {
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            return CreateCore<TValue>(receiver, callback);
+            return CreateCore<TValue>(receiver, callback, preventRender);
         }
 
         /// <summary>
@@ -190,14 +190,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public EventCallback<TValue> Create<TValue>(object receiver, Func<TValue, Task> callback)
+        public EventCallback<TValue> Create<TValue>(object receiver, Func<TValue, Task> callback, bool preventRender = false)
         {
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            return CreateCore<TValue>(receiver, callback);
+            return CreateCore<TValue>(receiver, callback, preventRender);
         }
 
         /// <summary>
@@ -209,9 +209,9 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="value"></param>
         /// <returns></returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public EventCallback<TValue> CreateInferred<TValue>(object receiver, Action<TValue> callback, TValue value)
+        public EventCallback<TValue> CreateInferred<TValue>(object receiver, Action<TValue> callback, TValue value, bool preventDefault = false)
         {
-            return Create(receiver, callback);
+            return Create(receiver, callback, preventDefault);
         }
 
         /// <summary>
@@ -221,21 +221,22 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="callback"></param>
         /// <param name="value"></param>
+        /// <param name="preventRender"></param>
         /// <returns></returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public EventCallback<TValue> CreateInferred<TValue>(object receiver, Func<TValue, Task> callback, TValue value)
+        public EventCallback<TValue> CreateInferred<TValue>(object receiver, Func<TValue, Task> callback, TValue value, bool preventRender  = false)
         {
-            return Create(receiver, callback);
+            return Create(receiver, callback, preventRender);
         }
 
-        private EventCallback CreateCore(object receiver, MulticastDelegate callback)
+        private EventCallback CreateCore(object receiver, MulticastDelegate callback, bool preventRender)
         {
-            return new EventCallback(callback?.Target as IHandleEvent ?? receiver as IHandleEvent, callback);
+            return new EventCallback(callback?.Target as IHandleEvent ?? receiver as IHandleEvent, callback, preventRender);
         }
 
-        private EventCallback<TValue> CreateCore<TValue>(object receiver, MulticastDelegate callback)
+        private EventCallback<TValue> CreateCore<TValue>(object receiver, MulticastDelegate callback, bool preventRender)
         {
-            return new EventCallback<TValue>(callback?.Target as IHandleEvent ?? receiver as IHandleEvent, callback);
+            return new EventCallback<TValue>(callback?.Target as IHandleEvent ?? receiver as IHandleEvent, callback, preventRender);
         }
     }
 }

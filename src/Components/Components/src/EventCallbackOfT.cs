@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Components
 
         internal readonly MulticastDelegate? Delegate;
         internal readonly IHandleEvent? Receiver;
+        internal readonly bool PreventRender;
 
         /// <summary>
         /// Creates the new <see cref="EventCallback{TValue}"/>.
@@ -28,6 +29,20 @@ namespace Microsoft.AspNetCore.Components
         {
             Receiver = receiver;
             Delegate = @delegate;
+            PreventRender = false;
+        }
+
+        /// <summary>
+        /// Creates the new <see cref="EventCallback"/>.
+        /// </summary>
+        /// <param name="receiver">The event receiver.</param>
+        /// <param name="delegate">The delegate to bind.</param>
+        /// <param name="preventRender"></param>
+        public EventCallback(IHandleEvent? receiver, MulticastDelegate? @delegate, bool preventRender)
+        {
+            Receiver = receiver;
+            Delegate = @delegate;
+            PreventRender = preventRender;
         }
 
         /// <summary>
@@ -53,7 +68,7 @@ namespace Microsoft.AspNetCore.Components
                 return EventCallbackWorkItem.InvokeAsync<TValue?>(Delegate, arg);
             }
 
-            return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg);
+            return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg, PreventRender);
         }
 
         /// <summary>
@@ -65,7 +80,7 @@ namespace Microsoft.AspNetCore.Components
 
         internal EventCallback AsUntyped()
         {
-            return new EventCallback(Receiver ?? Delegate?.Target as IHandleEvent, Delegate);
+            return new EventCallback(Receiver ?? Delegate?.Target as IHandleEvent, Delegate, PreventRender);
         }
 
         object? IEventCallback.UnpackForRenderTree()

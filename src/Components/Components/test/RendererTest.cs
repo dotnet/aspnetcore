@@ -4377,7 +4377,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.AddContent(6, $"Render count: {++renderCount}");
             }
 
-            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg)
+            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg, bool? preventRender)
             {
                 // Notice, we don't re-render.
                 return callback.InvokeAsync(arg);
@@ -4448,7 +4448,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 return Task.CompletedTask;
             }
 
-            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg)
+            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg, bool? preventRender)
             {
                 var task = callback.InvokeAsync(arg);
                 Render();
@@ -4494,7 +4494,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public bool CheckboxEnabled;
             public string SomeStringProperty;
 
-            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg)
+            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg, bool? preventRender)
             {
                 var task = callback.InvokeAsync(arg);
                 TriggerRender();
@@ -4648,7 +4648,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 _renderHandle = renderHandle;
             }
 
-            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg)
+            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg, bool? preventRender)
             {
                 var task = callback.InvokeAsync(arg);
                 OnEvent?.Invoke();

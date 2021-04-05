@@ -656,7 +656,7 @@ namespace Microsoft.AspNetCore.Components
         {
             public int Count;
 
-            public Task HandleEventAsync(EventCallbackWorkItem item, object arg)
+            public Task HandleEventAsync(EventCallbackWorkItem item, object arg, bool? preventRender)
             {
                 Count++;
                 return item.InvokeAsync(arg);

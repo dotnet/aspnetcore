@@ -1,0 +1,22 @@
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount" @onclick:preventRender="true" id="event-with-prevent-render">Click me but don't render</button>
+
+<button class="btn btn-primary" @onclick="IncrementCount" id="event-with-render">Click me and render</button>
+
+@code {
+    private int currentCount = 0;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            System.Console.WriteLine("First render...");
+        } else {
+            System.Console.WriteLine("Rendering again...");
+        }
+
+    }
+
+    private void IncrementCount() {}
+}

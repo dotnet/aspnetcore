@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="attributeName"></param>
         /// <param name="eventArgsType"></param>
-        public EventHandlerAttribute(string attributeName, Type eventArgsType) : this(attributeName, eventArgsType, false, false)
+        public EventHandlerAttribute(string attributeName, Type eventArgsType) : this(attributeName, eventArgsType, false, false, false)
         {
         }
 
@@ -27,7 +27,19 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="eventArgsType"></param>
         /// <param name="enableStopPropagation"></param>
         /// <param name="enablePreventDefault"></param>
-        public EventHandlerAttribute(string attributeName, Type eventArgsType, bool enableStopPropagation, bool enablePreventDefault)
+        public EventHandlerAttribute(string attributeName, Type eventArgsType, bool enableStopPropagation, bool enablePreventDefault) : this(attributeName, eventArgsType, enableStopPropagation, enablePreventDefault, false)
+        {
+        }
+
+        /// <summary>
+        /// Constructs an instance of <see cref="EventHandlerAttribute"/>.
+        /// </summary>
+        /// <param name="attributeName"></param>
+        /// <param name="eventArgsType"></param>
+        /// <param name="enableStopPropagation"></param>
+        /// <param name="enablePreventDefault"></param>
+        /// <param name="enablePreventRender"></param>
+        public EventHandlerAttribute(string attributeName, Type eventArgsType, bool enableStopPropagation, bool enablePreventDefault, bool enablePreventRender)
         {
             if (attributeName == null)
             {
@@ -43,6 +55,7 @@ namespace Microsoft.AspNetCore.Components
             EventArgsType = eventArgsType;
             EnableStopPropagation = enableStopPropagation;
             EnablePreventDefault = enablePreventDefault;
+            EnablePreventRender = enablePreventRender;
         }
 
         /// <summary>
@@ -64,5 +77,10 @@ namespace Microsoft.AspNetCore.Components
         /// Gets the event's ability to prevent default event flow.
         /// </summary>
         public bool EnablePreventDefault { get; }
+
+        /// <summary>
+        /// Gets the event's ability to prevent automatically re-rendering aftter event handling.
+        /// </summary>
+        public bool EnablePreventRender { get; }
     }
 }

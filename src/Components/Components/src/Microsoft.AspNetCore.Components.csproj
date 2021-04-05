@@ -7,6 +7,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
+    <NoWarn>RS0017;RS0016;RS0026;CS1573</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

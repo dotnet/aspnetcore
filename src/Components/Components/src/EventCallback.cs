@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Components
 
         internal readonly MulticastDelegate? Delegate;
         internal readonly IHandleEvent? Receiver;
+        internal readonly bool PreventRender;
 
         /// <summary>
         /// Creates the new <see cref="EventCallback"/>.
@@ -33,6 +34,20 @@ namespace Microsoft.AspNetCore.Components
         {
             Receiver = receiver;
             Delegate = @delegate;
+            PreventRender = false;
+        }
+
+        /// <summary>
+        /// Creates the new <see cref="EventCallback"/>.
+        /// </summary>
+        /// <param name="receiver">The event receiver.</param>
+        /// <param name="delegate">The delegate to bind.</param>
+        /// <param name="preventRender"></param>
+        public EventCallback(IHandleEvent? receiver, MulticastDelegate? @delegate, bool preventRender)
+        {
+            Receiver = receiver;
+            Delegate = @delegate;
+            PreventRender = preventRender;
         }
 
         /// <summary>
@@ -58,7 +73,7 @@ namespace Microsoft.AspNetCore.Components
                 return EventCallbackWorkItem.InvokeAsync<object?>(Delegate, arg);
             }
 
-            return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg);
+            return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg, PreventRender);
         }
 
         /// <summary>

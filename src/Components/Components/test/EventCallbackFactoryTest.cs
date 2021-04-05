@@ -640,7 +640,7 @@ namespace Microsoft.AspNetCore.Components
                 throw new NotImplementedException();
             }
 
-            public Task HandleEventAsync(EventCallbackWorkItem item, object arg)
+            public Task HandleEventAsync(EventCallbackWorkItem item, object arg, bool? preventRender)
             {
                 throw new NotImplementedException();
             }

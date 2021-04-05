@@ -629,6 +629,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         WriteCSharpToken(context, tokens[i]);
                     }
 
+                    if (node.BoundAttribute.DoesEventCallbackPreventRender())
+                    {
+                        context.CodeWriter.Write("true");
+                    }
+
                     context.CodeWriter.Write(")");
 
                     if (canTypeCheck && NeedsTypeCheck(node))

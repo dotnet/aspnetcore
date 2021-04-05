@@ -82,10 +82,15 @@ namespace Microsoft.CodeAnalysis.Razor
                     {
                         var enablePreventDefault = false;
                         var enableStopPropagation = false;
-                        if (attribute.ConstructorArguments.Length == 4)
+                        var enablePreventRender = false;
+                        if (attribute.ConstructorArguments.Length >= 4)
                         {
                             enablePreventDefault = (bool)attribute.ConstructorArguments[2].Value;
                             enableStopPropagation = (bool)attribute.ConstructorArguments[3].Value;
+                            if (attribute.ConstructorArguments.Length == 5)
+                            {
+                                enablePreventRender = (bool)attribute.ConstructorArguments[4].Value;
+                            }
                         }
 
                         results.Add(new EventHandlerData(
@@ -94,7 +99,8 @@ namespace Microsoft.CodeAnalysis.Razor
                             (string)attribute.ConstructorArguments[0].Value,
                             (INamedTypeSymbol)attribute.ConstructorArguments[1].Value,
                             enablePreventDefault,
-                            enableStopPropagation));
+                            enableStopPropagation,
+                            enablePreventRender));
                     }
                 }
             }
@@ -173,6 +179,12 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 builder.BindAttribute(a =>
                 {
+                    while (!System.Diagnostics.Debugger.IsAttached)
+                    {
+                        System.Console.WriteLine($"Waiting to attach on ${System.Diagnostics.Process.GetCurrentProcess().Id}");
+                        System.Threading.Thread.Sleep(1000);
+                    }
+
                     a.Documentation = string.Format(
                         CultureInfo.CurrentCulture,
                         ComponentResources.EventHandlerTagHelper_Documentation,
@@ -188,7 +200,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     // logic that we don't want to interfere with.
                     a.Metadata.Add(ComponentMetadata.Component.WeaklyTypedKey, bool.TrueString);
 
-                    a.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
+                    a.Metadata[ComponentMetadata.EventHandler.PreventRender] = bool.TrueString;
 
                     // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                     // a C# property will crash trying to create the tooltips.
@@ -235,7 +247,8 @@ namespace Microsoft.CodeAnalysis.Razor
                 string element,
                 INamedTypeSymbol eventArgsType,
                 bool enablePreventDefault,
-                bool enableStopPropagation)
+                bool enableStopPropagation,
+                bool enablePreventRender)
             {
                 Assembly = assembly;
                 TypeName = typeName;
@@ -243,6 +256,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 EventArgsType = eventArgsType;
                 EnablePreventDefault = enablePreventDefault;
                 EnableStopPropagation = enableStopPropagation;
+                EnablePreventRender = enablePreventRender;
             }
 
             public string Assembly { get; }
@@ -256,6 +270,8 @@ namespace Microsoft.CodeAnalysis.Razor
             public bool EnablePreventDefault { get; }
 
             public bool EnableStopPropagation { get; }
+
+            public bool EnablePreventRender { get; }
         }
 
         private class EventHandlerDataVisitor : SymbolVisitor

@@ -120,6 +120,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public static readonly string RuntimeName = "Components.None";
 
             public readonly static string TagHelperKind = "Components.EventHandler";
+
+            public static readonly string PreventRender = "Components.EventHandler.PreventRender";
         }
 
         public static class Key

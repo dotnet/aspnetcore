@@ -15,9 +15,10 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="item">The <see cref="EventCallbackWorkItem"/> associated with this event.</param>
         /// <param name="arg">The argument associated with this event.</param>
+        /// <param name="preventRender">Whether or not the event should trigger a re-render.</param>
         /// <returns>
         /// A <see cref="Task"/> that completes once the component has processed the state change.
         /// </returns>
-        Task HandleEventAsync(EventCallbackWorkItem item, object? arg);
+        Task HandleEventAsync(EventCallbackWorkItem item, object? arg, bool? preventRender);
     }
 }

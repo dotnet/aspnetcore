@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Components
             StateHasChanged();
         }
 
-        Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object? arg)
+        Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object? arg, bool? preventRender)
         {
             var task = callback.InvokeAsync(arg);
             var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&
@@ -307,7 +307,10 @@ namespace Microsoft.AspNetCore.Components
             // After each event, we synchronously re-render (unless !ShouldRender())
             // This just saves the developer the trouble of putting "StateHasChanged();"
             // at the end of every event callback.
-            StateHasChanged();
+            if (preventRender is not true)
+            {
+                StateHasChanged();
+            }
 
             return shouldAwaitTask ?
                 CallStateHasChangedOnAsyncCompletion(task) :
