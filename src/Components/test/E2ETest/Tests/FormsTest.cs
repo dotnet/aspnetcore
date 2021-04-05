@@ -572,6 +572,32 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
         }
 
+        [Fact]
+        public void CanRemoveAndReAddDataAnnotationsSupport()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+            var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
+            Func<string> lastLogEntryAccessor = () => appElement.FindElement(By.CssSelector(".submission-log-entry:last-of-type")).Text;
+
+            nameInput.SendKeys("01234567890123456789\t");
+            Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
+            Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
+
+            // Remove DataAnnotations support
+            appElement.FindElement(By.Id("toggle-dataannotations")).Click();
+            Browser.Equal("DataAnnotations support is now disabled", lastLogEntryAccessor);
+            Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
+            Browser.Empty(messagesAccessor);
+
+            // Re-add DataAnnotations support
+            appElement.FindElement(By.Id("toggle-dataannotations")).Click();
+            nameInput.SendKeys("0\t");
+            Browser.Equal("DataAnnotations support is now enabled", lastLogEntryAccessor);
+            Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
+            Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))

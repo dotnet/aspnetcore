@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Mvc.Microbenchmarks
 {
     public class HelperPerformanceBenchmark : RuntimePerformanceBenchmarkBase
     {
-        private Random _rand = new Random();
         public HelperPerformanceBenchmark() : base(
             "~/Views/HelperTyped.cshtml",
             "~/Views/HelperDynamic.cshtml",
@@ -45,6 +44,6 @@ namespace Microsoft.AspNetCore.Mvc.Microbenchmarks
         {
         }
 
-        protected override object Model => _rand.Next().ToString(CultureInfo.InvariantCulture);
+        protected override object Model => Random.Shared.Next().ToString(CultureInfo.InvariantCulture);
     }
 }

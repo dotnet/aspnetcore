@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             hostingApplication.CreateContext(features);
             Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
 
-            var expectedBaggage = new []
+            var expectedBaggage = new[]
             {
                 KeyValuePair.Create("Key1","value1"),
                 KeyValuePair.Create("Key2","value2"),
@@ -493,17 +493,18 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.True(Activity.Current.Recorded);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30582")]
+        [Fact]
         public void ActivityListenersAreCalled()
         {
             var hostingApplication = CreateApplication(out var features);
+            var parentSpanId = "";
             using var listener = new ActivityListener
             {
                 ShouldListenTo = activitySource => true,
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
                 ActivityStarted = activity =>
                 {
-                    Assert.Equal("0123456789abcdef", Activity.Current.ParentSpanId.ToHexString());
+                    parentSpanId = Activity.Current.ParentSpanId.ToHexString();
                 }
             };
 
@@ -518,7 +519,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                     {"baggage", "Key1=value1, Key2=value2"}
                 }
             });
+
             hostingApplication.CreateContext(features);
+            Assert.Equal("0123456789abcdef", parentSpanId);
         }
 
 
@@ -533,7 +536,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         private static HostingApplication CreateApplication(out FeatureCollection features,
-            DiagnosticListener diagnosticListener = null, ILogger logger = null, Action<DefaultHttpContext> configure = null)
+            DiagnosticListener diagnosticListener = null, ActivitySource activitySource = null, ILogger logger = null, Action<DefaultHttpContext> configure = null)
         {
             var httpContextFactory = new Mock<IHttpContextFactory>();
 
@@ -548,6 +551,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 ctx => Task.CompletedTask,
                 logger ?? new NullScopeLogger(),
                 diagnosticListener ?? new NoopDiagnosticListener(),
+                activitySource ?? new ActivitySource("Microsoft.AspNetCore"),
                 httpContextFactory.Object);
 
             return hostingApplication;

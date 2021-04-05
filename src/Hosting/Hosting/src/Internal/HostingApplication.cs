@@ -23,10 +23,11 @@ namespace Microsoft.AspNetCore.Hosting
             RequestDelegate application,
             ILogger logger,
             DiagnosticListener diagnosticSource,
+            ActivitySource activitySource,
             IHttpContextFactory httpContextFactory)
         {
             _application = application;
-            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource);
+            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, activitySource);
             if (httpContextFactory is DefaultHttpContextFactory factory)
             {
                 _defaultHttpContextFactory = factory;

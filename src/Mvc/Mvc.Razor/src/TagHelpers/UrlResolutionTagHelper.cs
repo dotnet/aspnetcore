@@ -343,15 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
 
         private static bool IsCharWhitespace(char ch)
         {
-            for (var i = 0; i < ValidAttributeWhitespaceChars.Length; i++)
-            {
-                if (ValidAttributeWhitespaceChars[i] == ch)
-                {
-                    return true;
-                }
-            }
-            // the character is not white space
-            return false;
+            return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
         }
 
         private class EncodeFirstSegmentContent : IHtmlContent

@@ -292,6 +292,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
             services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
+            services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
 
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, DefaultHttpContextFactory>();
@@ -346,6 +347,9 @@ namespace Microsoft.AspNetCore.Hosting
             var listener = hostingServiceProvider.GetService<DiagnosticListener>();
             services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticListener), listener!));
             services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticSource), listener!));
+
+            var activitySource = hostingServiceProvider.GetService<ActivitySource>();
+            services.Replace(ServiceDescriptor.Singleton(typeof(ActivitySource), activitySource!));
         }
 
         private string ResolveContentRootPath(string contentRootPath, string basePath)

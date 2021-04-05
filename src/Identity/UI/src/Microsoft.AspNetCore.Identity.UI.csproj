@@ -36,11 +36,6 @@
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' ">
-    <!-- This dependency was removed in 5.0. The suppression can be removed after 5.0 RTM is released. -->
-    <SuppressBaselineReference Include="Newtonsoft.Json" />
-  </ItemGroup>
-
   <Target Name="SetupRazorInputs" BeforeTargets="ResolveRazorGenerateInputs">
     <ItemGroup>
       <_RazorGenerate Include="Areas\Identity\Pages\V4\**\*.cshtml" />

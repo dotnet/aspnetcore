@@ -75,5 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// Stores arbitrary metadata properties associated with the <see cref="ActionDescriptor"/>.
         /// </summary>
         public IDictionary<object, object> Properties { get; set; } = default!;
+
+        internal IFilterMetadata[]? CachedResuableFilters { get; set; }
     }
 }

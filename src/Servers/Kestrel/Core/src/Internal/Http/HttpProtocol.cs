@@ -400,8 +400,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             lock (_abortLock)
             {
                 _preventRequestAbortedCancellation = false;
-                localAbortCts = _abortedCts;
-                _abortedCts = null;
+                if (_abortedCts?.TryReset() == false)
+                {
+                    localAbortCts = _abortedCts;
+                    _abortedCts = null;
+                }
             }
 
             localAbortCts?.Dispose();
