@@ -627,6 +627,8 @@ namespace Microsoft.AspNetCore.Internal
         {
             private readonly AdaptiveCapacityDictionary<TKey, TValue> _dictionary;
             private int _index;
+            // Don't mark this as readonly
+            private Dictionary<TKey, TValue>.Enumerator? _dictionaryEnumerator;
 
             /// <summary>
             /// Instantiates a new enumerator with the values provided in <paramref name="dictionary"/>.
@@ -640,6 +642,15 @@ namespace Microsoft.AspNetCore.Internal
                 }
 
                 _dictionary = dictionary;
+
+                if (_dictionary._dictionaryStorage != null)
+                {
+                    _dictionaryEnumerator = _dictionary._dictionaryStorage.GetEnumerator();
+                }
+                else
+                {
+                    _dictionaryEnumerator = null;
+                }
 
                 Current = default;
                 _index = 0;
@@ -663,19 +674,30 @@ namespace Microsoft.AspNetCore.Internal
             public bool MoveNext()
             {
                 var dictionary = _dictionary;
-                if (dictionary._arrayStorage == null)
+                if (dictionary._arrayStorage != null)
                 {
-                    return false;
-                }
+                    if (dictionary._count <= _index)
+                    {
+                        return false;
+                    }
 
-                if (dictionary._count <= _index)
+                    Current = dictionary._arrayStorage[_index];
+                    _index++;
+                    return true;
+                }
+                else
                 {
-                    return false;
-                }
+                    var enumerator = _dictionaryEnumerator!.Value;
+                    var hasNext = enumerator.MoveNext();
+                    if (hasNext)
+                    {
+                        Current = enumerator.Current;
+                    }
 
-                Current = dictionary._arrayStorage[_index];
-                _index++;
-                return true;
+                    _dictionaryEnumerator = enumerator;
+
+                    return hasNext;
+                }
             }
 
             /// <inheritdoc />

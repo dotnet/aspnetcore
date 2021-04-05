@@ -1076,6 +1076,12 @@ namespace Microsoft.AspNetCore.Internal.Tests
                 kvp => Assert.Equal(new KeyValuePair<string, object?>("key", "value"), kvp),
                 kvp => Assert.Equal(default, kvp),
                 kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
                 kvp => Assert.Equal(default, kvp));
         }
 
@@ -1098,6 +1104,12 @@ namespace Microsoft.AspNetCore.Internal.Tests
                 kvp => Assert.Equal(new KeyValuePair<string, object?>("key0", "value0"), kvp),
                 kvp => Assert.Equal(new KeyValuePair<string, object?>("key1", "value1"), kvp),
                 kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
                 kvp => Assert.Equal(default, kvp));
         }
 
@@ -1118,6 +1130,12 @@ namespace Microsoft.AspNetCore.Internal.Tests
             Assert.Collection(
                 dict._arrayStorage,
                 kvp => Assert.Equal(new KeyValuePair<string, object?>("key0", "value0"), kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
+                kvp => Assert.Equal(default, kvp),
                 kvp => Assert.Equal(default, kvp),
                 kvp => Assert.Equal(default, kvp),
                 kvp => Assert.Equal(default, kvp));
@@ -1232,7 +1250,7 @@ namespace Microsoft.AspNetCore.Internal.Tests
 
             // Assert 2
             Assert.Null(dict._arrayStorage);
-            Assert.Equal(5, dict.Count);
+            Assert.Equal(11, dict.Count);
         }
 
         [Fact]
@@ -1291,7 +1309,6 @@ namespace Microsoft.AspNetCore.Internal.Tests
             dict["key10"] = "value";
 
             // Assert 2
-            storage = Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
             Assert.Null(dict._arrayStorage);
             Assert.Equal(11, dict.Count);
         }
