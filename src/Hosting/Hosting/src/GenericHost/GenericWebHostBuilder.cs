@@ -86,6 +86,7 @@ namespace Microsoft.AspNetCore.Hosting
                 // We need to flow this differently
                 services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
                 services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
+                services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
 
                 services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();

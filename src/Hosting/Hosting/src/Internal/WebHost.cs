@@ -155,8 +155,9 @@ namespace Microsoft.AspNetCore.Hosting
             await _hostedServiceExecutor.StartAsync(cancellationToken).ConfigureAwait(false);
 
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
+            var activitySource = _applicationServices.GetRequiredService<ActivitySource>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
-            var hostingApp = new HostingApplication(application, _logger, diagnosticSource, httpContextFactory);
+            var hostingApp = new HostingApplication(application, _logger, diagnosticSource, activitySource, httpContextFactory);
             await Server.StartAsync(hostingApp, cancellationToken).ConfigureAwait(false);
             _startedServer = true;
 

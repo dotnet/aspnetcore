@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(33, "RequestBodyDrainTimedOut"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": automatic draining of the request body timed out after taking over 5 seconds.");
 
         private static readonly Action<ILogger, string, string, Exception?> _applicationAbortedConnection =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(34, "RequestBodyDrainTimedOut"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.");
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(34, "ApplicationAbortedConnection"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.");
 
         private static readonly Action<ILogger, string, Http2ErrorCode, Exception> _http2StreamResetAbort =
             LoggerMessage.Define<string, Http2ErrorCode>(LogLevel.Debug, new EventId(35, "Http2StreamResetAbort"),

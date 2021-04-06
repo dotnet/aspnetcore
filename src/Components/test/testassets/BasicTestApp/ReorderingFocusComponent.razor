@@ -31,7 +31,6 @@
 </ul>
 
 @code {
-    Random rng = new Random();
     TodoItem[] todoItems = new[]
     {
         new TodoItem { Id = 1, Text = "First" },
@@ -43,7 +42,7 @@
 
     void Shuffle()
     {
-        todoItems = todoItems.OrderBy(x => rng.Next()).ToArray();
+        todoItems = todoItems.OrderBy(x => Random.Shared.Next()).ToArray();
     }
 
     class TodoItem

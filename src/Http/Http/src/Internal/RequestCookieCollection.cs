@@ -6,7 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Net.Http.Headers;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -19,20 +21,22 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private Dictionary<string, string>? Store { get; set; }
+        private AdaptiveCapacityDictionary<string, string> Store { get; set; }
 
         public RequestCookieCollection()
         {
-        }
-
-        public RequestCookieCollection(Dictionary<string, string> store)
-        {
-            Store = store;
+            Store = new AdaptiveCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         public RequestCookieCollection(int capacity)
         {
-            Store = new Dictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
+            Store = new AdaptiveCapacityDictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
+        }
+
+        // For tests
+        public RequestCookieCollection(Dictionary<string, string> store)
+        {
+            Store = new AdaptiveCapacityDictionary<string, string>(store);
         }
 
         public string? this[string key]
@@ -121,6 +125,7 @@ namespace Microsoft.AspNetCore.Http
                 value = null;
                 return false;
             }
+
             return Store.TryGetValue(key, out value);
         }
 
@@ -172,10 +177,10 @@ namespace Microsoft.AspNetCore.Http
         public struct Enumerator : IEnumerator<KeyValuePair<string, string>>
         {
             // Do NOT make this readonly, or MoveNext will not work
-            private Dictionary<string, string>.Enumerator _dictionaryEnumerator;
+            private AdaptiveCapacityDictionary<string, string>.Enumerator _dictionaryEnumerator;
             private bool _notEmpty;
 
-            internal Enumerator(Dictionary<string, string>.Enumerator dictionaryEnumerator)
+            internal Enumerator(AdaptiveCapacityDictionary<string, string>.Enumerator dictionaryEnumerator)
             {
                 _dictionaryEnumerator = dictionaryEnumerator;
                 _notEmpty = true;
@@ -197,7 +202,7 @@ namespace Microsoft.AspNetCore.Http
                     if (_notEmpty)
                     {
                         var current = _dictionaryEnumerator.Current;
-                        return new KeyValuePair<string, string>(current.Key, current.Value);
+                        return new KeyValuePair<string, string>(current.Key, (string)current.Value!);
                     }
                     return default(KeyValuePair<string, string>);
                 }

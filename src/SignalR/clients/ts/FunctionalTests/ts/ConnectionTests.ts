@@ -222,6 +222,20 @@ describe("connection", () => {
 
                 await closePromise;
             });
+
+            it("contains server response in error", async () => {
+                const connection = new HttpConnection(ENDPOINT_BASE_URL + "/bad-negotiate", {
+                    ...commonOptions,
+                    httpClient,
+                });
+
+                try {
+                    await connection.start(TransferFormat.Text);
+                    expect(true).toBe(false);
+                } catch (e) {
+                    expect(e).toEqual(new Error("Failed to complete negotiation with the server: Error: Some response from server: Status code '400'"));
+                }
+            })
         });
     });
 });

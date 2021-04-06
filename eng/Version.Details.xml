@@ -285,9 +285,21 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b7a164882573af99eaf200c4b21808ecaf6dbb8c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="6.0.0-preview.4.21205.3">
+    <Dependency Name="Microsoft.NET.Runtime.Emscripten.2.0.12.Node.win-x64" Version="6.0.0-preview.4.21205.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b7a164882573af99eaf200c4b21808ecaf6dbb8c</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NET.Runtime.Emscripten.2.0.12.Python.win-x64" Version="6.0.0-preview.4.21205.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>245cd97e52d6082407cf3a6da6f5221d61be10fe</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NET.Runtime.Emscripten.2.0.12.Sdk.win-x64" Version="6.0.0-preview.4.21205.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>245cd97e52d6082407cf3a6da6f5221d61be10fe</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="6.0.0-preview.4.21205.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>245cd97e52d6082407cf3a6da6f5221d61be10fe</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
@@ -296,18 +308,18 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b7a164882573af99eaf200c4b21808ecaf6dbb8c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.21181.6">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.21203.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e9cdc025014eb2030075303211fdb5af254e278c</Sha>
+      <Sha>1bfe91238cb39b9620b878b8f1bf0c789324b4cd</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="6.0.0-beta.21181.6">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="6.0.0-beta.21203.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e9cdc025014eb2030075303211fdb5af254e278c</Sha>
+      <Sha>1bfe91238cb39b9620b878b8f1bf0c789324b4cd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="6.0.0-beta.21181.6">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="6.0.0-beta.21203.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e9cdc025014eb2030075303211fdb5af254e278c</Sha>
+      <Sha>1bfe91238cb39b9620b878b8f1bf0c789324b4cd</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>

@@ -105,7 +105,6 @@ namespace CodeGenerator
                 HeaderNames.TE,
                 HeaderNames.Translate,
                 HeaderNames.UserAgent,
-                HeaderNames.DNT,
                 HeaderNames.UpgradeInsecureRequests,
                 HeaderNames.RequestId,
                 HeaderNames.CorrelationContext,

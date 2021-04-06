@@ -404,22 +404,6 @@ namespace Microsoft.Extensions.Internal
         }
 #endif
 
-        private static int GetNumBase64PaddingCharsInString(string str)
-        {
-            // Assumption: input contains a well-formed base64 string with no whitespace.
-
-            // base64 guaranteed have 0 - 2 padding characters.
-            if (str[str.Length - 1] == '=')
-            {
-                if (str[str.Length - 2] == '=')
-                {
-                    return 2;
-                }
-                return 1;
-            }
-            return 0;
-        }
-
         private static int GetNumBase64PaddingCharsToAddForDecode(int inputLength)
         {
             switch (inputLength % 4)
