@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 _invokedValue = invokedValue;
             }
 
-            private void NonStaticTestAction(HttpContext httpContext)
+            public void NonStaticTestAction(HttpContext httpContext)
             {
                 httpContext.Items.Add("invoked", _invokedValue);
             }
@@ -132,10 +132,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Fact]
         public async Task NonStaticMethodInfoOverloadWorksWithBasicReflection()
+
         {
             var methodInfo = typeof(TestNonStaticActionClass).GetMethod(
-                "NonStaticTestAction",
-                BindingFlags.NonPublic | BindingFlags.Instance,
+                nameof(TestNonStaticActionClass.NonStaticTestAction),
+                BindingFlags.Public | BindingFlags.Instance,
                 new[] { typeof(HttpContext) });
 
             var invoked = false;
@@ -344,6 +345,41 @@ namespace Microsoft.AspNetCore.Routing.Internal
             {
                 ["tryParsable"] = routeValue
             });
+
+            var requestDelegate = RequestDelegateFactory.Create(action);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(FromTryParsableParameter))]
+        public async Task RequestDelegatePopulatesUnattributedTryParseableParametersFromRouteValueBeforeQueryString(Delegate action, string routeValue, object expectedParameterValue)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.RouteValues["tryParsable"] = routeValue;
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["tryParsable"] = "invalid!"
+            });
+
+            var requestDelegate = RequestDelegateFactory.Create(action);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(FromTryParsableParameter))]
+        public async Task RequestDelegateLogsTryParsableFailuresAsDebugAndSets400Response(Delegate action, string routeValue, object expectedParameterValue)
+        {
+            // disabling error xUnit1026 the "right" way looks ugly
+            var ignore = routeValue;
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.RouteValues["tryParsable"] = "invalid!";
 
             var requestDelegate = RequestDelegateFactory.Create(action);
 
