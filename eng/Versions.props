@@ -8,8 +8,8 @@
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>5</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>5</AspNetCorePatchVersion>
-    <ValidateBaseline>true</ValidateBaseline>
+    <AspNetCorePatchVersion>6</AspNetCorePatchVersion>
+    <ValidateBaseline>false</ValidateBaseline>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
