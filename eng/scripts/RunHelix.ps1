@@ -41,6 +41,6 @@ Write-Host -ForegroundColor Yellow "If running tests that need the shared Fx, ru
 Write-Host -ForegroundColor Yellow "And if packing for a different platform, add '/p:CrossgenOutput=false'."
 
 $HelixQueues = $HelixQueues -replace ";", "%3B"
-dotnet msbuild $Project /t:Helix /p:TargetArchitecture="$TargetArchitecture" /p:IsRequiredCheck=true `
+dotnet msbuild $Project /t:Helix /p:Configuration=Release /p:TargetArchitecture="$TargetArchitecture" /p:IsRequiredCheck=true `
     /p:IsHelixDaily=true /p:HelixTargetQueues=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests `
     /p:_UseHelixOpenQueues=true /p:CrossgenOutput=false /p:ASPNETCORE_TEST_LOG_DIR=artifacts/log

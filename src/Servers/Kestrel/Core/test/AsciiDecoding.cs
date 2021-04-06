@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -110,6 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [Repeat(50000)]
         private void AsciiBytesEqualAsciiStrings()
         {
             var byteRange = Enumerable.Range(1, 127).Select(x => (byte)x);
@@ -147,9 +151,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     // Change byte back for next iteration, ensure is equal again
                     asciiBytes[i] = b;
-                    Assert.True(StringUtilities.BytesOrdinalEqualsStringAndAscii(s, asciiBytes), s);
+                    var result = StringUtilities.BytesOrdinalEqualsStringAndAscii(s, asciiBytes);
+                    if (!result)
+                    {
+                        Assert.True(result, $"Ordinal string comparison: {string.Equals(s, Encoding.ASCII.GetString(asciiBytes), StringComparison.Ordinal)}" +
+                            $"\nExpected length:{s.Length}" +
+                            $"\nExpected string:{EscapeControlCodesString(s)}" +
+                            $"\nActual length:{asciiBytes.Length}" +
+                            $"\nActual string:{EscapeControlCodesBytes(asciiBytes)}");
+                    }
                 }
             }
+
+            static string EscapeControlCodesString(string input)
+            {
+                var builder = new StringBuilder();
+
+                foreach (var c in input)
+                {
+                    builder.Append(EscapeControlCode((byte)c));
+                }
+
+                return builder.ToString();
+            }
+
+            static string EscapeControlCodesBytes(Span<byte> input)
+            {
+                var builder = new StringBuilder();
+
+                foreach (var c in input)
+                {
+                    builder.Append(EscapeControlCode(c));
+                }
+
+                return builder.ToString();
+            }
+
+            static string EscapeControlCode(byte c) => "0x" + c.ToString("X2", CultureInfo.InvariantCulture);
         }
     }
 }
