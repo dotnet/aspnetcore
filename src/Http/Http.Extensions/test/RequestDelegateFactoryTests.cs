@@ -494,7 +494,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegateLogsFromBodyIOExceptionsAsDebugAndAborts()
+        public async Task RequestDelegateLogsFromBodyIOExceptionsAsDebugAndDoesNotAbort()
         {
             var invoked = false;
 
@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.False(invoked);
-            Assert.True(httpContext.RequestAborted.IsCancellationRequested);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
 
             var logMessage = Assert.Single(sink.Writes);
             Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
@@ -709,7 +709,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Theory]
         [MemberData(nameof(FromServiceParameter))]
-        public async Task RequestDelegatePopulatesFromServiceParameterBasedOnParameterType(Delegate @delegate)
+        public async Task RequestDelegatePopulatesFromServiceParameterBasedOnParameterType(Delegate action)
         {
             var myOriginalService = new MyService();
 
@@ -719,7 +719,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, MyService>)@delegate);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, MyService>)action);
 
             await requestDelegate(httpContext);
 
