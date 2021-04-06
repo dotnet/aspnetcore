@@ -226,6 +226,11 @@ namespace Microsoft.AspNetCore.Http
                 {
                     paramterExpression = RequestAbortedExpr;
                 }
+                else if (IsBindableFromString(parameter))
+                {
+                    var routeValuesProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
+                    paramterExpression = BindParamenter(routeValuesProperty, parameter);
+                }
 
                 args.Add(paramterExpression);
             }
@@ -437,13 +442,36 @@ namespace Microsoft.AspNetCore.Http
             return requestDelegate;
         }
 
+        private static bool IsBindableFromString(ParameterInfo parameter)
+        {
+            var type = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
+
+            foreach (var method in methods)
+            {
+                if (method.Name != "Parse")
+                {
+                    continue;
+                }
+
+                var parameters = method.GetParameters();
+
+                if (parameters.Length == 1 && parameters[0].ParameterType == typeof(string))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static ILogger GetLogger(HttpContext httpContext)
         {
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             return loggerFactory.CreateLogger("Microsoft.AspNetCore.Routing.MapAction");
         }
 
-        private static Expression BindParamenter(Expression sourceExpression, ParameterInfo parameter, string? name)
+        private static Expression BindParamenter(Expression sourceExpression, ParameterInfo parameter, string? name = null)
         {
             var key = name ?? parameter.Name;
             var type = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
