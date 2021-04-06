@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Components.Web
         [Inject] private IErrorBoundaryLogger? ErrorBoundaryLogger { get; set; }
 
         /// <inheritdoc />
-        protected override ValueTask LogExceptionAsync(Exception exception)
+        protected override async Task OnErrorAsync(Exception exception)
         {
-            return ErrorBoundaryLogger!.LogErrorAsync(exception);
+            await ErrorBoundaryLogger!.LogErrorAsync(exception);
         }
 
         /// <inheritdoc />

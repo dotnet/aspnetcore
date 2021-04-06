@@ -45,10 +45,10 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Logs the exception.
+        /// Invoked by the base class when an error is being handled.
         /// </summary>
         /// <param name="exception">The <see cref="Exception"/> being handled.</param>
-        protected abstract ValueTask LogExceptionAsync(Exception exception);
+        protected abstract Task OnErrorAsync(Exception exception);
 
         void IErrorBoundary.HandleException(Exception exception)
         {
@@ -59,32 +59,32 @@ namespace Microsoft.AspNetCore.Components
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
 
-            var logExceptionTask = LogExceptionAsync(exception);
-            if (!logExceptionTask.IsCompletedSuccessfully)
+            var onErrorTask = OnErrorAsync(exception);
+            if (!onErrorTask.IsCompletedSuccessfully)
             {
-                _ = HandleLoggingErrors(logExceptionTask);
+                _ = HandleOnErrorExceptions(onErrorTask);
             }
 
             CurrentException = exception;
             StateHasChanged();
         }
 
-        private async Task HandleLoggingErrors(ValueTask logExceptionTask)
+        private async Task HandleOnErrorExceptions(Task onExceptionTask)
         {
-            if (logExceptionTask.IsFaulted)
+            if (onExceptionTask.IsFaulted)
             {
-                // Synchronous logging exceptions can simply be fatal to the circuit
-                ExceptionDispatchInfo.Capture(logExceptionTask.AsTask().Exception!).Throw();
+                // Synchronous error handling exceptions can simply be fatal to the circuit
+                ExceptionDispatchInfo.Capture(onExceptionTask.Exception!).Throw();
             }
             else
             {
-                // Async logging exceptions are tricky because there's no natural way to bring them
-                // back onto the sync context within their original circuit. The closest approximation
+                // Async exceptions are tricky because there's no natural way to bring them back
+                // onto the sync context within their original circuit. The closest approximation
                 // we have is trying to rethrow via rendering. If, in the future, we add an API for
                 // directly dispatching an exception from ComponentBase, we should use that here.
                 try
                 {
-                    await logExceptionTask;
+                    await onExceptionTask;
                 }
                 catch (Exception exception)
                 {
