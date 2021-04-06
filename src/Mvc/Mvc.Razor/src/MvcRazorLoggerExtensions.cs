@@ -103,12 +103,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _tagHelperComponentInitialized = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(2, "TagHelperComponentInitialized"),
-                "Tag helper component '{ComponentName}' initialized.");
+                "Tag helper component '{ComponentName}' initialized.",
+                skipEnabledCheck: true);
 
             _tagHelperComponentProcessed = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 new EventId(3, "TagHelperComponentProcessed"),
-                "Tag helper component '{ComponentName}' processed.");
+                "Tag helper component '{ComponentName}' processed.",
+                skipEnabledCheck: true);
         }
 
         public static void ViewCompilerStartCodeGeneration(this ILogger logger, string filePath)

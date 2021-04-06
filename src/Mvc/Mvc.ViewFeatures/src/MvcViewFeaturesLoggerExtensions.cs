@@ -80,7 +80,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _viewComponentResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
                 new EventId(1, "ViewComponentResultExecuting"),
-                "Executing ViewComponentResult, running {ViewComponentName}.");
+                "Executing ViewComponentResult, running {ViewComponentName}.",
+                skipEnabledCheck: true);
 
             _viewResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
