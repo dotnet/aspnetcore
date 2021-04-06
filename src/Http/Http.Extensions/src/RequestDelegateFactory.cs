@@ -162,17 +162,17 @@ namespace Microsoft.AspNetCore.Http
                 if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
                 {
                     var routeValuesProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
-                    paramterExpression = BindParamenter(routeValuesProperty, parameter, routeAttribute.Name);
+                    paramterExpression = BindParamenterFromSource(routeValuesProperty, parameter, routeAttribute.Name);
                 }
                 else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
                 {
                     var queryProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
-                    paramterExpression = BindParamenter(queryProperty, parameter, queryAttribute.Name);
+                    paramterExpression = BindParamenterFromSource(queryProperty, parameter, queryAttribute.Name);
                 }
                 else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
                 {
                     var headersProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
-                    paramterExpression = BindParamenter(headersProperty, parameter, headerAttribute.Name);
+                    paramterExpression = BindParamenterFromSource(headersProperty, parameter, headerAttribute.Name);
                 }
                 else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
                 {
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Http
                     consumeBodyAsForm = true;
 
                     var formProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
-                    paramterExpression = BindParamenter(formProperty, parameter, parameter.Name);
+                    paramterExpression = BindParamenterFromSource(formProperty, parameter, parameter.Name);
                 }
                 else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
                 {
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Http
                 else if (IsBindableFromString(parameter))
                 {
                     var routeValuesProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
-                    paramterExpression = BindParamenter(routeValuesProperty, parameter);
+                    paramterExpression = BindParamenterFromValue(routeValuesProperty, parameter);
                 }
 
                 args.Add(paramterExpression);
@@ -471,15 +471,20 @@ namespace Microsoft.AspNetCore.Http
             return loggerFactory.CreateLogger("Microsoft.AspNetCore.Routing.MapAction");
         }
 
-        private static Expression BindParamenter(Expression sourceExpression, ParameterInfo parameter, string? name = null)
+        private static Expression BindParamenterFromSource(Expression sourceExpression, ParameterInfo parameter, string? name = null)
         {
             var key = name ?? parameter.Name;
+            var valueExpression = Expression.Convert(Expression.MakeIndex(sourceExpression,
+                                                         sourceExpression.Type.GetProperty("Item"),
+                                                         new[] { Expression.Constant(key) }),
+                                                     typeof(string));
+
+            return BindParamenterFromValue(valueExpression, parameter);
+        }
+
+        private static Expression BindParamenterFromValue(Expression valueExpression, ParameterInfo parameter)
+        {
             var type = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-            var valueArg = Expression.Convert(
-                                Expression.MakeIndex(sourceExpression,
-                                                     sourceExpression.Type.GetProperty("Item"),
-                                                     new[] { Expression.Constant(key) }),
-                                typeof(string));
 
             MethodInfo parseMethod = (from m in type.GetMethods(BindingFlags.Public | BindingFlags.Static)
                                       let parameters = m.GetParameters()
@@ -490,16 +495,16 @@ namespace Microsoft.AspNetCore.Http
 
             if (parseMethod != null)
             {
-                expr = Expression.Call(parseMethod, valueArg);
+                expr = Expression.Call(parseMethod, valueExpression);
             }
-            else if (parameter.ParameterType != valueArg.Type)
+            else if (parameter.ParameterType != valueExpression.Type)
             {
                 // Convert.ChangeType()
-                expr = Expression.Call(ChangeTypeMethodInfo, valueArg, Expression.Constant(type));
+                expr = Expression.Call(ChangeTypeMethodInfo, valueExpression, Expression.Constant(type));
             }
             else
             {
-                expr = valueArg;
+                expr = valueExpression;
             }
 
             if (expr.Type != parameter.ParameterType)
@@ -519,7 +524,7 @@ namespace Microsoft.AspNetCore.Http
 
             // property[key] == null ? default : (ParameterType){Type}.Parse(property[key]);
             expr = Expression.Condition(
-                Expression.Equal(valueArg, Expression.Constant(null)),
+                Expression.Equal(valueExpression, Expression.Constant(null)),
                 defaultExpression,
                 expr);
 
