@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { DefaultHttpClient } from "./DefaultHttpClient";
+import { HttpError } from "./Errors";
 import { HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
@@ -334,8 +335,15 @@ export class HttpConnection implements IConnection {
             }
             return negotiateResponse;
         } catch (e) {
-            this._logger.log(LogLevel.Error, "Failed to complete negotiation with the server: " + e);
-            return Promise.reject(e);
+            let errorMessage = "Failed to complete negotiation with the server: " + e;
+            if (e instanceof HttpError) {
+                if (e.statusCode === 404) {
+                    errorMessage = errorMessage + " Either this is not a SignalR endpoint or there is a proxy blocking the connection.";
+                }
+            }
+            this._logger.log(LogLevel.Error, errorMessage);
+
+            return Promise.reject(new Error(errorMessage));
         }
     }
 
