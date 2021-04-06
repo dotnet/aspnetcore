@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components
         /// Specifies whether to reset the error state each time this component instance is rendered
         /// by its parent. This allows the child content to be recreated in an attempt to recover from the error.
         /// </summary>
-        [Parameter] public bool AutoReset { get; set; }
+        [Parameter] public bool AutoRecover { get; set; }
 
         /// <summary>
         /// Gets the current exception, or null if there is no exception.
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components
         /// <inheritdoc />
         public override Task SetParametersAsync(ParameterView parameters)
         {
-            if (AutoReset)
+            if (AutoRecover)
             {
                 CurrentException = null;
             }
