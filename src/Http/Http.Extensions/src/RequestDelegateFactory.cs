@@ -45,6 +45,10 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.Request));
         private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.Response));
         private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.RequestAborted));
+        private static readonly MemberExpression RouteValuesProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
+        private static readonly MemberExpression QueryProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
+        private static readonly MemberExpression HeadersProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
+        private static readonly MemberExpression FormProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
 
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
@@ -74,7 +78,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
-        /// </summary>
+        /// </summary>Microsoft.AspNetCore.Routing.MapAction"
         /// <param name="methodInfo">A static request handler with any number of custom parameters that often produces a response with its return value.</param>
         /// <returns>The <see cref="RequestDelegate"/>.</returns>
         public static RequestDelegate Create(MethodInfo methodInfo)
@@ -155,24 +159,27 @@ namespace Microsoft.AspNetCore.Http
 
             foreach (var parameter in methodParameters)
             {
+                if (parameter.Name is null)
+                {
+                    // TODO: Add test!
+                    throw new InvalidOperationException($"Parameter {parameter} does not have a name! All parameters must be named.");
+                }
+
                 Expression paramterExpression = Expression.Default(parameter.ParameterType);
 
                 var parameterCustomAttributes = parameter.GetCustomAttributes();
 
                 if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
                 {
-                    var routeValuesProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
-                    paramterExpression = BindParamenterFromSource(routeValuesProperty, parameter, routeAttribute.Name);
+                    paramterExpression = BindParameterFromProperty(parameter, RouteValuesProperty, routeAttribute.Name ?? parameter.Name);
                 }
                 else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
                 {
-                    var queryProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
-                    paramterExpression = BindParamenterFromSource(queryProperty, parameter, queryAttribute.Name);
+                    paramterExpression = BindParameterFromProperty(parameter, QueryProperty, queryAttribute.Name ?? parameter.Name);
                 }
                 else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
                 {
-                    var headersProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
-                    paramterExpression = BindParamenterFromSource(headersProperty, parameter, headerAttribute.Name);
+                    paramterExpression = BindParameterFromProperty(parameter, HeadersProperty, headerAttribute.Name ?? parameter.Name);
                 }
                 else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
                 {
@@ -199,9 +206,7 @@ namespace Microsoft.AspNetCore.Http
                     }
 
                     consumeBodyAsForm = true;
-
-                    var formProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
-                    paramterExpression = BindParamenterFromSource(formProperty, parameter, parameter.Name);
+                    paramterExpression = BindParameterFromProperty(parameter, FormProperty, formAttribute.Name ?? parameter.Name);
                 }
                 else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
                 {
@@ -226,10 +231,13 @@ namespace Microsoft.AspNetCore.Http
                 {
                     paramterExpression = RequestAbortedExpr;
                 }
-                else if (IsBindableFromString(parameter))
+                else if (parameter.ParameterType == typeof(string))
                 {
-                    var routeValuesProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
-                    paramterExpression = BindParamenterFromSource(routeValuesProperty, parameter);
+                    paramterExpression = BindParameterFromRouteValueOrQueryString(parameter, parameter.Name);
+                }
+                else if (FindParseMethod(parameter) is { } parseMethod)
+                {
+                    paramterExpression = BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, parseMethod);
                 }
 
                 args.Add(paramterExpression);
@@ -442,14 +450,14 @@ namespace Microsoft.AspNetCore.Http
             return requestDelegate;
         }
 
-        private static bool IsBindableFromString(ParameterInfo parameter)
+        private static MethodInfo? FindParseMethod(ParameterInfo parameter)
         {
             var type = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
 
             foreach (var method in methods)
             {
-                if (method.Name != "Parse")
+                if (method.Name != "Parse" || method.ReturnType != type)
                 {
                     continue;
                 }
@@ -458,11 +466,11 @@ namespace Microsoft.AspNetCore.Http
 
                 if (parameters.Length == 1 && parameters[0].ParameterType == typeof(string))
                 {
-                    return true;
+                    return method;
                 }
             }
 
-            return false;
+            return null;
         }
 
         private static ILogger GetLogger(HttpContext httpContext)
@@ -471,40 +479,33 @@ namespace Microsoft.AspNetCore.Http
             return loggerFactory.CreateLogger(typeof(RequestDelegateFactory));
         }
 
-        private static Expression BindParamenterFromSource(Expression sourceExpression, ParameterInfo parameter, string? name = null)
+        private static Expression GetValueFromProperty(Expression sourceExpression, string key)
         {
-            var key = name ?? parameter.Name;
-            var valueExpression = Expression.Convert(Expression.MakeIndex(sourceExpression,
-                                                         sourceExpression.Type.GetProperty("Item"),
-                                                         new[] { Expression.Constant(key) }),
-                                                     typeof(string));
-
-            return BindParamenterFromValue(valueExpression, parameter);
+            var itemProperty = sourceExpression.Type.GetProperty("Item");
+            var getIndexArgs = new[] { Expression.Constant(key) };
+            var getIndex = Expression.MakeIndex(sourceExpression, itemProperty, getIndexArgs);
+            return Expression.Convert(getIndex, typeof(string));
         }
 
-        private static Expression BindParamenterFromValue(Expression valueExpression, ParameterInfo parameter)
+        private static Expression BindParameterFromValue(ParameterInfo parameter, Expression valueExpression, MethodInfo? parseMethod = null)
         {
-            var type = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-
-            MethodInfo parseMethod = (from m in type.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                                      let parameters = m.GetParameters()
-                                      where m.Name == "Parse" && parameters.Length == 1 && parameters[0].ParameterType == typeof(string)
-                                      select m).FirstOrDefault()!;
-
             Expression? expr = null;
 
-            if (parseMethod != null)
+            if (parameter.ParameterType == typeof(string))
             {
-                expr = Expression.Call(parseMethod, valueExpression);
-            }
-            else if (parameter.ParameterType != valueExpression.Type)
-            {
-                // Convert.ChangeType()
-                expr = Expression.Call(ChangeTypeMethodInfo, valueExpression, Expression.Constant(type));
+                expr = valueExpression;
             }
             else
             {
-                expr = valueExpression;
+                parseMethod ??= FindParseMethod(parameter);
+
+                if (parseMethod is null)
+                {
+                    // TODO: Add test!
+                    throw new InvalidOperationException($"No valid static {parameter.ParameterType}.Parse(string) method for {parameter} was found.");
+                }
+
+                expr = Expression.Call(parseMethod, valueExpression);
             }
 
             if (expr.Type != parameter.ParameterType)
@@ -529,6 +530,16 @@ namespace Microsoft.AspNetCore.Http
                 expr);
 
             return expr;
+        }
+
+        private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, string key) =>
+            BindParameterFromValue(parameter, GetValueFromProperty(property, key));
+
+        private static Expression BindParameterFromRouteValueOrQueryString(ParameterInfo parameter, string key, MethodInfo? parseMethod = null)
+        {
+            var routeValue = GetValueFromProperty(RouteValuesProperty, key);
+            var queryValue = GetValueFromProperty(QueryProperty, key);
+            return BindParameterFromValue(parameter, Expression.Coalesce(routeValue, queryValue), parseMethod);
         }
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
