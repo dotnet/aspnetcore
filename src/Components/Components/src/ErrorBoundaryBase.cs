@@ -100,11 +100,29 @@ namespace Microsoft.AspNetCore.Components
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
 
-            // TODO: If there's an async exception here, do something with it (can be fatal)
-            _ = LogExceptionAsync(exception);
-
+            var logExceptionTask = LogExceptionAsync(exception);
             _currentException = exception;
             _renderHandle.Render(Render);
+
+            // If the logger is failing, show its exception in preference to showing the original
+            // exception, since otherwise the developer has no way to discover it.
+            if (!logExceptionTask.IsCompletedSuccessfully)
+            {
+                _ = HandleAnyLoggingErrors(logExceptionTask);
+            }
+        }
+
+        private async Task HandleAnyLoggingErrors(ValueTask logExceptionTask)
+        {
+            try
+            {
+                await logExceptionTask;
+            }
+            catch (Exception exception)
+            {
+                _currentException = exception;
+                _renderHandle.Render(Render);
+            }
         }
 
         private void Render(RenderTreeBuilder builder)
