@@ -70,28 +70,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         public bool CanRead { get; }
         public bool CanWrite { get; }
 
-        public long StreamId
-        {
-            get
-            {
-                return _stream.StreamId;
-            }
-        }
+        public long StreamId => _stream.StreamId;
 
         public override string ConnectionId
         {
-            get
-            {
-                if (_connectionId == null)
-                {
-                    _connectionId = $"{_connection.ConnectionId}:{StreamId}";
-                }
-                return _connectionId;
-            }
-            set
-            {
-                _connectionId = value;
-            }
+            get => _connectionId ??= $"{_connection.ConnectionId}:{StreamId}";
+            set => _connectionId = value;
         }
 
         public long Error { get; set; }
@@ -147,7 +131,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             {
                 // This is unexpected.
                 error = ex;
-                _log.StreamError(ConnectionId, error);
+                if (_log.IsEnabled(LogLevel.Debug))
+                {
+                    _log.StreamError(ConnectionId, error);
+                }
             }
             finally
             {
@@ -180,14 +167,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
                 var paused = !flushTask.IsCompleted;
 
-                if (paused)
+                if (paused && _log.IsEnabled(LogLevel.Debug))
                 {
                     _log.StreamPause(ConnectionId);
                 }
 
                 var result = await flushTask;
 
-                if (paused)
+                if (paused && _log.IsEnabled(LogLevel.Debug))
                 {
                     _log.StreamResume(ConnectionId);
                 }
@@ -250,7 +237,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             {
                 shutdownReason = ex;
                 unexpectedError = ex;
-                _log.ConnectionError(ConnectionId, unexpectedError);
+                if (_log.IsEnabled(LogLevel.Debug))
+                {
+                    _log.ConnectionError(ConnectionId, unexpectedError);
+                }
             }
             finally
             {
@@ -307,7 +297,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
             _aborted = true;
 
-            _log.StreamAbort(ConnectionId, abortReason.Message);
+            if (_log.IsEnabled(LogLevel.Debug))
+            {
+                _log.StreamAbort(ConnectionId, abortReason.Message);
+            }
 
             lock (_shutdownLock)
             {
@@ -328,7 +321,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
                     // TODO: Exception is always allocated. Consider only allocating if receive hasn't completed.
                     _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Quic transport's send loop completed gracefully.");
 
-                    _log.StreamShutdownWrite(ConnectionId, _shutdownReason.Message);
+                    if (_log.IsEnabled(LogLevel.Debug))
+                    {
+                        _log.StreamShutdownWrite(ConnectionId, _shutdownReason.Message);
+                    }
                     _stream.Shutdown();
                 }
 

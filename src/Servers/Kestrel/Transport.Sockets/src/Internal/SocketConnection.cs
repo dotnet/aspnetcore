@@ -156,7 +156,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     if (bytesReceived == 0)
                     {
                         // FIN
-                        _trace.ConnectionReadFin(ConnectionId);
+                        if (_trace.IsEnabled(LogLevel.Debug))
+                        {
+                            _trace.ConnectionReadFin(ConnectionId);
+                        }
                         break;
                     }
 
@@ -166,14 +169,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                     var paused = !flushTask.IsCompleted;
 
-                    if (paused)
+                    if (paused && _trace.IsEnabled(LogLevel.Debug))
                     {
                         _trace.ConnectionPause(ConnectionId);
                     }
 
                     var result = await flushTask;
 
-                    if (paused)
+                    if (paused && _trace.IsEnabled(LogLevel.Debug))
                     {
                         _trace.ConnectionResume(ConnectionId);
                     }
@@ -204,7 +207,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 // This exception should always be ignored because _shutdownReason should be set.
                 error = ex;
 
-                if (!_socketDisposed)
+                if (!_socketDisposed && _trace.IsEnabled(LogLevel.Debug))
                 {
                     // This is unexpected if the socket hasn't been disposed yet.
                     _trace.ConnectionError(ConnectionId, error);
@@ -214,7 +217,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 // This is unexpected.
                 error = ex;
-                _trace.ConnectionError(ConnectionId, error);
+                if (_trace.IsEnabled(LogLevel.Debug))
+                {
+                    _trace.ConnectionError(ConnectionId, error);
+                }
             }
             finally
             {
@@ -265,7 +271,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
                 shutdownReason = new ConnectionResetException(ex.Message, ex);
-                _trace.ConnectionReset(ConnectionId);
+                if (_trace.IsEnabled(LogLevel.Debug))
+                {
+                    _trace.ConnectionReset(ConnectionId);
+                }
             }
             catch (Exception ex)
                 when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
@@ -278,7 +287,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 shutdownReason = ex;
                 unexpectedError = ex;
-                _trace.ConnectionError(ConnectionId, unexpectedError);
+                if (_trace.IsEnabled(LogLevel.Debug))
+                {
+                    _trace.ConnectionError(ConnectionId, unexpectedError);
+                }
             }
             finally
             {
@@ -331,7 +343,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 // to half close the connection which is currently unsupported.
                 _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Socket transport's send loop completed gracefully.");
 
-                _trace.ConnectionWriteFin(ConnectionId, _shutdownReason.Message);
+                if (_trace.IsEnabled(LogLevel.Debug))
+                {
+                    _trace.ConnectionWriteFin(ConnectionId, _shutdownReason.Message);
+                }
 
                 try
                 {
