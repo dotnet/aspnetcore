@@ -709,7 +709,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Theory]
         [MemberData(nameof(FromServiceParameter))]
-        public async Task RequestDelegatePopulatesFromServiceParameterBasedOnParameterType(Delegate action)
+        public async Task RequestDelegatePopulatesParametersFromServiceWithAndWithoutAttribute(Delegate action)
         {
             var myOriginalService = new MyService();
 
@@ -724,6 +724,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.Same(myOriginalService, httpContext.Items["service"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(FromServiceParameter))]
+        public async Task RequestDelegateRequiresServiceForAllFromServiceParameters(Delegate action)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = (new ServiceCollection()).BuildServiceProvider();
+
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, MyService>)action);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
         }
 
         [Fact]
