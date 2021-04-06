@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.Web
                 // Instead, the default project template provides locale-specific default content via CSS. This provides
                 // a quick form of customization even without having to subclass this component.
                 builder.OpenElement(2, "div");
-                builder.AddAttribute(3, "class", "error-boundary");
+                builder.AddAttribute(3, "class", "blazor-error-boundary");
                 builder.CloseElement();
             }
         }
