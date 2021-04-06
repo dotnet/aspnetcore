@@ -68,11 +68,11 @@ namespace Microsoft.AspNetCore.Http
                 null => null,
             };
 
-            var untargetedRequestDelegate = CreateRequestDelegate(action.Method, targetExpression);
+            var targettableRequestDelegate = CreateTargettableRequestDelegate(action.Method, targetExpression);
 
             return httpContext =>
             {
-                return untargetedRequestDelegate(action.Target, httpContext);
+                return targettableRequestDelegate(action.Target, httpContext);
             };
         }
 
@@ -88,11 +88,11 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(methodInfo));
             }
 
-            var untargetedRequestDelegate = CreateRequestDelegate(methodInfo, targetExpression: null);
+            var targettableRequestDelegate = CreateTargettableRequestDelegate(methodInfo, targetExpression: null);
 
             return httpContext =>
             {
-                return untargetedRequestDelegate(null, httpContext);
+                return targettableRequestDelegate(null, httpContext);
             };
         }
 
@@ -120,15 +120,15 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var targetExpression = Expression.Convert(TargetArg, methodInfo.DeclaringType);
-            var untargetedRequestDelegate = CreateRequestDelegate(methodInfo, targetExpression);
+            var targettableRequestDelegate = CreateTargettableRequestDelegate(methodInfo, targetExpression);
 
             return httpContext =>
             {
-                return untargetedRequestDelegate(targetFactory(httpContext), httpContext);
+                return targettableRequestDelegate(targetFactory(httpContext), httpContext);
             };
         }
 
-        private static Func<object?, HttpContext, Task> CreateRequestDelegate(MethodInfo methodInfo, Expression? targetExpression)
+        private static Func<object?, HttpContext, Task> CreateTargettableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression)
         {
             // Non void return type
 
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var body = CreateRequestDelegateBody(methodInfo, methodCall);
-            return CreateRequestDelegateFromBodyExpression(methodInfo, body, context);
+            return CreateTargettableRequestDelegateFromBodyExpression(methodInfo, body, context);
         }
 
         private static Expression[] CreateArgumentExpresssions(ParameterInfo[]? parameters, RequestBodyContext context)
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Http
                     throw new InvalidOperationException($"Parameter {parameter} does not have a name! All parameters must be named.");
                 }
 
-                Expression argumentExpression = Expression.Default(parameter.ParameterType);
+                Expression argumentExpression;
 
                 var parameterCustomAttributes = parameter.GetCustomAttributes();
 
@@ -260,6 +260,10 @@ namespace Microsoft.AspNetCore.Http
                 else if (FindParseMethod(parameter) is { } parseMethod)
                 {
                     argumentExpression = BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, parseMethod);
+                }
+                else
+                {
+                    argumentExpression = Expression.Call(GetRequiredServiceMethodInfo.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
                 }
 
                 args[i] = argumentExpression;
@@ -380,7 +384,7 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        private static Func<object?, HttpContext, Task> CreateRequestDelegateFromBodyExpression(MethodInfo methodInfo, Expression body, RequestBodyContext context)
+        private static Func<object?, HttpContext, Task> CreateTargettableRequestDelegateFromBodyExpression(MethodInfo methodInfo, Expression body, RequestBodyContext context)
         {
             if (context.Mode is RequestBodyMode.AsJson)
             {

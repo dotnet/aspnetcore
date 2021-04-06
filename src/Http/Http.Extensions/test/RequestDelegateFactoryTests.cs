@@ -719,7 +719,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<MyService>)@delegate);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, MyService>)@delegate);
 
             await requestDelegate(httpContext);
 
