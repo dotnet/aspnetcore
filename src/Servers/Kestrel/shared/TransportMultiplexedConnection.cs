@@ -26,19 +26,8 @@ namespace Microsoft.AspNetCore.Connections
 
         public override string ConnectionId
         {
-            get
-            {
-                if (_connectionId == null)
-                {
-                    _connectionId = CorrelationIdGenerator.GetNextId();
-                }
-
-                return _connectionId;
-            }
-            set
-            {
-                _connectionId = value;
-            }
+            get => _connectionId ??= CorrelationIdGenerator.GetNextId();
+            set => _connectionId = value;
         }
 
         public override IFeatureCollection Features => this;

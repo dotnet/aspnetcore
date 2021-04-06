@@ -32,10 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
             Features.Set<IProtocolErrorCodeFeature>(this);
 
-            if (_log.IsEnabled(LogLevel.Debug))
-            {
-                _log.AcceptedConnection(ConnectionId);
-            }
+            _log.AcceptedConnection(this);
         }
 
         public ValueTask<ConnectionContext> StartUnidirectionalStreamAsync()

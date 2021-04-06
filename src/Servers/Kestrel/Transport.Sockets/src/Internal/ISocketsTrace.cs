@@ -8,16 +8,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     internal interface ISocketsTrace : ILogger
     {
-        void ConnectionReadFin(string connectionId);
+        void ConnectionReadFin(SocketConnection connection);
 
-        void ConnectionWriteFin(string connectionId, string reason);
+        void ConnectionWriteFin(SocketConnection connection, string reason);
 
-        void ConnectionError(string connectionId, Exception ex);
+        void ConnectionError(SocketConnection connection, Exception ex);
 
         void ConnectionReset(string connectionId);
+        void ConnectionReset(SocketConnection connection);
 
-        void ConnectionPause(string connectionId);
+        void ConnectionPause(SocketConnection connection);
 
-        void ConnectionResume(string connectionId);
+        void ConnectionResume(SocketConnection connection);
     }
 }

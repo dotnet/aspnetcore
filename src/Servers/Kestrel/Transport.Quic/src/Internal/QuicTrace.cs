@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         private static readonly Action<ILogger, string, Exception?> _acceptedConnection =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "AcceptedConnection"), @"Connection id ""{ConnectionId}"" accepted.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _acceptedStream =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "AcceptedStream"), @"Stream id ""{ConnectionId}"" accepted.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "AcceptedStream"), @"Stream id ""{ConnectionId}"" accepted.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _connectionError =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "ConnectionError"), @"Connection id ""{ConnectionId}"" unexpected error.", skipEnabledCheck: true);
         private static readonly Action<ILogger, string, Exception?> _streamError =
@@ -39,44 +40,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             => _logger.Log(logLevel, eventId, state, exception, formatter);
 
-        public void AcceptedConnection(string connectionId)
+        public void AcceptedConnection(BaseConnectionContext connection)
         {
-            _acceptedConnection(_logger, connectionId, null);
+            if (!_logger.IsEnabled(LogLevel.Debug)) return;
+
+            _acceptedConnection(_logger, connection.ConnectionId, null);
         }
 
-        public void AcceptedStream(string streamId)
+        public void AcceptedStream(QuicStreamContext streamContext)
         {
-            _acceptedStream(_logger, streamId, null);
+            if (!_logger.IsEnabled(LogLevel.Debug)) return;
+
+            _acceptedStream(_logger, streamContext.ConnectionId, null);
         }
 
-        public void ConnectionError(string connectionId, Exception ex)
+        public void ConnectionError(BaseConnectionContext connection, Exception ex)
         {
-            _connectionError(_logger, connectionId, ex);
+            if (!_logger.IsEnabled(LogLevel.Debug)) return;
+
+            _connectionError(_logger, connection.ConnectionId, ex);
         }
 
-        public void StreamError(string streamId, Exception ex)
+        public void StreamError(QuicStreamContext streamContext, Exception ex)
         {
-            _streamError(_logger, streamId, ex);
+            if (!_logger.IsEnabled(LogLevel.Debug)) return;
+
+            _streamError(_logger, streamContext.ConnectionId, ex);
         }
 
-        public void StreamPause(string streamId)
+        public void StreamPause(QuicStreamContext streamContext)
         {
-            _streamPause(_logger, streamId, null);
+            if (!_logger.IsEnabled(LogLevel.Debug)) return;
+
+            _streamPause(_logger, streamContext.ConnectionId, null);
         }
 
-        public void StreamResume(string streamId)
+        public void StreamResume(QuicStreamContext streamContext)
         {
-            _streamResume(_logger, streamId, null);
+            if (!_logger.IsEnabled(LogLevel.Debug)) return;
+
+            _streamResume(_logger, streamContext.ConnectionId, null);
         }
 
-        public void StreamShutdownWrite(string streamId, string reason)
+        public void StreamShutdownWrite(QuicStreamContext streamContext, string reason)
         {
-            _streamShutdownWrite(_logger, streamId, reason, null);
+            if (!_logger.IsEnabled(LogLevel.Debug)) return;
+
+            _streamShutdownWrite(_logger, streamContext.ConnectionId, reason, null);
         }
 
-        public void StreamAbort(string streamId, string reason)
+        public void StreamAbort(QuicStreamContext streamContext, string reason)
         {
-            _streamAborted(_logger, streamId, reason, null);
+            if (!_logger.IsEnabled(LogLevel.Debug)) return;
+
+            _streamAborted(_logger, streamContext.ConnectionId, reason, null);
         }
     }
 }
