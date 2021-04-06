@@ -4586,10 +4586,9 @@ namespace Microsoft.AspNetCore.Components.Test
                     builder.OpenComponent<T>(1);
                     if (ChildParameters != null)
                     {
-                        var sequence = 2;
                         foreach (var kvp in ChildParameters)
                         {
-                            builder.AddAttribute(sequence++, kvp.Key, kvp.Value);
+                            builder.AddAttribute(2, kvp.Key, kvp.Value);
                         }
                     }
                     builder.CloseComponent();
@@ -4805,9 +4804,8 @@ namespace Microsoft.AspNetCore.Components.Test
                 // Cheap closure
                 void CreateFragment(RenderTreeBuilder builder)
                 {
-                    var s = 0;
-                    builder.OpenElement(s++, "p");
-                    builder.AddContent(s++, n);
+                    builder.OpenElement(0, "p");
+                    builder.AddContent(1, n);
                     builder.CloseElement();
                 }
             }
@@ -4886,16 +4884,15 @@ namespace Microsoft.AspNetCore.Components.Test
 
             return component => builder =>
             {
-                var s = 0;
-                builder.OpenElement(s++, "div");
-                builder.AddContent(s++, $"Id: {component.TestId} BuildRenderTree, {Guid.NewGuid()}");
+                builder.OpenElement(0, "div");
+                builder.AddContent(1, $"Id: {component.TestId} BuildRenderTree, {Guid.NewGuid()}");
                 foreach (var child in childrenToRender)
                 {
-                    builder.OpenComponent<NestedAsyncComponent>(s++);
-                    builder.AddAttribute(s++, eventActionsName, component.EventActions);
-                    builder.AddAttribute(s++, whatToRenderName, component.WhatToRender);
-                    builder.AddAttribute(s++, testIdName, child);
-                    builder.AddAttribute(s++, logName, component.Log);
+                    builder.OpenComponent<NestedAsyncComponent>(2);
+                    builder.AddAttribute(3, eventActionsName, component.EventActions);
+                    builder.AddAttribute(4, whatToRenderName, component.WhatToRender);
+                    builder.AddAttribute(5, testIdName, child);
+                    builder.AddAttribute(6, logName, component.Log);
                     builder.CloseComponent();
                 }
 
