@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
@@ -9,9 +10,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     public interface IRouteTemplateProvider
     {
         /// <summary>
-        /// The route template. May be null.
+        /// The route template. May be <see langword="null"/>.
         /// </summary>
-        string Template { get; }
+        string? Template { get; }
 
         /// <summary>
         /// Gets the route order. The order determines the order of route execution. Routes with a lower
@@ -25,6 +26,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// Gets the route name. The route name can be used to generate a link using a specific route, instead
         ///  of relying on selection of a route based on the given set of route values.
         /// </summary>
-        string Name { get; }
+        string? Name { get; }
     }
 }

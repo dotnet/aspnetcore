@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -879,8 +880,8 @@ namespace InteropTestsClient
         // Consider providing ca file in a different format and removing method
         private byte[]? GetBytesFromPem(string pemString, string section)
         {
-            var header = string.Format("-----BEGIN {0}-----", section);
-            var footer = string.Format("-----END {0}-----", section);
+            var header = string.Format(CultureInfo.InvariantCulture, "-----BEGIN {0}-----", section);
+            var footer = string.Format(CultureInfo.InvariantCulture, "-----END {0}-----", section);
 
             var start = pemString.IndexOf(header, StringComparison.Ordinal);
             if (start == -1)

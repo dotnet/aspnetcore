@@ -7,16 +7,15 @@ using System.IO.Pipelines;
 using System.Threading;
 using Microsoft.AspNetCore.Connections.Features;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Connections
 {
-    internal partial class TransportConnection : IConnectionIdFeature,
-                                                 IConnectionTransportFeature,
-                                                 IConnectionItemsFeature,
-                                                 IMemoryPoolFeature,
-                                                 IConnectionLifetimeFeature
+    internal partial class TransportConnection
     {
         // NOTE: When feature interfaces are added to or removed from this TransportConnection class implementation,
-        // then the list of `features` in the generated code project MUST also be updated.
+        // then the list of `features` in the generated code project MUST also be updated first
+        // and the code generator re-reun, which will change the interface list.
         // See also: tools/CodeGenerator/TransportConnectionFeatureCollection.cs
 
         MemoryPool<byte> IMemoryPoolFeature.MemoryPool => MemoryPool;
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Connections
             set => Transport = value;
         }
 
-        IDictionary<object, object> IConnectionItemsFeature.Items
+        IDictionary<object, object?> IConnectionItemsFeature.Items
         {
             get => Items;
             set => Items = value;

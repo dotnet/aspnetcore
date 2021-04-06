@@ -1,6 +1,6 @@
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
-import { EventDelegator } from '../Rendering/EventDelegator';
+import { EventDelegator } from '../Rendering/Events/EventDelegator';
 
 let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
@@ -53,15 +53,9 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
     // Intercept clicks on all <a> elements where the href is within the <base href> URI space
     // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
     const anchorTarget = findAnchorTarget(event);
-    const hrefAttributeName = 'href';
-    if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName)) {
-      const targetAttributeValue = anchorTarget.getAttribute('target');
-      const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
-      if (!opensInSameFrame) {
-        return;
-      }
 
-      const href = anchorTarget.getAttribute(hrefAttributeName)!;
+    if (anchorTarget && canProcessAnchor(anchorTarget)) {
+      const href = anchorTarget.getAttribute('href')!;
       const absoluteHref = toAbsoluteUri(href);
 
       if (isWithinBaseUriSpace(absoluteHref)) {
@@ -165,4 +159,10 @@ function toBaseUriWithTrailingSlash(baseUri: string) {
 
 function eventHasSpecialKey(event: MouseEvent) {
   return event.ctrlKey || event.shiftKey || event.altKey || event.metaKey;
+}
+
+function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
+  const targetAttributeValue = anchorTarget.getAttribute('target');
+  const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
+  return opensInSameFrame && anchorTarget.hasAttribute('href') && !anchorTarget.hasAttribute('download');
 }

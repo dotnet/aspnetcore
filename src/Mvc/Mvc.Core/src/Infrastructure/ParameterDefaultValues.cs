@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 
 using System;
 using System.ComponentModel;
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     internal static class ParameterDefaultValues
     {
-        public static object[] GetParameterDefaultValues(MethodBase methodInfo)
+        public static object?[] GetParameterDefaultValues(MethodBase methodInfo)
         {
             if (methodInfo == null)
             {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             var parameters = methodInfo.GetParameters();
-            var values = new object[parameters.Length];
+            var values = new object?[parameters.Length];
 
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return values;
         }
 
-        private static object GetParameterDefaultValue(ParameterInfo parameterInfo)
+        private static object? GetParameterDefaultValue(ParameterInfo parameterInfo)
         {
             TryGetDeclaredParameterDefaultValue(parameterInfo, out var defaultValue);
             if (defaultValue == null && parameterInfo.ParameterType.IsValueType)
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return defaultValue;
         }
 
-        public static bool TryGetDeclaredParameterDefaultValue(ParameterInfo parameterInfo, out object defaultValue)
+        public static bool TryGetDeclaredParameterDefaultValue(ParameterInfo parameterInfo, out object? defaultValue)
         {
             if (ParameterDefaultValue.TryGetDefaultValue(parameterInfo, out defaultValue))
             {

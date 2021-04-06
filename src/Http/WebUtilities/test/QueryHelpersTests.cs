@@ -55,6 +55,16 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Equal(new[] { "value1", "" }, collection[""]);
         }
 
+        [Theory]
+        [InlineData("?")]
+        [InlineData("")]
+        [InlineData(null)]
+        public void ParseEmptyOrNullQueryWorks(string? queryString)
+        {
+            var collection = QueryHelpers.ParseQuery(queryString);
+            Assert.Empty(collection);
+        }
+
         [Fact]
         public void AddQueryStringWithNullValueThrows()
         {

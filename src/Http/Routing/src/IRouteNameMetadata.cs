@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Routing
@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Routing
     public interface IRouteNameMetadata
     {
         /// <summary>
-        /// Gets the route name. Can be null.
+        /// Gets the route name. Can be <see langword="null"/>.
         /// </summary>
-        string RouteName { get; }
+        string? RouteName { get; }
     }
 }

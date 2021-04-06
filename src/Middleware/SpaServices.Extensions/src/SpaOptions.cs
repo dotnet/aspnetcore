@@ -62,14 +62,14 @@ namespace Microsoft.AspNetCore.SpaServices
         /// <see cref="IHostingEnvironment.WebRootPath"/>, which by default is
         /// the <c>wwwroot</c> directory.
         /// </summary>
-        public StaticFileOptions DefaultPageStaticFileOptions { get; set; }
+        public StaticFileOptions? DefaultPageStaticFileOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the path, relative to the application working directory,
         /// of the directory that contains the SPA source files during
         /// development. The directory may not exist in published applications.
         /// </summary>
-        public string SourcePath { get; set; }
+        public string? SourcePath { get; set; }
 
         /// <summary>
         /// Controls whether the development server should be used with a dynamic or fixed port.

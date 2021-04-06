@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 {
     internal interface IQuicTrace : ILogger
     {
-        void NewConnection(string connectionId);
-        void NewStream(string streamId);
+        void AcceptedConnection(string connectionId);
+        void AcceptedStream(string streamId);
         void ConnectionError(string connectionId, Exception ex);
         void StreamError(string streamId, Exception ex);
         void StreamPause(string streamId);
         void StreamResume(string streamId);
-        void StreamShutdownWrite(string streamId, Exception ex);
-        void StreamAbort(string streamId, Exception ex);
+        void StreamShutdownWrite(string streamId, string reason);
+        void StreamAbort(string streamId, string reason);
     }
 }

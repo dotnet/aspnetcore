@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
@@ -14,6 +16,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class SaveTempDataAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
+        /// <summary>
+        /// Initialize a new instance of <see cref="SaveTempDataAttribute"/>.
+        /// </summary>
         public SaveTempDataAttribute()
         {
             // Since SaveTempDataFilter registers for a response's OnStarting callback, we want this filter to run

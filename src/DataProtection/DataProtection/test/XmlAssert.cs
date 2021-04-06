@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using Xunit;
@@ -124,7 +125,7 @@ namespace Microsoft.AspNetCore.DataProtection
                     return true; // relevant
                 }
 
-                throw new NotSupportedException(string.Format("Node of type '{0}' is not supported.", node.GetType().Name));
+                throw new NotSupportedException(string.Format(CultureInfo.InvariantCulture, "Node of type '{0}' is not supported.", node.GetType().Name));
             }
         }
 

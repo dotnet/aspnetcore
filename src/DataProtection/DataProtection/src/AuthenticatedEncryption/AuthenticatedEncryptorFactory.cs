@@ -3,12 +3,14 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
@@ -21,15 +23,19 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
     {
         private readonly ILoggerFactory _loggerFactory;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="AuthenticatedEncryptorFactory"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public AuthenticatedEncryptorFactory(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
         }
 
-        public IAuthenticatedEncryptor CreateEncryptorInstance(IKey key)
+        /// <inheritdoc />
+        public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
         {
-            var descriptor = key.Descriptor as AuthenticatedEncryptorDescriptor;
-            if (descriptor == null)
+            if (key.Descriptor is not AuthenticatedEncryptorDescriptor descriptor)
             {
                 return null;
             }
@@ -37,9 +43,10 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
         }
 
-        internal IAuthenticatedEncryptor CreateAuthenticatedEncryptorInstance(
+        [return: NotNullIfNotNull("authenticatedConfiguration")]
+        internal IAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
             ISecret secret,
-            AuthenticatedEncryptorConfiguration authenticatedConfiguration)
+            AuthenticatedEncryptorConfiguration? authenticatedConfiguration)
         {
             if (authenticatedConfiguration == null)
             {
@@ -48,6 +55,9 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 
             if (IsGcmAlgorithm(authenticatedConfiguration.EncryptionAlgorithm))
             {
+#if NETCOREAPP
+                return new AesGcmAuthenticatedEncryptor(secret, GetAlgorithmKeySizeInBits(authenticatedConfiguration.EncryptionAlgorithm) / 8);
+#else
                 // GCM requires CNG, and CNG is only supported on Windows.
                 if (!OSVersionUtil.IsWindows())
                 {
@@ -63,6 +73,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 };
 
                 return new CngGcmAuthenticatedEncryptorFactory(_loggerFactory).CreateAuthenticatedEncryptorInstance(secret, configuration);
+#endif
             }
             else
             {

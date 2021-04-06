@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             });
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://example.com/challenge");
-            Assert.Contains(transaction.SetCookie, cookie => cookie.StartsWith(".AspNetCore.Correlation."));
+            Assert.Contains(transaction.SetCookie, cookie => cookie.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
         }
 
         [Fact]
@@ -941,7 +941,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         }
 
         [Fact]
-        public async Task AuthenticateFacebookWhenAlreadySignedWithGoogleReturnsNull()
+        public async Task AuthenticateGoogleWhenAlreadySignedWithGoogleReturnsNull()
         {
             var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             using var host = await CreateHost(o =>
@@ -978,7 +978,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         }
 
         [Fact]
-        public async Task ChallengeFacebookWhenAlreadySignedWithGoogleSucceeds()
+        public async Task ChallengeGoogleWhenAlreadySignedWithGoogleSucceeds()
         {
             var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             using var host = await CreateHost(o =>

@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Logging;
@@ -17,12 +19,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
         }
 
-        internal override async Task BindAsync(AddressBindContext context)
+        internal override async Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
         {
+            Debug.Assert(IPEndPoint != null);
+
             // when address is 'http://hostname:port', 'http://*:port', or 'http://+:port'
             try
             {
-                await base.BindAsync(context).ConfigureAwait(false);
+                await base.BindAsync(context, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!(ex is IOException))
             {
@@ -30,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 // for machines that do not support IPv6
                 EndPoint = new IPEndPoint(IPAddress.Any, IPEndPoint.Port);
-                await base.BindAsync(context).ConfigureAwait(false);
+                await base.BindAsync(context, cancellationToken).ConfigureAwait(false);
             }
         }
     }

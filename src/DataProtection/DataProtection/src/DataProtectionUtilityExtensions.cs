@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
+    /// <summary>
+    /// Data protection extensions for <see cref="IServiceProvider"/>.
+    /// </summary>
     public static class DataProtectionUtilityExtensions
     {
         /// <summary>
@@ -30,9 +33,9 @@ namespace Microsoft.AspNetCore.DataProtection
         /// </para>
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static string GetApplicationUniqueIdentifier(this IServiceProvider services)
+        public static string? GetApplicationUniqueIdentifier(this IServiceProvider services)
         {
-            string discriminator = null;
+            string? discriminator = null;
             if (services != null)
             {
                 discriminator = services.GetService<IApplicationDiscriminator>()?.Discriminator;

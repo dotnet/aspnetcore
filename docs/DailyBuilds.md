@@ -13,7 +13,7 @@ If you want to download the latest daily build and use it in a project, then you
   <configuration>
       <packageSources>
           <clear />
-          <add key="aspnetcore" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json" />
+          <add key="aspnetcore" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>

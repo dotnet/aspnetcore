@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -24,6 +26,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public string[] Segments { get; }
 
+        [DynamicallyAccessedMembers(Component)]
         public Type? Handler { get; set; }
 
         public IReadOnlyDictionary<string, object>? Parameters { get; set; }

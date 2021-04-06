@@ -1271,6 +1271,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             EvaluateData(MalformedRequiredAttribute_Descriptors, "<p notRequired=\"hi\" class=\"btn\" </p");
         }
 
+        [Fact]
+        public void RequiredAttributeDescriptorsCreateMalformedTagHelperBlocksCorrectly11()
+        {
+            var document = "<p class='foo'>@if(true){</p>}</p>";
+            EvaluateData(MalformedRequiredAttribute_Descriptors, document);
+        }
+
         public static TagHelperDescriptor[] PrefixedTagHelperColon_Descriptors = new TagHelperDescriptor[]
         {
             TagHelperDescriptorBuilder.Create("mythTagHelper", "SomeAssembly")

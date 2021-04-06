@@ -18,8 +18,7 @@ namespace RazorPagesWebSite
             services.AddRazorPages(options =>
                 {
                     options.Conventions.AuthorizeFolder("/Admin");
-                })
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                });
         }
 
         public void Configure(IApplicationBuilder app)

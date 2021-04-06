@@ -81,7 +81,6 @@ namespace Templates.Test
 
         [Theory]
         [MemberData(nameof(TemplateBaselines))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23993")]
         public async Task Template_Produces_The_Right_Set_Of_FilesAsync(string arguments, string[] expectedFiles)
         {
             Project = await ProjectFactory.GetOrCreateProject("baseline" + SanitizeArgs(arguments), Output);

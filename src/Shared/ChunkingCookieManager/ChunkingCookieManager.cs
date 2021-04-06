@@ -70,9 +70,7 @@ namespace Microsoft.AspNetCore.Internal
         {
             if (value != null && value.StartsWith(ChunkCountPrefix, StringComparison.Ordinal))
             {
-                var chunksCountString = value.Substring(ChunkCountPrefix.Length);
-                int chunksCount;
-                if (int.TryParse(chunksCountString, NumberStyles.None, CultureInfo.InvariantCulture, out chunksCount))
+                if (int.TryParse(value.AsSpan(ChunkCountPrefix.Length), NumberStyles.None, CultureInfo.InvariantCulture, out var chunksCount))
                 {
                     return chunksCount;
                 }

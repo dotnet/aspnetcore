@@ -11,6 +11,7 @@
   "directories": {
     "test": "spec"
   },
+  "sideEffects": false,
   "scripts": {
     "preclean": "cd ../common && yarn install --mutex network",
     "clean": "node ../common/node_modules/rimraf/bin.js ./dist",
@@ -20,7 +21,7 @@
     "build:esm": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
     "build:cjs": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
     "build:browser": "node ../common/node_modules/webpack-cli/bin/cli.js",
-    "build:uglify": "node ../common/node_modules/uglify-js/bin/uglifyjs --source-map \"url='signalr-protocol-msgpack.min.js.map',content='./dist/browser/signalr-protocol-msgpack.js.map'\" --comments -o ./dist/browser/signalr-protocol-msgpack.min.js ./dist/browser/signalr-protocol-msgpack.js",
+    "build:uglify": "node ../common/node_modules/terser/bin/terser -m -c --ecma 2019 --module --source-map \"url='signalr-protocol-msgpack.min.js.map',content='./dist/browser/signalr-protocol-msgpack.js.map'\" --comments -o ./dist/browser/signalr-protocol-msgpack.min.js ./dist/browser/signalr-protocol-msgpack.js",
     "prepack": "node ../build/embed-version.js",
     "test": "echo \"Run 'yarn test' in the 'clients/ts' folder to test this package\" && exit 1"
   },
@@ -37,17 +38,14 @@
   "bugs": {
     "url": "https://github.com/dotnet/aspnetcore/issues"
   },
-  "homepage": "https://github.com/dotnet/aspnetcore/tree/master/src/SignalR#readme",
+  "homepage": "https://github.com/dotnet/aspnetcore/tree/main/src/SignalR#readme",
   "files": [
     "dist/**/*",
     "src/**/*"
   ],
   "dependencies": {
     "@microsoft/signalr": "link:../signalr",
-    "msgpack5": "^4.5.0"
+    "@msgpack/msgpack": "^2.4.0"
   },
-  "devDependencies": {
-    "@types/msgpack5": "^3.4.1",
-    "buffer": "^5.0.8"
-  }
+  "devDependencies": {}
 }

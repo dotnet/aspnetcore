@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <param name="context">The <see cref="HttpContext"/> associated with this call.</param>
         /// <param name="policyName">An optional policy name to look for.</param>
         /// <returns>A <see cref="CorsPolicy"/></returns>
-        Task<CorsPolicy> GetPolicyAsync(HttpContext context, string policyName);
+        Task<CorsPolicy?> GetPolicyAsync(HttpContext context, string? policyName);
     }
 }

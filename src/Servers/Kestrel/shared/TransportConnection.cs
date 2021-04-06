@@ -4,25 +4,28 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Connections
 {
     internal abstract partial class TransportConnection : ConnectionContext
     {
-        private IDictionary<object, object> _items;
-        private string _connectionId;
+        private IDictionary<object, object?>? _items;
+        private string? _connectionId;
 
         public TransportConnection()
         {
             FastReset();
         }
 
-        public override EndPoint LocalEndPoint { get; set; }
-        public override EndPoint RemoteEndPoint { get; set; }
+        public override EndPoint? LocalEndPoint { get; set; }
+        public override EndPoint? RemoteEndPoint { get; set; }
 
         public override string ConnectionId
         {
@@ -43,13 +46,13 @@ namespace Microsoft.AspNetCore.Connections
 
         public override IFeatureCollection Features => this;
 
-        public virtual MemoryPool<byte> MemoryPool { get; }
+        public virtual MemoryPool<byte> MemoryPool { get; } = default!;
 
-        public override IDuplexPipe Transport { get; set; }
+        public override IDuplexPipe Transport { get; set; } = default!;
 
-        public IDuplexPipe Application { get; set; }
+        public IDuplexPipe Application { get; set; } = default!;
 
-        public override IDictionary<object, object> Items
+        public override IDictionary<object, object?> Items
         {
             get
             {
@@ -72,6 +75,7 @@ namespace Microsoft.AspNetCore.Connections
         // sufficient to abort the connection if there is backpressure.
         public override void Abort(ConnectionAbortedException abortReason)
         {
+            Debug.Assert(Application != null);
             Application.Input.CancelPendingRead();
         }
     }

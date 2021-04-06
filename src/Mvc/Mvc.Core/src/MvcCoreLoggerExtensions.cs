@@ -1,9 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
@@ -705,12 +708,10 @@ namespace Microsoft.AspNetCore.Mvc
             _selectingFirstCanWriteFormatter(logger, null);
         }
 
-#nullable enable
-        public static IDisposable? ActionScope(this ILogger logger, ActionDescriptor action)
+        public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
         {
             return logger.BeginScope(new ActionLogScope(action));
         }
-#nullable restore
 
         public static void ExecutingAction(this ILogger logger, ActionDescriptor action)
         {
@@ -856,7 +857,7 @@ namespace Microsoft.AspNetCore.Mvc
                 if (routeValueDictionary != null)
                 {
                     routeValues = routeValueDictionary
-                        .Select(pair => pair.Key + "=" + Convert.ToString(pair.Value))
+                        .Select(pair => pair.Key + "=" + Convert.ToString(pair.Value, CultureInfo.InvariantCulture))
                         .ToArray();
                 }
                 _noActionsMatched(logger, routeValues, null);
@@ -900,7 +901,7 @@ namespace Microsoft.AspNetCore.Mvc
                     var convertedArguments = new string[arguments.Length];
                     for (var i = 0; i < arguments.Length; i++)
                     {
-                        convertedArguments[i] = Convert.ToString(arguments[i]);
+                        convertedArguments[i] = Convert.ToString(arguments[i], CultureInfo.InvariantCulture);
                     }
 
                     _actionMethodExecutingWithArguments(logger, actionName, convertedArguments, null);
@@ -913,7 +914,7 @@ namespace Microsoft.AspNetCore.Mvc
             if (logger.IsEnabled(LogLevel.Information))
             {
                 var actionName = context.ActionDescriptor.DisplayName;
-                _actionMethodExecuted(logger, actionName, Convert.ToString(result), timeSpan.TotalMilliseconds, null);
+                _actionMethodExecuted(logger, actionName, Convert.ToString(result, CultureInfo.InvariantCulture), timeSpan.TotalMilliseconds, null);
             }
         }
 
@@ -1046,7 +1047,7 @@ namespace Microsoft.AspNetCore.Mvc
 
                 if (context.ContentType.HasValue)
                 {
-                    considered.Add(Convert.ToString(context.ContentType));
+                    considered.Add(Convert.ToString(context.ContentType, CultureInfo.InvariantCulture));
                 }
 
                 _noFormatter(logger, considered, null);
@@ -1060,7 +1061,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {
-                var contentType = Convert.ToString(context.ContentType);
+                var contentType = Convert.ToString(context.ContentType, CultureInfo.InvariantCulture);
                 _formatterSelected(logger, outputFormatter, contentType, null);
             }
         }
@@ -1568,7 +1569,7 @@ namespace Microsoft.AspNetCore.Mvc
             if (enumerableType != null)
             {
                 var elementType = enumerableType.GenericTypeArguments[0];
-                if (elementType.IsGenericType && elementType.GetGenericTypeDefinition().GetTypeInfo() == typeof(KeyValuePair<,>).GetTypeInfo())
+                if (elementType.IsGenericType && elementType.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
                 {
                     _attemptingToBindCollectionOfKeyValuePair(logger, modelName, modelName, modelName, modelName, modelName, modelName, null);
                     return;
@@ -1716,7 +1717,7 @@ namespace Microsoft.AspNetCore.Mvc
                     }
                     else if (index == 1)
                     {
-                        return new KeyValuePair<string, object>("ActionName", _action.DisplayName);
+                        return new KeyValuePair<string, object>("ActionName", _action.DisplayName ?? string.Empty);
                     }
                     throw new IndexOutOfRangeException(nameof(index));
                 }
@@ -1736,7 +1737,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 // We don't include the _action.Id here because it's just an opaque guid, and if
                 // you have text logging, you can already use the requestId for correlation.
-                return _action.DisplayName;
+                return _action.DisplayName ?? string.Empty;
             }
 
             IEnumerator IEnumerable.GetEnumerator()

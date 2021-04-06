@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -19,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IList<IInputFormatter> _formatters;
         private readonly IHttpRequestStreamReaderFactory _readerFactory;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly MvcOptions _options;
+        private readonly MvcOptions? _options;
 
         /// <summary>
         /// Creates a new <see cref="BodyModelBinderProvider"/>.
@@ -53,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             IList<IInputFormatter> formatters,
             IHttpRequestStreamReaderFactory readerFactory,
             ILoggerFactory loggerFactory,
-            MvcOptions options)
+            MvcOptions? options)
         {
             if (formatters == null)
             {
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {
@@ -101,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             return null;
         }
 
-        internal static bool CalculateAllowEmptyBody(EmptyBodyBehavior emptyBodyBehavior, MvcOptions options)
+        internal static bool CalculateAllowEmptyBody(EmptyBodyBehavior emptyBodyBehavior, MvcOptions? options)
         {
             if (emptyBodyBehavior == EmptyBodyBehavior.Default)
             {

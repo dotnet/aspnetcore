@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.SpaServices.Prerendering;
 using System;
 using System.Collections.Generic;
 
+#nullable disable
+
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>

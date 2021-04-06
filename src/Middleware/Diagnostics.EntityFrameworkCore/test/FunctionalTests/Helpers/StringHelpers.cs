@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.H
     {
         public static string GetResourceString(string stringName, params object[] parameters)
         {
-            var strings = typeof(DatabaseErrorPageMiddleware).GetTypeInfo().Assembly.GetType("Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Strings").GetTypeInfo();
+            var strings = typeof(DatabaseErrorPageMiddleware).Assembly.GetType("Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Strings").GetTypeInfo();
 
             if (parameters.Length > 0)
             {

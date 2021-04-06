@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     internal static class ViewDataDictionaryFactory
     {
-        public static Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> CreateFactory(TypeInfo modelType)
+        public static Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> CreateFactory(Type modelType)
         {
             if (modelType == null)
             {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .Compile();
         }
 
-        public static Func<ViewDataDictionary, ViewDataDictionary> CreateNestedFactory(TypeInfo modelType)
+        public static Func<ViewDataDictionary, ViewDataDictionary> CreateNestedFactory(Type modelType)
         {
             if (modelType == null)
             {

@@ -3,11 +3,11 @@
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -187,7 +187,6 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24414")]
         public void DefaultControllerFactory_DelegatesDisposalToControllerActivator()
         {
             // Arrange
@@ -199,6 +198,22 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
 
             // Act + Assert
             factory.ReleaseController(new ControllerContext(), controller);
+
+            activatorMock.Verify();
+        }
+
+        [Fact]
+        public async Task DefaultControllerFactory_DelegatesAsyncDisposalToControllerActivatorAsync()
+        {
+            // Arrange
+            var activatorMock = new Mock<IControllerActivator>();
+            activatorMock.Setup(s => s.Release(It.IsAny<ControllerContext>(), It.IsAny<object>()));
+
+            var factory = CreateControllerFactory(activatorMock.Object);
+            var controller = new MyAsyncDisposableController();
+
+            // Act + Assert
+            await factory.ReleaseControllerAsync(new ControllerContext(), controller);
 
             activatorMock.Verify();
         }
@@ -265,6 +280,17 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             public void Dispose()
             {
                 Disposed = true;
+            }
+        }
+
+        private class MyAsyncDisposableController : IAsyncDisposable
+        {
+            public bool Disposed { get; set; }
+
+            public ValueTask DisposeAsync()
+            {
+                Disposed = true;
+                return default;
             }
         }
 

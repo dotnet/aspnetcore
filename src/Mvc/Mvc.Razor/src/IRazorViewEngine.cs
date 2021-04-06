@@ -45,6 +45,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <paramref name="pagePath"/> is a relative path. The <paramref name="pagePath"/> value (unchanged)
         /// otherwise.
         /// </returns>
-        string GetAbsolutePath(string executingFilePath, string pagePath);
+        string? GetAbsolutePath(string? executingFilePath, string? pagePath);
     }
 }

@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcBuilder AddDataAnnotationsLocalization(
             this IMvcBuilder builder,
-            Action<MvcDataAnnotationsLocalizationOptions> setupAction)
+            Action<MvcDataAnnotationsLocalizationOptions>? setupAction)
         {
             if (builder == null)
             {

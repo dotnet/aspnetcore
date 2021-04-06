@@ -13,9 +13,25 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal static class HostingLoggerExtensions
     {
+        private static readonly Action<ILogger, string, Exception?> _startupAssemblyLoaded =
+                LoggerMessage.Define<string>(LogLevel.Debug, LoggerEventIds.HostingStartupAssemblyLoaded, "Loaded hosting startup assembly {assemblyName}");
+
+        private static readonly Action<ILogger, string, Exception?> _listeningOnAddress =
+                LoggerMessage.Define<string>(LogLevel.Information, LoggerEventIds.ServerListeningOnAddresses, "Now listening on: {address}");
+
         public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext)
         {
             return logger.BeginScope(new HostingLogScope(httpContext));
+        }
+
+        public static void ListeningOnAddress(this ILogger logger, string address)
+        {
+            _listeningOnAddress(logger, address, null);
+        }
+
+        public static void StartupAssemblyLoaded(this ILogger logger, string assemblyName)
+        {
+            _startupAssemblyLoaded(logger, assemblyName, null);
         }
 
         public static void ApplicationError(this ILogger logger, Exception exception)
@@ -41,7 +57,10 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var ex in reflectionTypeLoadException.LoaderExceptions)
                 {
-                    message = message + Environment.NewLine + ex.Message;
+                    if (ex != null)
+                    {
+                        message = message + Environment.NewLine + ex.Message;
+                    }
                 }
             }
 
@@ -97,7 +116,7 @@ namespace Microsoft.AspNetCore.Hosting
             private readonly string _path;
             private readonly string _traceIdentifier;
 
-            private string _cachedToString;
+            private string? _cachedToString;
 
             public int Count
             {
@@ -127,8 +146,8 @@ namespace Microsoft.AspNetCore.Hosting
             public HostingLogScope(HttpContext httpContext)
             {
                 _traceIdentifier = httpContext.TraceIdentifier;
-                _path = (httpContext.Request.PathBase.HasValue 
-                         ? httpContext.Request.PathBase + httpContext.Request.Path 
+                _path = (httpContext.Request.PathBase.HasValue
+                         ? httpContext.Request.PathBase + httpContext.Request.Path
                          : httpContext.Request.Path).ToString();
             }
 

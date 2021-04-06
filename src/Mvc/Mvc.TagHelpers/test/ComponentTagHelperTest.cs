@@ -1,9 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,6 +13,8 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -82,7 +86,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var httpContext = new DefaultHttpContext
             {
-                RequestServices = new ServiceCollection().AddSingleton<IComponentRenderer>(renderer).BuildServiceProvider(),
+                RequestServices = new ServiceCollection()
+                    .AddSingleton<IComponentRenderer>(renderer)
+                    .AddSingleton<HtmlRenderer>()
+                    .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                    .AddSingleton<HtmlEncoder>(HtmlEncoder.Default)
+                    .BuildServiceProvider(),
             };
 
             return new ViewContext

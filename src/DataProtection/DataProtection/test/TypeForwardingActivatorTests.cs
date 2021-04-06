@@ -110,14 +110,14 @@ namespace Microsoft.AspNetCore.DataProtection
         {
             var activator = new TypeForwardingActivator(null);
 
-            var typeInfo = typeof(ClassWithParameterlessCtor).GetTypeInfo();
-            var typeName = typeInfo.FullName;
-            var assemblyName = typeInfo.Assembly.GetName();
+            var type = typeof(ClassWithParameterlessCtor);
+            var typeName = type.FullName;
+            var assemblyName = type.Assembly.GetName();
 
             assemblyName.Version = newVersion;
             var newName = $"{typeName}, {assemblyName}";
 
-            Assert.NotEqual(typeInfo.AssemblyQualifiedName, newName);
+            Assert.NotEqual(type.AssemblyQualifiedName, newName);
             Assert.IsType<ClassWithParameterlessCtor>(activator.CreateInstance(typeof(object), newName, out var forwarded));
             Assert.True(forwarded, "Should have forwarded this type to new version or namespace");
         }

@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components
                 var logs = string.Join(Environment.NewLine, Logs);
                 return new Exception(error + Environment.NewLine + logs);
             };
-            
+
             _ = ServerFixture.RootUri; // This is needed for the side-effects of starting the server.
 
             if (ServerFixture is WebHostServerFixture hostFixture)
@@ -109,6 +109,13 @@ namespace Microsoft.AspNetCore.Components
             catch (Exception)
             {
             }
+        }
+
+        protected async Task ConnectAutomaticallyAndWait(Uri baseUri)
+        {
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
+            Assert.Single(Batches);
+            await Task.Delay(500);
         }
 
         [DebuggerDisplay("{LogLevel.ToString(),nq} - {Message ?? \"null\",nq} - {Exception?.Message,nq}")]

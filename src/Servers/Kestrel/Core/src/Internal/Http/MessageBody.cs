@@ -43,17 +43,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public abstract void AdvanceTo(SequencePosition consumed);
-
-        public abstract void AdvanceTo(SequencePosition consumed, SequencePosition examined);
+        public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
 
         public abstract bool TryRead(out ReadResult readResult);
 
-        public abstract void Complete(Exception exception);
+        public void AdvanceTo(SequencePosition consumed)
+        {
+            AdvanceTo(consumed, consumed);
+        }
+
+        public abstract void AdvanceTo(SequencePosition consumed, SequencePosition examined);
 
         public abstract void CancelPendingRead();
 
-        public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
+        public abstract void Complete(Exception? exception);
+
+        public virtual ValueTask CompleteAsync(Exception? exception)
+        {
+            Complete(exception);
+            return default;
+        }
 
         public virtual Task ConsumeAsync()
         {
@@ -62,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return OnConsumeAsync();
         }
 
-        public virtual Task StopAsync()
+        public virtual ValueTask StopAsync()
         {
             TryStop();
 
@@ -71,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected virtual Task OnConsumeAsync() => Task.CompletedTask;
 
-        protected virtual Task OnStopAsync() => Task.CompletedTask;
+        protected virtual ValueTask OnStopAsync() => default;
 
         public virtual void Reset()
         {
@@ -172,13 +181,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected ValueTask<ReadResult> StartTimingReadAsync(ValueTask<ReadResult> readAwaitable, CancellationToken cancellationToken)
         {
-
-            if (!readAwaitable.IsCompleted && _timingEnabled)
+            if (!readAwaitable.IsCompleted)
             {
                 TryProduceContinue();
 
-                _backpressure = true;
-                _context.TimeoutControl.StartTimingRead();
+                if (_timingEnabled)
+                {
+                    _backpressure = true;
+                    _context.TimeoutControl.StartTimingRead();
+                }
             }
 
             return readAwaitable;

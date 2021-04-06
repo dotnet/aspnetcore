@@ -44,7 +44,7 @@ namespace Microsoft.Authentication.WebAssembly.Msal
 
         public void PostConfigure(string name, RemoteAuthenticationOptions<MsalProviderOptions> options)
         {
-            if (string.Equals(name, Options.DefaultName))
+            if (string.Equals(name, Options.DefaultName, StringComparison.Ordinal))
             {
                 Configure(options);
             }

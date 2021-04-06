@@ -40,6 +40,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _pipe = new TestDuplexPipe();
 
             var hubConnectionBuilder = new HubConnectionBuilder();
+            hubConnectionBuilder.WithUrl("http://doesntmatter");
+
             var delegateConnectionFactory = new DelegateConnectionFactory(endPoint =>
             {
                 var connection = new DefaultConnectionContext();

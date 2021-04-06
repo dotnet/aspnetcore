@@ -6,21 +6,32 @@
 #include "debugutil.h"
 #include "AppOfflineTrackingApplication.h"
 #include "exceptions.h"
+#include <EventLog.h>
 
 FILE_WATCHER::FILE_WATCHER() :
     m_hCompletionPort(NULL),
     m_hChangeNotificationThread(NULL),
-    m_fThreadExit(FALSE)
+    m_fThreadExit(FALSE),
+    m_fShadowCopyEnabled(FALSE),
+    m_copied(false)
 {
+    m_pDoneCopyEvent = CreateEvent(
+        nullptr,  // default security attributes
+        TRUE,     // manual reset event
+        FALSE,    // not set
+        nullptr); // name
 }
 
 FILE_WATCHER::~FILE_WATCHER()
 {
     StopMonitor();
+    WaitForMonitor(20); // wait for 1 second total
+}
 
+void FILE_WATCHER::WaitForMonitor(DWORD dwRetryCounter)
+{
     if (m_hChangeNotificationThread != NULL)
     {
-        DWORD dwRetryCounter = 20;      // totally wait for 1s
         DWORD dwExitCode = STILL_ACTIVE;
 
         while (!m_fThreadExit && dwRetryCounter > 0)
@@ -54,9 +65,14 @@ HRESULT
 FILE_WATCHER::Create(
     _In_ PCWSTR                  pszDirectoryToMonitor,
     _In_ PCWSTR                  pszFileNameToMonitor,
-    _In_ AppOfflineTrackingApplication *pApplication
+    _In_ const std::wstring&     shadowCopyPath,
+    _In_ AppOfflineTrackingApplication* pApplication,
+    _In_ DWORD                   shutdownTimeout
 )
 {
+    m_shadowCopyPath = shadowCopyPath;
+    m_fShadowCopyEnabled = !shadowCopyPath.empty();
+    m_shutdownTimeout = shutdownTimeout;
 
     RETURN_LAST_ERROR_IF_NULL(m_hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0));
 
@@ -130,10 +146,10 @@ Win32 error
 
 --*/
 {
-    FILE_WATCHER *       pFileMonitor;
+    FILE_WATCHER* pFileMonitor;
     BOOL                 fSuccess = FALSE;
     DWORD                cbCompletion = 0;
-    OVERLAPPED *         pOverlapped = NULL;
+    OVERLAPPED* pOverlapped = NULL;
     DWORD                dwErrorStatus;
     ULONG_PTR            completionKey;
 
@@ -177,7 +193,15 @@ Win32 error
 
     pFileMonitor->m_fThreadExit = TRUE;
 
+    if (pFileMonitor->m_fShadowCopyEnabled)
+    {
+        // Cancel the timer to avoid it calling copy.
+        pFileMonitor->m_Timer.CancelTimer();
+        FILE_WATCHER::CopyAndShutdown(pFileMonitor);
+    }
+
     LOG_INFO(L"Stopping file watcher thread");
+
     ExitThread(0);
 }
 
@@ -204,7 +228,8 @@ HRESULT
 
 --*/
 {
-    BOOL                        fFileChanged = FALSE;
+    BOOL                        fAppOfflineChanged = FALSE;
+    BOOL                        fDllChanged = FALSE;
 
     // When directory handle is closed then HandleChangeCompletion
     // happens with cbCompletion = 0 and dwCompletionStatus = 0
@@ -226,7 +251,7 @@ HRESULT
     //
     if (cbCompletion == 0)
     {
-        fFileChanged = TRUE;
+        fAppOfflineChanged = TRUE;
     }
     else
     {
@@ -242,9 +267,22 @@ HRESULT
                 _strFileName.QueryStr(),
                 pNotificationInfo->FileNameLength / sizeof(WCHAR)) == 0)
             {
-                fFileChanged = TRUE;
+                fAppOfflineChanged = TRUE;
+                auto app = _pApplication.get();
+                app->m_detectedAppOffline = true;
                 break;
             }
+
+            //
+            // Look for changes to dlls when shadow copying is enabled.
+            //
+            std::wstring notification(pNotificationInfo->FileName, pNotificationInfo->FileNameLength / sizeof(WCHAR));
+            std::filesystem::path notificationPath(notification);
+            if (m_fShadowCopyEnabled && notificationPath.extension().compare(L".dll") == 0)
+            {
+                fDllChanged = TRUE;
+            }
+
             //
             // Advance to next notification
             //
@@ -261,14 +299,90 @@ HRESULT
         }
     }
 
-    if (fFileChanged && !_lStopMonitorCalled)
+    if (fAppOfflineChanged && !_lStopMonitorCalled)
     {
         // Reference application before
         _pApplication->ReferenceApplication();
         RETURN_LAST_ERROR_IF(!QueueUserWorkItem(RunNotificationCallback, _pApplication.get(), WT_EXECUTEDEFAULT));
     }
 
+    if (fDllChanged && m_fShadowCopyEnabled && !_lStopMonitorCalled)
+    {
+        // Reset timer for dll checks
+        LOG_INFO(L"Detected dll change, resetting timer callback which will eventually trigger shutdown.");
+        m_Timer.CancelTimer();
+        m_Timer.InitializeTimer(FILE_WATCHER::TimerCallback, this, 5000, INFINITE);
+    }
+
     return S_OK;
+}
+
+
+VOID
+CALLBACK
+FILE_WATCHER::TimerCallback(
+    _In_ PTP_CALLBACK_INSTANCE Instance,
+    _In_ PVOID Context,
+    _In_ PTP_TIMER Timer
+)
+{
+    Instance;
+    Timer;
+    CopyAndShutdown((FILE_WATCHER*)Context);
+}
+
+DWORD WINAPI FILE_WATCHER::CopyAndShutdown(FILE_WATCHER* watcher)
+{
+    // Only copy and shutdown once
+    SRWExclusiveLock lock(watcher->m_copyLock);
+    if (watcher->m_copied)
+    {
+        return 0;
+    }
+
+    watcher->m_copied = true;
+
+    LOG_INFO(L"Starting copy on shutdown in filewatcher, creating directory.");
+
+    auto directoryNameInt = 0;
+    auto currentShadowCopyDirectory = std::filesystem::path(watcher->m_shadowCopyPath);
+    auto parentDirectory = currentShadowCopyDirectory.parent_path();
+    try
+    {
+        directoryNameInt = std::stoi(currentShadowCopyDirectory.filename().string());
+    }
+    catch (...)
+    {
+        OBSERVE_CAUGHT_EXCEPTION();
+        return 0;
+    }
+
+    // Add one to the directory we want to copy to.
+    directoryNameInt++;
+    auto destination = parentDirectory / std::to_wstring(directoryNameInt);
+
+    LOG_INFOF(L"Copying new shadow copy directory to %ls.", destination.wstring().c_str());
+
+    // Copy contents before shutdown
+    try
+    {
+        Environment::CopyToDirectory(watcher->_strDirectoryName.QueryStr(), destination, false, std::filesystem::canonical(parentDirectory));
+    }
+    catch (...)
+    {
+        OBSERVE_CAUGHT_EXCEPTION();
+        return 0;
+    }
+
+    LOG_INFOF(L"Finished copy on shutdown to %ls.", destination.wstring().c_str());
+
+    SetEvent(watcher->m_pDoneCopyEvent);
+
+    // reference application before callback (same thing we do with app_offline).
+    watcher->_pApplication->ReferenceApplication();
+    QueueUserWorkItem(RunNotificationCallback, watcher->_pApplication.get(), WT_EXECUTEDEFAULT);
+
+    return 0;
 }
 
 DWORD
@@ -279,7 +393,6 @@ FILE_WATCHER::RunNotificationCallback(
 {
     // Recapture application instance into unique_ptr
     auto pApplication = std::unique_ptr<AppOfflineTrackingApplication, IAPPLICATION_DELETER>(static_cast<AppOfflineTrackingApplication*>(pvArg));
-    DBG_ASSERT(pFileMonitor != NULL);
     pApplication->OnAppOffline();
 
     return 0;
@@ -319,9 +432,23 @@ FILE_WATCHER::StopMonitor()
     // we know that HandleChangeCompletion() call
     // can be ignored
     //
-    InterlockedExchange(&_lStopMonitorCalled, 1);
+    if (InterlockedExchange(&_lStopMonitorCalled, 1) == 1)
+    {
+        return;
+    }
+
+    LOG_INFO(L"Stopping file watching.");
+
     // signal the file watch thread to exit
     PostQueuedCompletionStatus(m_hCompletionPort, 0, FILE_WATCHER_SHUTDOWN_KEY, NULL);
+    WaitForMonitor(200);
+
+    if (m_fShadowCopyEnabled)
+    {
+        // If we are shadow copying, wait for the copying to finish.
+        WaitForSingleObject(m_pDoneCopyEvent, m_shutdownTimeout);
+    }
+
     // Release application reference
     _pApplication.reset(nullptr);
 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        public Task InitializeAsync(CancellationToken cancellationToken)
+        public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, CancellationToken cancellationToken)
         {
             Log.InitializationStarted(_logger);
 
@@ -112,8 +113,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     for (var i = 0; i < count; i++)
                     {
                         var (componentType, parameters, sequence) = Descriptors[i];
-                        await Renderer.AddComponentAsync(componentType, parameters, sequence.ToString());
+                        await Renderer.AddComponentAsync(componentType, parameters, sequence.ToString(CultureInfo.InvariantCulture));
                     }
+
+                    // At this point all components have successfully produced an initial render and we can clear the contents of the component
+                    // application state store. This ensures the memory that was not used during the initial render of these components gets
+                    // reclaimed since no-one else is holding on to it any longer.
+                    store.ExistingState.Clear();
 
                     Log.InitializationSucceeded(_logger);
                 }
@@ -398,7 +404,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             WebEventData webEventData;
             try
             {
-                webEventData = WebEventData.Parse(eventDescriptorJson, eventArgsJson);
+                webEventData = WebEventData.Parse(Renderer, eventDescriptorJson, eventArgsJson);
             }
             catch (Exception ex)
             {
@@ -423,7 +429,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 // A failure in dispatching an event means that it was an attempt to use an invalid event id.
                 // A well-behaved client won't do this.
-                Log.DispatchEventFailedToDispatchEvent(_logger, webEventData.EventHandlerId.ToString(), ex);
+                Log.DispatchEventFailedToDispatchEvent(_logger, webEventData.EventHandlerId.ToString(CultureInfo.InvariantCulture), ex);
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Failed to dispatch event."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }

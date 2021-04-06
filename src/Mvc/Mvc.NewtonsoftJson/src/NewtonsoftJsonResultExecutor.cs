@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             Log.JsonResultExecuting(_logger, result.Value);
 
             var responseStream = response.Body;
-            FileBufferingWriteStream fileBufferingWriteStream = null;
+            FileBufferingWriteStream? fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
                 fileBufferingWriteStream = new FileBufferingWriteStream();
@@ -178,30 +178,38 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _jsonResultExecuting;
-            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable;
+            private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting;
+            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable;
 
             static Log()
             {
-                _jsonResultExecuting = LoggerMessage.Define<string>(
+                _jsonResultExecuting = LoggerMessage.Define<string?>(
                     LogLevel.Information,
                     new EventId(1, "JsonResultExecuting"),
                     "Executing JsonResult, writing value of type '{Type}'.");
 
-                _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+                _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
                    LogLevel.Debug,
                    new EventId(1, "BufferingAsyncEnumerable"),
                    "Buffering IAsyncEnumerable instance of type '{Type}'.");
             }
 
-            public static void JsonResultExecuting(ILogger logger, object value)
+            public static void JsonResultExecuting(ILogger logger, object? value)
             {
-                var type = value == null ? "null" : value.GetType().FullName;
-                _jsonResultExecuting(logger, type, null);
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    var type = value == null ? "null" : value.GetType().FullName;
+                    _jsonResultExecuting(logger, type, null);
+                }
             }
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                }
+            }
         }
     }
 }

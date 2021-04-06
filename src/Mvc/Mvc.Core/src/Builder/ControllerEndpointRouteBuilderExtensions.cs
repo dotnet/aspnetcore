@@ -88,9 +88,9 @@ namespace Microsoft.AspNetCore.Builder
             this IEndpointRouteBuilder endpoints,
             string name,
             string pattern,
-            object defaults = null,
-            object constraints = null,
-            object dataTokens = null)
+            object? defaults = null,
+            object? constraints = null,
+            object? dataTokens = null)
         {
             if (endpoints == null)
             {
@@ -137,9 +137,9 @@ namespace Microsoft.AspNetCore.Builder
             string name,
             string areaName,
             string pattern,
-            object defaults = null,
-            object constraints = null,
-            object dataTokens = null)
+            object? defaults = null,
+            object? constraints = null,
+            object? dataTokens = null)
         {
             if (endpoints == null)
             {
@@ -507,7 +507,7 @@ namespace Microsoft.AspNetCore.Builder
         /// is required when using <paramref name="state" />.
         /// </para>
         /// </remarks>
-        public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object state)
+        public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object? state)
             where TTransformer : DynamicRouteValueTransformer
         {
             if (endpoints == null)
@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.Builder
             controllerDataSource.AddDynamicControllerEndpoint(endpoints, pattern, typeof(TTransformer), state, order);
         }
 
-        private static DynamicControllerMetadata CreateDynamicControllerMetadata(string action, string controller, string area)
+        private static DynamicControllerMetadata CreateDynamicControllerMetadata(string action, string controller, string? area)
         {
             return new DynamicControllerMetadata(new RouteValueDictionary()
             {

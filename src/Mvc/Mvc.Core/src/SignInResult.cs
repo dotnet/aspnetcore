@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="authenticationScheme">The authentication scheme to use when signing in the user.</param>
         /// <param name="principal">The claims principal containing the user claims.</param>
-        public SignInResult(string authenticationScheme, ClaimsPrincipal principal)
+        public SignInResult(string? authenticationScheme, ClaimsPrincipal principal)
             : this(authenticationScheme, principal, properties: null)
         {
         }
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="principal">The claims principal containing the user claims.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
-        public SignInResult(ClaimsPrincipal principal, AuthenticationProperties properties)
+        public SignInResult(ClaimsPrincipal principal, AuthenticationProperties? properties)
             : this(authenticationScheme: null, principal, properties)
         {
         }
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="authenticationScheme">The authentication schemes to use when signing in the user.</param>
         /// <param name="principal">The claims principal containing the user claims.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
-        public SignInResult(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
+        public SignInResult(string? authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties? properties)
         {
             Principal = principal ?? throw new ArgumentNullException(nameof(principal));
             AuthenticationScheme = authenticationScheme;
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the authentication scheme that is used to perform the sign-in operation.
         /// </summary>
-        public string AuthenticationScheme { get; set; }
+        public string? AuthenticationScheme { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ClaimsPrincipal"/> containing the user claims.
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the sign-in operation.
         /// </summary>
-        public AuthenticationProperties Properties { get; set; }
+        public AuthenticationProperties? Properties { get; set; }
 
         /// <inheritdoc />
         public override async Task ExecuteResultAsync(ActionContext context)

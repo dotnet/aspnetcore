@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
         /// </summary>
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
+        public OpenIdConnectMessage ProtocolMessage { get; set; } = default!;
 
         /// <summary>
         /// If true, will skip any default logic for this redirect.

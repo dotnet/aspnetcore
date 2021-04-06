@@ -10,7 +10,6 @@
 @functions {
     private int locX;
     private int locY;
-    private Random random = new Random();
     private Timer timer;
     private string locString;
 
@@ -18,8 +17,8 @@
     {
         timer = new Timer(_ =>
         {
-            locX = random.Next(1000);
-            locY = random.Next(1000);
+            locX = Random.Shared.Next(1000);
+            locY = Random.Shared.Next(1000);
             locString = $"{locX},{locY}";
 
             InvokeAsync(() => StateHasChanged());

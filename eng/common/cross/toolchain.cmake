@@ -36,6 +36,9 @@ elseif(TARGET_ARCH_NAME STREQUAL "arm64")
   if("$ENV{__DistroRid}" MATCHES "tizen.*")
     set(TIZEN_TOOLCHAIN "aarch64-tizen-linux-gnu/9.2.0")
   endif()
+elseif(TARGET_ARCH_NAME STREQUAL "s390x")
+  set(CMAKE_SYSTEM_PROCESSOR s390x)
+  set(TOOLCHAIN "s390x-linux-gnu")
 elseif(TARGET_ARCH_NAME STREQUAL "x86")
   set(CMAKE_SYSTEM_PROCESSOR i686)
   set(TOOLCHAIN "i686-linux-gnu")
@@ -46,7 +49,7 @@ elseif (ILLUMOS)
   set(CMAKE_SYSTEM_PROCESSOR "x86_64")
   set(TOOLCHAIN "x86_64-illumos")
 else()
-  message(FATAL_ERROR "Arch is ${TARGET_ARCH_NAME}. Only armel, arm, arm64 and x86 are supported!")
+  message(FATAL_ERROR "Arch is ${TARGET_ARCH_NAME}. Only armel, arm, arm64, s390x and x86 are supported!")
 endif()
 
 if(DEFINED ENV{TOOLCHAIN})
@@ -139,6 +142,10 @@ function(add_toolchain_linker_flag Flag)
   set("CMAKE_SHARED_LINKER_FLAGS${CONFIG_SUFFIX}" "${CMAKE_SHARED_LINKER_FLAGS${CONFIG_SUFFIX}} ${Flag}" PARENT_SCOPE)
 endfunction()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_toolchain_linker_flag("-Wl,--rpath-link=${CROSS_ROOTFS}/lib/${TOOLCHAIN}")
+  add_toolchain_linker_flag("-Wl,--rpath-link=${CROSS_ROOTFS}/usr/lib/${TOOLCHAIN}")
+endif()
 
 if(TARGET_ARCH_NAME STREQUAL "armel")
   if(DEFINED TIZEN_TOOLCHAIN) # For Tizen only
@@ -167,7 +174,7 @@ endif()
 
 # Specify compile options
 
-if((TARGET_ARCH_NAME MATCHES "^(arm|armel|arm64)$" AND NOT "$ENV{__DistroRid}" MATCHES "android.*") OR ILLUMOS)
+if((TARGET_ARCH_NAME MATCHES "^(arm|armel|arm64|s390x)$" AND NOT "$ENV{__DistroRid}" MATCHES "android.*") OR ILLUMOS)
   set(CMAKE_C_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_CXX_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_ASM_COMPILER_TARGET ${TOOLCHAIN})

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Connections.Experimental
     /// <summary>
     /// Defines an interface that represents a listener bound to a specific <see cref="EndPoint"/>.
     /// </summary>
-    internal interface IMultiplexedConnectionListener : IAsyncDisposable
+    public interface IMultiplexedConnectionListener : IAsyncDisposable
     {
         /// <summary>
         /// The endpoint that was bound. This may differ from the requested endpoint, such as when the caller requested that any free port be selected.
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Connections.Experimental
         /// </summary>
         /// <param name="features">A feature collection to pass options when accepting a connection.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        /// <returns>A <see cref="ValueTask{ConnectionContext}"/> that completes when a connection is accepted, yielding the <see cref="MultiplexedConnectionContext" /> representing the connection.</returns>
-        ValueTask<MultiplexedConnectionContext> AcceptAsync(IFeatureCollection? features = null, CancellationToken cancellationToken = default);
+        /// <returns>A <see cref="ValueTask{MultiplexedConnectionContext}"/> that completes when a connection is accepted, yielding the <see cref="MultiplexedConnectionContext" /> representing the connection.</returns>
+        ValueTask<MultiplexedConnectionContext?> AcceptAsync(IFeatureCollection? features = null, CancellationToken cancellationToken = default);
     }
 }

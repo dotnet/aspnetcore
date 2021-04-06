@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(hostingStartupType));
             }
 
-            if (!typeof(IHostingStartup).GetTypeInfo().IsAssignableFrom(hostingStartupType.GetTypeInfo()))
+            if (!typeof(IHostingStartup).IsAssignableFrom(hostingStartupType))
             {
                 throw new ArgumentException($@"""{hostingStartupType}"" does not implement {typeof(IHostingStartup)}.", nameof(hostingStartupType));
             }

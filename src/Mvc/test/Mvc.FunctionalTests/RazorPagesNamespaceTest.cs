@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var content = await Client.GetStringAsync("http://localhost/DefaultNamespace");
 
             // Assert
-            Assert.Equal("AspNetCore", content.Trim());
+            Assert.Equal("AspNetCoreGeneratedDocument", content.Trim());
         }
-        
+
         [Fact]
         public async Task Page_ImportedNamespace_UsedFromViewImports()
         {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal("CustomNamespace.Nested.Folder", content.Trim());
         }
-        
+
         [Fact]
         public async Task Page_OverrideNamespace_SetByPage()
         {

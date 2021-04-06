@@ -3,13 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+
+#nullable enable
 
 namespace Microsoft.AspNetCore.Certificates.Generation
 {
@@ -27,11 +29,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public const int RSAMinimumKeySizeInBits = 2048;
 
-        public static CertificateManager Instance { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+        public static CertificateManager Instance { get; } = OperatingSystem.IsWindows() ?
 #pragma warning disable CA1416 // Validate platform compatibility
             new WindowsCertificateManager() :
 #pragma warning restore CA1416 // Validate platform compatibility
-            RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+            OperatingSystem.IsMacOS() ?
                 new MacOSCertificateManager() as CertificateManager :
                 new UnixCertificateManager();
 
@@ -61,7 +63,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate) =>
             certificate.Extensions.OfType<X509Extension>()
-            .Any(e => string.Equals(AspNetHttpsOid, e.Oid.Value, StringComparison.Ordinal));
+            .Any(e => string.Equals(AspNetHttpsOid, e.Oid?.Value, StringComparison.Ordinal));
 
         public IList<X509Certificate2> ListCertificates(
             StoreName storeName,
@@ -80,7 +82,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 matchingCertificates = matchingCertificates
                     .Where(c => HasOid(c, AspNetHttpsOid));
 
-                Log.DescribeFoundCertificates(ToCertificateDescription(matchingCertificates));
+                if (Log.IsEnabled())
+                {
+                    Log.DescribeFoundCertificates(ToCertificateDescription(matchingCertificates));
+                }
 
                 if (isValid)
                 {
@@ -93,10 +98,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                         .OrderByDescending(c => GetCertificateVersion(c))
                         .ToArray();
 
-                    var invalidCertificates = matchingCertificates.Except(validCertificates);
-
-                    Log.DescribeValidCertificates(ToCertificateDescription(validCertificates));
-                    Log.DescribeInvalidValidCertificates(ToCertificateDescription(invalidCertificates));
+                    if (Log.IsEnabled())
+                    {
+                        var invalidCertificates = matchingCertificates.Except(validCertificates);
+                        Log.DescribeValidCertificates(ToCertificateDescription(validCertificates));
+                        Log.DescribeInvalidValidCertificates(ToCertificateDescription(invalidCertificates));
+                    }
 
                     matchingCertificates = validCertificates;
                 }
@@ -114,7 +121,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
             catch (Exception e)
             {
-                Log.ListCertificatesError(e.ToString());
+                if (Log.IsEnabled())
+                {
+                    Log.ListCertificatesError(e.ToString());
+                }
                 DisposeCertificates(certificates);
                 certificates.Clear();
                 return certificates;
@@ -122,12 +132,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             bool HasOid(X509Certificate2 certificate, string oid) =>
                 certificate.Extensions.OfType<X509Extension>()
-                    .Any(e => string.Equals(oid, e.Oid.Value, StringComparison.Ordinal));
+                    .Any(e => string.Equals(oid, e.Oid?.Value, StringComparison.Ordinal));
 
             static byte GetCertificateVersion(X509Certificate2 c)
             {
                 var byteArray = c.Extensions.OfType<X509Extension>()
-                    .Where(e => string.Equals(AspNetHttpsOid, e.Oid.Value, StringComparison.Ordinal))
+                    .Where(e => string.Equals(AspNetHttpsOid, e.Oid?.Value, StringComparison.Ordinal))
                     .Single()
                     .RawData;
 
@@ -156,10 +166,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         public EnsureCertificateResult EnsureAspNetCoreHttpsDevelopmentCertificate(
             DateTimeOffset notBefore,
             DateTimeOffset notAfter,
-            string path = null,
+            string? path = null,
             bool trust = false,
             bool includePrivateKey = false,
-            string password = null,
+            string? password = null,
             CertificateKeyExportFormat keyExportFormat = CertificateKeyExportFormat.Pfx,
             bool isInteractive = true)
         {
@@ -170,14 +180,17 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var certificates = currentUserCertificates.Concat(trustedCertificates);
 
             var filteredCertificates = certificates.Where(c => c.Subject == Subject);
-            var excludedCertificates = certificates.Except(filteredCertificates);
 
-            Log.FilteredCertificates(ToCertificateDescription(filteredCertificates));
-            Log.ExcludedCertificates(ToCertificateDescription(excludedCertificates));
+            if (Log.IsEnabled())
+            {
+                var excludedCertificates = certificates.Except(filteredCertificates);
+                Log.FilteredCertificates(ToCertificateDescription(filteredCertificates));
+                Log.ExcludedCertificates(ToCertificateDescription(excludedCertificates));
+            }
 
             certificates = filteredCertificates;
 
-            X509Certificate2 certificate = null;
+            X509Certificate2? certificate = null;
             var isNewCertificate = false;
             if (certificates.Any())
             {
@@ -190,17 +203,23 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     foreach (var candidate in currentUserCertificates)
                     {
                         var status = CheckCertificateState(candidate, true);
-                        if (!status.Result)
+                        if (!status.Success)
                         {
                             try
                             {
-                                Log.CorrectCertificateStateStart(GetDescription(candidate));
+                                if (Log.IsEnabled())
+                                {
+                                    Log.CorrectCertificateStateStart(GetDescription(candidate));
+                                }
                                 CorrectCertificateState(candidate);
                                 Log.CorrectCertificateStateEnd();
                             }
                             catch (Exception e)
                             {
-                                Log.CorrectCertificateStateError(e.ToString());
+                                if (Log.IsEnabled())
+                                {
+                                    Log.CorrectCertificateStateError(e.ToString());
+                                }
                                 result = EnsureCertificateResult.FailedToMakeKeyAccessible;
                                 // We don't return early on this type of failure to allow for tooling to
                                 // export or trust the certificate even in this situation, as that enables
@@ -213,9 +232,15 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
                 if (!failedToFixCertificateState)
                 {
-                    Log.ValidCertificatesFound(ToCertificateDescription(certificates));
+                    if (Log.IsEnabled())
+                    {
+                        Log.ValidCertificatesFound(ToCertificateDescription(certificates));
+                    }
                     certificate = certificates.First();
-                    Log.SelectedCertificate(GetDescription(certificate));
+                    if (Log.IsEnabled())
+                    {
+                        Log.SelectedCertificate(GetDescription(certificate));
+                    }
                     result = EnsureCertificateResult.ValidCertificatePresent;
                 }
             }
@@ -230,7 +255,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 }
                 catch (Exception e)
                 {
-                    Log.CreateDevelopmentCertificateError(e.ToString());
+                    if (Log.IsEnabled())
+                    {
+                        Log.CreateDevelopmentCertificateError(e.ToString());
+                    }
                     result = EnsureCertificateResult.ErrorCreatingTheCertificate;
                     return result;
                 }
@@ -251,13 +279,20 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 {
                     try
                     {
-                        Log.CorrectCertificateStateStart(GetDescription(certificate));
+                        if (Log.IsEnabled())
+                        {
+                            Log.CorrectCertificateStateStart(GetDescription(certificate));
+                        }
                         CorrectCertificateState(certificate);
                         Log.CorrectCertificateStateEnd();
                     }
                     catch (Exception e)
                     {
-                        Log.CorrectCertificateStateError(e.ToString());
+                        if (Log.IsEnabled())
+                        {
+                            Log.CorrectCertificateStateError(e.ToString());
+                        }
+
                         // We don't return early on this type of failure to allow for tooling to
                         // export or trust the certificate even in this situation, as that enables
                         // exporting the certificate to perform any necessary fix with native tooling.
@@ -274,7 +309,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 }
                 catch (Exception e)
                 {
-                    Log.ExportCertificateError(e.ToString());
+                    if (Log.IsEnabled())
+                    {
+                        Log.ExportCertificateError(e.ToString());
+                    }
+
                     // We don't want to mask the original source of the error here.
                     result = result != EnsureCertificateResult.Succeeded && result != EnsureCertificateResult.ValidCertificatePresent ?
                         result :
@@ -318,7 +357,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var certificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false, requireExportable: false);
             if (certificates.Any())
             {
-                Log.ImportCertificateExistingCertificates(ToCertificateDescription(certificates));
+                if (Log.IsEnabled())
+                {
+                    Log.ImportCertificateExistingCertificates(ToCertificateDescription(certificates));
+                }
                 return ImportCertificateResult.ExistingCertificatesPresent;
             }
 
@@ -327,17 +369,26 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             {
                 Log.LoadCertificateStart(certificatePath);
                 certificate = new X509Certificate2(certificatePath, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
-                Log.LoadCertificateEnd(GetDescription(certificate));
+                if (Log.IsEnabled())
+                {
+                    Log.LoadCertificateEnd(GetDescription(certificate));
+                }
             }
             catch (Exception e)
             {
-                Log.LoadCertificateError(e.ToString());
+                if (Log.IsEnabled())
+                {
+                    Log.LoadCertificateError(e.ToString());
+                }
                 return ImportCertificateResult.InvalidCertificate;
             }
 
             if (!IsHttpsDevelopmentCertificate(certificate))
             {
-                Log.NoHttpsDevelopmentCertificate(GetDescription(certificate));
+                if (Log.IsEnabled())
+                {
+                    Log.NoHttpsDevelopmentCertificate(GetDescription(certificate));
+                }
                 return ImportCertificateResult.NoDevelopmentHttpsCertificate;
             }
 
@@ -347,7 +398,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
             catch (Exception e)
             {
-                Log.SaveCertificateInStoreError(e.ToString());
+                if (Log.IsEnabled())
+                {
+                    Log.SaveCertificateInStoreError(e.ToString());
+                }
                 return ImportCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
             }
 
@@ -365,10 +419,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // we remove the certificates from the local user store to finish up the cleanup.
             var certificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false);
             var filteredCertificates = certificates.Where(c => c.Subject == Subject);
-            var excludedCertificates = certificates.Except(filteredCertificates);
 
-            Log.FilteredCertificates(ToCertificateDescription(filteredCertificates));
-            Log.ExcludedCertificates(ToCertificateDescription(excludedCertificates));
+            if (Log.IsEnabled())
+            {
+                var excludedCertificates = certificates.Except(filteredCertificates);
+                Log.FilteredCertificates(ToCertificateDescription(filteredCertificates));
+                Log.ExcludedCertificates(ToCertificateDescription(excludedCertificates));
+            }
 
             foreach (var certificate in filteredCertificates)
             {
@@ -388,16 +445,20 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         protected abstract IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation);
 
-        internal void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string password, CertificateKeyExportFormat format)
+        internal void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string? password, CertificateKeyExportFormat format)
         {
-            Log.ExportCertificateStart(GetDescription(certificate), path, includePrivateKey);
+            if (Log.IsEnabled())
+            {
+                Log.ExportCertificateStart(GetDescription(certificate), path, includePrivateKey);
+            }
+
             if (includePrivateKey && password == null)
             {
                 Log.NoPasswordForCertificate();
             }
 
             var targetDirectoryPath = Path.GetDirectoryName(path);
-            if (targetDirectoryPath != "")
+            if (!string.IsNullOrEmpty(targetDirectoryPath))
             {
                 Log.CreateExportCertificateDirectory(targetDirectoryPath);
                 Directory.CreateDirectory(targetDirectoryPath);
@@ -405,8 +466,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             byte[] bytes;
             byte[] keyBytes;
-            byte[] pemEnvelope = null;
-            RSA key = null;
+            byte[]? pemEnvelope = null;
+            RSA? key = null;
 
             try
             {
@@ -418,7 +479,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                             bytes = certificate.Export(X509ContentType.Pkcs12, password);
                             break;
                         case CertificateKeyExportFormat.Pem:
-                            key = certificate.GetRSAPrivateKey();
+                            key = certificate.GetRSAPrivateKey()!;
 
                             char[] pem;
                             if (password != null)
@@ -465,7 +526,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (Log.IsEnabled())
             {
                 Log.ExportCertificateError(e.ToString());
                 throw;
@@ -480,7 +541,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 Log.WriteCertificateToDisk(path);
                 File.WriteAllBytes(path, bytes);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Log.IsEnabled())
             {
                 Log.WriteCertificateToDiskError(ex.ToString());
                 throw;
@@ -492,13 +553,15 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             if (includePrivateKey && format == CertificateKeyExportFormat.Pem)
             {
+                Debug.Assert(pemEnvelope != null);
+
                 try
                 {
                     var keyPath = Path.ChangeExtension(path, ".key");
                     Log.WritePemKeyToDisk(keyPath);
                     File.WriteAllBytes(keyPath, pemEnvelope);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (Log.IsEnabled())
                 {
                     Log.WritePemKeyToDiskError(ex.ToString());
                     throw;
@@ -565,7 +628,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var name = StoreName.My;
             var location = StoreLocation.CurrentUser;
 
-            Log.SaveCertificateInStoreStart(GetDescription(certificate), name, location);
+            if (Log.IsEnabled())
+            {
+                Log.SaveCertificateInStoreStart(GetDescription(certificate), name, location);
+            }
 
             certificate = SaveCertificateCore(certificate);
 
@@ -577,11 +643,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         {
             try
             {
-                Log.TrustCertificateStart(GetDescription(certificate));
+                if (Log.IsEnabled())
+                {
+                    Log.TrustCertificateStart(GetDescription(certificate));
+                }
                 TrustCertificateCore(certificate);
                 Log.TrustCertificateEnd();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Log.IsEnabled())
             {
                 Log.TrustCertificateError(ex.ToString());
                 throw;
@@ -676,7 +745,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         {
             try
             {
-                Log.RemoveCertificateFromUserStoreStart(GetDescription(certificate));
+                if (Log.IsEnabled())
+                {
+                    Log.RemoveCertificateFromUserStoreStart(GetDescription(certificate));
+                }
                 using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
                 store.Open(OpenFlags.ReadWrite);
                 var matching = store.Certificates
@@ -687,7 +759,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 store.Close();
                 Log.RemoveCertificateFromUserStoreEnd();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Log.IsEnabled())
             {
                 Log.RemoveCertificateFromUserStoreError(ex.ToString());
                 throw;
@@ -695,10 +767,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         }
 
         internal static string ToCertificateDescription(IEnumerable<X509Certificate2> matchingCertificates) =>
-        string.Join(Environment.NewLine, matchingCertificates
-            .OrderBy(c => c.Thumbprint)
-            .Select(c => GetDescription(c))
-            .ToArray());
+            string.Join(Environment.NewLine, matchingCertificates
+                .OrderBy(c => c.Thumbprint)
+                .Select(c => GetDescription(c))
+                .ToArray());
 
         internal static string GetDescription(X509Certificate2 c) =>
             $"{c.Thumbprint[0..6]} - {c.Subject} - {c.GetEffectiveDateString()} - {c.GetExpirationDateString()} - {Instance.IsHttpsDevelopmentCertificate(c)} - {Instance.IsExportable(c)}";
@@ -707,7 +779,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         public class CertificateManagerEventSource : EventSource
         {
             [Event(1, Level = EventLevel.Verbose)]
-            public void ListCertificatesStart(StoreLocation location, StoreName storeName) => WriteEvent(1, $"Listing certificates from {location}\\{storeName}");
+            public void ListCertificatesStart(StoreLocation location, StoreName storeName)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(1, $"Listing certificates from {location}\\{storeName}");
+                }
+            }
 
             [Event(2, Level = EventLevel.Verbose)]
             public void DescribeFoundCertificates(string matchingCertificates) => WriteEvent(2, matchingCertificates);
@@ -725,7 +803,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             public void ListCertificatesEnd() => WriteEvent(6, "Finished listing certificates.");
 
             [Event(7, Level = EventLevel.Error)]
-            public void ListCertificatesError(string e) => WriteEvent(7, $"An error ocurred while listing the certificates: {e}");
+            public void ListCertificatesError(string e)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(7, $"An error ocurred while listing the certificates: {e}");
+                }
+            }
 
             [Event(8, Level = EventLevel.Verbose)]
             public void FilteredCertificates(string filteredCertificates) => WriteEvent(8, filteredCertificates);
@@ -734,21 +818,37 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             public void ExcludedCertificates(string excludedCertificates) => WriteEvent(9, excludedCertificates);
 
             [Event(11, Level = EventLevel.Verbose)]
-            public void MacOSMakeCertificateAccessibleAcrossPartitionsStart(string cert) => WriteEvent(11, $"Trying to make certificate accessible across partitions: {cert}");
+            public void MacOSMakeCertificateAccessibleAcrossPartitionsStart(string cert)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(11, $"Trying to make certificate accessible across partitions: {cert}");
+                }
+            }
 
             [Event(12, Level = EventLevel.Verbose)]
             public void MacOSMakeCertificateAccessibleAcrossPartitionsEnd() => WriteEvent(12, "Finished making the certificate accessible across partitions.");
 
             [Event(13, Level = EventLevel.Error)]
-            public void MacOSMakeCertificateAccessibleAcrossPartitionsError(string ex) => WriteEvent(13, $"An error ocurred while making the certificate accessible across partitions : {ex}");
-
+            public void MacOSMakeCertificateAccessibleAcrossPartitionsError(string ex)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(13, $"An error ocurred while making the certificate accessible across partitions : {ex}");
+                }
+            }
 
             [Event(14, Level = EventLevel.Verbose)]
             public void ValidCertificatesFound(string certificates) => WriteEvent(14, certificates);
 
             [Event(15, Level = EventLevel.Verbose)]
-            public void SelectedCertificate(string certificate) => WriteEvent(15, $"Selected certificate: {certificate}");
-
+            public void SelectedCertificate(string certificate)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(15, $"Selected certificate: {certificate}");
+                }
+            }
 
             [Event(16, Level = EventLevel.Verbose)]
             public void NoValidCertificatesFound() => WriteEvent(16, "No valid certificates found.");
@@ -761,8 +861,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             public void CreateDevelopmentCertificateEnd() => WriteEvent(18, "Finished generating HTTPS development certificate.");
 
             [Event(19, Level = EventLevel.Error)]
-            public void CreateDevelopmentCertificateError(string e) => WriteEvent(19, $"An error has occurred generating the certificate: {e}.");
-
+            public void CreateDevelopmentCertificateError(string e)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(19, $"An error has occurred generating the certificate: {e}.");
+                }
+            }
 
             [Event(20, Level = EventLevel.Verbose)]
             public void SaveCertificateInStoreStart(string certificate, StoreName name, StoreLocation location) => WriteEvent(20, $"Saving certificate '{certificate}' to store {location}\\{name}.");
@@ -771,144 +876,309 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             public void SaveCertificateInStoreEnd() => WriteEvent(21, "Finished saving certificate to the store.");
 
             [Event(22, Level = EventLevel.Error)]
-            public void SaveCertificateInStoreError(string e) => WriteEvent(22, $"An error has occurred saving the certificate: {e}.");
-
+            public void SaveCertificateInStoreError(string e)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(22, $"An error has occurred saving the certificate: {e}.");
+                }
+            }
 
             [Event(23, Level = EventLevel.Verbose)]
-            public void ExportCertificateStart(string certificate, string path, bool includePrivateKey) =>
-                            WriteEvent(23, $"Saving certificate '{certificate}' to {path} {(includePrivateKey ? "with" : "without")} private key.");
+            public void ExportCertificateStart(string certificate, string path, bool includePrivateKey)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(23, $"Saving certificate '{certificate}' to {path} {(includePrivateKey ? "with" : "without")} private key.");
+                }
+            }
 
             [Event(24, Level = EventLevel.Verbose)]
             public void NoPasswordForCertificate() => WriteEvent(24, "Exporting certificate with private key but no password");
 
             [Event(25, Level = EventLevel.Verbose)]
-            public void CreateExportCertificateDirectory(string path) => WriteEvent(25, $"Creating directory {path}.");
-
+            public void CreateExportCertificateDirectory(string path)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(25, $"Creating directory {path}.");
+                }
+            }
 
             [Event(26, Level = EventLevel.Error)]
-            public void ExportCertificateError(string ex) => WriteEvent(26, $"An error has ocurred while exporting the certificate: {ex}.");
-
+            public void ExportCertificateError(string ex)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(26, $"An error has ocurred while exporting the certificate: {ex}.");
+                }
+            }
 
             [Event(27, Level = EventLevel.Verbose)]
-            public void WriteCertificateToDisk(string path) => WriteEvent(27, $"Writing the certificate to: {path}.");
+            public void WriteCertificateToDisk(string path)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(27, $"Writing the certificate to: {path}.");
+                }
+            }
 
             [Event(28, Level = EventLevel.Error)]
-            public void WriteCertificateToDiskError(string ex) => WriteEvent(28, $"An error has ocurred while writing the certificate to disk: {ex}.");
-
+            public void WriteCertificateToDiskError(string ex)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(28, $"An error has ocurred while writing the certificate to disk: {ex}.");
+                }
+            }
 
             [Event(29, Level = EventLevel.Verbose)]
-            public void TrustCertificateStart(string certificate) => WriteEvent(29, $"Trusting the certificate to: {certificate}.");
+            public void TrustCertificateStart(string certificate)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(29, $"Trusting the certificate to: {certificate}.");
+                }
+            }
 
             [Event(30, Level = EventLevel.Verbose)]
-            public void TrustCertificateEnd() => WriteEvent(30, $"Finished trusting the certificate.");
+            public void TrustCertificateEnd() =>WriteEvent(30, "Finished trusting the certificate.");
 
             [Event(31, Level = EventLevel.Error)]
-            public void TrustCertificateError(string ex) => WriteEvent(31, $"An error has ocurred while trusting the certificate: {ex}.");
-
+            public void TrustCertificateError(string ex)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(31, $"An error has ocurred while trusting the certificate: {ex}.");
+                }
+            }
 
             [Event(32, Level = EventLevel.Verbose)]
-            public void MacOSTrustCommandStart(string command) => WriteEvent(32, $"Running the trust command {command}.");
+            public void MacOSTrustCommandStart(string command)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(32, $"Running the trust command {command}.");
+                }
+            }
 
             [Event(33, Level = EventLevel.Verbose)]
-            public void MacOSTrustCommandEnd() => WriteEvent(33, $"Finished running the trust command.");
+            public void MacOSTrustCommandEnd() => WriteEvent(33, "Finished running the trust command.");
 
             [Event(34, Level = EventLevel.Verbose)]
-            public void MacOSTrustCommandError(int exitCode) => WriteEvent(34, $"An error has ocurred while running the trust command: {exitCode}.");
-
+            public void MacOSTrustCommandError(int exitCode)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(34, $"An error has ocurred while running the trust command: {exitCode}.");
+                }
+            }
 
             [Event(35, Level = EventLevel.Verbose)]
-            public void MacOSRemoveCertificateTrustRuleStart(string certificate) => WriteEvent(35, $"Running the remove trust command for {certificate}.");
+            public void MacOSRemoveCertificateTrustRuleStart(string certificate)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(35, $"Running the remove trust command for {certificate}.");
+                }
+            }
 
             [Event(36, Level = EventLevel.Verbose)]
-            public void MacOSRemoveCertificateTrustRuleEnd() => WriteEvent(36, $"Finished running the remove trust command.");
+            public void MacOSRemoveCertificateTrustRuleEnd() => WriteEvent(36, "Finished running the remove trust command.");
 
             [Event(37, Level = EventLevel.Verbose)]
-            public void MacOSRemoveCertificateTrustRuleError(int exitCode) => WriteEvent(37, $"An error has ocurred while running the remove trust command: {exitCode}.");
+            public void MacOSRemoveCertificateTrustRuleError(int exitCode)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(37, $"An error has ocurred while running the remove trust command: {exitCode}.");
+                }
+            }
 
             [Event(38, Level = EventLevel.Verbose)]
-            public void MacOSCertificateUntrusted(string certificate) => WriteEvent(38, $"The certificate is not trusted: {certificate}.");
+            public void MacOSCertificateUntrusted(string certificate)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(38, $"The certificate is not trusted: {certificate}.");
+                }
+            }
 
 
             [Event(39, Level = EventLevel.Verbose)]
-            public void MacOSRemoveCertificateFromKeyChainStart(string keyChain, string certificate) => WriteEvent(39, $"Removing the certificate from the keychain {keyChain} {certificate}.");
+            public void MacOSRemoveCertificateFromKeyChainStart(string keyChain, string certificate)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(39, $"Removing the certificate from the keychain {keyChain} {certificate}.");
+                }
+            }
 
             [Event(40, Level = EventLevel.Verbose)]
-            public void MacOSRemoveCertificateFromKeyChainEnd() => WriteEvent(40, $"Finished removing the certificate from the keychain.");
+            public void MacOSRemoveCertificateFromKeyChainEnd() => WriteEvent(40, "Finished removing the certificate from the keychain.");
 
             [Event(41, Level = EventLevel.Verbose)]
-            public void MacOSRemoveCertificateFromKeyChainError(int exitCode) => WriteEvent(41, $"An error has ocurred while running the remove trust command: {exitCode}.");
+            public void MacOSRemoveCertificateFromKeyChainError(int exitCode)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(41, $"An error has ocurred while running the remove trust command: {exitCode}.");
+                }
+            }
 
 
             [Event(42, Level = EventLevel.Verbose)]
-            public void RemoveCertificateFromUserStoreStart(string certificate) => WriteEvent(42, $"Removing the certificate from the user store {certificate}.");
+            public void RemoveCertificateFromUserStoreStart(string certificate)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(42, $"Removing the certificate from the user store {certificate}.");
+                }
+            }
 
             [Event(43, Level = EventLevel.Verbose)]
-            public void RemoveCertificateFromUserStoreEnd() => WriteEvent(43, $"Finished removing the certificate from the user store.");
+            public void RemoveCertificateFromUserStoreEnd() => WriteEvent(43, "Finished removing the certificate from the user store.");
 
             [Event(44, Level = EventLevel.Error)]
-            public void RemoveCertificateFromUserStoreError(string ex) => WriteEvent(44, $"An error has ocurred while removing the certificate from the user store: {ex}.");
-
+            public void RemoveCertificateFromUserStoreError(string ex)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(44, $"An error has ocurred while removing the certificate from the user store: {ex}.");
+                }
+            }
 
             [Event(45, Level = EventLevel.Verbose)]
-            public void WindowsAddCertificateToRootStore() => WriteEvent(45, $"Adding certificate to the trusted root certification authority store.");
+            public void WindowsAddCertificateToRootStore() => WriteEvent(45, "Adding certificate to the trusted root certification authority store.");
 
             [Event(46, Level = EventLevel.Verbose)]
-            public void WindowsCertificateAlreadyTrusted() => WriteEvent(46, $"The certificate is already trusted");
+            public void WindowsCertificateAlreadyTrusted() => WriteEvent(46, "The certificate is already trusted");
 
             [Event(47, Level = EventLevel.Verbose)]
-            public void WindowsCertificateTrustCanceled() => WriteEvent(47, $"Trusting the certificate was cancelled by the user.");
+            public void WindowsCertificateTrustCanceled() => WriteEvent(47, "Trusting the certificate was cancelled by the user.");
 
             [Event(48, Level = EventLevel.Verbose)]
-            public void WindowsRemoveCertificateFromRootStoreStart() => WriteEvent(48, $"Removing the certificate from the trusted root certification authority store.");
+            public void WindowsRemoveCertificateFromRootStoreStart() => WriteEvent(48, "Removing the certificate from the trusted root certification authority store.");
 
             [Event(49, Level = EventLevel.Verbose)]
-            public void WindowsRemoveCertificateFromRootStoreEnd() => WriteEvent(49, $"Finished removing the certificate from the trusted root certification authority store.");
+            public void WindowsRemoveCertificateFromRootStoreEnd() => WriteEvent(49, "Finished removing the certificate from the trusted root certification authority store.");
 
             [Event(50, Level = EventLevel.Verbose)]
             public void WindowsRemoveCertificateFromRootStoreNotFound() => WriteEvent(50, "The certificate was not trusted.");
 
             [Event(51, Level = EventLevel.Verbose)]
-            public void CorrectCertificateStateStart(string certificate) => WriteEvent(51, $"Correcting the the certificate state for '{certificate}'");
+            public void CorrectCertificateStateStart(string certificate)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(51, $"Correcting the the certificate state for '{certificate}'");
+                }
+            }
 
             [Event(52, Level = EventLevel.Verbose)]
             public void CorrectCertificateStateEnd() => WriteEvent(52, "Finished correcting the certificate state");
 
             [Event(53, Level = EventLevel.Error)]
-            public void CorrectCertificateStateError(string error) => WriteEvent(53, $"An error has ocurred while correcting the certificate state: {error}.");
+            public void CorrectCertificateStateError(string error)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(53, $"An error has ocurred while correcting the certificate state: {error}.");
+                }
+            }
 
             [Event(54, Level = EventLevel.Verbose)]
-            internal void MacOSAddCertificateToKeyChainStart(string keychain, string certificate) => WriteEvent(54, $"Importing the certificate {certificate} to the keychain '{keychain}'");
+            internal void MacOSAddCertificateToKeyChainStart(string keychain, string certificate)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(54, $"Importing the certificate {certificate} to the keychain '{keychain}'");
+                }
+            }
 
             [Event(55, Level = EventLevel.Verbose)]
             internal void MacOSAddCertificateToKeyChainEnd() => WriteEvent(55, "Finished importing the certificate to the key chain.");
 
             [Event(56, Level = EventLevel.Error)]
-            internal void MacOSAddCertificateToKeyChainError(int exitCode) => WriteEvent(56, $"An error has ocurred while importing the certificate to the keychain: {exitCode}.");
-
+            internal void MacOSAddCertificateToKeyChainError(int exitCode)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(56, $"An error has ocurred while importing the certificate to the keychain: {exitCode}.");
+                }
+            }
 
             [Event(57, Level = EventLevel.Verbose)]
-            public void WritePemKeyToDisk(string path) => WriteEvent(57, $"Writing the certificate to: {path}.");
+            public void WritePemKeyToDisk(string path)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(57, $"Writing the certificate to: {path}.");
+                }
+            }
 
             [Event(58, Level = EventLevel.Error)]
-            public void WritePemKeyToDiskError(string ex) => WriteEvent(58, $"An error has ocurred while writing the certificate to disk: {ex}.");
+            public void WritePemKeyToDiskError(string ex)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(58, $"An error has ocurred while writing the certificate to disk: {ex}.");
+                }
+            }
 
             [Event(59, Level = EventLevel.Error)]
-            internal void ImportCertificateMissingFile(string certificatePath) => WriteEvent(59, $"The file '{certificatePath}' does not exist.");
+            internal void ImportCertificateMissingFile(string certificatePath)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(59, $"The file '{certificatePath}' does not exist.");
+                }
+            }
 
             [Event(60, Level = EventLevel.Error)]
-            internal void ImportCertificateExistingCertificates(string certificateDescription) => WriteEvent(60, $"One or more HTTPS certificates exist '{certificateDescription}'.");
+            internal void ImportCertificateExistingCertificates(string certificateDescription)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(60, $"One or more HTTPS certificates exist '{certificateDescription}'.");
+                }
+            }
 
             [Event(61, Level = EventLevel.Verbose)]
-            internal void LoadCertificateStart(string certificatePath) => WriteEvent(61, $"Loading certificate from path '{certificatePath}'.");
+            internal void LoadCertificateStart(string certificatePath)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(61, $"Loading certificate from path '{certificatePath}'.");
+                }
+            }
 
             [Event(62, Level = EventLevel.Verbose)]
-            internal void LoadCertificateEnd(string description) => WriteEvent(62, $"The certificate '{description}' has been loaded successfully.");
+            internal void LoadCertificateEnd(string description)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(62, $"The certificate '{description}' has been loaded successfully.");
+                }
+            }
 
             [Event(63, Level = EventLevel.Error)]
-            internal void LoadCertificateError(string ex) => WriteEvent(63, $"An error has ocurred while loading the certificate from disk: {ex}.");
+            internal void LoadCertificateError(string ex)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(63, $"An error has ocurred while loading the certificate from disk: {ex}.");
+                }
+            }
 
             [Event(64, Level = EventLevel.Error)]
-            internal void NoHttpsDevelopmentCertificate(string description) => WriteEvent(64, $"The provided certificate '{description}' is not a valid ASP.NET Core HTTPS development certificate.");
+            internal void NoHttpsDevelopmentCertificate(string description)
+            {
+                if (IsEnabled())
+                {
+                    WriteEvent(64, $"The provided certificate '{description}' is not a valid ASP.NET Core HTTPS development certificate.");
+                }
+            }
         }
 
         internal class UserCancelledTrustException : Exception
@@ -917,13 +1187,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         internal struct CheckCertificateStateResult
         {
-            public bool Result { get; }
-            public string Message { get; }
+            public bool Success { get; }
+            public string? FailureMessage { get; }
 
-            public CheckCertificateStateResult(bool result, string message)
+            public CheckCertificateStateResult(bool success, string? failureMessage)
             {
-                Result = result;
-                Message = message;
+                Success = success;
+                FailureMessage = failureMessage;
             }
         }
 

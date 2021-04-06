@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -197,7 +198,7 @@ Hello from page";
             // Assert
             var responseContent = response.Trim();
             var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "/TagHelper/PostWithHandler");
-            var expectedContent = string.Format(expected, forgeryToken);
+            var expectedContent = string.Format(CultureInfo.InvariantCulture, expected, forgeryToken);
 
             Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
         }

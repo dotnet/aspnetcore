@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             CompiledPageActionDescriptor actionDescriptor,
             Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> viewDataFactory,
             Func<PageContext, ViewContext, object> pageFactory,
-            Action<PageContext, ViewContext, object> releasePage,
+            Func<PageContext, ViewContext, object, ValueTask> releasePage,
             Func<PageContext, object> modelFactory,
-            Action<PageContext, object> releaseModel,
+            Func<PageContext, object, ValueTask> releaseModel,
             Func<PageContext, object, Task> propertyBinder,
             PageHandlerExecutorDelegate[] handlerExecutors,
             PageHandlerBinderDelegate[] handlerBinders,
@@ -47,14 +47,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         /// <summary>
         /// The action invoked to release a page. This may be <c>null</c>.
         /// </summary>
-        public Action<PageContext, ViewContext, object> ReleasePage { get; }
+        public Func<PageContext, ViewContext, object, ValueTask> ReleasePage { get; }
 
         public Func<PageContext, object> ModelFactory { get; }
 
         /// <summary>
         /// The delegate invoked to release a model. This may be <c>null</c>.
         /// </summary>
-        public Action<PageContext, object> ReleaseModel { get; }
+        public Func<PageContext, object, ValueTask> ReleaseModel { get; }
 
         /// <summary>
         /// The delegate invoked to bind either the handler type (page or model).

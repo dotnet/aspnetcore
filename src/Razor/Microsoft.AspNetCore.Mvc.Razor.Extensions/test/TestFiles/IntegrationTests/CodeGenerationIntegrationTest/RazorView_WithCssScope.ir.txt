@@ -1,0 +1,78 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - AspNetCore
+        UsingDirective - (1:0,1 [14] ) - System
+        UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
+        UsingDirective - (51:2,1 [19] ) - System.Linq
+        UsingDirective - (71:3,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_test - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_0 - Bar - Foo - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - asp-route - register - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_2 - method - post - HtmlAttributeValueStyle.DoubleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::AllTagHelper - __AllTagHelper
+            FieldDeclaration -  - private - global::FormTagHelper - __FormTagHelper
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - (28:1,2 [40] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml)
+                    LazyIntermediateToken - (28:1,2 [40] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - CSharp - \n    ViewData["Title"] = "Home page";\n
+                HtmlContent - (71:4,0 [191] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml)
+                    LazyIntermediateToken - (71:4,0 [4] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <div
+                    IntermediateToken -  - Html -  TestCssScope
+                    LazyIntermediateToken - (75:4,4 [20] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  class="text-center"
+                    LazyIntermediateToken - (95:4,24 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - >
+                    LazyIntermediateToken - (96:4,25 [6] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n    
+                    LazyIntermediateToken - (102:5,4 [3] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <h1
+                    IntermediateToken -  - Html -  TestCssScope
+                    LazyIntermediateToken - (105:5,7 [18] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  class="display-4"
+                    LazyIntermediateToken - (123:5,25 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - >
+                    LazyIntermediateToken - (124:5,26 [7] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - Welcome
+                    LazyIntermediateToken - (131:5,33 [5] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - </h1>
+                    LazyIntermediateToken - (136:5,38 [6] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n    
+                    LazyIntermediateToken - (142:6,4 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <p
+                    IntermediateToken -  - Html -  TestCssScope
+                    LazyIntermediateToken - (144:6,6 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - >
+                    LazyIntermediateToken - (145:6,7 [11] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - Learn about
+                    LazyIntermediateToken - (156:6,18 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <a
+                    IntermediateToken -  - Html -  TestCssScope
+                    LazyIntermediateToken - (158:6,20 [47] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  href= "https://docs.microsoft.com/aspnet/core"
+                    LazyIntermediateToken - (205:6,67 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  
+                    LazyIntermediateToken - (206:6,68 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - >
+                    LazyIntermediateToken - (207:6,69 [36] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  building Web apps with ASP.NET Core
+                    LazyIntermediateToken - (243:6,105 [4] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - </a>
+                    LazyIntermediateToken - (247:6,109 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - .
+                    LazyIntermediateToken - (248:6,110 [4] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - </p>
+                    LazyIntermediateToken - (252:6,114 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+                    LazyIntermediateToken - (254:7,0 [6] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - </div>
+                    LazyIntermediateToken - (260:7,6 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+                TagHelper - (262:8,0 [21] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - all - TagMode.StartTagAndEndTag
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - AllTagHelper
+                    PreallocatedTagHelperProperty - (272:8,10 [3] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - __tagHelperAttribute_0 - Bar - Bar
+                    DefaultTagHelperExecute - 
+                HtmlContent - (283:8,21 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml)
+                    LazyIntermediateToken - (283:8,21 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+                TagHelper - (285:9,0 [84] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - form - TagMode.StartTagAndEndTag
+                    DefaultTagHelperBody - 
+                        HtmlContent - (326:9,41 [36] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml)
+                            LazyIntermediateToken - (326:9,41 [4] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n  
+                            LazyIntermediateToken - (330:10,2 [6] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <input
+                            IntermediateToken -  - Html -  TestCssScope
+                            LazyIntermediateToken - (336:10,8 [21] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  name="regular input"
+                            LazyIntermediateToken - (357:10,29 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  
+                            LazyIntermediateToken - (358:10,30 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - />
+                            LazyIntermediateToken - (360:10,32 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+                    DefaultTagHelperCreate -  - FormTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperExecute - 
+                HtmlContent - (369:11,7 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml)
+                    LazyIntermediateToken - (369:11,7 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 

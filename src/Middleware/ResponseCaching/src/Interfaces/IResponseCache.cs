@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
@@ -14,7 +13,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         /// </summary>
         /// <param name="key">The cache key to look up.</param>
         /// <returns>The response cache entry if it exists; otherwise <c>null</c>.</returns>
-        IResponseCacheEntry Get(string key);
+        IResponseCacheEntry? Get(string key);
 
         /// <summary>
         /// Stores the given response in the response cache.

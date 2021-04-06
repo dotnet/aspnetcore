@@ -87,10 +87,6 @@ try {
     & $(Join-Path $PSScriptRoot 'run-sdl.ps1') -GuardianCliLocation $guardianCliLocation -WorkingDirectory $workingDirectory -TargetDirectory $SourceDirectory -GdnFolder $gdnFolder -ToolsList $SourceToolsList -AzureDevOpsAccessToken $AzureDevOpsAccessToken -UpdateBaseline $UpdateBaseline -GuardianLoggerLevel $GuardianLoggerLevel -CrScanAdditionalRunConfigParams $CrScanAdditionalRunConfigParams -PoliCheckAdditionalRunConfigParams $PoliCheckAdditionalRunConfigParams
   }
 
-  if ($UpdateBaseline) {
-    & (Join-Path $PSScriptRoot 'push-gdn.ps1') -Repository $RepoName -BranchName $BranchName -GdnFolder $GdnFolder -AzureDevOpsAccessToken $AzureDevOpsAccessToken -PushReason 'Update baseline'
-  }
-
   if ($TsaPublish) {
     if ($TsaBranchName -and $BuildNumber) {
       if (-not $TsaRepositoryName) {

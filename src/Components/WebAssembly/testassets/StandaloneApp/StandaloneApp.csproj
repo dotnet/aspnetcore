@@ -9,21 +9,4 @@
     <Reference Include="System.Net.Http.Json" />
   </ItemGroup>
 
-  <!-- A bit of msbuild magic to support reference resolver tests -->
-  <Target Name="CreateReferenceHintPathsList" AfterTargets="ResolveAssemblyReferences">
-    <ItemGroup>
-      <_BclFile Include="$(ComponentsWebAssemblyBaseClassLibraryPath)*" />
-      <_BclFile Include="$(ComponentsWebAssemblyBaseClassLibraryFacadesPath)*" />
-      <_BclFile Include="$(ComponentsWebAssemblyFrameworkPath)*" />
-    </ItemGroup>
-
-    <WriteLinesToFile Lines="@(ReferencePath);@(ReferenceDependencyPaths)" File="$(IntermediateOutputPath)referenceHints.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />
-    <WriteLinesToFile Lines="@(_BclFile)" File="$(IntermediateOutputPath)bclLocations.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />
-
-    <ItemGroup>
-      <EmbeddedResource Include="$(IntermediateOutputPath)bclLocations.txt" Link="bclLocations.txt" Type="Non-Resx" />
-      <EmbeddedResource Include="$(IntermediateOutputPath)referenceHints.txt" Link="referenceHints.txt" Type="Non-Resx" />
-    </ItemGroup>
-  </Target>
-
 </Project>

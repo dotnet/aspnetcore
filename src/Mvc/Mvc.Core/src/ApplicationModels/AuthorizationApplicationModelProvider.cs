@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                         actionModel.Filters.Add(GetFilter(_policyProvider, actionModelAuthData));
                     }
 
-                    foreach (var attribute in actionModel.Attributes.OfType<IAllowAnonymous>())
+                    foreach (var _ in actionModel.Attributes.OfType<IAllowAnonymous>())
                     {
                         actionModel.Filters.Add(new AllowAnonymousFilter());
                     }
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // This will always execute synchronously.
             if (policyProvider.GetType() == typeof(DefaultAuthorizationPolicyProvider))
             {
-                var policy = AuthorizationPolicy.CombineAsync(policyProvider, authData).GetAwaiter().GetResult();
+                var policy = AuthorizationPolicy.CombineAsync(policyProvider, authData).GetAwaiter().GetResult()!;
                 return new AuthorizeFilter(policy);
             }
             else

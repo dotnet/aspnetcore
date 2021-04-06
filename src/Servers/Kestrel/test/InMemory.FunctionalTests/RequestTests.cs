@@ -847,6 +847,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task Expect100ContinueHonoredWhenMinRequestBodyDataRateIsDisabled()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            // This may seem unrelated, but this is a regression test for
+            // https://github.com/dotnet/aspnetcore/issues/30449
+            testContext.ServerOptions.Limits.MinRequestBodyDataRate = null;
+
+            await using (var server = new TestServer(TestApp.EchoAppChunked, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Expect: 100-continue",
+                        "Connection: close",
+                        "Content-Length: 11",
+                        "\r\n");
+                    await connection.Receive(
+                        "HTTP/1.1 100 Continue",
+                        "",
+                        "");
+                    await connection.Send("Hello World");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 11",
+                        "",
+                        "Hello World");
+                }
+            }
+        }
+
+        [Fact]
         public async Task ZeroContentLengthAssumedOnNonKeepAliveRequestsWithoutContentLengthOrTransferEncodingHeader()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -1783,7 +1819,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Empty(TestApplicationErrorLogger.Messages.Where(m => m.LogLevel >= LogLevel.Warning));
+            Assert.Empty(LogMessages.Where(m => m.LogLevel >= LogLevel.Warning));
         }
 
         [Fact]

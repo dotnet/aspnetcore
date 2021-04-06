@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -357,19 +356,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // First go to some URL on the router
             var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Other")).Click();
-            Browser.True(() => Browser.Url.EndsWith("/Other"));
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
 
             // Now follow a link out of the SPA entirely
             app.FindElement(By.LinkText("Not a component")).Click();
             Browser.Equal("Not a component!", () => Browser.Exists(By.Id("test-info")).Text);
-            Browser.True(() => Browser.Url.EndsWith("/NotAComponent.html"));
+            Browser.True(() => Browser.Url.EndsWith("/NotAComponent.html", StringComparison.Ordinal));
 
             // Now click back
             // Because of how the tests are structured with the router not appearing until the router
             // tests are selected, we can only observe the test selector being there, but this is enough
             // to show we did go back to the right place and the Blazor app started up
             Browser.Navigate().Back();
-            Browser.True(() => Browser.Url.EndsWith("/Other"));
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
             Browser.WaitUntilTestSelectorReady();
         }
 
@@ -382,7 +381,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var testSelector = Browser.WaitUntilTestSelectorReady();
 
             app.FindElement(By.Id("do-navigation")).Click();
-            Browser.True(() => Browser.Url.EndsWith("/Other"));
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
             Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
 
@@ -399,7 +398,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var testSelector = Browser.WaitUntilTestSelectorReady();
 
             app.FindElement(By.Id("do-navigation-forced")).Click();
-            Browser.True(() => Browser.Url.EndsWith("/Other"));
+            Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
 
             // Because this was a full-page load, our element references should no longer be valid
             Assert.Throws<StaleElementReferenceException>(() =>
@@ -509,12 +508,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31195")]
         public void PreventDefault_CanBlockNavigation_ForInternalNavigation_PreventDefaultTarget()
             => PreventDefault_CanBlockNavigation("internal", "target");
 
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31195")]
+        public void PreventDefault_CanBlockNavigation_ForExternalNavigation_PreventDefaultAncestor()
+            => PreventDefault_CanBlockNavigation("external", "ancestor");
+
         [Theory]
-        [InlineData("external", "ancestor")]
         [InlineData("external", "target")]
         [InlineData("external", "descendant")]
         [InlineData("internal", "ancestor")]
@@ -624,18 +627,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("This is a long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
         }
 
+        [Theory]
+        [InlineData("/WithParameters/Name/Ñoño ñi/LastName/O'Jkl")]
+        [InlineData("/WithParameters/Name/[Ñoño ñi]/LastName/O'Jkl")]
+        [InlineData("/other?abc=Ñoño ñi")]
+        [InlineData("/other?abc=[Ñoño ñi]")]
+        public void CanArriveAtPageWithSpecialURL(string relativeUrl)
+        {
+            SetUrlViaPushState(relativeUrl, true);
+            var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
+            Browser.Equal("none", () => errorUi.GetCssValue("display"));
+        }
+
         private long BrowserScrollY
         {
             get => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY");
             set => ((IJavaScriptExecutor)Browser).ExecuteScript($"window.scrollTo(0, {value})");
         }
 
-        private string SetUrlViaPushState(string relativeUri)
+        private string SetUrlViaPushState(string relativeUri, bool forceLoad = false)
         {
             var pathBaseWithoutHash = ServerPathBase.Split('#')[0];
             var jsExecutor = (IJavaScriptExecutor)Browser;
             var absoluteUri = new Uri(_serverFixture.RootUri, $"{pathBaseWithoutHash}{relativeUri}");
-            jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString().Replace("'", "\\'")}')");
+            jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString().Replace("'", "\\'")}', {(forceLoad ? "true" : "false")})");
 
             return absoluteUri.AbsoluteUri;
         }
