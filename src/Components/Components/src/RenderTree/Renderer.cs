@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -387,11 +386,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // already on the sync context (and if not, we have a bug we want to know about).
             Dispatcher.AssertAccess();
 
-            // Slow linear search is fine because this is only during exception handling.
-            // If it becomes problematic, we can maintain a lookup from component instance to ID.
-            var componentState = _componentStateById.FirstOrDefault(kvp => kvp.Value.Component == errorSource).Value;
-
             // Find the closest error boundary, if any
+            var componentState = FindComponentState(errorSource);
             while (componentState is not null)
             {
                 if (componentState.Component is IErrorBoundary errorBoundary)
@@ -428,6 +424,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
 
             return false;
+
+            ComponentState? FindComponentState(IComponent errorSource)
+            {
+                // Slow linear search is fine because this is only during exception handling.
+                // If it becomes problematic, we can maintain a lookup from component instance to ID.
+                foreach (var value in _componentStateById.Values)
+                {
+                    if (value.Component == errorSource)
+                    {
+                        return value;
+                    }
+                }
+
+                return null;
+            }
         }
 
         /// <summary>
