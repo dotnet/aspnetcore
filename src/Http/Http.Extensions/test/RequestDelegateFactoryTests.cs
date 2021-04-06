@@ -297,6 +297,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
                 return new[]
                 {
+                    // User defined!
                     new object[] { (Action<HttpContext, int>)StoreTryParsableParameter, "42", 42 },
                     // Byte
                     // Int16
@@ -497,7 +498,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var invoked = false;
 
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Routing.MapAction");
+            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Http.RequestDelegateFactory");
             var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             void TestAction([FromBody] Todo todo)
@@ -533,7 +534,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var invoked = false;
 
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Routing.MapAction");
+            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Http.RequestDelegateFactory");
             var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             void TestAction([FromBody] Todo todo)
@@ -598,7 +599,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var invoked = false;
 
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Routing.MapAction");
+            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Http.RequestDelegateFactory");
             var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             void TestAction([FromForm] int value)
@@ -634,7 +635,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var invoked = false;
 
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Routing.MapAction");
+            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Http.RequestDelegateFactory");
             var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             void TestAction([FromForm] int value)

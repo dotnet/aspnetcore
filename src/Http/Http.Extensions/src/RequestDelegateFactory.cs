@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Http
                 else if (IsBindableFromString(parameter))
                 {
                     var routeValuesProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
-                    paramterExpression = BindParamenterFromValue(routeValuesProperty, parameter);
+                    paramterExpression = BindParamenterFromSource(routeValuesProperty, parameter);
                 }
 
                 args.Add(paramterExpression);
@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.Http
         private static ILogger GetLogger(HttpContext httpContext)
         {
             var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            return loggerFactory.CreateLogger("Microsoft.AspNetCore.Routing.MapAction");
+            return loggerFactory.CreateLogger(typeof(RequestDelegateFactory));
         }
 
         private static Expression BindParamenterFromSource(Expression sourceExpression, ParameterInfo parameter, string? name = null)
