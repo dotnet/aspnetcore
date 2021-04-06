@@ -337,24 +337,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             catch (Exception e)
             {
-                // Exceptions in event handlers don't compromise the stability of the framework, since the
-                // framework wasn't processing any internal state that might have been left corrupted. The
-                // risk is that user code is now left in some invalid state. So:
-                //
-                // * If we can identify a strong enough candidate for which component subtree is at risk
-                //   of being affected, we'll shut down that subtree. The conditions for this are:
-                //   * The event callback was dispatched to an IComponent
-                //   * ... which is still live in the hierarchy
-                //   * ... and is within an error boundary
-                // * Otherwise, we're in a more ambiguous case, such as event callbacks being dispatched
-                //   to non-components. In this case, we'll treat it as fatal for the entire renderer.
-                //
-                // This is pretty subjective. Even in the "safe" case, it's possible that some non-component
-                // (domain model) state has been left corrupted. But we have to let developers be responsible
-                // for keeping their non-component state valid otherwise we couldn't have any error recovery.
-                var recovered = TrySendExceptionToErrorBoundary(componentReceiver, e);
-                if (!recovered)
+                if (!TrySendExceptionToErrorBoundary(componentReceiver, e))
                 {
+                    // It's unhandled, so treat as fatal
                     HandleException(e);
                 }
 
@@ -401,19 +386,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
                     try
                     {
-                        // We don't log the error here, and instead leave it up to the IErrorBoundary to do
-                        // what it wants (which could be suppressing the error entirely). Note that the default
-                        // logging behavior has to vary between hosting models.
-                        // TODO: Are we happy with letting IErrorBoundary suppress errors if it wants?
                         errorBoundary.HandleException(error);
                     }
                     catch (Exception errorBoundaryException)
                     {
                         // If *notifying* about an exception fails, it's OK for that to be fatal. This is
                         // different from an IErrorBoundary component throwing during its own rendering or
-                        // lifecycle methods.
-                        // TODO: Should we support rethrowing from inside HandleException? I prefer not to
-                        // unless we get a better justification. See design doc.
+                        // lifecycle methods, which can be handled that error boundary or an ancestor.
                         HandleException(errorBoundaryException);
                     }
 
@@ -477,8 +456,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             frame.ComponentIdField = newComponentState.ComponentId;
         }
 
-        // TODO: Need to reason about all the code paths that lead here and ensure it makes sense
-        // to treat the exceptions as handleable
         internal void AddToPendingTasks(Task task, IComponent? owningComponent)
         {
             switch (task == null ? TaskStatus.RanToCompletion : task.Status)
@@ -839,7 +816,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     }
                     else
                     {
-                        AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result), null);
+                        // We set owningComponent to null because we don't want exceptions during disposal to be recoverable
+                        AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result), owningComponent: null);
 
                         async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
                         {
@@ -930,7 +908,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 {
                     if (!TrySendExceptionToErrorBoundary(owningComponent, ex))
                     {
-                        // It's unhandled
+                        // It's unhandled, so treat as fatal
                         HandleException(ex);
                     }
                 }

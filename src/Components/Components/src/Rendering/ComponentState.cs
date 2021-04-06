@@ -74,11 +74,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
             catch (Exception ex)
             {
                 // If an exception occurs in the render fragment delegate, we won't process the diff in any way, so child components,
-                // event handlers, etc., will all be left untouched as if this component didn't re-render at all. We also are careful
-                // to leave ComponentState in an internally-consistent state so that technically this component could continue to be
-                // used. However, the Renderer will not allow the component to continue to be used, except if it's the IErrorBoundary,
-                // because it forcibly clears the descendants of the IErrorBoundary before notifying it.
-                // TODO: Verify that having a try/catch here doesn't degrade perf noticeably on WebAssembly. It might do.
+                // event handlers, etc., will all be left untouched as if this component didn't re-render at all. The Renderer will
+                // then forcibly clear the descendant subtree by rendering an empty fragment for this component.
                 renderFragmentException = ex;
                 return;
             }
@@ -199,10 +196,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         // a consistent set to the recipient.
         private void SupplyCombinedParameters(ParameterView directAndCascadingParameters)
         {
-            // Normalise sync and async exceptions into a Task, as there's no value in differentiating
-            // between "it returned an already-faulted Task" and "it just threw".
-            // TODO: This is the most invasive part of this whole work area on perf. Need to validate
-            // that this doesn't regress WebAssembly rendering perf too much in intense cases.
+            // Normalise sync and async exceptions into a Task
             Task setParametersAsyncTask;
             try
             {

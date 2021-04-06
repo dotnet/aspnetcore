@@ -6,11 +6,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Web
 {
-    // The rules arround logging differ between environments.
-    // - For WebAssembly, we always log to the console with detailed information
-    // - For Server, we log to both the server-side log (with detailed information), and to the
-    //   client (respecting the DetailedError option)
-    // - In prerendering, we log only to the server-side log
+    // The reason this abstraction exists is that logging behaviors differ across hosting platforms.
+    // For example, Blazor Server logs to both the server and client, whereas WebAssembly has only one log.
 
     /// <summary>
     /// Logs exception information for a <see cref="ErrorBoundary"/> component.
