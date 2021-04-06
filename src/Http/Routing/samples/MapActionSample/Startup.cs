@@ -40,7 +40,8 @@ namespace HttpApiSampleApp
 
                 endpoints.MapGet("/", async context =>
                 {
-                    await context.Response.WriteAsync("Hello World!");
+                    var res = context.Request.Query["foo"];
+                    await context.Response.WriteAsync(res.ToString());
                 });
             });
         }
