@@ -10,15 +10,14 @@ Microsoft.AspNetCore.Components.ComponentApplicationState.PersistState(string! k
 Microsoft.AspNetCore.Components.ComponentApplicationState.TryTakeAsJson<TValue>(string! key, out TValue? instance) -> bool
 Microsoft.AspNetCore.Components.ComponentApplicationState.TryTakePersistedState(string! key, out byte[]? value) -> bool
 Microsoft.AspNetCore.Components.ErrorBoundaryBase
-Microsoft.AspNetCore.Components.ErrorBoundaryBase.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.AutoReset.get -> bool
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.AutoReset.set -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.ChildContent.set -> void
+Microsoft.AspNetCore.Components.ErrorBoundaryBase.CurrentException.get -> System.Exception?
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.ErrorBoundaryBase() -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.ErrorContent.get -> Microsoft.AspNetCore.Components.RenderFragment<System.Exception!>?
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.ErrorContent.set -> void
-Microsoft.AspNetCore.Components.ErrorBoundaryBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.ComponentApplicationLifetime(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime!>! logger) -> void
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.PersistStateAsync(Microsoft.AspNetCore.Components.Lifetime.IComponentApplicationStateStore! store, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer) -> System.Threading.Tasks.Task!
@@ -44,7 +43,7 @@ Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute.CascadingTypePar
 Microsoft.AspNetCore.Components.CascadingTypeParameterAttribute.Name.get -> string!
 Microsoft.AspNetCore.Components.RenderTree.Renderer.GetEventArgsType(ulong eventHandlerId) -> System.Type!
 abstract Microsoft.AspNetCore.Components.ErrorBoundaryBase.LogExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
-abstract Microsoft.AspNetCore.Components.ErrorBoundaryBase.RenderDefaultErrorContent(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, System.Exception! exception) -> void
+override Microsoft.AspNetCore.Components.ErrorBoundaryBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.LayoutComponentBase.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!

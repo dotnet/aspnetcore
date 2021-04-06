@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 if (componentState.Component is IErrorBoundary errorBoundary)
                 {
-                    // Even though ErrorBoundaryBase always removes its ChildContent from the tree when
+                    // Even though .Web's ErrorBoundary by default removes its ChildContent from the tree when
                     // switching into an error state, the Renderer doesn't rely on that. To guarantee that
                     // the failed subtree is disposed, forcibly remove it here. If the failed components did
                     // continue to run, it wouldn't harm framework state, but it would be a whole new kind of

@@ -17,7 +17,9 @@ Microsoft.AspNetCore.Components.Forms.InputTextArea.Element.set -> void
 Microsoft.AspNetCore.Components.Web.ErrorBoundary
 Microsoft.AspNetCore.Components.Web.ErrorBoundary.ErrorBoundary() -> void
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger
-Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception, bool clientOnly) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
+override Microsoft.AspNetCore.Components.Web.ErrorBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+override Microsoft.AspNetCore.Components.Web.ErrorBoundary.LogExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
 static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference, bool preventScroll) -> System.Threading.Tasks.ValueTask
 static Microsoft.AspNetCore.Components.Forms.BrowserFileExtensions.RequestImageFileAsync(this Microsoft.AspNetCore.Components.Forms.IBrowserFile! browserFile, string! format, int maxWidth, int maxHeight) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
 Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.get -> string!

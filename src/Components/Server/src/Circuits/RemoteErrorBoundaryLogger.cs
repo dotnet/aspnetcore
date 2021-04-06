@@ -28,15 +28,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _options = options.Value;
         }
 
-        public ValueTask LogErrorAsync(Exception exception, bool clientOnly)
+        public ValueTask LogErrorAsync(Exception exception)
         {
-            // If the end user clicks on the UI to re-log the error, we don't want to spam the
-            // server logs so we only re-load to the client
-            if (!clientOnly)
-            {
-                // We always log detailed information to the server-side log
-                _exceptionCaughtByErrorBoundary(_logger, exception.Message, exception);
-            }
+            // We always log detailed information to the server-side log
+            _exceptionCaughtByErrorBoundary(_logger, exception.Message, exception);
 
             // We log to the client only if the browser is connected interactively, and even then
             // we may suppress the details

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _logger = logger;
         }
 
-        public ValueTask LogErrorAsync(Exception exception, bool clientOnly)
+        public ValueTask LogErrorAsync(Exception exception)
         {
             _exceptionCaughtByErrorBoundary(_logger, exception.Message, exception);
             return ValueTask.CompletedTask;

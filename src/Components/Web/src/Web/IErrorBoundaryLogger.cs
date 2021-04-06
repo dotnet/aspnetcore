@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.Components.Web
         /// Logs the supplied <paramref name="exception"/>.
         /// </summary>
         /// <param name="exception">The <see cref="Exception"/> to log.</param>
-        /// <param name="clientOnly">If true, indicates that the error should only be logged to the client (e.g., because it was already logged to the server).</param>
         /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
-        ValueTask LogErrorAsync(Exception exception, bool clientOnly);
+        ValueTask LogErrorAsync(Exception exception);
     }
 }

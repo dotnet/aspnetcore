@@ -10,30 +10,42 @@ namespace Microsoft.AspNetCore.Components.Web
     /// <summary>
     /// Captures errors thrown from its child content.
     /// </summary>
-    public sealed class ErrorBoundary : ErrorBoundaryBase
+    public class ErrorBoundary : ErrorBoundaryBase
     {
         [Inject] private IErrorBoundaryLogger? ErrorBoundaryLogger { get; set; }
 
         /// <inheritdoc />
         protected override ValueTask LogExceptionAsync(Exception exception)
         {
-            return ErrorBoundaryLogger!.LogErrorAsync(exception, clientOnly: false);
+            return ErrorBoundaryLogger!.LogErrorAsync(exception);
         }
 
         /// <inheritdoc />
-        protected override void RenderDefaultErrorContent(RenderTreeBuilder builder, Exception exception)
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            // TODO: Better UI (some kind of language-independent icon, CSS stylability)
-            // Could it simply be <div class="error-boundary-error"></div>, with all the
-            // content provided in template CSS? Is this even going to be used in the
-            // template by default? It's probably best have some default UI that doesn't
-            // rely on there being any CSS, but make it overridable via CSS.
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "onclick", (Func<MouseEventArgs, ValueTask>)(_ =>
-                // Re-log, to help the developer figure out which ErrorBoundary issued which log message
-                ErrorBoundaryLogger!.LogErrorAsync(exception, clientOnly: true)));
-            builder.AddContent(1, "Error");
-            builder.CloseElement();
+            if (CurrentException is null)
+            {
+                builder.AddContent(0, ChildContent);
+            }
+            else if (ErrorContent is not null)
+            {
+                builder.AddContent(1, ErrorContent(CurrentException));
+            }
+            else
+            {
+                // The default error UI doesn't include any content, because:
+                // [1] We don't know whether or not you'd be happy to show the stack trace. It depends both on
+                //     whether DetailedErrors is enabled and whether you're in production, because even on WebAssembly
+                //     you likely don't want to put technical data like that in the UI for end users. A reasonable way
+                //     to toggle this is via something like "#if DEBUG" but that can only be done in user code.
+                // [2] We can't have any other human-readable content by default, because it would need to be valid
+                //     for all languages.
+                // Instead, the default project template provides locale-specific default content via CSS. This provides
+                // a quick form of customization even without having to subclass this component.
+                builder.OpenElement(2, "div");
+                builder.AddAttribute(3, "class", "error-boundary");
+                builder.CloseElement();
+            }
         }
     }
 }
