@@ -4170,6 +4170,191 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed.", ex.Message);
         }
 
+        [Fact]
+        public void RenderingExceptionsCanBeHandledByClosestErrorBoundary()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var exception = new InvalidTimeZoneException("Error during render");
+            var rootComponentId = renderer.AssignRootComponentId(new TestComponent(builder =>
+            {
+                TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                {
+                    builder.OpenComponent<ErrorThrowingComponent>(0);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringRender), exception);
+                    builder.CloseComponent();
+                });
+            }));
+
+            // Act
+            renderer.RenderRootComponent(rootComponentId);
+
+            // Assert
+            var batch = renderer.Batches.Single();
+            var errorThrowingComponentId = batch.GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+            var componentFrames = batch.GetComponentFrames<TestErrorBoundary>();
+            Assert.Collection(componentFrames.Select(f => (TestErrorBoundary)f.Component),
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+
+            // The failed subtree is disposed
+            Assert.Equal(errorThrowingComponentId, batch.DisposedComponentIDs.Single());
+        }
+
+        [Fact]
+        public void SetParametersAsyncExceptionsCanBeHandledByClosestErrorBoundary_Sync()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            Exception exception = null;
+            var rootComponent = new TestComponent(builder =>
+            {
+                TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                {
+                    builder.OpenComponent<ErrorThrowingComponent>(0);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringParameterSettingSync), exception);
+                    builder.CloseComponent();
+                });
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            renderer.RenderRootComponent(rootComponentId);
+            var errorBoundaries = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>()
+                .Select(f => (TestErrorBoundary)f.Component);
+            var errorThrowingComponentId = renderer.Batches.Single()
+                .GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+
+            // Act
+            exception = new InvalidTimeZoneException("Error during SetParametersAsync");
+            rootComponent.TriggerRender();
+
+            // Assert
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+
+            // The failed subtree is disposed
+            Assert.Equal(errorThrowingComponentId, renderer.Batches[1].DisposedComponentIDs.Single());
+        }
+
+        [Fact]
+        public async Task SetParametersAsyncExceptionsCanBeHandledByClosestErrorBoundary_Async()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            Exception exception = null;
+            var rootComponent = new TestComponent(builder =>
+            {
+                TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                {
+                    builder.OpenComponent<ErrorThrowingComponent>(0);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringParameterSettingAsync), exception);
+                    builder.CloseComponent();
+                });
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            renderer.RenderRootComponent(rootComponentId);
+            var errorBoundaries = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>()
+                .Select(f => (TestErrorBoundary)f.Component).ToArray();
+            var errorThrowingComponentId = renderer.Batches.Single()
+                .GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+
+            // Act/Assert 1: No synchronous errors
+            exception = new InvalidTimeZoneException("Error during SetParametersAsync");
+            rootComponent.TriggerRender();
+            Assert.Equal(2, renderer.Batches.Count);
+
+            // Act/Assert 2: Asynchronous error
+            await errorBoundaries[1].ReceivedErrorTask;
+            Assert.Equal(3, renderer.Batches.Count);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+
+            // The failed subtree is disposed
+            Assert.Equal(errorThrowingComponentId, renderer.Batches[2].DisposedComponentIDs.Single());
+        }
+
+        [Fact]
+        public void EventDispatchExceptionsCanBeHandledByClosestErrorBoundary_Sync()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var exception = new InvalidTimeZoneException("Error during event");
+            var rootComponentId = renderer.AssignRootComponentId(new TestComponent(builder =>
+            {
+                TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                {
+                    builder.OpenComponent<ErrorThrowingComponent>(0);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringEventSync), exception);
+                    builder.CloseComponent();
+                });
+            }));
+            renderer.RenderRootComponent(rootComponentId);
+            var errorBoundaries = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>()
+                .Select(f => (TestErrorBoundary)f.Component);
+            var errorThrowingComponentId = renderer.Batches.Single()
+                .GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+            var eventHandlerId = renderer.Batches.Single().ReferenceFrames
+                .Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onmakeerror")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
+
+            // Assert
+            Assert.True(task.IsCompletedSuccessfully);
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+
+            // The failed subtree is disposed
+            Assert.Equal(errorThrowingComponentId, renderer.Batches[1].DisposedComponentIDs.Single());
+        }
+
+        [Fact]
+        public async Task EventDispatchExceptionsCanBeHandledByClosestErrorBoundary_Async()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var exception = new InvalidTimeZoneException("Error during event");
+            var rootComponentId = renderer.AssignRootComponentId(new TestComponent(builder =>
+            {
+                TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                {
+                    builder.OpenComponent<ErrorThrowingComponent>(0);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringEventAsync), exception);
+                    builder.CloseComponent();
+                });
+            }));
+            renderer.RenderRootComponent(rootComponentId);
+            var errorBoundaries = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>()
+                .Select(f => (TestErrorBoundary)f.Component);
+            var errorThrowingComponentId = renderer.Batches.Single()
+                .GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+            var eventHandlerId = renderer.Batches.Single().ReferenceFrames
+                .Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onmakeerror")
+                .AttributeEventHandlerId;
+
+            // Act/Assert 1: No error synchronously
+            var task = renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
+            Assert.Single(renderer.Batches);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Null(component.ReceivedException));
+
+            // Act/Assert 2: Error is handled asynchronously
+            await task;
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+
+            // The failed subtree is disposed
+            Assert.Equal(errorThrowingComponentId, renderer.Batches[1].DisposedComponentIDs.Single());
+        }
+
         private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
         {
             public List<Type> RequestedComponentTypes { get; } = new List<Type>();
@@ -4968,6 +5153,92 @@ namespace Microsoft.AspNetCore.Components.Test
                 // Return a task that never completes to show that access is forbidden
                 // after the synchronous return, not just after the returned task completes
                 return new TaskCompletionSource<object>().Task;
+            }
+        }
+
+        private class TestErrorBoundary : AutoRenderComponent, IErrorBoundary
+        {
+            private TaskCompletionSource receivedErrorTaskCompletionSource = new();
+
+            public Exception ReceivedException { get; private set; }
+            public Task ReceivedErrorTask => receivedErrorTaskCompletionSource.Task;
+
+            [Parameter] public RenderFragment ChildContent { get; set; }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+                => ChildContent(builder);
+
+            public void HandleException(Exception error)
+            {
+                ReceivedException = error;
+                receivedErrorTaskCompletionSource.SetResult();
+            }
+
+            public static void RenderNestedErrorBoundaries(RenderTreeBuilder builder, RenderFragment innerContent)
+            {
+                // Create an error boundary
+                builder.OpenComponent<TestErrorBoundary>(0);
+                builder.AddAttribute(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(builder =>
+                {
+                    // ... containing another error boundary, containing the content
+                    builder.OpenComponent<TestErrorBoundary>(0);
+                    builder.AddAttribute(1, nameof(TestErrorBoundary.ChildContent), innerContent);
+                    builder.CloseComponent();
+                }));
+                builder.CloseComponent();
+            }
+        }
+
+        private class ErrorThrowingComponent : AutoRenderComponent, IHandleEvent
+        {
+            [Parameter] public Exception ThrowDuringRender { get; set; }
+            [Parameter] public Exception ThrowDuringEventSync { get; set; }
+            [Parameter] public Exception ThrowDuringEventAsync { get; set; }
+            [Parameter] public Exception ThrowDuringParameterSettingSync { get; set; }
+            [Parameter] public Exception ThrowDuringParameterSettingAsync { get; set; }
+
+            public override async Task SetParametersAsync(ParameterView parameters)
+            {
+                _ = base.SetParametersAsync(parameters);
+
+                if (ThrowDuringParameterSettingSync is not null)
+                {
+                    throw ThrowDuringParameterSettingSync;
+                }
+
+                if (ThrowDuringParameterSettingAsync is not null)
+                {
+                    await Task.Yield();
+                    throw ThrowDuringParameterSettingAsync;
+                }
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                if (ThrowDuringRender is not null)
+                {
+                    throw ThrowDuringRender;
+                }
+
+                builder.OpenElement(0, "someelem");
+                builder.AddAttribute(1, "onmakeerror", EventCallback.Factory.Create(this, () => { }));
+                builder.AddContent(1, "Hello");
+                builder.CloseElement();
+            }
+
+            public async Task HandleEventAsync(EventCallbackWorkItem item, object arg)
+            {
+                if (ThrowDuringEventSync is not null)
+                {
+                    throw ThrowDuringEventSync;
+                }
+
+                await Task.Yield();
+
+                if (ThrowDuringEventAsync is not null)
+                {
+                    throw ThrowDuringEventAsync;
+                }
             }
         }
     }
