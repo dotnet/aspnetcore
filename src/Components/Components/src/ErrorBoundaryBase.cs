@@ -23,25 +23,21 @@ namespace Microsoft.AspNetCore.Components
         [Parameter] public RenderFragment<Exception>? ErrorContent { get; set; }
 
         /// <summary>
-        /// Specifies whether to reset the error state each time this component instance is rendered
-        /// by its parent. This allows the child content to be recreated in an attempt to recover from the error.
-        /// </summary>
-        [Parameter] public bool AutoRecover { get; set; }
-
-        /// <summary>
         /// Gets the current exception, or null if there is no exception.
         /// </summary>
         protected Exception? CurrentException { get; private set; }
 
-        /// <inheritdoc />
-        public override Task SetParametersAsync(ParameterView parameters)
+        /// <summary>
+        /// Resets the error boundary to a non-errored state. If the error boundary is not
+        /// already in an errored state, the call has no effect.
+        /// </summary>
+        public void Recover()
         {
-            if (AutoRecover)
+            if (CurrentException is not null)
             {
                 CurrentException = null;
+                StateHasChanged();
             }
-
-            return base.SetParametersAsync(parameters);
         }
 
         /// <summary>

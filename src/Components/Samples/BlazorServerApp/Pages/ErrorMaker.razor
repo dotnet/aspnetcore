@@ -36,25 +36,13 @@
 }
 
 <hr />
-<h2>AutoRecover</h2>
-<p>These errors will be caught by the inline error boundary. After recovery, the counter state will be reset, because it's a new instance.</p>
-<ErrorBoundary AutoRecover="true">
-    <ChildContent>
-        <ErrorCausingCounter />
-    </ChildContent>
-    <ErrorContent>
-        <p>Here is some custom error content. If you re-render the container, I'll try to recover.</p>
-    </ErrorContent>
-</ErrorBoundary>
-<button @onclick="@(() => { })">Re-render container</button>
-
-<hr />
 <h2>Custom error boundary</h2>
 <p>This shows how to create a common custom error UI by subclassing ErrorBoundary.</p>
 
-<CustomErrorBoundary>
+<CustomErrorBoundary @ref="customErrorBoundary">
     <ErrorCausingCounter />
 </CustomErrorBoundary>
+<button @onclick="@(() => customErrorBoundary!.Recover())">Recover programmatically</button>
 
 <hr />
 <h2>Custom error boundary that tries to ignore errors</h2>
@@ -89,6 +77,7 @@
     private bool throwWhileRendering;
     private bool throwInline;
     private bool throwInErrorContent;
+    private ErrorBoundaryBase? customErrorBoundary;
 
     void EventHandlerErrorSync()
         => throw new InvalidTimeZoneException("Synchronous error from event handler");

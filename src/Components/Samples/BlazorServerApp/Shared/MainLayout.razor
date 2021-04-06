@@ -10,7 +10,7 @@
     </div>
 
     <div class="content px-4">
-        <ErrorBoundary AutoRecover="true">
+        <ErrorBoundary @ref="pageErrorBoundary">
             @Body
         </ErrorBoundary>
     </div>
@@ -21,3 +21,13 @@
     <a class="reload">Reload</a>
     <a class="dismiss">X</a>
 </div>
+
+@code {
+    ErrorBoundary? pageErrorBoundary;
+
+    protected override void OnParametersSet()
+    {
+        // On each navigation, reset any error state so the user can move to a different page
+        pageErrorBoundary?.Recover();
+    }
+}
