@@ -9,22 +9,22 @@ namespace System.Threading.Tasks
     {
         public static Task<T> DefaultTimeout<T>(this ValueTask<T> task)
         {
-            return task.AsTask().TimeoutAfter(TestConstants.DefaultTimeout);
+            return task.AsTask().WaitAsync(TestConstants.DefaultTimeout);
         }
 
         public static Task DefaultTimeout(this ValueTask task)
         {
-            return task.AsTask().TimeoutAfter(TestConstants.DefaultTimeout);
+            return task.AsTask().WaitAsync(TestConstants.DefaultTimeout);
         }
 
         public static Task<T> DefaultTimeout<T>(this Task<T> task)
         {
-            return task.TimeoutAfter(TestConstants.DefaultTimeout);
+            return task.WaitAsync(TestConstants.DefaultTimeout);
         }
 
         public static Task DefaultTimeout(this Task task)
         {
-            return task.TimeoutAfter(TestConstants.DefaultTimeout);
+            return task.WaitAsync(TestConstants.DefaultTimeout);
         }
     }
 }

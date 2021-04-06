@@ -12,22 +12,22 @@ namespace System.Threading.Tasks
 
         public static Task<T> DefaultTimeout<T>(this ValueTask<T> task)
         {
-            return task.AsTask().TimeoutAfter(DefaultTimeoutTimeSpan);
+            return task.AsTask().WaitAsync(DefaultTimeoutTimeSpan);
         }
 
         public static Task DefaultTimeout(this ValueTask task)
         {
-            return task.AsTask().TimeoutAfter(DefaultTimeoutTimeSpan);
+            return task.AsTask().WaitAsync(DefaultTimeoutTimeSpan);
         }
 
         public static Task<T> DefaultTimeout<T>(this Task<T> task)
         {
-            return task.TimeoutAfter(DefaultTimeoutTimeSpan);
+            return task.WaitAsync(DefaultTimeoutTimeSpan);
         }
 
         public static Task DefaultTimeout(this Task task)
         {
-            return task.TimeoutAfter(DefaultTimeoutTimeSpan);
+            return task.WaitAsync(DefaultTimeoutTimeSpan);
         }
 
         private static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout,

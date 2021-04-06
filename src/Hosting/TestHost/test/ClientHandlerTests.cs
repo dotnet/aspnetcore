@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WaitAsync(DefaultTimeout));
             block.SetResult(0);
         }
 
@@ -415,7 +415,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100, cts.Token);
             Assert.False(readTask.IsCompleted, "Not Completed");
             cts.Cancel();
-            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WaitAsync(DefaultTimeout));
             block.SetResult(0);
         }
 
