@@ -10,10 +10,6 @@ else if (ErrorContent is not null)
 else
 {
     <div style="background-color: yellow; border: 2px dashed black; white-space: pre; font-family: consolas, monospace; padding: 0.5rem;">
-        @{ #if DEBUG }
-            @CurrentException.ToString()
-        @{ #else }
-            <p>Sorry, there was a problem.</p>
-        @{ #endif }
+        @CurrentException.ToString()
     </div>
 }

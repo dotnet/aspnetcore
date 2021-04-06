@@ -1,6 +1,4 @@
-﻿@page "/errormaker"
-
-<h2>Event handlers</h2>
+﻿<h2>Event handlers</h2>
 <p>These errors will be caught by the closest error boundary ancestor.</p>
 <button @onclick="@EventHandlerErrorSync">Synchronous</button>
 <button @onclick="@EventHandlerErrorAsync">Asynchronous</button>
@@ -77,7 +75,7 @@
     private bool throwWhileRendering;
     private bool throwInline;
     private bool throwInErrorContent;
-    private ErrorBoundaryBase? customErrorBoundary;
+    private ErrorBoundaryBase customErrorBoundary;
 
     void EventHandlerErrorSync()
         => throw new InvalidTimeZoneException("Synchronous error from event handler");

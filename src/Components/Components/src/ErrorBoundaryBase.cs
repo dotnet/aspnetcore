@@ -44,7 +44,10 @@ namespace Microsoft.AspNetCore.Components
         /// Invoked by the base class when an error is being handled.
         /// </summary>
         /// <param name="exception">The <see cref="Exception"/> being handled.</param>
-        protected abstract Task OnErrorAsync(Exception exception);
+        protected virtual Task OnErrorAsync(Exception exception)
+        {
+            return Task.CompletedTask;
+        }
 
         void IErrorBoundary.HandleException(Exception exception)
         {
