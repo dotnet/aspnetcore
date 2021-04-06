@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
@@ -27,6 +27,7 @@
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" Link="Shared\ServerInfrastructure\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" Link="Shared\ValueTaskExtensions\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)StackTrace\StackFrame\**\*.cs" Link="Shared\StackTrace\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)Dictionary\**\*.cs" Link="Shared\Dictionary\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\StackFrame\**\*.cs" Link="Shared\TypeNameHelper\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" Link="Shared\ValueStopwatch\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" Link="Shared\WebEncoders\%(Filename)%(Extension)"/>
