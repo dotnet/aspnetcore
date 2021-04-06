@@ -47,16 +47,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public void ConnectionReadFin(SocketConnection connection)
         {
-            if (!_logger.IsEnabled(LogLevel.Debug)) return;
-
-            _connectionReadFin(_logger, connection.ConnectionId, null);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _connectionReadFin(_logger, connection.ConnectionId, null);
+            }
         }
 
         public void ConnectionWriteFin(SocketConnection connection, string reason)
         {
-            if (!_logger.IsEnabled(LogLevel.Debug)) return;
-
-            _connectionWriteFin(_logger, connection.ConnectionId, reason, null);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _connectionWriteFin(_logger, connection.ConnectionId, reason, null);
+            }
         }
 
         public void ConnectionWrite(SocketConnection connection, int count)
@@ -73,9 +75,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public void ConnectionError(SocketConnection connection, Exception ex)
         {
-            if (!_logger.IsEnabled(LogLevel.Debug)) return;
-
-            _connectionError(_logger, connection.ConnectionId, ex);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _connectionError(_logger, connection.ConnectionId, ex);
+            }
         }
 
         public void ConnectionReset(string connectionId)
@@ -85,23 +88,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public void ConnectionReset(SocketConnection connection)
         {
-            if (!_logger.IsEnabled(LogLevel.Debug)) return;
-
-            _connectionReset(_logger, connection.ConnectionId, null);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _connectionReset(_logger, connection.ConnectionId, null);
+            }
         }
 
         public void ConnectionPause(SocketConnection connection)
         {
-            if (!_logger.IsEnabled(LogLevel.Debug)) return;
-
-            _connectionPause(_logger, connection.ConnectionId, null);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _connectionPause(_logger, connection.ConnectionId, null);
+            }
         }
 
         public void ConnectionResume(SocketConnection connection)
         {
-            if (!_logger.IsEnabled(LogLevel.Debug)) return;
-
-            _connectionResume(_logger, connection.ConnectionId, null);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _connectionResume(_logger, connection.ConnectionId, null);
+            }
         }
 
         public IDisposable BeginScope<TState>(TState state) => _logger.BeginScope(state);
