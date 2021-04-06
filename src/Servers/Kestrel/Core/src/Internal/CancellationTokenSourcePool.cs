@@ -25,8 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private bool Return(PooledCancellationTokenSource cts)
         {
-            // This counting isn't accurate, but it's good enough for what we need to avoid using _queue.Count which could be expensive
-            if (!cts.TryReset() || Interlocked.Increment(ref _count) > MaxQueueSize)
+            if (Interlocked.Increment(ref _count) > MaxQueueSize || !cts.TryReset())
             {
                 Interlocked.Decrement(ref _count);
                 return false;
