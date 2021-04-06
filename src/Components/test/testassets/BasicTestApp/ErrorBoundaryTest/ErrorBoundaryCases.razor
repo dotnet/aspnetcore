@@ -1,17 +1,17 @@
 ﻿<h2>Event handlers</h2>
 <p>These errors will be caught by the closest error boundary ancestor.</p>
-<button @onclick="@EventHandlerErrorSync">Synchronous</button>
-<button @onclick="@EventHandlerErrorAsync">Asynchronous</button>
+<button id="event-sync" @onclick="@EventHandlerErrorSync">Synchronous</button>
+<button id="event-async" @onclick="@EventHandlerErrorAsync">Asynchronous</button>
 
 <hr />
 <h2>Lifecycle methods</h2>
 <p>These errors will be caught by the closest error boundary ancestor.</p>
-<div><label><input @bind="throwInOnParametersSet" type="checkbox" /> OnParametersSet (sync)</label></div>
-<div><label><input @bind="throwInOnParametersSetAsync" type="checkbox" /> OnParametersSetAsync (async)</label></div>
-<div><label><input @bind="throwInOnParametersSetViaCascading" type="checkbox" /> OnParametersSet via cascading parameter (sync)</label></div>
-<div><label><input @bind="throwInOnParametersSetAsyncViaCascading" type="checkbox" /> OnParametersSetAsync via cascading parameter (async)</label></div>
-<div><label><input @bind="throwInOnAfterRender" type="checkbox" /> OnAfterRender (sync)</label></div>
-<div><label><input @bind="throwInOnAfterRenderAsync" type="checkbox" /> OnAfterRenderAsync (async)</label></div>
+<div><label id="parametersset-sync"><input @bind="throwInOnParametersSet" type="checkbox" /> OnParametersSet (sync)</label></div>
+<div><label id="parametersset-async"><input @bind="throwInOnParametersSetAsync" type="checkbox" /> OnParametersSetAsync (async)</label></div>
+<div><label id="parametersset-cascade-sync"><input @bind="throwInOnParametersSetViaCascading" type="checkbox" /> OnParametersSet via cascading parameter (sync)</label></div>
+<div><label id="parametersset-cascade-async"><input @bind="throwInOnParametersSetAsyncViaCascading" type="checkbox" /> OnParametersSetAsync via cascading parameter (async)</label></div>
+<div><label id="afterrender-sync"><input @bind="throwInOnAfterRender" type="checkbox" /> OnAfterRender (sync)</label></div>
+<div><label id="afterrender-async"><input @bind="throwInOnAfterRenderAsync" type="checkbox" /> OnAfterRenderAsync (async)</label></div>
 
 <CascadingValue Name="@nameof(ErrorCausingChild.ThrowOnCascadingParameterNotification)"
                 Value="@throwInOnParametersSetViaCascading">
@@ -27,7 +27,7 @@
 <hr />
 <h2>Rendering</h2>
 <p>These errors will be caught by the closest error boundary ancestor.</p>
-<label><input @bind="throwWhileRendering" type="checkbox" /> Throw during rendering</label>
+<label><input id="while-rendering" @bind="throwWhileRendering" type="checkbox" /> Throw during rendering</label>
 @if (throwWhileRendering)
 {
     throw new InvalidTimeZoneException($"Exception from {nameof(BuildRenderTree)}");
