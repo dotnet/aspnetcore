@@ -1,119 +1,85 @@
 ﻿@page "/errormaker"
 
-<fieldset>
-    <legend>Error maker</legend>
+<h2>Event handlers</h2>
+<p>These errors will be caught by the closest error boundary ancestor.</p>
+<button @onclick="@EventHandlerErrorSync">Synchronous</button>
+<button @onclick="@EventHandlerErrorAsync">Asynchronous</button>
 
-    <fieldset>
-        <legend>Event handlers</legend>
-        <button @onclick="@EventHandlerErrorSync">Synchronous</button>
-        <button @onclick="@EventHandlerErrorAsync">Asynchronous</button>
-    </fieldset>
+<hr />
+<h2>Lifecycle methods</h2>
+<p>These errors will be caught by the closest error boundary ancestor.</p>
+<div><label><input @bind="throwInOnParametersSet" type="checkbox" /> OnParametersSet (sync)</label></div>
+<div><label><input @bind="throwInOnParametersSetAsync" type="checkbox" /> OnParametersSetAsync (async)</label></div>
+<div><label><input @bind="throwInOnParametersSetViaCascading" type="checkbox" /> OnParametersSet via cascading parameter (sync)</label></div>
+<div><label><input @bind="throwInOnParametersSetAsyncViaCascading" type="checkbox" /> OnParametersSetAsync via cascading parameter (async)</label></div>
+<div><label><input @bind="throwInOnAfterRender" type="checkbox" /> OnAfterRender (sync)</label></div>
+<div><label><input @bind="throwInOnAfterRenderAsync" type="checkbox" /> OnAfterRenderAsync (async)</label></div>
 
-    <fieldset>
-        <legend>Lifecycle methods</legend>
-        <div><label><input @bind="throwInOnParametersSet" type="checkbox" /> OnParametersSet (sync)</label></div>
-        <div><label><input @bind="throwInOnParametersSetAsync" type="checkbox" /> OnParametersSetAsync (async)</label></div>
-        <div><label><input @bind="throwInOnParametersSetViaCascading" type="checkbox" /> OnParametersSet via cascading parameter (sync)</label></div>
-        <div><label><input @bind="throwInOnParametersSetAsyncViaCascading" type="checkbox" /> OnParametersSetAsync via cascading parameter (async)</label></div>
-        <div><label><input @bind="throwInOnAfterRender" type="checkbox" /> OnAfterRender (sync)</label></div>
-        <div><label><input @bind="throwInOnAfterRenderAsync" type="checkbox" /> OnAfterRenderAsync (async)</label></div>
+<CascadingValue Name="@nameof(ErrorCausingChild.ThrowOnCascadingParameterNotification)"
+                Value="@throwInOnParametersSetViaCascading">
+    <CascadingValue Name="@nameof(ErrorCausingChild.ThrowOnCascadingParameterNotificationAsync)"
+                    Value="@throwInOnParametersSetAsyncViaCascading">
+        <ErrorCausingChild ThrowOnParametersSet="@throwInOnParametersSet"
+                           ThrowOnParametersSetAsync="@throwInOnParametersSetAsync"
+                           ThrowOnAfterRender="@throwInOnAfterRender"
+                           ThrowOnAfterRenderAsync="@throwInOnAfterRenderAsync" />
+    </CascadingValue>
+</CascadingValue>
 
-        <CascadingValue Name="@nameof(ErrorCausingChild.ThrowOnCascadingParameterNotification)"
-                        Value="@throwInOnParametersSetViaCascading">
-            <CascadingValue Name="@nameof(ErrorCausingChild.ThrowOnCascadingParameterNotificationAsync)"
-                            Value="@throwInOnParametersSetAsyncViaCascading">
-                <ErrorCausingChild ThrowOnParametersSet="@throwInOnParametersSet"
-                                   ThrowOnParametersSetAsync="@throwInOnParametersSetAsync"
-                                   ThrowOnAfterRender="@throwInOnAfterRender"
-                                   ThrowOnAfterRenderAsync="@throwInOnAfterRenderAsync" />
-            </CascadingValue>
-        </CascadingValue>
-    </fieldset>
+<hr />
+<h2>Rendering</h2>
+<p>These errors will be caught by the closest error boundary ancestor.</p>
+<label><input @bind="throwWhileRendering" type="checkbox" /> Throw during rendering</label>
+@if (throwWhileRendering)
+{
+    throw new InvalidTimeZoneException($"Exception from {nameof(BuildRenderTree)}");
+}
 
-    <fieldset>
-        <legend>Rendering</legend>
-        <label><input @bind="throwWhileRendering" type="checkbox" /> Throw during rendering</label>
-        @if (throwWhileRendering)
-        {
-            throw new InvalidTimeZoneException($"Exception from {nameof(BuildRenderTree)}");
-        }
-    </fieldset>
+<hr />
+<h2>AutoRecover</h2>
+<p>These errors will be caught by the inline error boundary. After recovery, the counter state will be reset, because it's a new instance.</p>
+<ErrorBoundary AutoRecover="true">
+    <ChildContent>
+        <ErrorCausingCounter />
+    </ChildContent>
+    <ErrorContent>
+        <p>Here is some custom error content. If you re-render the container, I'll try to recover.</p>
+    </ErrorContent>
+</ErrorBoundary>
+<button @onclick="@(() => { })">Re-render container</button>
 
-    <fieldset>
-        <legend>Trying to ignore errors</legend>
-        <ErrorIgnorer>
-            <ErrorCausingCounter />
-        </ErrorIgnorer>
-    </fieldset>
+<hr />
+<h2>Custom error boundary</h2>
+<p>This shows how to create a common custom error UI by subclassing ErrorBoundary.</p>
 
-    <fieldset>
-        <legend>Custom error boundary component</legend>
-        <CustomErrorBoundary>
-            <ErrorCausingCounter />
-        </CustomErrorBoundary>
-    </fieldset>
+<CustomErrorBoundary>
+    <ErrorCausingCounter />
+</CustomErrorBoundary>
 
-    <fieldset>
-        <legend>Exception inline in error boundary markup</legend>
-        <ErrorBoundary>
-            <ChildContent>
-                @if (throwInline) { throw new InvalidTimeZoneException("Inline exception"); }
-                 <p>Hello!</p>
-            </ChildContent>
-            <ErrorContent>
-                @if (throwInErrorContent) { throw new InvalidTimeZoneException("Inline exception in error content"); }
-                <p>There was an error: @context</p>
-            </ErrorContent>
-        </ErrorBoundary>
-        <button @onclick="@(() => throwInline = true)">Throw in child content</button>
-        <button @onclick="@(() => throwInErrorContent = true)">Throw in error content</button>
-    </fieldset>
-</fieldset>
+<hr />
+<h2>Custom error boundary that tries to ignore errors</h2>
+<p>This shows that, even if a custom error boundary tries to continue rendering in a non-error state after an error, the subtree will be forcibly rebuilt. If there's an error while already in an error state, it's fatal.</p>
+<ErrorIgnorer>
+    <ErrorCausingCounter />
+</ErrorIgnorer>
+
+<hr />
+<h2>Exception inline in error boundary markup</h2>
+<p>This shows that, if an ErrorBoundary itself fails while rendering its own ChildContent, then it can catch its own exception (except if it's already showing an exception, in which case it's fatal).</p>
+<ErrorBoundary>
+    <ChildContent>
+        @if (throwInline) { throw new InvalidTimeZoneException("Inline exception"); }
+        <p>Hello!</p>
+    </ChildContent>
+    <ErrorContent>
+        @if (throwInErrorContent) { throw new InvalidTimeZoneException("Inline exception in error content"); }
+        <p>There was an error: @context</p>
+    </ErrorContent>
+</ErrorBoundary>
+<button @onclick="@(() => throwInline = true)">Throw in child content</button>
+<button @onclick="@(() => throwInErrorContent = true)">Throw in error content</button>
 
 @code {
-    // A weird subtlety is what happens if you do:
-    // <ErrorBoundary>Some inline content that may throw, either in a event-handling lambda or on render</ErrorBoundar>
-    // Syntactically it looks as if the error boundary will take care of errors in that content inside itself, but
-    // actually:
-    // [1] Any error-throwing lambdas in there are mapped to the host component outside the <ErrorBoundary>, since
-    //     that's where the delegate lives. So those errors will not be handled by this error boundary.
-    // [2] Any rendering errors in there are explicitly *not* dispatched to that <ErrorBoundary> because it would
-    //     commonly be an infinite error loop. So again, those errors will go up to any boundaries in ancestors.
-    // People will have to understand that error boundaries are responsible for their descendants, not for themselves.
-    // However on consideration I think we should probably change rule [2], as long as there is some mechanism to
-    // detect infinite error loops.
-
-    // Note that unhandled exceptions inside InvokeAsync are already non-fatal, since we simply return them to the
-    // upstream caller who decides what to do. We lack any API for transferring execution into the sync context
-    // that returns void and takes care of its own error handling (besides the complicated trick of stashing an
-    // exception in a field and triggering a render that then throws during rendering). If we add such an API
-    // in the future, it would be a method on ComponentBase that internally does InvokeAsync to a delegate that
-    // does try/catch around your Action/Func<Task>, and if there's an exception, calls some new method on RenderHandle
-    // that passes the exception and IComponent instance onto the Renderer, which then uses TrySendExceptionToErrorBoundary
-    // and falls back on HandleError (fatal). We could call it something like Execute/ExecuteAsync (both void),
-    // or maybe InvokeAndHandle/InvokeAndHandleAsync (both void).
-
-    // I'm proposing not to allow handling exceptions that occur during either IComponentActivator.CreateInstance
-    // (e.g., component constructor) or IComponent.Attach, because:
-    // [1] For most applications, these won't run any developer-supplied code, and will only run the framework's
-    //     built-in logic (e.g., ComponentBase.Attach which can't throw). The value here is pretty low.
-    // [2] Supporting recovery from these is difficult and leads to entirely new states, such as a "component" RenderTreeFrame
-    //     not actually having an associated ComponentState because we never initialized it in the first place.
-    // These particular lifecycle points are outside the scope of error recovery that could be achieved in user code today
-    // (via the "cascading a custom ErrorBoundary-type component" technique), so are outside the scope of this work. We retain
-    // the option of making component initialization errors recoverable in the future, as I think it's fair to say that would
-    // not be a breaking change, as we'd be replacing a previously-fatal error with a nonfatal one.
-    // - Actually we don't need to handle it for these anyway, because in these cases the exception will just bubble
-    //   up to the SetParametersAsync on the parent, and become a handleable error at that level.
-
-    // After a lot of consideration, I don't think we should allow exceptions during Dispose/DisposeAsync to be recoverable.
-    // We could do so, since components are only disposed once they are removed from their parents, so even if their disposal
-    // fails we know they are gone from the component hierarchy anyway, and we can still be sure to clean up all the framework
-    // managed resources for them and their descendants. However, if disposal throws, then it's very likely that the application
-    // cleanup logic didn't complete properly, and hence the application is now leaking memory. It's not smart to have a default
-    // behavior that lets the developer get away with randomly incomplete cleanup. If a developer really wants to opt into this
-    // on a per-Dispose/DisposeAsync basis, they can use a try/catch there, and in most cases they should not do so.
-
     private bool throwInOnParametersSet;
     private bool throwInOnParametersSetAsync;
     private bool throwInOnParametersSetViaCascading;
