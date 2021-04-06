@@ -115,7 +115,11 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessResult> RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
+        internal async Task<ProcessResult> RunDotNetPublishAsync(
+            IDictionary<string, string> packageOptions = null,
+            string additionalArgs = null,
+            bool noRestore = true,
+            string dotnetMuxerPath = null)
         {
             Output.WriteLine("Publishing ASP.NET Core application...");
 
@@ -124,7 +128,9 @@ namespace Templates.Test.Helpers
 
             var restoreArgs = noRestore ? "--no-restore" : null;
 
-            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish {restoreArgs} -c Release /bl {additionalArgs}", packageOptions);
+            dotnetMuxerPath ??= DotNetMuxer.MuxerPathOrDefault();
+
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, dotnetMuxerPath, $"publish {restoreArgs} -c Release /bl {additionalArgs}", packageOptions);
             await result.Exited;
             CaptureBinLogOnFailure(result);
             return new ProcessResult(result);

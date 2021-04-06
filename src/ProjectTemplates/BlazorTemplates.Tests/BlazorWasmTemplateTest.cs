@@ -423,6 +423,107 @@ namespace Templates.Test
         public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
             => CreateBuildPublishAsync(instance.Name, args: instance.Arguments, targetFramework: "netstandard2.1");
 
+        [Fact]
+        public async Task PublishingBlazorWebAssemblyAppWithAOTWorks()
+        {
+            var muxerPath = GetDotnetPath();
+            Assert.True(File.Exists(muxerPath), $"Could not find muxer at {muxerPath}.");
+
+            var project = await ProjectFactory.GetOrCreateProject("blazoraot", Output);
+
+            // We're going to have to install additional workload to publish AOT apps. We want to avoid polluting the
+            // dotnet installed as part of this repo's build. Instead we'll copy it to a different directory, 
+            var copiedDotNetPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "aot-sdk", Path.GetRandomFileName()));
+            CopyDirectoryRecursive(new FileInfo(muxerPath).Directory, copiedDotNetPath);
+            UpdateWorkloadFiles(copiedDotNetPath.FullName);
+
+            var copiedDotnetMuxer = Path.Combine(copiedDotNetPath.FullName, Path.GetFileName(muxerPath));
+
+            await AcquireAOTToolChain(copiedDotnetMuxer);
+            var createResult = await project.RunDotNetNewAsync("blazorwasm");
+
+            Assert.True(createResult.ExitCode == 0, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+            var projectFile = Directory.EnumerateFiles(project.TemplateOutputDir, "*.csproj").First();
+            var content = File.ReadAllText(projectFile);
+            File.WriteAllText(projectFile, content.Replace(
+                "</TargetFramework>",
+                @"</TargetFramework>
+    <RunAOTCompilation>true</RunAOTCompilation>"));
+
+            var publishResult = await project.RunDotNetPublishAsync(noRestore: false, dotnetMuxerPath: copiedDotnetMuxer);
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
+
+            var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
+            var browserKind = BrowserKind.Chromium;
+            using (serveProcess)
+            {
+                Output.WriteLine($"Opening browser at {listeningUri}...");
+                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                {
+                    await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                    var page = await NavigateToPage(browser, listeningUri);
+                    await TestBasicNavigation(project.ProjectName, page);
+                }
+                else
+                {
+                    EnsureBrowserAvailable(browserKind);
+                }
+            }
+
+            static string GetDotnetPath()
+            {
+                // Process.MainModule might not be `dotnet`. We can instead calculate the dotnet SDK path
+                // by looking at the shared fx directory instead.
+                // depsFile = /dotnet/shared/Microsoft.NETCore.App/6.0-preview2/Microsoft.NETCore.App.deps.json
+                var depsFile = (string)AppContext.GetData("FX_DEPS_FILE");
+                return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(depsFile), "..", "..", "..", "dotnet" + (OperatingSystem.IsWindows() ? ".exe" : "")));
+            }
+
+            static void CopyDirectoryRecursive(DirectoryInfo source, DirectoryInfo destination)
+            {
+                foreach (var item in source.EnumerateFileSystemInfos())
+                {
+                    var path = Path.Combine(destination.FullName, item.Name);
+                    if (item is FileInfo file)
+                    {
+                        File.Copy(file.FullName, path);
+                    }
+                    else
+                    {
+                        var sourceSubDir = (DirectoryInfo)item;
+                        var destinationSubDir = Directory.CreateDirectory(path);
+                        CopyDirectoryRecursive(sourceSubDir, destinationSubDir);
+                    }
+                }
+            }
+
+            async Task AcquireAOTToolChain(string copiedDotNetPath)
+            {
+                var acquireTool = Path.Combine(AppContext.BaseDirectory, "dotnet-install-blazoraot.dll");
+                Assert.True(File.Exists(acquireTool), $"Unable to find dotnet-install-blazoraot tool at {acquireTool}.");
+                using var process = ProcessEx.Run(Output, Directory.GetCurrentDirectory(), copiedDotNetPath, args: $"\"{acquireTool}\"");
+                await process.Exited.WaitAsync(TimeSpan.FromMinutes(15));
+                Assert.True(0 == process.ExitCode, ErrorMessages.GetFailedProcessMessage("aot-install", project, new ProcessResult(process)));
+            }
+
+            static void UpdateWorkloadFiles(string copiedDotnetPath)
+            {
+                // sdk-manifests/version/Microsoft.NET.Workload.BlazorWebAssembly
+                var manifestsDirectory = Path.Combine(copiedDotnetPath, "sdk-manifests");
+                var versionDirectory = Directory.EnumerateDirectories(manifestsDirectory).Single();
+                var blazorDirectory = Path.Combine(versionDirectory, "Microsoft.NET.Workload.BlazorWebAssembly");
+
+                foreach (var file in new[] { "WorkloadManifest.json", "WorkloadManifest.targets" })
+                {
+                    var source = Path.Combine(AppContext.BaseDirectory, file);
+                    var destination = Path.Combine(blazorDirectory, file);
+
+                    File.Copy(source, destination, overwrite: true);
+                }
+            }
+        }
+
         protected async Task BuildAndRunTest(string appName, Project project, BrowserKind browserKind, bool usesAuth = false)
         {
             using var aspNetProcess = project.StartBuiltProjectAsync();

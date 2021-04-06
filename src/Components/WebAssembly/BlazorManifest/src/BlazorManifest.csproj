@@ -11,7 +11,7 @@
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
-  <Target Name="_PrepareForPack" BeforeTargets="CoreBuild">
+  <Target Name="_PrepareForPack" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <_WorkloadManifestProperties>
         MicrosoftNETRuntimeMonoAOTCompilerTaskVersion=$(MicrosoftNETRuntimeMonoAOTCompilerTaskVersion);
@@ -31,8 +31,8 @@
       OutputPath="$(WorkloadManifestPath)" />
 
     <ItemGroup>
-      <None Include="$(WorkloadManifestPath)" Pack="true" PackagePath="\" />
-      <None Include="WorkloadManifest.targets" Pack="true" PackagePath="\" />
+      <Content Include="$(WorkloadManifestPath)" Pack="true" PackagePath="\" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+      <Content Include="WorkloadManifest.targets" Pack="true" PackagePath="\" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
       <None Include="_._" Pack="true" PackagePath="lib\$(DefaultNetCoreTargetFramework)\_._" />
     </ItemGroup>
   </Target>

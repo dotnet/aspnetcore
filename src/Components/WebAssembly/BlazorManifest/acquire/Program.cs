@@ -43,7 +43,7 @@ namespace acquire
                     var source = Path.Combine(restoreDirectory, id.ToLowerInvariant(), version);
                     var destination = Path.Combine(sdkDirectory, "packs", id, version);
 
-                    Move(source, destination);
+                    Copy(source, destination);
                 }
 
                 var sdkVersionProc = Process.Start(new ProcessStartInfo
@@ -67,7 +67,7 @@ namespace acquire
             return 0;
         }
 
-        static void Move(string source, string destination)
+        static void Copy(string source, string destination)
         {
             Console.WriteLine($"Moving {source} to {destination}...");
             if (Directory.Exists(destination))
@@ -75,9 +75,27 @@ namespace acquire
                 Directory.Delete(destination, recursive: true);
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(destination));
+            var destinationDirectory = Directory.CreateDirectory(destination);
 
-            Directory.Move(source, destination);
+            CopyDirectoryRecursive(new DirectoryInfo(source), destinationDirectory);
+        }
+
+        static void CopyDirectoryRecursive(DirectoryInfo source, DirectoryInfo destination)
+        {
+            foreach (var item in source.EnumerateFileSystemInfos())
+            {
+                var path = Path.Combine(destination.FullName, item.Name);
+                if (item is FileInfo file)
+                {
+                    File.Copy(file.FullName, path);
+                }
+                else
+                {
+                    var sourceSubDir = (DirectoryInfo)item;
+                    var destinationSubDir = Directory.CreateDirectory(path);
+                    CopyDirectoryRecursive(sourceSubDir, destinationSubDir);
+                }
+            }
         }
 
         static List<(string Id, string Version)> GetPacks(string sdkDirectory)

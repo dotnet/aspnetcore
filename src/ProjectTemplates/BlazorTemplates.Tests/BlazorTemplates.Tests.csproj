@@ -55,7 +55,22 @@
     <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
     <ProjectReference Include="../testassets/DotNetToolsInstaller/DotNetToolsInstaller.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\BlazorManifest\acquire\dotnet-install-blazoraot.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\BlazorManifest\src\BlazorManifest.csproj" />
   </ItemGroup>
+
+  <Target Name="_CopyManifest" BeforeTargets="PrepareForRun">
+    <ItemGroup>
+      <WorkloadFile Include="$(ArtifactsDir)bin\BlazorManifest\$(Configuration)\$(DefaultNetCoreTargetFramework)\WorkloadManifest.json" />
+      <WorkloadFile Include="$(ArtifactsDir)bin\BlazorManifest\$(Configuration)\$(DefaultNetCoreTargetFramework)\WorkloadManifest.targets" />
+    </ItemGroup>
+
+    <Error Text="Blazor Workload files could not be found" Condition="@(WorkloadFile-&gt;Count()) == 0" />
+
+    <Copy SourceFiles="@(WorkloadFile)" DestinationFolder="$(OutDir)">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
 
   <!-- Shared testing infrastructure for running E2E template tests -->
   <Import Project="..\TestInfrastructure\PrepareForTest.targets" />
