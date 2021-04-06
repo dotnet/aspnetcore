@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -170,96 +169,98 @@ namespace Microsoft.AspNetCore.Http
 
             for (var i = 0; i < parameters.Length; i++)
             {
-                var parameter = parameters[i];
-
-                if (parameter.Name is null)
-                {
-                    // TODO: Add test!
-                    throw new InvalidOperationException($"Parameter {parameter} does not have a name! All parameters must be named.");
-                }
-
-                Expression argumentExpression;
-
-                var parameterCustomAttributes = parameter.GetCustomAttributes();
-
-                if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
-                {
-                    argumentExpression = BindParameterFromProperty(parameter, RouteValuesProperty, routeAttribute.Name ?? parameter.Name);
-                }
-                else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
-                {
-                    argumentExpression = BindParameterFromProperty(parameter, QueryProperty, queryAttribute.Name ?? parameter.Name);
-                }
-                else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
-                {
-                    argumentExpression = BindParameterFromProperty(parameter, HeadersProperty, headerAttribute.Name ?? parameter.Name);
-                }
-                else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
-                {
-                    if (requestBodyContext.Mode is RequestBodyMode.AsJson)
-                    {
-                        throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
-                    }
-
-                    if (requestBodyContext.Mode is RequestBodyMode.AsForm)
-                    {
-                        ThrowCannotReadBodyDirectlyAndAsForm();
-                    }
-
-                    requestBodyContext.Mode = RequestBodyMode.AsJson;
-                    requestBodyContext.JsonBodyType = parameter.ParameterType;
-                    requestBodyContext.AllowEmptyBody = bodyAttribute.AllowEmpty;
-                    argumentExpression = Expression.Convert(DeserializedBodyArg, parameter.ParameterType);
-                }
-                else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)
-                {
-                    if (requestBodyContext.Mode is RequestBodyMode.AsJson)
-                    {
-                        ThrowCannotReadBodyDirectlyAndAsForm();
-                    }
-
-                    requestBodyContext.Mode = RequestBodyMode.AsForm;
-                    argumentExpression = BindParameterFromProperty(parameter, FormProperty, formAttribute.Name ?? parameter.Name);
-                }
-                else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
-                {
-                    argumentExpression = Expression.Call(GetRequiredServiceMethodInfo.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
-                }
-                else if (parameter.ParameterType == typeof(IFormCollection))
-                {
-                    if (requestBodyContext.Mode is RequestBodyMode.AsJson)
-                    {
-                        ThrowCannotReadBodyDirectlyAndAsForm();
-                    }
-
-                    requestBodyContext.Mode = RequestBodyMode.AsForm;
-                    argumentExpression = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
-                }
-                else if (parameter.ParameterType == typeof(HttpContext))
-                {
-                    argumentExpression = HttpContextParameter;
-                }
-                else if (parameter.ParameterType == typeof(CancellationToken))
-                {
-                    argumentExpression = RequestAbortedExpr;
-                }
-                else if (parameter.ParameterType == typeof(string))
-                {
-                    argumentExpression = BindParameterFromRouteValueOrQueryString(parameter, parameter.Name);
-                }
-                else if (FindParseMethod(parameter) is { } parseMethod)
-                {
-                    argumentExpression = BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, parseMethod);
-                }
-                else
-                {
-                    argumentExpression = Expression.Call(GetRequiredServiceMethodInfo.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
-                }
-
-                args[i] = argumentExpression;
+                args[i] = CreateArgumentExpression(parameters[i], requestBodyContext);
             }
 
             return args;
+        }
+
+        private static Expression CreateArgumentExpression(ParameterInfo parameter, RequestBodyContext requestBodyContext)
+        {
+            if (parameter.Name is null)
+            {
+                // TODO: Add test!
+                throw new InvalidOperationException($"Parameter {parameter} does not have a name! All parameters must be named.");
+            }
+
+            var parameterCustomAttributes = parameter.GetCustomAttributes();
+
+            if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
+            {
+                return BindParameterFromProperty(parameter, RouteValuesProperty, routeAttribute.Name ?? parameter.Name);
+            }
+            else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
+            {
+                return BindParameterFromProperty(parameter, QueryProperty, queryAttribute.Name ?? parameter.Name);
+            }
+            else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
+            {
+                return BindParameterFromProperty(parameter, HeadersProperty, headerAttribute.Name ?? parameter.Name);
+            }
+            else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
+            {
+                if (requestBodyContext.Mode is RequestBodyMode.AsJson)
+                {
+                    throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
+                }
+
+                if (requestBodyContext.Mode is RequestBodyMode.AsForm)
+                {
+                    ThrowCannotReadBodyDirectlyAndAsForm();
+                }
+
+                requestBodyContext.Mode = RequestBodyMode.AsJson;
+                requestBodyContext.JsonBodyType = parameter.ParameterType;
+                requestBodyContext.AllowEmptyBody = bodyAttribute.AllowEmpty;
+
+                return Expression.Convert(DeserializedBodyArg, parameter.ParameterType);
+            }
+            else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)
+            {
+                if (requestBodyContext.Mode is RequestBodyMode.AsJson)
+                {
+                    ThrowCannotReadBodyDirectlyAndAsForm();
+                }
+
+                requestBodyContext.Mode = RequestBodyMode.AsForm;
+
+                return BindParameterFromProperty(parameter, FormProperty, formAttribute.Name ?? parameter.Name);
+            }
+            else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
+            {
+                return Expression.Call(GetRequiredServiceMethodInfo.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+            }
+            else if (parameter.ParameterType == typeof(IFormCollection))
+            {
+                if (requestBodyContext.Mode is RequestBodyMode.AsJson)
+                {
+                    ThrowCannotReadBodyDirectlyAndAsForm();
+                }
+
+                requestBodyContext.Mode = RequestBodyMode.AsForm;
+
+                return  Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
+            }
+            else if (parameter.ParameterType == typeof(HttpContext))
+            {
+                return HttpContextParameter;
+            }
+            else if (parameter.ParameterType == typeof(CancellationToken))
+            {
+                return RequestAbortedExpr;
+            }
+            else if (parameter.ParameterType == typeof(string))
+            {
+                return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name);
+            }
+            else if (FindParseMethod(parameter) is { } parseMethod)
+            {
+                return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, parseMethod);
+            }
+            else
+            {
+                return Expression.Call(GetRequiredServiceMethodInfo.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+            }
         }
 
         private static Expression CreateMethodCallingAndResponseWritingExpression(Expression methodCall, Type returnType)
@@ -502,16 +503,9 @@ namespace Microsoft.AspNetCore.Http
                 argumentExpression = Expression.Convert(argumentExpression, parameter.ParameterType);
             }
 
-            Expression defaultExpression;
-
-            if (parameter.HasDefaultValue)
-            {
-                defaultExpression = Expression.Constant(parameter.DefaultValue);
-            }
-            else
-            {
-                defaultExpression = Expression.Default(parameter.ParameterType);
-            }
+            Expression defaultExpression = parameter.HasDefaultValue ?
+                Expression.Constant(parameter.DefaultValue) :
+                Expression.Default(parameter.ParameterType);
 
             // property[key] == null ? default : (ParameterType){Type}.Parse(property[key]);
             return Expression.Condition(
