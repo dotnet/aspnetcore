@@ -303,7 +303,9 @@ export class HubConnection {
         const [streams, streamIds] = this._replaceStreamingParams(args);
         const invocationDescriptor = this._createStreamInvocation(methodName, args, streamIds);
 
+        // eslint-disable-next-line prefer-const
         let promiseQueue: Promise<void>;
+
         const subject = new Subject<T>();
         subject.cancelCallback = () => {
             const cancelInvocation: CancelInvocationMessage = this._createCancelInvocation(invocationDescriptor.invocationId);
@@ -428,7 +430,7 @@ export class HubConnection {
      * @param {string} methodName The name of the hub method to define.
      * @param {Function} newMethod The handler that will be raised when the hub method is invoked.
      */
-    public on(methodName: string, newMethod: (...args: any[]) => void) {
+    public on(methodName: string, newMethod: (...args: any[]) => void): void {
         if (!methodName || !newMethod) {
             return;
         }
@@ -489,7 +491,7 @@ export class HubConnection {
      *
      * @param {Function} callback The handler that will be invoked when the connection is closed. Optionally receives a single argument containing the error that caused the connection to close (if any).
      */
-    public onclose(callback: (error?: Error) => void) {
+    public onclose(callback: (error?: Error) => void): void {
         if (callback) {
             this._closedCallbacks.push(callback);
         }
@@ -499,7 +501,7 @@ export class HubConnection {
      *
      * @param {Function} callback The handler that will be invoked when the connection starts reconnecting. Optionally receives a single argument containing the error that caused the connection to start reconnecting (if any).
      */
-    public onreconnecting(callback: (error?: Error) => void) {
+    public onreconnecting(callback: (error?: Error) => void): void {
         if (callback) {
             this._reconnectingCallbacks.push(callback);
         }
@@ -509,7 +511,7 @@ export class HubConnection {
      *
      * @param {Function} callback The handler that will be invoked when the connection successfully reconnects.
      */
-    public onreconnected(callback: (connectionId?: string) => void) {
+    public onreconnected(callback: (connectionId?: string) => void): void {
         if (callback) {
             this._reconnectedCallbacks.push(callback);
         }
@@ -534,7 +536,7 @@ export class HubConnection {
                         this._invokeClientMethod(message);
                         break;
                     case MessageType.StreamItem:
-                    case MessageType.Completion:
+                    case MessageType.Completion: {
                         const callback = this._callbacks[message.invocationId];
                         if (callback) {
                             if (message.type === MessageType.Completion) {
@@ -543,10 +545,11 @@ export class HubConnection {
                             callback(message);
                         }
                         break;
+                    }
                     case MessageType.Ping:
                         // Don't care about pings
                         break;
-                    case MessageType.Close:
+                    case MessageType.Close: {
                         this._logger.log(LogLevel.Information, "Close message received from server.");
 
                         const error = message.error ? new Error("Server returned an error on close: " + message.error) : undefined;
@@ -555,7 +558,7 @@ export class HubConnection {
                             // It feels wrong not to await connection.stop() here, but processIncomingData is called as part of an onreceive callback which is not async,
                             // this is already the behavior for serverTimeout(), and HttpConnection.Stop() should catch and log all possible exceptions.
 
-                            // tslint:disable-next-line:no-floating-promises
+                            // eslint-disable-next-line @typescript-eslint/no-floating-promises
                             this.connection.stop(error);
                         } else {
                             // We cannot await stopInternal() here, but subsequent calls to stop() will await this if stopInternal() is still ongoing.
@@ -563,6 +566,7 @@ export class HubConnection {
                         }
 
                         break;
+                    }
                     default:
                         this._logger.log(LogLevel.Warning, `Invalid message type: ${message.type}.`);
                         break;
@@ -647,7 +651,7 @@ export class HubConnection {
     private serverTimeout() {
         // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
         // Terminate the connection, but we don't need to wait on the promise. This could trigger reconnecting.
-        // tslint:disable-next-line:no-floating-promises
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.connection.stop(new Error("Server timeout elapsed without receiving a message from the server."));
     }
 
@@ -693,7 +697,7 @@ export class HubConnection {
         if (this._connectionState === HubConnectionState.Disconnecting) {
             this._completeClose(error);
         } else if (this._connectionState === HubConnectionState.Connected && this._reconnectPolicy) {
-            // tslint:disable-next-line:no-floating-promises
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._reconnect(error);
         } else if (this._connectionState === HubConnectionState.Connected) {
             this._completeClose(error);
