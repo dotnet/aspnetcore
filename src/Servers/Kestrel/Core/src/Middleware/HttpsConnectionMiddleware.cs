@@ -49,6 +49,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         private readonly HttpsOptionsCallback? _httpsOptionsCallback;
         private readonly object? _httpsOptionsCallbackState;
 
+        // Pool for cancellation tokens that cancel the handshake
+        private readonly CancellationTokenSourcePool _ctsPool = new();
+
         public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options)
           : this(next, options, loggerFactory: NullLoggerFactory.Instance)
         {
@@ -150,7 +153,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             try
             {
-                using var cancellationTokenSource = new CancellationTokenSource(_handshakeTimeout);
+                using var cancellationTokenSource = _ctsPool.Rent();
+                cancellationTokenSource.CancelAfter(_handshakeTimeout);
+
                 if (_httpsOptionsCallback is null)
                 {
                     await DoOptionsBasedHandshakeAsync(context, sslStream, feature, cancellationTokenSource.Token);
