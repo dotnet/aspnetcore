@@ -5208,7 +5208,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
                 if (ThrowDuringParameterSettingAsync is not null)
                 {
-                    await Task.Yield();
+                    await Task.Delay(100);
                     throw ThrowDuringParameterSettingAsync;
                 }
             }
@@ -5233,10 +5233,9 @@ namespace Microsoft.AspNetCore.Components.Test
                     throw ThrowDuringEventSync;
                 }
 
-                await Task.Yield();
-
                 if (ThrowDuringEventAsync is not null)
                 {
+                    await Task.Delay(100);
                     throw ThrowDuringEventAsync;
                 }
             }
