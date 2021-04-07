@@ -108,9 +108,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
     }
 
-    public class ServerErrorBoundaryBase : ErrorBoundaryTest
+    public class ServerErrorBoundaryTest : ErrorBoundaryTest
     {
-        public ServerErrorBoundaryBase(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+        public ServerErrorBoundaryTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
             : base(browserFixture, serverFixture.WithServerExecution(), output)
         {
         }
