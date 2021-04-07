@@ -231,4 +231,7 @@
   <data name="DuplicateEndpointNameHeader" xml:space="preserve">
     <value>The following endpoints with a duplicate endpoint name were found.</value>
   </data>
+  <data name="FormatterMapping_MediaTypeInvalid" xml:space="preserve">
+    <value>No media type found for format '{0}'.</value>
+  </data>
 </root>

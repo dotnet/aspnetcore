@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
@@ -11,7 +12,7 @@ namespace Microsoft.Net.Http.Headers
 {
     internal abstract class HttpHeaderParser<T>
     {
-        private bool _supportsMultipleValues;
+        private readonly bool _supportsMultipleValues;
 
         protected HttpHeaderParser(bool supportsMultipleValues)
         {
@@ -27,9 +28,9 @@ namespace Microsoft.Net.Http.Headers
         // pointing to the next non-whitespace character after a delimiter. E.g. if called with a start index of 0
         // for string "value , second_value", then after the call completes, 'index' must point to 's', i.e. the first
         // non-whitespace after the separator ','.
-        public abstract bool TryParseValue(StringSegment value, ref int index, out T parsedValue);
+        public abstract bool TryParseValue(StringSegment value, ref int index, out T? parsedValue);
 
-        public T ParseValue(StringSegment value, ref int index)
+        public T? ParseValue(StringSegment value, ref int index)
         {
             // Index may be value.Length (e.g. both 0). This may be allowed for some headers (e.g. Accept but not
             // allowed by others (e.g. Content-Length). The parser has to decide if this is valid or not.
@@ -37,8 +38,7 @@ namespace Microsoft.Net.Http.Headers
 
             // If a parser returns 'null', it means there was no value, but that's valid (e.g. "Accept: "). The caller
             // can ignore the value.
-            T result;
-            if (!TryParseValue(value, ref index, out result))
+            if (!TryParseValue(value, ref index, out var result))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture,
                     "The header contains invalid values at index {0}: '{1}'", index, value.Value ?? "<null>"));
@@ -46,23 +46,23 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        public virtual bool TryParseValues(IList<string> values, out IList<T> parsedValues)
+        public virtual bool TryParseValues(IList<string>? values, [NotNullWhen(true)] out IList<T>? parsedValues)
         {
             return TryParseValues(values, strict: false, parsedValues: out parsedValues);
         }
 
-        public virtual bool TryParseStrictValues(IList<string> values, out IList<T> parsedValues)
+        public virtual bool TryParseStrictValues(IList<string>? values, [NotNullWhen(true)] out IList<T>? parsedValues)
         {
             return TryParseValues(values, strict: true, parsedValues: out parsedValues);
         }
 
-        protected virtual bool TryParseValues(IList<string> values, bool strict, out IList<T> parsedValues)
+        protected virtual bool TryParseValues(IList<string>? values, bool strict, [NotNullWhen(true)] out IList<T>? parsedValues)
         {
             Contract.Assert(_supportsMultipleValues);
             // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
             // can ignore the value.
             parsedValues = null;
-            List<T> results = null;
+            List<T>? results = null;
             if (values == null)
             {
                 return false;
@@ -70,19 +70,18 @@ namespace Microsoft.Net.Http.Headers
             for (var i = 0; i < values.Count; i++)
             {
                 var value = values[i];
-                int index = 0;
+                var index = 0;
 
                 while (!string.IsNullOrEmpty(value) && index < value.Length)
                 {
-                    T output;
-                    if (TryParseValue(value, ref index, out output))
+                    if (TryParseValue(value, ref index, out var output))
                     {
                         // The entry may not contain an actual value, like " , "
                         if (output != null)
                         {
                             if (results == null)
                             {
-                                results = new List<T>();    // Allocate it only when used 
+                                results = new List<T>();    // Allocate it only when used
                             }
                             results.Add(output);
                         }
@@ -106,17 +105,17 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
-        public virtual IList<T> ParseValues(IList<string> values)
+        public virtual IList<T> ParseValues(IList<string>? values)
         {
             return ParseValues(values, strict: false);
         }
 
-        public virtual IList<T> ParseStrictValues(IList<string> values)
+        public virtual IList<T> ParseStrictValues(IList<string>? values)
         {
             return ParseValues(values, strict: true);
         }
 
-        protected virtual IList<T> ParseValues(IList<string> values, bool strict)
+        protected virtual IList<T> ParseValues(IList<string>? values, bool strict)
         {
             Contract.Assert(_supportsMultipleValues);
             // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
@@ -132,8 +131,7 @@ namespace Microsoft.Net.Http.Headers
 
                 while (!string.IsNullOrEmpty(value) && index < value.Length)
                 {
-                    T output;
-                    if (TryParseValue(value, ref index, out output))
+                    if (TryParseValue(value, ref index, out var output))
                     {
                         // The entry may not contain an actual value, like " , "
                         if (output != null)
@@ -164,9 +162,7 @@ namespace Microsoft.Net.Http.Headers
         // for most headers (custom types, string, etc.).
         public virtual string ToString(object value)
         {
-            Contract.Requires(value != null);
-
-            return value.ToString();
+            return value.ToString()!;
         }
     }
 }

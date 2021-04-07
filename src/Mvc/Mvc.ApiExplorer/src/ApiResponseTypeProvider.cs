@@ -109,9 +109,15 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                             // from the return type.
                             apiResponseType.Type = type;
                         }
-                        else if (IsClientError(statusCode) || apiResponseType.IsDefaultResponse)
+                        else if (IsClientError(statusCode))
                         {
-                            // Use the default error type for "default" responses or 4xx client errors if no response type is specified.
+                            // Determine whether or not the type was provided by the user. If so, favor it over the default
+                            // error type for 4xx client errors if no response type is specified..
+                            var setByDefault = metadataAttribute is ProducesResponseTypeAttribute { IsResponseTypeSetByDefault: true };
+                            apiResponseType.Type = setByDefault ? defaultErrorType : apiResponseType.Type;
+                        }
+                        else if (apiResponseType.IsDefaultResponse)
+                        {
                             apiResponseType.Type = defaultErrorType;
                         }
                     }
@@ -159,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // 2. When a type is specified, use GetSupportedContentTypes to expand wildcards and get the range of content-types formatters support.
             // 3. When no formatter supports the specified content-type, use the user specified value as is. This is useful in actions where the user
             // dictates the content-type.
-            // e.g. [Produces("application/pdf")] Action() => FileStream("somefile.pdf", "applicaiton/pdf");
+            // e.g. [Produces("application/pdf")] Action() => FileStream("somefile.pdf", "application/pdf");
 
             foreach (var apiResponse in responseTypes)
             {

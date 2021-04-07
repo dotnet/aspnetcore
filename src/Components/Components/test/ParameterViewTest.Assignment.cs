@@ -71,9 +71,9 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void IncomingParameterMatchesOverridenParameter_ThatDoesNotHasAttribute()
+        public void IncomingParameterMatchesOverriddenParameter_ThatDoesNotHaveAttribute()
         {
-            // Test for https://github.com/aspnet/AspNetCore/issues/13162
+            // Test for https://github.com/dotnet/aspnetcore/issues/13162
             // Arrange
             var parameters = new ParameterViewBuilder
             {
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.Components
         public void HasDuplicateCaptureUnmatchedValuesParameters_Throws()
         {
             // Arrange
-            var target = new HasDupliateCaptureUnmatchedValuesProperty();
+            var target = new HasDuplicateCaptureUnmatchedValuesProperty();
             var parameters = new ParameterViewBuilder().Build();
 
             // Act
@@ -374,17 +374,17 @@ namespace Microsoft.AspNetCore.Components
 
             // Assert
             Assert.Equal(
-                $"Multiple properties were found on component type '{typeof(HasDupliateCaptureUnmatchedValuesProperty).FullName}' " +
+                $"Multiple properties were found on component type '{typeof(HasDuplicateCaptureUnmatchedValuesProperty).FullName}' " +
                 $"with '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. " +
                 $"Only a single property per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. " +
                 $"Properties:" + Environment.NewLine +
-                $"{nameof(HasDupliateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp1)}" + Environment.NewLine +
-                $"{nameof(HasDupliateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp2)}",
+                $"{nameof(HasDuplicateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp1)}" + Environment.NewLine +
+                $"{nameof(HasDuplicateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp2)}",
                 ex.Message);
         }
 
         [Fact]
-        public void HasCaptureUnmatchedValuesParameteterWithWrongType_Throws()
+        public void HasCaptureUnmatchedValuesParameterWithWrongType_Throws()
         {
             // Arrange
             var target = new HasWrongTypeCaptureUnmatchedValuesProperty();
@@ -630,7 +630,7 @@ namespace Microsoft.AspNetCore.Components
             [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> CaptureUnmatchedValues { get; set; }
         }
 
-        class HasDupliateCaptureUnmatchedValuesProperty
+        class HasDuplicateCaptureUnmatchedValuesProperty
         {
             [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> CaptureUnmatchedValuesProp1 { get; set; }
             [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object> CaptureUnmatchedValuesProp2 { get; set; }

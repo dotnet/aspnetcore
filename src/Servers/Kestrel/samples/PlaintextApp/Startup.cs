@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace PlaintextApp
 {
@@ -34,13 +35,17 @@ namespace PlaintextApp
 
         public static async Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel(options =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(IPAddress.Loopback, 5001);
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.Listen(IPAddress.Loopback, 5001);
+                        })
+                        .UseContentRoot(Directory.GetCurrentDirectory())
+                        .UseStartup<Startup>();
                 })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
                 .Build();
 
             await host.RunAsync();

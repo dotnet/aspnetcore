@@ -76,7 +76,7 @@
   <PropertyGroup>
     <PackageFileName>dotnet-hosting-$(PackageVersion)-win$(TargetExt)</PackageFileName>
 
-    <BundleNameShort>Microsoft .NET Core $(PackageBrandingVersion)</BundleNameShort>
+    <BundleNameShort>Microsoft .NET $(PackageBrandingVersion)</BundleNameShort>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -88,8 +88,8 @@
 
     <!-- Registration -->
     <BundleRegManufacturer>Microsoft</BundleRegManufacturer>
-    <BundleRegFamily>.NET Core</BundleRegFamily>
-    <BundleRegName>Microsoft .NET Core $(PackageBrandingVersion) - Windows Server Hosting</BundleRegName>
+    <BundleRegFamily>.NET</BundleRegFamily>
+    <BundleRegName>Microsoft .NET $(PackageBrandingVersion) - Windows Server Hosting</BundleRegName>
     <BundleRegName>$(BundleNameFull)</BundleRegName>
   </PropertyGroup>
 

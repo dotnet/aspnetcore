@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         private readonly IArrayPool<char> _charPool;
         private readonly MvcOptions _mvcOptions;
-        private JsonSerializerSettings _serializerSettings;
+        private JsonSerializerSettings? _serializerSettings;
 
         /// <summary>
         /// Initializes a new <see cref="NewtonsoftJsonOutputFormatter"/> instance.
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var response = context.HttpContext.Response;
 
             var responseStream = response.Body;
-            FileBufferingWriteStream fileBufferingWriteStream = null;
+            FileBufferingWriteStream? fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
                 fileBufferingWriteStream = new FileBufferingWriteStream();
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 if (fileBufferingWriteStream != null)
                 {
                     response.ContentLength = fileBufferingWriteStream.Length;
-                    await fileBufferingWriteStream.DrainBufferAsync(response.Body);
+                    await fileBufferingWriteStream.DrainBufferAsync(response.BodyWriter);
                 }
             }
             finally

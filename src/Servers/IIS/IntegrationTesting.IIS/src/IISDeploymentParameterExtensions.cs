@@ -37,6 +37,21 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                     element.Descendants("access")
                         .Single()
+                        .SetAttributeValue("sslFlags", "None");
+                });
+        }
+
+        public static void AddHttpsWithClientCertToServerConfig(this IISDeploymentParameters parameters)
+        {
+            parameters.AddServerConfigAction(
+                element =>
+                {
+                    element.Descendants("binding")
+                        .Single()
+                        .SetAttributeValue("protocol", "https");
+
+                    element.Descendants("access")
+                        .Single()
                         .SetAttributeValue("sslFlags", "Ssl, SslNegotiateCert");
                 });
         }

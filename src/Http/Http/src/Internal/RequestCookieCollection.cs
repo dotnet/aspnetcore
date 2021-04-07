@@ -4,15 +4,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Net.Http.Headers;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Http
 {
     internal class RequestCookieCollection : IRequestCookieCollection
     {
-        private const string EnableCookieNameDecoding = "Microsoft.AspNetCore.Http.EnableCookieNameDecoding";
-        private bool _enableCookieNameDecoding;
-
         public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
         private static readonly Enumerator EmptyEnumerator = new Enumerator();
@@ -20,24 +21,25 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private Dictionary<string, string> Store { get; set; }
+        private AdaptiveCapacityDictionary<string, string> Store { get; set; }
 
         public RequestCookieCollection()
         {
-            _enableCookieNameDecoding = AppContext.TryGetSwitch(EnableCookieNameDecoding, out var enabled) && enabled;
+            Store = new AdaptiveCapacityDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public RequestCookieCollection(Dictionary<string, string> store) : this()
+        public RequestCookieCollection(int capacity)
         {
-            Store = store;
+            Store = new AdaptiveCapacityDictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
         }
 
-        public RequestCookieCollection(int capacity) : this()
+        // For tests
+        public RequestCookieCollection(Dictionary<string, string> store)
         {
-            Store = new Dictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
+            Store = new AdaptiveCapacityDictionary<string, string>(store);
         }
 
-        public string this[string key]
+        public string? this[string key]
         {
             get
             {
@@ -51,8 +53,7 @@ namespace Microsoft.AspNetCore.Http
                     return null;
                 }
 
-                string value;
-                if (TryGetValue(key, out value))
+                if (TryGetValue(key, out var value))
                 {
                     return value;
                 }
@@ -60,36 +61,23 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        public static RequestCookieCollection Parse(IList<string> values)
-            => ParseInternal(values, AppContext.TryGetSwitch(EnableCookieNameDecoding, out var enabled) && enabled);
+        public static RequestCookieCollection Parse(StringValues values)
+           => ParseInternal(values, AppContext.TryGetSwitch(ResponseCookies.EnableCookieNameEncoding, out var enabled) && enabled);
 
-        internal static RequestCookieCollection ParseInternal(IList<string> values, bool enableCookieNameDecoding)
+        internal static RequestCookieCollection ParseInternal(StringValues values, bool enableCookieNameEncoding)
         {
             if (values.Count == 0)
             {
                 return Empty;
             }
+            var collection = new RequestCookieCollection(values.Count);
+            var store = collection.Store!;
 
-            IList<CookieHeaderValue> cookies;
-            if (CookieHeaderValue.TryParseList(values, out cookies))
+            if (CookieHeaderParserShared.TryParseValues(values, store, enableCookieNameEncoding, supportsMultipleValues: true))
             {
-                if (cookies.Count == 0)
+                if (store.Count == 0)
                 {
                     return Empty;
-                }
-
-                var collection = new RequestCookieCollection(cookies.Count);
-                var store = collection.Store;
-                for (var i = 0; i < cookies.Count; i++)
-                {
-                    var cookie = cookies[i];
-                    var name = cookie.Name.Value;
-                    if (enableCookieNameDecoding)
-                    {
-                        name = Uri.UnescapeDataString(name);
-                    }
-                    var value = Uri.UnescapeDataString(cookie.Value.Value);
-                    store[name] = value;
                 }
 
                 return collection;
@@ -127,11 +115,10 @@ namespace Microsoft.AspNetCore.Http
             {
                 return false;
             }
-            return Store.ContainsKey(key)
-                || !_enableCookieNameDecoding && Store.ContainsKey(Uri.EscapeDataString(key));
+            return Store.ContainsKey(key);
         }
 
-        public bool TryGetValue(string key, out string value)
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out string? value)
         {
             if (Store == null)
             {
@@ -139,8 +126,7 @@ namespace Microsoft.AspNetCore.Http
                 return false;
             }
 
-            return Store.TryGetValue(key, out value)
-                || !_enableCookieNameDecoding && Store.TryGetValue(Uri.EscapeDataString(key), out value);
+            return Store.TryGetValue(key, out value);
         }
 
         /// <summary>
@@ -191,10 +177,10 @@ namespace Microsoft.AspNetCore.Http
         public struct Enumerator : IEnumerator<KeyValuePair<string, string>>
         {
             // Do NOT make this readonly, or MoveNext will not work
-            private Dictionary<string, string>.Enumerator _dictionaryEnumerator;
+            private AdaptiveCapacityDictionary<string, string>.Enumerator _dictionaryEnumerator;
             private bool _notEmpty;
 
-            internal Enumerator(Dictionary<string, string>.Enumerator dictionaryEnumerator)
+            internal Enumerator(AdaptiveCapacityDictionary<string, string>.Enumerator dictionaryEnumerator)
             {
                 _dictionaryEnumerator = dictionaryEnumerator;
                 _notEmpty = true;
@@ -216,7 +202,7 @@ namespace Microsoft.AspNetCore.Http
                     if (_notEmpty)
                     {
                         var current = _dictionaryEnumerator.Current;
-                        return new KeyValuePair<string, string>(current.Key, current.Value);
+                        return new KeyValuePair<string, string>(current.Key, (string)current.Value!);
                     }
                     return default(KeyValuePair<string, string>);
                 }

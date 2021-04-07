@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 {
+    /// <summary>
+    /// Static class that adds methods to <see cref="AssemblyPart"/>.
+    /// </summary>
     public static class AssemblyPartExtensions
     {
         /// <inheritdoc />

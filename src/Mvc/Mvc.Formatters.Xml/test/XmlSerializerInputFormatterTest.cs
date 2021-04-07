@@ -638,8 +638,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var httpContext = new DefaultHttpContext();
-            var testBufferedReadStream = new Mock<FileBufferingReadStream>(new MemoryStream(contentBytes), 1024) { CallBase = true };
-            httpContext.Request.Body = testBufferedReadStream.Object;
+            var testBufferedReadStream = new VerifyDisposeFileBufferingReadStream(new MemoryStream(contentBytes), 1024);
+            httpContext.Request.Body = testBufferedReadStream;
             var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
 
             // Act
@@ -652,8 +652,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
             Assert.Equal(expectedInt, model.SampleInt);
             Assert.Equal(expectedString, model.sampleString);
-
-            testBufferedReadStream.Verify(v => v.DisposeAsync(), Times.Never());
+            Assert.False(testBufferedReadStream.Disposed);
         }
 
         private InputFormatterContext GetInputFormatterContext(byte[] contentBytes, Type modelType)
@@ -711,6 +710,26 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             public override void OnCompleted(Func<object, Task> callback, object state)
             {
                 // do not do anything
+            }
+        }
+
+        private class VerifyDisposeFileBufferingReadStream : FileBufferingReadStream
+        {
+            public bool Disposed { get; private set; }
+            public VerifyDisposeFileBufferingReadStream(Stream inner, int memoryThreshold) : base(inner, memoryThreshold)
+            {
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                Disposed = true;
+                base.Dispose(disposing);
+            }
+
+            public override ValueTask DisposeAsync()
+            {
+                Disposed = true;
+                return base.DisposeAsync();
             }
         }
     }

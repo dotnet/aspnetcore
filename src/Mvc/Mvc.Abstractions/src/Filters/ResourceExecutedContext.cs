@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     /// </summary>
     public class ResourceExecutedContext : FilterContext
     {
-        private Exception _exception;
-        private ExceptionDispatchInfo _exceptionDispatchInfo;
+        private Exception? _exception;
+        private ExceptionDispatchInfo? _exceptionDispatchInfo;
 
         /// <summary>
         /// Creates a new <see cref="ResourceExecutedContext"/>.
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Setting <see cref="ExceptionHandled"/> to <c>true</c> will also mark the exception as handled.
         /// </para>
         /// </remarks>
-        public virtual Exception Exception
+        public virtual Exception? Exception
         {
             get
             {
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Setting <see cref="ExceptionHandled"/> to <c>true</c> will also mark the exception as handled.
         /// </para>
         /// </remarks>
-        public virtual ExceptionDispatchInfo ExceptionDispatchInfo
+        public virtual ExceptionDispatchInfo? ExceptionDispatchInfo
         {
             get
             {
@@ -115,6 +115,6 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// to resource filters.
         /// </para>
         /// </remarks>
-        public virtual IActionResult Result { get; set; }
+        public virtual IActionResult? Result { get; set; }
     }
 }

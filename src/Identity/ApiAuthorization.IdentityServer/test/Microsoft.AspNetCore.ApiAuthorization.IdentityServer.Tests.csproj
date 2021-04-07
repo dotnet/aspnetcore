@@ -12,7 +12,6 @@
     <FrameworkReference Remove="Microsoft.AspNetCore.App" />
 
     <Reference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>

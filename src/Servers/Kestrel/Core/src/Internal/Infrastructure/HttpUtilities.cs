@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -12,10 +15,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal static partial class HttpUtilities
     {
-        public const string Http10Version = "HTTP/1.0";
-        public const string Http11Version = "HTTP/1.1";
-        public const string Http2Version = "HTTP/2";
-
         public const string HttpUriScheme = "http://";
         public const string HttpsUriScheme = "https://";
 
@@ -28,7 +27,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private const ulong _http10VersionLong = 3471766442030158920; // GetAsciiStringAsLong("HTTP/1.0"); const results in better codegen
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
-        private static readonly UTF8EncodingSealed HeaderValueEncoding = new UTF8EncodingSealed();
+        private static readonly UTF8EncodingSealed DefaultRequestHeaderEncoding = new UTF8EncodingSealed();
+        private static readonly SpanAction<char, IntPtr> _getHeaderName = GetHeaderName;
+        private static readonly SpanAction<char, IntPtr> _getAsciiStringNonNullCharacters = GetAsciiStringNonNullCharacters;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
@@ -50,90 +51,121 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        private static unsafe ulong GetAsciiStringAsLong(string str)
+        private static ulong GetAsciiStringAsLong(string str)
         {
             Debug.Assert(str.Length == 8, "String must be exactly 8 (ASCII) characters long.");
 
             var bytes = Encoding.ASCII.GetBytes(str);
 
-            fixed (byte* ptr = &bytes[0])
-            {
-                return *(ulong*)ptr;
-            }
+            return BinaryPrimitives.ReadUInt64LittleEndian(bytes);
         }
 
-        private static unsafe uint GetAsciiStringAsInt(string str)
+        private static uint GetAsciiStringAsInt(string str)
         {
             Debug.Assert(str.Length == 4, "String must be exactly 4 (ASCII) characters long.");
 
             var bytes = Encoding.ASCII.GetBytes(str);
-
-            fixed (byte* ptr = &bytes[0])
-            {
-                return *(uint*)ptr;
-            }
+            return BinaryPrimitives.ReadUInt32LittleEndian(bytes);
         }
 
-        private static unsafe ulong GetMaskAsLong(byte[] bytes)
+        private static ulong GetMaskAsLong(byte[] bytes)
         {
             Debug.Assert(bytes.Length == 8, "Mask must be exactly 8 bytes long.");
 
-            fixed (byte* ptr = bytes)
-            {
-                return *(ulong*)ptr;
-            }
+            return BinaryPrimitives.ReadUInt64LittleEndian(bytes);
         }
 
         // The same as GetAsciiStringNonNullCharacters but throws BadRequest
-        public static unsafe string GetHeaderName(this Span<byte> span)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe string GetHeaderName(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {
                 return string.Empty;
             }
 
-            var asciiString = new string('\0', span.Length);
+            fixed (byte* source = &MemoryMarshal.GetReference(span))
+            {
+                return string.Create(span.Length, new IntPtr(source), _getHeaderName);
+            }
+        }
 
-            fixed (char* output = asciiString)
-            fixed (byte* buffer = span)
+        private static unsafe void GetHeaderName(Span<char> buffer, IntPtr state)
+        {
+            fixed (char* output = &MemoryMarshal.GetReference(buffer))
             {
                 // This version if AsciiUtilities returns null if there are any null (0 byte) characters
                 // in the string
-                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
                 }
             }
-
-            return asciiString;
         }
 
-        public static unsafe string GetAsciiStringNonNullCharacters(this Span<byte> span)
+        public static string GetAsciiStringNonNullCharacters(this Span<byte> span)
+            => GetAsciiStringNonNullCharacters((ReadOnlySpan<byte>)span);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe string GetAsciiStringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {
                 return string.Empty;
             }
 
-            var asciiString = new string('\0', span.Length);
+            fixed (byte* source = &MemoryMarshal.GetReference(span))
+            {
+                return string.Create(span.Length, new IntPtr(source), _getAsciiStringNonNullCharacters);
+            }
+        }
 
-            fixed (char* output = asciiString)
-            fixed (byte* buffer = span)
+        public static string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
+            => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, DefaultRequestHeaderEncoding);
+
+        private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
+        {
+            fixed (char* output = &MemoryMarshal.GetReference(buffer))
             {
                 // StringUtilities.TryGetAsciiString returns null if there are any null (0 byte) characters
                 // in the string
-                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
                 {
                     throw new InvalidOperationException();
                 }
             }
-            return asciiString;
         }
 
-        public static string GetRequestHeaderStringNonNullCharacters(this Span<byte> span, bool useLatin1) =>
-            useLatin1 ? span.GetLatin1StringNonNullCharacters() : span.GetAsciiOrUTF8StringNonNullCharacters(HeaderValueEncoding);
+        public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector)
+        {
+            if (ReferenceEquals(KestrelServerOptions.DefaultRequestHeaderEncodingSelector, encodingSelector))
+            {
+                return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+            }
 
-        public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)
+            var encoding = encodingSelector(name);
+
+            if (encoding is null)
+            {
+                return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+            }
+
+            if (ReferenceEquals(encoding, Encoding.Latin1))
+            {
+                return span.GetLatin1StringNonNullCharacters();
+            }
+
+            try
+            {
+                return encoding.GetString(span);
+            }
+            catch (DecoderFallbackException ex)
+            {
+                throw new InvalidOperationException(ex.Message, ex);
+            }
+        }
+
+        public static string GetAsciiStringEscaped(this ReadOnlySpan<byte> span, int maxChars)
         {
             var sb = new StringBuilder();
 
@@ -163,43 +195,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// To optimize performance the GET method will be checked first.
         /// </remarks>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool GetKnownMethod(this Span<byte> span, out HttpMethod method, out int length)
+        public static bool GetKnownMethod(this ReadOnlySpan<byte> span, out HttpMethod method, out int length)
         {
-            fixed (byte* data = span)
-            {
-                method = GetKnownMethod(data, span.Length, out length);
-                return method != HttpMethod.Custom;
-            }
+            method = GetKnownMethod(span, out length);
+            return method != HttpMethod.Custom;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe HttpMethod GetKnownMethod(byte* data, int length, out int methodLength)
+        public static HttpMethod GetKnownMethod(this ReadOnlySpan<byte> span, out int methodLength)
         {
             methodLength = 0;
-            if (length < sizeof(uint))
+            if (sizeof(uint) <= span.Length)
             {
-                return HttpMethod.Custom;
-            }
-            else if (*(uint*)data == _httpGetMethodInt)
-            {
-                methodLength = 3;
-                return HttpMethod.Get;
-            }
-            else if (length < sizeof(ulong))
-            {
-                return HttpMethod.Custom;
-            }
-            else
-            {
-                var value = *(ulong*)data;
-                var key = GetKnownMethodIndex(value);
-                var x = _knownMethods[key];
-
-                if (x != null && (value & x.Item1) == x.Item2)
+                if (BinaryPrimitives.ReadUInt32LittleEndian(span) == _httpGetMethodInt)
                 {
-                    methodLength = x.Item4;
-                    return x.Item3;
+                    methodLength = 3;
+                    return HttpMethod.Get;
+                }
+                else if (sizeof(ulong) <= span.Length)
+                {
+                    var value = BinaryPrimitives.ReadUInt64LittleEndian(span);
+                    var index = GetKnownMethodIndex(value);
+                    var knownMehods = _knownMethods;
+                    if ((uint)index < (uint)knownMehods.Length)
+                    {
+                        var knownMethod = _knownMethods[index];
+
+                        if (knownMethod != null && (value & knownMethod.Item1) == knownMethod.Item2)
+                        {
+                            methodLength = knownMethod.Item4;
+                            return knownMethod.Item3;
+                        }
+                    }
                 }
             }
 
@@ -249,7 +276,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 {
                     method = HttpMethod.Head;
                 }
-                else if(firstChar == 'P' && string.Equals(value, HttpMethods.Post, StringComparison.Ordinal))
+                else if (firstChar == 'P' && string.Equals(value, HttpMethods.Post, StringComparison.Ordinal))
                 {
                     method = HttpMethod.Post;
                 }
@@ -260,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 {
                     method = HttpMethod.Trace;
                 }
-                else if(firstChar == 'P' && string.Equals(value, HttpMethods.Patch, StringComparison.Ordinal))
+                else if (firstChar == 'P' && string.Equals(value, HttpMethods.Patch, StringComparison.Ordinal))
                 {
                     method = HttpMethod.Patch;
                 }
@@ -298,21 +325,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// To optimize performance the HTTP/1.1 will be checked first.
         /// </remarks>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool GetKnownVersion(this Span<byte> span, out HttpVersion knownVersion, out byte length)
+        public static bool GetKnownVersion(this ReadOnlySpan<byte> span, out HttpVersion knownVersion, out byte length)
         {
-            fixed (byte* data = span)
+            knownVersion = GetKnownVersionAndConfirmCR(span);
+            if (knownVersion != HttpVersion.Unknown)
             {
-                knownVersion = GetKnownVersion(data, span.Length);
-                if (knownVersion != HttpVersion.Unknown)
-                {
-                    length = sizeof(ulong);
-                    return true;
-                }
-
-                length = 0;
-                return false;
+                length = sizeof(ulong);
+                return true;
             }
+
+            length = 0;
+            return false;
         }
 
         /// <summary>
@@ -327,28 +350,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// </remarks>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe HttpVersion GetKnownVersion(byte* location, int length)
+        internal static HttpVersion GetKnownVersionAndConfirmCR(this ReadOnlySpan<byte> location)
         {
-            HttpVersion knownVersion;
-            var version = *(ulong*)location;
-            if (length < sizeof(ulong) + 1 || location[sizeof(ulong)] != (byte)'\r')
+            if (location.Length < sizeof(ulong))
             {
-                knownVersion = HttpVersion.Unknown;
-            }
-            else if (version == _http11VersionLong)
-            {
-                knownVersion = HttpVersion.Http11;
-            }
-            else if (version == _http10VersionLong)
-            {
-                knownVersion = HttpVersion.Http10;
+                return HttpVersion.Unknown;
             }
             else
             {
-                knownVersion = HttpVersion.Unknown;
+                var version = BinaryPrimitives.ReadUInt64LittleEndian(location);
+                if (sizeof(ulong) >= (uint)location.Length || location[sizeof(ulong)] != (byte)'\r')
+                {
+                    return HttpVersion.Unknown;
+                }
+                else if (version == _http11VersionLong)
+                {
+                    return HttpVersion.Http11;
+                }
+                else if (version == _http10VersionLong)
+                {
+                    return HttpVersion.Http10;
+                }
             }
 
-            return knownVersion;
+            return HttpVersion.Unknown;
         }
 
         /// <summary>
@@ -358,20 +383,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <param name="knownScheme">A reference to the known scheme, if the input matches any</param>
         /// <returns>True when memory starts with known http or https schema</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool GetKnownHttpScheme(this Span<byte> span, out HttpScheme knownScheme)
+        public static bool GetKnownHttpScheme(this Span<byte> span, out HttpScheme knownScheme)
         {
-            fixed (byte* data = span)
+            if (BinaryPrimitives.TryReadUInt64LittleEndian(span, out var scheme))
             {
-                return GetKnownHttpScheme(data, span.Length, out knownScheme);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe bool GetKnownHttpScheme(byte* location, int length, out HttpScheme knownScheme)
-        {
-            if (length >= sizeof(ulong))
-            {
-                var scheme = *(ulong*)location;
                 if ((scheme & _mask7Chars) == _httpSchemeLong)
                 {
                     knownScheme = HttpScheme.Http;
@@ -390,14 +405,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public static string VersionToString(HttpVersion httpVersion)
         {
-            return httpVersion switch
+            switch (httpVersion)
             {
-                HttpVersion.Http10 => Http10Version,
-                HttpVersion.Http11 => Http11Version,
-                _ => null,
+                case HttpVersion.Http10:
+                    return AspNetCore.Http.HttpProtocol.Http10;
+                case HttpVersion.Http11:
+                    return AspNetCore.Http.HttpProtocol.Http11;
+                case HttpVersion.Http2:
+                    return AspNetCore.Http.HttpProtocol.Http2;
+                case HttpVersion.Http3:
+                    return AspNetCore.Http.HttpProtocol.Http3;
+                default:
+                    Debug.Fail("Unexpected HttpVersion: " + httpVersion);
+                    return null;
             };
         }
-        public static string MethodToString(HttpMethod method)
+
+        public static string? MethodToString(HttpMethod method)
         {
             var methodIndex = (int)method;
             var methodNames = _methodNames;
@@ -408,7 +432,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return null;
         }
 
-        public static string SchemeToString(HttpScheme scheme)
+        public static string? SchemeToString(HttpScheme scheme)
         {
             return scheme switch
             {

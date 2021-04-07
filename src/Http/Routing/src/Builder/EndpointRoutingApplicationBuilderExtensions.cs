@@ -9,6 +9,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Constains extensions for configuring routing on an <see cref="IApplicationBuilder"/>.
+    /// </summary>
     public static class EndpointRoutingApplicationBuilderExtensions
     {
         private const string EndpointRouteBuilder = "__EndpointRouteBuilder";
@@ -128,7 +131,7 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             // If someone messes with this, just let it crash.
-            endpointRouteBuilder = (DefaultEndpointRouteBuilder)obj;
+            endpointRouteBuilder = (DefaultEndpointRouteBuilder)obj!;
 
             // This check handles the case where Map or something else that forks the pipeline is called between the two
             // routing middleware.

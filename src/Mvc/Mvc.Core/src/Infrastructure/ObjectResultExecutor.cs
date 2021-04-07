@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,21 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
     {
         private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
-
-        /// <summary>
-        /// Creates a new <see cref="ObjectResultExecutor"/>.
-        /// </summary>
-        /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
-        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
-        public ObjectResultExecutor(
-            OutputFormatterSelector formatterSelector,
-            IHttpResponseStreamWriterFactory writerFactory,
-            ILoggerFactory loggerFactory)
-            : this(formatterSelector, writerFactory, loggerFactory, mvcOptions: null)
-        {
-        }
 
         /// <summary>
         /// Creates a new <see cref="ObjectResultExecutor"/>.
@@ -134,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             await ExecuteAsyncCore(context, result, enumerated.GetType(), enumerated);
         }
 
-        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type objectType, object value)
+        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type? objectType, object? value)
         {
             var formatterContext = new OutputFormatterWriteContext(
                 context.HttpContext,
@@ -155,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return Task.CompletedTask;
             }
 
-            Logger.ObjectResultExecuting(value);
+            Logger.ObjectResultExecuting(result, value);
 
             result.OnFormatting(context);
             return selectedFormatter.WriteAsync(formatterContext);
@@ -164,19 +150,16 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private static void InferContentTypes(ActionContext context, ObjectResult result)
         {
             Debug.Assert(result.ContentTypes != null);
-            if (result.ContentTypes.Count != 0)
-            {
-                return;
-            }
 
             // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
             // then the one set on ObjectResult takes precedence over the Response object
             var responseContentType = context.HttpContext.Response.ContentType;
-            if (!string.IsNullOrEmpty(responseContentType))
+            if (result.ContentTypes.Count == 0 && !string.IsNullOrEmpty(responseContentType))
             {
                 result.ContentTypes.Add(responseContentType);
             }
-            else if (result.Value is ProblemDetails)
+
+            if (result.Value is ProblemDetails)
             {
                 result.ContentTypes.Add("application/problem+json");
                 result.ContentTypes.Add("application/problem+xml");
@@ -185,18 +168,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable;
-
-            static Log()
-            {
-                _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
-                   LogLevel.Debug,
-                   new EventId(1, "BufferingAsyncEnumerable"),
-                   "Buffering IAsyncEnumerable instance of type '{Type}'.");
-            }
+            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
+                LogLevel.Debug,
+                new EventId(1, "BufferingAsyncEnumerable"),
+                "Buffering IAsyncEnumerable instance of type '{Type}'.",
+                skipEnabledCheck: true);
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+            {
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                }
+            }
         }
     }
 }

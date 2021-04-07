@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
     {
         private readonly IHtmlLocalizerFactory _localizerFactory;
         private readonly string _applicationName;
-        private IHtmlLocalizer _localizer;
+        private IHtmlLocalizer _localizer = default!;
 
         /// <summary>
         /// Creates a new <see cref="ViewLocalizer"/>.
@@ -78,13 +77,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
 
         /// <inheritdoc />
         public LocalizedString GetString(string name, params object[] values) => _localizer.GetString(name, values);
-
-        /// <inheritdoc />
-        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-
-#pragma warning disable CS0618 // Type or member is obsolete
-        public IHtmlLocalizer WithCulture(CultureInfo culture) => _localizer.WithCulture(culture);
-#pragma warning restore CS0618 // Type or member is obsolete
 
         /// <inheritdoc />
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>

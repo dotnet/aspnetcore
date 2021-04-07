@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -102,10 +103,10 @@ namespace Microsoft.AspNetCore.Antiforgery
             CheckSSLConfig(httpContext);
 
             var method = httpContext.Request.Method;
-            if (string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(method, "HEAD", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(method, "OPTIONS", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(method, "TRACE", StringComparison.OrdinalIgnoreCase))
+            if (HttpMethods.IsGet(method) ||
+                HttpMethods.IsHead(method) ||
+                HttpMethods.IsOptions(method) ||
+                HttpMethods.IsTrace(method))
             {
                 // Validation not needed for these request types.
                 return true;
@@ -125,9 +126,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             }
 
             // Extract cookie & request tokens
-            AntiforgeryToken deserializedCookieToken;
-            AntiforgeryToken deserializedRequestToken;
-            if (!TryDeserializeTokens(httpContext, tokens, out deserializedCookieToken, out deserializedRequestToken))
+            if (!TryDeserializeTokens(httpContext, tokens, out var deserializedCookieToken, out var deserializedRequestToken))
             {
                 return false;
             }
@@ -137,7 +136,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                 httpContext,
                 deserializedCookieToken,
                 deserializedRequestToken,
-                out string message);
+                out var message);
 
             if (result)
             {
@@ -145,7 +144,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             }
             else
             {
-                _logger.ValidationFailed(message);
+                _logger.ValidationFailed(message!);
             }
 
             return result;
@@ -210,12 +209,11 @@ namespace Microsoft.AspNetCore.Antiforgery
                 out deserializedRequestToken);
 
             // Validate
-            string message;
             if (!_tokenGenerator.TryValidateTokenSet(
                 httpContext,
                 deserializedCookieToken,
                 deserializedRequestToken,
-                out message))
+                out var message))
             {
                 throw new AntiforgeryValidationException(message);
             }
@@ -306,7 +304,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                 return antiforgeryFeature;
             }
 
-            AntiforgeryToken cookieToken;
+            AntiforgeryToken? cookieToken;
             if (antiforgeryFeature.HaveDeserializedCookieToken)
             {
                 cookieToken = antiforgeryFeature.CookieToken;
@@ -319,7 +317,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                 antiforgeryFeature.HaveDeserializedCookieToken = true;
             }
 
-            AntiforgeryToken newCookieToken;
+            AntiforgeryToken? newCookieToken;
             if (_tokenGenerator.IsCookieTokenValid(cookieToken))
             {
                 // No need for the cookie token from the request after it has been verified.
@@ -338,7 +336,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             return antiforgeryFeature;
         }
 
-        private AntiforgeryToken GetCookieTokenDoesNotThrow(HttpContext httpContext)
+        private AntiforgeryToken? GetCookieTokenDoesNotThrow(HttpContext httpContext)
         {
             try
             {
@@ -367,7 +365,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                 var cookieToken = antiforgeryFeature.NewCookieToken ?? antiforgeryFeature.CookieToken;
                 antiforgeryFeature.NewRequestToken = _tokenGenerator.GenerateRequestToken(
                     httpContext,
-                    cookieToken);
+                    cookieToken!);
             }
 
             return antiforgeryFeature;
@@ -379,35 +377,41 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
         protected virtual void SetDoNotCacheHeaders(HttpContext httpContext)
         {
-            // Since antifogery token generation is not very obvious to the end users (ex: MVC's form tag generates them
-            // by default), log a warning to let users know of the change in behavior to any cache headers they might
-            // have set explicitly.
-            LogCacheHeaderOverrideWarning(httpContext.Response);
-
-            httpContext.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
-            httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
-        }
-
-        private void LogCacheHeaderOverrideWarning(HttpResponse response)
-        {
             var logWarning = false;
-            CacheControlHeaderValue cacheControlHeaderValue;
-            if (CacheControlHeaderValue.TryParse(response.Headers[HeaderNames.CacheControl].ToString(), out cacheControlHeaderValue))
+            var responseHeaders = httpContext.Response.Headers;
+
+            if (responseHeaders.TryGetValue(HeaderNames.CacheControl, out var cacheControlHeader) &&
+                CacheControlHeaderValue.TryParse(cacheControlHeader.ToString(), out var cacheControlHeaderValue))
             {
-                if (!cacheControlHeaderValue.NoCache)
+                // If the Cache-Control is already set, override it only if required
+                if (!cacheControlHeaderValue.NoCache || !cacheControlHeaderValue.NoStore)
                 {
                     logWarning = true;
+                    responseHeaders[HeaderNames.CacheControl] = "no-cache, no-store";
                 }
             }
-
-            var pragmaHeader = response.Headers[HeaderNames.Pragma];
-            if (!logWarning
-                && !string.IsNullOrEmpty(pragmaHeader)
-                && string.Compare(pragmaHeader, "no-cache", ignoreCase: true) != 0)
+            else
             {
-                logWarning = true;
+                responseHeaders[HeaderNames.CacheControl] = "no-cache, no-store";
             }
 
+            if (responseHeaders.TryGetValue(HeaderNames.Pragma, out var pragmaHeader) && pragmaHeader.Count > 0)
+            {
+                // If the Pragma is already set, override it only if required
+                if (!string.Equals(pragmaHeader[0], "no-cache", StringComparison.OrdinalIgnoreCase))
+                {
+                    logWarning = true;
+                    httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
+                }
+            }
+            else
+            {
+                httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
+            }
+
+            // Since antiforgery token generation is not very obvious to the end users (ex: MVC's form tag generates them
+            // by default), log a warning to let users know of the change in behavior to any cache headers they might
+            // have set explicitly.
             if (logWarning)
             {
                 _logger.ResponseCacheHeadersOverridenToNoCache();
@@ -434,7 +438,7 @@ namespace Microsoft.AspNetCore.Antiforgery
 
             return new AntiforgeryTokenSet(
                 antiforgeryFeature.NewRequestTokenString,
-                antiforgeryFeature.NewCookieTokenString,
+                antiforgeryFeature.NewCookieTokenString!,
                 _options.FormFieldName,
                 _options.HeaderName);
         }
@@ -442,8 +446,8 @@ namespace Microsoft.AspNetCore.Antiforgery
         private bool TryDeserializeTokens(
             HttpContext httpContext,
             AntiforgeryTokenSet antiforgeryTokenSet,
-            out AntiforgeryToken cookieToken,
-            out AntiforgeryToken requestToken)
+            [NotNullWhen(true)] out AntiforgeryToken? cookieToken,
+            [NotNullWhen(true)] out AntiforgeryToken? requestToken)
         {
             try
             {
@@ -470,11 +474,11 @@ namespace Microsoft.AspNetCore.Antiforgery
 
             if (antiforgeryFeature.HaveDeserializedCookieToken)
             {
-                cookieToken = antiforgeryFeature.CookieToken;
+                cookieToken = antiforgeryFeature.CookieToken!;
             }
             else
             {
-                cookieToken = _tokenSerializer.Deserialize(antiforgeryTokenSet.CookieToken);
+                cookieToken = _tokenSerializer.Deserialize(antiforgeryTokenSet.CookieToken!);
 
                 antiforgeryFeature.CookieToken = cookieToken;
                 antiforgeryFeature.HaveDeserializedCookieToken = true;
@@ -482,11 +486,11 @@ namespace Microsoft.AspNetCore.Antiforgery
 
             if (antiforgeryFeature.HaveDeserializedRequestToken)
             {
-                requestToken = antiforgeryFeature.RequestToken;
+                requestToken = antiforgeryFeature.RequestToken!;
             }
             else
             {
-                requestToken = _tokenSerializer.Deserialize(antiforgeryTokenSet.RequestToken);
+                requestToken = _tokenSerializer.Deserialize(antiforgeryTokenSet.RequestToken!);
 
                 antiforgeryFeature.RequestToken = requestToken;
                 antiforgeryFeature.HaveDeserializedRequestToken = true;

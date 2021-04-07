@@ -5,22 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Hosting.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.StackTrace.Sources;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -30,6 +24,7 @@ namespace Microsoft.AspNetCore.Hosting
                                      IServer server,
                                      ILoggerFactory loggerFactory,
                                      DiagnosticListener diagnosticListener,
+                                     ActivitySource activitySource,
                                      IHttpContextFactory httpContextFactory,
                                      IApplicationBuilderFactory applicationBuilderFactory,
                                      IEnumerable<IStartupFilter> startupFilters,
@@ -41,6 +36,7 @@ namespace Microsoft.AspNetCore.Hosting
             Logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Hosting.Diagnostics");
             LifetimeLogger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
             DiagnosticListener = diagnosticListener;
+            ActivitySource = activitySource;
             HttpContextFactory = httpContextFactory;
             ApplicationBuilderFactory = applicationBuilderFactory;
             StartupFilters = startupFilters;
@@ -54,6 +50,7 @@ namespace Microsoft.AspNetCore.Hosting
         // Only for high level lifetime events
         public ILogger LifetimeLogger { get; }
         public DiagnosticListener DiagnosticListener { get; }
+        public ActivitySource ActivitySource { get; }
         public IHttpContextFactory HttpContextFactory { get; }
         public IApplicationBuilderFactory ApplicationBuilderFactory { get; }
         public IEnumerable<IStartupFilter> StartupFilters { get; }
@@ -64,27 +61,27 @@ namespace Microsoft.AspNetCore.Hosting
         {
             HostingEventSource.Log.HostStart();
 
-            var serverAddressesFeature = Server.Features?.Get<IServerAddressesFeature>();
+            var serverAddressesFeature = Server.Features.Get<IServerAddressesFeature>();
             var addresses = serverAddressesFeature?.Addresses;
             if (addresses != null && !addresses.IsReadOnly && addresses.Count == 0)
             {
                 var urls = Configuration[WebHostDefaults.ServerUrlsKey];
                 if (!string.IsNullOrEmpty(urls))
                 {
-                    serverAddressesFeature.PreferHostingUrls = WebHostUtilities.ParseBool(Configuration, WebHostDefaults.PreferHostingUrlsKey);
+                    serverAddressesFeature!.PreferHostingUrls = WebHostUtilities.ParseBool(Configuration, WebHostDefaults.PreferHostingUrlsKey);
 
-                    foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var value in urls.Split(';', StringSplitOptions.RemoveEmptyEntries))
                     {
                         addresses.Add(value);
                     }
                 }
             }
 
-            RequestDelegate application = null;
+            RequestDelegate? application = null;
 
             try
             {
-                Action<IApplicationBuilder> configure = Options.ConfigureApplication;
+                var configure = Options.ConfigureApplication;
 
                 if (configure == null)
                 {
@@ -112,10 +109,12 @@ namespace Microsoft.AspNetCore.Hosting
                     throw;
                 }
 
-                application = BuildErrorPageApplication(ex);
+                var showDetailedErrors = HostingEnvironment.IsDevelopment() || Options.WebHostOptions.DetailedErrors;
+
+                application = ErrorPageBuilder.BuildErrorPageApplication(HostingEnvironment.ContentRootFileProvider, Logger, showDetailedErrors, ex);
             }
 
-            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, HttpContextFactory);
+            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, HttpContextFactory);
 
             await Server.StartAsync(httpApplication, cancellationToken);
 
@@ -123,7 +122,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var address in addresses)
                 {
-                    LifetimeLogger.LogInformation("Now listening on: {address}", address);
+                    LifetimeLogger.ListeningOnAddress(address);
                 }
             }
 
@@ -131,7 +130,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var assembly in Options.WebHostOptions.GetFinalHostingStartupAssemblies())
                 {
-                    Logger.LogDebug("Loaded hosting startup assembly {assemblyName}", assembly);
+                    Logger.StartupAssemblyLoaded(assembly);
                 }
             }
 
@@ -142,54 +141,6 @@ namespace Microsoft.AspNetCore.Hosting
                     Logger.HostingStartupAssemblyError(exception);
                 }
             }
-        }
-
-        private RequestDelegate BuildErrorPageApplication(Exception exception)
-        {
-            if (exception is TargetInvocationException tae)
-            {
-                exception = tae.InnerException;
-            }
-
-            var showDetailedErrors = HostingEnvironment.IsDevelopment() || Options.WebHostOptions.DetailedErrors;
-
-            var model = new ErrorPageModel
-            {
-                RuntimeDisplayName = RuntimeInformation.FrameworkDescription
-            };
-            var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
-            var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
-            var clrVersion = assemblyVersion;
-            model.RuntimeArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
-            var currentAssembly = typeof(ErrorPage).GetTypeInfo().Assembly;
-            model.CurrentAssemblyVesion = currentAssembly
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                .InformationalVersion;
-            model.ClrVersion = clrVersion;
-            model.OperatingSystemDescription = RuntimeInformation.OSDescription;
-            model.ShowRuntimeDetails = showDetailedErrors;
-
-            if (showDetailedErrors)
-            {
-                var exceptionDetailProvider = new ExceptionDetailsProvider(
-                    HostingEnvironment.ContentRootFileProvider,
-                    sourceCodeLineCount: 6);
-
-                model.ErrorDetails = exceptionDetailProvider.GetDetails(exception);
-            }
-            else
-            {
-                model.ErrorDetails = new ExceptionDetails[0];
-            }
-
-            var errorPage = new ErrorPage(model);
-            return context =>
-            {
-                context.Response.StatusCode = 500;
-                context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
-                context.Response.ContentType = "text/html; charset=utf-8";
-                return errorPage.ExecuteAsync(context);
-            };
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

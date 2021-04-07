@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -15,14 +16,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private const byte ByteLF = (byte)'\n';
         private const byte ByteColon = (byte)':';
 
-        private static ReadOnlySpan<byte> _dataPrefix => new byte[] { (byte)'d', (byte)'a', (byte)'t', (byte)'a', (byte)':', (byte)' ' };
-        private static ReadOnlySpan<byte> _sseLineEnding => new byte[] { (byte)'\r', (byte)'\n' };
+        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
+        private static ReadOnlySpan<byte> DataPrefix => new byte[] { (byte)'d', (byte)'a', (byte)'t', (byte)'a', (byte)':', (byte)' ' };
+        private static ReadOnlySpan<byte> SseLineEnding => new byte[] { (byte)'\r', (byte)'\n' };
         private static readonly byte[] _newLine = Encoding.UTF8.GetBytes(Environment.NewLine);
 
         private InternalParseState _internalParserState = InternalParseState.ReadMessagePayload;
         private readonly List<byte[]> _data = new List<byte[]>();
 
-        public ParseResult ParseMessage(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out byte[] message)
+        public ParseResult ParseMessage(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out byte[]? message)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -74,7 +76,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // data: foo\n\bar should be encoded as
                 // data: foo\r\n
                 // data: bar\r\n
-                else if (line[line.Length - _sseLineEnding.Length] != ByteCR)
+                else if (line[line.Length - SseLineEnding.Length] != ByteCR)
                 {
                     throw new FormatException("Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'");
                 }
@@ -90,8 +92,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                         EnsureStartsWithDataPrefix(line);
 
                         // Slice away the 'data: '
-                        var payloadLength = line.Length - (_dataPrefix.Length + _sseLineEnding.Length);
-                        var newData = line.Slice(_dataPrefix.Length, payloadLength).ToArray();
+                        var payloadLength = line.Length - (DataPrefix.Length + SseLineEnding.Length);
+                        var newData = line.Slice(DataPrefix.Length, payloadLength).ToArray();
                         _data.Add(newData);
 
                         start = lineEnd;
@@ -162,7 +164,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private void EnsureStartsWithDataPrefix(ReadOnlySpan<byte> line)
         {
-            if (!line.StartsWith(_dataPrefix))
+            if (!line.StartsWith(DataPrefix))
             {
                 throw new FormatException("Expected the message prefix 'data: '");
             }
@@ -170,7 +172,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private bool IsMessageEnd(ReadOnlySpan<byte> line)
         {
-            return line.Length == _sseLineEnding.Length && line.SequenceEqual(_sseLineEnding);
+            return line.Length == SseLineEnding.Length && line.SequenceEqual(SseLineEnding);
         }
 
         public enum ParseResult

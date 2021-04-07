@@ -11,6 +11,50 @@ extern std::string g_errorPageContent;
 extern IHttpServer* g_pHttpServer;
 
 //
+// Add support for certain HTTP/2.0 features like trailing headers
+// and GOAWAY or RST_STREAM frames.
+//
+
+class __declspec(uuid("1a2acc57-cae2-4f28-b4ab-00c8f96b12ec"))
+    IHttpResponse4 : public IHttpResponse3
+{
+public:
+    virtual
+        HRESULT
+        DeleteTrailer(
+            _In_ PCSTR  pszHeaderName
+        ) = 0;
+
+    virtual
+        PCSTR
+        GetTrailer(
+            _In_  PCSTR    pszHeaderName,
+            _Out_ USHORT* pcchHeaderValue = NULL
+        ) const = 0;
+
+    virtual
+        VOID
+        ResetStream(
+            _In_ ULONG errorCode
+        ) = 0;
+
+    virtual
+        VOID
+        SetNeedGoAway(
+            VOID
+        ) = 0;
+
+    virtual
+        HRESULT
+        SetTrailer(
+            _In_ PCSTR  pszHeaderName,
+            _In_ PCSTR  pszHeaderValue,
+            _In_ USHORT cchHeaderValue,
+            _In_ BOOL fReplace
+        ) = 0;
+};
+
+//
 // Initialization export
 //
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
@@ -515,6 +559,46 @@ http_set_startup_error_page_content(_In_ byte* errorPageContent, int length)
 {
     g_errorPageContent.resize(length);
     memcpy(&g_errorPageContent[0], errorPageContent, length);
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_has_response4(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler,
+    _Out_ BOOL* supportsTrailers
+)
+{
+    IHttpResponse4* pHttpResponse;
+
+    HRESULT hr = HttpGetExtendedInterface(g_pHttpServer, pInProcessHandler->QueryHttpContext()->GetResponse(), &pHttpResponse);
+    *supportsTrailers = SUCCEEDED(hr);
+
+    return 0;
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_response_set_trailer(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler,
+    _In_ PCSTR pszHeaderName,
+    _In_ PCSTR pszHeaderValue,
+    _In_ USHORT usHeaderValueLength,
+    _In_ BOOL fReplace)
+{
+    // always unknown
+    IHttpResponse4* pHttpResponse = (IHttpResponse4*)pInProcessHandler->QueryHttpContext()->GetResponse();
+    return pHttpResponse->SetTrailer(pszHeaderName, pszHeaderValue, usHeaderValueLength, fReplace);
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+VOID
+http_reset_stream(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler,
+    ULONG errorCode
+)
+{
+    IHttpResponse4* pHttpResponse = (IHttpResponse4*)pInProcessHandler->QueryHttpContext()->GetResponse();
+    pHttpResponse->ResetStream(errorCode);
 }
 
 // End of export

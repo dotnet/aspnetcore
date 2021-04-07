@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <DefineConstants Condition=" '$(InstallPlaywright)' == 'true' ">$(DefineConstants);INSTALLPLAYWRIGHT</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20158.1" />
+    <PackageReference Condition=" '$(InstallPlaywright)' == 'true' " Include="PlaywrightSharp" Version="0.192.0" />
+  </ItemGroup>
+</Project>

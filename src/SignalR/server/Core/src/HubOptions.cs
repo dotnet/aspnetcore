@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.SignalR
     /// </summary>
     public class HubOptions
     {
+        private int _maximumParallelInvocationsPerClient = 1;
+
         // HandshakeTimeout and KeepAliveInterval are set to null here to help identify when
         // local hub options have been set. Global default values are set in HubOptionsSetup.
         // SupportedProtocols being null is the true default value, and it represents support
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets or sets a collection of supported hub protocol names.
         /// </summary>
-        public IList<string> SupportedProtocols { get; set; } = null;
+        public IList<string>? SupportedProtocols { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum message size of a single incoming hub message. The default is 32KB.
@@ -51,5 +53,25 @@ namespace Microsoft.AspNetCore.SignalR
         /// Gets or sets the max buffer size for client upload streams. The default size is 10.
         /// </summary>
         public int? StreamBufferCapacity { get; set; } = null;
+
+        internal List<IHubFilter>? HubFilters { get; set; }
+
+        /// <summary>
+        /// By default a client is only allowed to invoke a single Hub method at a time.
+        /// Changing this property will allow clients to invoke multiple methods at the same time before queueing.
+        /// </summary>
+        public int MaximumParallelInvocationsPerClient
+        {
+            get => _maximumParallelInvocationsPerClient;
+            set
+            {
+                if (value < 1)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(MaximumParallelInvocationsPerClient));
+                }
+
+                _maximumParallelInvocationsPerClient = value;
+            }
+        }
     }
 }

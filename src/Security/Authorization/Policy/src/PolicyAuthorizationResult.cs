@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Authorization.Policy
 {
+    /// <summary>
+    /// The result of <see cref="IPolicyEvaluator.AuthorizeAsync(AuthorizationPolicy, Authentication.AuthenticateResult, Http.HttpContext, object?)"/>.
+    /// </summary>
     public class PolicyAuthorizationResult
     {
         private PolicyAuthorizationResult() { }
@@ -22,12 +25,37 @@ namespace Microsoft.AspNetCore.Authorization.Policy
         /// </summary>
         public bool Succeeded { get; private set; }
 
+        /// <summary>
+        /// Contains information about why authorization failed.
+        /// </summary>
+        public AuthorizationFailure? AuthorizationFailure { get; private set; }
+
+        /// <summary>
+        ///Indicates that an unauthenticated user requested access to an endpoint that requires authentication.
+        /// </summary>
+        /// <returns>The <see cref="PolicyAuthorizationResult"/>.</returns>
         public static PolicyAuthorizationResult Challenge()
             => new PolicyAuthorizationResult { Challenged = true };
 
+        /// <summary>
+        /// Indiciates that the access to a resource was forbidden.
+        /// </summary>
+        /// <returns>The <see cref="PolicyAuthorizationResult"/>.</returns>
         public static PolicyAuthorizationResult Forbid()
-            => new PolicyAuthorizationResult { Forbidden = true };
+            => Forbid(null);
 
+        /// <summary>
+        /// Indiciates that the access to a resource was forbidden.
+        /// </summary>
+        /// <param name="authorizationFailure">Specifies the reason the authorization failed.s</param>
+        /// <returns>The <see cref="PolicyAuthorizationResult"/>.</returns>
+        public static PolicyAuthorizationResult Forbid(AuthorizationFailure? authorizationFailure)
+            => new PolicyAuthorizationResult { Forbidden = true, AuthorizationFailure = authorizationFailure };
+
+        /// <summary>
+        /// Indicates a successful authorization.
+        /// </summary>
+        /// <returns>The <see cref="PolicyAuthorizationResult"/>.</returns>
         public static PolicyAuthorizationResult Success()
             => new PolicyAuthorizationResult { Succeeded = true };
 

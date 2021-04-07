@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task BindModel_FallsBackToBindingValues_WithValueTypes(IDictionary<long, int> dictionary)
         {
             // Arrange
-            var stringDictionary = dictionary.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.ToString());
+            var stringDictionary = dictionary.ToDictionary(kvp => kvp.Key.ToString(CultureInfo.InvariantCulture), kvp => kvp.Value.ToString(CultureInfo.InvariantCulture));
 
             var binder = new DictionaryModelBinder<long, int>(
                 new SimpleTypeModelBinder(typeof(long), NullLoggerFactory.Instance),
@@ -278,12 +278,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var binder = new DictionaryModelBinder<int, ModelWithProperties>(
                 new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
-                new ComplexTypeModelBinder(new Dictionary<ModelMetadata, IModelBinder>()
+                new ComplexObjectModelBinder(new Dictionary<ModelMetadata, IModelBinder>()
                 {
                     { valueMetadata.Properties["Id"], new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance) },
                     { valueMetadata.Properties["Name"], new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance) },
                 },
-                NullLoggerFactory.Instance),
+                Array.Empty<IModelBinder>(),
+                NullLogger<ComplexObjectModelBinder>.Instance),
                 NullLoggerFactory.Instance);
 
             // Act
@@ -528,7 +529,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Convert to an IDictionary<string, StringValues> then wrap it up.
             var backingStore = dictionary.ToDictionary(
-                kvp => string.Format(keyFormat, kvp.Key),
+                kvp => string.Format(CultureInfo.InvariantCulture, keyFormat, kvp.Key),
                 kvp => (StringValues)kvp.Value);
 
             var formCollection = new FormCollection(backingStore);
@@ -544,7 +545,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Convert to an IDictionary<string, object> then wrap it up.
             var backingStore = dictionary.ToDictionary(
-                kvp => string.Format(keyFormat, kvp.Key),
+                kvp => string.Format(CultureInfo.InvariantCulture, keyFormat, kvp.Key),
                 kvp => (object)kvp.Value);
 
             return new TestValueProvider(BindingSource.Form, backingStore);

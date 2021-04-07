@@ -26,17 +26,16 @@ usage()
   echo "  --pack                     Package build outputs into NuGet packages and Willow components"
   echo "  --sign                     Sign build outputs"
   echo "  --publish                  Publish artifacts (e.g. symbols)"
+  echo "  --clean                    Clean the solution"
   echo ""
 
   echo "Advanced settings:"
-  echo "  --projects <value>             Project or solution file(s) to build"
-  echo "  --ci                           Set when running on CI server"
-  echo "  --prepareMachine               Prepare machine for CI run, clean up processes after build"
-  echo "  --nodeReuse <value>            Sets nodereuse msbuild parameter ('true' or 'false')"
-  echo "  --warnAsError <value>          Sets warnaserror msbuild parameter ('true' or 'false')"
-  echo "  --runtimeSourceFeed <value>    Alternate (fallback) source for .NET Runtime and SDK installation"
-  echo "  --runtimeSourceFeedKey <value> Credentials (if needed) for authenticating to runtimeSourceFeed"
-
+  echo "  --projects <value>       Project or solution file(s) to build"
+  echo "  --ci                     Set when running on CI server"
+  echo "  --excludeCIBinarylog     Don't output binary log (short: -nobl)"
+  echo "  --prepareMachine         Prepare machine for CI run, clean up processes after build"
+  echo "  --nodeReuse <value>      Sets nodereuse msbuild parameter ('true' or 'false')"
+  echo "  --warnAsError <value>    Sets warnaserror msbuild parameter ('true' or 'false')"
   echo ""
   echo "Command line arguments not listed above are passed thru to msbuild."
   echo "Arguments can also be passed in with a single hyphen."
@@ -65,28 +64,31 @@ publish=false
 sign=false
 public=false
 ci=false
+clean=false
 
 warn_as_error=true
 node_reuse=true
 binary_log=false
+exclude_ci_binary_log=false
 pipelines_log=false
 
 projects=''
 configuration='Debug'
 prepare_machine=false
 verbosity='minimal'
-
-runtimeSourceFeed=''
-runtimeSourceFeedKey=''
+runtime_source_feed=''
+runtime_source_feed_key=''
 
 properties=''
-
 while [[ $# > 0 ]]; do
-  opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
+  opt="$(echo "${1/#--/-}" | tr "[:upper:]" "[:lower:]")"
   case "$opt" in
     -help|-h)
       usage
       exit 0
+      ;;
+    -clean)
+      clean=true
       ;;
     -configuration|-c)
       configuration=$2
@@ -98,6 +100,9 @@ while [[ $# > 0 ]]; do
       ;;
     -binarylog|-bl)
       binary_log=true
+      ;;
+    -excludeCIBinarylog|-nobl)
+      exclude_ci_binary_log=true
       ;;
     -pipelineslog|-pl)
       pipelines_log=true
@@ -148,12 +153,12 @@ while [[ $# > 0 ]]; do
       shift
       ;;
     -runtimesourcefeed)
+      runtime_source_feed=$2
       shift
-      runtimeSourceFeed="$1"
       ;;
-    -runtimesourcefeedkey)
+     -runtimesourcefeedkey)
+      runtime_source_feed_key=$2
       shift
-      runtimeSourceFeedKey="$1"
       ;;
     *)
       properties="$properties $1"
@@ -165,8 +170,10 @@ done
 
 if [[ "$ci" == true ]]; then
   pipelines_log=true
-  binary_log=true
   node_reuse=false
+  if [[ "$exclude_ci_binary_log" == false ]]; then
+    binary_log=true
+  fi
 fi
 
 . "$scriptroot/tools.sh"
@@ -180,7 +187,7 @@ function InitializeCustomToolset {
 }
 
 function Build {
-  InitializeToolset $runtimeSourceFeed $runtimeSourceFeedKey
+  InitializeToolset
   InitializeCustomToolset
 
   if [[ ! -z "$projects" ]]; then
@@ -210,20 +217,15 @@ function Build {
   ExitWithExitCode 0
 }
 
-# Import custom tools configuration, if present in the repo.
-configure_toolset_script="$eng_root/configure-toolset.sh"
-if [[ -a "$configure_toolset_script" ]]; then
-  . "$configure_toolset_script"
+if [[ "$clean" == true ]]; then
+  if [ -d "$artifacts_dir" ]; then
+    rm -rf $artifacts_dir
+    echo "Artifacts directory deleted."
+  fi
+  exit 0
 fi
 
-# TODO: https://github.com/dotnet/arcade/issues/1468
-# Temporary workaround to avoid breaking change.
-# Remove once repos are updated.
-if [[ -n "${useInstalledDotNetCli:-}" ]]; then
-  use_installed_dotnet_cli="$useInstalledDotNetCli"
-fi
-
-if [[ "$restore" == true && -z ${DisableNativeToolsetInstalls:-} ]]; then
+if [[ "$restore" == true ]]; then
   InitializeNativeTools
 fi
 

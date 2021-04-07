@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,8 +13,15 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+    /// <summary>
+    /// A <see cref="IActionResultExecutor{PhysicalFileResult}"/> for <see cref="PhysicalFileResult"/>.
+    /// </summary>
     public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<PhysicalFileResult>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="PhysicalFileResultExecutor"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The factory used to create loggers.</param>
         public PhysicalFileResultExecutor(ILoggerFactory loggerFactory)
             : base(CreateLogger<PhysicalFileResultExecutor>(loggerFactory))
         {
@@ -59,7 +66,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return Task.CompletedTask;
         }
 
-        protected virtual Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue range, long rangeLength)
+        /// <inheritdoc/>
+        protected virtual Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
         {
             if (context == null)
             {
@@ -99,6 +107,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 count: null);
         }
 
+        /// <summary>
+        /// Obsolete. This API is no longer called.
+        /// </summary>
         [Obsolete("This API is no longer called.")]
         protected virtual Stream GetFileStream(string path)
         {
@@ -116,6 +127,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     FileOptions.Asynchronous | FileOptions.SequentialScan);
         }
 
+
+        /// <summary>
+        /// Get the file metadata for a path.
+        /// </summary>
+        /// <param name="path">The file path.</param>
+        /// <returns>The <see cref="FileMetadata"/> for the path.</returns>
         protected virtual FileMetadata GetFileInfo(string path)
         {
             var fileInfo = new FileInfo(path);
@@ -127,12 +144,24 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             };
         }
 
+        /// <summary>
+        /// Represents metadata for a file.
+        /// </summary>
         protected class FileMetadata
         {
+            /// <summary>
+            /// Whether a file exists.
+            /// </summary>
             public bool Exists { get; set; }
 
+            /// <summary>
+            /// The file length.
+            /// </summary>
             public long Length { get; set; }
 
+            /// <summary>
+            /// When the file was last modified.
+            /// </summary>
             public DateTimeOffset LastModified { get; set; }
         }
     }

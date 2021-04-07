@@ -15,8 +15,7 @@ namespace TagHelpersWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            services.AddControllersWithViews();
         }
 
         public void Configure(IApplicationBuilder app)

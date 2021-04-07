@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
     {
         private readonly string _otherProperty;
 
-        public CompareAttributeAdapter(CompareAttribute attribute, IStringLocalizer stringLocalizer)
+        public CompareAttributeAdapter(CompareAttribute attribute, IStringLocalizer? stringLocalizer)
             : base(new CompareAttributeWrapper(attribute), stringLocalizer)
         {
             _otherProperty = "*." + attribute.OtherProperty;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         // populate OtherPropertyDisplayName until you call FormatErrorMessage.
         private sealed class CompareAttributeWrapper : CompareAttribute
         {
-            public ModelValidationContextBase ValidationContext { get; set; }
+            public ModelValidationContextBase ValidationContext { get; set; } = default!;
 
             public CompareAttributeWrapper(CompareAttribute attribute)
                 : base(attribute.OtherProperty)

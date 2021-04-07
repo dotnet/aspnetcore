@@ -78,8 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var result = await base.ReadRequestBodyAsync(context, encoding);
             if (!result.HasError)
             {
-                var jsonPatchDocument = (IJsonPatchDocument)result.Model;
-                if (jsonPatchDocument != null && SerializerSettings.ContractResolver != null)
+                if (result.Model is IJsonPatchDocument jsonPatchDocument && SerializerSettings.ContractResolver is not  null)
                 {
                     jsonPatchDocument.ContractResolver = SerializerSettings.ContractResolver;
                 }
@@ -96,9 +95,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var modelTypeInfo = context.ModelType.GetTypeInfo();
-            if (!typeof(IJsonPatchDocument).GetTypeInfo().IsAssignableFrom(modelTypeInfo) ||
-                !modelTypeInfo.IsGenericType)
+            var modelType = context.ModelType;
+            if (!typeof(IJsonPatchDocument).IsAssignableFrom(modelType) ||
+                !modelType.IsGenericType)
             {
                 return false;
             }

@@ -31,14 +31,8 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests
         public static TheoryData<string> NotAddedEndpoints =>
             new TheoryData<string>()
             {
-                "/AzureAD/Account/AccessDenied",
-                "/AzureAD/Account/Error",
-                "/AzureAD/Account/SignedOut",
                 "/AzureAD/Account/SignIn",
                 "/AzureAD/Account/SignOut",
-                "/AzureADB2C/Account/AccessDenied",
-                "/AzureADB2C/Account/Error",
-                "/AzureADB2C/Account/SignedOut",
                 "/AzureADB2C/Account/SignIn",
                 "/AzureADB2C/Account/ResetPassword",
                 "/AzureADB2C/Account/EditProfile",

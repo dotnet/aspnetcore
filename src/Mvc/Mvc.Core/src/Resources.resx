@@ -511,9 +511,30 @@
     <value>Unexcepted end when reading JSON.</value>
   </data>
   <data name="ApiConventions_Title_500" xml:space="preserve">
-    <value>An error occured while processing your request.</value>
+    <value>An error occurred while processing your request.</value>
   </data>
   <data name="FailedToReadRequestForm" xml:space="preserve">
     <value>Failed to read the request form. {0}</value>
+  </data>
+  <data name="ValidationVisitor_ContainerCannotBeSpecified" xml:space="preserve">
+    <value>A container cannot be specified when the ModelMetada is of kind '{0}'.</value>
+  </data>
+  <data name="StateShouldBeNullForRouteValueTransformers" xml:space="preserve">
+    <value>Transformer '{0}' was retrieved from dependency injection with a state value. State can only be specified when the dynamic route is mapped using MapDynamicControllerRoute's state argument together with transient lifetime transformer. Ensure that '{0}' doesn't set its own state and that the transformer is registered with a transient lifetime in dependency injection.</value>
+  </data>
+  <data name="ComplexObjectModelBinder_NoSuitableConstructor_ForParameter" xml:space="preserve">
+    <value>Could not create an instance of type '{0}'. Model bound complex types must not be abstract or value types and must have a parameterless constructor. Record types must have a single primary constructor. Alternatively, give the '{1}' parameter a non-null default value.</value>
+  </data>
+  <data name="ComplexObjectModelBinder_NoSuitableConstructor_ForProperty" xml:space="preserve">
+    <value>Could not create an instance of type '{0}'. Model bound complex types must not be abstract or value types and must have a parameterless constructor. Record types must have a single primary constructor. Alternatively, set the '{1}' property to a non-null value in the '{2}' constructor.</value>
+  </data>
+  <data name="ComplexObjectModelBinder_NoSuitableConstructor_ForType" xml:space="preserve">
+    <value>Could not create an instance of type '{0}'. Model bound complex types must not be abstract or value types and must have a parameterless constructor. Record types must have a single primary constructor.</value>
+  </data>
+  <data name="ValidationStrategy_MappedPropertyNotFound" xml:space="preserve">
+    <value>No property found that maps to constructor parameter '{0}' for type '{1}'. Validation requires that each bound parameter of a record type's primary constructor must have a property to read the value.</value>
+  </data>
+  <data name="TryUpdateModel_RecordTypeNotSupported" xml:space="preserve">
+    <value>{0} cannot update a record type model. If a '{1}' must be updated, include it in an object type.</value>
   </data>
 </root>

@@ -1,0 +1,23 @@
+#nullable enable
+*REMOVED*Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+*REMOVED*Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object!>! dataTokens) -> void
+*REMOVED*Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+*REMOVED*Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string!
+*REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string!
+*REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string! routeName) -> void
+Microsoft.AspNetCore.Builder.MapActionEndpointConventionBuilder
+Microsoft.AspNetCore.Builder.MapActionEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+Microsoft.AspNetCore.Builder.MapActionEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object?>! dataTokens) -> void
+Microsoft.AspNetCore.Routing.IDataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Microsoft.AspNetCore.Routing.IRouteNameMetadata.RouteName.get -> string?
+Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string?
+Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string? routeName) -> void
+static Microsoft.AspNetCore.Builder.MapActionEndpointRouteBuilderExtensions.Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, Microsoft.AspNetCore.Routing.Patterns.RoutePattern! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MapActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MapActionEndpointRouteBuilderExtensions.Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MapActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MapActionEndpointRouteBuilderExtensions.MapDelete(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MapActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MapActionEndpointRouteBuilderExtensions.MapGet(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MapActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MapActionEndpointRouteBuilderExtensions.MapMethods(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Collections.Generic.IEnumerable<string!>! httpMethods, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MapActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MapActionEndpointRouteBuilderExtensions.MapPost(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MapActionEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.MapActionEndpointRouteBuilderExtensions.MapPut(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! action) -> Microsoft.AspNetCore.Builder.MapActionEndpointConventionBuilder!

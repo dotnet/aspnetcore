@@ -1,19 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
@@ -68,14 +68,14 @@ namespace Microsoft.AspNetCore.Routing
             };
         }
 
-        public override string GetPathByAddress<TAddress>(
+        public override string? GetPathByAddress<TAddress>(
             HttpContext httpContext,
             TAddress address,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues = default,
+            RouteValueDictionary? ambientValues = default,
             PathString? pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = null)
+            LinkOptions? options = null)
         {
             if (httpContext == null)
             {
@@ -98,12 +98,12 @@ namespace Microsoft.AspNetCore.Routing
                 options);
         }
 
-        public override string GetPathByAddress<TAddress>(
+        public override string? GetPathByAddress<TAddress>(
             TAddress address,
             RouteValueDictionary values,
             PathString pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = null)
+            LinkOptions? options = null)
         {
             var endpoints = GetEndpoints(address);
             if (endpoints.Count == 0)
@@ -121,16 +121,16 @@ namespace Microsoft.AspNetCore.Routing
                 options: options);
         }
 
-        public override string GetUriByAddress<TAddress>(
+        public override string? GetUriByAddress<TAddress>(
             HttpContext httpContext,
             TAddress address,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues = default,
-            string scheme = default,
+            RouteValueDictionary? ambientValues = default,
+            string? scheme = default,
             HostString? host = default,
             PathString? pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = null)
+            LinkOptions? options = null)
         {
             if (httpContext == null)
             {
@@ -154,14 +154,14 @@ namespace Microsoft.AspNetCore.Routing
                 options);
         }
 
-        public override string GetUriByAddress<TAddress>(
+        public override string? GetUriByAddress<TAddress>(
             TAddress address,
             RouteValueDictionary values,
-            string scheme,
+            string? scheme,
             HostString host,
             PathString pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = null)
+            LinkOptions? options = null)
         {
             if (string.IsNullOrEmpty(scheme))
             {
@@ -207,14 +207,14 @@ namespace Microsoft.AspNetCore.Routing
             return endpoints;
         }
 
-        private string GetPathByEndpoints(
-            HttpContext httpContext,
+        private string? GetPathByEndpoints(
+            HttpContext? httpContext,
             List<RouteEndpoint> endpoints,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues,
+            RouteValueDictionary? ambientValues,
             PathString pathBase,
             FragmentString fragment,
-            LinkOptions options)
+            LinkOptions? options)
         {
             for (var i = 0; i < endpoints.Count; i++)
             {
@@ -242,15 +242,15 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         // Also called from DefaultLinkGenerationTemplate
-        public string GetUriByEndpoints(
+        public string? GetUriByEndpoints(
             List<RouteEndpoint> endpoints,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues,
+            RouteValueDictionary? ambientValues,
             string scheme,
             HostString host,
             PathString pathBase,
             FragmentString fragment,
-            LinkOptions options)
+            LinkOptions? options)
         {
             for (var i = 0; i < endpoints.Count; i++)
             {
@@ -289,11 +289,11 @@ namespace Microsoft.AspNetCore.Routing
 
         // Internal for testing
         internal bool TryProcessTemplate(
-            HttpContext httpContext,
+            HttpContext? httpContext,
             RouteEndpoint endpoint,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues,
-            LinkOptions options,
+            RouteValueDictionary? ambientValues,
+            LinkOptions? options,
             out (PathString path, QueryString query) result)
         {
             var templateBinder = GetTemplateBinder(endpoint);
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         // Also called from DefaultLinkGenerationTemplate
-        public static RouteValueDictionary GetAmbientValues(HttpContext httpContext)
+        public static RouteValueDictionary? GetAmbientValues(HttpContext? httpContext)
         {
             return httpContext?.Features.Get<IRouteValuesFeature>()?.RouteValues;
         }
@@ -335,6 +335,7 @@ namespace Microsoft.AspNetCore.Routing
             _cache.Dispose();
         }
 
+#nullable disable
         private static class Log
         {
             public static class EventIds
@@ -354,7 +355,8 @@ namespace Microsoft.AspNetCore.Routing
             private static readonly Action<ILogger, IEnumerable<string>, object, Exception> _endpointsFound = LoggerMessage.Define<IEnumerable<string>, object>(
                 LogLevel.Debug,
                 EventIds.EndpointsFound,
-                "Found the endpoints {Endpoints} for address {Address}");
+                "Found the endpoints {Endpoints} for address {Address}",
+                skipEnabledCheck: true);
 
             private static readonly Action<ILogger, object, Exception> _endpointsNotFound = LoggerMessage.Define<object>(
                 LogLevel.Debug,
@@ -371,30 +373,35 @@ namespace Microsoft.AspNetCore.Routing
                 EventIds.TemplateFailedRequiredValues,
                 "Failed to process the template {Template} for {Endpoint}. " +
                 "A required route value is missing, or has a different value from the required default values. " +
-                "Supplied ambient values {AmbientValues} and {Values} with default values {Defaults}");
+                "Supplied ambient values {AmbientValues} and {Values} with default values {Defaults}",
+                skipEnabledCheck: true);
 
             private static readonly Action<ILogger, string, string, IRouteConstraint, string, string, Exception> _templateFailedConstraint = LoggerMessage.Define<string, string, IRouteConstraint, string, string>(
                 LogLevel.Debug,
                 EventIds.TemplateFailedConstraint,
                 "Failed to process the template {Template} for {Endpoint}. " +
-                "The constraint {Constraint} for parameter {ParameterName} failed with values {Values}");
+                "The constraint {Constraint} for parameter {ParameterName} failed with values {Values}",
+                skipEnabledCheck: true);
 
             private static readonly Action<ILogger, string, string, string, Exception> _templateFailedExpansion = LoggerMessage.Define<string, string, string>(
                 LogLevel.Debug,
                 EventIds.TemplateFailedExpansion,
                 "Failed to process the template {Template} for {Endpoint}. " +
-                "The failure occured while expanding the template with values {Values} " +
-                "This is usually due to a missing or empty value in a complex segment");
+                "The failure occurred while expanding the template with values {Values} " +
+                "This is usually due to a missing or empty value in a complex segment",
+                skipEnabledCheck: true);
 
             private static readonly Action<ILogger, IEnumerable<string>, string, Exception> _linkGenerationSucceeded = LoggerMessage.Define<IEnumerable<string>, string>(
                 LogLevel.Debug,
                 EventIds.LinkGenerationSucceeded,
-                "Link generation succeeded for endpoints {Endpoints} with result {URI}");
+                "Link generation succeeded for endpoints {Endpoints} with result {URI}",
+                skipEnabledCheck: true);
 
             private static readonly Action<ILogger, IEnumerable<string>, Exception> _linkGenerationFailed = LoggerMessage.Define<IEnumerable<string>>(
                 LogLevel.Debug,
                 EventIds.LinkGenerationFailed,
-                "Link generation failed for endpoints {Endpoints}");
+                "Link generation failed for endpoints {Endpoints}",
+                skipEnabledCheck: true);
 
             public static void EndpointsFound(ILogger logger, object address, IEnumerable<Endpoint> endpoints)
             {
@@ -442,7 +449,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
             }
 
-            public static void LinkGenerationSucceeded(ILogger logger, IEnumerable<Endpoint> endpoints, string  uri)
+            public static void LinkGenerationSucceeded(ILogger logger, IEnumerable<Endpoint> endpoints, string uri)
             {
                 // Checking level again to avoid allocation on the common path
                 if (logger.IsEnabled(LogLevel.Debug))

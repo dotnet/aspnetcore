@@ -1,0 +1,5 @@
+Source Location: (11:0,11 [14] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewWithNamespace.cshtml)
+|Test.Namespace|
+Generated Location: (818:19,44 [14] )
+|Test.Namespace|
+

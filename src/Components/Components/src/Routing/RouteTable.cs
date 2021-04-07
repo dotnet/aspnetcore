@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public RouteEntry[] Routes { get; }
 
-        internal void Route(RouteContext routeContext)
+        public void Route(RouteContext routeContext)
         {
             for (var i = 0; i < Routes.Length; i++)
             {

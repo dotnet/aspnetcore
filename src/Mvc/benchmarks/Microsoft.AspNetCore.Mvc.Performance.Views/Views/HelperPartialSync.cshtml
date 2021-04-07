@@ -1,7 +1,0 @@
-@using System;
-@using Microsoft.AspNetCore.Html
-@model System.String
-@for (var i = 0; i < 100; i++)
-{
-    Html.RenderPartial("~/Views/HelperPartial_Partial.cshtml", Model + i.ToString());
-}

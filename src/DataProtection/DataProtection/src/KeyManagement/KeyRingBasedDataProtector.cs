@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         private AdditionalAuthenticatedDataTemplate _aadTemplate;
         private readonly IKeyRingProvider _keyRingProvider;
-        private readonly ILogger _logger;
+        private readonly ILogger? _logger;
 
-        public KeyRingBasedDataProtector(IKeyRingProvider keyRingProvider, ILogger logger, string[] originalPurposes, string newPurpose)
+        public KeyRingBasedDataProtector(IKeyRingProvider keyRingProvider, ILogger? logger, string[]? originalPurposes, string newPurpose)
         {
             Debug.Assert(keyRingProvider != null);
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         internal string[] Purposes { get; }
 
-        private static string[] ConcatPurposes(string[] originalPurposes, string newPurpose)
+        private static string[] ConcatPurposes(string[]? originalPurposes, string newPurpose)
         {
             if (originalPurposes != null && originalPurposes.Length > 0)
             {
@@ -248,12 +248,15 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
                     if (requestedEncryptor == null)
                     {
-                        _logger.KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(keyIdFromPayload);
+                        if (_logger.IsTraceLevelEnabled())
+                        {
+                            _logger.KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(keyIdFromPayload);
+                        }
                         throw Error.Common_KeyNotFound(keyIdFromPayload);
                     }
                 }
 
-                // Do we need to notify the caller that he should reprotect the data?
+                // Do we need to notify the caller that they should reprotect the data?
                 status = UnprotectStatus.Ok;
                 if (keyIdFromPayload != currentKeyRing.DefaultKeyId)
                 {
@@ -265,12 +268,18 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 {
                     if (allowOperationsOnRevokedKeys)
                     {
-                        _logger.KeyWasRevokedCallerRequestedUnprotectOperationProceedRegardless(keyIdFromPayload);
+                        if (_logger.IsDebugLevelEnabled())
+                        {
+                            _logger.KeyWasRevokedCallerRequestedUnprotectOperationProceedRegardless(keyIdFromPayload);
+                        }
                         status = UnprotectStatus.DecryptionKeyWasRevoked;
                     }
                     else
                     {
-                        _logger.KeyWasRevokedUnprotectOperationCannotProceed(keyIdFromPayload);
+                        if (_logger.IsDebugLevelEnabled())
+                        {
+                            _logger.KeyWasRevokedUnprotectOperationCannotProceed(keyIdFromPayload);
+                        }
                         throw Error.Common_KeyRevoked(keyIdFromPayload);
                     }
                 }

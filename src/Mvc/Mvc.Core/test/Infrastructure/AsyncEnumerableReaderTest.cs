@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -194,7 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             await Task.Yield();
             for (var i = 0; i < count; i++)
             {
-                yield return i.ToString();
+                yield return i.ToString(CultureInfo.InvariantCulture);
             }
         }
 

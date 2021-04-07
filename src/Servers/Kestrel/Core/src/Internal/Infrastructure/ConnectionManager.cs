@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// </summary>
         public ResourceCounter UpgradedConnectionCount { get; }
 
-        public void AddConnection(long id, KestrelConnection connection)
+        public void AddConnection(long id, ConnectionReference connectionReference)
         {
-            if (!_connectionReferences.TryAdd(id, new ConnectionReference(connection)))
+            if (!_connectionReferences.TryAdd(id, connectionReference))
             {
                 throw new ArgumentException(nameof(id));
             }
@@ -67,50 +67,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     // It's safe to modify the ConcurrentDictionary in the foreach.
                     // The connection reference has become unrooted because the application never completed.
                     _trace.ApplicationNeverCompleted(reference.ConnectionId);
+                    reference.StopTrasnsportTracking();
                 }
 
                 // If both conditions are false, the connection was removed during the heartbeat.
             }
-        }
-
-        public async Task<bool> CloseAllConnectionsAsync(CancellationToken token)
-        {
-            var closeTasks = new List<Task>();
-
-            Walk(connection =>
-            {
-                connection.RequestClose();
-                closeTasks.Add(connection.ExecutionTask);
-            });
-
-            var allClosedTask = Task.WhenAll(closeTasks.ToArray());
-            return await Task.WhenAny(allClosedTask, CancellationTokenAsTask(token)).ConfigureAwait(false) == allClosedTask;
-        }
-
-        public async Task<bool> AbortAllConnectionsAsync()
-        {
-            var abortTasks = new List<Task>();
-
-            Walk(connection =>
-            {
-                connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
-                abortTasks.Add(connection.ExecutionTask);
-            });
-
-            var allAbortedTask = Task.WhenAll(abortTasks.ToArray());
-            return await Task.WhenAny(allAbortedTask, Task.Delay(1000)).ConfigureAwait(false) == allAbortedTask;
-        }
-
-        private static Task CancellationTokenAsTask(CancellationToken token)
-        {
-            if (token.IsCancellationRequested)
-            {
-                return Task.CompletedTask;
-            }
-
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            token.Register(() => tcs.SetResult(null));
-            return tcs.Task;
         }
 
         private static ResourceCounter GetCounter(long? number)

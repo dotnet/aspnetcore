@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -12,7 +13,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -36,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             try
             {
-                var serverConnectionCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var serverConnectionCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 async Task EchoServer(ConnectionContext connection)
                 {
@@ -66,20 +70,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
                     finally
                     {
-                        serverConnectionCompletedTcs.TrySetResult(null);
+                        serverConnectionCompletedTcs.TrySetResult();
                     }
                 }
 
-                var hostBuilder = TransportSelector.GetWebHostBuilder()
-                    .UseKestrel(o =>
+                var hostBuilder = TransportSelector.GetHostBuilder()
+                    .ConfigureWebHost(webHostBuilder =>
                     {
-                        o.ListenUnixSocket(path, builder =>
-                        {
-                            builder.Run(EchoServer);
-                        });
+                        webHostBuilder
+                            .UseKestrel(o =>
+                            {
+                                o.ListenUnixSocket(path, builder =>
+                                {
+                                    builder.Run(EchoServer);
+                                });
+                            })
+                            .Configure(c => { });
                     })
-                    .ConfigureServices(AddTestLogging)
-                    .Configure(c => { });
+                    .ConfigureServices(AddTestLogging);
 
                 using (var host = hostBuilder.Build())
                 {
@@ -96,7 +104,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         var read = 0;
                         while (read < data.Length)
                         {
-                            read += await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None).DefaultTimeout();
+                            var bytesReceived = await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None).DefaultTimeout();
+                            read += bytesReceived;
+                            if (bytesReceived <= 0)
+                            {
+                                break;
+                            }
                         }
 
                         Assert.Equal(data, buffer);
@@ -105,6 +118,83 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Wait for the server to complete the loop because of the FIN
                     await serverConnectionCompletedTcs.Task.DefaultTimeout();
 
+                    await host.StopAsync().DefaultTimeout();
+                }
+            }
+            finally
+            {
+                Delete(path);
+            }
+        }
+
+#if LIBUV
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Libuv does not support unix domain sockets on Windows.")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28067")]
+#else
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
+#endif
+        [ConditionalFact]
+        [CollectDump]
+        public async Task TestUnixDomainSocketWithUrl()
+        {
+            var path = Path.GetTempFileName();
+            var url = $"http://unix:/{path}";
+
+            Delete(path);
+
+            try
+            {
+                var hostBuilder = TransportSelector.GetHostBuilder()
+                    .ConfigureWebHost(webHostBuilder =>
+                    {
+                        webHostBuilder
+                            .UseUrls(url)
+                            .UseKestrel()
+                            .Configure(app =>
+                            {
+                                app.Run(async context =>
+                                {
+                                    await context.Response.WriteAsync("Hello World");
+                                });
+                            });
+                    })
+                    .ConfigureServices(AddTestLogging);
+
+                using (var host = hostBuilder.Build())
+                {
+                    await host.StartAsync().DefaultTimeout();
+
+                    // https://github.com/dotnet/corefx/issues/5999
+                    // .NET Core HttpClient does not support unix sockets, it's difficult to parse raw response data. below is a little hacky way.
+                    using (var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
+                    {
+                        await socket.ConnectAsync(new UnixDomainSocketEndPoint(path)).DefaultTimeout();
+
+                        var httpRequest = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\nConnection: close\r\n\r\n");
+                        await socket.SendAsync(httpRequest, SocketFlags.None).DefaultTimeout();
+
+                        var readBuffer = new byte[512];
+                        var read = 0;
+                        while (true)
+                        {
+                            var bytesReceived = await socket.ReceiveAsync(readBuffer.AsMemory(read), SocketFlags.None).DefaultTimeout();
+                            read += bytesReceived;
+                            if (bytesReceived <= 0)
+                            {
+                                break;
+                            }
+                        }
+
+                        var httpResponse = Encoding.ASCII.GetString(readBuffer, 0, read);
+                        int httpStatusStart = httpResponse.IndexOf(' ') + 1;
+                        Assert.False(httpStatusStart == 0, $"Space not found in '{httpResponse}'.");
+                        int httpStatusEnd = httpResponse.IndexOf(' ', httpStatusStart);
+                        Assert.False(httpStatusEnd == -1, $"Second space not found in '{httpResponse}'.");
+
+                        var httpStatus = int.Parse(httpResponse.Substring(httpStatusStart, httpStatusEnd - httpStatusStart), CultureInfo.InvariantCulture);
+                        Assert.Equal(httpStatus, StatusCodes.Status200OK);
+
+                    }
                     await host.StopAsync().DefaultTimeout();
                 }
             }

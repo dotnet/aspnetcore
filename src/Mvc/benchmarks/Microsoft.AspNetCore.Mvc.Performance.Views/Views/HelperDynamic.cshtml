@@ -1,7 +1,0 @@
-@using System;
-@using Microsoft.AspNetCore.Html
-@model System.String
-@{Func<dynamic, IHtmlContent> SomeHelper = @<text>@{
-@item
-}</text>;}
-@for (var i = 0; i < 100; i++){@SomeHelper(Model + i.ToString())}

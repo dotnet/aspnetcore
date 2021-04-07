@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <summary>
         /// Gets the <see cref="System.Text.Encoding"/> of the <see cref="MediaType"/> if it has one.
         /// </summary>
-        public Encoding Encoding => GetEncodingFromCharset(GetParameter("charset"));
+        public Encoding? Encoding => GetEncodingFromCharset(GetParameter("charset"));
 
         /// <summary>
         /// Gets the charset parameter of the <see cref="MediaType"/> if it has one.
@@ -374,12 +374,22 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             return builder.ToString();
         }
 
-        public static Encoding GetEncoding(string mediaType)
+        /// <summary>
+        /// Get an encoding for a mediaType.
+        /// </summary>
+        /// <param name="mediaType">The mediaType.</param>
+        /// <returns>The encoding.</returns>
+        public static Encoding? GetEncoding(string mediaType)
         {
             return GetEncoding(new StringSegment(mediaType));
         }
 
-        public static Encoding GetEncoding(StringSegment mediaType)
+        /// <summary>
+        /// Get an encoding for a mediaType.
+        /// </summary>
+        /// <param name="mediaType">The mediaType.</param>
+        /// <returns>The encoding.</returns>
+        public static Encoding? GetEncoding(StringSegment mediaType)
         {
             var parsedMediaType = new MediaType(mediaType);
             return parsedMediaType.Encoding;
@@ -430,7 +440,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 quality);
         }
 
-        private static Encoding GetEncodingFromCharset(StringSegment charset)
+        private static Encoding? GetEncodingFromCharset(StringSegment charset)
         {
             if (charset.Equals("utf-8", StringComparison.OrdinalIgnoreCase))
             {

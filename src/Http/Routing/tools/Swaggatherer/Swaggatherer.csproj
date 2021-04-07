@@ -9,7 +9,8 @@
   <ItemGroup>
     <Reference Include="Newtonsoft.Json" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
 
 </Project>

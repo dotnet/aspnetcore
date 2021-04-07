@@ -32,7 +32,7 @@
     <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
 
     <AncmInProcessRHPath>aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
-    <!-- TODO: use LocalDotNetRoot instead to find dotnet.exe (see reporoot/Directory.Build.props). Requires a fix to https://github.com/aspnet/AspNetCore/issues/7196 -->
+    <!-- TODO: use LocalDotNetRoot instead to find dotnet.exe (see reporoot/Directory.Build.props). Requires a fix to https://github.com/dotnet/aspnetcore/issues/7196 -->
     <DotNetPath>$(RepoRoot).dotnet\dotnet.exe</DotNetPath>
     <DotNetPath Condition="'$(NativePlatform)' != 'x64'">$(RepoRoot).dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
   </PropertyGroup>
@@ -59,17 +59,27 @@
     </PropertyGroup>
   </Target>
 
+  <!--
+    GenerateBuildDependencyFile creates the .deps file used here. BuildDepsJson and CoreBuild are empty targets marking
+    the end of processes using the GenerateBuildDependencyFile target.
+  -->
   <Target Name="InjectRequestHandler"
           Condition=" '$(InProcessTestSite)' == 'true' AND '$(BuildIisNativeProjects)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
-          AfterTargets="GenerateBuildDependencyFile"
-          DependsOnTargets="PrepareInjectionApp">
+          BeforeTargets="BuildDepsJson;CoreBuild"
+          DependsOnTargets="GenerateBuildDependencyFile;PrepareInjectionApp">
     <Exec Command="$(InjectDepsApp) &quot;$(ProjectDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 
+  <!--
+    GeneratePublishDependencyFile creates an intermediate .deps file copied soon after into the publish folder.
+    CopyFilesToPublishDirectory is an empty target marking the end of all copies into the publish folder, including the
+    .deps file and native assets. Publish is an empty target marking the end of the entire process.
+    (GenerateSingleFileBundle also uses the intermediate .desp file but only in single-file publish cases ignored here.)
+  -->
   <Target Name="InjectRequestHandlerOnPublish"
           Condition=" '$(InProcessTestSite)' == 'true' AND '$(BuildIisNativeProjects)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
-          AfterTargets="GeneratePublishDependencyFile"
-          DependsOnTargets="PrepareInjectionApp">
+          BeforeTargets="Publish"
+          DependsOnTargets="GeneratePublishDependencyFile;CopyFilesToPublishDirectory;PrepareInjectionApp">
     <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 

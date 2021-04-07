@@ -12,6 +12,11 @@ namespace Microsoft.AspNetCore.Hosting
     [Obsolete]
     public interface IStartupConfigureContainerFilter<TContainerBuilder>
     {
+        /// <summary>
+        /// Extends the provided <paramref name="container"/> and returns a modified <see cref="Action"/> action of the same type.
+        /// </summary>
+        /// <param name="container">The ConfigureContainer method to extend.</param>
+        /// <returns>A modified <see cref="Action"/>.</returns>
         Action<TContainerBuilder> ConfigureContainer(Action<TContainerBuilder> container);
     }
 }

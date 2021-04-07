@@ -4,19 +4,27 @@
 using System;
 using System.Buffers;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public static class TransportSelector
     {
-        public static IWebHostBuilder GetWebHostBuilder(Func<MemoryPool<byte>> memoryPoolFactory = null,
+        public static IHostBuilder GetHostBuilder(Func<MemoryPool<byte>> memoryPoolFactory = null,
                                                         long? maxReadBufferSize = null)
         {
-            return new WebHostBuilder().UseLibuv(options =>
-            {
-                options.MemoryPoolFactory = memoryPoolFactory ?? options.MemoryPoolFactory;
-                options.MaxReadBufferSize = maxReadBufferSize;
-            });
+#pragma warning disable CS0618
+            return new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseLibuv(options =>
+                        {
+                            options.MemoryPoolFactory = memoryPoolFactory ?? options.MemoryPoolFactory;
+                            options.MaxReadBufferSize = maxReadBufferSize;
+                        });
+                });
+#pragma warning restore CS0618
         }
     }
 }

@@ -11,15 +11,15 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal unsafe class ResponseStreamAsyncResult : IAsyncResult, IDisposable
+    internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposable
     {
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
-        private SafeNativeOverlapped _overlapped;
-        private HttpApiTypes.HTTP_DATA_CHUNK[] _dataChunks;
-        private FileStream _fileStream;
+        private SafeNativeOverlapped? _overlapped;
+        private HttpApiTypes.HTTP_DATA_CHUNK[]? _dataChunks;
+        private FileStream? _fileStream;
         private ResponseBody _responseStream;
-        private TaskCompletionSource<object> _tcs;
+        private TaskCompletionSource<object?> _tcs;
         private uint _bytesSent;
         private CancellationToken _cancellationToken;
         private CancellationTokenRegistration _cancellationRegistration;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal ResponseStreamAsyncResult(ResponseBody responseStream, CancellationToken cancellationToken)
         {
             _responseStream = responseStream;
-            _tcs = new TaskCompletionSource<object>();
+            _tcs = new TaskCompletionSource<object?>();
 
             var cancellationRegistration = default(CancellationTokenRegistration);
             if (cancellationToken.CanBeCanceled)
@@ -80,11 +80,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             currentChunk = 0;
             if (chunked)
             {
-                _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(chunkHeaderBuffer.Array, chunkHeaderBuffer.Offset);
+                _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(chunkHeaderBuffer.Array!, chunkHeaderBuffer.Offset);
                 currentChunk++;
             }
 
-            _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(data.Array, data.Offset);
+            _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(data.Array!, data.Offset);
             currentChunk++;
 
             if (chunked)
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     chunkHeaderBuffer = Helpers.GetChunkHeader(count);
                     _dataChunks[0].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
                     _dataChunks[0].fromMemory.BufferLength = (uint)chunkHeaderBuffer.Count;
-                    objectsToPin[0] = chunkHeaderBuffer.Array;
+                    objectsToPin[0] = chunkHeaderBuffer.Array!;
 
                     _dataChunks[1].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromFileHandle;
                     _dataChunks[1].fromFile.offset = (ulong)offset;
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (chunked)
                 {
                     // These must be set after pinning with Overlapped.
-                    _dataChunks[0].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(chunkHeaderBuffer.Array, chunkHeaderBuffer.Offset);
+                    _dataChunks[0].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(chunkHeaderBuffer.Array!, chunkHeaderBuffer.Offset);
                     _dataChunks[2].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(Helpers.CRLF, 0);
                 }
             }
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private static void SetDataChunk(HttpApiTypes.HTTP_DATA_CHUNK[] chunks, ref int chunkIndex, object[] objectsToPin, ref int pinIndex, ArraySegment<byte> segment)
         {
-            objectsToPin[pinIndex] = segment.Array;
+            objectsToPin[pinIndex] = segment.Array!;
             pinIndex++;
             chunks[chunkIndex].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
             // The address is not set until after we pin it with Overlapped
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             chunkIndex++;
         }
 
-        internal SafeNativeOverlapped NativeOverlapped
+        internal SafeNativeOverlapped? NativeOverlapped
         {
             get { return _overlapped; }
         }
@@ -232,18 +232,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (asyncResult._cancellationToken.IsCancellationRequested)
                     {
-                        LogHelper.LogDebug(logger, "FlushAsync.IOCompleted", $"Write cancelled with error code: {errorCode}");
+                        Log.WriteCancelled(logger, errorCode);
                         asyncResult.Cancel(asyncResult._responseStream.ThrowWriteExceptions);
                     }
                     else if (asyncResult._responseStream.ThrowWriteExceptions)
                     {
                         var exception = new IOException(string.Empty, new HttpSysException((int)errorCode));
-                        LogHelper.LogException(logger, "FlushAsync.IOCompleted", exception);
+                        Log.WriteError(logger, exception);
                         asyncResult.Fail(exception);
                     }
                     else
                     {
-                        LogHelper.LogDebug(logger, "FlushAsync.IOCompleted", $"Ignored write exception: {errorCode}");
+                        Log.WriteErrorIgnored(logger, errorCode);
                         asyncResult.FailSilently();
                     }
                 }
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         // TODO: Verbose log
                         // for (int i = 0; i < asyncResult._dataChunks.Length; i++)
                         // {
-                            // Logging.Dump(Logging.HttpListener, asyncResult, "Callback", (IntPtr)asyncResult._dataChunks[0].fromMemory.pBuffer, (int)asyncResult._dataChunks[0].fromMemory.BufferLength);
+                        // Logging.Dump(Logging.HttpListener, asyncResult, "Callback", (IntPtr)asyncResult._dataChunks[0].fromMemory.pBuffer, (int)asyncResult._dataChunks[0].fromMemory.BufferLength);
                         // }
                     }
                     asyncResult.Complete();
@@ -266,14 +266,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                LogHelper.LogException(logger, "FlushAsync.IOCompleted", e);
+                Log.WriteError(logger, e);
                 asyncResult.Fail(e);
             }
         }
 
         private static unsafe void Callback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
         {
-            var asyncResult = (ResponseStreamAsyncResult)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
+            var asyncResult = (ResponseStreamAsyncResult)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped)!;
             IOCompleted(asyncResult, errorCode, numBytes);
         }
 
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _tcs.TrySetException(ex);
         }
 
-        public object AsyncState
+        public object? AsyncState
         {
             get { return _tcs.Task.AsyncState; }
         }

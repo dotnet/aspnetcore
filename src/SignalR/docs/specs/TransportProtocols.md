@@ -12,19 +12,65 @@ A transport is required to have the following attributes:
 
 The only transport which fully implements the duplex requirement is WebSockets, the others are "half-transports" which implement one end of the duplex connection. They are used in combination to achieve a duplex connection.
 
-Throughout this document, the term `[endpoint-base]` is used to refer to the route assigned to a particular end point. The term `[connection-id]` is used to refer to the connection ID provided by the `POST [endpoint-base]/negotiate` request.
+Throughout this document, the term `[endpoint-base]` is used to refer to the route assigned to a particular end point. The terms `connection-id` and `connectionToken` are used to refer to the connection ID and connection token provided by the `POST [endpoint-base]/negotiate` request.
 
 **NOTE on errors:** In all error cases, by default, the detailed exception message is **never** provided; a short description string may be provided. However, an application developer may elect to allow detailed exception messages to be emitted, which should only be used in the `Development` environment. Unexpected errors are communicated by HTTP `500 Server Error` status codes or WebSockets non-`1000 Normal Closure` close frames; in these cases the connection should be considered to be terminated.
 
 ## `POST [endpoint-base]/negotiate` request
 
-The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server. The content type of the response is `application/json`. The response to the `POST [endpoint-base]/negotiate` request contains one of three types of responses:
+The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server.
 
-1. A response that contains the `connectionId` which will be used to identify the connection on the server and the list of the transports supported by the server.
+In the POST request the client sends a query string parameter with the key "negotiateVersion" and the value as the negotiate protocol version it would like to use. If the query string is omitted, the server treats the version as zero. The server will include a "negotiateVersion" property in the json response that says which version it will be using. The version is chosen as described below:
+* If the servers minimum supported protocol version is greater than the version requested by the client it will send an error response and close the connection
+* If the server supports the request version it will respond with the requested version
+* If the requested version is greater than the servers largest supported version the server will respond with its largest supported version
+The client may close the connection if the "negotiateVersion" in the response is not acceptable.
 
+The content type of the response is `application/json` and is a JSON payload containing properties to assist the client in establishing a persistent connection. Extra JSON properties that the client does not know about should be ignored. This allows for future additions without breaking older clients.
+
+### Version 1
+
+When the server and client agree on version 1 the server response will include a "connectionToken" property in addition to the "connectionId" property. The value of the "connectionToken" property will be used in the "id" query string for the HTTP requests described below, this value should be kept secret.
+
+A successful negotiate response will look similar to the following payload:
+  ```json
+  {
+    "connectionToken":"05265228-1e2c-46c5-82a1-6a5bcc3f0143",
+    "connectionId":"807809a5-31bf-470d-9e23-afaee35d8a0d",
+    "negotiateVersion":1,
+    "availableTransports":[
+      {
+        "transport": "WebSockets",
+        "transferFormats": [ "Text", "Binary" ]
+      },
+      {
+        "transport": "ServerSentEvents",
+        "transferFormats": [ "Text" ]
+      },
+      {
+        "transport": "LongPolling",
+        "transferFormats": [ "Text", "Binary" ]
+      }
+    ]
+  }
+  ```
+
+  The payload returned from this endpoint provides the following data:
+
+  * The `connectionToken` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
+  * The `connectionId` which is the id by which other clients can refer to it.
+  * The `negotiateVersion` which is the negotiation protocol version being used between the server and client.
+  * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
+
+### Version 0
+
+When the server and client agree on version 0 the server response will include a "connectionId" property that is used in the "id" query string for the HTTP requests described below.
+
+A successful negotiate response will look similar to the following payload:
   ```json
   {
     "connectionId":"807809a5-31bf-470d-9e23-afaee35d8a0d",
+    "negotiateVersion":0,
     "availableTransports":[
       {
         "transport": "WebSockets",
@@ -45,10 +91,14 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
   The payload returned from this endpoint provides the following data:
 
   * The `connectionId` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
+  * The `negotiateVersion` which is the negotiation protocol version being used between the server and client.
   * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
 
+### All versions
 
-2. A redirect response which tells the client which URL and optionally access token to use as a result.
+There are two other possible negotiation responses:
+
+1. A redirect response which tells the client which URL and optionally access token to use as a result.
 
   ```json
   {
@@ -63,7 +113,7 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
   * The `accessToken` which is an optional bearer token for accessing the specified url.
 
 
-3. A response that contains an `error` which should stop the connection attempt.
+1. A response that contains an `error` which should stop the connection attempt.
 
   ```json
   {
@@ -136,10 +186,14 @@ Long Polling requires that the client poll the server for new messages. Unlike t
 
 A Poll is established by sending an HTTP GET request to `[endpoint-base]` with the following query string parameters
 
+#### Version 1
+* `id` (Required) - The Connection Token of the destination connection.
+
+#### Version 0
 * `id` (Required) - The Connection ID of the destination connection.
 
 When data is available, the server responds with a body in one of the two formats below (depending upon the value of the `Accept` header). The response may be chunked, as per the chunked encoding part of the HTTP spec.
 
 If the `id` parameter is missing, a `400 Bad Request` response is returned. If there is no connection with the ID specified in `id`, a `404 Not Found` response is returned.
 
-When the client has finished with the connection, it can issue a `DELETE` request to `[endpoint-base]` (with the `id` in the querystring) to gracefully terminate the connection. The server will complete the latest poll with `204` to indicate that it has shut down.
+When the client has finished with the connection, it can issue a `DELETE` request to `[endpoint-base]` (with the `id` in the query string) to gracefully terminate the connection. The server will complete the latest poll with `204` to indicate that it has shut down.

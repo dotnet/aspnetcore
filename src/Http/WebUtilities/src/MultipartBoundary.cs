@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public byte[] BoundaryBytes { get; private set; }
+        public byte[] BoundaryBytes { get; private set; } = default!; // This gets initialized as part of Initialize called from in the ctor.
 
         public int FinalBoundaryLength { get; private set; }
     }

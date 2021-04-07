@@ -4,7 +4,7 @@ source_directory=$BUILD_SOURCESDIRECTORY
 core_root_directory=
 baseline_core_root_directory=
 architecture=x64
-framework=netcoreapp5.0
+framework=net5.0
 compilation_mode=tiered
 repository=$BUILD_REPOSITORY_NAME
 branch=$BUILD_SOURCEBRANCH
@@ -12,16 +12,26 @@ commit_sha=$BUILD_SOURCEVERSION
 build_number=$BUILD_BUILDNUMBER
 internal=false
 compare=false
+mono_dotnet=
 kind="micro"
-run_categories="coreclr corefx"
+llvm=false
+monointerpreter=false
+monoaot=false
+monoaot_path=
+run_categories="Libraries Runtime"
 csproj="src\benchmarks\micro\MicroBenchmarks.csproj"
-configurations=
+configurations="CompliationMode=$compilation_mode RunKind=$kind"
 run_from_perf_repo=false
 use_core_run=true
 use_baseline_core_run=true
+using_mono=false
+wasm_runtime_loc=
+using_wasm=false
+use_latest_dotnet=false
+logical_machine=
 
 while (($# > 0)); do
-  lowerI="$(echo $1 | awk '{print tolower($0)}')"
+  lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
   case $lowerI in
     --sourcedirectory)
       source_directory=$2
@@ -47,6 +57,10 @@ while (($# > 0)); do
       compilation_mode=$2
       shift 2
       ;;
+    --logicalmachine)
+      logical_machine=$2
+      shift 2
+      ;;
     --repository)
       repository=$2
       shift 2
@@ -65,6 +79,7 @@ while (($# > 0)); do
       ;;
     --kind)
       kind=$2
+      configurations="CompilationMode=$compilation_mode RunKind=$kind"
       shift 2
       ;;
     --runcategories)
@@ -79,6 +94,31 @@ while (($# > 0)); do
       internal=true
       shift 1
       ;;
+    --alpine)
+      alpine=true
+      shift 1
+      ;;
+    --llvm)
+      llvm=true
+      shift 1
+      ;;
+    --monointerpreter)
+      monointerpreter=true
+      shift 1
+      ;;
+    --monoaot)
+      monoaot=true
+      monoaot_path=$2
+      shift 2
+      ;;
+    --monodotnet)
+      mono_dotnet=$2
+      shift 2
+      ;;
+    --wasm)
+      wasm_runtime_loc=$2
+      shift 2
+      ;;
     --compare)
       compare=true
       shift 1
@@ -87,7 +127,11 @@ while (($# > 0)); do
       configurations=$2
       shift 2
       ;;
-    --help)
+    --latestdotnet)
+      use_latest_dotnet=true
+      shift 1
+      ;;
+    *)
       echo "Common settings:"
       echo "  --corerootdirectory <value>    Directory where Core_Root exists, if running perf testing with --corerun"
       echo "  --architecture <value>         Architecture of the testing being run"
@@ -107,6 +151,10 @@ while (($# > 0)); do
       echo "  --kind <value>                 Related to csproj. The kind of benchmarks that should be run. Defaults to micro"
       echo "  --runcategories <value>        Related to csproj. Categories of benchmarks to run. Defaults to \"coreclr corefx\""
       echo "  --internal                     If the benchmarks are running as an official job."
+      echo "  --monodotnet                   Pass the path to the mono dotnet for mono performance testing."
+      echo "  --wasm                         Path to the unpacked wasm runtime pack."
+      echo "  --latestdotnet                 --dotnet-versions will not be specified. --dotnet-versions defaults to LKG version in global.json "
+      echo "  --alpine                       Set for runs on Alpine"
       echo ""
       exit 0
       ;;
@@ -118,7 +166,7 @@ if [ "$repository" == "dotnet/performance" ] || [ "$repository" == "dotnet-perfo
 fi
 
 if [ -z "$configurations" ]; then
-    configurations="CompliationMode=$compilation_mode"
+    configurations="CompilationMode=$compilation_mode"
 fi
 
 if [ -z "$core_root_directory" ]; then
@@ -138,19 +186,6 @@ queue=Ubuntu.1804.Amd64.Open
 creator=$BUILD_DEFINITIONNAME
 helix_source_prefix="pr"
 
-if [[ "$compare" == true ]]; then
-  extra_benchmark_dotnet_arguments=
-  perflab_arguments=
-
-  # No open queues for arm64
-  if [[ "$architecture" = "arm64" ]]; then
-    echo "Compare not available for arm64"
-    exit 1
-  fi
-
-  queue=Ubuntu.1804.Amd64.Tiger.Perf.Open
-fi
-
 if [[ "$internal" == true ]]; then
     perflab_arguments="--upload-to-perflab-container"
     helix_source_prefix="official"
@@ -160,11 +195,49 @@ if [[ "$internal" == true ]]; then
     if [[ "$architecture" = "arm64" ]]; then
         queue=Ubuntu.1804.Arm64.Perf
     else
-        queue=Ubuntu.1804.Amd64.Tiger.Perf
+        if [[ "$logical_machine" = "perfowl" ]]; then
+            queue=Ubuntu.1804.Amd64.Owl.Perf
+        else
+            queue=Ubuntu.1804.Amd64.Tiger.Perf
+        fi
+    fi
+
+    if [[ "$alpine" = "true" ]]; then
+        queue=alpine.amd64.tiger.perf
+    fi
+else
+    if [[ "$architecture" = "arm64" ]]; then
+        queue=ubuntu.1804.armarch.open
+    else
+        queue=Ubuntu.1804.Amd64.Open
+    fi
+
+    if [[ "$alpine" = "true" ]]; then
+        queue=alpine.amd64.tiger.perf
     fi
 fi
 
-common_setup_arguments="--frameworks $framework --queue $queue --build-number $build_number --build-configs $configurations"
+if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "false" ]]; then
+    configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoMono"
+fi
+
+if [[ "$wasm_runtime_loc" != "" ]]; then
+    configurations="CompilationMode=wasm RunKind=$kind"
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoInterpreter NoWASM NoMono"
+fi
+
+if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "true" ]]; then
+    configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoInterpreter NoMono"
+fi
+
+if [[ "$monoaot" == "true" ]]; then
+    configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoAOT"
+fi
+
+common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations --architecture $architecture"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
 
 if [[ "$run_from_perf_repo" = true ]]; then
@@ -173,10 +246,29 @@ if [[ "$run_from_perf_repo" = true ]]; then
     performance_directory=$workitem_directory
     setup_arguments="--perf-hash $commit_sha $common_setup_arguments"
 else
-    git clone --branch master --depth 1 --quiet https://github.com/dotnet/performance $performance_directory
+    git clone --branch main --depth 1 --quiet https://github.com/dotnet/performance $performance_directory
     
     docs_directory=$performance_directory/docs
     mv $docs_directory $workitem_directory
+fi
+
+if [[ "$wasm_runtime_loc" != "" ]]; then
+    using_wasm=true
+    wasm_dotnet_path=$payload_directory/dotnet-wasm
+    mv $wasm_runtime_loc $wasm_dotnet_path
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --wasmMainJS \$HELIX_CORRELATION_PAYLOAD/dotnet-wasm/runtime-test.js --wasmEngine /home/helixbot/.jsvu/v8 --customRuntimePack \$HELIX_CORRELATION_PAYLOAD/dotnet-wasm"
+fi
+
+if [[ "$mono_dotnet" != "" ]] && [[ "$monoaot" == "false" ]]; then
+    using_mono=true
+    mono_dotnet_path=$payload_directory/dotnet-mono
+    mv $mono_dotnet $mono_dotnet_path
+fi
+
+if [[ "$monoaot" == "true" ]]; then
+    monoaot_dotnet_path=$payload_directory/monoaot
+    mv $monoaot_path $monoaot_dotnet_path
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --runtimes monoaotllvm --aotcompilerpath \$HELIX_CORRELATION_PAYLOAD/monoaot/sgen/mini/mono-sgen --customruntimepack \$HELIX_CORRELATION_PAYLOAD/monoaot/pack --aotcompilermode llvm"
 fi
 
 if [[ "$use_core_run" = true ]]; then
@@ -203,7 +295,7 @@ Write-PipelineSetVariable -name "PerformanceDirectory" -value "$performance_dire
 Write-PipelineSetVariable -name "WorkItemDirectory" -value "$workitem_directory" -is_multi_job_variable false
 Write-PipelineSetVariable -name "Queue" -value "$queue" -is_multi_job_variable false
 Write-PipelineSetVariable -name "SetupArguments" -value "$setup_arguments" -is_multi_job_variable false
-Write-PipelineSetVariable -name "Python" -value "$python3" -is_multi_job_variable false
+Write-PipelineSetVariable -name "Python" -value "python3" -is_multi_job_variable false
 Write-PipelineSetVariable -name "PerfLabArguments" -value "$perflab_arguments" -is_multi_job_variable false
 Write-PipelineSetVariable -name "ExtraBenchmarkDotNetArguments" -value "$extra_benchmark_dotnet_arguments" -is_multi_job_variable false
 Write-PipelineSetVariable -name "BDNCategories" -value "$run_categories" -is_multi_job_variable false
@@ -214,3 +306,5 @@ Write-PipelineSetVariable -name "HelixSourcePrefix" -value "$helix_source_prefix
 Write-PipelineSetVariable -name "Kind" -value "$kind" -is_multi_job_variable false
 Write-PipelineSetVariable -name "_BuildConfig" -value "$architecture.$kind.$framework" -is_multi_job_variable false
 Write-PipelineSetVariable -name "Compare" -value "$compare" -is_multi_job_variable false
+Write-PipelineSetVariable -name "MonoDotnet" -value "$using_mono" -is_multi_job_variable false
+Write-PipelineSetVariable -name "WasmDotnet" -value "$using_wasm" -is_multi_job_variable false

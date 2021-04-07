@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             writeContext.EventId.Name == "ReconnectingWithError");
                 }
 
-                var failReconnectTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var failReconnectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             writeContext.EventId.Name == "ReconnectingWithError");
                 }
 
-                var failReconnectTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var failReconnectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
@@ -378,13 +378,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             writeContext.EventId.Name == "ReconnectingWithError");
                 }
 
-                var failReconnectTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
                 using (StartVerifiableLog(ExpectedErrors))
                 {
                     var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = default(ReconnectingConnectionFactory);
-       
+
                     testConnectionFactory = new ReconnectingConnectionFactory(() => new TestConnection());
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -464,13 +462,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             writeContext.EventId.Name == "ShutdownWithError");
                 }
 
-                var failReconnectTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
                 using (StartVerifiableLog(ExpectedErrors))
                 {
                     var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = default(ReconnectingConnectionFactory);
-       
+
                     testConnectionFactory = new ReconnectingConnectionFactory(() => new TestConnection());
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -647,7 +643,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
                     var retryContexts = new List<RetryContext>();
-                    var secondRetryDelayTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var secondRetryDelayTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     var mockReconnectPolicy = new Mock<IRetryPolicy>();
                     mockReconnectPolicy.Setup(p => p.NextRetryDelay(It.IsAny<RetryContext>())).Returns<RetryContext>(context =>
                     {
@@ -655,7 +651,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                         if (retryContexts.Count == 2)
                         {
-                            secondRetryDelayTcs.SetResult(null);
+                            secondRetryDelayTcs.SetResult();
                         }
 
                         return TimeSpan.Zero;
@@ -754,7 +750,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
                     var retryContexts = new List<RetryContext>();
-                    var secondRetryDelayTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var secondRetryDelayTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     var mockReconnectPolicy = new Mock<IRetryPolicy>();
                     mockReconnectPolicy.Setup(p => p.NextRetryDelay(It.IsAny<RetryContext>())).Returns<RetryContext>(context =>
                     {
@@ -762,7 +758,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                         if (retryContexts.Count == 2)
                         {
-                            secondRetryDelayTcs.SetResult(null);
+                            secondRetryDelayTcs.SetResult();
                         }
 
                         return TimeSpan.Zero;
@@ -869,7 +865,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 using (StartVerifiableLog(ExpectedErrors))
                 {
                     var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
-                    var connectionStartTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var connectionStartTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                     async Task OnTestConnectionStart()
                     {
@@ -879,7 +875,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         }
                         finally
                         {
-                            connectionStartTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                            connectionStartTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                         }
                     }
 
@@ -921,7 +917,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     };
 
                     // Allow the first connection to start successfully.
-                    connectionStartTcs.SetResult(null);
+                    connectionStartTcs.SetResult();
                     await hubConnection.StartAsync().OrTimeout();
 
                     var firstException = new Exception();
@@ -935,7 +931,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     var secondException = new Exception();
                     var stopTask = hubConnection.StopAsync();
-                    connectionStartTcs.SetResult(null);
+                    connectionStartTcs.SetResult();
 
                     Assert.IsType<OperationCanceledException>(await closedErrorTcs.Task.OrTimeout());
                     Assert.Single(retryContexts);

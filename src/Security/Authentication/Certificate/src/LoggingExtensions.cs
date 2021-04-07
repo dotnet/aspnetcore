@@ -8,9 +8,10 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception> _noCertificate;
-        private static Action<ILogger, string, string, Exception> _certRejected;
-        private static Action<ILogger, string, string, Exception> _certFailedValidation;
+        private static Action<ILogger, Exception?> _noCertificate;
+        private static Action<ILogger, Exception?> _notHttps;
+        private static Action<ILogger, string, string, Exception?> _certRejected;
+        private static Action<ILogger, string, string, Exception?> _certFailedValidation;
 
         static LoggingExtensions()
         {
@@ -28,11 +29,21 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(2, "CertificateFailedValidation"),
                 logLevel: LogLevel.Warning,
                 formatString: "Certificate validation failed, subject was {Subject}." + Environment.NewLine + "{ChainErrors}");
+            
+            _notHttps = LoggerMessage.Define(
+                eventId: new EventId(3, "NotHttps"),
+                logLevel: LogLevel.Debug,
+                formatString: "Not https, skipping certificate authentication.");
         }
 
         public static void NoCertificate(this ILogger logger)
         {
             _noCertificate(logger, null);
+        }
+
+        public static void NotHttps(this ILogger logger)
+        {
+            _notHttps(logger, null);
         }
 
         public static void CertificateRejected(this ILogger logger, string certificateType, string subject)

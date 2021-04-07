@@ -11,14 +11,16 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// <see cref="IApplicationBuilder"/> extension methods for the <see cref="DatabaseErrorPageMiddleware"/>.
     /// </summary>
+    [Obsolete("This is obsolete and will be removed in a future version. Use DatabaseDeveloperPageExceptionFilter instead, see documentation at https://aka.ms/DatabaseDeveloperPageExceptionFilter.")]
     public static class DatabaseErrorPageExtensions
     {
         /// <summary>
         /// Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
-        /// migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
+        /// migrations. When these exceptions occur, an HTML response with details of possible actions to resolve the issue is generated.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
+        [Obsolete("This is obsolete and will be removed in a future version. Use DatabaseDeveloperPageExceptionFilter instead, see documentation at https://aka.ms/DatabaseDeveloperPageExceptionFilter.")]
         public static IApplicationBuilder UseDatabaseErrorPage(this IApplicationBuilder app)
         {
             if (app == null)
@@ -31,11 +33,12 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
-        /// migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
+        /// migrations. When these exceptions occur, an HTML response with details of possible actions to resolve the issue is generated.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
         /// <param name="options">A <see cref="DatabaseErrorPageOptions"/> that specifies options for the middleware.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
+        [Obsolete("This is obsolete and will be removed in a future version. Use DatabaseDeveloperPageExceptionFilter instead, see documentation at https://aka.ms/DatabaseDeveloperPageExceptionFilter.")]
         public static IApplicationBuilder UseDatabaseErrorPage(
             this IApplicationBuilder app, DatabaseErrorPageOptions options)
         {

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using BasicTestApp;
-using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var cultureDisplay = Browser.Exists(By.Id("culture-name-display"));
             Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
 
-            var messageDisplay = Browser.FindElement(By.Id("message-display"));
+            var messageDisplay = Browser.Exists(By.Id("message-display"));
             Assert.Equal(message, messageDisplay.Text);
         }
     }

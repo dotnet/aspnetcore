@@ -1,18 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.NodeServices.Npm;
 using Microsoft.AspNetCore.NodeServices.Util;
-using Microsoft.AspNetCore.SpaServices.Util;
-using System;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Net.Http;
 using Microsoft.AspNetCore.SpaServices.Extensions.Util;
+using Microsoft.AspNetCore.SpaServices.Util;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SpaServices.AngularCli
 {
@@ -23,79 +26,77 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
 
         public static void Attach(
             ISpaBuilder spaBuilder,
-            string npmScriptName)
+            string scriptName)
         {
+            var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
             var sourcePath = spaBuilder.Options.SourcePath;
+            var devServerPort = spaBuilder.Options.DevServerPort;
             if (string.IsNullOrEmpty(sourcePath))
             {
                 throw new ArgumentException("Cannot be null or empty", nameof(sourcePath));
             }
 
-            if (string.IsNullOrEmpty(npmScriptName))
+            if (string.IsNullOrEmpty(scriptName))
             {
-                throw new ArgumentException("Cannot be null or empty", nameof(npmScriptName));
+                throw new ArgumentException("Cannot be null or empty", nameof(scriptName));
             }
 
             // Start Angular CLI and attach to middleware pipeline
             var appBuilder = spaBuilder.ApplicationBuilder;
+            var applicationStoppingToken = appBuilder.ApplicationServices.GetRequiredService<IHostApplicationLifetime>().ApplicationStopping;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-            var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, npmScriptName, logger);
-
-            // Everything we proxy is hardcoded to target http://localhost because:
-            // - the requests are always from the local machine (we're not accepting remote
-            //   requests that go directly to the Angular CLI middleware server)
-            // - given that, there's no reason to use https, and we couldn't even if we
-            //   wanted to, because in general the Angular CLI server has no certificate
-            var targetUriTask = angularCliServerInfoTask.ContinueWith(
-                task => new UriBuilder("http", "localhost", task.Result.Port).Uri);
+            var diagnosticSource = appBuilder.ApplicationServices.GetRequiredService<DiagnosticSource>();
+            var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, logger, diagnosticSource, applicationStoppingToken);
 
             SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, () =>
             {
                 // On each request, we create a separate startup task with its own timeout. That way, even if
                 // the first request times out, subsequent requests could still work.
                 var timeout = spaBuilder.Options.StartupTimeout;
-                return targetUriTask.WithTimeout(timeout,
+                return angularCliServerInfoTask.WithTimeout(timeout,
                     $"The Angular CLI process did not start listening for requests " +
-                    $"within the timeout period of {timeout.Seconds} seconds. " +
+                    $"within the timeout period of {timeout.TotalSeconds} seconds. " +
                     $"Check the log output for error information.");
             });
         }
 
-        private static async Task<AngularCliServerInfo> StartAngularCliServerAsync(
-            string sourcePath, string npmScriptName, ILogger logger)
+        private static async Task<Uri> StartAngularCliServerAsync(
+            string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, ILogger logger, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
         {
-            var portNumber = TcpPortFinder.FindAvailablePort();
+            if (portNumber == default(int))
+            {
+                portNumber = TcpPortFinder.FindAvailablePort();
+            }
             logger.LogInformation($"Starting @angular/cli on port {portNumber}...");
 
-            var npmScriptRunner = new NpmScriptRunner(
-                sourcePath, npmScriptName, $"--port {portNumber}", null);
-            npmScriptRunner.AttachToLogger(logger);
+            var scriptRunner = new NodeScriptRunner(
+                sourcePath, scriptName, $"--port {portNumber}", null, pkgManagerCommand, diagnosticSource, applicationStoppingToken);
+            scriptRunner.AttachToLogger(logger);
 
             Match openBrowserLine;
-            using (var stdErrReader = new EventedStreamStringReader(npmScriptRunner.StdErr))
+            using (var stdErrReader = new EventedStreamStringReader(scriptRunner.StdErr))
             {
                 try
                 {
-                    openBrowserLine = await npmScriptRunner.StdOut.WaitForMatch(
+                    openBrowserLine = await scriptRunner.StdOut.WaitForMatch(
                         new Regex("open your browser on (http\\S+)", RegexOptions.None, RegexMatchTimeout));
                 }
                 catch (EndOfStreamException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The NPM script '{npmScriptName}' exited without indicating that the " +
+                        $"The {pkgManagerCommand} script '{scriptName}' exited without indicating that the " +
                         $"Angular CLI was listening for requests. The error output was: " +
                         $"{stdErrReader.ReadAsString()}", ex);
                 }
             }
 
             var uri = new Uri(openBrowserLine.Groups[1].Value);
-            var serverInfo = new AngularCliServerInfo { Port = uri.Port };
 
             // Even after the Angular CLI claims to be listening for requests, there's a short
             // period where it will give an error if you make a request too quickly
             await WaitForAngularCliServerToAcceptRequests(uri);
 
-            return serverInfo;
+            return uri;
         }
 
         private static async Task WaitForAngularCliServerToAcceptRequests(Uri cliServerUri)
@@ -135,11 +136,6 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                     }
                 }
             }
-        }
-
-        class AngularCliServerInfo
-        {
-            public int Port { get; set; }
         }
     }
 }

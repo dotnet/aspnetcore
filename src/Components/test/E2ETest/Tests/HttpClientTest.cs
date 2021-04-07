@@ -134,9 +134,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             string WaitAndGetResponseText()
             {
-                new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                    driver => driver.FindElement(By.Id("response-text")) != null);
-                return app.FindElement(By.Id("response-text")).Text;
+                return Browser.Exists(By.Id("response-text")).Text;
             }
         }
 
@@ -145,14 +143,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var targetUri = new Uri(_apiServerFixture.RootUri, relativeUri);
             SetValue("request-uri", targetUri.AbsoluteUri);
             SetValue("request-body", requestBody ?? string.Empty);
-            new SelectElement(Browser.FindElement(By.Id("request-method")))
+            new SelectElement(Browser.Exists(By.Id("request-method")))
                 .SelectByText(requestMethod);
 
             _appElement.FindElement(By.Id("send-request")).Click();
 
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.Id("response-status")) != null);
-            _responseStatus = _appElement.FindElement(By.Id("response-status"));
+            _responseStatus = Browser.Exists(By.Id("response-status"));
             _responseBody = _appElement.FindElement(By.Id("response-body"));
             _responseHeaders = _appElement.FindElement(By.Id("response-headers"));
         }
@@ -169,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void SetValue(string elementId, string value)
         {
-            var element = Browser.FindElement(By.Id(elementId));
+            var element = Browser.Exists(By.Id(elementId));
             element.Clear();
             element.SendKeys(value);
         }

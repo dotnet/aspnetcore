@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         /// <param name="constraints">
         /// The list of <see cref="IActionConstraint"/> instances associated with <paramref name="action"/>.
         /// </param>
-        public ActionSelectorCandidate(ActionDescriptor action, IReadOnlyList<IActionConstraint> constraints)
+        public ActionSelectorCandidate(ActionDescriptor action, IReadOnlyList<IActionConstraint>? constraints)
         {
             if (action == null)
             {
@@ -38,6 +38,6 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         /// <summary>
         /// The list of <see cref="IActionConstraint"/> instances associated with <see name="Action"/>.
         /// </summary>
-        public IReadOnlyList<IActionConstraint> Constraints { get; }
+        public IReadOnlyList<IActionConstraint>? Constraints { get; }
     }
 }

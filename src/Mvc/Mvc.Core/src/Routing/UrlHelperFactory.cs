@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             if (context == null)
             {
-                throw new ArgumentNullException(Resources.ArgumentCannotBeNullOrEmpty, (nameof(context)));
+                throw new ArgumentNullException(nameof(context));
             }
 
             var httpContext = context.HttpContext;
@@ -41,12 +42,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             // Perf: Create only one UrlHelper per context
-            if (httpContext.Items.TryGetValue(typeof(IUrlHelper), out var value) && value is IUrlHelper)
+            if (httpContext.Items.TryGetValue(typeof(IUrlHelper), out var value) && value is IUrlHelper urlHelper)
             {
-                return (IUrlHelper)value;
+                return urlHelper;
             }
 
-            IUrlHelper urlHelper;
             var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
             if (endpointFeature?.Endpoint != null)
             {

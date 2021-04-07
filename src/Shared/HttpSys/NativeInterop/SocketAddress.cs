@@ -122,9 +122,9 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return (int)((_buffer[2] << 8 & 0xFF00) | (_buffer[3]));
         }
 
-        public override bool Equals(object comparand)
+        public override bool Equals(object? comparand)
         {
-            SocketAddress castedComparand = comparand as SocketAddress;
+            SocketAddress? castedComparand = comparand as SocketAddress;
             if (castedComparand == null || this.Size != castedComparand.Size)
             {
                 return false;
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return _hash;
         }
 
-        internal IPAddress GetIPAddress()
+        internal IPAddress? GetIPAddress()
         {
             if (Family == AddressFamily.InterNetworkV6)
             {
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return Family.ToString() + ":" + Size.ToString(NumberFormatInfo.InvariantInfo) + ":{" + bytes.ToString() + "}";
         }
 
-        internal string GetIPAddressString()
+        internal string? GetIPAddressString()
         {
             if (Family == AddressFamily.InterNetworkV6)
             {

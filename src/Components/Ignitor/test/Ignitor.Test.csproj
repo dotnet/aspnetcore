@@ -1,10 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DefineConstants>$(DefineConstants);IGNITOR</DefineConstants>
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Server\src\Circuits\RenderBatchWriter.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" />
   </ItemGroup>
 
 </Project>

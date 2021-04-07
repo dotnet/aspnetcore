@@ -1,9 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace RoutingWebSite
@@ -13,14 +16,14 @@ namespace RoutingWebSite
         public const string EndpointRoutingScenario = "endpointrouting";
         public const string RouterScenario = "router";
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var webHost = GetWebHostBuilder(args).Build();
-            webHost.Run();
+            var host = GetHostBuilder(args).Build();
+            return host.RunAsync();
         }
 
         // For unit testing
-        public static IWebHostBuilder GetWebHostBuilder(string[] args)
+        public static IHostBuilder GetHostBuilder(string[] args)
         {
             string scenario;
             if (args.Length == 0)
@@ -57,16 +60,21 @@ namespace RoutingWebSite
 
             }
 
-            return new WebHostBuilder()
-                .UseKestrel()
-                .UseIISIntegration()
+            return new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseIISIntegration()
+                        .UseContentRoot(Environment.CurrentDirectory)
+                        .UseStartup(startupType)
+                        .UseTestServer();
+                })
                 .ConfigureLogging(b =>
                 {
                     b.AddConsole();
                     b.SetMinimumLevel(LogLevel.Critical);
-                })
-                .UseContentRoot(Environment.CurrentDirectory)
-                .UseStartup(startupType);
+                });
         }
     }
 }

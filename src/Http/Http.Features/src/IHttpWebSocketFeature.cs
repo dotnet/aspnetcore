@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Provides access to server websocket features.
+    /// </summary>
     public interface IHttpWebSocketFeature
     {
         /// <summary>
@@ -17,8 +20,8 @@ namespace Microsoft.AspNetCore.Http.Features
         /// Attempts to upgrade the request to a <see cref="WebSocket"/>. Check <see cref="IsWebSocketRequest"/>
         /// before invoking this.
         /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
+        /// <param name="context">The <see cref="WebSocketAcceptContext"/>.</param>
+        /// <returns>A <see cref="WebSocket"/>.</returns>
         Task<WebSocket> AcceptAsync(WebSocketAcceptContext context);
     }
 }

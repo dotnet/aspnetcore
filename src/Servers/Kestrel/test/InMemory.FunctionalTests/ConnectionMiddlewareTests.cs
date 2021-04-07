@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             var serviceContext = new TestServiceContext(LoggerFactory);
 
-            TestApplicationErrorLogger.ThrowOnUngracefulShutdown = false;
+            ThrowOnUngracefulShutdown = false;
 
             var stopTask = Task.CompletedTask;
             await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ImmediateShutdownDuringOnConnectionAsyncDoesNotCrash()
         {
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             listenOptions.Use(next =>
             {
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     stopTask = server.StopAsync();
 
-                    tcs.TrySetResult(null);
+                    tcs.TrySetResult();
                 }
 
                 await stopTask;
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Unhandled exception while processing " + connectionId + "."));
+            Assert.Contains(LogMessages, m => m.Message.Contains("Unhandled exception while processing " + connectionId + "."));
         }
 
         [Fact]

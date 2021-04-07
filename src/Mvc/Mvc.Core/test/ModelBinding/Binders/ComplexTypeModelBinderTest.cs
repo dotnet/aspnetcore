@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -19,6 +20,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class ComplexTypeModelBinderTest
     {
         private static readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -543,6 +545,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var exception = Assert.Throws<InvalidOperationException>(() => binder.CreateModelPublic(bindingContext));
             Assert.Equal(
                 string.Format(
+                    CultureInfo.CurrentCulture,
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
                     "value types and must have a parameterless constructor.",
                     typeof(PointStruct).FullName),
@@ -584,6 +587,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var exception = Assert.Throws<InvalidOperationException>(() => binder.CreateModelPublic(bindingContext));
             Assert.Equal(
                 string.Format(
+                    CultureInfo.CurrentCulture,
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
                     "value types and must have a parameterless constructor. Alternatively, set the '{1}' property to" +
                     " a non-null value in the '{2}' constructor.",
@@ -1229,8 +1233,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             setup.Configure(options.Value);
 
             var lastIndex = options.Value.ModelBinderProviders.Count - 1;
-            Assert.IsType<ComplexTypeModelBinderProvider>(options.Value.ModelBinderProviders[lastIndex]);
-            options.Value.ModelBinderProviders.RemoveAt(lastIndex);
+            options.Value.ModelBinderProviders.RemoveType<ComplexObjectModelBinderProvider>();
             options.Value.ModelBinderProviders.Add(new TestableComplexTypeModelBinderProvider());
 
             var factory = TestModelBinderFactory.Create(options.Value.ModelBinderProviders.ToArray());
@@ -1662,4 +1665,5 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

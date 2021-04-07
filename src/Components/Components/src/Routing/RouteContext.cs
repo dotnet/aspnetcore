@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
     internal class RouteContext
     {
-        private static char[] Separator = new[] { '/' };
+        private static readonly char[] Separator = new[] { '/' };
 
         public RouteContext(string path)
         {
@@ -24,8 +26,9 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public string[] Segments { get; }
 
-        public Type Handler { get; set; }
+        [DynamicallyAccessedMembers(Component)]
+        public Type? Handler { get; set; }
 
-        public IReadOnlyDictionary<string, object> Parameters { get; set; }
+        public IReadOnlyDictionary<string, object>? Parameters { get; set; }
     }
 }

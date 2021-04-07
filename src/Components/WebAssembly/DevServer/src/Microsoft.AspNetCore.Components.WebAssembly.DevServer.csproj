@@ -6,20 +6,36 @@
     <AssemblyName>blazor-devserver</AssemblyName>
     <PackageId>Microsoft.AspNetCore.Components.WebAssembly.DevServer</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <StartupObject>Microsoft.AspNetCore.Components.WebAssembly.DevServer.Program</StartupObject>
     <Description>Development server for use when building Blazor applications.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <!-- Disable the default runtimeconfig.json in favor of the one that we create which contains the correct
+    framework references. Workaround for issues launching Blazor WASM apps with IIS Express. -->
+    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
-    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
-    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
+
+  <Target Name="_CreateRuntimeConfig" BeforeTargets="CoreBuild">
+    <PropertyGroup>
+      <_RuntimeConfigProperties>
+        SharedFxVersion=$(SharedFxVersion);
+      </_RuntimeConfigProperties>
+
+      <_RuntimeConfigPath>$(IntermediateOutputPath)blazor-devserver.runtimeconfig.json</_RuntimeConfigPath>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate
+      TemplateFile="blazor-devserver.runtimeconfig.json.in"
+      Properties="$(_RuntimeConfigProperties)"
+      OutputPath="$(_RuntimeConfigPath)" />
+  </Target>
 
   <!-- Pack settings -->
   <PropertyGroup>
@@ -30,7 +46,7 @@
 
   <ItemGroup>
     <NuspecProperty Include="publishDir=$(PublishDir)" />
-    <NuspecProperty Include="componentsrootdir=..\..\..\" />
+    <NuspecProperty Include="objDir=$(IntermediateOutputPath)" />
     <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
   </ItemGroup>
 

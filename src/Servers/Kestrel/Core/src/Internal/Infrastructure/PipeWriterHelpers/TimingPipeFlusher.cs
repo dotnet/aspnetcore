@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.IO.Pipelines;
 using System.Threading;
@@ -18,12 +20,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
     internal class TimingPipeFlusher
     {
         private readonly PipeWriter _writer;
-        private readonly ITimeoutControl _timeoutControl;
+        private readonly ITimeoutControl? _timeoutControl;
         private readonly IKestrelTrace _log;
 
         public TimingPipeFlusher(
             PipeWriter writer,
-            ITimeoutControl timeoutControl,
+            ITimeoutControl? timeoutControl,
             IKestrelTrace log)
         {
             _writer = writer;
@@ -36,45 +38,59 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             return FlushAsync(outputAborter: null, cancellationToken: default);
         }
 
-        public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
         {
             return FlushAsync(minRate: null, count: 0, outputAborter: outputAborter, cancellationToken: cancellationToken);
         }
 
-        public ValueTask<FlushResult> FlushAsync(MinDataRate minRate, long count)
+        public ValueTask<FlushResult> FlushAsync(MinDataRate? minRate, long count)
         {
             return FlushAsync(minRate, count, outputAborter: null, cancellationToken: default);
         }
 
-        public ValueTask<FlushResult> FlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FlushAsync(MinDataRate? minRate, long count, IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
         {
-            var pipeFlushTask = _writer.FlushAsync(cancellationToken);
-
-            if (minRate != null)
+            if (minRate is object)
             {
-                _timeoutControl.BytesWrittenToBuffer(minRate, count);
+                // Call BytesWrittenToBuffer before FlushAsync() to make testing easier, otherwise the Flush can cause test code to run before the timeout
+                // control updates and if the test checks for a timeout it can fail
+                _timeoutControl!.BytesWrittenToBuffer(minRate, count);
             }
+
+            var pipeFlushTask = _writer.FlushAsync(cancellationToken);
 
             if (pipeFlushTask.IsCompletedSuccessfully)
             {
-                return new ValueTask<FlushResult>(pipeFlushTask.Result);
+                var flushResult = pipeFlushTask.Result;
+
+                if (flushResult.IsCompleted && outputAborter is object)
+                {
+                    outputAborter.OnInputOrOutputCompleted();
+                }
+
+                return new ValueTask<FlushResult>(flushResult);
             }
 
             return TimeFlushAsyncAwaited(pipeFlushTask, minRate, outputAborter, cancellationToken);
         }
 
-        private async ValueTask<FlushResult> TimeFlushAsyncAwaited(ValueTask<FlushResult> pipeFlushTask, MinDataRate minRate, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        private async ValueTask<FlushResult> TimeFlushAsyncAwaited(ValueTask<FlushResult> pipeFlushTask, MinDataRate? minRate, IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
         {
-            if (minRate != null)
+            if (minRate is object)
             {
-                _timeoutControl.StartTimingWrite();
+                _timeoutControl!.StartTimingWrite();
             }
 
             try
             {
-                return await pipeFlushTask;
+                var flushResult = await pipeFlushTask;
+
+                if (flushResult.IsCompleted && outputAborter is object)
+                {
+                    outputAborter.OnInputOrOutputCompleted();
+                }
             }
-            catch (OperationCanceledException ex) when (outputAborter != null)
+            catch (OperationCanceledException ex) when (outputAborter is object)
             {
                 outputAborter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionOrStreamAbortedByCancellationToken, ex));
             }
@@ -85,9 +101,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
             finally
             {
-                if (minRate != null)
+                if (minRate is object)
                 {
-                    _timeoutControl.StopTimingWrite();
+                    _timeoutControl!.StopTimingWrite();
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();

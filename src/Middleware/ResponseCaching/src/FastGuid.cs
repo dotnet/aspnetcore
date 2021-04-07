@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private static long NextId;
 
         // Instance components
-        private string _idString;
+        private string? _idString;
 
         internal long IdValue { get; }
 

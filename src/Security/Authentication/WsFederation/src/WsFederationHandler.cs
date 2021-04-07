@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
     public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptions>, IAuthenticationSignOutHandler
     {
         private const string CorrelationProperty = ".xsrf";
-        private WsFederationConfiguration _configuration;
+        private WsFederationConfiguration? _configuration;
 
         /// <summary>
         /// Creates a new WsFederationAuthenticationHandler
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// <summary>
         /// Overridden to handle remote signout requests
         /// </summary>
-        /// <returns><code>true</code> if request processing should stop.</returns>
+        /// <returns><see langword="true" /> if request processing should stop.</returns>
         public override Task<bool> HandleRequestAsync()
         {
             // RemoteSignOutPath and CallbackPath may be the same, fall through if the message doesn't match.
@@ -138,8 +138,8 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// <returns></returns>
         protected override async Task<HandleRequestResult> HandleRemoteAuthenticateAsync()
         {
-            WsFederationMessage wsFederationMessage = null;
-            AuthenticationProperties properties = null;
+            WsFederationMessage? wsFederationMessage = null;
+            AuthenticationProperties? properties = null;
 
             // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
             if (HttpMethods.IsPost(Request.Method)
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
               && Request.Body.CanRead)
             {
-                var form = await Request.ReadFormAsync();
+                var form = await Request.ReadFormAsync(Context.RequestAborted);
 
                 wsFederationMessage = new WsFederationMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
@@ -195,10 +195,10 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
                     return messageReceivedContext.Result;
                 }
                 wsFederationMessage = messageReceivedContext.ProtocolMessage;
-                properties = messageReceivedContext.Properties; // Provides a new instance if not set.
+                properties = messageReceivedContext.Properties!; // Provides a new instance if not set.
 
                 // If state did flow from the challenge then validate it. See AllowUnsolicitedLogins above.
-                if (properties.Items.TryGetValue(CorrelationProperty, out string correlationId)
+                if (properties.Items.TryGetValue(CorrelationProperty, out string? correlationId)
                     && !ValidateCorrelationId(properties))
                 {
                     return HandleRequestResult.Fail("Correlation failed.", properties);
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
                     return securityTokenReceivedContext.Result;
                 }
                 wsFederationMessage = securityTokenReceivedContext.ProtocolMessage;
-                properties = messageReceivedContext.Properties;
+                properties = messageReceivedContext.Properties!;
 
                 if (_configuration == null)
                 {
@@ -240,8 +240,8 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
                 tvp.ValidIssuers = (tvp.ValidIssuers == null ? issuers : tvp.ValidIssuers.Concat(issuers));
                 tvp.IssuerSigningKeys = (tvp.IssuerSigningKeys == null ? _configuration.SigningKeys : tvp.IssuerSigningKeys.Concat(_configuration.SigningKeys));
 
-                ClaimsPrincipal principal = null;
-                SecurityToken parsedToken = null;
+                ClaimsPrincipal? principal = null;
+                SecurityToken? parsedToken = null;
                 foreach (var validator in Options.SecurityTokenHandlers)
                 {
                     if (validator.CanReadToken(token))
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
                 }
 
                 // Flow possible changes
-                principal = securityTokenValidatedContext.Principal;
+                principal = securityTokenValidatedContext.Principal!;
                 properties = securityTokenValidatedContext.Properties;
 
                 return HandleRequestResult.Success(new AuthenticationTicket(principal, properties, Scheme.Name));
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
                 Logger.ExceptionProcessingMessage(exception);
 
                 // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the notification.
-                if (Options.RefreshOnIssuerKeyNotFound && exception.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
+                if (Options.RefreshOnIssuerKeyNotFound && exception is SecurityTokenSignatureKeyNotFoundException)
                 {
                     Options.ConfigurationManager.RequestRefresh();
                 }
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// Handles Signout
         /// </summary>
         /// <returns></returns>
-        public async virtual Task SignOutAsync(AuthenticationProperties properties)
+        public async virtual Task SignOutAsync(AuthenticationProperties? properties)
         {
             var target = ResolveTarget(Options.ForwardSignOut);
             if (target != null)

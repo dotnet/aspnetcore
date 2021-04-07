@@ -29,38 +29,39 @@ export enum HubConnectionState {
 
 /** Represents a connection to a SignalR Hub. */
 export class HubConnection {
-    private readonly cachedPingMessage: string | ArrayBuffer;
+    private readonly _cachedPingMessage: string | ArrayBuffer;
+    // Needs to not start with _ for tests
     private readonly connection: IConnection;
-    private readonly logger: ILogger;
-    private readonly reconnectPolicy?: IRetryPolicy;
-    private protocol: IHubProtocol;
-    private handshakeProtocol: HandshakeProtocol;
-    private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
-    private methods: { [name: string]: Array<(...args: any[]) => void> };
-    private invocationId: number;
+    private readonly _logger: ILogger;
+    private readonly _reconnectPolicy?: IRetryPolicy;
+    private _protocol: IHubProtocol;
+    private _handshakeProtocol: HandshakeProtocol;
+    private _callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
+    private _methods: { [name: string]: ((...args: any[]) => void)[] };
+    private _invocationId: number;
 
-    private closedCallbacks: Array<(error?: Error) => void>;
-    private reconnectingCallbacks: Array<(error?: Error) => void>;
-    private reconnectedCallbacks: Array<(connectionId?: string) => void>;
+    private _closedCallbacks: ((error?: Error) => void)[];
+    private _reconnectingCallbacks: ((error?: Error) => void)[];
+    private _reconnectedCallbacks: ((connectionId?: string) => void)[];
 
-    private receivedHandshakeResponse: boolean;
-    private handshakeResolver!: (value?: PromiseLike<{}>) => void;
-    private handshakeRejecter!: (reason?: any) => void;
-    private stopDuringStartError?: Error;
+    private _receivedHandshakeResponse: boolean;
+    private _handshakeResolver!: (value?: PromiseLike<{}>) => void;
+    private _handshakeRejecter!: (reason?: any) => void;
+    private _stopDuringStartError?: Error;
 
-    private connectionState: HubConnectionState;
+    private _connectionState: HubConnectionState;
     // connectionStarted is tracked independently from connectionState, so we can check if the
     // connection ever did successfully transition from connecting to connected before disconnecting.
-    private connectionStarted: boolean;
-    private startPromise?: Promise<void>;
-    private stopPromise?: Promise<void>;
+    private _connectionStarted: boolean;
+    private _startPromise?: Promise<void>;
+    private _stopPromise?: Promise<void>;
 
     // The type of these a) doesn't matter and b) varies when building in browser and node contexts
     // Since we're building the WebPack bundle directly from the TypeScript, this matters (previously
     // we built the bundle from the compiled JavaScript).
-    private reconnectDelayHandle?: any;
-    private timeoutHandle?: any;
-    private pingServerHandle?: any;
+    private _reconnectDelayHandle?: any;
+    private _timeoutHandle?: any;
+    private _pingServerHandle?: any;
 
     /** The server timeout in milliseconds.
      *
@@ -93,31 +94,31 @@ export class HubConnection {
         this.serverTimeoutInMilliseconds = DEFAULT_TIMEOUT_IN_MS;
         this.keepAliveIntervalInMilliseconds = DEFAULT_PING_INTERVAL_IN_MS;
 
-        this.logger = logger;
-        this.protocol = protocol;
+        this._logger = logger;
+        this._protocol = protocol;
         this.connection = connection;
-        this.reconnectPolicy = reconnectPolicy;
-        this.handshakeProtocol = new HandshakeProtocol();
+        this._reconnectPolicy = reconnectPolicy;
+        this._handshakeProtocol = new HandshakeProtocol();
 
-        this.connection.onreceive = (data: any) => this.processIncomingData(data);
-        this.connection.onclose = (error?: Error) => this.connectionClosed(error);
+        this.connection.onreceive = (data: any) => this._processIncomingData(data);
+        this.connection.onclose = (error?: Error) => this._connectionClosed(error);
 
-        this.callbacks = {};
-        this.methods = {};
-        this.closedCallbacks = [];
-        this.reconnectingCallbacks = [];
-        this.reconnectedCallbacks = [];
-        this.invocationId = 0;
-        this.receivedHandshakeResponse = false;
-        this.connectionState = HubConnectionState.Disconnected;
-        this.connectionStarted = false;
+        this._callbacks = {};
+        this._methods = {};
+        this._closedCallbacks = [];
+        this._reconnectingCallbacks = [];
+        this._reconnectedCallbacks = [];
+        this._invocationId = 0;
+        this._receivedHandshakeResponse = false;
+        this._connectionState = HubConnectionState.Disconnected;
+        this._connectionStarted = false;
 
-        this.cachedPingMessage = this.protocol.writeMessage({ type: MessageType.Ping });
+        this._cachedPingMessage = this._protocol.writeMessage({ type: MessageType.Ping });
     }
 
     /** Indicates the state of the {@link HubConnection} to the server. */
     get state(): HubConnectionState {
-        return this.connectionState;
+        return this._connectionState;
     }
 
     /** Represents the connection id of the {@link HubConnection} on the server. The connection id will be null when the connection is either
@@ -138,7 +139,7 @@ export class HubConnection {
      * @param {string} url The url to connect to.
      */
     set baseUrl(url: string) {
-        if (this.connectionState !== HubConnectionState.Disconnected && this.connectionState !== HubConnectionState.Reconnecting) {
+        if (this._connectionState !== HubConnectionState.Disconnected && this._connectionState !== HubConnectionState.Reconnecting) {
             throw new Error("The HubConnection must be in the Disconnected or Reconnecting state to change the url.");
         }
 
@@ -154,75 +155,75 @@ export class HubConnection {
      * @returns {Promise<void>} A Promise that resolves when the connection has been successfully established, or rejects with an error.
      */
     public start(): Promise<void> {
-        this.startPromise = this.startWithStateTransitions();
-        return this.startPromise;
+        this._startPromise = this._startWithStateTransitions();
+        return this._startPromise;
     }
 
-    private async startWithStateTransitions(): Promise<void> {
-        if (this.connectionState !== HubConnectionState.Disconnected) {
+    private async _startWithStateTransitions(): Promise<void> {
+        if (this._connectionState !== HubConnectionState.Disconnected) {
             return Promise.reject(new Error("Cannot start a HubConnection that is not in the 'Disconnected' state."));
         }
 
-        this.connectionState = HubConnectionState.Connecting;
-        this.logger.log(LogLevel.Debug, "Starting HubConnection.");
+        this._connectionState = HubConnectionState.Connecting;
+        this._logger.log(LogLevel.Debug, "Starting HubConnection.");
 
         try {
-            await this.startInternal();
+            await this._startInternal();
 
-            this.connectionState = HubConnectionState.Connected;
-            this.connectionStarted = true;
-            this.logger.log(LogLevel.Debug, "HubConnection connected successfully.");
+            this._connectionState = HubConnectionState.Connected;
+            this._connectionStarted = true;
+            this._logger.log(LogLevel.Debug, "HubConnection connected successfully.");
         } catch (e) {
-            this.connectionState = HubConnectionState.Disconnected;
-            this.logger.log(LogLevel.Debug, `HubConnection failed to start successfully because of error '${e}'.`);
+            this._connectionState = HubConnectionState.Disconnected;
+            this._logger.log(LogLevel.Debug, `HubConnection failed to start successfully because of error '${e}'.`);
             return Promise.reject(e);
         }
     }
 
-    private async startInternal() {
-        this.stopDuringStartError = undefined;
-        this.receivedHandshakeResponse = false;
+    private async _startInternal() {
+        this._stopDuringStartError = undefined;
+        this._receivedHandshakeResponse = false;
         // Set up the promise before any connection is (re)started otherwise it could race with received messages
         const handshakePromise = new Promise((resolve, reject) => {
-            this.handshakeResolver = resolve;
-            this.handshakeRejecter = reject;
+            this._handshakeResolver = resolve;
+            this._handshakeRejecter = reject;
         });
 
-        await this.connection.start(this.protocol.transferFormat);
+        await this.connection.start(this._protocol.transferFormat);
 
         try {
             const handshakeRequest: HandshakeRequestMessage = {
-                protocol: this.protocol.name,
-                version: this.protocol.version,
+                protocol: this._protocol.name,
+                version: this._protocol.version,
             };
 
-            this.logger.log(LogLevel.Debug, "Sending handshake request.");
+            this._logger.log(LogLevel.Debug, "Sending handshake request.");
 
-            await this.sendMessage(this.handshakeProtocol.writeHandshakeRequest(handshakeRequest));
+            await this._sendMessage(this._handshakeProtocol.writeHandshakeRequest(handshakeRequest));
 
-            this.logger.log(LogLevel.Information, `Using HubProtocol '${this.protocol.name}'.`);
+            this._logger.log(LogLevel.Information, `Using HubProtocol '${this._protocol.name}'.`);
 
             // defensively cleanup timeout in case we receive a message from the server before we finish start
-            this.cleanupTimeout();
-            this.resetTimeoutPeriod();
-            this.resetKeepAliveInterval();
+            this._cleanupTimeout();
+            this._resetTimeoutPeriod();
+            this._resetKeepAliveInterval();
 
             await handshakePromise;
 
             // It's important to check the stopDuringStartError instead of just relying on the handshakePromise
             // being rejected on close, because this continuation can run after both the handshake completed successfully
             // and the connection was closed.
-            if (this.stopDuringStartError) {
+            if (this._stopDuringStartError) {
                 // It's important to throw instead of returning a rejected promise, because we don't want to allow any state
                 // transitions to occur between now and the calling code observing the exceptions. Returning a rejected promise
                 // will cause the calling continuation to get scheduled to run later.
-                throw this.stopDuringStartError;
+                throw this._stopDuringStartError;
             }
         } catch (e) {
-            this.logger.log(LogLevel.Debug, `Hub handshake failed with error '${e}' during start(). Stopping HubConnection.`);
+            this._logger.log(LogLevel.Debug, `Hub handshake failed with error '${e}' during start(). Stopping HubConnection.`);
 
-            this.cleanupTimeout();
-            this.cleanupPingTimer();
+            this._cleanupTimeout();
+            this._cleanupPingTimer();
 
             // HttpConnection.stop() should not complete until after the onclose callback is invoked.
             // This will transition the HubConnection to the disconnected state before HttpConnection.stop() completes.
@@ -237,10 +238,10 @@ export class HubConnection {
      */
     public async stop(): Promise<void> {
         // Capture the start promise before the connection might be restarted in an onclose callback.
-        const startPromise = this.startPromise;
+        const startPromise = this._startPromise;
 
-        this.stopPromise = this.stopInternal();
-        await this.stopPromise;
+        this._stopPromise = this._stopInternal();
+        await this._stopPromise;
 
         try {
             // Awaiting undefined continues immediately
@@ -250,37 +251,37 @@ export class HubConnection {
         }
     }
 
-    private stopInternal(error?: Error): Promise<void> {
-        if (this.connectionState === HubConnectionState.Disconnected) {
-            this.logger.log(LogLevel.Debug, `Call to HubConnection.stop(${error}) ignored because it is already in the disconnected state.`);
+    private _stopInternal(error?: Error): Promise<void> {
+        if (this._connectionState === HubConnectionState.Disconnected) {
+            this._logger.log(LogLevel.Debug, `Call to HubConnection.stop(${error}) ignored because it is already in the disconnected state.`);
             return Promise.resolve();
         }
 
-        if (this.connectionState === HubConnectionState.Disconnecting) {
-            this.logger.log(LogLevel.Debug, `Call to HttpConnection.stop(${error}) ignored because the connection is already in the disconnecting state.`);
-            return this.stopPromise!;
+        if (this._connectionState === HubConnectionState.Disconnecting) {
+            this._logger.log(LogLevel.Debug, `Call to HttpConnection.stop(${error}) ignored because the connection is already in the disconnecting state.`);
+            return this._stopPromise!;
         }
 
-        this.connectionState = HubConnectionState.Disconnecting;
+        this._connectionState = HubConnectionState.Disconnecting;
 
-        this.logger.log(LogLevel.Debug, "Stopping HubConnection.");
+        this._logger.log(LogLevel.Debug, "Stopping HubConnection.");
 
-        if (this.reconnectDelayHandle) {
+        if (this._reconnectDelayHandle) {
             // We're in a reconnect delay which means the underlying connection is currently already stopped.
             // Just clear the handle to stop the reconnect loop (which no one is waiting on thankfully) and
             // fire the onclose callbacks.
-            this.logger.log(LogLevel.Debug, "Connection stopped during reconnect delay. Done reconnecting.");
+            this._logger.log(LogLevel.Debug, "Connection stopped during reconnect delay. Done reconnecting.");
 
-            clearTimeout(this.reconnectDelayHandle);
-            this.reconnectDelayHandle = undefined;
+            clearTimeout(this._reconnectDelayHandle);
+            this._reconnectDelayHandle = undefined;
 
-            this.completeClose();
+            this._completeClose();
             return Promise.resolve();
         }
 
-        this.cleanupTimeout();
-        this.cleanupPingTimer();
-        this.stopDuringStartError = error || new Error("The connection was stopped before the hub handshake could complete.");
+        this._cleanupTimeout();
+        this._cleanupPingTimer();
+        this._stopDuringStartError = error || new Error("The connection was stopped before the hub handshake could complete.");
 
         // HttpConnection.stop() should not complete until after either HttpConnection.start() fails
         // or the onclose callback is invoked. The onclose callback will transition the HubConnection
@@ -296,22 +297,22 @@ export class HubConnection {
      * @returns {IStreamResult<T>} An object that yields results from the server as they are received.
      */
     public stream<T = any>(methodName: string, ...args: any[]): IStreamResult<T> {
-        const [streams, streamIds] = this.replaceStreamingParams(args);
-        const invocationDescriptor = this.createStreamInvocation(methodName, args, streamIds);
+        const [streams, streamIds] = this._replaceStreamingParams(args);
+        const invocationDescriptor = this._createStreamInvocation(methodName, args, streamIds);
 
         let promiseQueue: Promise<void>;
         const subject = new Subject<T>();
         subject.cancelCallback = () => {
-            const cancelInvocation: CancelInvocationMessage = this.createCancelInvocation(invocationDescriptor.invocationId);
+            const cancelInvocation: CancelInvocationMessage = this._createCancelInvocation(invocationDescriptor.invocationId);
 
-            delete this.callbacks[invocationDescriptor.invocationId];
+            delete this._callbacks[invocationDescriptor.invocationId];
 
             return promiseQueue.then(() => {
-                return this.sendWithProtocol(cancelInvocation);
+                return this._sendWithProtocol(cancelInvocation);
             });
         };
 
-        this.callbacks[invocationDescriptor.invocationId] = (invocationEvent: CompletionMessage | StreamItemMessage | null, error?: Error) => {
+        this._callbacks[invocationDescriptor.invocationId] = (invocationEvent: CompletionMessage | StreamItemMessage | null, error?: Error) => {
             if (error) {
                 subject.error(error);
                 return;
@@ -329,19 +330,19 @@ export class HubConnection {
             }
         };
 
-        promiseQueue = this.sendWithProtocol(invocationDescriptor)
+        promiseQueue = this._sendWithProtocol(invocationDescriptor)
             .catch((e) => {
                 subject.error(e);
-                delete this.callbacks[invocationDescriptor.invocationId];
+                delete this._callbacks[invocationDescriptor.invocationId];
             });
 
-        this.launchStreams(streams, promiseQueue);
+        this._launchStreams(streams, promiseQueue);
 
         return subject;
     }
 
-    private sendMessage(message: any) {
-        this.resetKeepAliveInterval();
+    private _sendMessage(message: any) {
+        this._resetKeepAliveInterval();
         return this.connection.send(message);
     }
 
@@ -349,8 +350,8 @@ export class HubConnection {
      * Sends a js object to the server.
      * @param message The js object to serialize and send.
      */
-    private sendWithProtocol(message: any) {
-        return this.sendMessage(this.protocol.writeMessage(message));
+    private _sendWithProtocol(message: any) {
+        return this._sendMessage(this._protocol.writeMessage(message));
     }
 
     /** Invokes a hub method on the server using the specified name and arguments. Does not wait for a response from the receiver.
@@ -363,10 +364,10 @@ export class HubConnection {
      * @returns {Promise<void>} A Promise that resolves when the invocation has been successfully sent, or rejects with an error.
      */
     public send(methodName: string, ...args: any[]): Promise<void> {
-        const [streams, streamIds] = this.replaceStreamingParams(args);
-        const sendPromise = this.sendWithProtocol(this.createInvocation(methodName, args, true, streamIds));
+        const [streams, streamIds] = this._replaceStreamingParams(args);
+        const sendPromise = this._sendWithProtocol(this._createInvocation(methodName, args, true, streamIds));
 
-        this.launchStreams(streams, sendPromise);
+        this._launchStreams(streams, sendPromise);
 
         return sendPromise;
     }
@@ -383,12 +384,12 @@ export class HubConnection {
      * @returns {Promise<T>} A Promise that resolves with the result of the server method (if any), or rejects with an error.
      */
     public invoke<T = any>(methodName: string, ...args: any[]): Promise<T> {
-        const [streams, streamIds] = this.replaceStreamingParams(args);
-        const invocationDescriptor = this.createInvocation(methodName, args, false, streamIds);
+        const [streams, streamIds] = this._replaceStreamingParams(args);
+        const invocationDescriptor = this._createInvocation(methodName, args, false, streamIds);
 
         const p = new Promise<any>((resolve, reject) => {
             // invocationId will always have a value for a non-blocking invocation
-            this.callbacks[invocationDescriptor.invocationId!] = (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => {
+            this._callbacks[invocationDescriptor.invocationId!] = (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => {
                 if (error) {
                     reject(error);
                     return;
@@ -406,14 +407,14 @@ export class HubConnection {
                 }
             };
 
-            const promiseQueue = this.sendWithProtocol(invocationDescriptor)
+            const promiseQueue = this._sendWithProtocol(invocationDescriptor)
                 .catch((e) => {
                     reject(e);
                     // invocationId will always have a value for a non-blocking invocation
-                    delete this.callbacks[invocationDescriptor.invocationId!];
+                    delete this._callbacks[invocationDescriptor.invocationId!];
                 });
 
-            this.launchStreams(streams, promiseQueue);
+            this._launchStreams(streams, promiseQueue);
         });
 
         return p;
@@ -430,16 +431,16 @@ export class HubConnection {
         }
 
         methodName = methodName.toLowerCase();
-        if (!this.methods[methodName]) {
-            this.methods[methodName] = [];
+        if (!this._methods[methodName]) {
+            this._methods[methodName] = [];
         }
 
         // Preventing adding the same handler multiple times.
-        if (this.methods[methodName].indexOf(newMethod) !== -1) {
+        if (this._methods[methodName].indexOf(newMethod) !== -1) {
             return;
         }
 
-        this.methods[methodName].push(newMethod);
+        this._methods[methodName].push(newMethod);
     }
 
     /** Removes all handlers for the specified hub method.
@@ -463,7 +464,7 @@ export class HubConnection {
         }
 
         methodName = methodName.toLowerCase();
-        const handlers = this.methods[methodName];
+        const handlers = this._methods[methodName];
         if (!handlers) {
             return;
         }
@@ -472,11 +473,11 @@ export class HubConnection {
             if (removeIdx !== -1) {
                 handlers.splice(removeIdx, 1);
                 if (handlers.length === 0) {
-                    delete this.methods[methodName];
+                    delete this._methods[methodName];
                 }
             }
         } else {
-            delete this.methods[methodName];
+            delete this._methods[methodName];
         }
 
     }
@@ -487,7 +488,7 @@ export class HubConnection {
      */
     public onclose(callback: (error?: Error) => void) {
         if (callback) {
-            this.closedCallbacks.push(callback);
+            this._closedCallbacks.push(callback);
         }
     }
 
@@ -497,7 +498,7 @@ export class HubConnection {
      */
     public onreconnecting(callback: (error?: Error) => void) {
         if (callback) {
-            this.reconnectingCallbacks.push(callback);
+            this._reconnectingCallbacks.push(callback);
         }
     }
 
@@ -507,34 +508,34 @@ export class HubConnection {
      */
     public onreconnected(callback: (connectionId?: string) => void) {
         if (callback) {
-            this.reconnectedCallbacks.push(callback);
+            this._reconnectedCallbacks.push(callback);
         }
     }
 
-    private processIncomingData(data: any) {
-        this.cleanupTimeout();
+    private _processIncomingData(data: any) {
+        this._cleanupTimeout();
 
-        if (!this.receivedHandshakeResponse) {
-            data = this.processHandshakeResponse(data);
-            this.receivedHandshakeResponse = true;
+        if (!this._receivedHandshakeResponse) {
+            data = this._processHandshakeResponse(data);
+            this._receivedHandshakeResponse = true;
         }
 
         // Data may have all been read when processing handshake response
         if (data) {
             // Parse the messages
-            const messages = this.protocol.parseMessages(data, this.logger);
+            const messages = this._protocol.parseMessages(data, this._logger);
 
             for (const message of messages) {
                 switch (message.type) {
                     case MessageType.Invocation:
-                        this.invokeClientMethod(message);
+                        this._invokeClientMethod(message);
                         break;
                     case MessageType.StreamItem:
                     case MessageType.Completion:
-                        const callback = this.callbacks[message.invocationId];
+                        const callback = this._callbacks[message.invocationId];
                         if (callback) {
                             if (message.type === MessageType.Completion) {
-                                delete this.callbacks[message.invocationId];
+                                delete this._callbacks[message.invocationId];
                             }
                             callback(message);
                         }
@@ -543,7 +544,7 @@ export class HubConnection {
                         // Don't care about pings
                         break;
                     case MessageType.Close:
-                        this.logger.log(LogLevel.Information, "Close message received from server.");
+                        this._logger.log(LogLevel.Information, "Close message received from server.");
 
                         const error = message.error ? new Error("Server returned an error on close: " + message.error) : undefined;
 
@@ -555,71 +556,76 @@ export class HubConnection {
                             this.connection.stop(error);
                         } else {
                             // We cannot await stopInternal() here, but subsequent calls to stop() will await this if stopInternal() is still ongoing.
-                            this.stopPromise = this.stopInternal(error);
+                            this._stopPromise = this._stopInternal(error);
                         }
 
                         break;
                     default:
-                        this.logger.log(LogLevel.Warning, `Invalid message type: ${message.type}.`);
+                        this._logger.log(LogLevel.Warning, `Invalid message type: ${message.type}.`);
                         break;
                 }
             }
         }
 
-        this.resetTimeoutPeriod();
+        this._resetTimeoutPeriod();
     }
 
-    private processHandshakeResponse(data: any): any {
+    private _processHandshakeResponse(data: any): any {
         let responseMessage: HandshakeResponseMessage;
         let remainingData: any;
 
         try {
-            [remainingData, responseMessage] = this.handshakeProtocol.parseHandshakeResponse(data);
+            [remainingData, responseMessage] = this._handshakeProtocol.parseHandshakeResponse(data);
         } catch (e) {
             const message = "Error parsing handshake response: " + e;
-            this.logger.log(LogLevel.Error, message);
+            this._logger.log(LogLevel.Error, message);
 
             const error = new Error(message);
-            this.handshakeRejecter(error);
+            this._handshakeRejecter(error);
             throw error;
         }
         if (responseMessage.error) {
             const message = "Server returned handshake error: " + responseMessage.error;
-            this.logger.log(LogLevel.Error, message);
+            this._logger.log(LogLevel.Error, message);
 
             const error = new Error(message);
-            this.handshakeRejecter(error);
+            this._handshakeRejecter(error);
             throw error;
         } else {
-            this.logger.log(LogLevel.Debug, "Server handshake complete.");
+            this._logger.log(LogLevel.Debug, "Server handshake complete.");
         }
 
-        this.handshakeResolver();
+        this._handshakeResolver();
         return remainingData;
     }
 
-    private resetKeepAliveInterval() {
-        this.cleanupPingTimer();
-        this.pingServerHandle = setTimeout(async () => {
-            if (this.connectionState === HubConnectionState.Connected) {
+    private _resetKeepAliveInterval() {
+        if (this.connection.features.inherentKeepAlive) {
+            return;
+        }
+
+        this._cleanupPingTimer();
+        this._pingServerHandle = setTimeout(async () => {
+            if (this._connectionState === HubConnectionState.Connected) {
                 try {
-                    await this.sendMessage(this.cachedPingMessage);
+                    await this._sendMessage(this._cachedPingMessage);
                 } catch {
                     // We don't care about the error. It should be seen elsewhere in the client.
                     // The connection is probably in a bad or closed state now, cleanup the timer so it stops triggering
-                    this.cleanupPingTimer();
+                    this._cleanupPingTimer();
                 }
             }
         }, this.keepAliveIntervalInMilliseconds);
     }
 
-    private resetTimeoutPeriod() {
+    private _resetTimeoutPeriod() {
         if (!this.connection.features || !this.connection.features.inherentKeepAlive) {
             // Set the timeout timer
-            this.timeoutHandle = setTimeout(() => this.serverTimeout(), this.serverTimeoutInMilliseconds);
+            this._timeoutHandle = setTimeout(() => this.serverTimeout(), this.serverTimeoutInMilliseconds);
         }
     }
 
+    // tslint:disable-next-line:naming-convention
     private serverTimeout() {
         // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
         // Terminate the connection, but we don't need to wait on the promise. This could trigger reconnecting.
@@ -627,52 +633,52 @@ export class HubConnection {
         this.connection.stop(new Error("Server timeout elapsed without receiving a message from the server."));
     }
 
-    private invokeClientMethod(invocationMessage: InvocationMessage) {
-        const methods = this.methods[invocationMessage.target.toLowerCase()];
+    private _invokeClientMethod(invocationMessage: InvocationMessage) {
+        const methods = this._methods[invocationMessage.target.toLowerCase()];
         if (methods) {
             try {
                 methods.forEach((m) => m.apply(this, invocationMessage.arguments));
             } catch (e) {
-                this.logger.log(LogLevel.Error, `A callback for the method ${invocationMessage.target.toLowerCase()} threw error '${e}'.`);
+                this._logger.log(LogLevel.Error, `A callback for the method ${invocationMessage.target.toLowerCase()} threw error '${e}'.`);
             }
 
             if (invocationMessage.invocationId) {
                 // This is not supported in v1. So we return an error to avoid blocking the server waiting for the response.
                 const message = "Server requested a response, which is not supported in this version of the client.";
-                this.logger.log(LogLevel.Error, message);
+                this._logger.log(LogLevel.Error, message);
 
                 // We don't want to wait on the stop itself.
-                this.stopPromise = this.stopInternal(new Error(message));
+                this._stopPromise = this._stopInternal(new Error(message));
             }
         } else {
-            this.logger.log(LogLevel.Warning, `No client method with the name '${invocationMessage.target}' found.`);
+            this._logger.log(LogLevel.Warning, `No client method with the name '${invocationMessage.target}' found.`);
         }
     }
 
-    private connectionClosed(error?: Error) {
-        this.logger.log(LogLevel.Debug, `HubConnection.connectionClosed(${error}) called while in state ${this.connectionState}.`);
+    private _connectionClosed(error?: Error) {
+        this._logger.log(LogLevel.Debug, `HubConnection.connectionClosed(${error}) called while in state ${this._connectionState}.`);
 
         // Triggering this.handshakeRejecter is insufficient because it could already be resolved without the continuation having run yet.
-        this.stopDuringStartError = this.stopDuringStartError || error || new Error("The underlying connection was closed before the hub handshake could complete.");
+        this._stopDuringStartError = this._stopDuringStartError || error || new Error("The underlying connection was closed before the hub handshake could complete.");
 
         // If the handshake is in progress, start will be waiting for the handshake promise, so we complete it.
         // If it has already completed, this should just noop.
-        if (this.handshakeResolver) {
-            this.handshakeResolver();
+        if (this._handshakeResolver) {
+            this._handshakeResolver();
         }
 
-        this.cancelCallbacksWithError(error || new Error("Invocation canceled due to the underlying connection being closed."));
+        this._cancelCallbacksWithError(error || new Error("Invocation canceled due to the underlying connection being closed."));
 
-        this.cleanupTimeout();
-        this.cleanupPingTimer();
+        this._cleanupTimeout();
+        this._cleanupPingTimer();
 
-        if (this.connectionState === HubConnectionState.Disconnecting) {
-            this.completeClose(error);
-        } else if (this.connectionState === HubConnectionState.Connected && this.reconnectPolicy) {
+        if (this._connectionState === HubConnectionState.Disconnecting) {
+            this._completeClose(error);
+        } else if (this._connectionState === HubConnectionState.Connected && this._reconnectPolicy) {
             // tslint:disable-next-line:no-floating-promises
-            this.reconnect(error);
-        } else if (this.connectionState === HubConnectionState.Connected) {
-            this.completeClose(error);
+            this._reconnect(error);
+        } else if (this._connectionState === HubConnectionState.Connected) {
+            this._completeClose(error);
         }
 
         // If none of the above if conditions were true were called the HubConnection must be in either:
@@ -682,116 +688,120 @@ export class HubConnection {
         // 3. The Disconnected state in which case we're already done.
     }
 
-    private completeClose(error?: Error) {
-        if (this.connectionStarted) {
-            this.connectionState = HubConnectionState.Disconnected;
-            this.connectionStarted = false;
+    private _completeClose(error?: Error) {
+        if (this._connectionStarted) {
+            this._connectionState = HubConnectionState.Disconnected;
+            this._connectionStarted = false;
 
             try {
-                this.closedCallbacks.forEach((c) => c.apply(this, [error]));
+                this._closedCallbacks.forEach((c) => c.apply(this, [error]));
             } catch (e) {
-                this.logger.log(LogLevel.Error, `An onclose callback called with error '${error}' threw error '${e}'.`);
+                this._logger.log(LogLevel.Error, `An onclose callback called with error '${error}' threw error '${e}'.`);
             }
         }
     }
 
-    private async reconnect(error?: Error) {
+    private async _reconnect(error?: Error) {
         const reconnectStartTime = Date.now();
         let previousReconnectAttempts = 0;
         let retryError = error !== undefined ? error : new Error("Attempting to reconnect due to a unknown error.");
 
-        let nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, 0, retryError);
+        let nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts++, 0, retryError);
 
         if (nextRetryDelay === null) {
-            this.logger.log(LogLevel.Debug, "Connection not reconnecting because the IRetryPolicy returned null on the first reconnect attempt.");
-            this.completeClose(error);
+            this._logger.log(LogLevel.Debug, "Connection not reconnecting because the IRetryPolicy returned null on the first reconnect attempt.");
+            this._completeClose(error);
             return;
         }
 
-        this.connectionState = HubConnectionState.Reconnecting;
+        this._connectionState = HubConnectionState.Reconnecting;
 
         if (error) {
-            this.logger.log(LogLevel.Information, `Connection reconnecting because of error '${error}'.`);
+            this._logger.log(LogLevel.Information, `Connection reconnecting because of error '${error}'.`);
         } else {
-            this.logger.log(LogLevel.Information, "Connection reconnecting.");
+            this._logger.log(LogLevel.Information, "Connection reconnecting.");
         }
 
-        if (this.onreconnecting) {
+        if (this._reconnectingCallbacks.length !== 0) {
             try {
-                this.reconnectingCallbacks.forEach((c) => c.apply(this, [error]));
+                this._reconnectingCallbacks.forEach((c) => c.apply(this, [error]));
             } catch (e) {
-                this.logger.log(LogLevel.Error, `An onreconnecting callback called with error '${error}' threw error '${e}'.`);
+                this._logger.log(LogLevel.Error, `An onreconnecting callback called with error '${error}' threw error '${e}'.`);
             }
 
             // Exit early if an onreconnecting callback called connection.stop().
-            if (this.connectionState !== HubConnectionState.Reconnecting) {
-                this.logger.log(LogLevel.Debug, "Connection left the reconnecting state in onreconnecting callback. Done reconnecting.");
+            if (this._connectionState !== HubConnectionState.Reconnecting) {
+                this._logger.log(LogLevel.Debug, "Connection left the reconnecting state in onreconnecting callback. Done reconnecting.");
                 return;
             }
         }
 
         while (nextRetryDelay !== null) {
-            this.logger.log(LogLevel.Information, `Reconnect attempt number ${previousReconnectAttempts} will start in ${nextRetryDelay} ms.`);
+            this._logger.log(LogLevel.Information, `Reconnect attempt number ${previousReconnectAttempts} will start in ${nextRetryDelay} ms.`);
 
             await new Promise((resolve) => {
-                this.reconnectDelayHandle = setTimeout(resolve, nextRetryDelay!);
+                this._reconnectDelayHandle = setTimeout(resolve, nextRetryDelay!);
             });
-            this.reconnectDelayHandle = undefined;
+            this._reconnectDelayHandle = undefined;
 
-            if (this.connectionState !== HubConnectionState.Reconnecting) {
-                this.logger.log(LogLevel.Debug, "Connection left the reconnecting state during reconnect delay. Done reconnecting.");
+            if (this._connectionState !== HubConnectionState.Reconnecting) {
+                this._logger.log(LogLevel.Debug, "Connection left the reconnecting state during reconnect delay. Done reconnecting.");
                 return;
             }
 
             try {
-                await this.startInternal();
+                await this._startInternal();
 
-                this.connectionState = HubConnectionState.Connected;
-                this.logger.log(LogLevel.Information, "HubConnection reconnected successfully.");
+                this._connectionState = HubConnectionState.Connected;
+                this._logger.log(LogLevel.Information, "HubConnection reconnected successfully.");
 
-                if (this.onreconnected) {
+                if (this._reconnectedCallbacks.length !== 0) {
                     try {
-                        this.reconnectedCallbacks.forEach((c) => c.apply(this, [this.connection.connectionId]));
+                        this._reconnectedCallbacks.forEach((c) => c.apply(this, [this.connection.connectionId]));
                     } catch (e) {
-                        this.logger.log(LogLevel.Error, `An onreconnected callback called with connectionId '${this.connection.connectionId}; threw error '${e}'.`);
+                        this._logger.log(LogLevel.Error, `An onreconnected callback called with connectionId '${this.connection.connectionId}; threw error '${e}'.`);
                     }
                 }
 
                 return;
             } catch (e) {
-                this.logger.log(LogLevel.Information, `Reconnect attempt failed because of error '${e}'.`);
+                this._logger.log(LogLevel.Information, `Reconnect attempt failed because of error '${e}'.`);
 
-                if (this.connectionState !== HubConnectionState.Reconnecting) {
-                    this.logger.log(LogLevel.Debug, "Connection left the reconnecting state during reconnect attempt. Done reconnecting.");
+                if (this._connectionState !== HubConnectionState.Reconnecting) {
+                    this._logger.log(LogLevel.Debug, `Connection moved to the '${this._connectionState}' from the reconnecting state during reconnect attempt. Done reconnecting.`);
+                    // The TypeScript compiler thinks that connectionState must be Connected here. The TypeScript compiler is wrong.
+                    if (this._connectionState as any === HubConnectionState.Disconnecting) {
+                        this._completeClose();
+                    }
                     return;
                 }
 
                 retryError = e instanceof Error ? e : new Error(e.toString());
-                nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime, retryError);
+                nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime, retryError);
             }
         }
 
-        this.logger.log(LogLevel.Information, `Reconnect retries have been exhausted after ${Date.now() - reconnectStartTime} ms and ${previousReconnectAttempts} failed attempts. Connection disconnecting.`);
+        this._logger.log(LogLevel.Information, `Reconnect retries have been exhausted after ${Date.now() - reconnectStartTime} ms and ${previousReconnectAttempts} failed attempts. Connection disconnecting.`);
 
-        this.completeClose();
+        this._completeClose();
     }
 
-    private getNextRetryDelay(previousRetryCount: number, elapsedMilliseconds: number, retryReason: Error) {
+    private _getNextRetryDelay(previousRetryCount: number, elapsedMilliseconds: number, retryReason: Error) {
         try {
-            return this.reconnectPolicy!.nextRetryDelayInMilliseconds({
+            return this._reconnectPolicy!.nextRetryDelayInMilliseconds({
                 elapsedMilliseconds,
                 previousRetryCount,
                 retryReason,
             });
         } catch (e) {
-            this.logger.log(LogLevel.Error, `IRetryPolicy.nextRetryDelayInMilliseconds(${previousRetryCount}, ${elapsedMilliseconds}) threw error '${e}'.`);
+            this._logger.log(LogLevel.Error, `IRetryPolicy.nextRetryDelayInMilliseconds(${previousRetryCount}, ${elapsedMilliseconds}) threw error '${e}'.`);
             return null;
         }
     }
 
-    private cancelCallbacksWithError(error: Error) {
-        const callbacks = this.callbacks;
-        this.callbacks = {};
+    private _cancelCallbacksWithError(error: Error) {
+        const callbacks = this._callbacks;
+        this._callbacks = {};
 
         Object.keys(callbacks)
             .forEach((key) => {
@@ -800,41 +810,58 @@ export class HubConnection {
             });
     }
 
-    private cleanupPingTimer(): void {
-        if (this.pingServerHandle) {
-            clearTimeout(this.pingServerHandle);
+    private _cleanupPingTimer(): void {
+        if (this._pingServerHandle) {
+            clearTimeout(this._pingServerHandle);
         }
     }
 
-    private cleanupTimeout(): void {
-        if (this.timeoutHandle) {
-            clearTimeout(this.timeoutHandle);
+    private _cleanupTimeout(): void {
+        if (this._timeoutHandle) {
+            clearTimeout(this._timeoutHandle);
         }
     }
 
-    private createInvocation(methodName: string, args: any[], nonblocking: boolean, streamIds: string[]): InvocationMessage {
+    private _createInvocation(methodName: string, args: any[], nonblocking: boolean, streamIds: string[]): InvocationMessage {
         if (nonblocking) {
-            return {
-                arguments: args,
-                streamIds,
-                target: methodName,
-                type: MessageType.Invocation,
-            };
+            if (streamIds.length !== 0) {
+                return {
+                    arguments: args,
+                    streamIds,
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            } else {
+                return {
+                    arguments: args,
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            }
         } else {
-            const invocationId = this.invocationId;
-            this.invocationId++;
+            const invocationId = this._invocationId;
+            this._invocationId++;
 
-            return {
-                arguments: args,
-                invocationId: invocationId.toString(),
-                streamIds,
-                target: methodName,
-                type: MessageType.Invocation,
-            };
+            if (streamIds.length !== 0) {
+                return {
+                    arguments: args,
+                    invocationId: invocationId.toString(),
+                    streamIds,
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            } else {
+                return {
+                    arguments: args,
+                    invocationId: invocationId.toString(),
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            }
         }
     }
 
-    private launchStreams(streams: Array<IStreamResult<any>>, promiseQueue: Promise<void>): void {
+    private _launchStreams(streams: IStreamResult<any>[], promiseQueue: Promise<void>): void {
         if (streams.length === 0) {
             return;
         }
@@ -849,7 +876,7 @@ export class HubConnection {
         for (const streamId in streams) {
             streams[streamId].subscribe({
                 complete: () => {
-                    promiseQueue = promiseQueue.then(() => this.sendWithProtocol(this.createCompletionMessage(streamId)));
+                    promiseQueue = promiseQueue.then(() => this._sendWithProtocol(this._createCompletionMessage(streamId)));
                 },
                 error: (err) => {
                     let message: string;
@@ -861,23 +888,23 @@ export class HubConnection {
                         message = "Unknown error";
                     }
 
-                    promiseQueue = promiseQueue.then(() => this.sendWithProtocol(this.createCompletionMessage(streamId, message)));
+                    promiseQueue = promiseQueue.then(() => this._sendWithProtocol(this._createCompletionMessage(streamId, message)));
                 },
                 next: (item) => {
-                    promiseQueue = promiseQueue.then(() => this.sendWithProtocol(this.createStreamItemMessage(streamId, item)));
+                    promiseQueue = promiseQueue.then(() => this._sendWithProtocol(this._createStreamItemMessage(streamId, item)));
                 },
             });
         }
     }
 
-    private replaceStreamingParams(args: any[]): [Array<IStreamResult<any>>, string[]] {
-        const streams: Array<IStreamResult<any>> = [];
+    private _replaceStreamingParams(args: any[]): [IStreamResult<any>[], string[]] {
+        const streams: IStreamResult<any>[] = [];
         const streamIds: string[] = [];
         for (let i = 0; i < args.length; i++) {
             const argument = args[i];
-            if (this.isObservable(argument)) {
-                const streamId = this.invocationId;
-                this.invocationId++;
+            if (this._isObservable(argument)) {
+                const streamId = this._invocationId;
+                this._invocationId++;
                 // Store the stream for later use
                 streams[streamId] = argument;
                 streamIds.push(streamId.toString());
@@ -890,32 +917,41 @@ export class HubConnection {
         return [streams, streamIds];
     }
 
-    private isObservable(arg: any): arg is IStreamResult<any> {
+    private _isObservable(arg: any): arg is IStreamResult<any> {
         // This allows other stream implementations to just work (like rxjs)
         return arg && arg.subscribe && typeof arg.subscribe === "function";
     }
 
-    private createStreamInvocation(methodName: string, args: any[], streamIds: string[]): StreamInvocationMessage {
-        const invocationId = this.invocationId;
-        this.invocationId++;
+    private _createStreamInvocation(methodName: string, args: any[], streamIds: string[]): StreamInvocationMessage {
+        const invocationId = this._invocationId;
+        this._invocationId++;
 
-        return {
-            arguments: args,
-            invocationId: invocationId.toString(),
-            streamIds,
-            target: methodName,
-            type: MessageType.StreamInvocation,
-        };
+        if (streamIds.length !== 0) {
+            return {
+                arguments: args,
+                invocationId: invocationId.toString(),
+                streamIds,
+                target: methodName,
+                type: MessageType.StreamInvocation,
+            };
+        } else {
+            return {
+                arguments: args,
+                invocationId: invocationId.toString(),
+                target: methodName,
+                type: MessageType.StreamInvocation,
+            };
+        }
     }
 
-    private createCancelInvocation(id: string): CancelInvocationMessage {
+    private _createCancelInvocation(id: string): CancelInvocationMessage {
         return {
             invocationId: id,
             type: MessageType.CancelInvocation,
         };
     }
 
-    private createStreamItemMessage(id: string, item: any): StreamItemMessage {
+    private _createStreamItemMessage(id: string, item: any): StreamItemMessage {
         return {
             invocationId: id,
             item,
@@ -923,7 +959,7 @@ export class HubConnection {
         };
     }
 
-    private createCompletionMessage(id: string, error?: any, result?: any): CompletionMessage {
+    private _createCompletionMessage(id: string, error?: any, result?: any): CompletionMessage {
         if (error) {
             return {
                 error,

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using LocalizationSample;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Localization.FunctionalTests
@@ -19,8 +20,17 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public async Task LocalizationSampleSmokeTest()
         {
             // Arrange
-            var webHostBuilder = new WebHostBuilder().UseStartup(typeof(Startup));
-            var testHost = new TestServer(webHostBuilder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .UseStartup(typeof(Startup));
+                }).Build();
+
+            await host.StartAsync();
+
+            var testHost = host.GetTestServer();
             var locale = "fr-FR";
             var client = testHost.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, "My/Resources");

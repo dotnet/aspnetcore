@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Cryptography
     {
         // This isn't a typical Debug.Assert; the check is always performed, even in retail builds.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Assert(bool condition, string message)
+        public static void Assert([DoesNotReturnIf(false)] bool condition, string message)
         {
             if (!condition)
             {
@@ -70,15 +71,24 @@ namespace Microsoft.AspNetCore.Cryptography
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+#if NETSTANDARD2_0
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+#endif
         public static bool TimeConstantBuffersAreEqual(byte* bufA, byte* bufB, uint count)
         {
+#if NETCOREAPP
+            var byteCount = Convert.ToInt32(count);
+            var bytesA = new ReadOnlySpan<byte>(bufA, byteCount);
+            var bytesB = new ReadOnlySpan<byte>(bufB, byteCount);
+            return CryptographicOperations.FixedTimeEquals(bytesA, bytesB);
+#else
             bool areEqual = true;
             for (uint i = 0; i < count; i++)
             {
                 areEqual &= (bufA[i] == bufB[i]);
             }
             return areEqual;
+#endif
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
@@ -88,12 +98,21 @@ namespace Microsoft.AspNetCore.Cryptography
             // An error at the call site isn't usable for timing attacks.
             Assert(countA == countB, "countA == countB");
 
+#if NETCOREAPP
+            unsafe
+            {
+                return CryptographicOperations.FixedTimeEquals(
+                    bufA.AsSpan(start: offsetA, length: countA),
+                    bufB.AsSpan(start: offsetB, length: countB));
+            }
+#else
             bool areEqual = true;
             for (int i = 0; i < countA; i++)
             {
                 areEqual &= (bufA[offsetA + i] == bufB[offsetB + i]);
             }
             return areEqual;
+#endif
         }
     }
 }

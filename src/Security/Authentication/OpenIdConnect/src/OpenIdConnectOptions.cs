@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     public class OpenIdConnectOptions : RemoteAuthenticationOptions
     {
         private CookieBuilder _nonceCookieBuilder;
+        private JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
 
         /// <summary>
         /// Initializes a new <see cref="OpenIdConnectOptions"/>
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             CallbackPath = new PathString("/signin-oidc");
             SignedOutCallbackPath = new PathString("/signout-callback-oidc");
             RemoteSignOutPath = new PathString("/signout-oidc");
+            SecurityTokenValidator = _defaultHandler;
 
             Events = new OpenIdConnectEvents();
             Scope.Add("openid");
@@ -107,29 +109,29 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the Authority to use when making OpenIdConnect calls.
         /// </summary>
-        public string Authority { get; set; }
+        public string? Authority { get; set; }
 
         /// <summary>
         /// Gets or sets the 'client_id'.
         /// </summary>
-        public string ClientId { get; set; }
+        public string? ClientId { get; set; }
 
         /// <summary>
         /// Gets or sets the 'client_secret'.
         /// </summary>
-        public string ClientSecret { get; set; }
+        public string? ClientSecret { get; set; }
 
         /// <summary>
         /// Configuration provided directly by the developer. If provided, then MetadataAddress and the Backchannel properties
         /// will not be used. This information should not be updated during request processing.
         /// </summary>
-        public OpenIdConnectConfiguration Configuration { get; set; }
+        public OpenIdConnectConfiguration? Configuration { get; set; }
 
         /// <summary>
         /// Responsible for retrieving, caching, and refreshing the configuration from metadata.
         /// If not provided, then one will be created using the MetadataAddress and Backchannel properties.
         /// </summary>
-        public IConfigurationManager<OpenIdConnectConfiguration> ConfigurationManager { get; set; }
+        public IConfigurationManager<OpenIdConnectConfiguration>? ConfigurationManager { get; set; }
 
         /// <summary>
         /// Boolean to set whether the handler should go to user info endpoint to retrieve additional claims or not after creating an identity from id_token received from token endpoint.
@@ -151,7 +153,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the discovery endpoint for obtaining metadata
         /// </summary>
-        public string MetadataAddress { get; set; }
+        public string? MetadataAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectEvents"/> to notify when processing OpenIdConnect messages.
@@ -207,7 +209,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the 'resource'.
         /// </summary>
-        public string Resource { get; set; }
+        public string? Resource { get; set; }
 
         /// <summary>
         /// Gets or sets the 'response_mode'.
@@ -222,7 +224,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the 'prompt'.
         /// </summary>
-        public string Prompt { get; set; }
+        public string? Prompt { get; set; }
 
         /// <summary>
         /// Gets the list of permissions to request.
@@ -238,22 +240,22 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// The Authentication Scheme to use with SignOut on the SignOutPath. SignInScheme will be used if this
         /// is not set.
         /// </summary>
-        public string SignOutScheme { get; set; }
+        public string? SignOutScheme { get; set; }
 
         /// <summary>
         /// Gets or sets the type used to secure data handled by the handler.
         /// </summary>
-        public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; }
+        public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the type used to secure strings used by the handler.
         /// </summary>
-        public ISecureDataFormat<string> StringDataFormat { get; set; }
+        public ISecureDataFormat<string> StringDataFormat { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ISecurityTokenValidator"/> used to validate identity tokens.
         /// </summary>
-        public ISecurityTokenValidator SecurityTokenValidator { get; set; } = new JwtSecurityTokenHandler();
+        public ISecurityTokenValidator SecurityTokenValidator { get; set; }
 
         /// <summary>
         /// Gets or sets the parameters used to validate identity tokens.
@@ -288,7 +290,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// cookie gets added to the response.
         /// </summary>
         /// <remarks>
-        /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <seealso cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
+        /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <see cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
         /// </remarks>
         public CookieBuilder NonceCookie
         {
@@ -327,5 +329,27 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 return cookieOptions;
             }
         }
+
+        /// <summary>
+        /// 1 day is the default time interval that afterwards, <see cref="ConfigurationManager" /> will obtain new configuration.
+        /// </summary>
+        public TimeSpan AutomaticRefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval;
+
+        /// <summary>
+        /// The minimum time between <see cref="ConfigurationManager" /> retrievals, in the event that a retrieval failed, or that a refresh was explicitly requested. 30 seconds is the default.
+        /// </summary>
+        public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
+        
+        /// <summary>
+        /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidator, which is used when determining 
+        /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/>. 
+        /// <para>If this is set to true, the Claim Type is set to the JSON claim 'name' after translating using this mapping. Otherwise, no mapping occurs.</para>
+        /// <para>The default value is true.</para>
+        /// </summary>
+        public bool MapInboundClaims
+        {
+            get => _defaultHandler.MapInboundClaims;
+            set => _defaultHandler.MapInboundClaims = value;
+        }        
     }
 }

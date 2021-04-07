@@ -24,7 +24,6 @@ namespace JwtClientSample
         private const string ServerUrl = "http://localhost:54543";
 
         private readonly ConcurrentDictionary<string, Task<string>> _tokens = new ConcurrentDictionary<string, Task<string>>(StringComparer.Ordinal);
-        private readonly Random _random = new Random();
 
         private async Task RunConnection(HttpTransportType transportType)
         {
@@ -39,10 +38,10 @@ namespace JwtClientSample
                 })
                 .Build();
 
-            var closedTcs = new TaskCompletionSource<object>();
+            var closedTcs = new TaskCompletionSource();
             hubConnection.Closed += e =>
             {
-                closedTcs.SetResult(null);
+                closedTcs.SetResult();
                 return Task.CompletedTask;
             };
 
@@ -71,8 +70,8 @@ namespace JwtClientSample
 
                     if (ticks % nextMsgAt == 0)
                     {
-                        await hubConnection.SendAsync("Broadcast", userId, $"Hello at {DateTime.Now.ToString()}");
-                        nextMsgAt = _random.Next(2, 5);
+                        await hubConnection.SendAsync("Broadcast", userId, $"Hello at {DateTime.Now}");
+                        nextMsgAt = Random.Shared.Next(2, 5);
                     }
                 }
             }

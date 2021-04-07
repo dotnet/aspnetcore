@@ -1,4 +1,4 @@
-@page ""
+﻿@page ""
 @addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
 <!DOCTYPE html>
 <html>
@@ -7,15 +7,20 @@
     <title>Basic test app</title>
     <base href="~/" />
     <link href="style.css" rel="stylesheet" />
+    <link rel="icon" href="data:,">
 
     <!-- Used by ExternalContentPackage -->
     <link href="_content/TestContentPackage/styles.css" rel="stylesheet" />
+    <link href="Components.TestServer.styles.css" rel="stylesheet" />
 </head>
 <body>
     <root><component type="typeof(BasicTestApp.Index)" render-mode="Server" /></root>
 
-    <!-- Used for testing interop scenarios between JS and .NET -->
+    <!-- Used for specific test cases -->
     <script src="js/jsinteroptests.js"></script>
+    <script src="js/renderattributestest.js"></script>
+    <script src="js/webComponentPerformingJsInterop.js"></script>
+    <script src="js/customLinkElement.js"></script>
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.

@@ -5,11 +5,13 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -38,7 +40,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Null(Http1Connection.QueryString);
 
             var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"POST {rawTarget} HTTP/1.1\r\n"));
-            Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+            var reader = new SequenceReader<byte>(ros);
+            Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
             // Equal the inputs.
             Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -64,7 +67,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Null(Http1Connection.QueryString);
 
             var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"CONNECT {rawTarget} HTTP/1.1\r\n"));
-            Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+            var reader = new SequenceReader<byte>(ros);
+            Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
             // Equal the inputs.
             Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -91,7 +95,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Null(Http1Connection.QueryString);
 
             var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"CONNECT {rawTarget} HTTP/1.1\r\n"));
-            Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+            var reader = new SequenceReader<byte>(ros);
+            Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
             // Equal the inputs.
             Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -117,7 +122,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Null(Http1Connection.QueryString);
 
             var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"OPTIONS {rawTarget} HTTP/1.1\r\n"));
-            Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+            var reader = new SequenceReader<byte>(ros);
+            Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
             // Equal the inputs.
             Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -140,7 +146,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var query = "?q=123&w=xyzw12";
             Http1Connection.Reset();
             var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"POST {rawTarget} HTTP/1.1\r\n"));
-            Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+            var reader = new SequenceReader<byte>(ros);
+            Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
             // Equal the inputs.
             Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -184,7 +191,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             Http1Connection.Reset();
             var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"GET {rawTarget} HTTP/1.1\r\n"));
-            Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+            var reader = new SequenceReader<byte>(ros);
+            Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
             var prevRequestUrl = Http1Connection.RawTarget;
             var prevPath = Http1Connection.Path;
@@ -201,7 +209,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 // Parser decodes % encoding in place, so we need to recreate the ROS
                 ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"GET {rawTarget} HTTP/1.1\r\n"));
-                Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+                reader = new SequenceReader<byte>(ros);
+                Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
                 // Equal the inputs.
                 Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -234,7 +243,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             Http1Connection.Reset();
             ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"GET {rawTarget} HTTP/1.1\r\n"));
-            Parser.ParseRequestLine(ParsingHandler, ros, out _, out _);
+            reader = new SequenceReader<byte>(ros);
+            Parser.ParseRequestLine(ParsingHandler, ref reader);
 
             // Equal the inputs.
             Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -275,7 +285,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             Http1Connection.Reset();
             var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"GET {rawTarget} HTTP/1.1\r\n"));
-            Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+            var reader = new SequenceReader<byte>(ros);
+            Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
             var prevRequestUrl = Http1Connection.RawTarget;
             var prevPath = Http1Connection.Path;
@@ -291,7 +302,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Null(Http1Connection.QueryString);
 
                 ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"GET {rawTarget} HTTP/1.1\r\n"));
-                Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+                reader = new SequenceReader<byte>(ros);
+                Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
                 // Equal the inputs.
                 Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -324,7 +336,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             Http1Connection.Reset();
             ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"GET {rawTarget} HTTP/1.1\r\n"));
-            Parser.ParseRequestLine(ParsingHandler, ros, out _, out _);
+            reader = new SequenceReader<byte>(ros);
+            Parser.ParseRequestLine(ParsingHandler, ref reader);
 
             // Equal the inputs.
             Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -353,7 +366,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             Http1Connection.Reset();
             var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"OPTIONS {rawTarget} HTTP/1.1\r\n"));
-            Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+            var reader = new SequenceReader<byte>(ros);
+            Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
             var prevRequestUrl = Http1Connection.RawTarget;
             var prevPath = Http1Connection.Path;
@@ -369,7 +383,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Null(Http1Connection.QueryString);
 
                 ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"OPTIONS {rawTarget} HTTP/1.1\r\n"));
-                Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+                reader = new SequenceReader<byte>(ros);
+                Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
                 // Equal the inputs.
                 Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -400,7 +415,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             Http1Connection.Reset();
             ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"GET {rawTarget} HTTP/1.1\r\n"));
-            Parser.ParseRequestLine(ParsingHandler, ros, out _, out _);
+            reader = new SequenceReader<byte>(ros);
+            Parser.ParseRequestLine(ParsingHandler, ref reader);
 
             // Equal the inputs.
             Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -431,7 +447,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             Http1Connection.Reset();
             var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"CONNECT {rawTarget} HTTP/1.1\r\n"));
-            Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+            var reader = new SequenceReader<byte>(ros);
+            Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
             var prevRequestUrl = Http1Connection.RawTarget;
             var prevPath = Http1Connection.Path;
@@ -447,7 +464,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Null(Http1Connection.QueryString);
 
                 ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"CONNECT {rawTarget} HTTP/1.1\r\n"));
-                Assert.True(Parser.ParseRequestLine(ParsingHandler, ros, out _, out _));
+                reader = new SequenceReader<byte>(ros);
+                Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
 
                 // Equal the inputs.
                 Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -478,7 +496,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             Http1Connection.Reset();
             ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"CONNECT {rawTarget} HTTP/1.1\r\n"));
-            Parser.ParseRequestLine(ParsingHandler, ros, out _, out _);
+            reader = new SequenceReader<byte>(ros);
+            Parser.ParseRequestLine(ParsingHandler, ref reader);
 
             // Equal the inputs.
             Assert.Equal(rawTarget, Http1Connection.RawTarget);
@@ -504,21 +523,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             Transport = pair.Transport;
 
-            var serviceContext = new ServiceContext
-            {
-                ServerOptions = new KestrelServerOptions(),
-                Log = _trace,
-                HttpParser = new HttpParser<Http1ParsingHandler>()
-            };
+            var serviceContext = TestContextFactory.CreateServiceContext(
+                serverOptions: new KestrelServerOptions(),
+                httpParser: new HttpParser<Http1ParsingHandler>(),
+                log: _trace);
 
-            Http1Connection = new Http1Connection(context: new HttpConnectionContext
-            {
-                ServiceContext = serviceContext,
-                ConnectionFeatures = new FeatureCollection(),
-                MemoryPool = MemoryPool,
-                Transport = Transport,
-                TimeoutControl = new TimeoutControl(timeoutHandler: null)
-            });
+            var connectionContext = TestContextFactory.CreateHttpConnectionContext(
+                serviceContext: serviceContext,
+                connectionContext: Mock.Of<ConnectionContext>(),
+                transport: Transport,
+                timeoutControl: new TimeoutControl(timeoutHandler: null),
+                memoryPool: MemoryPool,
+                connectionFeatures: new FeatureCollection());
+
+            Http1Connection = new Http1Connection(connectionContext);
 
             Parser = new HttpParser<Http1ParsingHandler>(showErrorDetails: true);
             ParsingHandler = new Http1ParsingHandler(Http1Connection);

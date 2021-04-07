@@ -1,0 +1,5 @@
+(2,5): Error RZ1009: The "@" character must be followed by a ":", "(", or a C# identifier.  If you intended to switch to markup, use an HTML start tag, for example:
+
+@if(isLoggedIn) {
+    <p>Hello, @user!</p>
+}

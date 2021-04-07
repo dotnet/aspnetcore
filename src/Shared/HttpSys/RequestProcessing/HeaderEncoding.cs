@@ -15,11 +15,11 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             if (useLatin1)
             {
-                return new Span<byte>(pBytes, byteCount).GetLatin1StringNonNullCharacters();
+                return new ReadOnlySpan<byte>(pBytes, byteCount).GetLatin1StringNonNullCharacters();
             }
             else
             {
-                return new Span<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding);
+                return new ReadOnlySpan<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding);
             }
         }
 

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable disable
 
 using System;
 using System.Collections.Generic;
@@ -121,7 +123,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             builder.Append(" c: ");
             if (Literals != null)
             {
-                builder.Append(string.Join(", ", Literals.Select(kvp => $"{kvp.Key}->({FormatNode(kvp.Value)})")));
+                builder.AppendJoin(", ", Literals.Select(kvp => $"{kvp.Key}->({FormatNode(kvp.Value)})"));
             }
             return builder.ToString();
             

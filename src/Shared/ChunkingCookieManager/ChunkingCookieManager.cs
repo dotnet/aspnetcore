@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -38,6 +40,9 @@ namespace Microsoft.AspNetCore.Internal
         private const string ChunkKeySuffix = "C";
         private const string ChunkCountPrefix = "chunks-";
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ChunkingCookieManager"/>.
+        /// </summary>
         public ChunkingCookieManager()
         {
             // Lowest common denominator. Safari has the lowest known limit (4093), and we leave little extra just in case.
@@ -61,13 +66,11 @@ namespace Microsoft.AspNetCore.Internal
         public bool ThrowForPartialCookies { get; set; }
 
         // Parse the "chunks-XX" to determine how many chunks there should be.
-        private static int ParseChunksCount(string value)
+        private static int ParseChunksCount(string? value)
         {
             if (value != null && value.StartsWith(ChunkCountPrefix, StringComparison.Ordinal))
             {
-                var chunksCountString = value.Substring(ChunkCountPrefix.Length);
-                int chunksCount;
-                if (int.TryParse(chunksCountString, NumberStyles.None, CultureInfo.InvariantCulture, out chunksCount))
+                if (int.TryParse(value.AsSpan(ChunkCountPrefix.Length), NumberStyles.None, CultureInfo.InvariantCulture, out var chunksCount))
                 {
                     return chunksCount;
                 }
@@ -82,7 +85,7 @@ namespace Microsoft.AspNetCore.Internal
         /// <param name="context"></param>
         /// <param name="key"></param>
         /// <returns>The reassembled cookie, if any, or null.</returns>
-        public string GetRequestCookie(HttpContext context, string key)
+        public string? GetRequestCookie(HttpContext context, string key)
         {
             if (context == null)
             {
@@ -144,7 +147,7 @@ namespace Microsoft.AspNetCore.Internal
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="options"></param>
-        public void AppendResponseCookie(HttpContext context, string key, string value, CookieOptions options)
+        public void AppendResponseCookie(HttpContext context, string key, string? value, CookieOptions options)
         {
             if (context == null)
             {
@@ -288,7 +291,7 @@ namespace Microsoft.AspNetCore.Internal
                     SameSite = options.SameSite,
                     Secure = options.Secure,
                     IsEssential = options.IsEssential,
-                    Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    Expires = DateTimeOffset.UnixEpoch,
                     HttpOnly = options.HttpOnly,
                 });
 
@@ -305,7 +308,7 @@ namespace Microsoft.AspNetCore.Internal
                         SameSite = options.SameSite,
                         Secure = options.Secure,
                         IsEssential = options.IsEssential,
-                        Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                        Expires = DateTimeOffset.UnixEpoch,
                         HttpOnly = options.HttpOnly,
                     });
             }

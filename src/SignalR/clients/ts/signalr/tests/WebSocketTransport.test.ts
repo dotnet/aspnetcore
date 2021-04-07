@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { MessageHeaders } from "../src/IHubProtocol";
 import { ILogger } from "../src/ILogger";
 import { TransferFormat } from "../src/ITransport";
+import { getUserAgentHeader } from "../src/Utils";
 import { WebSocketTransport } from "../src/WebSocketTransport";
 import { VerifyLogger } from "./Common";
 import { TestMessageEvent } from "./TestEventSource";
@@ -23,7 +25,7 @@ describe("WebSocketTransport", () => {
 
     it("connect waits for WebSocket to be connected", async () => {
         await VerifyLogger.run(async (logger) => {
-            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket);
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {});
 
             let connectComplete: boolean = false;
             const connectPromise = (async () => {
@@ -45,7 +47,7 @@ describe("WebSocketTransport", () => {
     it("connect fails if there is error during connect", async () => {
         await VerifyLogger.run(async (logger) => {
             (global as any).ErrorEvent = TestErrorEvent;
-            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket);
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {});
 
             let connectComplete: boolean = false;
             const connectPromise = (async () => {
@@ -57,11 +59,12 @@ describe("WebSocketTransport", () => {
 
             expect(connectComplete).toBe(false);
 
-            TestWebSocket.webSocket.onerror(new TestEvent());
+            TestWebSocket.webSocket.onclose(new TestEvent());
 
             await expect(connectPromise)
                 .rejects
-                .toThrow("There was an error with the transport.");
+                .toThrow("WebSocket failed to connect. The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, " +
+                "the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.");
             expect(connectComplete).toBe(false);
         });
     });
@@ -69,7 +72,7 @@ describe("WebSocketTransport", () => {
     it("connect failure does not call onclose handler", async () => {
         await VerifyLogger.run(async (logger) => {
             (global as any).ErrorEvent = TestErrorEvent;
-            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket);
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {});
             let closeCalled = false;
             webSocket.onclose = () => closeCalled = true;
 
@@ -87,7 +90,8 @@ describe("WebSocketTransport", () => {
 
             await expect(connectPromise)
                 .rejects
-                .toThrow("There was an error with the transport.");
+                .toThrow("WebSocket failed to connect. The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, " +
+                "the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.");
             expect(connectComplete).toBe(false);
             expect(closeCalled).toBe(false);
         });
@@ -229,10 +233,123 @@ describe("WebSocketTransport", () => {
                 });
             });
         });
+
+    it("sets user agent header on connect", async () => {
+        await VerifyLogger.run(async (logger) => {
+            (global as any).ErrorEvent = TestEvent;
+            const webSocket = await createAndStartWebSocket(logger);
+
+            let closeCalled: boolean = false;
+            let error: Error;
+            webSocket.onclose = (e) => {
+                closeCalled = true;
+                error = e!;
+            };
+
+            const [, value] = getUserAgentHeader();
+            expect(TestWebSocket.webSocket.options!.headers[`User-Agent`]).toEqual(value);
+
+            await webSocket.stop();
+
+            expect(closeCalled).toBe(true);
+            expect(error!).toBeUndefined();
+
+            await expect(webSocket.send(""))
+                .rejects
+                .toBe("WebSocket is not in the OPEN state");
+        });
+    });
+
+    it("overwrites library headers with user headers", async () => {
+        await VerifyLogger.run(async (logger) => {
+            (global as any).ErrorEvent = TestEvent;
+            const headers = { "User-Agent": "Custom Agent", "X-HEADER": "VALUE" };
+            const webSocket = await createAndStartWebSocket(logger, undefined, undefined, undefined, headers);
+
+            let closeCalled: boolean = false;
+            let error: Error;
+            webSocket.onclose = (e) => {
+                closeCalled = true;
+                error = e!;
+            };
+
+            expect(TestWebSocket.webSocket.options!.headers[`User-Agent`]).toEqual("Custom Agent");
+            expect(TestWebSocket.webSocket.options!.headers[`X-HEADER`]).toEqual("VALUE");
+
+            await webSocket.stop();
+
+            expect(closeCalled).toBe(true);
+            expect(error!).toBeUndefined();
+
+            await expect(webSocket.send(""))
+                .rejects
+                .toBe("WebSocket is not in the OPEN state");
+        });
+    });
+
+    it("is closed from 'onreceive' callback throwing", async () => {
+        await VerifyLogger.run(async (logger) => {
+            (global as any).ErrorEvent = TestEvent;
+            const webSocket = await createAndStartWebSocket(logger);
+
+            let closeCalled: boolean = false;
+            let error: Error;
+            webSocket.onclose = (e) => {
+                closeCalled = true;
+                error = e!;
+            };
+
+            const receiveError = new Error("callback error");
+            webSocket.onreceive = () => {
+                throw receiveError;
+            };
+
+            const message = new TestMessageEvent();
+            message.data = "receive data";
+            TestWebSocket.webSocket.onmessage(message);
+
+            expect(closeCalled).toBe(true);
+            expect(error!).toBe(receiveError);
+
+            await expect(webSocket.send(""))
+                .rejects
+                .toBe("WebSocket is not in the OPEN state");
+        });
+    });
+
+    it("does not run onclose callback if Transport does not fully connect and exits", async () => {
+        await VerifyLogger.run(async (logger) => {
+            (global as any).ErrorEvent = TestErrorEvent;
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {});
+
+            const connectPromise = webSocket.connect("http://example.com", TransferFormat.Text);
+
+            await TestWebSocket.webSocket.closeSet;
+
+            let closeCalled: boolean = false;
+            let error: Error;
+            webSocket.onclose = (e) => {
+                closeCalled = true;
+                error = e!;
+            };
+
+            const message = new TestCloseEvent();
+            message.wasClean = false;
+            message.code = 1;
+            message.reason = "just cause";
+            TestWebSocket.webSocket.onclose(message);
+
+            expect(closeCalled).toBe(false);
+            expect(error!).toBeUndefined();
+
+            await expect(connectPromise).rejects.toThrow("WebSocket failed to connect. The connection could not be found on the server, " +
+            "either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.");
+        });
+    });
 });
 
-async function createAndStartWebSocket(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), format?: TransferFormat): Promise<WebSocketTransport> {
-    const webSocket = new WebSocketTransport(new TestHttpClient(), accessTokenFactory, logger, true, TestWebSocket);
+async function createAndStartWebSocket(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), format?: TransferFormat, headers?: MessageHeaders): Promise<WebSocketTransport> {
+    const webSocket = new WebSocketTransport(new TestHttpClient(), accessTokenFactory, logger, true, TestWebSocket, headers || {});
 
     const connectPromise = webSocket.connect(url || "http://example.com", format || TransferFormat.Text);
 

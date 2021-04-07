@@ -1,0 +1,139 @@
+#nullable enable
+Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions
+Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions.DataProtectionTokenProviderOptions() -> void
+Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions.TokenLifespan.get -> System.TimeSpan
+Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions.TokenLifespan.set -> void
+Microsoft.AspNetCore.Identity.ExternalLoginInfo
+Microsoft.AspNetCore.Identity.ISecurityStampValidator
+Microsoft.AspNetCore.Identity.ITwoFactorSecurityStampValidator
+Microsoft.AspNetCore.Identity.IdentityBuilderExtensions
+Microsoft.AspNetCore.Identity.IdentityConstants
+Microsoft.AspNetCore.Identity.IdentityConstants.IdentityConstants() -> void
+Microsoft.AspNetCore.Identity.IdentityCookieAuthenticationBuilderExtensions
+Microsoft.AspNetCore.Identity.IdentityCookiesBuilder
+Microsoft.AspNetCore.Identity.IdentityCookiesBuilder.IdentityCookiesBuilder() -> void
+Microsoft.AspNetCore.Identity.SecurityStampRefreshingPrincipalContext
+Microsoft.AspNetCore.Identity.SecurityStampRefreshingPrincipalContext.SecurityStampRefreshingPrincipalContext() -> void
+Microsoft.AspNetCore.Identity.SecurityStampValidator
+Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions
+Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions.SecurityStampValidatorOptions() -> void
+Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions.ValidationInterval.get -> System.TimeSpan
+Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions.ValidationInterval.set -> void
+Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions
+override Microsoft.AspNetCore.Identity.AspNetRoleManager<TRole>.CancellationToken.get -> System.Threading.CancellationToken
+override Microsoft.AspNetCore.Identity.AspNetUserManager<TUser>.CancellationToken.get -> System.Threading.CancellationToken
+~Microsoft.AspNetCore.Identity.AspNetRoleManager<TRole>
+~Microsoft.AspNetCore.Identity.AspNetRoleManager<TRole>.AspNetRoleManager(Microsoft.AspNetCore.Identity.IRoleStore<TRole> store, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IRoleValidator<TRole>> roleValidators, Microsoft.AspNetCore.Identity.ILookupNormalizer keyNormalizer, Microsoft.AspNetCore.Identity.IdentityErrorDescriber errors, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.RoleManager<TRole>> logger, Microsoft.AspNetCore.Http.IHttpContextAccessor contextAccessor) -> void
+~Microsoft.AspNetCore.Identity.AspNetUserManager<TUser>
+~Microsoft.AspNetCore.Identity.AspNetUserManager<TUser>.AspNetUserManager(Microsoft.AspNetCore.Identity.IUserStore<TUser> store, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions> optionsAccessor, Microsoft.AspNetCore.Identity.IPasswordHasher<TUser> passwordHasher, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IUserValidator<TUser>> userValidators, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IPasswordValidator<TUser>> passwordValidators, Microsoft.AspNetCore.Identity.ILookupNormalizer keyNormalizer, Microsoft.AspNetCore.Identity.IdentityErrorDescriber errors, System.IServiceProvider services, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.UserManager<TUser>> logger) -> void
+~Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions.Name.get -> string
+~Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions.Name.set -> void
+~Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>
+~Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.DataProtectorTokenProvider(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions> options, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>> logger) -> void
+~Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.Logger.get -> Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>>
+~Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.Name.get -> string
+~Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.Options.get -> Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions
+~Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.Protector.get -> Microsoft.AspNetCore.DataProtection.IDataProtector
+~Microsoft.AspNetCore.Identity.ExternalLoginInfo.AuthenticationProperties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties
+~Microsoft.AspNetCore.Identity.ExternalLoginInfo.AuthenticationProperties.set -> void
+~Microsoft.AspNetCore.Identity.ExternalLoginInfo.AuthenticationTokens.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationToken>
+~Microsoft.AspNetCore.Identity.ExternalLoginInfo.AuthenticationTokens.set -> void
+~Microsoft.AspNetCore.Identity.ExternalLoginInfo.ExternalLoginInfo(System.Security.Claims.ClaimsPrincipal principal, string loginProvider, string providerKey, string displayName) -> void
+~Microsoft.AspNetCore.Identity.ExternalLoginInfo.Principal.get -> System.Security.Claims.ClaimsPrincipal
+~Microsoft.AspNetCore.Identity.ExternalLoginInfo.Principal.set -> void
+~Microsoft.AspNetCore.Identity.ISecurityStampValidator.ValidateAsync(Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext context) -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Identity.IdentityCookiesBuilder.ApplicationCookie.get -> Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>
+~Microsoft.AspNetCore.Identity.IdentityCookiesBuilder.ApplicationCookie.set -> void
+~Microsoft.AspNetCore.Identity.IdentityCookiesBuilder.ExternalCookie.get -> Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>
+~Microsoft.AspNetCore.Identity.IdentityCookiesBuilder.ExternalCookie.set -> void
+~Microsoft.AspNetCore.Identity.IdentityCookiesBuilder.TwoFactorRememberMeCookie.get -> Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>
+~Microsoft.AspNetCore.Identity.IdentityCookiesBuilder.TwoFactorRememberMeCookie.set -> void
+~Microsoft.AspNetCore.Identity.IdentityCookiesBuilder.TwoFactorUserIdCookie.get -> Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>
+~Microsoft.AspNetCore.Identity.IdentityCookiesBuilder.TwoFactorUserIdCookie.set -> void
+~Microsoft.AspNetCore.Identity.SecurityStampRefreshingPrincipalContext.CurrentPrincipal.get -> System.Security.Claims.ClaimsPrincipal
+~Microsoft.AspNetCore.Identity.SecurityStampRefreshingPrincipalContext.CurrentPrincipal.set -> void
+~Microsoft.AspNetCore.Identity.SecurityStampRefreshingPrincipalContext.NewPrincipal.get -> System.Security.Claims.ClaimsPrincipal
+~Microsoft.AspNetCore.Identity.SecurityStampRefreshingPrincipalContext.NewPrincipal.set -> void
+~Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>
+~Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.Clock.get -> Microsoft.AspNetCore.Authentication.ISystemClock
+~Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.Logger.get -> Microsoft.Extensions.Logging.ILogger
+~Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.Logger.set -> void
+~Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.Options.get -> Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions
+~Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.SecurityStampValidator(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions> options, Microsoft.AspNetCore.Identity.SignInManager<TUser> signInManager, Microsoft.AspNetCore.Authentication.ISystemClock clock, Microsoft.Extensions.Logging.ILoggerFactory logger) -> void
+~Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.SignInManager.get -> Microsoft.AspNetCore.Identity.SignInManager<TUser>
+~Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions.OnRefreshingPrincipal.get -> System.Func<Microsoft.AspNetCore.Identity.SecurityStampRefreshingPrincipalContext, System.Threading.Tasks.Task>
+~Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions.OnRefreshingPrincipal.set -> void
+~Microsoft.AspNetCore.Identity.SignInManager<TUser>
+~Microsoft.AspNetCore.Identity.SignInManager<TUser>.ClaimsFactory.get -> Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<TUser>
+~Microsoft.AspNetCore.Identity.SignInManager<TUser>.ClaimsFactory.set -> void
+~Microsoft.AspNetCore.Identity.SignInManager<TUser>.Context.get -> Microsoft.AspNetCore.Http.HttpContext
+~Microsoft.AspNetCore.Identity.SignInManager<TUser>.Context.set -> void
+~Microsoft.AspNetCore.Identity.SignInManager<TUser>.Options.get -> Microsoft.AspNetCore.Identity.IdentityOptions
+~Microsoft.AspNetCore.Identity.SignInManager<TUser>.Options.set -> void
+~Microsoft.AspNetCore.Identity.SignInManager<TUser>.SignInManager(Microsoft.AspNetCore.Identity.UserManager<TUser> userManager, Microsoft.AspNetCore.Http.IHttpContextAccessor contextAccessor, Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<TUser> claimsFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions> optionsAccessor, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.SignInManager<TUser>> logger, Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider schemes, Microsoft.AspNetCore.Identity.IUserConfirmation<TUser> confirmation) -> void
+~Microsoft.AspNetCore.Identity.SignInManager<TUser>.UserManager.get -> Microsoft.AspNetCore.Identity.UserManager<TUser>
+~Microsoft.AspNetCore.Identity.SignInManager<TUser>.UserManager.set -> void
+~Microsoft.AspNetCore.Identity.TwoFactorSecurityStampValidator<TUser>
+~Microsoft.AspNetCore.Identity.TwoFactorSecurityStampValidator<TUser>.TwoFactorSecurityStampValidator(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions> options, Microsoft.AspNetCore.Identity.SignInManager<TUser> signInManager, Microsoft.AspNetCore.Authentication.ISystemClock clock, Microsoft.Extensions.Logging.ILoggerFactory logger) -> void
+~override Microsoft.AspNetCore.Identity.TwoFactorSecurityStampValidator<TUser>.SecurityStampVerified(TUser user, Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext context) -> System.Threading.Tasks.Task
+~override Microsoft.AspNetCore.Identity.TwoFactorSecurityStampValidator<TUser>.VerifySecurityStamp(System.Security.Claims.ClaimsPrincipal principal) -> System.Threading.Tasks.Task<TUser>
+~static Microsoft.AspNetCore.Identity.IdentityBuilderExtensions.AddDefaultTokenProviders(this Microsoft.AspNetCore.Identity.IdentityBuilder builder) -> Microsoft.AspNetCore.Identity.IdentityBuilder
+~static Microsoft.AspNetCore.Identity.IdentityBuilderExtensions.AddSignInManager(this Microsoft.AspNetCore.Identity.IdentityBuilder builder) -> Microsoft.AspNetCore.Identity.IdentityBuilder
+~static Microsoft.AspNetCore.Identity.IdentityBuilderExtensions.AddSignInManager<TSignInManager>(this Microsoft.AspNetCore.Identity.IdentityBuilder builder) -> Microsoft.AspNetCore.Identity.IdentityBuilder
+~static Microsoft.AspNetCore.Identity.IdentityCookieAuthenticationBuilderExtensions.AddApplicationCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder) -> Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>
+~static Microsoft.AspNetCore.Identity.IdentityCookieAuthenticationBuilderExtensions.AddExternalCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder) -> Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>
+~static Microsoft.AspNetCore.Identity.IdentityCookieAuthenticationBuilderExtensions.AddIdentityCookies(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder) -> Microsoft.AspNetCore.Identity.IdentityCookiesBuilder
+~static Microsoft.AspNetCore.Identity.IdentityCookieAuthenticationBuilderExtensions.AddIdentityCookies(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, System.Action<Microsoft.AspNetCore.Identity.IdentityCookiesBuilder> configureCookies) -> Microsoft.AspNetCore.Identity.IdentityCookiesBuilder
+~static Microsoft.AspNetCore.Identity.IdentityCookieAuthenticationBuilderExtensions.AddTwoFactorRememberMeCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder) -> Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>
+~static Microsoft.AspNetCore.Identity.IdentityCookieAuthenticationBuilderExtensions.AddTwoFactorUserIdCookie(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder) -> Microsoft.Extensions.Options.OptionsBuilder<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>
+~static Microsoft.AspNetCore.Identity.SecurityStampValidator.ValidateAsync<TValidator>(Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext context) -> System.Threading.Tasks.Task
+~static Microsoft.AspNetCore.Identity.SecurityStampValidator.ValidatePrincipalAsync(Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext context) -> System.Threading.Tasks.Task
+~static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentity<TUser, TRole>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.AspNetCore.Identity.IdentityBuilder
+~static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentity<TUser, TRole>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions> setupAction) -> Microsoft.AspNetCore.Identity.IdentityBuilder
+~static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.ConfigureApplicationCookie(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions> configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+~static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.ConfigureExternalCookie(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions> configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+~static readonly Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme -> string
+~static readonly Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme -> string
+~static readonly Microsoft.AspNetCore.Identity.IdentityConstants.TwoFactorRememberMeScheme -> string
+~static readonly Microsoft.AspNetCore.Identity.IdentityConstants.TwoFactorUserIdScheme -> string
+~virtual Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.CanGenerateTwoFactorTokenAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<bool>
+~virtual Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.GenerateAsync(string purpose, Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<string>
+~virtual Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.ValidateAsync(string purpose, string token, Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<bool>
+~virtual Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.SecurityStampVerified(TUser user, Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext context) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.ValidateAsync(Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext context) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.VerifySecurityStamp(System.Security.Claims.ClaimsPrincipal principal) -> System.Threading.Tasks.Task<TUser>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.CanSignInAsync(TUser user) -> System.Threading.Tasks.Task<bool>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.CheckPasswordSignInAsync(TUser user, string password, bool lockoutOnFailure) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ConfigureExternalAuthenticationProperties(string provider, string redirectUrl, string userId = null) -> Microsoft.AspNetCore.Authentication.AuthenticationProperties
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.CreateUserPrincipalAsync(TUser user) -> System.Threading.Tasks.Task<System.Security.Claims.ClaimsPrincipal>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ForgetTwoFactorClientAsync() -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.GetExternalAuthenticationSchemesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationScheme>>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.GetExternalLoginInfoAsync(string expectedXsrf = null) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.ExternalLoginInfo>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.GetTwoFactorAuthenticationUserAsync() -> System.Threading.Tasks.Task<TUser>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.IsLockedOut(TUser user) -> System.Threading.Tasks.Task<bool>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.IsSignedIn(System.Security.Claims.ClaimsPrincipal principal) -> bool
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.IsTwoFactorClientRememberedAsync(TUser user) -> System.Threading.Tasks.Task<bool>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.LockedOut(TUser user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.Logger.get -> Microsoft.Extensions.Logging.ILogger
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.Logger.set -> void
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.PasswordSignInAsync(TUser user, string password, bool isPersistent, bool lockoutOnFailure) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.PreSignInCheck(TUser user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.RefreshSignInAsync(TUser user) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.RememberTwoFactorClientAsync(TUser user) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ResetLockout(TUser user) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.SignInAsync(TUser user, Microsoft.AspNetCore.Authentication.AuthenticationProperties authenticationProperties, string authenticationMethod = null) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.SignInAsync(TUser user, bool isPersistent, string authenticationMethod = null) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.SignInOrTwoFactorAsync(TUser user, bool isPersistent, string loginProvider = null, bool bypassTwoFactor = false) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.SignInWithClaimsAsync(TUser user, Microsoft.AspNetCore.Authentication.AuthenticationProperties authenticationProperties, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> additionalClaims) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.SignInWithClaimsAsync(TUser user, bool isPersistent, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> additionalClaims) -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.SignOutAsync() -> System.Threading.Tasks.Task
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.TwoFactorRecoveryCodeSignInAsync(string recoveryCode) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.UpdateExternalAuthenticationTokensAsync(Microsoft.AspNetCore.Identity.ExternalLoginInfo externalLogin) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ValidateSecurityStampAsync(System.Security.Claims.ClaimsPrincipal principal) -> System.Threading.Tasks.Task<TUser>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ValidateSecurityStampAsync(TUser user, string securityStamp) -> System.Threading.Tasks.Task<bool>
+~virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ValidateTwoFactorSecurityStampAsync(System.Security.Claims.ClaimsPrincipal principal) -> System.Threading.Tasks.Task<TUser>

@@ -26,15 +26,20 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             AssertMessages(new byte[] { ArrayBytes(5), 3, 0x80, StringBytes(1), (byte)'0', 0x03, ArrayBytes(1), 42 }, result);
         }
 
-        [Fact]
-        public void WriteAndParseDateTimeConvertsToUTC()
+        [Theory]
+        [InlineData(DateTimeKind.Utc)]
+        [InlineData(DateTimeKind.Local)]
+        [InlineData(DateTimeKind.Unspecified)]
+        public void WriteAndParseDateTimeConvertsToUTC(DateTimeKind dateTimeKind)
         {
-            var dateTime = new DateTime(2018, 4, 9);
+            // The messagepack Timestamp format always converts input DateTime to Utc if they are passed as "DateTimeKind.Local" :
+            // https://github.com/neuecc/MessagePack-CSharp/pull/520/files#diff-ed970b3daebc708ce49f55d418075979
+            var originalDateTime = new DateTime(2018, 4, 9, 0, 0, 0, dateTimeKind);
             var writer = MemoryBufferWriter.Get();
 
             try
             {
-                HubProtocol.WriteMessage(CompletionMessage.WithResult("xyz", dateTime), writer);
+                HubProtocol.WriteMessage(CompletionMessage.WithResult("xyz", originalDateTime), writer);
                 var bytes = new ReadOnlySequence<byte>(writer.ToArray());
                 HubProtocol.TryParseMessage(ref bytes, new TestBinder(typeof(DateTime)), out var hubMessage);
 
@@ -44,7 +49,10 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 // The messagepack Timestamp format specifies that time is stored as seconds since 1970-01-01 UTC
                 // so the library has no choice but to store the time as UTC
                 // https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type
-                Assert.Equal(dateTime.ToUniversalTime(), resultDateTime);
+                // So If the original DateTiem was a "Local" one, we create a new DateTime equivalent to the original one but converted to Utc
+                var expectedUtcDateTime = (originalDateTime.Kind == DateTimeKind.Local) ? originalDateTime.ToUniversalTime() : originalDateTime;
+
+                Assert.Equal(expectedUtcDateTime, resultDateTime);
             }
             finally
             {

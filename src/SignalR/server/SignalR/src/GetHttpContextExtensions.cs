@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         /// <param name="connection">The connection.</param>
         /// <returns>The <see cref="HttpContext"/> for the connection, or <c>null</c> if the connection is not associated with an HTTP request.</returns>
-        public static HttpContext GetHttpContext(this HubCallerContext connection)
+        public static HttpContext? GetHttpContext(this HubCallerContext connection)
         {
             if (connection == null)
             {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         /// <param name="connection">The connection.</param>
         /// <returns>The <see cref="HttpContext"/> for the connection, or <c>null</c> if the connection is not associated with an HTTP request.</returns>
-        public static HttpContext GetHttpContext(this HubConnectionContext connection)
+        public static HttpContext? GetHttpContext(this HubConnectionContext connection)
         {
             if (connection == null)
             {

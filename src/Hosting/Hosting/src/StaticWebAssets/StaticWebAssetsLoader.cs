@@ -1,12 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
+#nullable enable
+
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 
@@ -26,18 +25,15 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         /// <param name="configuration">The host <see cref="IConfiguration"/>.</param>
         public static void UseStaticWebAssets(IWebHostEnvironment environment, IConfiguration configuration)
         {
-            using (var manifest = ResolveManifest(environment, configuration))
+            using var manifest = ResolveManifest(environment, configuration);
+            if (manifest != null)
             {
-                if (manifest != null)
-                {
-                    UseStaticWebAssetsCore(environment, manifest);
-                }
+                UseStaticWebAssetsCore(environment, manifest);
             }
         }
 
         internal static void UseStaticWebAssetsCore(IWebHostEnvironment environment, Stream manifest)
         {
-            var staticWebAssetsFileProvider = new List<IFileProvider>();
             var webRootFileProvider = environment.WebRootFileProvider;
 
             var additionalFiles = StaticWebAssetsReader.Parse(manifest)
@@ -56,14 +52,14 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             }
         }
 
-        internal static Stream ResolveManifest(IWebHostEnvironment environment, IConfiguration configuration)
+        internal static Stream? ResolveManifest(IWebHostEnvironment environment, IConfiguration configuration)
         {
             try
             {
                 var manifestPath = configuration.GetValue<string>(WebHostDefaults.StaticWebAssetsKey);
                 var filePath = manifestPath ?? ResolveRelativeToAssembly(environment);
-                
-                if (File.Exists(filePath))
+
+                if (filePath != null && File.Exists(filePath))
                 {
                     return File.OpenRead(filePath);
                 }
@@ -81,21 +77,16 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             }
         }
 
-        private static string ResolveRelativeToAssembly(IWebHostEnvironment environment)
+        private static string? ResolveRelativeToAssembly(IWebHostEnvironment environment)
         {
             var assembly = Assembly.Load(environment.ApplicationName);
-            return Path.Combine(Path.GetDirectoryName(GetAssemblyLocation(assembly)), $"{environment.ApplicationName}.StaticWebAssets.xml");
-        }
-
-        internal static string GetAssemblyLocation(Assembly assembly)
-        {
-            if (Uri.TryCreate(assembly.CodeBase, UriKind.Absolute, out var result) &&
-                result.IsFile && string.IsNullOrWhiteSpace(result.Fragment))
+            if (string.IsNullOrEmpty(assembly.Location))
             {
-                return result.LocalPath;
+                return null;
             }
 
-            return assembly.Location;
+            return Path.Combine(Path.GetDirectoryName(assembly.Location)!, $"{environment.ApplicationName}.StaticWebAssets.xml");
         }
     }
 }
+#nullable restore

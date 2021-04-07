@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
+
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
     /// <summary>
@@ -21,5 +23,16 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// <param name="context"><see cref="ControllerContext"/> for the executing action.</param>
         /// <param name="controller">The controller.</param>
         void ReleaseController(ControllerContext context, object controller);
+
+        /// <summary>
+        /// Releases a controller instance asynchronously.
+        /// </summary>
+        /// <param name="context"><see cref="ControllerContext"/> for the executing action.</param>
+        /// <param name="controller">The controller.</param>
+        ValueTask ReleaseControllerAsync(ControllerContext context, object controller)
+        {
+            ReleaseController(context, controller);
+            return default;
+        }
     }
 }

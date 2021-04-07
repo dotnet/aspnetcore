@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "noEmitOnError": true,
+        "removeComments": false,
+        "sourceMap": true,
+        "target": "es2019",
+        "lib": ["es2019", "dom"],
+        "strict": true,
+        "declaration": true,
+        "outDir": "dist",
+        "module": "ESNext",
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "dist/**"
+    ]
+}

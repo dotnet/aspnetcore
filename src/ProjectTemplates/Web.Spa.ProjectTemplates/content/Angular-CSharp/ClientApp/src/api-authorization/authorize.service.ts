@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { User, UserManager, WebStorageStateStore } from 'oidc-client';
+import { User, UserManager } from 'oidc-client';
 import { BehaviorSubject, concat, from, Observable } from 'rxjs';
 import { filter, map, mergeMap, take, tap } from 'rxjs/operators';
 import { ApplicationPaths, ApplicationName } from './api-authorization.constants';
@@ -135,7 +135,7 @@ export class AuthorizeService {
         await this.userManager.signoutRedirect(this.createArguments(state));
         return this.redirect();
       } catch (redirectSignOutError) {
-        console.log('Redirect signout error: ', popupSignOutError);
+        console.log('Redirect signout error: ', redirectSignOutError);
         return this.error(redirectSignOutError);
       }
     }

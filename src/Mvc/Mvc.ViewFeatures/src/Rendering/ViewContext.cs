@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,9 +17,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     /// </summary>
     public class ViewContext : ActionContext
     {
-        private FormContext _formContext;
-        private DynamicViewData _viewBag;
-        private Dictionary<object, object> _items;
+        private FormContext _formContext = default!;
+        private DynamicViewData? _viewBag;
+        private Dictionary<object, object?> _items = default!;
 
         /// <summary>
         /// Creates an empty <see cref="ViewContext"/>.
@@ -25,10 +27,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <remarks>
         /// The default constructor is provided for unit test purposes only.
         /// </remarks>
+#nullable disable warnings
+        // This is a unit-test only constructor where no property is initialized. We'll avoid having to
+        // using null-forgiveness operator by skipping nullable warnings on this constructor.
         public ViewContext()
         {
             ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), ModelState);
         }
+#nullable enable
 
         /// <summary>
         /// Initializes a new instance of <see cref="ViewContext"/>.
@@ -89,6 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             Html5DateRenderingMode = htmlHelperOptions.Html5DateRenderingMode;
             ValidationSummaryMessageElement = htmlHelperOptions.ValidationSummaryMessageElement;
             ValidationMessageElement = htmlHelperOptions.ValidationMessageElement;
+            CheckBoxHiddenInputRenderMode = htmlHelperOptions.CheckBoxHiddenInputRenderMode;
         }
 
         /// <summary>
@@ -131,6 +138,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             Html5DateRenderingMode = viewContext.Html5DateRenderingMode;
             ValidationSummaryMessageElement = viewContext.ValidationSummaryMessageElement;
             ValidationMessageElement = viewContext.ValidationMessageElement;
+            CheckBoxHiddenInputRenderMode = viewContext.CheckBoxHiddenInputRenderMode;
+
             ExecutingFilePath = viewContext.ExecutingFilePath;
             View = view;
             ViewData = viewData;
@@ -185,6 +194,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public string ValidationMessageElement { get; set; }
 
         /// <summary>
+        /// Gets or sets the way hidden inputs are rendered for checkbox tag helpers and html helpers.
+        /// </summary>
+        public CheckBoxHiddenInputRenderMode CheckBoxHiddenInputRenderMode { get; set; }
+
+        /// <summary>
         /// Gets the dynamic view bag.
         /// </summary>
         public dynamic ViewBag
@@ -227,14 +241,18 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// The rendering of a view may involve one or more files (e.g. _ViewStart, Layouts etc).
         /// This property contains the path of the file currently being rendered.
         /// </remarks>
-        public string ExecutingFilePath { get; set; }
+        public string? ExecutingFilePath { get; set; }
 
         /// <summary>
         /// Gets a key/value collection that can be used to share data within the scope of this view execution.
         /// </summary>
-        internal Dictionary<object, object> Items => _items ??= new Dictionary<object, object>();
+        internal Dictionary<object, object?> Items => _items ??= new Dictionary<object, object?>();
 
-        public FormContext GetFormContextForClientValidation()
+        /// <summary>
+        /// Gets the <see cref="FormContext"/> if <see cref="ClientValidationEnabled"/> is enabled.
+        /// </summary>
+        /// <returns></returns>
+        public FormContext? GetFormContextForClientValidation()
         {
             return ClientValidationEnabled ? FormContext : null;
         }

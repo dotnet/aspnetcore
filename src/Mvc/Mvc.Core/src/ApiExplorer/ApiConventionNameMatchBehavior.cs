@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     public enum ApiConventionNameMatchBehavior
     {
         /// <summary>
-        /// Matches any name. Use this if the parameter or method name does not need to be matched.
+        /// Matches any name. Use this if the parameter does not need to be matched.
         /// </summary>
         Any,
 

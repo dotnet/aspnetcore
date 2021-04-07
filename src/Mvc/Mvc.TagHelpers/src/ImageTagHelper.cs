@@ -95,14 +95,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// Gets the <see cref="IWebHostEnvironment"/> for the application.
         /// This property is obsolete and will be removed in a future version.
         /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version.")]
+        [Obsolete("This property is obsolete and will be removed in a future version.")] // Remove after .NET 6.
         protected internal IWebHostEnvironment HostingEnvironment { get; }
 
         /// <summary>
         /// Gets the <see cref="IMemoryCache"/> used to store globbed urls.
         /// This property is obsolete and will be removed in a future version.
         /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version.")]
+        [Obsolete("This property is obsolete and will be removed in a future version.")] // Remove after .NET 6.
         protected internal IMemoryCache Cache { get; }
 
         internal IFileVersionProvider FileVersionProvider { get; private set; }

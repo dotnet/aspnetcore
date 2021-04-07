@@ -1,0 +1,29 @@
+﻿@using Microsoft.Extensions.DependencyInjection 
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject IServiceProvider ServiceProvider
+
+<button id="inject-local" @onclick="Inject<ProtectedLocalStorage>">Inject @(nameof(ProtectedLocalStorage))</button>
+<button id="inject-session" @onclick="Inject<ProtectedSessionStorage>">Inject @(nameof(ProtectedSessionStorage))</button>
+
+<p id="message">@message</p>
+
+@code {
+    private string message = "Waiting for injection...";
+
+    private void Inject<T>() where T : ProtectedBrowserStorage
+    {
+        try
+        {
+            var localStorage = ServiceProvider.GetService<T>();
+            message = "Success!";
+        }
+        catch (PlatformNotSupportedException ex)
+        {
+            message = ex.Message;
+        }
+        catch
+        {
+            message = "Unexpected exception encountered.";
+        }
+    }
+}

@@ -14,7 +14,7 @@
 #include "Environment.h"
 #include "HostFxr.h"
 
-IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
+IN_PROCESS_APPLICATION* IN_PROCESS_APPLICATION::s_Application = NULL;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
@@ -22,7 +22,8 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     std::unique_ptr<InProcessOptions> pConfig,
     APPLICATION_PARAMETER* pParameters,
     DWORD                  nParameters) :
-    InProcessApplicationBase(pHttpServer, pApplication),
+    InProcessApplicationBase(pHttpServer,
+        pApplication),
     m_Initialized(false),
     m_blockManagedCallbacks(true),
     m_waitForShutdown(true),
@@ -37,6 +38,14 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
         m_dotnetExeKnownLocation = knownLocation;
     }
 
+    const auto shadowCopyDirectory = FindParameter<PCWSTR>(s_shadowCopyDirectoryName, pParameters, nParameters);
+    if (shadowCopyDirectory != nullptr)
+    {
+        m_shadowCopyDirectory = shadowCopyDirectory;
+    }
+
+    m_shutdownTimeout = m_pConfig.get()->QueryShutdownTimeLimitInMS();
+
     m_stringRedirectionOutput = std::make_shared<StringStreamRedirectionOutput>();
 }
 
@@ -48,6 +57,9 @@ IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 VOID
 IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
 {
+    // Stop app offline tracking before shutting down CLR.
+    // This is to help with shadow copy scenario where the app is shutting down.
+    AppOfflineTrackingApplication::StopInternal(fServerInitiated);
     StopClr();
     InProcessApplicationBase::StopInternal(fServerInitiated);
 }
@@ -58,7 +70,19 @@ IN_PROCESS_APPLICATION::StopClr()
     // This has the state lock around it.
     LOG_INFO(L"Stopping CLR");
 
-    if (!m_blockManagedCallbacks)
+    // Signal shutdown
+    if (m_pShutdownEvent != nullptr)
+    {
+        LOG_IF_FAILED(SetEvent(m_pShutdownEvent));
+    }
+
+    // Need to wait for either the app to be initialized, the worker thread to exit, or the shutdown timeout.
+    const HANDLE waitHandles[2] = { m_pInitializeEvent, m_workerThread.native_handle() };
+
+    const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, m_pConfig->QueryShutdownTimeLimitInMS());
+
+    // If waitResults != WAIT_OBJECT_0 + 1, it means main hasn't returned, so okay to call into it.
+    if (!m_blockManagedCallbacks && waitResult != WAIT_OBJECT_0 + 1)
     {
         // We cannot call into managed if the dll is detaching from the process.
         // Calling into managed code when the dll is detaching is strictly a bad idea,
@@ -80,16 +104,15 @@ IN_PROCESS_APPLICATION::StopClr()
         }
     }
 
-    // Signal shutdown
-    if (m_pShutdownEvent != nullptr)
-    {
-        LOG_IF_FAILED(SetEvent(m_pShutdownEvent));
-    }
-
     if (m_workerThread.joinable())
     {
         // Worker thread would wait for clr to finish and log error if required
         m_workerThread.join();
+    }
+
+    if (m_folderCleanupThread.joinable())
+    {
+        m_folderCleanupThread.join();
     }
 
     s_Application = nullptr;
@@ -146,12 +169,43 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
 
     LOG_INFO(L"Waiting for initialization");
 
-    m_workerThread = std::thread([](std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> application)
+    THROW_IF_FAILED(StartMonitoringAppOffline());
+
+    if (!m_shadowCopyDirectory.empty())
     {
-        LOG_INFO(L"Starting in-process worker thread");
-        application->ExecuteApplication();
-        LOG_INFO(L"Stopping in-process worker thread");
-    }, ::ReferenceApplication(this));
+        if (!Environment::CheckUpToDate(QueryApplicationPhysicalPath(), m_shadowCopyDirectory, L".dll", std::filesystem::path(m_shadowCopyDirectory).parent_path()))
+        {
+            Stop(/* fServerInitiated */false);
+            throw InvalidOperationException(L"File changed between copy and start of application, restarting.");
+        }
+        // Cleanup other directories that haven't been removed.
+        m_folderCleanupThread = std::thread([](std::wstring shadowCopyDir)
+            {
+                auto parentDir = std::filesystem::path(shadowCopyDir).parent_path();
+                for (auto& p : std::filesystem::directory_iterator(parentDir))
+                {
+                    if (p.path() != shadowCopyDir)
+                    {
+                        try
+                        {
+                            std::filesystem::remove_all(p.path());
+                        }
+                        catch (...)
+                        {
+                            OBSERVE_CAUGHT_EXCEPTION();
+                        }
+                    }
+                }
+
+            }, m_shadowCopyDirectory);
+    }
+
+    m_workerThread = std::thread([](std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> application)
+        {
+            LOG_INFO(L"Starting in-process worker thread");
+            application->ExecuteApplication();
+            LOG_INFO(L"Stopping in-process worker thread");
+        }, ::ReferenceApplication(this));
 
     const HANDLE waitHandles[2] = { m_pInitializeEvent, m_workerThread.native_handle() };
 
@@ -165,11 +219,18 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
         // If server wasn't initialized in time shut application down without waiting for CLR thread to exit
         errorContext.statusCode = 500;
         errorContext.subStatusCode = 37;
-        errorContext.generalErrorType = "ANCM Failed to Start Within Startup Time Limit";
-        errorContext.errorReason = format("ANCM failed to start after %d milliseconds", m_pConfig->QueryStartupTimeLimitInMS());
+        errorContext.generalErrorType = "ASP.NET Core app failed to start within startup time limit";
+        errorContext.errorReason = format("ASP.NET Core app failed to start after %d milliseconds", m_pConfig->QueryStartupTimeLimitInMS());
 
         m_waitForShutdown = false;
-        StopClr();
+        if (m_pConfig->QuerySuppressRecycleOnStartupTimeout())
+        {
+            StopClr();
+        }
+        else
+        {
+            Stop(/* fServerInitiated */false);
+        }
         throw InvalidOperationException(format(L"Managed server didn't initialize after %u ms.", m_pConfig->QueryStartupTimeLimitInMS()));
     }
 
@@ -180,8 +241,6 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
         StopClr();
         throw InvalidOperationException(format(L"CLR worker thread exited prematurely"));
     }
-
-    THROW_IF_FAILED(StartMonitoringAppOffline());
 
     return S_OK;
 }
@@ -195,18 +254,18 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         auto context = std::make_shared<ExecuteClrContext>();
 
-        ErrorContext errorContext; // unused 
+        ErrorContext errorContext; // unused
 
         if (s_fMainCallback == nullptr)
         {
             THROW_IF_FAILED(HostFxrResolutionResult::Create(
                 m_dotnetExeKnownLocation,
                 m_pConfig->QueryProcessPath(),
-                QueryApplicationPhysicalPath(),
+                m_shadowCopyDirectory.empty() ? QueryApplicationPhysicalPath() : m_shadowCopyDirectory,
                 m_pConfig->QueryArguments(),
                 errorContext,
                 hostFxrResolutionResult
-                ));
+            ));
 
             hostFxrResolutionResult->GetArguments(context->m_argc, context->m_argv);
             THROW_IF_FAILED(SetEnvironmentVariablesOnWorkerProcess());
@@ -244,18 +303,34 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
+        auto redirectionOutput = LoggingHelpers::CreateOutputs(
+            m_pConfig->QueryStdoutLogEnabled(),
+            m_pConfig->QueryStdoutLogFile(),
+            QueryApplicationPhysicalPath(),
+            m_stringRedirectionOutput
+        );
+
+        StandardStreamRedirection redirection(*redirectionOutput.get(), m_pHttpServer.IsCommandLineLaunch());
+
+        context->m_redirectionOutput = redirectionOutput.get();
+
+        ForwardingRedirectionOutput redirectionForwarder(&context->m_redirectionOutput);
+        const auto redirect = context->m_hostFxr.RedirectOutput(&redirectionForwarder);
+
         auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
         if (startupReturnCode != 0)
         {
-            throw InvalidOperationException(format(L"Error occured when initializing inprocess application, Return code: 0x%x", startupReturnCode));
+            auto content = m_stringRedirectionOutput->GetOutput();
+
+            throw InvalidOperationException(format(L"Error occurred when initializing in-process application, Return code: 0x%x, Error logs: %ls", startupReturnCode, content.c_str()));
         }
 
         if (m_pConfig->QueryCallStartupHook())
         {
             PWSTR startupHookValue = NULL;
-            // Will get property not found if the enviroment variable isn't set.
+            // Will get property not found if the environment variable isn't set.
             context->m_hostFxr.GetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, &startupHookValue);
-            
+
             if (startupHookValue == NULL)
             {
                 RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
@@ -271,19 +346,13 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_USE_ENTRYPOINT_FILTER, L"1"));
         RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STACK_SIZE, m_pConfig->QueryStackSize().c_str()));
 
+        if (!m_shadowCopyDirectory.empty())
+        {
+            RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(APP_CONTEXT_BASE_DIRECTORY, Environment::GetCurrentDirectoryValue().c_str()));
+        }
+
         bool clrThreadExited;
         {
-            auto redirectionOutput = LoggingHelpers::CreateOutputs(
-                    m_pConfig->QueryStdoutLogEnabled(),
-                    m_pConfig->QueryStdoutLogFile(),
-                    QueryApplicationPhysicalPath(),
-                    m_stringRedirectionOutput
-                );
-
-            StandardStreamRedirection redirection(*redirectionOutput.get(), m_pHttpServer.IsCommandLineLaunch());
-
-            context->m_redirectionOutput = redirectionOutput.get();
-
             //Start CLR thread
             m_clrThread = std::thread(ClrThreadEntryPoint, context);
 
@@ -381,11 +450,11 @@ void IN_PROCESS_APPLICATION::QueueStop()
     LOG_INFO(L"Queueing in-process stop thread");
 
     std::thread stoppingThread([](std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> application)
-    {
-        LOG_INFO(L"Starting in-process stop thread");
-        application->Stop(false);
-        LOG_INFO(L"Stopping in-process stop thread");
-    }, ::ReferenceApplication(this));
+        {
+            LOG_INFO(L"Starting in-process stop thread");
+            application->Stop(false);
+            LOG_INFO(L"Stopping in-process stop thread");
+        }, ::ReferenceApplication(this));
 
     stoppingThread.detach();
 }
@@ -446,7 +515,7 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
         context->m_exitCode = exitCode;
         context->m_hostFxr.Close();
     }
-    __except(GetExceptionCode() != 0)
+    __except (GetExceptionCode() != 0)
     {
         LOG_INFOF(L"Managed threw an exception %d", GetExceptionCode());
 
@@ -460,7 +529,7 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
 // in case of startup timeout
 //
 VOID
-IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrContext> &context)
+IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrContext>& context)
 {
     HandleWrapper<ModuleHandleTraits> moduleHandle;
 
@@ -473,8 +542,6 @@ IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrCont
     {
         // We use forwarder here instead of context->m_errorWriter itself to be able to
         // disconnect listener before CLR exits
-        ForwardingRedirectionOutput redirectionForwarder(&context->m_redirectionOutput);
-        const auto redirect = context->m_hostFxr.RedirectOutput(&redirectionForwarder);
 
         ExecuteClr(context);
     }
@@ -493,7 +560,7 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
         QueryApplicationPhysicalPath().c_str(),
         nullptr);
 
-    for (const auto & variable : variables)
+    for (const auto& variable : variables)
     {
         LOG_INFOF(L"Setting environment variable %ls=%ls", variable.first.c_str(), variable.second.c_str());
         SetEnvironmentVariable(variable.first.c_str(), variable.second.c_str());
@@ -527,7 +594,7 @@ IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) c
                 QueryApplicationId().c_str(),
                 QueryApplicationPhysicalPath().c_str(),
                 context.m_exceptionCode
-                );
+            );
         }
         return;
     }
@@ -561,13 +628,12 @@ IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) c
 
 HRESULT
 IN_PROCESS_APPLICATION::CreateHandler(
-    _In_  IHttpContext       *pHttpContext,
-    _Out_ IREQUEST_HANDLER  **pRequestHandler)
+    _In_  IHttpContext* pHttpContext,
+    _Out_ IREQUEST_HANDLER** pRequestHandler)
 {
     try
     {
         SRWSharedLock dataLock(m_dataLock);
-
         DBG_ASSERT(!m_fStopCalled);
         m_requestCount++;
 

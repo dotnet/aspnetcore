@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -22,12 +24,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var serviceContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
+            await using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
                     // Will throw because the exception in the connection adapter will close the connection.
-                    await Assert.ThrowsAsync<IOException>(async () =>
+                    await Assert.ThrowsAnyAsync<IOException>(async () =>
                     {
                         await connection.Send(
                            "POST / HTTP/1.0",
@@ -41,7 +43,127 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
                     });
                 }
-                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task DisposeAsyncAfterReplacingTransportClosesConnection()
+        {
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+
+            var connectionCloseTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var mockDuplexPipe = new MockDuplexPipe();
+
+            listenOptions.Use(next =>
+            {
+                return async context =>
+                {
+                    context.Transport = mockDuplexPipe;
+                    await context.DisposeAsync();
+                    await connectionCloseTcs.Task;
+                };
+            });
+
+            var serviceContext = new TestServiceContext(LoggerFactory);
+
+            await using (var server = new TestServer(TestApp.EmptyApp, serviceContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.WaitForConnectionClose();
+                    connectionCloseTcs.SetResult();
+                }
+            }
+
+            Assert.False(mockDuplexPipe.WasCompleted);
+        }
+
+        private class MockDuplexPipe : IDuplexPipe
+        {
+            public bool WasCompleted { get; private set; }
+
+            public PipeReader Input => new MockPipeReader(this);
+
+            public PipeWriter Output => new MockPipeWriter(this);
+
+            private class MockPipeReader : PipeReader
+            {
+                private readonly MockDuplexPipe _duplexPipe;
+
+                public MockPipeReader(MockDuplexPipe duplexPipe)
+                {
+                    _duplexPipe = duplexPipe;
+                }
+
+                public override void AdvanceTo(SequencePosition consumed)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public override void CancelPendingRead()
+                {
+                    throw new NotImplementedException();
+                }
+
+                public override void Complete(Exception exception = null)
+                {
+                    _duplexPipe.WasCompleted = true;
+                }
+
+                public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public override bool TryRead(out ReadResult result)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            private class MockPipeWriter : PipeWriter
+            {
+                private readonly MockDuplexPipe _duplexPipe;
+
+                public MockPipeWriter(MockDuplexPipe duplexPipe)
+                {
+                    _duplexPipe = duplexPipe;
+                }
+
+                public override void Advance(int bytes)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public override void CancelPendingFlush()
+                {
+                    throw new NotImplementedException();
+                }
+
+                public override void Complete(Exception exception = null)
+                {
+                    _duplexPipe.WasCompleted = true;
+                }
+
+                public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public override Memory<byte> GetMemory(int sizeHint = 0)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public override Span<byte> GetSpan(int sizeHint = 0)
+                {
+                    throw new NotImplementedException();
+                }
             }
         }
     }

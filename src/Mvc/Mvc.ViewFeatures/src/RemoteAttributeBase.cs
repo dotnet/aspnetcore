@@ -1,9 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
@@ -28,8 +31,11 @@ namespace Microsoft.AspNetCore.Mvc
         private string _additionalFields = string.Empty;
         private string[] _additionalFieldsSplit = Array.Empty<string>();
         private bool _checkedForLocalizer;
-        private IStringLocalizer _stringLocalizer;
-        
+        private IStringLocalizer? _stringLocalizer;
+
+        /// <summary>
+        /// Initialize a new instance of <see cref="RemoteAttributeBase"/>.
+        /// </summary>
         protected RemoteAttributeBase()
             : base(errorMessageAccessor: () => Resources.RemoteAttribute_RemoteValidationFailed)
         {
@@ -46,11 +52,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the HTTP method (<c>"Get"</c> or <c>"Post"</c>) client should use when sending a validation
         /// request.
         /// </summary>
-        public string HttpMethod { get; set; }
+        public string? HttpMethod { get; set; }
 
         /// <summary>
         /// Gets or sets the comma-separated names of fields the client should include in a validation request.
         /// </summary>
+        [AllowNull]
         public string AdditionalFields
         {
             get => _additionalFields;
@@ -126,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Always returns <c>true</c> since this <see cref="ValidationAttribute"/> does no validation itself.
         /// Related validations occur only when the client sends a validation request.
         /// </remarks>
-        public override bool IsValid(object value)
+        public override bool IsValid(object? value)
         {
             return true;
         }
@@ -160,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc
                 MergeAttribute(context.Attributes, "data-val-remote-type", HttpMethod);
             }
 
-            var additionalFields = FormatAdditionalFieldsForClientValidation(context.ModelMetadata.PropertyName);
+            var additionalFields = FormatAdditionalFieldsForClientValidation(context.ModelMetadata.PropertyName!);
             MergeAttribute(context.Attributes, "data-val-remote-additionalfields", additionalFields);
         }
 
@@ -172,20 +179,8 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        private static IEnumerable<string> SplitAndTrimPropertyNames(string original)
-        {
-            if (string.IsNullOrEmpty(original))
-            {
-                return Array.Empty<string>();
-            }
-
-            var split = original
-                .Split(',')
-                .Select(piece => piece.Trim())
-                .Where(trimmed => !string.IsNullOrEmpty(trimmed));
-
-            return split;
-        }
+        private static IEnumerable<string> SplitAndTrimPropertyNames(string? original)
+            => original?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 
         private void CheckForLocalizer(ClientModelValidationContext context)
         {

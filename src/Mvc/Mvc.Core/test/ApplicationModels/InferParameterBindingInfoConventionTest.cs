@@ -998,7 +998,7 @@ Environment.NewLine + "int b";
         private class ParameterWithBindingInfo
         {
             [HttpGet("test")]
-            public IActionResult Action([ModelBinder(typeof(ComplexTypeModelBinder))] Car car) => null;
+            public IActionResult Action([ModelBinder(typeof(ComplexObjectModelBinder))] Car car) => null;
         }
     }
 }

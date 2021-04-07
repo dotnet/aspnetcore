@@ -368,6 +368,38 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        [ConditionalTheory]
+        [InlineData(AuthenticationSchemes.Negotiate)]
+        [InlineData(AuthenticationSchemes.NTLM)]
+        // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
+        // [InlineData(AuthenticationSchemes.Basic)] // Doesn't work with default creds
+        [InlineData(AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /* AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic)]
+        public async Task AuthTypes_DisableAutomaticAuthentication(AuthenticationSchemes authType)
+        {
+            using (var server = Utilities.CreateDynamicHost(out var address, options =>
+            {
+                options.Authentication.AutomaticAuthentication = false;
+                options.Authentication.Schemes = authType;
+                options.Authentication.AllowAnonymous = DenyAnoymous;
+            },
+            async httpContext =>
+            {
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.False(httpContext.User.Identity.IsAuthenticated);
+
+                var authenticateResult = await httpContext.AuthenticateAsync(HttpSysDefaults.AuthenticationScheme);
+
+                Assert.NotNull(authenticateResult.Principal);
+                Assert.NotNull(authenticateResult.Principal.Identity);
+                Assert.True(authenticateResult.Principal.Identity.IsAuthenticated);
+            }))
+            {
+                var response = await SendRequestAsync(address, useDefaultCredentials: true);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
         private async Task<HttpResponseMessage> SendRequestAsync(string uri, bool useDefaultCredentials = false)
         {
             HttpClientHandler handler = new HttpClientHandler();

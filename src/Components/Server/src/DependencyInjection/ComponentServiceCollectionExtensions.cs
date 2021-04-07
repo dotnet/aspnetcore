@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -27,11 +28,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="configure">A callback to configure <see cref="CircuitOptions"/>.</param>
         /// <returns>An <see cref="IServerSideBlazorBuilder"/> that can be used to further customize the configuration.</returns>
-        public static IServerSideBlazorBuilder AddServerSideBlazor(this IServiceCollection services, Action<CircuitOptions> configure = null)
+        public static IServerSideBlazorBuilder AddServerSideBlazor(this IServiceCollection services, Action<CircuitOptions>? configure = null)
         {
             var builder = new DefaultServerSideBlazorBuilder(services);
 
             services.AddDataProtection();
+
+            services.TryAddScoped<ProtectedLocalStorage>();
+            services.TryAddScoped<ProtectedSessionStorage>();
 
             // This call INTENTIONALLY uses the AddHubOptions on the SignalR builder, because it will merge
             // the global HubOptions before running the configure callback. We want to ensure that happens
@@ -57,7 +61,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<StaticFileOptions>, ConfigureStaticFilesOptions>());
             services.TryAddSingleton<CircuitFactory>();
             services.TryAddSingleton<ServerComponentDeserializer>();
-            services.TryAddSingleton<ServerComponentTypeCache>();
+            services.TryAddSingleton<RootComponentTypeCache>();
             services.TryAddSingleton<ComponentParameterDeserializer>();
             services.TryAddSingleton<ComponentParametersTypeCache>();
             services.TryAddSingleton<CircuitIdFactory>();

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+    /// <summary>
+    /// The default implementation of <see cref="OutputFormatterSelector"/>.
+    /// </summary>
     public class DefaultOutputFormatterSelector : OutputFormatterSelector
     {
         private static readonly Comparison<MediaTypeSegmentWithQuality> _sortFunction = (left, right) =>
@@ -26,6 +31,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private readonly bool _respectBrowserAcceptHeader;
         private readonly bool _returnHttpNotAcceptable;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="DefaultOutputFormatterSelector"/>
+        /// </summary>
+        /// <param name="options">Used to access <see cref="MvcOptions"/>.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         public DefaultOutputFormatterSelector(IOptions<MvcOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
@@ -45,7 +55,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             _returnHttpNotAcceptable = options.Value.ReturnHttpNotAcceptable;
         }
 
-        public override IOutputFormatter SelectFormatter(OutputFormatterCanWriteContext context, IList<IOutputFormatter> formatters, MediaTypeCollection contentTypes)
+        /// <inheritdoc/>
+        public override IOutputFormatter? SelectFormatter(OutputFormatterCanWriteContext context, IList<IOutputFormatter> formatters, MediaTypeCollection contentTypes)
         {
             if (context == null)
             {
@@ -82,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var acceptableMediaTypes = GetAcceptableMediaTypes(request);
             var selectFormatterWithoutRegardingAcceptHeader = false;
 
-            IOutputFormatter selectedFormatter = null;
+            IOutputFormatter? selectedFormatter = null;
             if (acceptableMediaTypes.Count == 0)
             {
                 // There is either no Accept header value, or it contained */* and we
@@ -174,20 +185,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return result;
         }
 
-        private IOutputFormatter SelectFormatterNotUsingContentType(
+        private IOutputFormatter? SelectFormatterNotUsingContentType(
             OutputFormatterCanWriteContext formatterContext,
             IList<IOutputFormatter> formatters)
         {
-            if (formatterContext == null)
-            {
-                throw new ArgumentNullException(nameof(formatterContext));
-            }
-
-            if (formatters == null)
-            {
-                throw new ArgumentNullException(nameof(formatters));
-            }
-
             _logger.SelectFirstCanWriteFormatter();
 
             foreach (var formatter in formatters)
@@ -204,26 +205,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return null;
         }
 
-        private IOutputFormatter SelectFormatterUsingSortedAcceptHeaders(
+        private IOutputFormatter? SelectFormatterUsingSortedAcceptHeaders(
             OutputFormatterCanWriteContext formatterContext,
             IList<IOutputFormatter> formatters,
             IList<MediaTypeSegmentWithQuality> sortedAcceptHeaders)
         {
-            if (formatterContext == null)
-            {
-                throw new ArgumentNullException(nameof(formatterContext));
-            }
-
-            if (formatters == null)
-            {
-                throw new ArgumentNullException(nameof(formatters));
-            }
-
-            if (sortedAcceptHeaders == null)
-            {
-                throw new ArgumentNullException(nameof(sortedAcceptHeaders));
-            }
-
             for (var i = 0; i < sortedAcceptHeaders.Count; i++)
             {
                 var mediaType = sortedAcceptHeaders[i];
@@ -244,26 +230,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return null;
         }
 
-        private IOutputFormatter SelectFormatterUsingAnyAcceptableContentType(
+        private IOutputFormatter? SelectFormatterUsingAnyAcceptableContentType(
             OutputFormatterCanWriteContext formatterContext,
             IList<IOutputFormatter> formatters,
             MediaTypeCollection acceptableContentTypes)
         {
-            if (formatterContext == null)
-            {
-                throw new ArgumentNullException(nameof(formatterContext));
-            }
-
-            if (formatters == null)
-            {
-                throw new ArgumentNullException(nameof(formatters));
-            }
-
-            if (acceptableContentTypes == null)
-            {
-                throw new ArgumentNullException(nameof(acceptableContentTypes));
-            }
-
             foreach (var formatter in formatters)
             {
                 foreach (var contentType in acceptableContentTypes)
@@ -281,7 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return null;
         }
 
-        private IOutputFormatter SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
+        private IOutputFormatter? SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
             OutputFormatterCanWriteContext formatterContext,
             IList<IOutputFormatter> formatters,
             IList<MediaTypeSegmentWithQuality> sortedAcceptableContentTypes,

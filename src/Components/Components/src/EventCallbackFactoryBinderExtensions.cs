@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using static Microsoft.AspNetCore.Components.BindConverter;
 
@@ -12,9 +13,9 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     //
     // NOTE: for number parsing, the HTML5 spec dictates that <input type="number"> the DOM will represent
-    // number values as floating point numbers using `.` as the period separator. This is NOT culture senstive.
+    // number values as floating point numbers using `.` as the period separator. This is NOT culture sensitive.
     // Put another way, the user might see `,` as their decimal separator, but the value available in events
-    // to JS code is always simpilar to what .NET parses with InvariantCulture.
+    // to JS code is always similar to what .NET parses with InvariantCulture.
     //
     // See: https://www.w3.org/TR/html5/sec-forms.html#number-state-typenumber
     // See: https://www.w3.org/TR/html5/infrastructure.html#valid-floating-point-number
@@ -31,14 +32,15 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
-            Action<string> setter,
+            Action<string?> setter,
             string existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
-            return CreateBinderCore<string>(factory, receiver, setter, culture, ConvertToString);
+            return CreateBinderCore<string?>(factory, receiver, setter, culture, ConvertToString);
         }
 
         /// <summary>
@@ -50,12 +52,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<bool> setter,
             bool existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<bool>(factory, receiver, setter, culture, ConvertToBool);
         }
@@ -69,12 +72,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<bool?> setter,
             bool? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<bool?>(factory, receiver, setter, culture, ConvertToNullableBool);
         }
@@ -88,12 +92,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<int> setter,
             int existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<int>(factory, receiver, setter, culture, ConvertToInt);
         }
@@ -107,12 +112,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<int?> setter,
             int? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<int?>(factory, receiver, setter, culture, ConvertToNullableInt);
         }
@@ -126,12 +132,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<long> setter,
             long existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<long>(factory, receiver, setter, culture, ConvertToLong);
         }
@@ -145,12 +152,33 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<short> setter,
+            short existingValue,
+            CultureInfo? culture = null)
+        {
+            return CreateBinderCore<short>(factory, receiver, setter, culture, ConvertToShort);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<long?> setter,
             long? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<long?>(factory, receiver, setter, culture, ConvertToNullableLong);
         }
@@ -164,12 +192,33 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<short?> setter,
+            short? existingValue,
+            CultureInfo? culture = null)
+        {
+            return CreateBinderCore<short?>(factory, receiver, setter, culture, ConvertToNullableShort);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<float> setter,
             float existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<float>(factory, receiver, setter, culture, ConvertToFloat);
         }
@@ -183,12 +232,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<float?> setter,
             float? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<float?>(factory, receiver, setter, culture, ConvertToNullableFloat);
         }
@@ -202,12 +252,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<double> setter,
             double existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<double>(factory, receiver, setter, culture, ConvertToDoubleDelegate);
         }
@@ -221,12 +272,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<double?> setter,
             double? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<double?>(factory, receiver, setter, culture, ConvertToNullableDoubleDelegate);
         }
@@ -240,12 +292,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<decimal> setter,
             decimal existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<decimal>(factory, receiver, setter, culture, ConvertToDecimal);
         }
@@ -259,12 +312,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<decimal?> setter,
             decimal? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<decimal?>(factory, receiver, setter, culture, ConvertToNullableDecimal);
         }
@@ -278,12 +332,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime> setter,
             DateTime existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTime>(factory, receiver, setter, culture, ConvertToDateTime);
         }
@@ -298,13 +353,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="format"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime> setter,
             DateTime existingValue,
             string format,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTime>(factory, receiver, setter, culture, format, ConvertToDateTimeWithFormat);
         }
@@ -318,12 +374,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime?> setter,
             DateTime? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, ConvertToNullableDateTime);
         }
@@ -338,13 +395,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="format"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime?> setter,
             DateTime? existingValue,
             string format,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeWithFormat);
         }
@@ -358,12 +416,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTimeOffset> setter,
             DateTimeOffset existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, ConvertToDateTimeOffset);
         }
@@ -378,13 +437,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="format"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTimeOffset> setter,
             DateTimeOffset existingValue,
             string format,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, format, ConvertToDateTimeOffsetWithFormat);
         }
@@ -398,12 +458,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTimeOffset?> setter,
             DateTimeOffset? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTimeOffset?>(factory, receiver, setter, culture, ConvertToNullableDateTimeOffset);
         }
@@ -418,13 +479,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="format"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTimeOffset?> setter,
             DateTimeOffset? existingValue,
             string format,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTimeOffset?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeOffsetWithFormat);
         }
@@ -439,12 +501,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<ChangeEventArgs> CreateBinder<T>(
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+        public static EventCallback<ChangeEventArgs> CreateBinder<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
             T existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<T>(factory, receiver, setter, culture, ParserDelegateCache.Get<T>());
         }
@@ -453,12 +516,12 @@ namespace Microsoft.AspNetCore.Components
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
-            CultureInfo culture,
+            CultureInfo? culture,
             BindConverter.BindParser<T> converter)
         {
             Action<ChangeEventArgs> callback = e =>
             {
-                T value = default;
+                T? value = default;
                 var converted = false;
                 try
                 {
@@ -482,11 +545,11 @@ namespace Microsoft.AspNetCore.Components
                 //   know that the data they are submitting is different from what they think they've typed
                 if (converted)
                 {
-                    setter(value);
+                    setter(value!);
                 }
                 else if (string.Empty.Equals(e.Value))
                 {
-                    setter(default);
+                    setter(default!);
                 }
             };
             return factory.Create<ChangeEventArgs>(receiver, callback);
@@ -496,13 +559,13 @@ namespace Microsoft.AspNetCore.Components
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
-            CultureInfo culture,
+            CultureInfo? culture,
             string format,
             BindConverter.BindParserWithFormat<T> converter)
         {
             Action<ChangeEventArgs> callback = e =>
             {
-                T value = default;
+                T? value = default;
                 var converted = false;
                 try
                 {
@@ -526,11 +589,11 @@ namespace Microsoft.AspNetCore.Components
                 //   know that the data they are submitting is different from what they think they've typed
                 if (converted)
                 {
-                    setter(value);
+                    setter(value!);
                 }
                 else if (string.Empty.Equals(e.Value))
                 {
-                    setter(default);
+                    setter(default!);
                 }
             };
             return factory.Create<ChangeEventArgs>(receiver, callback);

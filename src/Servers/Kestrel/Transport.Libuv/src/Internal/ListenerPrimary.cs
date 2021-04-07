@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private string _pipeName;
         private byte[] _pipeMessage;
         private IntPtr _fileCompletionInfoPtr;
-        private bool _tryDetachFromIOCP = PlatformApis.IsWindows;
+        private bool _tryDetachFromIOCP = OperatingSystem.IsWindows();
 
         // this message is passed to write2 because it must be non-zero-length,
         // but it has no other functional significance
@@ -69,8 +69,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             ListenPipe = new UvPipeHandle(Log);
             ListenPipe.Init(Thread.Loop, Thread.QueueCloseHandle, false);
             ListenPipe.Bind(_pipeName);
-            ListenPipe.Listen(LibuvConstants.ListenBacklog,
+#pragma warning disable CS0618
+            ListenPipe.Listen(TransportContext.Options.Backlog,
                 (pipe, status, error, state) => ((ListenerPrimary)state).OnListenPipe(pipe, status, error), this);
+#pragma warning restore CS0618
         }
 
         private void OnListenPipe(UvStreamHandle pipe, int status, UvException error)
@@ -232,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 {
                     // This is an unexpected immediate termination of the dispatch pipe most likely caused by an
                     // external process scanning the pipe, so don't we don't log it too severely.
-                    // https://github.com/aspnet/AspNetCore/issues/4741
+                    // https://github.com/dotnet/aspnetcore/issues/4741
 
                     dispatchPipe.Dispose();
                     _bufHandle.Free();

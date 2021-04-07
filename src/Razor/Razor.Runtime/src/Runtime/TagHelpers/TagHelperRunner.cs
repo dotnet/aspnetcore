@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
@@ -28,24 +29,23 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             }
 
             var tagHelperContext = executionContext.Context;
-            var tagHelpers = executionContext.TagHelpers;
-            OrderTagHelpers(tagHelpers);
+            var tagHelpers = CollectionsMarshal.AsSpan(executionContext.TagHelperList);
 
-            // Read interface .Count once rather than per iteration
-            var count = tagHelpers.Count;
-            for (var i = 0; i < count; i++)
+            tagHelpers.Sort(default(SortTagHelpers));
+
+            foreach (var tagHelper in tagHelpers)
             {
-                tagHelpers[i].Init(tagHelperContext);
+                tagHelper.Init(tagHelperContext);
             }
 
             var tagHelperOutput = executionContext.Output;
 
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < tagHelpers.Length; i++)
             {
                 var task = tagHelpers[i].ProcessAsync(tagHelperContext, tagHelperOutput);
                 if (!task.IsCompletedSuccessfully)
                 {
-                    return Awaited(task, executionContext, i + 1, count);
+                    return Awaited(task, executionContext, i + 1, tagHelpers.Length);
                 }
             }
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             {
                 await task;
 
-                var tagHelpers = executionContext.TagHelpers;
+                var tagHelpers = executionContext.TagHelperList;
                 var tagHelperOutput = executionContext.Output;
                 var tagHelperContext = executionContext.Context;
                 for (; i < count; i++)
@@ -65,25 +65,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             }
         }
 
-        private static void OrderTagHelpers(IList<ITagHelper> tagHelpers)
+        private readonly struct SortTagHelpers : IComparer<ITagHelper>
         {
-            // Using bubble-sort here due to its simplicity. It'd be an extreme corner case to ever have more than 3 or
-            // 4 tag helpers simultaneously.
-
-            // Read interface .Count once rather than per iteration
-            var count = tagHelpers.Count;
-            for (var i = 0; i < count; i++)
-            {
-                for (var j = i + 1; j < count; j++)
-                {
-                    if (tagHelpers[j].Order < tagHelpers[i].Order)
-                    {
-                        var temp = tagHelpers[i];
-                        tagHelpers[i] = tagHelpers[j];
-                        tagHelpers[j] = temp;
-                    }
-                }
-            }
+            public int Compare(ITagHelper left, ITagHelper right)
+                => left.Order.CompareTo(right.Order);
         }
     }
 }

@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 {
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     /// <typeparam name="TRemoteAuthenticationState">The state to preserve across authentication operations.</typeparam>
     /// <typeparam name="TAccount">The type of the <see cref="RemoteUserAccount" />.</typeparam>
     /// <typeparam name="TProviderOptions">The options to be passed down to the underlying JavaScript library handling the authentication operations.</typeparam>
-    public class RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions> :
+    public class RemoteAuthenticationService<TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount, TProviderOptions> :
         AuthenticationStateProvider,
         IRemoteAuthenticationService<TRemoteAuthenticationState>,
         IAccessTokenProvider
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <param name="accountClaimsPrincipalFactory">The <see cref="AccountClaimsPrincipalFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
         public RemoteAuthenticationService(
             IJSRuntime jsRuntime,
-            IOptions<RemoteAuthenticationOptions<TProviderOptions>> options,
+            IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>> options,
             NavigationManager navigation,
             AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory)
         {

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -30,7 +32,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             AppendDiffEntriesForRange(ref diffContext, 0, oldTree.Count, 0, newTree.Count);
 
             var editsSegment = editsBuffer.ToSegment(editsBufferStartLength, editsBuffer.Count);
-            return new RenderTreeDiff(componentId, editsSegment);
+            var result = new RenderTreeDiff(componentId, editsSegment);
+            return result;
         }
 
         public static void DisposeFrames(RenderBatchBuilder batchBuilder, ArrayRange<RenderTreeFrame> frames)
@@ -73,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     if (hasMoreOld)
                     {
                         ref var oldFrame = ref oldTree[oldStartIndex];
-                        oldSeq = oldFrame.Sequence;
+                        oldSeq = oldFrame.SequenceField;
                         oldKey = KeyValue(ref oldFrame);
                     }
                     else
@@ -85,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     if (hasMoreNew)
                     {
                         ref var newFrame = ref newTree[newStartIndex];
-                        newSeq = newFrame.Sequence;
+                        newSeq = newFrame.SequenceField;
                         newKey = KeyValue(ref newFrame);
                     }
                     else
@@ -190,7 +193,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                                 var newLoopsBackLater = false;
                                 for (var testIndex = newStartIndex + 1; testIndex < newEndIndexExcl; testIndex++)
                                 {
-                                    if (newTree[testIndex].Sequence < newSeq)
+                                    if (newTree[testIndex].SequenceField < newSeq)
                                     {
                                         newLoopsBackLater = true;
                                         break;
@@ -213,7 +216,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                                 var oldLoopsBackLater = false;
                                 for (var testIndex = oldStartIndex + 1; testIndex < oldEndIndexExcl; testIndex++)
                                 {
-                                    if (oldTree[testIndex].Sequence < oldSeq)
+                                    if (oldTree[testIndex].SequenceField < oldSeq)
                                     {
                                         oldLoopsBackLater = true;
                                         break;
@@ -307,7 +310,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 {
                     if (result.ContainsKey(key))
                     {
-                        ThrowExceptionForDuplicateKey(key);
+                        ThrowExceptionForDuplicateKey(key, frame);
                     }
 
                     result[key] = new KeyedItemInfo(oldStartIndex, -1);
@@ -330,7 +333,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     {
                         if (existingEntry.NewIndex >= 0)
                         {
-                            ThrowExceptionForDuplicateKey(key);
+                            ThrowExceptionForDuplicateKey(key, frame);
                         }
 
                         result[key] = new KeyedItemInfo(existingEntry.OldIndex, newStartIndex);
@@ -343,19 +346,29 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             return result;
         }
 
-        private static void ThrowExceptionForDuplicateKey(object key)
+        private static void ThrowExceptionForDuplicateKey(object key, in RenderTreeFrame frame)
         {
-            throw new InvalidOperationException($"More than one sibling has the same key value, '{key}'. Key values must be unique.");
+            switch (frame.FrameTypeField)
+            {
+                case RenderTreeFrameType.Component:
+                    throw new InvalidOperationException($"More than one sibling of component '{frame.ComponentTypeField}' has the same key value, '{key}'. Key values must be unique.");
+
+                case RenderTreeFrameType.Element:
+                    throw new InvalidOperationException($"More than one sibling of element '{frame.ElementNameField}' has the same key value, '{key}'. Key values must be unique.");
+
+                default:
+                    throw new InvalidOperationException($"More than one sibling has the same key value, '{key}'. Key values must be unique.");
+            }
         }
 
         private static object KeyValue(ref RenderTreeFrame frame)
         {
-            switch (frame.FrameType)
+            switch (frame.FrameTypeField)
             {
                 case RenderTreeFrameType.Element:
-                    return frame.ElementKey;
+                    return frame.ElementKeyField;
                 case RenderTreeFrameType.Component:
-                    return frame.ComponentKey;
+                    return frame.ComponentKeyField;
                 default:
                     return null;
             }
@@ -390,10 +403,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             while (hasMoreOld || hasMoreNew)
             {
-                var oldSeq = hasMoreOld ? oldTree[oldStartIndex].Sequence : int.MaxValue;
-                var newSeq = hasMoreNew ? newTree[newStartIndex].Sequence : int.MaxValue;
-                var oldAttributeName = oldTree[oldStartIndex].AttributeName;
-                var newAttributeName = newTree[newStartIndex].AttributeName;
+                var oldSeq = hasMoreOld ? oldTree[oldStartIndex].SequenceField : int.MaxValue;
+                var newSeq = hasMoreNew ? newTree[newStartIndex].SequenceField : int.MaxValue;
+                var oldAttributeName = oldTree[oldStartIndex].AttributeNameField;
+                var newAttributeName = newTree[newStartIndex].AttributeNameField;
 
                 if (oldSeq == newSeq &&
                     string.Equals(oldAttributeName, newAttributeName, StringComparison.Ordinal))
@@ -466,12 +479,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // 3. iterate through the remaining attributes in the set and add them
             for (var i = newStartIndex; i < newEndIndexExcl; i++)
             {
-                diffContext.AttributeDiffSet[newTree[i].AttributeName] = i;
+                diffContext.AttributeDiffSet[newTree[i].AttributeNameField] = i;
             }
 
             for (var i = oldStartIndex; i < oldEndIndexExcl; i++)
             {
-                var oldName = oldTree[i].AttributeName;
+                var oldName = oldTree[i].AttributeNameField;
                 if (diffContext.AttributeDiffSet.TryGetValue(oldName, out var matchIndex))
                 {
                     // Has a match in the new tree, look for a diff
@@ -504,10 +517,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var newTree = diffContext.NewTree;
             ref var oldComponentFrame = ref oldTree[oldComponentIndex];
             ref var newComponentFrame = ref newTree[newComponentIndex];
-            var componentState = oldComponentFrame.ComponentState;
+            var componentState = oldComponentFrame.ComponentStateField;
 
             // Preserve the actual componentInstance
-            newComponentFrame = newComponentFrame.WithComponent(componentState);
+            newComponentFrame.ComponentStateField = componentState;
+            newComponentFrame.ComponentIdField = componentState.ComponentId;
 
             // As an important rendering optimization, we want to skip parameter update
             // notifications if we know for sure they haven't changed/mutated. The
@@ -519,10 +533,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // comparisons it wants with the old values. Later we could choose to pass the
             // old parameter values if we wanted. By default, components always rerender
             // after any SetParameters call, which is safe but now always optimal for perf.
+
+            // When performing hot reload, we want to force all components to re-render.
+            // We do this using two mechanisms - we call SetParametersAsync even if the parameters
+            // are unchanged and we ignore ComponentBase.ShouldRender
+
             var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldComponentIndex);
             var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
             var newParameters = new ParameterView(newParametersLifetime, newTree, newComponentIndex);
-            if (!newParameters.DefinitelyEquals(oldParameters))
+            if (!newParameters.DefinitelyEquals(oldParameters) || diffContext.Renderer.IsHotReloading)
             {
                 componentState.SetDirectParameters(newParameters);
             }
@@ -530,14 +549,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private static int NextSiblingIndex(in RenderTreeFrame frame, int frameIndex)
         {
-            switch (frame.FrameType)
+            switch (frame.FrameTypeField)
             {
                 case RenderTreeFrameType.Component:
-                    return frameIndex + frame.ComponentSubtreeLength;
+                    return frameIndex + frame.ComponentSubtreeLengthField;
                 case RenderTreeFrameType.Element:
-                    return frameIndex + frame.ElementSubtreeLength;
+                    return frameIndex + frame.ElementSubtreeLengthField;
                 case RenderTreeFrameType.Region:
-                    return frameIndex + frame.RegionSubtreeLength;
+                    return frameIndex + frame.RegionSubtreeLengthField;
                 default:
                     return frameIndex + 1;
             }
@@ -555,8 +574,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             // This can't happen for sequence-matched frames from .razor components, but it can happen if you write your
             // builder logic manually or if two dissimilar frames matched by key. Treat as completely unrelated.
-            var newFrameType = newFrame.FrameType;
-            if (oldFrame.FrameType != newFrameType)
+            var newFrameType = newFrame.FrameTypeField;
+            if (oldFrame.FrameTypeField != newFrameType)
             {
                 InsertNewFrame(ref diffContext, newFrameIndex);
                 RemoveOldFrame(ref diffContext, oldFrameIndex);
@@ -571,8 +590,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 case RenderTreeFrameType.Text:
                     {
-                        var oldText = oldFrame.TextContent;
-                        var newText = newFrame.TextContent;
+                        var oldText = oldFrame.TextContentField;
+                        var newText = newFrame.TextContentField;
                         if (!string.Equals(oldText, newText, StringComparison.Ordinal))
                         {
                             var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
@@ -584,8 +603,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
                 case RenderTreeFrameType.Markup:
                     {
-                        var oldMarkup = oldFrame.MarkupContent;
-                        var newMarkup = newFrame.MarkupContent;
+                        var oldMarkup = oldFrame.MarkupContentField;
+                        var newMarkup = newFrame.MarkupContentField;
                         if (!string.Equals(oldMarkup, newMarkup, StringComparison.Ordinal))
                         {
                             var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
@@ -597,8 +616,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
                 case RenderTreeFrameType.Element:
                     {
-                        var oldElementName = oldFrame.ElementName;
-                        var newElementName = newFrame.ElementName;
+                        var oldElementName = oldFrame.ElementNameField;
+                        var newElementName = newFrame.ElementNameField;
                         if (string.Equals(oldElementName, newElementName, StringComparison.Ordinal))
                         {
                             var oldFrameAttributesEndIndexExcl = GetAttributesEndIndexExclusive(oldTree, oldFrameIndex);
@@ -611,8 +630,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                                 newFrameIndex + 1, newFrameAttributesEndIndexExcl);
 
                             // Diff the children
-                            var oldFrameChildrenEndIndexExcl = oldFrameIndex + oldFrame.ElementSubtreeLength;
-                            var newFrameChildrenEndIndexExcl = newFrameIndex + newFrame.ElementSubtreeLength;
+                            var oldFrameChildrenEndIndexExcl = oldFrameIndex + oldFrame.ElementSubtreeLengthField;
+                            var newFrameChildrenEndIndexExcl = newFrameIndex + newFrame.ElementSubtreeLengthField;
                             var hasChildrenToProcess =
                                 oldFrameChildrenEndIndexExcl > oldFrameAttributesEndIndexExcl ||
                                 newFrameChildrenEndIndexExcl > newFrameAttributesEndIndexExcl;
@@ -646,14 +665,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     {
                         AppendDiffEntriesForRange(
                             ref diffContext,
-                            oldFrameIndex + 1, oldFrameIndex + oldFrame.RegionSubtreeLength,
-                            newFrameIndex + 1, newFrameIndex + newFrame.RegionSubtreeLength);
+                            oldFrameIndex + 1, oldFrameIndex + oldFrame.RegionSubtreeLengthField,
+                            newFrameIndex + 1, newFrameIndex + newFrame.RegionSubtreeLengthField);
                         break;
                     }
 
                 case RenderTreeFrameType.Component:
                     {
-                        if (oldFrame.ComponentType == newFrame.ComponentType)
+                        if (oldFrame.ComponentTypeField == newFrame.ComponentTypeField)
                         {
                             UpdateRetainedChildComponent(
                                 ref diffContext,
@@ -680,10 +699,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         break;
                     }
 
-                    // We don't handle attributes here, they have their own diff logic.
-                    // See AppendDiffEntriesForAttributeFrame
+                // We don't handle attributes here, they have their own diff logic.
+                // See AppendDiffEntriesForAttributeFrame
                 default:
-                    throw new NotImplementedException($"Encountered unsupported frame type during diffing: {newTree[newFrameIndex].FrameType}");
+                    throw new NotImplementedException($"Encountered unsupported frame type during diffing: {newTree[newFrameIndex].FrameTypeField}");
             }
         }
 
@@ -700,7 +719,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             ref var newFrame = ref newTree[newFrameIndex];
 
             // Using Equals to account for string comparisons, nulls, etc.
-            var valueChanged = !Equals(oldFrame.AttributeValue, newFrame.AttributeValue);
+            var valueChanged = !Equals(oldFrame.AttributeValueField, newFrame.AttributeValueField);
             if (valueChanged)
             {
                 InitializeNewAttributeFrame(ref diffContext, ref newFrame);
@@ -709,13 +728,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
                 // If we're replacing an old event handler ID with a new one, register the old one for disposal,
                 // plus keep track of the old->new chain until the old one is fully disposed
-                if (oldFrame.AttributeEventHandlerId > 0)
+                if (oldFrame.AttributeEventHandlerIdField > 0)
                 {
-                    diffContext.Renderer.TrackReplacedEventHandlerId(oldFrame.AttributeEventHandlerId, newFrame.AttributeEventHandlerId);
-                    diffContext.BatchBuilder.DisposedEventHandlerIds.Append(oldFrame.AttributeEventHandlerId);
+                    diffContext.Renderer.TrackReplacedEventHandlerId(oldFrame.AttributeEventHandlerIdField, newFrame.AttributeEventHandlerIdField);
+                    diffContext.BatchBuilder.DisposedEventHandlerIds.Append(oldFrame.AttributeEventHandlerIdField);
                 }
             }
-            else if (oldFrame.AttributeEventHandlerId > 0)
+            else if (oldFrame.AttributeEventHandlerIdField > 0)
             {
                 // Retain the event handler ID by copying the old frame over the new frame.
                 // this will prevent us from needing to dispose the old event handler
@@ -728,7 +747,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             var newTree = diffContext.NewTree;
             ref var newFrame = ref newTree[newFrameIndex];
-            switch (newFrame.FrameType)
+            switch (newFrame.FrameTypeField)
             {
                 case RenderTreeFrameType.Attribute:
                     {
@@ -741,7 +760,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 case RenderTreeFrameType.Element:
                     {
                         InitializeNewSubtree(ref diffContext, newFrameIndex);
-                        var referenceFrameIndex = diffContext.ReferenceFrames.Append(newTree, newFrameIndex, newFrame.ElementSubtreeLength);
+                        var referenceFrameIndex = diffContext.ReferenceFrames.Append(newTree, newFrameIndex, newFrame.ElementSubtreeLengthField);
                         diffContext.Edits.Append(RenderTreeEdit.PrependFrame(diffContext.SiblingIndex, referenceFrameIndex));
                         diffContext.SiblingIndex++;
                         break;
@@ -749,7 +768,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 case RenderTreeFrameType.Region:
                     {
                         var regionChildFrameIndex = newFrameIndex + 1;
-                        var regionChildFrameEndIndexExcl = newFrameIndex + newFrame.RegionSubtreeLength;
+                        var regionChildFrameEndIndexExcl = newFrameIndex + newFrame.RegionSubtreeLengthField;
                         while (regionChildFrameIndex < regionChildFrameEndIndexExcl)
                         {
                             InsertNewFrame(ref diffContext, regionChildFrameIndex);
@@ -776,7 +795,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         break;
                     }
                 default:
-                    throw new NotImplementedException($"Unexpected frame type during {nameof(InsertNewFrame)}: {newFrame.FrameType}");
+                    throw new NotImplementedException($"Unexpected frame type during {nameof(InsertNewFrame)}: {newFrame.FrameTypeField}");
             }
         }
 
@@ -784,21 +803,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             var oldTree = diffContext.OldTree;
             ref var oldFrame = ref oldTree[oldFrameIndex];
-            switch (oldFrame.FrameType)
+            switch (oldFrame.FrameTypeField)
             {
                 case RenderTreeFrameType.Attribute:
                     {
-                        diffContext.Edits.Append(RenderTreeEdit.RemoveAttribute(diffContext.SiblingIndex, oldFrame.AttributeName));
-                        if (oldFrame.AttributeEventHandlerId > 0)
+                        diffContext.Edits.Append(RenderTreeEdit.RemoveAttribute(diffContext.SiblingIndex, oldFrame.AttributeNameField));
+                        if (oldFrame.AttributeEventHandlerIdField > 0)
                         {
-                            diffContext.BatchBuilder.DisposedEventHandlerIds.Append(oldFrame.AttributeEventHandlerId);
+                            diffContext.BatchBuilder.DisposedEventHandlerIds.Append(oldFrame.AttributeEventHandlerIdField);
                         }
                         break;
                     }
                 case RenderTreeFrameType.Component:
                 case RenderTreeFrameType.Element:
                     {
-                        var endIndexExcl = oldFrameIndex + oldFrame.ElementSubtreeLength;
+                        var endIndexExcl = oldFrameIndex + oldFrame.ElementSubtreeLengthField;
                         DisposeFramesInRange(diffContext.BatchBuilder, oldTree, oldFrameIndex, endIndexExcl);
                         diffContext.Edits.Append(RenderTreeEdit.RemoveFrame(diffContext.SiblingIndex));
                         break;
@@ -806,7 +825,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 case RenderTreeFrameType.Region:
                     {
                         var regionChildFrameIndex = oldFrameIndex + 1;
-                        var regionChildFrameEndIndexExcl = oldFrameIndex + oldFrame.RegionSubtreeLength;
+                        var regionChildFrameEndIndexExcl = oldFrameIndex + oldFrame.RegionSubtreeLengthField;
                         while (regionChildFrameIndex < regionChildFrameEndIndexExcl)
                         {
                             RemoveOldFrame(ref diffContext, regionChildFrameIndex);
@@ -821,17 +840,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         break;
                     }
                 default:
-                    throw new NotImplementedException($"Unexpected frame type during {nameof(RemoveOldFrame)}: {oldFrame.FrameType}");
+                    throw new NotImplementedException($"Unexpected frame type during {nameof(RemoveOldFrame)}: {oldFrame.FrameTypeField}");
             }
         }
 
         private static int GetAttributesEndIndexExclusive(RenderTreeFrame[] tree, int rootIndex)
         {
-            var descendantsEndIndexExcl = rootIndex + tree[rootIndex].ElementSubtreeLength;
+            var descendantsEndIndexExcl = rootIndex + tree[rootIndex].ElementSubtreeLengthField;
             var index = rootIndex + 1;
             for (; index < descendantsEndIndexExcl; index++)
             {
-                if (tree[index].FrameType != RenderTreeFrameType.Attribute)
+                if (tree[index].FrameTypeField != RenderTreeFrameType.Attribute)
                 {
                     break;
                 }
@@ -857,11 +876,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private static void InitializeNewSubtree(ref DiffContext diffContext, int frameIndex)
         {
             var frames = diffContext.NewTree;
-            var endIndexExcl = frameIndex + frames[frameIndex].ElementSubtreeLength;
+            var endIndexExcl = frameIndex + frames[frameIndex].ElementSubtreeLengthField;
             for (var i = frameIndex; i < endIndexExcl; i++)
             {
                 ref var frame = ref frames[i];
-                switch (frame.FrameType)
+                switch (frame.FrameTypeField)
                 {
                     case RenderTreeFrameType.Component:
                         InitializeNewComponentFrame(ref diffContext, i);
@@ -884,14 +903,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var frames = diffContext.NewTree;
             ref var frame = ref frames[frameIndex];
 
-            if (frame.ComponentState != null)
+            if (frame.ComponentStateField != null)
             {
                 throw new InvalidOperationException($"Child component already exists during {nameof(InitializeNewComponentFrame)}");
             }
 
             var parentComponentId = diffContext.ComponentId;
             diffContext.Renderer.InstantiateChildComponentOnFrame(ref frame, parentComponentId);
-            var childComponentState = frame.ComponentState;
+            var childComponentState = frame.ComponentStateField;
 
             // Set initial parameters
             var initialParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
@@ -905,9 +924,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             //
             // We're following a simple heuristic here that's reflected in the ts runtime
             // based on the common usage of attributes for DOM events.
-            if ((newFrame.AttributeValue is MulticastDelegate || newFrame.AttributeValue is EventCallback) &&
-                newFrame.AttributeName.Length >= 3 &&
-                newFrame.AttributeName.StartsWith("on"))
+            if ((newFrame.AttributeValueField is MulticastDelegate || newFrame.AttributeValueField is EventCallback) &&
+                newFrame.AttributeNameField.Length >= 3 &&
+                newFrame.AttributeNameField.StartsWith("on", StringComparison.Ordinal))
             {
                 diffContext.Renderer.AssignEventHandlerId(ref newFrame);
             }
@@ -915,15 +934,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private static void InitializeNewElementReferenceCaptureFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)
         {
-            var newElementReference = ElementReference.CreateWithUniqueId();
-            newFrame = newFrame.WithElementReferenceCaptureId(newElementReference.Id);
-            newFrame.ElementReferenceCaptureAction(newElementReference);
+            var newElementReference = ElementReference.CreateWithUniqueId(diffContext.Renderer.ElementReferenceContext);
+            newFrame.ElementReferenceCaptureIdField = newElementReference.Id;
+            newFrame.ElementReferenceCaptureActionField(newElementReference);
         }
 
         private static void InitializeNewComponentReferenceCaptureFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)
         {
-            ref var parentFrame = ref diffContext.NewTree[newFrame.ComponentReferenceCaptureParentFrameIndex];
-            if (parentFrame.FrameType != RenderTreeFrameType.Component)
+            ref var parentFrame = ref diffContext.NewTree[newFrame.ComponentReferenceCaptureParentFrameIndexField];
+            if (parentFrame.FrameTypeField != RenderTreeFrameType.Component)
             {
                 // Should never happen, but will help with diagnosis if it does
                 throw new InvalidOperationException($"{nameof(RenderTreeFrameType.ComponentReferenceCapture)} frame references invalid parent index.");
@@ -936,7 +955,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 throw new InvalidOperationException($"Trying to initialize {nameof(RenderTreeFrameType.ComponentReferenceCapture)} frame before parent component was assigned.");
             }
 
-            newFrame.ComponentReferenceCaptureAction(componentInstance);
+            newFrame.ComponentReferenceCaptureActionField(componentInstance);
         }
 
         private static void DisposeFramesInRange(RenderBatchBuilder batchBuilder, RenderTreeFrame[] frames, int startIndex, int endIndexExcl)
@@ -944,13 +963,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             for (var i = startIndex; i < endIndexExcl; i++)
             {
                 ref var frame = ref frames[i];
-                if (frame.FrameType == RenderTreeFrameType.Component && frame.ComponentState != null)
+                if (frame.FrameTypeField == RenderTreeFrameType.Component && frame.ComponentStateField != null)
                 {
-                    batchBuilder.ComponentDisposalQueue.Enqueue(frame.ComponentId);
+                    batchBuilder.ComponentDisposalQueue.Enqueue(frame.ComponentIdField);
                 }
-                else if (frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId > 0)
+                else if (frame.FrameTypeField == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerIdField > 0)
                 {
-                    batchBuilder.DisposedEventHandlerIds.Append(frame.AttributeEventHandlerId);
+                    batchBuilder.DisposedEventHandlerIds.Append(frame.AttributeEventHandlerIdField);
                 }
             }
         }

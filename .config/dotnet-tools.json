@@ -3,9 +3,15 @@
   "isRoot": true,
   "tools": {
     "dotnet-serve": {
-      "version": "1.7.125",
+      "version": "1.7.139",
       "commands": [
         "dotnet-serve"
+      ]
+    },
+    "playwright-sharp-tool": {
+      "version": "0.170.2",
+      "commands": [
+        "playwright-sharp"
       ]
     }
   }

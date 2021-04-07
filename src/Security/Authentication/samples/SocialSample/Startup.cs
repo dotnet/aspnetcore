@@ -117,7 +117,7 @@ namespace SocialSample
                 })
                 // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
                 // https://github.com/settings/applications/
-                // https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/
+                // https://docs.github.com/en/developers/apps/authorizing-oauth-apps
                 .AddOAuth("GitHub", "Github", o =>
                 {
                     o.ClientId = Configuration["github:clientid"];
@@ -156,7 +156,7 @@ namespace SocialSample
                 })
                 // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
                 // https://github.com/settings/applications/
-                // https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/
+                // https://docs.github.com/en/developers/apps/authorizing-oauth-apps
                 .AddOAuth("GitHub-AccessToken", "GitHub AccessToken only", o =>
                 {
                     o.ClientId = Configuration["github-token:clientid"];
@@ -171,9 +171,10 @@ namespace SocialSample
                     };
                 })
                 // https://demo.identityserver.io/
+                // https://github.com/IdentityServer/IdentityServer4.Demo/blob/master/src/IdentityServer4Demo/Config.cs
                 .AddOAuth("IdentityServer", "Identity Server", o =>
                 {
-                    o.ClientId = "server.code";
+                    o.ClientId = "interactive.public";
                     o.ClientSecret = "secret";
                     o.CallbackPath = new PathString("/signin-identityserver");
                     o.AuthorizationEndpoint = "https://demo.identityserver.io/connect/authorize";

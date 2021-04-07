@@ -7,17 +7,17 @@
     <AssemblyName>dotnet-openapi</AssemblyName>
     <PackageId>Microsoft.dotnet-openapi</PackageId>
     <PackAsTool>true</PackAsTool>
-    <IsShippingPackage>true</IsShippingPackage>
+    <RemoveDevicePlatformSupport>true</RemoveDevicePlatformSupport>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Build" ExcludeAssets="runtime" />
     <Reference Include="Microsoft.Build.Locator" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="Microsoft.Win32.Registry"  />
     <Reference Include="System.Security.Principal.Windows"  />
   </ItemGroup>
@@ -25,12 +25,12 @@
   <ItemGroup>
     <AssemblyAttribute Include="Microsoft.DotNet.Openapi.Tools.Internal.OpenApiDependencyAttribute">
       <_Parameter1>NSwag.ApiDescription.Client</_Parameter1>
-      <_Parameter2>$(NSwagApiDescriptionClientPackageVersion)</_Parameter2>
+      <_Parameter2>$(NSwagApiDescriptionClientVersion)</_Parameter2>
       <_Parameter3>NSwagCSharp;NSwagTypeScript</_Parameter3>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.DotNet.Openapi.Tools.Internal.OpenApiDependencyAttribute">
       <_Parameter1>Newtonsoft.Json</_Parameter1>
-      <_Parameter2>$(NewtonsoftJsonPackageVersion)</_Parameter2>
+      <_Parameter2>$(NewtonsoftJsonVersion)</_Parameter2>
       <_Parameter3>NSwagCSharp;NSwagTypeScript</_Parameter3>
     </AssemblyAttribute>
   </ItemGroup>

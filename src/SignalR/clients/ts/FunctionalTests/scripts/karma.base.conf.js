@@ -13,7 +13,6 @@ try {
                 basePath: path.resolve(__dirname, ".."),
                 frameworks: ["jasmine"],
                 files: [
-                    "wwwroot/lib/msgpack5/msgpack5.js",
                     "node_modules/@microsoft/signalr/dist/browser/signalr.js",
                     "node_modules/@microsoft/signalr-protocol-msgpack/dist/browser/signalr-protocol-msgpack.js",
                     "wwwroot/dist/signalr-functional-tests.js"
@@ -26,7 +25,7 @@ try {
                 logLevel: config.LOG_INFO,
                 autoWatch: false,
                 singleRun: false,
-                concurrency: Infinity,
+                concurrency: 1,
 
                 // Log browser messages to a file, not the terminal.
                 browserConsoleLogOptions: {

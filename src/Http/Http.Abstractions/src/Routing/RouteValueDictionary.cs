@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.Extensions.Internal;
@@ -15,13 +16,13 @@ namespace Microsoft.AspNetCore.Routing
     /// <summary>
     /// An <see cref="IDictionary{String, Object}"/> type for route values.
     /// </summary>
-    public class RouteValueDictionary : IDictionary<string, object>, IReadOnlyDictionary<string, object>
+    public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
     {
         // 4 is a good default capacity here because that leaves enough space for area/controller/action/id
-        private const int DefaultCapacity = 4;
+        private readonly int DefaultCapacity = 4;
 
-        internal KeyValuePair<string, object>[] _arrayStorage;
-        internal PropertyStorage _propertyStorage;
+        internal KeyValuePair<string, object?>[] _arrayStorage;
+        internal PropertyStorage? _propertyStorage;
         private int _count;
 
         /// <summary>
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         /// <param name="items">The items array.</param>
         /// <returns>A new <see cref="RouteValueDictionary"/>.</returns>
-        public static RouteValueDictionary FromArray(KeyValuePair<string, object>[] items)
+        public static RouteValueDictionary FromArray(KeyValuePair<string, object?>[] items)
         {
             if (items == null)
             {
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Routing
 
             return new RouteValueDictionary()
             {
-                _arrayStorage = items,
+                _arrayStorage = items!,
                 _count = start,
             };
         }
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         public RouteValueDictionary()
         {
-            _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
+            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
         }
 
         /// <summary>
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Routing
         /// property names are keys, and property values are the values, and copied into the dictionary.
         /// Only public instance non-index properties are considered.
         /// </remarks>
-        public RouteValueDictionary(object values)
+        public RouteValueDictionary(object? values)
         {
             if (values is RouteValueDictionary dictionary)
             {
@@ -105,6 +106,7 @@ namespace Microsoft.AspNetCore.Routing
                     // PropertyStorage is immutable so we can just copy it.
                     _propertyStorage = dictionary._propertyStorage;
                     _count = dictionary._count;
+                    _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
                     return;
                 }
 
@@ -112,14 +114,14 @@ namespace Microsoft.AspNetCore.Routing
                 if (count > 0)
                 {
                     var other = dictionary._arrayStorage;
-                    var storage = new KeyValuePair<string, object>[count];
+                    var storage = new KeyValuePair<string, object?>[count];
                     Array.Copy(other, 0, storage, 0, count);
                     _arrayStorage = storage;
                     _count = count;
                 }
                 else
                 {
-                    _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
+                    _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
                 }
 
                 return;
@@ -127,7 +129,7 @@ namespace Microsoft.AspNetCore.Routing
 
             if (values is IEnumerable<KeyValuePair<string, object>> keyValueEnumerable)
             {
-                _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
+                _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
 
                 foreach (var kvp in keyValueEnumerable)
                 {
@@ -139,7 +141,7 @@ namespace Microsoft.AspNetCore.Routing
 
             if (values is IEnumerable<KeyValuePair<string, string>> stringValueEnumerable)
             {
-                _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
+                _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
 
                 foreach (var kvp in stringValueEnumerable)
                 {
@@ -154,15 +156,16 @@ namespace Microsoft.AspNetCore.Routing
                 var storage = new PropertyStorage(values);
                 _propertyStorage = storage;
                 _count = storage.Properties.Length;
+                _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
             }
             else
             {
-                _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
+                _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
             }
         }
 
         /// <inheritdoc />
-        public object this[string key]
+        public object? this[string key]
         {
             get
             {
@@ -171,8 +174,7 @@ namespace Microsoft.AspNetCore.Routing
                     ThrowArgumentNullExceptionForKey();
                 }
 
-                object value;
-                TryGetValue(key, out value);
+                TryGetValue(key, out var value);
                 return value;
             }
 
@@ -185,18 +187,18 @@ namespace Microsoft.AspNetCore.Routing
 
                 // We're calling this here for the side-effect of converting from properties
                 // to array. We need to create the array even if we just set an existing value since
-                // property storage is immutable. 
+                // property storage is immutable.
                 EnsureCapacity(_count);
 
                 var index = FindIndex(key);
                 if (index < 0)
                 {
                     EnsureCapacity(_count + 1);
-                    _arrayStorage[_count++] = new KeyValuePair<string, object>(key, value);
+                    _arrayStorage[_count++] = new KeyValuePair<string, object?>(key, value);
                 }
                 else
                 {
-                    _arrayStorage[index] = new KeyValuePair<string, object>(key, value);
+                    _arrayStorage[index] = new KeyValuePair<string, object?>(key, value);
                 }
             }
         }
@@ -213,7 +215,7 @@ namespace Microsoft.AspNetCore.Routing
         public int Count => _count;
 
         /// <inheritdoc />
-        bool ICollection<KeyValuePair<string, object>>.IsReadOnly => false;
+        bool ICollection<KeyValuePair<string, object?>>.IsReadOnly => false;
 
         /// <inheritdoc />
         public ICollection<string> Keys
@@ -233,17 +235,17 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        IEnumerable<string> IReadOnlyDictionary<string, object>.Keys => Keys;
+        IEnumerable<string> IReadOnlyDictionary<string, object?>.Keys => Keys;
 
         /// <inheritdoc />
-        public ICollection<object> Values
+        public ICollection<object?> Values
         {
             get
             {
                 EnsureCapacity(_count);
 
                 var array = _arrayStorage;
-                var values = new object[_count];
+                var values = new object?[_count];
                 for (var i = 0; i < values.Length; i++)
                 {
                     values[i] = array[i].Value;
@@ -253,16 +255,16 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        IEnumerable<object> IReadOnlyDictionary<string, object>.Values => Values;
+        IEnumerable<object?> IReadOnlyDictionary<string, object?>.Values => Values;
 
         /// <inheritdoc />
-        void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
+        void ICollection<KeyValuePair<string, object?>>.Add(KeyValuePair<string, object?> item)
         {
             Add(item.Key, item.Value);
         }
 
         /// <inheritdoc />
-        public void Add(string key, object value)
+        public void Add(string key, object? value)
         {
             if (key == null)
             {
@@ -277,7 +279,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentException(message, nameof(key));
             }
 
-            _arrayStorage[_count] = new KeyValuePair<string, object>(key, value);
+            _arrayStorage[_count] = new KeyValuePair<string, object?>(key, value);
             _count++;
         }
 
@@ -291,7 +293,7 @@ namespace Microsoft.AspNetCore.Routing
 
             if (_propertyStorage != null)
             {
-                _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
+                _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
                 _propertyStorage = null;
                 _count = 0;
                 return;
@@ -302,7 +304,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <inheritdoc />
-        bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
+        bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item)
         {
             return TryGetValue(item.Key, out var value) && EqualityComparer<object>.Default.Equals(value, item.Value);
         }
@@ -330,8 +332,8 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <inheritdoc />
-        void ICollection<KeyValuePair<string, object>>.CopyTo(
-            KeyValuePair<string, object>[] array,
+        void ICollection<KeyValuePair<string, object?>>.CopyTo(
+            KeyValuePair<string, object?>[] array,
             int arrayIndex)
         {
             if (array == null)
@@ -362,7 +364,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <inheritdoc />
-        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+        IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator()
         {
             return GetEnumerator();
         }
@@ -374,12 +376,14 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <inheritdoc />
-        bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
+        bool ICollection<KeyValuePair<string, object?>>.Remove(KeyValuePair<string, object?> item)
         {
             if (Count == 0)
             {
                 return false;
             }
+
+            Debug.Assert(_arrayStorage != null);
 
             EnsureCapacity(Count);
 
@@ -435,7 +439,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <returns>
         /// <c>true</c> if the object was removed successfully; otherwise, <c>false</c>.
         /// </returns>
-        public bool Remove(string key, out object value)
+        public bool Remove(string key, out object? value)
         {
             if (key == null)
             {
@@ -474,7 +478,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <returns>Returns <c>true</c> if the value was added. Returns <c>false</c> if the key was already present.</returns>
-        public bool TryAdd(string key, object value)
+        public bool TryAdd(string key, object? value)
         {
             if (key == null)
             {
@@ -487,13 +491,13 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             EnsureCapacity(Count + 1);
-            _arrayStorage[Count] = new KeyValuePair<string, object>(key, value);
+            _arrayStorage[Count] = new KeyValuePair<string, object?>(key, value);
             _count++;
             return true;
         }
 
         /// <inheritdoc />
-        public bool TryGetValue(string key, out object value)
+        public bool TryGetValue(string key, out object? value)
         {
             if (key == null)
             {
@@ -508,7 +512,7 @@ namespace Microsoft.AspNetCore.Routing
             return TryGetValueSlow(key, out value);
         }
 
-        private bool TryGetValueSlow(string key, out object value)
+        private bool TryGetValueSlow(string key, out object? value)
         {
             if (_propertyStorage != null)
             {
@@ -527,6 +531,7 @@ namespace Microsoft.AspNetCore.Routing
             return false;
         }
 
+        [DoesNotReturn]
         private static void ThrowArgumentNullExceptionForKey()
         {
             throw new ArgumentNullException("key");
@@ -546,16 +551,16 @@ namespace Microsoft.AspNetCore.Routing
             if (_propertyStorage != null)
             {
                 var storage = _propertyStorage;
-                
+
                 // If we're converting from properties, it's likely due to an 'add' to make sure we have at least
                 // the default amount of space.
                 capacity = Math.Max(DefaultCapacity, Math.Max(storage.Properties.Length, capacity));
-                var array = new KeyValuePair<string, object>[capacity];
+                var array = new KeyValuePair<string, object?>[capacity];
 
                 for (var i = 0; i < storage.Properties.Length; i++)
                 {
                     var property = storage.Properties[i];
-                    array[i] = new KeyValuePair<string, object>(property.Name, property.GetValue(storage.Value));
+                    array[i] = new KeyValuePair<string, object?>(property.Name, property.GetValue(storage.Value));
                 }
 
                 _arrayStorage = array;
@@ -566,7 +571,7 @@ namespace Microsoft.AspNetCore.Routing
             if (_arrayStorage.Length < capacity)
             {
                 capacity = _arrayStorage.Length == 0 ? DefaultCapacity : _arrayStorage.Length * 2;
-                var array = new KeyValuePair<string, object>[capacity];
+                var array = new KeyValuePair<string, object?>[capacity];
                 if (_count > 0)
                 {
                     Array.Copy(_arrayStorage, 0, array, 0, _count);
@@ -596,7 +601,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryFindItem(string key, out object value)
+        private bool TryFindItem(string key, out object? value)
         {
             var array = _arrayStorage;
             var count = _count;
@@ -642,6 +647,8 @@ namespace Microsoft.AspNetCore.Routing
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool ContainsKeyProperties(string key)
         {
+            Debug.Assert(_propertyStorage != null);
+
             var properties = _propertyStorage.Properties;
             for (var i = 0; i < properties.Length; i++)
             {
@@ -654,11 +661,16 @@ namespace Microsoft.AspNetCore.Routing
             return false;
         }
 
-        public struct Enumerator : IEnumerator<KeyValuePair<string, object>>
+        /// <inheritdoc />
+        public struct Enumerator : IEnumerator<KeyValuePair<string, object?>>
         {
             private readonly RouteValueDictionary _dictionary;
             private int _index;
 
+            /// <summary>
+            /// Instantiates a new enumerator with the values provided in <paramref name="dictionary"/>.
+            /// </summary>
+            /// <param name="dictionary">A <see cref="RouteValueDictionary"/>.</param>
             public Enumerator(RouteValueDictionary dictionary)
             {
                 if (dictionary == null)
@@ -672,15 +684,20 @@ namespace Microsoft.AspNetCore.Routing
                 _index = 0;
             }
 
-            public KeyValuePair<string, object> Current { get; private set; }
+            /// <inheritdoc />
+            public KeyValuePair<string, object?> Current { get; private set; }
 
             object IEnumerator.Current => Current;
 
+            /// <summary>
+            /// Releases resources used by the <see cref="Enumerator"/>.
+            /// </summary>
             public void Dispose()
             {
             }
 
             // Similar to the design of List<T>.Enumerator - Split into fast path and slow path for inlining friendliness
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
@@ -699,12 +716,12 @@ namespace Microsoft.AspNetCore.Routing
 
             private bool MoveNextRare()
             {
-                var dictionary = _dictionary; 
+                var dictionary = _dictionary;
                 if (dictionary._propertyStorage != null && ((uint)_index < (uint)dictionary._count))
                 {
                     var storage = dictionary._propertyStorage;
                     var property = storage.Properties[_index];
-                    Current = new KeyValuePair<string, object>(property.Name, property.GetValue(storage.Value));
+                    Current = new KeyValuePair<string, object?>(property.Name, property.GetValue(storage.Value));
                     _index++;
                     return true;
                 }
@@ -714,6 +731,7 @@ namespace Microsoft.AspNetCore.Routing
                 return false;
             }
 
+            /// <inheritdoc />
             public void Reset()
             {
                 Current = default;
@@ -735,7 +753,7 @@ namespace Microsoft.AspNetCore.Routing
 
                 // Cache the properties so we can know if we've already validated them for duplicates.
                 var type = Value.GetType();
-                if (!_propertyCache.TryGetValue(type, out Properties))
+                if (!_propertyCache.TryGetValue(type, out Properties!))
                 {
                     Properties = PropertyHelper.GetVisibleProperties(type);
                     ValidatePropertyNames(type, Properties);

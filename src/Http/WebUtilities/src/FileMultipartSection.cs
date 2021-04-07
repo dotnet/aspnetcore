@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         /// <param name="section">The section from which to create the <see cref="FileMultipartSection"/></param>
         /// <param name="header">An already parsed content disposition header</param>
-        public FileMultipartSection(MultipartSection section, ContentDispositionHeaderValue header)
+        public FileMultipartSection(MultipartSection section, ContentDispositionHeaderValue? header)
         {
-            if (!header.IsFileDisposition())
+            if (header is null || !header.IsFileDisposition())
             {
                 throw new ArgumentException($"Argument must be a file section", nameof(section));
             }
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <summary>
         /// Gets the file stream from the section body
         /// </summary>
-        public Stream FileStream => Section.Body;
+        public Stream? FileStream => Section.Body;
 
         /// <summary>
         /// Gets the name of the section

@@ -1,0 +1,68 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - AspNetCore
+        UsingDirective - (1:0,1 [14] ) - System
+        UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
+        UsingDirective - (51:2,1 [19] ) - System.Linq
+        UsingDirective - (71:3,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_test - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [164] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml)
+                    LazyIntermediateToken - (0:0,0 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+                    LazyIntermediateToken - (2:1,0 [17] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <!DOCTYPE html>\n
+                    LazyIntermediateToken - (19:2,0 [5] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <html
+                    IntermediateToken -  - Html -  TestCssScope
+                    LazyIntermediateToken - (24:2,5 [10] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  lang="en"
+                    LazyIntermediateToken - (34:2,15 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - >
+                    LazyIntermediateToken - (35:2,16 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+                    LazyIntermediateToken - (37:3,0 [5] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <head
+                    IntermediateToken -  - Html -  TestCssScope
+                    LazyIntermediateToken - (42:3,5 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - >
+                    LazyIntermediateToken - (43:3,6 [6] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n    
+                    LazyIntermediateToken - (49:4,4 [5] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <meta
+                    IntermediateToken -  - Html -  TestCssScope
+                    LazyIntermediateToken - (54:4,9 [16] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  charset="utf-8"
+                    LazyIntermediateToken - (70:4,25 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  
+                    LazyIntermediateToken - (71:4,26 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - />
+                    LazyIntermediateToken - (73:4,28 [6] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n    
+                    LazyIntermediateToken - (79:5,4 [5] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <meta
+                    IntermediateToken -  - Html -  TestCssScope
+                    LazyIntermediateToken - (84:5,9 [16] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  name="viewport"
+                    LazyIntermediateToken - (100:5,25 [48] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  content="width=device-width, initial-scale=1.0"
+                    LazyIntermediateToken - (148:5,73 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html -  
+                    LazyIntermediateToken - (149:5,74 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - />
+                    LazyIntermediateToken - (151:5,76 [6] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n    
+                    LazyIntermediateToken - (157:6,4 [6] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <title
+                    IntermediateToken -  - Html -  TestCssScope
+                    LazyIntermediateToken - (163:6,10 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - >
+                CSharpExpression - (165:6,12 [17] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml)
+                    LazyIntermediateToken - (165:6,12 [17] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - CSharp - ViewData["Title"]
+                HtmlContent - (182:6,29 [97] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml)
+                    LazyIntermediateToken - (182:6,29 [24] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \-Test layout component
+                    LazyIntermediateToken - (206:6,53 [8] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - </title>
+                    LazyIntermediateToken - (214:6,61 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+                    LazyIntermediateToken - (216:7,0 [7] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - </head>
+                    LazyIntermediateToken - (223:7,7 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+                    LazyIntermediateToken - (225:8,0 [5] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <body
+                    IntermediateToken -  - Html -  TestCssScope
+                    LazyIntermediateToken - (230:8,5 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - >
+                    LazyIntermediateToken - (231:8,6 [6] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n    
+                    LazyIntermediateToken - (237:9,4 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - <p
+                    IntermediateToken -  - Html -  TestCssScope
+                    LazyIntermediateToken - (239:9,6 [1] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - >
+                    LazyIntermediateToken - (240:9,7 [15] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - This is a body.
+                    LazyIntermediateToken - (255:9,22 [4] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - </p>
+                    LazyIntermediateToken - (259:9,26 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+                    LazyIntermediateToken - (261:10,0 [7] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - </body>
+                    LazyIntermediateToken - (268:10,7 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+                    LazyIntermediateToken - (270:11,0 [7] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - </html>
+                    LazyIntermediateToken - (277:11,7 [2] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\test.cshtml) - Html - \n
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 

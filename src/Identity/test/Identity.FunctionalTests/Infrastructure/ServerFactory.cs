@@ -62,11 +62,11 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         private void UpdateApplicationParts(IWebHostBuilder builder) =>
-            builder.ConfigureServices(services => AddRelatedParts(services, BootstrapFrameworkVersion));
+            builder.ConfigureServices(services => services.AddMvc());
 
         private void UpdateStaticAssets(IWebHostBuilder builder)
         {
-            var manifestPath = Path.GetDirectoryName(new Uri(typeof(ServerFactory<,>).Assembly.CodeBase).LocalPath);
+            var manifestPath = Path.GetDirectoryName(typeof(ServerFactory<,>).Assembly.Location);
             builder.ConfigureAppConfiguration((ctx, cb) =>
             {
                 if (ctx.HostingEnvironment.WebRootFileProvider is CompositeFileProvider composite)
@@ -150,76 +150,5 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             base.Dispose(disposing);
         }
-
-        private static void AddRelatedParts(IServiceCollection services, string framework)
-        {
-            var _assemblyMap =
-                new Dictionary<UIFramework, string>()
-                {
-                    [UIFramework.Bootstrap3] = "Microsoft.AspNetCore.Identity.UI.Views.V3",
-                    [UIFramework.Bootstrap4] = "Microsoft.AspNetCore.Identity.UI.Views.V4",
-                };
-
-            var mvcBuilder = services
-                .AddMvc()
-                .ConfigureApplicationPartManager(partManager =>
-                {
-                    var thisAssembly = typeof(IdentityBuilderUIExtensions).Assembly;
-                    var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(thisAssembly, throwOnError: true);
-                    var relatedParts = relatedAssemblies.ToDictionary(
-                        ra => ra,
-                        CompiledRazorAssemblyApplicationPartFactory.GetDefaultApplicationParts);
-
-                    var selectedFrameworkAssembly = _assemblyMap[framework == "V3" ? UIFramework.Bootstrap3 : UIFramework.Bootstrap4];
-
-                    foreach (var kvp in relatedParts)
-                    {
-                        var assemblyName = kvp.Key.GetName().Name;
-                        if (!IsAssemblyForFramework(selectedFrameworkAssembly, assemblyName))
-                        {
-                            RemoveParts(partManager, kvp.Value);
-                        }
-                        else
-                        {
-                            AddParts(partManager, kvp.Value);
-                        }
-                    }
-
-                    bool IsAssemblyForFramework(string frameworkAssembly, string assemblyName) =>
-                        string.Equals(assemblyName, frameworkAssembly, StringComparison.OrdinalIgnoreCase);
-
-                    void RemoveParts(
-                        ApplicationPartManager manager,
-                        IEnumerable<ApplicationPart> partsToRemove)
-                    {
-                        for (var i = 0; i < manager.ApplicationParts.Count; i++)
-                        {
-                            var part = manager.ApplicationParts[i];
-                            if (partsToRemove.Any(p => string.Equals(
-                                    p.Name,
-                                    part.Name,
-                                    StringComparison.OrdinalIgnoreCase)))
-                            {
-                                manager.ApplicationParts.Remove(part);
-                            }
-                        }
-                    }
-
-                    void AddParts(
-                        ApplicationPartManager manager,
-                        IEnumerable<ApplicationPart> partsToAdd)
-                    {
-                        foreach (var part in partsToAdd)
-                        {
-                            if (!manager.ApplicationParts.Any(p => p.GetType() == part.GetType() &&
-                                string.Equals(p.Name, part.Name, StringComparison.OrdinalIgnoreCase)))
-                            {
-                                manager.ApplicationParts.Add(part);
-                            }
-                        }
-                    }
-                });
-        }
-
     }
 }

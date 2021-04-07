@@ -827,22 +827,23 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             public IList<ParameterDescriptor> Descriptors { get; } = new List<ParameterDescriptor>();
 
-            public override Task<ModelBindingResult> BindModelAsync(
+            public override ValueTask<ModelBindingResult> BindModelAsync(
                 ActionContext actionContext,
                 IModelBinder modelBinder,
                 IValueProvider valueProvider,
                 ParameterDescriptor parameter,
                 ModelMetadata metadata,
-                object value)
+                object value,
+                object container)
             {
                 Descriptors.Add(parameter);
 
                 if (_args.TryGetValue(parameter.Name, out var result))
                 {
-                    return Task.FromResult(ModelBindingResult.Success(result));
+                    return new ValueTask<ModelBindingResult>(ModelBindingResult.Success(result));
                 }
 
-                return Task.FromResult(ModelBindingResult.Failed());
+                return new ValueTask<ModelBindingResult>(ModelBindingResult.Failed());
             }
         }
 

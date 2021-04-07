@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Globalization;
@@ -29,21 +31,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             ILoggerFactory loggerFactory)
             : base(modelType, loggerFactory)
         {
-            if (modelType == null)
-            {
-                throw new ArgumentNullException(nameof(modelType));
-            }
-
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
         }
 
+        /// <inheritdoc/>
         protected override void CheckModel(
             ModelBindingContext bindingContext,
             ValueProviderResult valueProviderResult,
-            object model)
+            object? model)
         {
             if (model == null)
             {

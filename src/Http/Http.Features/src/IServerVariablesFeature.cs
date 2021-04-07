@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Http.Features
         /// </summary>
         /// <param name="variableName">The variable name</param>
         /// <returns>May return null or empty if the variable does not exist or is not set.</returns>
-        string this[string variableName] { get; set; }
+        string? this[string variableName] { get; set; }
     }
 }

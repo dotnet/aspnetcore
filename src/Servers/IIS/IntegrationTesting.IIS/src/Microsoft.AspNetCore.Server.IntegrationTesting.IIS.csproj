@@ -1,19 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageId>Microsoft.AspNetCore.Server.IntegrationTesting.IIS</PackageId>
     <Description>Provides support for integration testing using IIS based servers.</Description>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
     <IsTestAssetProject>true</IsTestAssetProject>
-    <!-- This is used as a package by aspnet benchmarking infrastructure. It is meant for internal-use only. -->
+    <!-- This is used as a package by ASP.NET benchmarking infrastructure. It is meant for internal use only. -->
     <IsPackable>true</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <!--
       The assembly 'contentFiles\any\any\x64\aspnetcorev2.dll' is intentionally
       not inside the 'lib' folder and hence it won't be added as a reference when
@@ -21,6 +19,8 @@
       about this structure
     -->
     <NoWarn>$(NoWarn);NU5100</NoWarn>
+    <!-- Ignore platform compatibility analyzer warnings for test and test infrastructure -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <Import Project="..\..\build\assets.props" />
@@ -29,12 +29,12 @@
     <EmbeddedResource Include="Http.config" />
   </ItemGroup>
 
-  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" Condition="'$(BuildIisNativeProjects)' == 'true'">
+  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" Condition="'$(BuildIisNativeProjects)' == 'true' and '$(SkipTestBuild)' != 'true'">
     <Error Text="Required dll from ANCM has not been built. To build ANCM, you must use MSBuild.exe."
           Condition="!Exists('$(AspNetCoreModuleV2ShimDll)') OR !Exists('$(AspNetCoreModuleV2OutOfProcessHandlerDll)')" />
   </Target>
 
-  <ItemGroup Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(VCTargetsPath)' != '' AND '$(TestGroupName)' != 'IISNewHandler.FunctionalTests'">
+  <ItemGroup Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(TestGroupName)' != 'IISNewHandler.FunctionalTests'">
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="x64"/>
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="x64" />
 
@@ -44,7 +44,7 @@
 
   <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="'$(BuildIisNativeProjects)' == 'true'">
     <ItemGroup>
-      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="ANCM\%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
+      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('%(ShimComponents.DllLocation)')" Link="ANCM\%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
     </ItemGroup>
   </Target>
 

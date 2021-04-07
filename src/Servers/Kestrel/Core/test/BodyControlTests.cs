@@ -146,11 +146,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 RequestUpgrade = upgradeable;
             }
 
-            public override void AdvanceTo(SequencePosition consumed)
-            {
-                throw new NotImplementedException();
-            }
-
             public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
             {
                 throw new NotImplementedException();

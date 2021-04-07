@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             // Arrange
             var pipe = new Pipe(new PipeOptions(_dirtyMemoryPool, PipeScheduler.Inline, PipeScheduler.Inline));
-            var frameWriter = new Http2FrameWriter(pipe.Writer, null, null, null, null, null, null, _dirtyMemoryPool, new Mock<IKestrelTrace>().Object);
+            var frameWriter = CreateFrameWriter(pipe);
 
             // Act
             await frameWriter.WriteWindowUpdateAsync(1, 1);
@@ -52,12 +53,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(new byte[] { 0x00, 0x00, 0x00, 0x01 }, payload.Skip(Http2FrameReader.HeaderLength).Take(4).ToArray());
         }
 
+        private Http2FrameWriter CreateFrameWriter(Pipe pipe)
+        {
+            var serviceContext = TestContextFactory.CreateServiceContext(new KestrelServerOptions(), log: Mock.Of<IKestrelTrace>());
+            return new Http2FrameWriter(pipe.Writer, null, null, null, null, null, null, _dirtyMemoryPool, serviceContext);
+        }
+
         [Fact]
         public async Task WriteGoAway_UnsetsReservedBit()
         {
             // Arrange
             var pipe = new Pipe(new PipeOptions(_dirtyMemoryPool, PipeScheduler.Inline, PipeScheduler.Inline));
-            var frameWriter = new Http2FrameWriter(pipe.Writer, null, null, null, null, null, null, _dirtyMemoryPool, new Mock<IKestrelTrace>().Object);
+            var frameWriter = CreateFrameWriter(pipe);
 
             // Act
             await frameWriter.WriteGoAwayAsync(1, Http2ErrorCode.NO_ERROR);

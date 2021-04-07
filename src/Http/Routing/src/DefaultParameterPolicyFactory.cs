@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Routing
             _serviceProvider = serviceProvider;
         }
 
-        public override IParameterPolicy Create(RoutePatternParameterPart parameter, IParameterPolicy parameterPolicy)
+        public override IParameterPolicy Create(RoutePatternParameterPart? parameter, IParameterPolicy parameterPolicy)
         {
             if (parameterPolicy == null)
             {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing
             return parameterPolicy;
         }
 
-        public override IParameterPolicy Create(RoutePatternParameterPart parameter, string inlineText)
+        public override IParameterPolicy Create(RoutePatternParameterPart? parameter, string inlineText)
         {
             if (inlineText == null)
             {

@@ -25,14 +25,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
     }
 
-    public class ServerEventTest : EventTest
-    {
-        public ServerEventTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution(), output)
-        {
-        }
-    }
-
     public class ServerInteropTest : InteropTest
     {
         public ServerInteropTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
@@ -79,6 +71,38 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
     public class ServerKeyTest : KeyTest
     {
         public ServerKeyTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        {
+        }
+    }
+
+    public class ServerInputFileTest : InputFileTest
+    {
+        public ServerInputFileTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        {
+        }
+    }
+
+    public class ServerVirtualizationTest : VirtualizationTest
+    {
+        public ServerVirtualizationTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        {
+        }
+    }
+
+    public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest
+    {
+        public ServerDynamicComponentRenderingTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        {
+        }
+    }
+
+    public class ServerEventCustomArgsTest : EventCustomArgsTest
+    {
+        public ServerEventCustomArgsTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
             : base(browserFixture, serverFixture.WithServerExecution(), output)
         {
         }

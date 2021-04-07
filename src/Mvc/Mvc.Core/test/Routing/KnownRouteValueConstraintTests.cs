@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -295,7 +296,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             var actionDescriptor = new ControllerActionDescriptor()
             {
-                ActionName = string.Format("Area: {0}, Controller: {1}, Action: {2}", area, controller, action),
+                ActionName = string.Format(CultureInfo.InvariantCulture, "Area: {0}, Controller: {1}, Action: {2}", area, controller, action),
             };
 
             actionDescriptor.RouteValues.Add("area", area);

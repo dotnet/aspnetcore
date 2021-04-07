@@ -91,9 +91,9 @@ namespace Microsoft.Extensions.DependencyInjection
             return manager;
         }
 
-        private static T GetServiceFromCollection<T>(IServiceCollection services)
+        private static T? GetServiceFromCollection<T>(IServiceCollection services)
         {
-            return (T)services
+            return (T?)services
                 .LastOrDefault(d => d.ServiceType == typeof(T))
                 ?.ImplementationInstance;
         }
@@ -143,8 +143,6 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, MvcCoreMvcOptionsSetup>());
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IPostConfigureOptions<MvcOptions>, MvcOptionsConfigureCompatibilityOptions>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IPostConfigureOptions<MvcOptions>, MvcCoreMvcOptionsSetup>());
             services.TryAddEnumerable(
@@ -269,10 +267,13 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Endpoint Routing / Endpoints
             //
-            services.TryAddSingleton<ControllerActionEndpointDataSource>();
+            services.TryAddSingleton<ControllerActionEndpointDataSourceFactory>();
+            services.TryAddSingleton<OrderedEndpointsSequenceProviderCache>();
+            services.TryAddSingleton<ControllerActionEndpointDataSourceIdProvider>();
             services.TryAddSingleton<ActionEndpointFactory>();
-            services.TryAddSingleton<DynamicControllerEndpointSelector>();
+            services.TryAddSingleton<DynamicControllerEndpointSelectorCache>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicControllerEndpointMatcherPolicy>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IRequestDelegateFactory, ControllerRequestDelegateFactory>());
 
             //
             // Middleware pipeline filter related

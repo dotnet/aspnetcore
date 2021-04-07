@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Threading.Tasks;
@@ -8,12 +10,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+    /// <summary>
+    /// A <see cref="IActionResultExecutor{ContentResult}"/> that is responsible for <see cref="ContentResult"/>
+    /// </summary>
     public class ContentResultExecutor : IActionResultExecutor<ContentResult>
     {
         private const string DefaultContentType = "text/plain; charset=utf-8";
         private readonly ILogger<ContentResultExecutor> _logger;
         private readonly IHttpResponseStreamWriterFactory _httpResponseStreamWriterFactory;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ContentResultExecutor"/>.
+        /// </summary>
+        /// <param name="logger">The logger to use.</param>
+        /// <param name="httpResponseStreamWriterFactory">The stream writer factory.</param>
         public ContentResultExecutor(ILogger<ContentResultExecutor> logger, IHttpResponseStreamWriterFactory httpResponseStreamWriterFactory)
         {
             _logger = logger;

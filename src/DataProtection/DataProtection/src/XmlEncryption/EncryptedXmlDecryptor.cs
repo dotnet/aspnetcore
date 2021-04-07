@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXmlDecryptor
     {
         private readonly IInternalEncryptedXmlDecryptor _decryptor;
-        private readonly XmlKeyDecryptionOptions _options;
+        private readonly XmlKeyDecryptionOptions? _options;
 
         /// <summary>
         /// Creates a new instance of an <see cref="EncryptedXmlDecryptor"/>.
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// Creates a new instance of an <see cref="EncryptedXmlDecryptor"/>.
         /// </summary>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public EncryptedXmlDecryptor(IServiceProvider services)
+        public EncryptedXmlDecryptor(IServiceProvider? services)
         {
             _decryptor = services?.GetService<IInternalEncryptedXmlDecryptor>() ?? this;
             _options = services?.GetService<IOptions<XmlKeyDecryptionOptions>>()?.Value;
@@ -59,7 +59,6 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             // doesn't handle encrypting the root element all that well.
             var xmlDocument = new XmlDocument();
             xmlDocument.Load(new XElement("root", encryptedElement).CreateReader());
-            var elementToDecrypt = (XmlElement)xmlDocument.DocumentElement.FirstChild;
 
             // Perform the decryption and update the document in-place.
             var encryptedXml = new EncryptedXmlWithCertificateKeys(_options, xmlDocument);
@@ -68,7 +67,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             encryptedXml.DecryptDocument();
 
             // Strip the <root /> element back off and convert the XmlDocument to an XElement.
-            return XElement.Load(xmlDocument.DocumentElement.FirstChild.CreateNavigator().ReadSubtree());
+            return XElement.Load(xmlDocument.DocumentElement!.FirstChild!.CreateNavigator()!.ReadSubtree());
         }
 
         void IInternalEncryptedXmlDecryptor.PerformPreDecryptionSetup(EncryptedXml encryptedXml)
@@ -81,15 +80,15 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// </summary>
         private class EncryptedXmlWithCertificateKeys : EncryptedXml
         {
-            private readonly XmlKeyDecryptionOptions _options;
+            private readonly XmlKeyDecryptionOptions? _options;
 
-            public EncryptedXmlWithCertificateKeys(XmlKeyDecryptionOptions options, XmlDocument document)
+            public EncryptedXmlWithCertificateKeys(XmlKeyDecryptionOptions? options, XmlDocument document)
                 : base(document)
             {
                 _options = options;
             }
 
-            public override byte[] DecryptEncryptedKey(EncryptedKey encryptedKey)
+            public override byte[]? DecryptEncryptedKey(EncryptedKey encryptedKey)
             {
                 if (_options != null && _options.KeyDecryptionCertificateCount > 0)
                 {
@@ -106,7 +105,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                             continue;
                         }
 
-                        byte[] key = GetKeyFromCert(encryptedKey, kiX509Data);
+                        var key = GetKeyFromCert(encryptedKey, kiX509Data);
                         if (key != null)
                         {
                             return key;
@@ -117,7 +116,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 return base.DecryptEncryptedKey(encryptedKey);
             }
 
-            private byte[] GetKeyFromCert(EncryptedKey encryptedKey, KeyInfoX509Data keyInfo)
+            private byte[]? GetKeyFromCert(EncryptedKey encryptedKey, KeyInfoX509Data keyInfo)
             {
                 var certEnum = keyInfo.Certificates?.GetEnumerator();
                 if (certEnum == null)
@@ -132,7 +131,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                         continue;
                     }
 
-                    if (!_options.TryGetKeyDecryptionCertificates(certInfo, out var keyDecryptionCerts))
+                    if (_options == null || !_options.TryGetKeyDecryptionCertificates(certInfo, out var keyDecryptionCerts))
                     {
                         continue;
                     }
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                             continue;
                         }
 
-                        using (RSA privateKey = keyDecryptionCert.GetRSAPrivateKey())
+                        using (var privateKey = keyDecryptionCert.GetRSAPrivateKey())
                         {
                             if (privateKey != null)
                             {

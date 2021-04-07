@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -20,6 +22,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private readonly ApiBehaviorOptions _apiBehaviorOptions;
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ModelStateInvalidFilter"/>.
+        /// </summary>
+        /// <param name="apiBehaviorOptions">The api behavior options.</param>
+        /// <param name="logger">The logger.</param>
         public ModelStateInvalidFilter(ApiBehaviorOptions apiBehaviorOptions, ILogger logger)
         {
             _apiBehaviorOptions = apiBehaviorOptions ?? throw new ArgumentNullException(nameof(apiBehaviorOptions));
@@ -29,7 +36,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     typeof(ApiBehaviorOptions),
                     nameof(ApiBehaviorOptions.InvalidModelStateResponseFactory)));
             }
-
 
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -54,10 +60,18 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <inheritdoc />
         public bool IsReusable => true;
 
+        /// <summary>
+        /// Invoked when an action is executed.
+        /// </summary>
+        /// <param name="context">The <see cref="ActionExecutedContext"/>.</param>
         public void OnActionExecuted(ActionExecutedContext context)
         {
         }
 
+        /// <summary>
+        /// Invoked when an action is executing.
+        /// </summary>
+        /// <param name="context">The <see cref="ActionExecutingContext"/>.</param>
         public void OnActionExecuting(ActionExecutingContext context)
         {
             if (context.Result == null && !context.ModelState.IsValid)

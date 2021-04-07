@@ -32,8 +32,7 @@ namespace SecurityWebSite
             {
                 o.EnableEndpointRouting = false;
                 o.Filters.Add(new AuthorizeFilter());
-            })
-            .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            });
 
             services.AddScoped<IPolicyEvaluator, CountingPolicyEvaluator>();
         }

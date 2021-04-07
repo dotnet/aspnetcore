@@ -14,12 +14,12 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Gets or sets the delegate used to process requests for the endpoint.
         /// </summary>
-        public RequestDelegate RequestDelegate { get; set; }
+        public RequestDelegate? RequestDelegate { get; set; }
 
         /// <summary>
         /// Gets or sets the informational display name of this endpoint.
         /// </summary>
-        public string DisplayName { get; set; }
+        public string? DisplayName { get; set; }
 
         /// <summary>
         /// Gets the collection of metadata associated with this endpoint.

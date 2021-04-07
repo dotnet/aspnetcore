@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -19,9 +20,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public async Task RunAsync_CanExitBasedOnCancellationToken()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var host = builder.Build();
-            host.SatelliteResourcesLoader = new TestSatelliteResourcesLoader();
+            host.CultureProvider = new TestSatelliteResourcesLoader();
 
             var cts = new CancellationTokenSource();
 
@@ -38,9 +39,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public async Task RunAsync_CallingTwiceCausesException()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var host = builder.Build();
-            host.SatelliteResourcesLoader = new TestSatelliteResourcesLoader();
+            host.CultureProvider = new TestSatelliteResourcesLoader();
 
             var cts = new CancellationTokenSource();
             var task = host.RunAsyncCore(cts.Token);
@@ -59,10 +60,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public async Task DisposeAsync_CanDisposeAfterCallingRunAsync()
         {
             // Arrange
-            var builder = new WebAssemblyHostBuilder(new TestWebAssemblyJSRuntimeInvoker());
+            var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             builder.Services.AddSingleton<DisposableService>();
             var host = builder.Build();
-            host.SatelliteResourcesLoader = new TestSatelliteResourcesLoader();
+            host.CultureProvider = new TestSatelliteResourcesLoader();
 
             var disposable = host.Services.GetRequiredService<DisposableService>();
 
@@ -92,10 +93,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             }
         }
 
-        private class TestSatelliteResourcesLoader : SatelliteResourcesLoader
+        private class TestSatelliteResourcesLoader : WebAssemblyCultureProvider
         {
             internal TestSatelliteResourcesLoader()
-                : base(WebAssemblyJSRuntimeInvoker.Instance)
+                : base(DefaultWebAssemblyJSRuntime.Instance, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture)
             {
             }
 

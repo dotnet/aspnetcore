@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     internal class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
     {
         private static readonly Oid ClientCertificateOid = new Oid("1.3.6.1.5.5.7.3.2");
+        private ICertificateValidationCache? _cache;
 
         public CertificateAuthenticationHandler(
             IOptionsMonitor<CertificateAuthenticationOptions> options,
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// </summary>
         protected new CertificateAuthenticationEvents Events
         {
-            get { return (CertificateAuthenticationEvents)base.Events; }
+            get { return (CertificateAuthenticationEvents)base.Events!; }
             set { base.Events = value; }
         }
 
@@ -41,11 +43,18 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <returns>A new instance of the events instance.</returns>
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new CertificateAuthenticationEvents());
 
+        protected override Task InitializeHandlerAsync()
+        {
+            _cache = Context.RequestServices.GetService<ICertificateValidationCache>();
+            return base.InitializeHandlerAsync();
+        }
+
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             // You only get client certificates over HTTPS
             if (!Context.Request.IsHttps)
             {
+                Logger.NotHttps();
                 return AuthenticateResult.NoResult();
             }
 
@@ -60,67 +69,36 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                     return AuthenticateResult.NoResult();
                 }
 
-                // If we have a self signed cert, and they're not allowed, exit early and not bother with
-                // any other validations.
-                if (clientCertificate.IsSelfSigned() &&
-                    !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.SelfSigned))
+                if (_cache != null)
                 {
-                    Logger.CertificateRejected("Self signed", clientCertificate.Subject);
-                    return AuthenticateResult.Fail("Options do not allow self signed certificates.");
-                }
-
-                // If we have a chained cert, and they're not allowed, exit early and not bother with
-                // any other validations.
-                if (!clientCertificate.IsSelfSigned() &&
-                    !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.Chained))
-                {
-                    Logger.CertificateRejected("Chained", clientCertificate.Subject);
-                    return AuthenticateResult.Fail("Options do not allow chained certificates.");
-                }
-
-                var chainPolicy = BuildChainPolicy(clientCertificate);
-                var chain = new X509Chain
-                {
-                    ChainPolicy = chainPolicy
-                };
-
-                var certificateIsValid = chain.Build(clientCertificate);
-                if (!certificateIsValid)
-                {
-                    var chainErrors = new List<string>();
-                    foreach (var validationFailure in chain.ChainStatus)
+                    var cacheHit = _cache.Get(Context, clientCertificate);
+                    if (cacheHit != null)
                     {
-                        chainErrors.Add($"{validationFailure.Status} {validationFailure.StatusInformation}");
+                        return cacheHit;
                     }
-                    Logger.CertificateFailedValidation(clientCertificate.Subject, chainErrors);
-                    return AuthenticateResult.Fail("Client certificate failed validation.");
                 }
 
-                var certificateValidatedContext = new CertificateValidatedContext(Context, Scheme, Options)
-                {
-                    ClientCertificate = clientCertificate,
-                    Principal = CreatePrincipal(clientCertificate)
-                };
+                var result = await ValidateCertificateAsync(clientCertificate);
 
-                await Events.CertificateValidated(certificateValidatedContext);
-
-                if (certificateValidatedContext.Result != null)
+                // Invoke the failed handler if validation failed, before updating the cache
+                if (result.Failure != null)
                 {
-                    return certificateValidatedContext.Result;
+                    var authenticationFailedContext = await HandleFailureAsync(result.Failure);
+                    if (authenticationFailedContext.Result != null)
+                    {
+                        result = authenticationFailedContext.Result;
+                    }
                 }
-
-                certificateValidatedContext.Success();
-                return certificateValidatedContext.Result;
+                
+                if (_cache != null)
+                {
+                    _cache.Put(Context, clientCertificate, result);
+                }
+                return result;
             }
             catch (Exception ex)
             {
-                var authenticationFailedContext = new CertificateAuthenticationFailedContext(Context, Scheme, Options)
-                {
-                    Exception = ex
-                };
-
-                await Events.AuthenticationFailed(authenticationFailedContext);
-
+                var authenticationFailedContext = await HandleFailureAsync(ex);
                 if (authenticationFailedContext.Result != null)
                 {
                     return authenticationFailedContext.Result;
@@ -130,11 +108,85 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             }
         }
 
-        protected override Task HandleChallengeAsync(AuthenticationProperties properties)
+        private async Task<CertificateAuthenticationFailedContext> HandleFailureAsync(Exception error)
         {
+            var authenticationFailedContext = new CertificateAuthenticationFailedContext(Context, Scheme, Options)
+            {
+                Exception = error
+            };
+
+            await Events.AuthenticationFailed(authenticationFailedContext);
+            return authenticationFailedContext;
+        }
+
+        private async Task<AuthenticateResult> ValidateCertificateAsync(X509Certificate2 clientCertificate)
+        {
+            // If we have a self signed cert, and they're not allowed, exit early and not bother with
+            // any other validations.
+            if (clientCertificate.IsSelfSigned() &&
+                !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.SelfSigned))
+            {
+                Logger.CertificateRejected("Self signed", clientCertificate.Subject);
+                return AuthenticateResult.Fail("Options do not allow self signed certificates.");
+            }
+
+            // If we have a chained cert, and they're not allowed, exit early and not bother with
+            // any other validations.
+            if (!clientCertificate.IsSelfSigned() &&
+                !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.Chained))
+            {
+                Logger.CertificateRejected("Chained", clientCertificate.Subject);
+                return AuthenticateResult.Fail("Options do not allow chained certificates.");
+            }
+
+            var chainPolicy = BuildChainPolicy(clientCertificate);
+            using var chain = new X509Chain
+            {
+                ChainPolicy = chainPolicy
+            };
+
+            var certificateIsValid = chain.Build(clientCertificate);
+            if (!certificateIsValid)
+            {
+                var chainErrors = new List<string>(chain.ChainStatus.Length);
+                foreach (var validationFailure in chain.ChainStatus)
+                {
+                    chainErrors.Add($"{validationFailure.Status} {validationFailure.StatusInformation}");
+                }
+                Logger.CertificateFailedValidation(clientCertificate.Subject, chainErrors);
+                return AuthenticateResult.Fail("Client certificate failed validation.");
+            }
+
+            var certificateValidatedContext = new CertificateValidatedContext(Context, Scheme, Options)
+            {
+                ClientCertificate = clientCertificate,
+                Principal = CreatePrincipal(clientCertificate)
+            };
+
+            await Events.CertificateValidated(certificateValidatedContext);
+
+            if (certificateValidatedContext.Result != null)
+            {
+                return certificateValidatedContext.Result;
+            }
+
+            certificateValidatedContext.Success();
+            return certificateValidatedContext.Result!;
+        }
+
+        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+        {
+            var authenticationChallengedContext = new CertificateChallengeContext(Context, Scheme, Options, properties);
+            await Events.Challenge(authenticationChallengedContext);
+
+            if (authenticationChallengedContext.Handled)
+            {
+                return;
+            }
+
             // Certificate authentication takes place at the connection level. We can't prompt once we're in
             // user code, so the best thing to do is Forbid, not Challenge.
-            return HandleForbiddenAsync(properties);
+            await HandleForbiddenAsync(properties);
         }
 
         private X509ChainPolicy BuildChainPolicy(X509Certificate2 certificate)
@@ -167,6 +219,17 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                 chainPolicy.VerificationFlags |= X509VerificationFlags.IgnoreEndRevocationUnknown;
                 chainPolicy.ExtraStore.Add(certificate);
             }
+            else
+            {
+                if (Options.CustomTrustStore != null)
+                {
+                    chainPolicy.CustomTrustStore.AddRange(Options.CustomTrustStore);
+                }
+
+                chainPolicy.TrustMode = Options.ChainTrustValidationMode;
+            }
+
+            chainPolicy.ExtraStore.AddRange(Options.AdditionalChainCertificates);
 
             if (!Options.ValidateValidityPeriod)
             {

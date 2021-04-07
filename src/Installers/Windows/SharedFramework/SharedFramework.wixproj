@@ -58,7 +58,7 @@
     </HarvestDirectory>
   </ItemGroup>
 
-  <!-- TODO: https://github.com/aspnet/AspNetCore/issues/6304. Harvest shared frameworks from a project reference -->
+  <!-- TODO: https://github.com/dotnet/aspnetcore/issues/6304. Harvest shared frameworks from a project reference -->
   <Target Name="ExtractIntermediateSharedFx" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <SharedFrameworkArm64HarvestRootPath Condition="'$(SharedFrameworkArm64HarvestRootPath)' == ''">$(InstallersOutputPath)</SharedFrameworkArm64HarvestRootPath>

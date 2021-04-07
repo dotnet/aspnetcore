@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <Description>Implements the SignalR Hub Protocol using System.Text.Json.</Description>
-    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,9 +23,8 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '3.1'">
-    <!-- This dependency was replaced by System.Text.Json between 3.0 and 2.2. This suppression can be removed after 3.0 is complete. -->
-    <SuppressBaselineReference Include="Newtonsoft.Json" />
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
   </ItemGroup>
 
 </Project>

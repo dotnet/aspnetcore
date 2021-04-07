@@ -30,22 +30,33 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Theory]
-        [InlineData(false, false, false)]
-        [InlineData(false, true, false)]
-        [InlineData(true, false, false)]
-        [InlineData(true, true, false)]
-        [InlineData(true, false, true)]
-        [InlineData(true, true, true)]
-        public async Task EnsureClaimsIdentityHasExpectedClaims(bool supportRoles, bool supportClaims, bool supportRoleClaims)
+        [InlineData(true, false, false, false)]
+        [InlineData(true, true, false, false)]
+        [InlineData(true, false, true, false)]
+        [InlineData(true, true, true, false)]
+        [InlineData(false, false, false, true)]
+        [InlineData(false, true, false, true)]
+        [InlineData(false, false, false, false)]
+        [InlineData(false, true, false, false)]
+        [InlineData(true, false, false, true)]
+        [InlineData(true, true, false, true)]
+        [InlineData(true, false, true, true)]
+        [InlineData(true, true, true, true)]
+        public async Task EnsureClaimsIdentityHasExpectedClaims(bool supportRoles, bool supportClaims, bool supportRoleClaims, bool supportsUserEmail)
         {
             // Setup
             var userManager = MockHelpers.MockUserManager<PocoUser>();
             var roleManager = MockHelpers.MockRoleManager<PocoRole>();
-            var user = new PocoUser { UserName = "Foo" };
+            var user = new PocoUser { UserName = "Foo", Email = "foo@bar.com" };
             userManager.Setup(m => m.SupportsUserClaim).Returns(supportClaims);
             userManager.Setup(m => m.SupportsUserRole).Returns(supportRoles);
+            userManager.Setup(m => m.SupportsUserEmail).Returns(supportsUserEmail);
             userManager.Setup(m => m.GetUserIdAsync(user)).ReturnsAsync(user.Id);
             userManager.Setup(m => m.GetUserNameAsync(user)).ReturnsAsync(user.UserName);
+            if (supportsUserEmail)
+            {
+                userManager.Setup(m => m.GetEmailAsync(user)).ReturnsAsync(user.Email);
+            }
             var roleClaims = new[] { "Admin", "Local" };
             if (supportRoles)
             {
@@ -90,6 +101,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Contains(
                 claims, c => c.Type == manager.Options.ClaimsIdentity.UserNameClaimType && c.Value == user.UserName);
             Assert.Contains(claims, c => c.Type == manager.Options.ClaimsIdentity.UserIdClaimType && c.Value == user.Id);
+            Assert.Equal(supportsUserEmail, claims.Any(c => c.Type == manager.Options.ClaimsIdentity.EmailClaimType && c.Value == user.Email));
             Assert.Equal(supportRoles, claims.Any(c => c.Type == manager.Options.ClaimsIdentity.RoleClaimType && c.Value == "Admin"));
             Assert.Equal(supportRoles, claims.Any(c => c.Type == manager.Options.ClaimsIdentity.RoleClaimType && c.Value == "Local"));
             foreach (var cl in userClaims)

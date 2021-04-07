@@ -2,32 +2,39 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
+
+#nullable enable
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal static class StringUtilities
     {
-        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span, Encoding defaultEncoding)
+        private static readonly SpanAction<char, IntPtr> s_getAsciiOrUtf8StringNonNullCharacters = GetAsciiStringNonNullCharacters;
+
+        private static string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span, Encoding defaultEncoding)
+            => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span, defaultEncoding);
+
+        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span, Encoding defaultEncoding)
         {
             if (span.IsEmpty)
             {
                 return string.Empty;
             }
 
-            var resultString = new string('\0', span.Length);
-
-            fixed (char* output = resultString)
-            fixed (byte* buffer = span)
+            fixed (byte* source = &MemoryMarshal.GetReference(span))
             {
-                // StringUtilities.TryGetAsciiString returns null if there are any null (0 byte) characters
-                // in the string
-                if (!TryGetAsciiString(buffer, output, span.Length))
+                var resultString = string.Create(span.Length, new IntPtr(source), s_getAsciiOrUtf8StringNonNullCharacters);
+
+                // If resultString is marked, perform UTF-8 encoding
+                if (resultString[0] == '\0')
                 {
                     // null characters are considered invalid
                     if (span.IndexOf((byte)0) != -1)
@@ -37,19 +44,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                     try
                     {
-                        resultString = defaultEncoding.GetString(buffer, span.Length);
+                        resultString = defaultEncoding.GetString(span);
                     }
                     catch (DecoderFallbackException)
                     {
                         throw new InvalidOperationException();
                     }
                 }
-            }
 
-            return resultString;
+                return resultString;
+            }
         }
 
-        public static unsafe string GetLatin1StringNonNullCharacters(this Span<byte> span)
+        private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
+        {
+            fixed (char* output = &MemoryMarshal.GetReference(buffer))
+            {
+                // This version if AsciiUtilities returns false if there are any null ('\0') or non-Ascii
+                // character (> 127) in the string.
+                if (!TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
+                {
+                    // Mark resultString for UTF-8 encoding
+                    output[0] = '\0';
+                }
+            }
+        }
+
+        public static unsafe string GetLatin1StringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {
@@ -78,88 +99,83 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Debug.Assert(input != null);
             Debug.Assert(output != null);
 
-            // Calculate end position
             var end = input + count;
-            // Start as valid
-            var isValid = true;
 
-            do
+            Debug.Assert((long)end >= Vector256<sbyte>.Count);
+
+            // PERF: so the JIT can reuse the zero from a register
+            Vector128<sbyte> zero = Vector128<sbyte>.Zero;
+
+            if (Sse2.IsSupported)
             {
-                // If Vector not-accelerated or remaining less than vector size
-                if (!Vector.IsHardwareAccelerated || input > end - Vector<sbyte>.Count)
+                if (Avx2.IsSupported && input <= end - Vector256<sbyte>.Count)
                 {
-                    if (IntPtr.Size == 8) // Use Intrinsic switch for branch elimination
+                    Vector256<sbyte> avxZero = Vector256<sbyte>.Zero;
+
+                    do
                     {
-                        // 64-bit: Loop longs by default
-                        while (input <= end - sizeof(long))
+                        var vector = Avx.LoadVector256(input).AsSByte();
+                        if (!CheckBytesInAsciiRange(vector, avxZero))
                         {
-                            isValid &= CheckBytesInAsciiRange(((long*)input)[0]);
-
-                            output[0] = (char)input[0];
-                            output[1] = (char)input[1];
-                            output[2] = (char)input[2];
-                            output[3] = (char)input[3];
-                            output[4] = (char)input[4];
-                            output[5] = (char)input[5];
-                            output[6] = (char)input[6];
-                            output[7] = (char)input[7];
-
-                            input += sizeof(long);
-                            output += sizeof(long);
+                            return false;
                         }
-                        if (input <= end - sizeof(int))
-                        {
-                            isValid &= CheckBytesInAsciiRange(((int*)input)[0]);
 
-                            output[0] = (char)input[0];
-                            output[1] = (char)input[1];
-                            output[2] = (char)input[2];
-                            output[3] = (char)input[3];
+                        var tmp0 = Avx2.UnpackLow(vector, avxZero);
+                        var tmp1 = Avx2.UnpackHigh(vector, avxZero);
 
-                            input += sizeof(int);
-                            output += sizeof(int);
-                        }
-                    }
-                    else
+                        // Bring into the right order
+                        var out0 = Avx2.Permute2x128(tmp0, tmp1, 0x20);
+                        var out1 = Avx2.Permute2x128(tmp0, tmp1, 0x31);
+
+                        Avx.Store((ushort*)output, out0.AsUInt16());
+                        Avx.Store((ushort*)output + Vector256<ushort>.Count, out1.AsUInt16());
+
+                        input += Vector256<sbyte>.Count;
+                        output += Vector256<sbyte>.Count;
+                    } while (input <= end - Vector256<sbyte>.Count);
+
+                    if (input == end)
                     {
-                        // 32-bit: Loop ints by default
-                        while (input <= end - sizeof(int))
-                        {
-                            isValid &= CheckBytesInAsciiRange(((int*)input)[0]);
-
-                            output[0] = (char)input[0];
-                            output[1] = (char)input[1];
-                            output[2] = (char)input[2];
-                            output[3] = (char)input[3];
-
-                            input += sizeof(int);
-                            output += sizeof(int);
-                        }
+                        return true;
                     }
-                    if (input <= end - sizeof(short))
-                    {
-                        isValid &= CheckBytesInAsciiRange(((short*)input)[0]);
-
-                        output[0] = (char)input[0];
-                        output[1] = (char)input[1];
-
-                        input += sizeof(short);
-                        output += sizeof(short);
-                    }
-                    if (input < end)
-                    {
-                        isValid &= CheckBytesInAsciiRange(((sbyte*)input)[0]);
-                        output[0] = (char)input[0];
-                    }
-
-                    return isValid;
                 }
 
-                // do/while as entry condition already checked
-                do
+                if (input <= end - Vector128<sbyte>.Count)
+                {
+                    do
+                    {
+                        var vector = Sse2.LoadVector128(input).AsSByte();
+                        if (!CheckBytesInAsciiRange(vector, zero))
+                        {
+                            return false;
+                        }
+
+                        var c0 = Sse2.UnpackLow(vector, zero).AsUInt16();
+                        var c1 = Sse2.UnpackHigh(vector, zero).AsUInt16();
+
+                        Sse2.Store((ushort*)output, c0);
+                        Sse2.Store((ushort*)output + Vector128<ushort>.Count, c1);
+
+                        input += Vector128<sbyte>.Count;
+                        output += Vector128<sbyte>.Count;
+                    } while (input <= end - Vector128<sbyte>.Count);
+
+                    if (input == end)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (Vector.IsHardwareAccelerated)
+            {
+                while (input <= end - Vector<sbyte>.Count)
                 {
                     var vector = Unsafe.AsRef<Vector<sbyte>>(input);
-                    isValid &= CheckBytesInAsciiRange(vector);
+                    if (!CheckBytesInAsciiRange(vector))
+                    {
+                        return false;
+                    }
+
                     Vector.Widen(
                         vector,
                         out Unsafe.AsRef<Vector<short>>(output),
@@ -167,13 +183,104 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                     input += Vector<sbyte>.Count;
                     output += Vector<sbyte>.Count;
-                } while (input <= end - Vector<sbyte>.Count);
+                }
 
-                // Vector path done, loop back to do non-Vector
-                // If is a exact multiple of vector size, bail now
-            } while (input < end);
+                if (input == end)
+                {
+                    return true;
+                }
+            }
 
-            return isValid;
+            if (Environment.Is64BitProcess) // Use Intrinsic switch for branch elimination
+            {
+                // 64-bit: Loop longs by default
+                while (input <= end - sizeof(long))
+                {
+                    var value = *(long*)input;
+                    if (!CheckBytesInAsciiRange(value))
+                    {
+                        return false;
+                    }
+
+                    // BMI2 could be used, but this variant is faster on both Intel and AMD.
+                    if (Sse2.X64.IsSupported)
+                    {
+                        Vector128<sbyte> vecNarrow = Sse2.X64.ConvertScalarToVector128Int64(value).AsSByte();
+                        Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
+                        Sse2.Store((ulong*)output, vecWide);
+                    }
+                    else
+                    {
+                        output[0] = (char)input[0];
+                        output[1] = (char)input[1];
+                        output[2] = (char)input[2];
+                        output[3] = (char)input[3];
+                        output[4] = (char)input[4];
+                        output[5] = (char)input[5];
+                        output[6] = (char)input[6];
+                        output[7] = (char)input[7];
+                    }
+
+                    input += sizeof(long);
+                    output += sizeof(long);
+                }
+
+                if (input <= end - sizeof(int))
+                {
+                    var value = *(int*)input;
+                    if (!CheckBytesInAsciiRange(value))
+                    {
+                        return false;
+                    }
+
+                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value, zero);
+
+                    input += sizeof(int);
+                    output += sizeof(int);
+                }
+            }
+            else
+            {
+                // 32-bit: Loop ints by default
+                while (input <= end - sizeof(int))
+                {
+                    var value = *(int*)input;
+                    if (!CheckBytesInAsciiRange(value))
+                    {
+                        return false;
+                    }
+
+                    WidenFourAsciiBytesToUtf16AndWriteToBuffer(output, input, value, zero);
+
+                    input += sizeof(int);
+                    output += sizeof(int);
+                }
+            }
+
+            if (input <= end - sizeof(short))
+            {
+                if (!CheckBytesInAsciiRange(((short*)input)[0]))
+                {
+                    return false;
+                }
+
+                output[0] = (char)input[0];
+                output[1] = (char)input[1];
+
+                input += sizeof(short);
+                output += sizeof(short);
+            }
+
+            if (input < end)
+            {
+                if (!CheckBytesInAsciiRange(((sbyte*)input)[0]))
+                {
+                    return false;
+                }
+                output[0] = (char)input[0];
+            }
+
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -282,7 +389,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe static bool BytesOrdinalEqualsStringAndAscii(string previousValue, Span<byte> newValue)
+        public static bool BytesOrdinalEqualsStringAndAscii(string previousValue, ReadOnlySpan<byte> newValue)
         {
             // previousValue is a previously materialized string which *must* have already passed validation.
             Debug.Assert(IsValidHeaderString(previousValue));
@@ -305,8 +412,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // This isn't problematic as we know the maximum length is max string length (from test above)
             // which is a signed value so half the size of the unsigned pointer value so we can safely add
             // a Vector<byte>.Count to it without overflowing.
-            var count = (IntPtr)newValue.Length;
-            var offset = (IntPtr)0;
+            var count = (nint)newValue.Length;
+            var offset = (nint)0;
 
             // Get references to the first byte in the span, and the first char in the string.
             ref var bytes = ref MemoryMarshal.GetReference(newValue);
@@ -315,12 +422,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             do
             {
                 // If Vector not-accelerated or remaining less than vector size
-                if (!Vector.IsHardwareAccelerated || (byte*)(offset + Vector<byte>.Count) > (byte*)count)
+                if (!Vector.IsHardwareAccelerated || (offset + Vector<byte>.Count) > count)
                 {
                     if (IntPtr.Size == 8) // Use Intrinsic switch for branch elimination
                     {
                         // 64-bit: Loop longs by default
-                        while ((byte*)(offset + sizeof(long)) <= (byte*)count)
+                        while ((offset + sizeof(long)) <= count)
                         {
                             if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
                                     ref Unsafe.Add(ref str, offset),
@@ -334,7 +441,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                             offset += sizeof(long);
                         }
-                        if ((byte*)(offset + sizeof(int)) <= (byte*)count)
+                        if ((offset + sizeof(int)) <= count)
                         {
                             if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
                                 ref Unsafe.Add(ref str, offset),
@@ -349,7 +456,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     else
                     {
                         // 32-bit: Loop ints by default
-                        while ((byte*)(offset + sizeof(int)) <= (byte*)count)
+                        while ((offset + sizeof(int)) <= count)
                         {
                             if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
                                 ref Unsafe.Add(ref str, offset),
@@ -361,7 +468,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                             offset += sizeof(int);
                         }
                     }
-                    if ((byte*)(offset + sizeof(short)) <= (byte*)count)
+                    if ((offset + sizeof(short)) <= count)
                     {
                         if (!WidenTwoAsciiBytesToUtf16AndCompareToChars(
                             ref Unsafe.Add(ref str, offset),
@@ -372,7 +479,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                         offset += sizeof(short);
                     }
-                    if ((byte*)offset < (byte*)count)
+                    if (offset < count)
                     {
                         var ch = (char)Unsafe.Add(ref bytes, offset);
                         if (((ch & 0x80) != 0) || Unsafe.Add(ref str, offset) != ch)
@@ -420,17 +527,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     }
 
                     offset += Vector<byte>.Count;
-                } while ((byte*)(offset + Vector<byte>.Count) <= (byte*)count);
+                } while ((offset + Vector<byte>.Count) <= count);
 
                 // Vector path done, loop back to do non-Vector
                 // If is a exact multiple of vector size, bail now
-            } while ((byte*)offset < (byte*)count);
+            } while (offset < count);
 
             // If we get here (input is exactly a multiple of Vector length) then there are no inequalities via widening;
             // so the input bytes are both ascii and a match to the string if it was converted via Encoding.ASCII.GetString(...)
             return true;
         NotEqual:
             return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void WidenFourAsciiBytesToUtf16AndWriteToBuffer(char* output, byte* input, int value, Vector128<sbyte> zero)
+        {
+            // BMI2 could be used, but this variant is faster on both Intel and AMD.
+            if (Sse2.X64.IsSupported)
+            {
+                Vector128<sbyte> vecNarrow = Sse2.ConvertScalarToVector128Int32(value).AsSByte();
+                Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, zero).AsUInt64();
+                Unsafe.WriteUnaligned(output, Sse2.X64.ConvertToUInt64(vecWide));
+            }
+            else
+            {
+                output[0] = (char)input[0];
+                output[1] = (char)input[1];
+                output[2] = (char)input[2];
+                output[3] = (char)input[3];
+            }
         }
 
         /// <summary>
@@ -445,11 +571,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return false;
             }
 
-            if (Bmi2.X64.IsSupported)
+            // BMI2 could be used, but this variant is faster on both Intel and AMD.
+            if (Sse2.X64.IsSupported)
             {
-                // BMI2 will work regardless of the processor's endianness.
+                Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
+                Vector128<ulong> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
                 return Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<char, byte>(ref charStart)) ==
-                    Bmi2.X64.ParallelBitDeposit(value, 0x00FF00FF_00FF00FFul);
+                    Sse2.X64.ConvertToUInt64(vecWide);
             }
             else
             {
@@ -482,11 +610,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return false;
             }
 
-            if (Bmi2.IsSupported)
+            // BMI2 could be used, but this variant is faster on both Intel and AMD.
+            if (Sse2.IsSupported)
             {
-                // BMI2 will work regardless of the processor's endianness.
+                Vector128<byte> vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
+                Vector128<uint> vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt32();
                 return Unsafe.ReadUnaligned<uint>(ref Unsafe.As<char, byte>(ref charStart)) ==
-                    Bmi2.ParallelBitDeposit(value, 0x00FF00FFu);
+                    Sse2.ConvertToUInt32(vecWide);
             }
             else
             {
@@ -521,7 +651,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return ((value & 0x8080u) == 0);
         }
 
-        private unsafe static bool IsValidHeaderString(string value)
+        private static bool IsValidHeaderString(string value)
         {
             // Method for Debug.Assert to ensure BytesOrdinalEqualsStringAndAscii
             // is not called with an unvalidated string comparitor.
@@ -536,8 +666,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return false;
             }
         }
-
-        private static readonly char[] s_encode16Chars = "0123456789ABCDEF".ToCharArray();
+        private static readonly SpanAction<char, (string? str, char separator, uint number)> s_populateSpanWithHexSuffix = PopulateSpanWithHexSuffix;
 
         /// <summary>
         /// A faster version of String.Concat(<paramref name="str"/>, <paramref name="separator"/>, <paramref name="number"/>.ToString("X8"))
@@ -554,28 +683,86 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 length += str.Length;
             }
 
-            return string.Create(length, (str, separator, number), (buffer, tuple) =>
+            return string.Create(length, (str, separator, number), s_populateSpanWithHexSuffix);
+        }
+
+        private static void PopulateSpanWithHexSuffix(Span<char> buffer, (string? str, char separator, uint number) tuple)
+        {
+            var (tupleStr, tupleSeparator, tupleNumber) = tuple;
+
+            var i = 0;
+            if (tupleStr != null)
             {
-                var (tupleStr, tupleSeparator, tupleNumber) = tuple;
-                char[] encode16Chars = s_encode16Chars;
+                tupleStr.AsSpan().CopyTo(buffer);
+                i = tupleStr.Length;
+            }
 
-                var i = 0;
-                if (tupleStr != null)
+            buffer[i] = tupleSeparator;
+            i++;
+
+            if (Ssse3.IsSupported)
+            {
+                // These must be explicity typed as ReadOnlySpan<byte>
+                // They then become a non-allocating mappings to the data section of the assembly.
+                // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
+                ReadOnlySpan<byte> shuffleMaskData = new byte[16]
                 {
-                    tupleStr.AsSpan().CopyTo(buffer);
-                    i = tupleStr.Length;
-                }
+                    0xF, 0xF, 3, 0xF,
+                    0xF, 0xF, 2, 0xF,
+                    0xF, 0xF, 1, 0xF,
+                    0xF, 0xF, 0, 0xF
+                };
 
-                buffer[i + 8] = encode16Chars[tupleNumber & 0xF];
-                buffer[i + 7] = encode16Chars[(tupleNumber >> 4) & 0xF];
-                buffer[i + 6] = encode16Chars[(tupleNumber >> 8) & 0xF];
-                buffer[i + 5] = encode16Chars[(tupleNumber >> 12) & 0xF];
-                buffer[i + 4] = encode16Chars[(tupleNumber >> 16) & 0xF];
-                buffer[i + 3] = encode16Chars[(tupleNumber >> 20) & 0xF];
-                buffer[i + 2] = encode16Chars[(tupleNumber >> 24) & 0xF];
-                buffer[i + 1] = encode16Chars[(tupleNumber >> 28) & 0xF];
-                buffer[i] = tupleSeparator;
-            });
+                ReadOnlySpan<byte> asciiUpperCaseData = new byte[16]
+                {
+                    (byte)'0', (byte)'1', (byte)'2', (byte)'3',
+                    (byte)'4', (byte)'5', (byte)'6', (byte)'7',
+                    (byte)'8', (byte)'9', (byte)'A', (byte)'B',
+                    (byte)'C', (byte)'D', (byte)'E', (byte)'F'
+                };
+
+                // Load from data section memory into Vector128 registers
+                var shuffleMask = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(shuffleMaskData));
+                var asciiUpperCase = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(asciiUpperCaseData));
+
+                var lowNibbles = Ssse3.Shuffle(Vector128.CreateScalarUnsafe(tupleNumber).AsByte(), shuffleMask);
+                var highNibbles = Sse2.ShiftRightLogical(Sse2.ShiftRightLogical128BitLane(lowNibbles, 2).AsInt32(), 4).AsByte();
+                var indices = Sse2.And(Sse2.Or(lowNibbles, highNibbles), Vector128.Create((byte)0xF));
+                // Lookup the hex values at the positions of the indices
+                var hex = Ssse3.Shuffle(asciiUpperCase, indices);
+                // The high bytes (0x00) of the chars have also been converted to ascii hex '0', so clear them out.
+                hex = Sse2.And(hex, Vector128.Create((ushort)0xFF).AsByte());
+
+                // This generates much more efficient asm than fixing the buffer and using
+                // Sse2.Store((byte*)(p + i), chars.AsByte());
+                Unsafe.WriteUnaligned(
+                    ref Unsafe.As<char, byte>(
+                        ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), i)),
+                    hex);
+            }
+            else
+            {
+                var number = (int)tupleNumber;
+                // Slice the buffer so we can use constant offsets in a backwards order
+                // and the highest index [7] will eliminate the bounds checks for all the lower indicies.
+                buffer = buffer.Slice(i);
+
+                // This must be explicity typed as ReadOnlySpan<byte>
+                // This then becomes a non-allocating mapping to the data section of the assembly.
+                // If it is a var, Span<byte> or byte[], it allocates the byte array per call.
+                ReadOnlySpan<byte> hexEncodeMap = new byte[] { (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F' };
+                // Note: this only works with byte due to endian ambiguity for other types,
+                // hence the later (char) casts
+
+                buffer[7] = (char)hexEncodeMap[number & 0xF];
+                buffer[6] = (char)hexEncodeMap[(number >> 4) & 0xF];
+                buffer[5] = (char)hexEncodeMap[(number >> 8) & 0xF];
+                buffer[4] = (char)hexEncodeMap[(number >> 12) & 0xF];
+                buffer[3] = (char)hexEncodeMap[(number >> 16) & 0xF];
+                buffer[2] = (char)hexEncodeMap[(number >> 20) & 0xF];
+                buffer[1] = (char)hexEncodeMap[(number >> 24) & 0xF];
+                buffer[0] = (char)hexEncodeMap[(number >> 28) & 0xF];
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
@@ -583,6 +770,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             // Vectorized byte range check, signed byte > 0 for 1-127
             return Vector.GreaterThanAll(check, Vector<sbyte>.Zero);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool CheckBytesInAsciiRange(Vector256<sbyte> check, Vector256<sbyte> zero)
+        {
+            Debug.Assert(Avx2.IsSupported);
+
+            var mask = Avx2.CompareGreaterThan(check, zero);
+            return (uint)Avx2.MoveMask(mask) == 0xFFFF_FFFF;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool CheckBytesInAsciiRange(Vector128<sbyte> check, Vector128<sbyte> zero)
+        {
+            Debug.Assert(Sse2.IsSupported);
+
+            var mask = Sse2.CompareGreaterThan(check, zero);
+            return Sse2.MoveMask(mask) == 0xFFFF;
         }
 
         // Validate: bytes != 0 && bytes <= 127
@@ -597,12 +802,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return (((check - 0x0101010101010101L) | check) & HighBits) == 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CheckBytesInAsciiRange(int check)
         {
             const int HighBits = unchecked((int)0x80808080);
             return (((check - 0x01010101) | check) & HighBits) == 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CheckBytesInAsciiRange(short check)
         {
             const short HighBits = unchecked((short)0x8080);

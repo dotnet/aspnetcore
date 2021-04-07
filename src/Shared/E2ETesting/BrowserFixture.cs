@@ -11,7 +11,10 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Edge;
+using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Remote;
+using OpenQA.Selenium.Safari;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -29,6 +32,8 @@ namespace Microsoft.AspNetCore.E2ETesting
         public ILogs Logs { get; private set; }
 
         public IMessageSink DiagnosticsMessageSink { get; }
+
+        public string UserProfileDir { get; private set; }
 
         public static void EnforceSupportedConfigurations()
         {
@@ -67,6 +72,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             var browsers = await Task.WhenAll(_browsers.Values);
             foreach (var (browser, log) in browsers)
             {
+                browser?.Quit();
                 browser?.Dispose();
             }
 
@@ -134,13 +140,17 @@ namespace Microsoft.AspNetCore.E2ETesting
         {
             var opts = new ChromeOptions();
 
-            // Comment this out if you want to watch or interact with the browser (e.g., for debugging)
-            if (!Debugger.IsAttached)
+            // Force language to english for tests
+            opts.AddUserProfilePreference("intl.accept_languages", "en");
+
+            if (!Debugger.IsAttached &&
+                !string.Equals(Environment.GetEnvironmentVariable("E2E_TEST_VISIBLE"), "true", StringComparison.OrdinalIgnoreCase))
             {
                 opts.AddArgument("--headless");
             }
 
             opts.AddArgument("--no-sandbox");
+            opts.AddArgument("--ignore-certificate-errors");
 
             // Log errors
             opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
@@ -156,10 +166,12 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
 
             var userProfileDirectory = UserProfileDirectory(context);
+            UserProfileDir = userProfileDirectory;
             if (!string.IsNullOrEmpty(userProfileDirectory))
             {
                 Directory.CreateDirectory(userProfileDirectory);
                 opts.AddArgument($"--user-data-dir={userProfileDirectory}");
+                opts.AddUserProfilePreference("download.default_directory", Path.Combine(userProfileDirectory, "Downloads"));
             }
 
             var instance = await SeleniumStandaloneServer.GetInstanceAsync(output);
@@ -176,11 +188,11 @@ namespace Microsoft.AspNetCore.E2ETesting
                     // To prevent this we let the client attempt several times to connect to the server, increasing
                     // the max allowed timeout for a command on each attempt linearly.
                     // This can also be caused if many tests are running concurrently, we might want to manage
-                    // chrome and chromedriver instances more aggresively if we have to.
+                    // chrome and chromedriver instances more aggressively if we have to.
                     // Additionally, if we think the selenium server has become irresponsive, we could spin up
                     // replace the current selenium server instance and let a new instance take over for the
                     // remaining tests.
-                    var driver = new RemoteWebDriver(
+                    var driver = new RemoteWebDriverWithLogs(
                         instance.Uri,
                         opts.ToCapabilities(),
                         TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
@@ -234,54 +246,74 @@ namespace Microsoft.AspNetCore.E2ETesting
                 name = $"{name} - {context}";
             }
 
-            var capabilities = new DesiredCapabilities();
+            DriverOptions options;
+
+            switch (sauce.BrowserName.ToLowerInvariant())
+            {
+                case "chrome":
+                    options = new ChromeOptions();
+                    break;
+                case "safari":
+                    options = new SafariOptions();
+                    break;
+                case "internet explorer":
+                    options = new InternetExplorerOptions();
+                    break;
+                case "microsoftedge":
+                    options = new EdgeOptions();
+                    break;
+                default:
+                    throw new InvalidOperationException($"Browser name {sauce.BrowserName} not recognized");
+            }
 
             // Required config
-            capabilities.SetCapability("username", sauce.Username);
-            capabilities.SetCapability("accessKey", sauce.AccessKey);
-            capabilities.SetCapability("tunnelIdentifier", sauce.TunnelIdentifier);
-            capabilities.SetCapability("name", name);
+            options.AddAdditionalOption("username", sauce.Username);
+            options.AddAdditionalOption("accessKey", sauce.AccessKey);
+            options.AddAdditionalOption("tunnelIdentifier", sauce.TunnelIdentifier);
+            options.AddAdditionalOption("name", name);
 
             if (!string.IsNullOrEmpty(sauce.BrowserName))
             {
-                capabilities.SetCapability("browserName", sauce.BrowserName);
+                options.AddAdditionalOption("browserName", sauce.BrowserName);
             }
 
             if (!string.IsNullOrEmpty(sauce.PlatformVersion))
             {
-                capabilities.SetCapability("platformName", sauce.PlatformName);
-                capabilities.SetCapability("platformVersion", sauce.PlatformVersion);
+                options.PlatformName = sauce.PlatformName;
+                options.AddAdditionalOption("platformVersion", sauce.PlatformVersion);
             }
             else
             {
                 // In some cases (like macOS), SauceLabs expects us to set "platform" instead of "platformName".
-                capabilities.SetCapability("platform", sauce.PlatformName);
+                options.AddAdditionalOption("platform", sauce.PlatformName);
             }
 
             if (!string.IsNullOrEmpty(sauce.BrowserVersion))
             {
-                capabilities.SetCapability("browserVersion", sauce.BrowserVersion);
+                options.BrowserVersion = sauce.BrowserVersion;
             }
 
             if (!string.IsNullOrEmpty(sauce.DeviceName))
             {
-                capabilities.SetCapability("deviceName", sauce.DeviceName);
+                options.AddAdditionalOption("deviceName", sauce.DeviceName);
             }
 
             if (!string.IsNullOrEmpty(sauce.DeviceOrientation))
             {
-                capabilities.SetCapability("deviceOrientation", sauce.DeviceOrientation);
+                options.AddAdditionalOption("deviceOrientation", sauce.DeviceOrientation);
             }
 
             if (!string.IsNullOrEmpty(sauce.AppiumVersion))
             {
-                capabilities.SetCapability("appiumVersion", sauce.AppiumVersion);
+                options.AddAdditionalOption("appiumVersion", sauce.AppiumVersion);
             }
 
             if (!string.IsNullOrEmpty(sauce.SeleniumVersion))
             {
-                capabilities.SetCapability("seleniumVersion", sauce.SeleniumVersion);
+                options.AddAdditionalOption("seleniumVersion", sauce.SeleniumVersion);
             }
+
+            var capabilities = options.ToCapabilities();
 
             await SauceConnectServer.StartAsync(output);
 
@@ -297,7 +329,9 @@ namespace Microsoft.AspNetCore.E2ETesting
                         capabilities,
                         TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
 
-                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
+                    // Make sure implicit waits are disabled as they don't mix well with explicit waiting
+                    // see https://www.selenium.dev/documentation/en/webdriver/waits/#implicit-wait
+                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.Zero;
                     var logs = new RemoteLogs(driver);
 
                     return (driver, logs);
@@ -312,6 +346,15 @@ namespace Microsoft.AspNetCore.E2ETesting
             } while (attempt < maxAttempts);
 
             throw new InvalidOperationException("Couldn't create a SauceLabs remote driver client.");
+        }
+
+        // This is a workaround for https://github.com/SeleniumHQ/selenium/issues/8229
+        private class RemoteWebDriverWithLogs : RemoteWebDriver, ISupportsLogs
+        {
+            public RemoteWebDriverWithLogs(Uri remoteAddress, ICapabilities desiredCapabilities, TimeSpan commandTimeout)
+                : base(remoteAddress, desiredCapabilities, commandTimeout)
+            {
+            }
         }
     }
 }

@@ -1,0 +1,95 @@
+#nullable enable
+Microsoft.AspNetCore.Hosting.EnvironmentName
+Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions
+Microsoft.AspNetCore.Hosting.HostingEnvironmentExtensions
+Microsoft.AspNetCore.Hosting.HostingStartupAttribute
+Microsoft.AspNetCore.Hosting.HostingStartupAttribute.HostingStartupAttribute(System.Type! hostingStartupType) -> void
+Microsoft.AspNetCore.Hosting.HostingStartupAttribute.HostingStartupType.get -> System.Type!
+Microsoft.AspNetCore.Hosting.IApplicationLifetime
+Microsoft.AspNetCore.Hosting.IApplicationLifetime.ApplicationStarted.get -> System.Threading.CancellationToken
+Microsoft.AspNetCore.Hosting.IApplicationLifetime.ApplicationStopped.get -> System.Threading.CancellationToken
+Microsoft.AspNetCore.Hosting.IApplicationLifetime.ApplicationStopping.get -> System.Threading.CancellationToken
+Microsoft.AspNetCore.Hosting.IApplicationLifetime.StopApplication() -> void
+Microsoft.AspNetCore.Hosting.IHostingEnvironment
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.ApplicationName.get -> string!
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.ApplicationName.set -> void
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.ContentRootFileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider!
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.ContentRootFileProvider.set -> void
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.ContentRootPath.get -> string!
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.ContentRootPath.set -> void
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.EnvironmentName.get -> string!
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.EnvironmentName.set -> void
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.WebRootFileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider!
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.WebRootFileProvider.set -> void
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.WebRootPath.get -> string!
+Microsoft.AspNetCore.Hosting.IHostingEnvironment.WebRootPath.set -> void
+Microsoft.AspNetCore.Hosting.IHostingStartup
+Microsoft.AspNetCore.Hosting.IHostingStartup.Configure(Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder) -> void
+Microsoft.AspNetCore.Hosting.IStartup
+Microsoft.AspNetCore.Hosting.IStartup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> void
+Microsoft.AspNetCore.Hosting.IStartup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> System.IServiceProvider!
+Microsoft.AspNetCore.Hosting.IStartupConfigureContainerFilter<TContainerBuilder>
+Microsoft.AspNetCore.Hosting.IStartupConfigureContainerFilter<TContainerBuilder>.ConfigureContainer(System.Action<TContainerBuilder>! container) -> System.Action<TContainerBuilder>!
+Microsoft.AspNetCore.Hosting.IStartupConfigureServicesFilter
+Microsoft.AspNetCore.Hosting.IStartupConfigureServicesFilter.ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>! next) -> System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>!
+Microsoft.AspNetCore.Hosting.IStartupFilter
+Microsoft.AspNetCore.Hosting.IStartupFilter.Configure(System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! next) -> System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>!
+Microsoft.AspNetCore.Hosting.IWebHost
+Microsoft.AspNetCore.Hosting.IWebHost.ServerFeatures.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
+Microsoft.AspNetCore.Hosting.IWebHost.Services.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Hosting.IWebHost.Start() -> void
+Microsoft.AspNetCore.Hosting.IWebHost.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Hosting.IWebHost.StopAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Hosting.IWebHostBuilder
+Microsoft.AspNetCore.Hosting.IWebHostBuilder.Build() -> Microsoft.AspNetCore.Hosting.IWebHost!
+Microsoft.AspNetCore.Hosting.IWebHostBuilder.ConfigureAppConfiguration(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.Extensions.Configuration.IConfigurationBuilder!>! configureDelegate) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Hosting.IWebHostBuilder.ConfigureServices(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.Extensions.DependencyInjection.IServiceCollection!>! configureServices) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Hosting.IWebHostBuilder.ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>! configureServices) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Hosting.IWebHostBuilder.GetSetting(string! key) -> string?
+Microsoft.AspNetCore.Hosting.IWebHostBuilder.UseSetting(string! key, string? value) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Hosting.IWebHostEnvironment
+Microsoft.AspNetCore.Hosting.IWebHostEnvironment.WebRootFileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider!
+Microsoft.AspNetCore.Hosting.IWebHostEnvironment.WebRootFileProvider.set -> void
+Microsoft.AspNetCore.Hosting.IWebHostEnvironment.WebRootPath.get -> string!
+Microsoft.AspNetCore.Hosting.IWebHostEnvironment.WebRootPath.set -> void
+Microsoft.AspNetCore.Hosting.WebHostBuilderContext
+Microsoft.AspNetCore.Hosting.WebHostBuilderContext.Configuration.get -> Microsoft.Extensions.Configuration.IConfiguration!
+Microsoft.AspNetCore.Hosting.WebHostBuilderContext.Configuration.set -> void
+Microsoft.AspNetCore.Hosting.WebHostBuilderContext.HostingEnvironment.get -> Microsoft.AspNetCore.Hosting.IWebHostEnvironment!
+Microsoft.AspNetCore.Hosting.WebHostBuilderContext.HostingEnvironment.set -> void
+Microsoft.AspNetCore.Hosting.WebHostBuilderContext.WebHostBuilderContext() -> void
+Microsoft.AspNetCore.Hosting.WebHostDefaults
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.CaptureStartupErrors(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, bool captureStartupErrors) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.PreferHostingUrls(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, bool preferHostingUrls) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.Start(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, params string![]! urls) -> Microsoft.AspNetCore.Hosting.IWebHost!
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.SuppressStatusMessages(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, bool suppressStatusMessages) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.UseConfiguration(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, Microsoft.Extensions.Configuration.IConfiguration! configuration) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.UseContentRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, string! contentRoot) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.UseEnvironment(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, string! environment) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.UseServer(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, Microsoft.AspNetCore.Hosting.Server.IServer! server) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.UseShutdownTimeout(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.TimeSpan timeout) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.UseStartup(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, string! startupAssemblyName) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.UseUrls(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, params string![]! urls) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions.UseWebRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, string! webRoot) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.HostingEnvironmentExtensions.IsDevelopment(this Microsoft.AspNetCore.Hosting.IHostingEnvironment! hostingEnvironment) -> bool
+static Microsoft.AspNetCore.Hosting.HostingEnvironmentExtensions.IsEnvironment(this Microsoft.AspNetCore.Hosting.IHostingEnvironment! hostingEnvironment, string! environmentName) -> bool
+static Microsoft.AspNetCore.Hosting.HostingEnvironmentExtensions.IsProduction(this Microsoft.AspNetCore.Hosting.IHostingEnvironment! hostingEnvironment) -> bool
+static Microsoft.AspNetCore.Hosting.HostingEnvironmentExtensions.IsStaging(this Microsoft.AspNetCore.Hosting.IHostingEnvironment! hostingEnvironment) -> bool
+static readonly Microsoft.AspNetCore.Hosting.EnvironmentName.Development -> string!
+static readonly Microsoft.AspNetCore.Hosting.EnvironmentName.Production -> string!
+static readonly Microsoft.AspNetCore.Hosting.EnvironmentName.Staging -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.ApplicationKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.CaptureStartupErrorsKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.ContentRootKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.DetailedErrorsKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.EnvironmentKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.HostingStartupAssembliesKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.HostingStartupExcludeAssembliesKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.PreferHostingUrlsKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.PreventHostingStartupKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.ServerUrlsKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.ShutdownTimeoutKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.StartupAssemblyKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.StaticWebAssetsKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.SuppressStatusMessagesKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.WebRootKey -> string!

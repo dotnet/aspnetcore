@@ -20,7 +20,5 @@
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <None Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 </Project>

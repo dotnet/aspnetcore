@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,14 +25,27 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="InferParameterBindingInfoConvention"/>.
+        /// </summary>
+        /// <param name="modelMetadataProvider">The model metadata provider.</param>
         public InferParameterBindingInfoConvention(
             IModelMetadataProvider modelMetadataProvider)
         {
             _modelMetadataProvider = modelMetadataProvider ?? throw new ArgumentNullException(nameof(modelMetadataProvider));
         }
 
+        /// <summary>
+        /// Called to determine whether the action should apply.
+        /// </summary>
+        /// <param name="action">The action in question.</param>
+        /// <returns><see langword="true"/> if the action should apply.</returns>
         protected virtual bool ShouldApply(ActionModel action) => true;
 
+        /// <summary>
+        /// Called to apply the convention to the <see cref="ActionModel"/>.
+        /// </summary>
+        /// <param name="action">The <see cref="ActionModel"/>.</param>
         public void Apply(ActionModel action)
         {
             if (action == null)
@@ -63,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 }
             }
 
-            var fromBodyParameters = action.Parameters.Where(p => p.BindingInfo.BindingSource == BindingSource.Body).ToList();
+            var fromBodyParameters = action.Parameters.Where(p => p.BindingInfo!.BindingSource == BindingSource.Body).ToList();
             if (fromBodyParameters.Count > 1)
             {
                 var parameters = string.Join(Environment.NewLine, fromBodyParameters.Select(p => p.DisplayName));
@@ -103,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     continue;
                 }
 
-                var parsedTemplate = TemplateParser.Parse(selector.AttributeRouteModel.Template);
+                var parsedTemplate = TemplateParser.Parse(selector.AttributeRouteModel.Template!);
                 if (parsedTemplate.GetParameter(parameterName) != null)
                 {
                     return true;

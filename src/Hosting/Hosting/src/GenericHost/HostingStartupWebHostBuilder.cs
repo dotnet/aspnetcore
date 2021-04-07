@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,8 +15,8 @@ namespace Microsoft.AspNetCore.Hosting
     internal class HostingStartupWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
     {
         private readonly GenericWebHostBuilder _builder;
-        private Action<WebHostBuilderContext, IConfigurationBuilder> _configureConfiguration;
-        private Action<WebHostBuilderContext, IServiceCollection> _configureServices;
+        private Action<WebHostBuilderContext, IConfigurationBuilder>? _configureConfiguration;
+        private Action<WebHostBuilderContext, IServiceCollection>? _configureServices;
 
         public HostingStartupWebHostBuilder(GenericWebHostBuilder builder)
         {
@@ -45,7 +47,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public string GetSetting(string key) => _builder.GetSetting(key);
 
-        public IWebHostBuilder UseSetting(string key, string value)
+        public IWebHostBuilder UseSetting(string key, string? value)
         {
             _builder.UseSetting(key, value);
             return this;
@@ -71,9 +73,14 @@ namespace Microsoft.AspNetCore.Hosting
             return _builder.Configure(configure);
         }
 
-        public IWebHostBuilder UseStartup(Type startupType)
+        public IWebHostBuilder UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType)
         {
             return _builder.UseStartup(startupType);
+        }
+
+        public IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
+        {
+            return _builder.UseStartup(startupFactory);
         }
     }
 }

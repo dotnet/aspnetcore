@@ -82,155 +82,95 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var reasonPhrase = WebUtilities.ReasonPhrases.GetReasonPhrase(statusCode);
             Debug.Assert(!string.IsNullOrEmpty(reasonPhrase));
 
+            return CreateStatusBytes(statusCode, reasonPhrase);
+        }
+
+        private static byte[] CreateStatusBytes(int statusCode, string? reasonPhrase)
+        {
+            // https://tools.ietf.org/html/rfc7230#section-3.1.2 requires trailing whitespace regardless of reason phrase
             return Encoding.ASCII.GetBytes(statusCode.ToString(CultureInfo.InvariantCulture) + " " + reasonPhrase);
         }
 
-        public static byte[] ToStatusBytes(int statusCode, string reasonPhrase = null)
+        public static byte[] ToStatusBytes(int statusCode, string? reasonPhrase = null)
         {
-            if (string.IsNullOrEmpty(reasonPhrase))
+            var candidate = statusCode switch
             {
-                switch (statusCode)
-                {
-                    case StatusCodes.Status100Continue:
-                        return _bytesStatus100;
-                    case StatusCodes.Status101SwitchingProtocols:
-                        return _bytesStatus101;
-                    case StatusCodes.Status102Processing:
-                        return _bytesStatus102;
+                StatusCodes.Status100Continue => _bytesStatus100,
+                StatusCodes.Status101SwitchingProtocols => _bytesStatus101,
+                StatusCodes.Status102Processing => _bytesStatus102,
 
-                    case StatusCodes.Status200OK:
-                        return _bytesStatus200;
-                    case StatusCodes.Status201Created:
-                        return _bytesStatus201;
-                    case StatusCodes.Status202Accepted:
-                        return _bytesStatus202;
-                    case StatusCodes.Status203NonAuthoritative:
-                        return _bytesStatus203;
-                    case StatusCodes.Status204NoContent:
-                        return _bytesStatus204;
-                    case StatusCodes.Status205ResetContent:
-                        return _bytesStatus205;
-                    case StatusCodes.Status206PartialContent:
-                        return _bytesStatus206;
-                    case StatusCodes.Status207MultiStatus:
-                        return _bytesStatus207;
-                    case StatusCodes.Status208AlreadyReported:
-                        return _bytesStatus208;
-                    case StatusCodes.Status226IMUsed:
-                        return _bytesStatus226;
+                StatusCodes.Status200OK => _bytesStatus200,
+                StatusCodes.Status201Created => _bytesStatus201,
+                StatusCodes.Status202Accepted => _bytesStatus202,
+                StatusCodes.Status203NonAuthoritative => _bytesStatus203,
+                StatusCodes.Status204NoContent => _bytesStatus204,
+                StatusCodes.Status205ResetContent => _bytesStatus205,
+                StatusCodes.Status206PartialContent => _bytesStatus206,
+                StatusCodes.Status207MultiStatus => _bytesStatus207,
+                StatusCodes.Status208AlreadyReported => _bytesStatus208,
+                StatusCodes.Status226IMUsed => _bytesStatus226,
 
-                    case StatusCodes.Status300MultipleChoices:
-                        return _bytesStatus300;
-                    case StatusCodes.Status301MovedPermanently:
-                        return _bytesStatus301;
-                    case StatusCodes.Status302Found:
-                        return _bytesStatus302;
-                    case StatusCodes.Status303SeeOther:
-                        return _bytesStatus303;
-                    case StatusCodes.Status304NotModified:
-                        return _bytesStatus304;
-                    case StatusCodes.Status305UseProxy:
-                        return _bytesStatus305;
-                    case StatusCodes.Status306SwitchProxy:
-                        return _bytesStatus306;
-                    case StatusCodes.Status307TemporaryRedirect:
-                        return _bytesStatus307;
-                    case StatusCodes.Status308PermanentRedirect:
-                        return _bytesStatus308;
+                StatusCodes.Status300MultipleChoices => _bytesStatus300,
+                StatusCodes.Status301MovedPermanently => _bytesStatus301,
+                StatusCodes.Status302Found => _bytesStatus302,
+                StatusCodes.Status303SeeOther => _bytesStatus303,
+                StatusCodes.Status304NotModified => _bytesStatus304,
+                StatusCodes.Status305UseProxy => _bytesStatus305,
+                StatusCodes.Status306SwitchProxy => _bytesStatus306,
+                StatusCodes.Status307TemporaryRedirect => _bytesStatus307,
+                StatusCodes.Status308PermanentRedirect => _bytesStatus308,
 
-                    case StatusCodes.Status400BadRequest:
-                        return _bytesStatus400;
-                    case StatusCodes.Status401Unauthorized:
-                        return _bytesStatus401;
-                    case StatusCodes.Status402PaymentRequired:
-                        return _bytesStatus402;
-                    case StatusCodes.Status403Forbidden:
-                        return _bytesStatus403;
-                    case StatusCodes.Status404NotFound:
-                        return _bytesStatus404;
-                    case StatusCodes.Status405MethodNotAllowed:
-                        return _bytesStatus405;
-                    case StatusCodes.Status406NotAcceptable:
-                        return _bytesStatus406;
-                    case StatusCodes.Status407ProxyAuthenticationRequired:
-                        return _bytesStatus407;
-                    case StatusCodes.Status408RequestTimeout:
-                        return _bytesStatus408;
-                    case StatusCodes.Status409Conflict:
-                        return _bytesStatus409;
-                    case StatusCodes.Status410Gone:
-                        return _bytesStatus410;
-                    case StatusCodes.Status411LengthRequired:
-                        return _bytesStatus411;
-                    case StatusCodes.Status412PreconditionFailed:
-                        return _bytesStatus412;
-                    case StatusCodes.Status413PayloadTooLarge:
-                        return _bytesStatus413;
-                    case StatusCodes.Status414UriTooLong:
-                        return _bytesStatus414;
-                    case StatusCodes.Status415UnsupportedMediaType:
-                        return _bytesStatus415;
-                    case StatusCodes.Status416RangeNotSatisfiable:
-                        return _bytesStatus416;
-                    case StatusCodes.Status417ExpectationFailed:
-                        return _bytesStatus417;
-                    case StatusCodes.Status418ImATeapot:
-                        return _bytesStatus418;
-                    case StatusCodes.Status419AuthenticationTimeout:
-                        return _bytesStatus419;
-                    case StatusCodes.Status421MisdirectedRequest:
-                        return _bytesStatus421;
-                    case StatusCodes.Status422UnprocessableEntity:
-                        return _bytesStatus422;
-                    case StatusCodes.Status423Locked:
-                        return _bytesStatus423;
-                    case StatusCodes.Status424FailedDependency:
-                        return _bytesStatus424;
-                    case StatusCodes.Status426UpgradeRequired:
-                        return _bytesStatus426;
-                    case StatusCodes.Status428PreconditionRequired:
-                        return _bytesStatus428;
-                    case StatusCodes.Status429TooManyRequests:
-                        return _bytesStatus429;
-                    case StatusCodes.Status431RequestHeaderFieldsTooLarge:
-                        return _bytesStatus431;
-                    case StatusCodes.Status451UnavailableForLegalReasons:
-                        return _bytesStatus451;
+                StatusCodes.Status400BadRequest => _bytesStatus400,
+                StatusCodes.Status401Unauthorized => _bytesStatus401,
+                StatusCodes.Status402PaymentRequired => _bytesStatus402,
+                StatusCodes.Status403Forbidden => _bytesStatus403,
+                StatusCodes.Status404NotFound => _bytesStatus404,
+                StatusCodes.Status405MethodNotAllowed => _bytesStatus405,
+                StatusCodes.Status406NotAcceptable => _bytesStatus406,
+                StatusCodes.Status407ProxyAuthenticationRequired => _bytesStatus407,
+                StatusCodes.Status408RequestTimeout => _bytesStatus408,
+                StatusCodes.Status409Conflict => _bytesStatus409,
+                StatusCodes.Status410Gone => _bytesStatus410,
+                StatusCodes.Status411LengthRequired => _bytesStatus411,
+                StatusCodes.Status412PreconditionFailed => _bytesStatus412,
+                StatusCodes.Status413PayloadTooLarge => _bytesStatus413,
+                StatusCodes.Status414UriTooLong => _bytesStatus414,
+                StatusCodes.Status415UnsupportedMediaType => _bytesStatus415,
+                StatusCodes.Status416RangeNotSatisfiable => _bytesStatus416,
+                StatusCodes.Status417ExpectationFailed => _bytesStatus417,
+                StatusCodes.Status418ImATeapot => _bytesStatus418,
+                StatusCodes.Status419AuthenticationTimeout => _bytesStatus419,
+                StatusCodes.Status421MisdirectedRequest => _bytesStatus421,
+                StatusCodes.Status422UnprocessableEntity => _bytesStatus422,
+                StatusCodes.Status423Locked => _bytesStatus423,
+                StatusCodes.Status424FailedDependency => _bytesStatus424,
+                StatusCodes.Status426UpgradeRequired => _bytesStatus426,
+                StatusCodes.Status428PreconditionRequired => _bytesStatus428,
+                StatusCodes.Status429TooManyRequests => _bytesStatus429,
+                StatusCodes.Status431RequestHeaderFieldsTooLarge => _bytesStatus431,
+                StatusCodes.Status451UnavailableForLegalReasons => _bytesStatus451,
 
-                    case StatusCodes.Status500InternalServerError:
-                        return _bytesStatus500;
-                    case StatusCodes.Status501NotImplemented:
-                        return _bytesStatus501;
-                    case StatusCodes.Status502BadGateway:
-                        return _bytesStatus502;
-                    case StatusCodes.Status503ServiceUnavailable:
-                        return _bytesStatus503;
-                    case StatusCodes.Status504GatewayTimeout:
-                        return _bytesStatus504;
-                    case StatusCodes.Status505HttpVersionNotsupported:
-                        return _bytesStatus505;
-                    case StatusCodes.Status506VariantAlsoNegotiates:
-                        return _bytesStatus506;
-                    case StatusCodes.Status507InsufficientStorage:
-                        return _bytesStatus507;
-                    case StatusCodes.Status508LoopDetected:
-                        return _bytesStatus508;
-                    case StatusCodes.Status510NotExtended:
-                        return _bytesStatus510;
-                    case StatusCodes.Status511NetworkAuthenticationRequired:
-                        return _bytesStatus511;
+                StatusCodes.Status500InternalServerError => _bytesStatus500,
+                StatusCodes.Status501NotImplemented => _bytesStatus501,
+                StatusCodes.Status502BadGateway => _bytesStatus502,
+                StatusCodes.Status503ServiceUnavailable => _bytesStatus503,
+                StatusCodes.Status504GatewayTimeout => _bytesStatus504,
+                StatusCodes.Status505HttpVersionNotsupported => _bytesStatus505,
+                StatusCodes.Status506VariantAlsoNegotiates => _bytesStatus506,
+                StatusCodes.Status507InsufficientStorage => _bytesStatus507,
+                StatusCodes.Status508LoopDetected => _bytesStatus508,
+                StatusCodes.Status510NotExtended => _bytesStatus510,
+                StatusCodes.Status511NetworkAuthenticationRequired => _bytesStatus511,
 
-                    default:
-                        var predefinedReasonPhrase = WebUtilities.ReasonPhrases.GetReasonPhrase(statusCode);
-                        // https://tools.ietf.org/html/rfc7230#section-3.1.2 requires trailing whitespace regardless of reason phrase
-                        var formattedStatusCode = statusCode.ToString(CultureInfo.InvariantCulture) + " ";
-                        return string.IsNullOrEmpty(predefinedReasonPhrase)
-                            ? Encoding.ASCII.GetBytes(formattedStatusCode)
-                            : Encoding.ASCII.GetBytes(formattedStatusCode + predefinedReasonPhrase);
+                _ => null
+            };
 
-                }
+            if (candidate is not null && (string.IsNullOrEmpty(reasonPhrase) || WebUtilities.ReasonPhrases.GetReasonPhrase(statusCode) == reasonPhrase))
+            {
+                return candidate;
             }
-            return Encoding.ASCII.GetBytes(statusCode.ToString(CultureInfo.InvariantCulture) + " " + reasonPhrase);
+
+            return CreateStatusBytes(statusCode, reasonPhrase);
         }
     }
 }

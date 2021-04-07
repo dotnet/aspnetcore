@@ -73,7 +73,7 @@ namespace Microsoft.Extensions.Logging
             _unexpectedEndOfInput(logger, null);
         }
 
-        public static void SequrityStampNotEquals(this ILogger logger)
+        public static void SecurityStampNotEquals(this ILogger logger)
         {
             _securityStampNotEquals(logger, null);
         }

@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -37,8 +38,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [InlineData("unbound_lambda_bind_to_component")]
         public void EventCallback_RerendersOuterComponent(string @case)
         {
-            var target = Browser.FindElement(By.CssSelector($"#{@case} button"));
-            var count = Browser.FindElement(By.Id("render_count"));
+            var target = Browser.Exists(By.CssSelector($"#{@case} button"));
+            var count = Browser.Exists(By.Id("render_count"));
             Browser.Equal("Render Count: 1", () => count.Text);
             target.Click();
             Browser.Equal("Render Count: 2", () => count.Text);

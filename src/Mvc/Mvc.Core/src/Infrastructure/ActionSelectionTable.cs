@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 getRouteKeys: a => a.RouteValues?.Keys,
                 getRouteValue: (a, key) =>
                 {
-                    string value = null;
+                    string? value = null;
                     a.RouteValues?.TryGetValue(key, out value);
                     return value ?? string.Empty;
                 });
@@ -91,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 getRouteKeys: e => e.Metadata.GetMetadata<ActionDescriptor>()?.RouteValues?.Keys,
                 getRouteValue: (e, key) =>
                 {
-                    string value = null;
+                    string? value = null;
                     e.Metadata.GetMetadata<ActionDescriptor>()?.RouteValues?.TryGetValue(key, out value);
                     return Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
                 });
@@ -100,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private static ActionSelectionTable<T> CreateCore<T>(
             int version,
             IEnumerable<T> items,
-            Func<T, IEnumerable<string>> getRouteKeys,
+            Func<T, IEnumerable<string>?> getRouteKeys,
             Func<T, string, string> getRouteValue)
         {       
             // We need to build two maps for all of the route values.

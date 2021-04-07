@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Internal;
@@ -22,7 +21,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         private readonly IPageHandlerMethodSelector _selector;
         private readonly PageContext _pageContext;
-        private readonly ParameterBinder _parameterBinder;
         private readonly ITempDataDictionaryFactory _tempDataFactory;
         private readonly HtmlHelperOptions _htmlHelperOptions;
         private readonly CompiledPageActionDescriptor _actionDescriptor;
@@ -46,7 +44,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             PageContext pageContext,
             IFilterMetadata[] filterMetadata,
             PageActionInvokerCacheEntry cacheEntry,
-            ParameterBinder parameterBinder,
             ITempDataDictionaryFactory tempDataFactory,
             HtmlHelperOptions htmlHelperOptions)
             : base(
@@ -61,7 +58,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _selector = handlerMethodSelector;
             _pageContext = pageContext;
             CacheEntry = cacheEntry;
-            _parameterBinder = parameterBinder;
             _tempDataFactory = tempDataFactory;
             _htmlHelperOptions = htmlHelperOptions;
 
@@ -92,17 +88,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
-        protected override void ReleaseResources()
+        protected override ValueTask ReleaseResources()
         {
             if (_pageModel != null && CacheEntry.ReleaseModel != null)
             {
-                CacheEntry.ReleaseModel(_pageContext, _pageModel);
+                return CacheEntry.ReleaseModel(_pageContext, _pageModel);
             }
 
             if (_page != null && CacheEntry.ReleasePage != null)
             {
-                CacheEntry.ReleasePage(_pageContext, _viewContext, _page);
+                return CacheEntry.ReleasePage(_pageContext, _viewContext, _page);
             }
+
+            return default;
         }
 
         protected override Task InvokeResultAsync(IActionResult result)

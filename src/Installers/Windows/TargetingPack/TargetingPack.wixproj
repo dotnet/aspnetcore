@@ -59,11 +59,13 @@
     </HarvestDirectory>
   </ItemGroup>
 
-  <!-- TODO: https://github.com/aspnet/AspNetCore/issues/6304. harvest from TargetingPackLayoutRoot directly. Unzipping is currently required because the zip has the signed versions of .dll files. -->
+  <!-- TODO: https://github.com/dotnet/aspnetcore/issues/6304. harvest from TargetingPackLayoutRoot directly. Unzipping is currently required because the zip has the signed versions of .dll files. -->
   <Target Name="ExtractIntermediateTargetingPack" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <TargetingPackHarvestRoot Condition="'$(TargetingPackHarvestRoot)' == ''">$(InstallersOutputPath)</TargetingPackHarvestRoot>
-      <IntermediateTargetingPackZip>$(TargetingPackHarvestRoot)aspnetcore-targeting-pack-$(TargetingPackVersionPrefix).zip</IntermediateTargetingPackZip>
+      <TargetingPackZipVersion>$(TargetingPackVersionPrefix)</TargetingPackZipVersion>
+      <TargetingPackZipVersion Condition="'$(VersionSuffix)' != ''">$(TargetingPackZipVersion)-$(VersionSuffix)</TargetingPackZipVersion>
+      <IntermediateTargetingPackZip>$(TargetingPackHarvestRoot)aspnetcore-targeting-pack-$(TargetingPackZipVersion).zip</IntermediateTargetingPackZip>
     </PropertyGroup>
 
     <Unzip SourceFiles="$(IntermediateTargetingPackZip)" DestinationFolder="$(HarvestSource)" />

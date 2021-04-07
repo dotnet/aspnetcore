@@ -1,31 +1,25 @@
 <Project>
 
   <PropertyGroup>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
 
     <!-- Enables Strict mode for Roslyn compiler -->
-    <Features>strict</Features>
+    <Features>strict;nullablePublicOnly</Features>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Required to exist in the NuGet package cache to enable code-signing. -->
     <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" AllowExplicitReference="true" ExcludeAssets="All" />
-
-    <PackageReference Condition="'$(DotNetBuildFromSource)' != 'true'" Include="Microsoft.DotNet.GenAPI" PrivateAssets="All" Version="$(MicrosoftDotNetGenApiPackageVersion)" IsImplicitlyDefined="true" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
-    <!--
-      Use the Razor SDK as a package reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
-      several versions older than latest. To avoid a cyclical dependency, this package reference is added to override the bundled version.
-    -->
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" Version="$(MicrosoftNETSdkRazorPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />
+    <Reference Include="NETStandard.Library" />
+    <Compile Include="$(SharedSourceRoot)test\SuccessfulTests.cs" LinkBase="SharedTests" />
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" Condition=" '$(IsTestProject)' == 'true' " />
 
   <ItemDefinitionGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Content>
@@ -34,7 +28,10 @@
     </Content>
   </ItemDefinitionGroup>
 
-  <Import Project="CSharp.ReferenceAssembly.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
-  <Import Project="Helix.props" Condition="'$(IsTestProject)' == 'true'" />
+  <!-- Properties to control how we handle warnings when using the tasks provided by the Yarn MSBuild SDK -->
+  <PropertyGroup>
+    <IgnoreYarnWarnings>false</IgnoreYarnWarnings>
+    <IgnoreYarnWarnings Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</IgnoreYarnWarnings>
+  </PropertyGroup>
 
 </Project>

@@ -3,22 +3,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Reflection
 {
     internal class MemberAssignment
     {
         public static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
-            Type type, BindingFlags bindingFlags)
+            [DynamicallyAccessedMembers(Component)] Type type,
+            BindingFlags bindingFlags)
         {
             var dictionary = new Dictionary<string, List<PropertyInfo>>();
 
-            while (type != null)
+            Type? currentType = type;
+
+            while (currentType != null)
             {
-                var properties = type.GetProperties(bindingFlags)
-                    .Where(prop => prop.DeclaringType == type);
+                var properties = currentType.GetProperties(bindingFlags  | BindingFlags.DeclaredOnly);
                 foreach (var property in properties)
                 {
                     if (!dictionary.TryGetValue(property.Name, out var others))
@@ -37,51 +41,10 @@ namespace Microsoft.AspNetCore.Components.Reflection
                     others.Add(property);
                 }
 
-                type = type.BaseType;
+                currentType = currentType.BaseType;
             }
 
             return dictionary.Values.SelectMany(p => p);
-        }
-
-        public static IPropertySetter CreatePropertySetter(Type targetType, PropertyInfo property, bool cascading)
-        {
-            if (property.SetMethod == null)
-            {
-                throw new InvalidOperationException($"Cannot provide a value for property " +
-                    $"'{property.Name}' on type '{targetType.FullName}' because the property " +
-                    $"has no setter.");
-            }
-
-            return (IPropertySetter)Activator.CreateInstance(
-                typeof(PropertySetter<,>).MakeGenericType(targetType, property.PropertyType),
-                property.SetMethod,
-                cascading);
-        }
-
-        class PropertySetter<TTarget, TValue> : IPropertySetter
-        {
-            private readonly Action<TTarget, TValue> _setterDelegate;
-
-            public PropertySetter(MethodInfo setMethod, bool cascading)
-            {
-                _setterDelegate = (Action<TTarget, TValue>)Delegate.CreateDelegate(
-                    typeof(Action<TTarget, TValue>), setMethod);
-                Cascading = cascading;
-            }
-
-            public bool Cascading { get; }
-
-            public void SetValue(object target, object value)
-            {
-                if (value == null)
-                {
-                    _setterDelegate((TTarget)target, default);
-                }
-                else
-                {
-                    _setterDelegate((TTarget)target, (TValue)value);
-                }
-            }
         }
     }
 }

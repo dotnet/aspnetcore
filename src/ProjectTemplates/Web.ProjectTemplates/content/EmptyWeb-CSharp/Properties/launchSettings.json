@@ -1,11 +1,11 @@
 ﻿{
   "iisSettings": {
-    //#if (WindowsAuth) 
-    "windowsAuthentication": true, 
-    "anonymousAuthentication": false, 
-    //#else 
-    "windowsAuthentication": false, 
-    "anonymousAuthentication": true, 
+    //#if (WindowsAuth)
+    "windowsAuthentication": true,
+    "anonymousAuthentication": false,
+    //#else
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
     //#endif
     "iisExpress": {
       "applicationUrl": "http://localhost:8080",
@@ -17,21 +17,23 @@
     }
   },
   "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
     "Company.WebApplication1": {
       "commandName": "Project",
+      "dotnetRunMessages": "true",
       "launchBrowser": true,
+      "hotReloadProfile": "aspnetcore",
       //#if(NoHttps)
       "applicationUrl": "http://localhost:5000",
       //#else
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       //#endif
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

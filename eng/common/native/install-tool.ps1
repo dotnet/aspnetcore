@@ -46,6 +46,8 @@ Param (
   [int] $RetryWaitTimeInSeconds = 30
 )
 
+. $PSScriptRoot\..\pipeline-logging-functions.ps1
+
 # Import common library modules
 Import-Module -Name (Join-Path $CommonLibraryDirectory "CommonLibrary.psm1")
 
@@ -93,7 +95,7 @@ try {
                                                       -Verbose:$Verbose
 
     if ($InstallStatus -Eq $False) {
-      Write-Error "Installation failed"
+      Write-PipelineTelemetryError "Installation failed" -Category "NativeToolsetBootstrapping"
       exit 1
     }
   }
@@ -103,7 +105,7 @@ try {
     Write-Error "There are multiple copies of $ToolName in $($ToolInstallDirectory): `n$(@($ToolFilePath | out-string))"
     exit 1
   } elseif (@($ToolFilePath).Length -Lt 1) {
-    Write-Error "$ToolName was not found in $ToolFilePath."
+    Write-Host "$ToolName was not found in $ToolInstallDirectory."
     exit 1
   }
 
@@ -117,14 +119,14 @@ try {
                                                      -Verbose:$Verbose
 
   if ($GenerateShimStatus -Eq $False) {
-    Write-Error "Generate shim failed"
+    Write-PipelineTelemetryError "Generate shim failed" -Category "NativeToolsetBootstrapping"
     return 1
   }
 
   exit 0
 }
 catch {
-  Write-Host $_
-  Write-Host $_.Exception
+  Write-Host $_.ScriptStackTrace
+  Write-PipelineTelemetryError -Category "NativeToolsetBootstrapping" -Message $_
   exit 1
 }

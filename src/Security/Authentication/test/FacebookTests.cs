@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Linq;
@@ -40,21 +41,22 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         protected override void ConfigureDefaults(FacebookOptions o)
         {
             o.AppId = "whatever";
-            o.AppSecret = "whatever";
+            o.AppSecret = "PLACEHOLDER";
             o.SignInScheme = "auth1";
         }
 
         [Fact]
         public async Task ThrowsIfAppIdMissing()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 app => { },
-                services => services.AddAuthentication().AddFacebook(o => o.SignInScheme = "Whatever"),
+                services => services.AddAuthentication().AddFacebook(o => o.SignInScheme = "PLACEHOLDER"),
                 async context =>
                 {
                     await Assert.ThrowsAsync<ArgumentException>("AppId", () => context.ChallengeAsync("Facebook"));
                     return true;
                 });
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
@@ -62,7 +64,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         [Fact]
         public async Task ThrowsIfAppSecretMissing()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 app => { },
                 services => services.AddAuthentication().AddFacebook(o => o.AppId = "Whatever"),
                 async context =>
@@ -70,6 +72,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                     await Assert.ThrowsAsync<ArgumentException>("AppSecret", () => context.ChallengeAsync("Facebook"));
                     return true;
                 });
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
@@ -77,7 +80,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         [Fact]
         public async Task ChallengeWillTriggerApplyRedirectEvent()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 app =>
                 {
                     app.UseAuthentication();
@@ -105,6 +108,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                     await context.ChallengeAsync("Facebook");
                     return true;
                 });
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
@@ -114,7 +118,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         [Fact]
         public async Task ChallengeWillIncludeScopeAsConfigured()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 app => app.UseAuthentication(),
                 services =>
                 {
@@ -133,6 +137,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                     return true;
                 });
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             var res = transaction.Response;
 
@@ -143,7 +148,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         [Fact]
         public async Task ChallengeWillIncludeScopeAsOverwritten()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 app => app.UseAuthentication(),
                 services =>
                 {
@@ -164,6 +169,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                     return true;
                 });
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             var res = transaction.Response;
 
@@ -174,7 +180,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         [Fact]
         public async Task ChallengeWillIncludeScopeAsOverwrittenWithBaseAuthenticationProperties()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 app => app.UseAuthentication(),
                 services =>
                 {
@@ -195,6 +201,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                     return true;
                 });
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             var res = transaction.Response;
 
@@ -205,7 +212,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         [Fact]
         public async Task NestedMapWillNotAffectRedirect()
         {
-            var server = CreateServer(app => app.Map("/base", map =>
+            using var host = await CreateHost(app => app.Map("/base", map =>
             {
                 map.UseAuthentication();
                 map.Map("/login", signoutApp => signoutApp.Run(context => context.ChallengeAsync("Facebook", new AuthenticationProperties() { RedirectUri = "/" })));
@@ -222,10 +229,11 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             },
             handler: null);
 
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/base/login");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v4.0/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v8.0/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/base/signin-facebook"), location);
@@ -236,7 +244,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         [Fact]
         public async Task MapWillNotAffectRedirect()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 app =>
                 {
                     app.UseAuthentication();
@@ -254,10 +262,11 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                     });
                 },
                 handler: null);
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/login");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v4.0/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v8.0/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/signin-facebook"), location);
@@ -268,7 +277,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         [Fact]
         public async Task ChallengeWillTriggerRedirection()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 app => app.UseAuthentication(),
                 services =>
                 {
@@ -288,10 +297,11 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                     await context.ChallengeAsync("Facebook");
                     return true;
                 });
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v4.0/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v8.0/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=", location);
@@ -305,7 +315,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             var customUserInfoEndpoint = "https://graph.facebook.com/me?fields=email,timezone,picture";
             var finalUserInfoEndpoint = string.Empty;
             var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("FacebookTest"));
-            var server = CreateServer(
+            using var host = await CreateHost(
                 app => app.UseAuthentication(),
                 services =>
                 {
@@ -350,9 +360,10 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync(
                 "https://example.com/signin-facebook?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Facebook.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(1, finalUserInfoEndpoint.Count(c => c == '?'));
@@ -360,22 +371,27 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             Assert.Contains("&access_token=", finalUserInfoEndpoint);
         }
 
-        private static TestServer CreateServer(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, Task<bool>> handler)
+        private static async Task<IHost> CreateHost(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, Task<bool>> handler)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    configure?.Invoke(app);
-                    app.Use(async (context, next) =>
-                    {
-                        if (handler == null || !await handler(context))
+            var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                        .Configure(app =>
                         {
-                            await next();
-                        }
-                    });
-                })
-                .ConfigureServices(configureServices);
-            return new TestServer(builder);
+                            configure?.Invoke(app);
+                            app.Use(async (context, next) =>
+                            {
+                                if (handler == null || !await handler(context))
+                                {
+                                    await next();
+                                }
+                            });
+                        })
+                        .ConfigureServices(configureServices))
+                .Build();
+
+            await host.StartAsync();
+            return host;
         }
     }
 }

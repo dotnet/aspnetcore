@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 
 using System;
 using System.Collections.Generic;
@@ -19,14 +20,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             _valueComparer = valueComparer;
         }
 
-        public bool Equals(string[] x, string[] y)
+        public bool Equals(string[]? x, string[]? y)
         {
             if (object.ReferenceEquals(x, y))
             {
                 return true;
             }
 
-            if (x == null ^ y == null)
+            if (x == null && y == null)
+            {
+                return true;
+            }
+
+            if (x == null || y == null)
             {
                 return false;
             }

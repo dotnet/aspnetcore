@@ -1,16 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using SignalRSamples.ConnectionHandlers;
 using SignalRSamples.Hubs;
 
@@ -18,7 +14,6 @@ namespace SignalRSamples
 {
     public class Startup
     {
-
         private readonly JsonWriterOptions _jsonWriterOptions = new JsonWriterOptions { Indented = true };
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -27,11 +22,7 @@ namespace SignalRSamples
         {
             services.AddConnections();
 
-            services.AddSignalR(options =>
-            {
-                // Faster pings for testing
-                options.KeepAliveInterval = TimeSpan.FromSeconds(5);
-            })
+            services.AddSignalR()
             .AddMessagePackProtocol();
             //.AddStackExchangeRedis();
         }

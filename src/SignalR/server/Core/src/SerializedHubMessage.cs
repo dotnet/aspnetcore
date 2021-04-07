@@ -14,13 +14,13 @@ namespace Microsoft.AspNetCore.SignalR
     {
         private SerializedMessage _cachedItem1;
         private SerializedMessage _cachedItem2;
-        private List<SerializedMessage> _cachedItems;
+        private List<SerializedMessage>? _cachedItems;
         private readonly object _lock = new object();
 
         /// <summary>
         /// Gets the hub message for the serialization cache.
         /// </summary>
-        public HubMessage Message { get; }
+        public HubMessage? Message { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SerializedHubMessage"/> class.

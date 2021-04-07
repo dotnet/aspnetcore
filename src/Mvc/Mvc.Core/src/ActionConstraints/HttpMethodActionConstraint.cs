@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Routing;
 namespace Microsoft.AspNetCore.Mvc.ActionConstraints
 {
     /// <summary>
-    /// The implementation of <see cref="IActionResult" /> used to enforce
+    /// The implementation of <see cref="IActionConstraint" /> used to enforce
     /// HTTP method filtering when MVC is used with legacy <see cref="IRouter" />
     /// support. The <see cref="HttpMethodActionConstraint" /> can be used to determine
     /// the set of HTTP methods supported by an action.

@@ -7,8 +7,10 @@ param(
     [switch]$ci,
     # Optional arguments that enable downloading an internal
     # runtime or runtime from a non-default location
-    [string]$DotNetRuntimeSourceFeed,
-    [string]$DotNetRuntimeSourceFeedKey
+    [Alias('DotNetRuntimeSourceFeed')]
+    [string]$RuntimeSourceFeed,
+    [Alias('DotNetRuntimeSourceFeedKey')]
+    [string]$RuntimeSourceFeedKey
 )
 
 $ErrorActionPreference = 'Stop'
@@ -47,11 +49,11 @@ function LogError {
 try {
     if ($ci) {
         # Install dotnet.exe
-        if ($DotNetRuntimeSourceFeed -or $DotNetRuntimeSourceFeedKey) {
-            & $repoRoot/restore.cmd -ci -NoBuildNodeJS -DotNetRuntimeSourceFeed $DotNetRuntimeSourceFeed -DotNetRuntimeSourceFeedKey $DotNetRuntimeSourceFeedKey
+        if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
+            & $repoRoot/restore.cmd -ci -nobl -noBuildNodeJS -RuntimeSourceFeed $RuntimeSourceFeed -RuntimeSourceFeedKey $RuntimeSourceFeedKey
         }
         else{
-            & $repoRoot/restore.cmd -ci -NoBuildNodeJS
+            & $repoRoot/restore.cmd -ci -nobl -noBuildNodeJS
         }
     }
 
@@ -108,7 +110,7 @@ try {
         else {
             $varName = $dep.Name -replace '\.',''
             $varName = $varName -replace '\-',''
-            $varName = "${varName}PackageVersion"
+            $varName = "${varName}Version"
 
             $versionVar = $versionProps.SelectSingleNode("//PropertyGroup[`@Label=`"Automated`"]/$varName")
             $actualVersion = $versionVar.InnerText
@@ -129,7 +131,7 @@ try {
 
     foreach ($unexpectedVar in $versionVars) {
         LogError `
-            "Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. See https://github.com/aspnet/AspNetCore/blob/master/docs/ReferenceResolution.md for instructions on how to add a new dependency." `
+            "Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. See https://github.com/dotnet/aspnetcore/blob/main/docs/ReferenceResolution.md for instructions on how to add a new dependency." `
             -filepath "$repoRoot\eng\Versions.props"
     }
 
@@ -138,7 +140,8 @@ try {
     Get-ChildItem "$repoRoot/*.sln" -Recurse `
         | ? {
             # These .sln files are used by the templating engine.
-            (($_.Name -ne "BlazorServerWeb_CSharp.sln") -and ($_.Name -ne 'ComponentsWebAssembly-CSharp.sln'))
+            ($_.Name -ne "BlazorServerWeb_CSharp.sln") -and
+            ($_.Name -ne "ComponentsWebAssembly-CSharp.sln")
         } `
         | % {
         Write-Host "  Checking $(Split-Path -Leaf $_)"
@@ -165,11 +168,6 @@ try {
         & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
     }
 
-    Write-Host "Re-generating references assemblies"
-    Invoke-Block {
-        & $PSScriptRoot\GenerateReferenceAssemblies.ps1 -ci:$ci
-    }
-
     Write-Host "Re-generating package baselines"
     Invoke-Block {
         & dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
@@ -178,7 +176,7 @@ try {
     Write-Host "Run git diff to check for pending changes"
 
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
-    $changedFiles = & cmd /c 'git --no-pager diff --ignore-space-at-eol --name-only 2>nul'
+    $changedFiles = & cmd /c 'git --no-pager diff --ignore-space-change --name-only 2>nul'
 
     # Temporary: Disable check for blazor js file and nuget.config (updated automatically for
     # internal builds)
@@ -187,10 +185,46 @@ try {
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
             if ($changedFilesExclusions -contains $file) {continue}
-
             $filePath = Resolve-Path "${repoRoot}/${file}"
             LogError "Generated code is not up to date in $file. You might need to regenerate the reference assemblies or project list (see docs/ReferenceAssemblies.md and docs/ReferenceResolution.md)" -filepath $filePath
-            & git --no-pager diff --ignore-space-at-eol $filePath
+            & git --no-pager diff --ignore-space-change $filePath
+        }
+    }
+
+    $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
+
+    if (![string]::IsNullOrEmpty($targetBranch)) {
+        if ($targetBranch.StartsWith('refs/heads/')) {
+            $targetBranch = $targetBranch.Replace('refs/heads/','')
+        }
+
+        # Retrieve the set of changed files compared to main
+        Write-Host "Checking for changes to API baseline files $targetBranch"
+
+        $changedFilesFromTarget = git --no-pager diff origin/$targetBranch --ignore-space-change --name-only --diff-filter=ar
+        $changedAPIBaselines = [System.Collections.Generic.List[string]]::new()
+
+        if ($changedFilesFromTarget) {
+            foreach ($file in $changedFilesFromTarget) {
+                # Check for changes in Shipped in all branches
+                if ($file -like '*PublicAPI.Shipped.txt') {
+                    $changedAPIBaselines.Add($file)
+                }
+                # Check for changes in Unshipped in servicing branches
+                if ($targetBranch -like 'release*' -and $file -like '*PublicAPI.Unshipped.txt') {
+                    $changedAPIBaselines.Add($file)
+                }
+            }
+        }
+
+        Write-Host "Found changes in $($changedAPIBaselines.count) API baseline files"
+
+        if ($changedAPIBaselines.count -gt 0) {
+            LogError "Detected modification to baseline API files. PublicAPI.Shipped.txt files should only be updated after a major release. See /docs/APIBaselines.md for more information."
+            LogError "Modified API baseline files:"
+            foreach ($file in $changedAPIBaselines) {
+                LogError $file
+            }
         }
     }
 }

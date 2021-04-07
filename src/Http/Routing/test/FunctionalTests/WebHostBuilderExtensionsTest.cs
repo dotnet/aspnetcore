@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests
 {
@@ -79,14 +80,21 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         public async Task UseRouter_MapGet_MatchesRequest(Action<IRouteBuilder> routeBuilder, HttpRequestMessage request, string expected)
         {
             // Arrange
-            var webhostbuilder = new WebHostBuilder();
-            webhostbuilder
-                .ConfigureServices(services => services.AddRouting())
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webhostbuilder =>
                 {
-                    app.UseRouter(routeBuilder);
-                });
-            var testServer = new TestServer(webhostbuilder);
+                    webhostbuilder
+                        .Configure(app =>
+                        {
+                            app.UseRouter(routeBuilder);
+                        })
+                        .UseTestServer();
+                })
+                .ConfigureServices(services => services.AddRouting())
+                .Build();
+
+            var testServer = host.GetTestServer();
+            await host.StartAsync();
             var client = testServer.CreateClient();
 
             // Act

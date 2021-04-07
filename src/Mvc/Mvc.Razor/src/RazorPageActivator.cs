@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
@@ -69,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         internal RazorPagePropertyActivator GetOrAddCacheEntry(IRazorPage page)
         {
             var pageType = page.GetType();
-            Type providedModelType = null;
+            Type? providedModelType = null;
             if (page is IModelTypeProvider modelTypeProvider)
             {
                 providedModelType = modelTypeProvider.GetModelType();
@@ -105,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         private readonly struct CacheKey : IEquatable<CacheKey>
         {
-            public CacheKey(Type pageType, Type providedModelType)
+            public CacheKey(Type pageType, Type? providedModelType)
             {
                 PageType = pageType;
                 ProvidedModelType = providedModelType;
@@ -113,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             public Type PageType { get; }
 
-            public Type ProvidedModelType { get; }
+            public Type? ProvidedModelType { get; }
 
             public bool Equals(CacheKey other)
             {
@@ -123,14 +122,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             public override int GetHashCode()
             {
-                var hashCodeCombiner = HashCodeCombiner.Start();
+                var hashCodeCombiner = new HashCode();
                 hashCodeCombiner.Add(PageType);
                 if (ProvidedModelType != null)
                 {
                     hashCodeCombiner.Add(ProvidedModelType);
                 }
 
-                return hashCodeCombiner.CombinedHash;
+                return hashCodeCombiner.ToHashCode();
             }
         }
     }

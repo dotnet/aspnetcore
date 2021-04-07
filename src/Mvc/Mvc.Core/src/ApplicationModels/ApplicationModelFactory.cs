@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     attributeRoutingConfigurationErrors);
             }
 
-            if (attributeRoutingConfigurationErrors.Any())
+            if (attributeRoutingConfigurationErrors.Count > 0)
             {
                 var message = CreateAttributeRoutingAggregateErrorMessage(attributeRoutingConfigurationErrors.Values);
 
@@ -114,13 +114,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
 
             var namedRoutedErrors = ValidateNamedAttributeRoutedActions(actionsByRouteName);
-            if (namedRoutedErrors.Any())
+            if (namedRoutedErrors.Count > 0)
             {
                 var message = CreateAttributeRoutingAggregateErrorMessage(namedRoutedErrors);
                 throw new InvalidOperationException(message);
             }
 
-            if (routeTemplateErrors.Any())
+            if (routeTemplateErrors.Count > 0)
             {
                 var message = CreateAttributeRoutingAggregateErrorMessage(routeTemplateErrors);
                 throw new InvalidOperationException(message);
@@ -131,9 +131,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         private static void ReplaceAttributeRouteTokens(
-            ControllerModel controller, 
-            ActionModel action, 
-            SelectorModel selector, 
+            ControllerModel controller,
+            ActionModel action,
+            SelectorModel selector,
             List<string> errors)
         {
             if (selector.AttributeRouteModel == null)
@@ -143,12 +143,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             try
             {
-                var routeValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                var routeValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "action", action.ActionName },
                     { "controller", controller.ControllerName },
                 };
-                
+
                 foreach (var kvp in action.RouteValues)
                 {
                     routeValues.TryAdd(kvp.Key, kvp.Value);
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 }
 
                 selector.AttributeRouteModel.Template = AttributeRouteModel.ReplaceTokens(
-                    selector.AttributeRouteModel.Template,
+                    selector.AttributeRouteModel.Template!,
                     routeValues,
                     action.RouteParameterTransformer);
 
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         private static void AddActionToMethodInfoMap(
-            Dictionary<MethodInfo, List<(ActionModel, SelectorModel)>> actionsByMethod, 
+            Dictionary<MethodInfo, List<(ActionModel, SelectorModel)>> actionsByMethod,
             ActionModel action,
             SelectorModel selector)
         {
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             SelectorModel selector)
         {
             var routeName = selector.AttributeRouteModel?.Name;
-            if (selector.AttributeRouteModel?.Name == null)
+            if (routeName == null)
             {
                 return;
             }
@@ -242,19 +242,19 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 // we compare it against the rest of the templates that have that same name
                 // associated.
                 // The moment we find one that is different we report the whole group to the
-                // user in the error message so that he can see the different actions and the
+                // user in the error message so that they can see the different actions and the
                 // different templates for a given named attribute route.
-                var template = actions[0].selector.AttributeRouteModel.Template;
+                var template = actions[0].selector.AttributeRouteModel!.Template!;
 
                 for (var i = 1; i < actions.Count; i++)
                 {
-                    var other = actions[i].selector.AttributeRouteModel.Template;
+                    var other = actions[i].selector.AttributeRouteModel!.Template;
 
                     if (!template.Equals(other, StringComparison.OrdinalIgnoreCase))
                     {
                         var descriptions = actions.Select(a =>
                         {
-                            return Resources.FormatAttributeRoute_DuplicateNames_Item(a.action.DisplayName, a.selector.AttributeRouteModel.Template);
+                            return Resources.FormatAttributeRoute_DuplicateNames_Item(a.action.DisplayName, a.selector.AttributeRouteModel!.Template);
                         });
 
                         var message = Resources.FormatAttributeRoute_DuplicateNames(routeName, Environment.NewLine, string.Join(Environment.NewLine, descriptions));
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Text to show as the attribute route template for conventionally routed actions.
             var nullTemplate = Resources.AttributeRoute_NullTemplateRepresentation;
 
-            var actionDescriptions = new List<string>();
+            var actionDescriptions = new List<string>(actions.Count);
             for (var i = 0; i < actions.Count; i++)
             {
                 var (action, selector) = actions[i];
@@ -341,7 +341,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Use 'AcceptVerbsAttribute' to create a single route that allows multiple HTTP verbs and defines a route,
             // or set a route template in all attributes that constrain HTTP verbs.
 
-            var formattedMethodInfo = $"{TypeNameHelper.GetTypeDisplayName(method.ReflectedType)}.{method.Name} ({method.ReflectedType.Assembly.GetName().Name})";
+            var type = method.ReflectedType!;
+            var formattedMethodInfo = $"{TypeNameHelper.GetTypeDisplayName(type)}.{method.Name} ({type.Assembly.GetName().Name})";
             return Resources.FormatAttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod(
                     formattedMethodInfo,
                     Environment.NewLine,

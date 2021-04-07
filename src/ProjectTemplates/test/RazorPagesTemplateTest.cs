@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -11,44 +12,53 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class RazorPagesTemplateTest
+    public class RazorPagesTemplateTest : LoggedTest
     {
-        public RazorPagesTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
+        public RazorPagesTemplateTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
-            Output = output;
         }
-
-        public Project Project { get; set; }
 
         public ProjectFactoryFixture ProjectFactory { get; set; }
 
-        public ITestOutputHelper Output { get; }
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
+        {
+            get
+            {
+                if (_output == null)
+                {
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
+            }
+        }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         public async Task RazorPagesTemplate_NoAuth()
         {
-            Project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
+            var project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
 
-            var createResult = await Project.RunDotNetNewAsync("razor");
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("razor", Project, createResult));
+            var createResult = await project.RunDotNetNewAsync("razor");
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("razor", project, createResult));
 
-            var projectFileContents = ReadFile(Project.TemplateOutputDir, $"{Project.ProjectName}.csproj");
+            var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
             Assert.DoesNotContain(".db", projectFileContents);
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
             Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
             Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
 
-            var publishResult = await Project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, createResult));
+            var publishResult = await project.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, createResult));
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
             // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
-            var buildResult = await Project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, createResult));
+            var buildResult = await project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, createResult));
 
             var pages = new List<Page>
             {
@@ -74,65 +84,67 @@ namespace Templates.Test
                 }
             };
 
-            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            using (var aspNetProcess = project.StartBuiltProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertPagesOk(pages);
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            using (var aspNetProcess = project.StartPublishedProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertPagesOk(pages);
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB)
         {
-            Project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
+            var project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
 
-            var createResult = await Project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB);
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+            var createResult = await project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB);
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
-            var projectFileContents = ReadFile(Project.TemplateOutputDir, $"{Project.ProjectName}.csproj");
+            var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
             if (!useLocalDB)
             {
                 Assert.Contains(".db", projectFileContents);
             }
 
-            var publishResult = await Project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
+            var publishResult = await project.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
             // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
-            var buildResult = await Project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+            var buildResult = await project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
 
-            var migrationsResult = await Project.RunDotNetEfCreateMigrationAsync("razorpages");
-            Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
-            Project.AssertEmptyMigration("razorpages");
+            var migrationsResult = await project.RunDotNetEfCreateMigrationAsync("razorpages");
+            Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", project, migrationsResult));
+            project.AssertEmptyMigration("razorpages");
 
+            // Note: if any links are updated here, MvcTemplateTest.cs should be updated as well
             var pages = new List<Page> {
                 new Page
                 {
                     Url = PageUrls.ForgotPassword,
                     Links = new string [] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -141,10 +153,10 @@ namespace Templates.Test
                     Url = PageUrls.HomeUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.DocsUrl,
                         PageUrls.PrivacyUrl
                     }
@@ -154,10 +166,10 @@ namespace Templates.Test
                     Url = PageUrls.PrivacyUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -166,12 +178,13 @@ namespace Templates.Test
                     Url = PageUrls.LoginUrl,
                     Links = new string[] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.ForgotPassword,
                         PageUrls.RegisterUrl,
+                        PageUrls.ResendEmailConfirmation,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl }
                 },
@@ -180,56 +193,74 @@ namespace Templates.Test
                     Url = PageUrls.RegisterUrl,
                     Links = new string [] {
                         PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl
                     }
                 }
             };
 
-            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            using (var aspNetProcess = project.StartBuiltProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertPagesOk(pages);
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            using (var aspNetProcess = project.StartPublishedProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertPagesOk(pages);
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31044")]
         public async Task RazorPagesTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
-            Project = await ProjectFactory.GetOrCreateProject("razorpages_rc", Output);
+            var project = await BuildAndPublishRazorPagesTemplate(auth: null, new[] { "--razor-runtime-compilation" });
 
-            var createResult = await Project.RunDotNetNewAsync("razor", args: new[] { "--razor-runtime-compilation" });
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
-
-            // Verify building in debug works
-            var buildResult = await Project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
-
-            // Publish builds in "release" configuration. Running publish should ensure we can compile in release and that we can publish without issues.
-            buildResult = await Project.RunDotNetPublishAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, buildResult));
-
-            Assert.False(Directory.Exists(Path.Combine(Project.TemplatePublishDir, "refs")), "The refs directory should not be published.");
+            Assert.False(Directory.Exists(Path.Combine(project.TemplatePublishDir, "refs")), "The refs directory should not be published.");
 
             // Verify ref assemblies isn't published
-            var refsDirectory = Path.Combine(Project.TemplatePublishDir, "refs");
+            var refsDirectory = Path.Combine(project.TemplatePublishDir, "refs");
             Assert.False(Directory.Exists(refsDirectory), $"{refsDirectory} should not be in the publish output.");
+        }
+
+        [ConditionalTheory]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [InlineData("IndividualB2C", null)]
+        [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("SingleOrg", null)]
+        [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("SingleOrg", new string[] { "--calls-graph" })]
+        public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
+
+        private async Task<Project> BuildAndPublishRazorPagesTemplate(string auth, string[] args)
+        {
+            var project = await ProjectFactory.GetOrCreateProject("razorpages" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
+
+            var createResult = await project.RunDotNetNewAsync("razor", auth: auth, args: args);
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+            // Verify building in debug works
+            var buildResult = await project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
+
+            // Publish builds in "release" configuration. Running publish should ensure we can compile in release and that we can publish without issues.
+            buildResult = await project.RunDotNetPublishAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, buildResult));
+
+            return project;
        }
 
 

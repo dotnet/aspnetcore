@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
@@ -41,8 +42,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     return new NginxDeployer(deploymentParameters, loggerFactory);
                 default:
                     throw new NotSupportedException(
-                        string.Format("Found no deployers suitable for server type '{0}' with the current runtime.",
-                        deploymentParameters.ServerType)
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            "Found no deployers suitable for server type '{0}' with the current runtime.",
+                            deploymentParameters.ServerType)
                         );
             }
         }

@@ -1,0 +1,185 @@
+#nullable enable
+*REMOVED*~Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Add(string key, System.Collections.Generic.IEnumerable<string> values) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Add(string key, string value) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Extensions.QueryBuilder.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, string>>
+*REMOVED*~Microsoft.AspNetCore.Http.Extensions.QueryBuilder.QueryBuilder(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> parameters) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Extensions.QueryBuilder.QueryBuilder(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>> parameters) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Accept.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue>
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Accept.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptCharset.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptCharset.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptEncoding.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptEncoding.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptLanguage.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptLanguage.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Append(string name, object value) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.AppendList<T>(string name, System.Collections.Generic.IList<T> values) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.CacheControl.get -> Microsoft.Net.Http.Headers.CacheControlHeaderValue
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.CacheControl.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentDisposition.get -> Microsoft.Net.Http.Headers.ContentDispositionHeaderValue
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentDisposition.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentRange.get -> Microsoft.Net.Http.Headers.ContentRangeHeaderValue
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentRange.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentType.get -> Microsoft.Net.Http.Headers.MediaTypeHeaderValue
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentType.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Cookie.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue>
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Cookie.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Get<T>(string name) -> T
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.GetList<T>(string name) -> System.Collections.Generic.IList<T>
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Headers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfMatch.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue>
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfMatch.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfNoneMatch.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue>
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfNoneMatch.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfRange.get -> Microsoft.Net.Http.Headers.RangeConditionHeaderValue
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfRange.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Range.get -> Microsoft.Net.Http.Headers.RangeHeaderValue
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Range.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Referer.get -> System.Uri
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Referer.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.RequestHeaders(Microsoft.AspNetCore.Http.IHeaderDictionary headers) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.Set(string name, object value) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.RequestHeaders.SetList<T>(string name, System.Collections.Generic.IList<T> values) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Append(string name, object value) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.AppendList<T>(string name, System.Collections.Generic.IList<T> values) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.CacheControl.get -> Microsoft.Net.Http.Headers.CacheControlHeaderValue
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.CacheControl.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentDisposition.get -> Microsoft.Net.Http.Headers.ContentDispositionHeaderValue
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentDisposition.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentRange.get -> Microsoft.Net.Http.Headers.ContentRangeHeaderValue
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentRange.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentType.get -> Microsoft.Net.Http.Headers.MediaTypeHeaderValue
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentType.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ETag.get -> Microsoft.Net.Http.Headers.EntityTagHeaderValue
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ETag.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Get<T>(string name) -> T
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.GetList<T>(string name) -> System.Collections.Generic.IList<T>
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Headers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Location.get -> System.Uri
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Location.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ResponseHeaders(Microsoft.AspNetCore.Http.IHeaderDictionary headers) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Set(string name, object value) -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetCookie.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue>
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetCookie.set -> void
+*REMOVED*~Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetList<T>(string name, System.Collections.Generic.IList<T> values) -> void
+*REMOVED*~override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Equals(object obj) -> bool
+*REMOVED*~override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.ToString() -> string
+*REMOVED*~static Microsoft.AspNetCore.Http.Extensions.HttpRequestMultipartExtensions.GetMultipartBoundary(this Microsoft.AspNetCore.Http.HttpRequest request) -> string
+*REMOVED*~static Microsoft.AspNetCore.Http.Extensions.StreamCopyOperation.CopyToAsync(System.IO.Stream source, System.IO.Stream destination, long? count, System.Threading.CancellationToken cancel) -> System.Threading.Tasks.Task
+*REMOVED*~static Microsoft.AspNetCore.Http.Extensions.StreamCopyOperation.CopyToAsync(System.IO.Stream source, System.IO.Stream destination, long? count, int bufferSize, System.Threading.CancellationToken cancel) -> System.Threading.Tasks.Task
+*REMOVED*~static Microsoft.AspNetCore.Http.Extensions.UriHelper.BuildAbsolute(string scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.PathString path = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.QueryString query = default(Microsoft.AspNetCore.Http.QueryString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString)) -> string
+*REMOVED*~static Microsoft.AspNetCore.Http.Extensions.UriHelper.BuildRelative(Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.PathString path = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.QueryString query = default(Microsoft.AspNetCore.Http.QueryString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString)) -> string
+*REMOVED*~static Microsoft.AspNetCore.Http.Extensions.UriHelper.Encode(System.Uri uri) -> string
+*REMOVED*~static Microsoft.AspNetCore.Http.Extensions.UriHelper.FromAbsolute(string uri, out string scheme, out Microsoft.AspNetCore.Http.HostString host, out Microsoft.AspNetCore.Http.PathString path, out Microsoft.AspNetCore.Http.QueryString query, out Microsoft.AspNetCore.Http.FragmentString fragment) -> void
+*REMOVED*~static Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(this Microsoft.AspNetCore.Http.HttpRequest request) -> string
+*REMOVED*~static Microsoft.AspNetCore.Http.Extensions.UriHelper.GetEncodedPathAndQuery(this Microsoft.AspNetCore.Http.HttpRequest request) -> string
+*REMOVED*~static Microsoft.AspNetCore.Http.Extensions.UriHelper.GetEncodedUrl(this Microsoft.AspNetCore.Http.HttpRequest request) -> string
+*REMOVED*~static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.AppendList<T>(this Microsoft.AspNetCore.Http.IHeaderDictionary Headers, string name, System.Collections.Generic.IList<T> values) -> void
+*REMOVED*~static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpRequest request) -> Microsoft.AspNetCore.Http.Headers.RequestHeaders
+*REMOVED*~static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpResponse response) -> Microsoft.AspNetCore.Http.Headers.ResponseHeaders
+*REMOVED*~static Microsoft.AspNetCore.Http.HttpContextServerVariableExtensions.GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext context, string variableName) -> string
+*REMOVED*~static Microsoft.AspNetCore.Http.ResponseExtensions.Clear(this Microsoft.AspNetCore.Http.HttpResponse response) -> void
+*REMOVED*~static Microsoft.AspNetCore.Http.ResponseExtensions.Redirect(this Microsoft.AspNetCore.Http.HttpResponse response, string location, bool permanent, bool preserveMethod) -> void
+*REMOVED*~static Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsync(this Microsoft.AspNetCore.Http.HttpResponse response, Microsoft.Extensions.FileProviders.IFileInfo file, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+*REMOVED*~static Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsync(this Microsoft.AspNetCore.Http.HttpResponse response, Microsoft.Extensions.FileProviders.IFileInfo file, long offset, long? count, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+*REMOVED*~static Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsync(this Microsoft.AspNetCore.Http.HttpResponse response, string fileName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+*REMOVED*~static Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsync(this Microsoft.AspNetCore.Http.HttpResponse response, string fileName, long offset, long? count, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+*REMOVED*~static Microsoft.AspNetCore.Http.SessionExtensions.Get(this Microsoft.AspNetCore.Http.ISession session, string key) -> byte[]
+*REMOVED*~static Microsoft.AspNetCore.Http.SessionExtensions.GetInt32(this Microsoft.AspNetCore.Http.ISession session, string key) -> int?
+*REMOVED*~static Microsoft.AspNetCore.Http.SessionExtensions.GetString(this Microsoft.AspNetCore.Http.ISession session, string key) -> string
+*REMOVED*~static Microsoft.AspNetCore.Http.SessionExtensions.SetInt32(this Microsoft.AspNetCore.Http.ISession session, string key, int value) -> void
+*REMOVED*~static Microsoft.AspNetCore.Http.SessionExtensions.SetString(this Microsoft.AspNetCore.Http.ISession session, string key, string value) -> void
+Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Add(string! key, System.Collections.Generic.IEnumerable<string!>! values) -> void
+Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Add(string! key, string! value) -> void
+Microsoft.AspNetCore.Http.Extensions.QueryBuilder.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string!, string!>>!
+Microsoft.AspNetCore.Http.Extensions.QueryBuilder.QueryBuilder(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues>>! parameters) -> void
+Microsoft.AspNetCore.Http.Extensions.QueryBuilder.QueryBuilder(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string!>>! parameters) -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Accept.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!>!
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Accept.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptCharset.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>!
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptCharset.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptEncoding.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>!
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptEncoding.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptLanguage.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>!
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.AcceptLanguage.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Append(string! name, object! value) -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.AppendList<T>(string! name, System.Collections.Generic.IList<T>! values) -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.CacheControl.get -> Microsoft.Net.Http.Headers.CacheControlHeaderValue?
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.CacheControl.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentDisposition.get -> Microsoft.Net.Http.Headers.ContentDispositionHeaderValue?
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentDisposition.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentRange.get -> Microsoft.Net.Http.Headers.ContentRangeHeaderValue?
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentRange.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentType.get -> Microsoft.Net.Http.Headers.MediaTypeHeaderValue?
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.ContentType.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Cookie.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue!>!
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Cookie.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Get<T>(string! name) -> T?
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.GetList<T>(string! name) -> System.Collections.Generic.IList<T>!
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Headers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfMatch.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>!
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfMatch.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfNoneMatch.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>!
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfNoneMatch.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfRange.get -> Microsoft.Net.Http.Headers.RangeConditionHeaderValue?
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.IfRange.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Range.get -> Microsoft.Net.Http.Headers.RangeHeaderValue?
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Range.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Referer.get -> System.Uri?
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Referer.set -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.RequestHeaders(Microsoft.AspNetCore.Http.IHeaderDictionary! headers) -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.Set(string! name, object? value) -> void
+Microsoft.AspNetCore.Http.Headers.RequestHeaders.SetList<T>(string! name, System.Collections.Generic.IList<T>? values) -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Append(string! name, object! value) -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.AppendList<T>(string! name, System.Collections.Generic.IList<T>! values) -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.CacheControl.get -> Microsoft.Net.Http.Headers.CacheControlHeaderValue?
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.CacheControl.set -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentDisposition.get -> Microsoft.Net.Http.Headers.ContentDispositionHeaderValue?
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentDisposition.set -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentRange.get -> Microsoft.Net.Http.Headers.ContentRangeHeaderValue?
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentRange.set -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentType.get -> Microsoft.Net.Http.Headers.MediaTypeHeaderValue?
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentType.set -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ETag.get -> Microsoft.Net.Http.Headers.EntityTagHeaderValue?
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ETag.set -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Get<T>(string! name) -> T?
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.GetList<T>(string! name) -> System.Collections.Generic.IList<T>!
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Headers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Location.get -> System.Uri?
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Location.set -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ResponseHeaders(Microsoft.AspNetCore.Http.IHeaderDictionary! headers) -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.Set(string! name, object? value) -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetCookie.get -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue!>!
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetCookie.set -> void
+Microsoft.AspNetCore.Http.Headers.ResponseHeaders.SetList<T>(string! name, System.Collections.Generic.IList<T>? values) -> void
+Microsoft.AspNetCore.Http.RequestDelegateFactory
+override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Http.Extensions.QueryBuilder.ToString() -> string!
+static Microsoft.AspNetCore.Http.Extensions.HttpRequestMultipartExtensions.GetMultipartBoundary(this Microsoft.AspNetCore.Http.HttpRequest! request) -> string!
+static Microsoft.AspNetCore.Http.Extensions.StreamCopyOperation.CopyToAsync(System.IO.Stream! source, System.IO.Stream! destination, long? count, System.Threading.CancellationToken cancel) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Http.Extensions.StreamCopyOperation.CopyToAsync(System.IO.Stream! source, System.IO.Stream! destination, long? count, int bufferSize, System.Threading.CancellationToken cancel) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Http.Extensions.UriHelper.BuildAbsolute(string! scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.PathString path = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.QueryString query = default(Microsoft.AspNetCore.Http.QueryString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString)) -> string!
+static Microsoft.AspNetCore.Http.Extensions.UriHelper.BuildRelative(Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.PathString path = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.QueryString query = default(Microsoft.AspNetCore.Http.QueryString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString)) -> string!
+static Microsoft.AspNetCore.Http.Extensions.UriHelper.Encode(System.Uri! uri) -> string!
+static Microsoft.AspNetCore.Http.Extensions.UriHelper.FromAbsolute(string! uri, out string! scheme, out Microsoft.AspNetCore.Http.HostString host, out Microsoft.AspNetCore.Http.PathString path, out Microsoft.AspNetCore.Http.QueryString query, out Microsoft.AspNetCore.Http.FragmentString fragment) -> void
+static Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(this Microsoft.AspNetCore.Http.HttpRequest! request) -> string!
+static Microsoft.AspNetCore.Http.Extensions.UriHelper.GetEncodedPathAndQuery(this Microsoft.AspNetCore.Http.HttpRequest! request) -> string!
+static Microsoft.AspNetCore.Http.Extensions.UriHelper.GetEncodedUrl(this Microsoft.AspNetCore.Http.HttpRequest! request) -> string!
+static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.AppendList<T>(this Microsoft.AspNetCore.Http.IHeaderDictionary! Headers, string! name, System.Collections.Generic.IList<T>! values) -> void
+static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpRequest! request) -> Microsoft.AspNetCore.Http.Headers.RequestHeaders!
+static Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions.GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpResponse! response) -> Microsoft.AspNetCore.Http.Headers.ResponseHeaders!
+static Microsoft.AspNetCore.Http.HttpContextServerVariableExtensions.GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext! context, string! variableName) -> string?
+static Microsoft.AspNetCore.Http.RequestDelegateFactory.Create(System.Delegate! action) -> Microsoft.AspNetCore.Http.RequestDelegate!
+static Microsoft.AspNetCore.Http.RequestDelegateFactory.Create(System.Reflection.MethodInfo! methodInfo) -> Microsoft.AspNetCore.Http.RequestDelegate!
+static Microsoft.AspNetCore.Http.RequestDelegateFactory.Create(System.Reflection.MethodInfo! methodInfo, System.Func<Microsoft.AspNetCore.Http.HttpContext!, object!>! targetFactory) -> Microsoft.AspNetCore.Http.RequestDelegate!
+static Microsoft.AspNetCore.Http.ResponseExtensions.Clear(this Microsoft.AspNetCore.Http.HttpResponse! response) -> void
+static Microsoft.AspNetCore.Http.ResponseExtensions.Redirect(this Microsoft.AspNetCore.Http.HttpResponse! response, string! location, bool permanent, bool preserveMethod) -> void
+static Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, Microsoft.Extensions.FileProviders.IFileInfo! file, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, Microsoft.Extensions.FileProviders.IFileInfo! file, long offset, long? count, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, string! fileName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, string! fileName, long offset, long? count, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Http.SessionExtensions.Get(this Microsoft.AspNetCore.Http.ISession! session, string! key) -> byte[]?
+static Microsoft.AspNetCore.Http.SessionExtensions.GetInt32(this Microsoft.AspNetCore.Http.ISession! session, string! key) -> int?
+static Microsoft.AspNetCore.Http.SessionExtensions.GetString(this Microsoft.AspNetCore.Http.ISession! session, string! key) -> string?
+static Microsoft.AspNetCore.Http.SessionExtensions.SetInt32(this Microsoft.AspNetCore.Http.ISession! session, string! key, int value) -> void
+static Microsoft.AspNetCore.Http.SessionExtensions.SetString(this Microsoft.AspNetCore.Http.ISession! session, string! key, string! value) -> void

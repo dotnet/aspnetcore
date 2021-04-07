@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// </summary>
         /// <param name="memberName">The name of the entry on which validation was performed.</param>
         /// <param name="message">The validation message.</param>
-        public ModelValidationResult(string memberName, string message)
+        public ModelValidationResult(string? memberName, string? message)
         {
             MemberName = memberName ?? string.Empty;
             Message = message ?? string.Empty;

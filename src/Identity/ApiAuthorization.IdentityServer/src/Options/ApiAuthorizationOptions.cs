@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.IdentityModel.Tokens;
@@ -31,6 +31,12 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// </summary>
         public ApiResourceCollection ApiResources { get; set; } =
             new ApiResourceCollection();
+
+        /// <summary>
+        /// Gets or sets the <see cref="ApiScopes"/>.
+        /// </summary>
+        public ApiScopeCollection ApiScopes { get; set; } =
+            new ApiScopeCollection();
 
         /// <summary>
         /// Gets or sets the <see cref="Clients"/>.

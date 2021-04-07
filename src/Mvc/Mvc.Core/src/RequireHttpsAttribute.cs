@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // only redirect for GET requests, otherwise the browser might not propagate the verb and request
             // body correctly.
-            if (!string.Equals(filterContext.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+            if (!HttpMethods.IsGet(filterContext.HttpContext.Request.Method))
             {
                 filterContext.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
             }

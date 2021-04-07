@@ -8,14 +8,17 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc
 {
+    /// <summary>
+    /// Static class for url helper extension methods.
+    /// </summary>
     public static class UrlHelperExtensions
     {
         /// <summary>
-        /// Generates a URL with an absolute path for an action method.
+        /// Generates a URL with a path for an action method.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <returns>The generated URL.</returns>
-        public static string Action(this IUrlHelper helper)
+        public static string? Action(this IUrlHelper helper)
         {
             if (helper == null)
             {
@@ -32,13 +35,13 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
         /// <returns>The generated URL.</returns>
-        public static string Action(this IUrlHelper helper, string action)
+        public static string? Action(this IUrlHelper helper, string? action)
         {
             if (helper == null)
             {
@@ -49,14 +52,14 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name and route <paramref name="values"/>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <returns>The generated URL.</returns>
-        public static string Action(this IUrlHelper helper, string action, object values)
+        public static string? Action(this IUrlHelper helper, string? action, object? values)
         {
             if (helper == null)
             {
@@ -67,14 +70,14 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> and <paramref name="controller"/> names.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
         /// <param name="controller">The name of the controller.</param>
         /// <returns>The generated URL.</returns>
-        public static string Action(this IUrlHelper helper, string action, string controller)
+        public static string? Action(this IUrlHelper helper, string? action, string? controller)
         {
             if (helper == null)
             {
@@ -85,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name, <paramref name="controller"/> name, and route <paramref name="values"/>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
@@ -93,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="controller">The name of the controller.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <returns>The generated URL.</returns>
-        public static string Action(this IUrlHelper helper, string action, string controller, object values)
+        public static string? Action(this IUrlHelper helper, string? action, string? controller, object? values)
         {
             if (helper == null)
             {
@@ -104,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>, and
         /// <paramref name="protocol"/> to use. See the remarks section for important security information.
         /// </summary>
@@ -122,12 +125,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// validate the <c>Host</c> header in your deployment environment.
         /// </para>
         /// </remarks>
-        public static string Action(
+        public static string? Action(
             this IUrlHelper helper,
-            string action,
-            string controller,
-            object values,
-            string protocol)
+            string? action,
+            string? controller,
+            object? values,
+            string? protocol)
         {
             if (helper == null)
             {
@@ -138,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>,
         /// <paramref name="protocol"/> to use, and <paramref name="host"/> name.
         /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
@@ -159,13 +162,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string Action(
+        public static string? Action(
             this IUrlHelper helper,
-            string action,
-            string controller,
-            object values,
-            string protocol,
-            string host)
+            string? action,
+            string? controller,
+            object? values,
+            string? protocol,
+            string? host)
         {
             if (helper == null)
             {
@@ -176,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// Generates a URL with a path for an action method, which contains the specified
         /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>,
         /// <paramref name="protocol"/> to use, <paramref name="host"/> name, and <paramref name="fragment"/>.
         /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
@@ -198,14 +201,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string Action(
+        public static string? Action(
             this IUrlHelper helper,
-            string action,
-            string controller,
-            object values,
-            string protocol,
-            string host,
-            string fragment)
+            string? action,
+            string? controller,
+            object? values,
+            string? protocol,
+            string? host,
+            string? fragment)
         {
             if (helper == null)
             {
@@ -229,7 +232,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <returns>The generated URL.</returns>
-        public static string RouteUrl(this IUrlHelper helper, object values)
+        public static string? RouteUrl(this IUrlHelper helper, object? values)
         {
             if (helper == null)
             {
@@ -245,7 +248,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="routeName">The name of the route that is used to generate URL.</param>
         /// <returns>The generated URL.</returns>
-        public static string RouteUrl(this IUrlHelper helper, string routeName)
+        public static string? RouteUrl(this IUrlHelper helper, string? routeName)
         {
             if (helper == null)
             {
@@ -263,7 +266,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeName">The name of the route that is used to generate URL.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <returns>The generated URL.</returns>
-        public static string RouteUrl(this IUrlHelper helper, string routeName, object values)
+        public static string? RouteUrl(this IUrlHelper helper, string? routeName, object? values)
         {
             if (helper == null)
             {
@@ -291,11 +294,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// validate the <c>Host</c> header in your deployment environment.
         /// </para>
         /// </remarks>
-        public static string RouteUrl(
+        public static string? RouteUrl(
             this IUrlHelper helper,
-            string routeName,
-            object values,
-            string protocol)
+            string? routeName,
+            object? values,
+            string? protocol)
         {
             if (helper == null)
             {
@@ -326,12 +329,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string RouteUrl(
+        public static string? RouteUrl(
             this IUrlHelper helper,
-            string routeName,
-            object values,
-            string protocol,
-            string host)
+            string? routeName,
+            object? values,
+            string? protocol,
+            string? host)
         {
             if (helper == null)
             {
@@ -363,13 +366,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string RouteUrl(
+        public static string? RouteUrl(
             this IUrlHelper helper,
-            string routeName,
-            object values,
-            string protocol,
-            string host,
-            string fragment)
+            string? routeName,
+            object? values,
+            string? protocol,
+            string? host,
+            string? fragment)
         {
             if (helper == null)
             {
@@ -392,7 +395,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
         /// <returns>The generated URL.</returns>
-        public static string Page(this IUrlHelper urlHelper, string pageName)
+        public static string? Page(this IUrlHelper urlHelper, string? pageName)
             => Page(urlHelper, pageName, values: null);
 
         /// <summary>
@@ -402,7 +405,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="pageName">The page name to generate the url for.</param>
         /// <param name="pageHandler">The handler to generate the url for.</param>
         /// <returns>The generated URL.</returns>
-        public static string Page(this IUrlHelper urlHelper, string pageName, string pageHandler)
+        public static string? Page(this IUrlHelper urlHelper, string? pageName, string? pageHandler)
             => Page(urlHelper, pageName, pageHandler, values: null);
 
         /// <summary>
@@ -412,7 +415,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="pageName">The page name to generate the url for.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <returns>The generated URL.</returns>
-        public static string Page(this IUrlHelper urlHelper, string pageName, object values)
+        public static string? Page(this IUrlHelper urlHelper, string? pageName, object? values)
             => Page(urlHelper, pageName, pageHandler: null, values: values);
 
         /// <summary>
@@ -423,11 +426,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="pageHandler">The handler to generate the url for.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <returns>The generated URL.</returns>
-        public static string Page(
+        public static string? Page(
             this IUrlHelper urlHelper,
-            string pageName,
-            string pageHandler,
-            object values)
+            string? pageName,
+            string? pageHandler,
+            object? values)
             => Page(urlHelper, pageName, pageHandler, values, protocol: null);
 
         /// <summary>
@@ -448,12 +451,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// validate the <c>Host</c> header in your deployment environment.
         /// </para>
         /// </remarks>
-        public static string Page(
+        public static string? Page(
             this IUrlHelper urlHelper,
-            string pageName,
-            string pageHandler,
-            object values,
-            string protocol)
+            string? pageName,
+            string? pageHandler,
+            object? values,
+            string? protocol)
             => Page(urlHelper, pageName, pageHandler, values, protocol, host: null, fragment: null);
 
         /// <summary>
@@ -475,13 +478,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string Page(
+        public static string? Page(
             this IUrlHelper urlHelper,
-            string pageName,
-            string pageHandler,
-            object values,
-            string protocol,
-            string host)
+            string? pageName,
+            string? pageHandler,
+            object? values,
+            string? protocol,
+            string? host)
             => Page(urlHelper, pageName, pageHandler, values, protocol, host, fragment: null);
 
         /// <summary>
@@ -504,14 +507,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string Page(
+        public static string? Page(
             this IUrlHelper urlHelper,
-            string pageName,
-            string pageHandler,
-            object values,
-            string protocol,
-            string host,
-            string fragment)
+            string? pageName,
+            string? pageHandler,
+            object? values,
+            string? protocol,
+            string? host,
+            string? fragment)
         {
             if (urlHelper == null)
             {
@@ -554,14 +557,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string ActionLink(
+        public static string? ActionLink(
             this IUrlHelper helper,
-            string action = null,
-            string controller = null,
-            object values = null,
-            string protocol = null,
-            string host = null,
-            string fragment = null)
+            string? action = null,
+            string? controller = null,
+            object? values = null,
+            string? protocol = null,
+            string? host = null,
+            string? fragment = null)
         {
             if (helper == null)
             {
@@ -606,14 +609,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string PageLink(
+        public static string? PageLink(
             this IUrlHelper urlHelper,
-            string pageName = null,
-            string pageHandler = null,
-            object values = null,
-            string protocol = null,
-            string host = null,
-            string fragment = null)
+            string? pageName = null,
+            string? pageHandler = null,
+            object? values = null,
+            string? protocol = null,
+            string? host = null,
+            string? fragment = null)
         {
             if (urlHelper == null)
             {

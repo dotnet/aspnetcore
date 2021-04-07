@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
+using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -23,10 +24,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private readonly Func<string, string> _htmlEncoder;
 
-        public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, Func<string, string> htmlEncoder)
+        public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, HtmlEncoder htmlEncoder)
             : base(serviceProvider, loggerFactory)
         {
-            _htmlEncoder = htmlEncoder;
+            _htmlEncoder = htmlEncoder.Encode;
         }
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();

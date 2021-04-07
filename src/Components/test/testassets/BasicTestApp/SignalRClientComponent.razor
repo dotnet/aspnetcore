@@ -1,0 +1,66 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Http.Connections
+
+<h1 id="signalr-client">SignalR Client</h1>
+
+<p>This shows that the SignalR client can be used on WebAssembly.</p>
+
+<p>
+    Hub URL:
+    <input id="hub-url" @bind="hubUrl" />
+    <select id="transport-type" @bind="transportType">
+        <option value=@HttpTransportType.LongPolling>LongPolling</option>
+        <option value=@HttpTransportType.WebSockets>WebSockets</option>
+    </select>
+    <button id="hub-connect" @onclick="Connect">Connect</button>
+    <button id="hub-useragent" @onclick="GetUserAgentHeader">GetUserAgent</button>
+</p>
+
+<div>Connected: @IsConnected</div>
+<div id="useragent">User-Agent: @userAgent</div>
+
+<ul id="messagesList">
+    @foreach (var message in messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+
+@code {
+    private string hubUrl;
+    private HttpTransportType transportType;
+    private HubConnection hubConnection;
+    private List<string> messages = new List<string>();
+    private string userAgent;
+
+    protected async Task Connect()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(hubUrl, transportType)
+            .Build();
+
+        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            var encodedMsg = $"{user}: {message}";
+            messages.Add(encodedMsg);
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+        await hubConnection.SendAsync("SendMessage", "SignalR Client", $"Echo {transportType}");
+    }
+
+    protected async Task GetUserAgentHeader()
+    {
+        userAgent = await hubConnection.InvokeAsync<string>("GetHeaderValue", "X-SignalR-User-Agent");
+        StateHasChanged();
+    }
+
+    public bool IsConnected =>
+        hubConnection != null && hubConnection.State == HubConnectionState.Connected;
+
+    public ValueTask DisposeAsync()
+    {
+        return hubConnection.DisposeAsync();
+    }
+}

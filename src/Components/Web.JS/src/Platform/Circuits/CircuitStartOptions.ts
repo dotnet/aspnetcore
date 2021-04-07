@@ -1,7 +1,8 @@
 import { LogLevel } from '../Logging/Logger';
+import { HubConnectionBuilder } from '@microsoft/signalr';
 
 export interface CircuitStartOptions {
-  configureSignalR: (builder: signalR.HubConnectionBuilder) => void;
+  configureSignalR: (builder: HubConnectionBuilder) => void;
   logLevel: LogLevel;
   reconnectionOptions: ReconnectionOptions;
   reconnectionHandler?: ReconnectionHandler;
@@ -33,8 +34,8 @@ const defaultOptions: CircuitStartOptions = {
     configureSignalR: (_) => { },
     logLevel: LogLevel.Warning,
     reconnectionOptions: {
-      maxRetries: 5,
-      retryIntervalMilliseconds: 3000,
+      maxRetries: 8,
+      retryIntervalMilliseconds: 20000,
       dialogId: 'components-reconnect-modal',
     },
 };

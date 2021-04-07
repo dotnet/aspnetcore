@@ -37,7 +37,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             return Thread.PostAsync(listener =>
             {
                 listener.ListenSocket = listener.CreateListenSocket();
-                listener.ListenSocket.Listen(LibuvConstants.ListenBacklog, ConnectionCallback, listener);
+#pragma warning disable CS0618
+                listener.ListenSocket.Listen(TransportContext.Options.Backlog, ConnectionCallback, listener);
+#pragma warning restore CS0618
             }, this);
         }
 
@@ -66,7 +68,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 socket.Init(Thread.Loop, Thread.QueueCloseHandle);
+#pragma warning disable CS0618
                 socket.NoDelay(TransportContext.Options.NoDelay);
+#pragma warning restore CS0618
 
                 if (!useFileHandle)
                 {

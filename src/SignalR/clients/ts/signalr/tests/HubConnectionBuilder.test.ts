@@ -47,22 +47,22 @@ class CapturingConsole {
     public messages: any[] = [];
 
     public error(message: any) {
-        this.messages.push(CapturingConsole.stripPrefix(message));
+        this.messages.push(CapturingConsole._stripPrefix(message));
     }
 
     public warn(message: any) {
-        this.messages.push(CapturingConsole.stripPrefix(message));
+        this.messages.push(CapturingConsole._stripPrefix(message));
     }
 
     public info(message: any) {
-        this.messages.push(CapturingConsole.stripPrefix(message));
+        this.messages.push(CapturingConsole._stripPrefix(message));
     }
 
     public log(message: any) {
-        this.messages.push(CapturingConsole.stripPrefix(message));
+        this.messages.push(CapturingConsole._stripPrefix(message));
     }
 
-    private static stripPrefix(input: any): any {
+    private static _stripPrefix(input: any): any {
         if (typeof input === "string") {
             input = input.replace(/\[.*\]\s+/, "");
         }
@@ -73,12 +73,14 @@ class CapturingConsole {
 registerUnhandledRejectionHandler();
 
 describe("HubConnectionBuilder", () => {
-    eachMissingValue((val, name) => {
-        it(`withUrl throws if url is ${name}`, () => {
+    for (const val of [undefined, null, ""]) {
+        it(`withUrl throws if url is ${String(val)}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.withUrl(val!)).toThrow("The 'url' argument is required.");
+            expect(() => builder.withUrl(val!)).toThrow(/The 'url' argument (is required|should not be empty)./);
         });
+    }
 
+    eachMissingValue((val, name) => {
         it(`withHubProtocol throws if protocol is ${name}`, () => {
             const builder = new HubConnectionBuilder();
             expect(() => builder.withHubProtocol(val!)).toThrow("The 'protocol' argument is required.");
@@ -153,7 +155,7 @@ describe("HubConnectionBuilder", () => {
     describe("configureLogging", () => {
         function testLogLevels(logger: ILogger, minLevel: LogLevel) {
             const capturingConsole = new CapturingConsole();
-            (logger as ConsoleLogger).outputConsole = capturingConsole;
+            (logger as ConsoleLogger).out = capturingConsole;
 
             for (let level = LogLevel.Trace; level < LogLevel.None; level++) {
                 const message = `Message at LogLevel.${LogLevel[level]}`;
@@ -196,7 +198,7 @@ describe("HubConnectionBuilder", () => {
             });
         });
 
-        const levelNames = Object.keys(ExpectedLogLevelMappings) as Array<keyof typeof ExpectedLogLevelMappings>;
+        const levelNames = Object.keys(ExpectedLogLevelMappings) as (keyof typeof ExpectedLogLevelMappings)[];
         for (const str of levelNames) {
             const mapped = ExpectedLogLevelMappings[str];
             const mappedName = LogLevel[mapped];

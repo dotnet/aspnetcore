@@ -13,12 +13,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     public class SignOutSessionStateManager
     {
         private readonly IJSRuntime _jsRuntime;
-        private static readonly JsonSerializerOptions _serializationOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNameCaseInsensitive = true,
-        };
+        private static readonly JsonSerializerOptions _serializationOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="SignOutSessionStateManager"/>.
+        /// </summary>
+        /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
         public SignOutSessionStateManager(IJSRuntime jsRuntime) => _jsRuntime = jsRuntime;
 
         /// <summary>

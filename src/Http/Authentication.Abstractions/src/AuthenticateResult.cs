@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -19,32 +20,55 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// If a ticket was produced, authenticate was successful.
         /// </summary>
+        [MemberNotNullWhen(true, nameof(Ticket))]
         public bool Succeeded => Ticket != null;
 
         /// <summary>
         /// The authentication ticket.
         /// </summary>
-        public AuthenticationTicket Ticket { get; protected set; }
+        public AuthenticationTicket? Ticket { get; protected set; }
 
         /// <summary>
         /// Gets the claims-principal with authenticated user identities.
         /// </summary>
-        public ClaimsPrincipal Principal => Ticket?.Principal;
+        public ClaimsPrincipal? Principal => Ticket?.Principal;
 
         /// <summary>
         /// Additional state values for the authentication session.
         /// </summary>
-        public AuthenticationProperties Properties { get; protected set; }
+        public AuthenticationProperties? Properties { get; protected set; }
 
         /// <summary>
         /// Holds failure information from the authentication.
         /// </summary>
-        public Exception Failure { get; protected set; }
+        public Exception? Failure { get; protected set; }
 
         /// <summary>
         /// Indicates that there was no information returned for this authentication scheme.
         /// </summary>
         public bool None { get; protected set; }
+
+        /// <summary>
+        /// Create a new deep copy of the result
+        /// </summary>
+        /// <returns>A copy of the result</returns>
+        public AuthenticateResult Clone()
+        {
+            if (None)
+            {
+                return NoResult();
+            }
+            if (Failure != null)
+            {
+                return Fail(Failure, Properties?.Clone());
+            }
+            if (Succeeded)
+            {
+                return Success(Ticket!.Clone());
+            }
+            // This shouldn't happen
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Indicates that authentication was successful.
@@ -85,7 +109,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="failure">The failure exception.</param>
         /// <param name="properties">Additional state values for the authentication session.</param>
         /// <returns>The result.</returns>
-        public static AuthenticateResult Fail(Exception failure, AuthenticationProperties properties)
+        public static AuthenticateResult Fail(Exception failure, AuthenticationProperties? properties)
         {
             return new AuthenticateResult() { Failure = failure, Properties = properties };
         }
@@ -104,7 +128,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="failureMessage">The failure message.</param>
         /// <param name="properties">Additional state values for the authentication session.</param>
         /// <returns>The result.</returns>
-        public static AuthenticateResult Fail(string failureMessage, AuthenticationProperties properties)
+        public static AuthenticateResult Fail(string failureMessage, AuthenticationProperties? properties)
             => Fail(new Exception(failureMessage), properties);
     }
 }

@@ -322,7 +322,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             return UserLogins.SingleOrDefaultAsync(userLogin => userLogin.LoginProvider == loginProvider && userLogin.ProviderKey == providerKey, cancellationToken);
         }
 
-
         /// <summary>
         /// Adds the given <paramref name="normalizedRoleName"/> to the specified <paramref name="user"/>.
         /// </summary>
@@ -637,7 +636,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            return Task.FromResult(Users.Where(u => u.NormalizedEmail == normalizedEmail).SingleOrDefault());
+            return Users.SingleOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
         }
 
         /// <summary>
@@ -718,7 +717,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             UserTokens.Add(token);
             return Task.CompletedTask;
         }
-
 
         /// <summary>
         /// Remove a new user token.

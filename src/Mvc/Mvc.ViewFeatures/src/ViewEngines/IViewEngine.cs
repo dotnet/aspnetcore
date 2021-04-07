@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Mvc.ViewEngines
 {
     /// <summary>
@@ -28,6 +30,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
         /// <param name="viewPath">The path to the view.</param>
         /// <param name="isMainPage">Determines if the page being found is the main page for an action.</param>
         /// <returns>The <see cref="ViewEngineResult"/> of locating the view.</returns>
-        ViewEngineResult GetView(string executingFilePath, string viewPath, bool isMainPage);
+        ViewEngineResult GetView(string? executingFilePath, string viewPath, bool isMainPage);
     }
 }

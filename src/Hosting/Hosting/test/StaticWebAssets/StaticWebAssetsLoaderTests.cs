@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
   <ContentRoot Path=""/Path"" BasePath=""/BasePath"" />
 </StaticWebAssets>
 ";
-            var path = Path.ChangeExtension(new Uri(typeof(StaticWebAssetsLoader).Assembly.CodeBase).LocalPath, ".StaticWebAssets.xml");
+            var path = Path.ChangeExtension(typeof(StaticWebAssetsLoader).Assembly.Location, ".StaticWebAssets.xml");
             var environment = new HostingEnvironment()
             {
                 ApplicationName = "NonExistingDll"

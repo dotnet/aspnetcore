@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -54,12 +55,12 @@ namespace Microsoft.AspNetCore.Routing
 
         public TextWriter QueryWriter { get; }
 
-        public bool Accept(string value)
+        public bool Accept(string? value)
         {
             return Accept(value, encodeSlashes: true);
         }
 
-        public bool Accept(string value, bool encodeSlashes)
+        public bool Accept(string? value, bool encodeSlashes)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -141,7 +142,7 @@ namespace Microsoft.AspNetCore.Routing
             _lastValueOffset = -1;
         }
 
-        public bool Buffer(string value)
+        public bool Buffer(string? value)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -319,7 +320,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private string DebuggerToString()
         {
-            return string.Format("{{Accepted: '{0}' Buffered: '{1}'}}", _path, string.Join("", _buffer));
+            return string.Format(CultureInfo.InvariantCulture, "{{Accepted: '{0}' Buffered: '{1}'}}", _path, string.Join("", _buffer));
         }
 
         private readonly struct BufferValue

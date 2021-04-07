@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -412,8 +412,7 @@ namespace Microsoft.Net.Http.Headers
                 "name=value6,name=value7",
                 "name=\"value 8\", name= \"value 9\"",
             };
-            IList<NameValueHeaderValue> results;
-            Assert.True(NameValueHeaderValue.TryParseList(inputs, out results));
+            Assert.True(NameValueHeaderValue.TryParseList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -446,8 +445,7 @@ namespace Microsoft.Net.Http.Headers
                 "name=value6,name=value7",
                 "name=\"value 8\", name= \"value 9\"",
             };
-            IList<NameValueHeaderValue> results;
-            Assert.True(NameValueHeaderValue.TryParseStrictList(inputs, out results));
+            Assert.True(NameValueHeaderValue.TryParseStrictList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -534,8 +532,7 @@ namespace Microsoft.Net.Http.Headers
                 "name8=value8,name9=value9",
                 "name10=\"value 10\", name11= \"value 11\"",
             };
-            IList<NameValueHeaderValue> results;
-            Assert.True(NameValueHeaderValue.TryParseList(inputs, out results));
+            Assert.True(NameValueHeaderValue.TryParseList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -571,8 +568,7 @@ namespace Microsoft.Net.Http.Headers
                 "name8=value8,name9=value9",
                 "name10=\"value 10\", name11= \"value 11\"",
             };
-            IList<NameValueHeaderValue> results;
-            Assert.False(NameValueHeaderValue.TryParseStrictList(inputs, out results));
+            Assert.False(NameValueHeaderValue.TryParseStrictList(inputs, out var results));
         }
 
         [Theory]
@@ -658,38 +654,36 @@ namespace Microsoft.Net.Http.Headers
 
         #region Helper methods
 
-        private void CheckValidParse(string input, NameValueHeaderValue expectedResult)
+        private void CheckValidParse(string? input, NameValueHeaderValue expectedResult)
         {
             var result = NameValueHeaderValue.Parse(input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidParse(string input)
+        private void CheckInvalidParse(string? input)
         {
             Assert.Throws<FormatException>(() => NameValueHeaderValue.Parse(input));
         }
 
-        private void CheckValidTryParse(string input, NameValueHeaderValue expectedResult)
+        private void CheckValidTryParse(string? input, NameValueHeaderValue expectedResult)
         {
-            NameValueHeaderValue result = null;
-            Assert.True(NameValueHeaderValue.TryParse(input, out result));
+            Assert.True(NameValueHeaderValue.TryParse(input, out var result));
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidTryParse(string input)
+        private void CheckInvalidTryParse(string? input)
         {
-            NameValueHeaderValue result = null;
-            Assert.False(NameValueHeaderValue.TryParse(input, out result));
+            Assert.False(NameValueHeaderValue.TryParse(input, out var result));
             Assert.Null(result);
         }
 
-        private static void CheckValue(string value)
+        private static void CheckValue(string? value)
         {
             var nameValue = new NameValueHeaderValue("text", value);
             Assert.Equal(value, nameValue.Value);
         }
 
-        private static void AssertFormatException(string name, string value)
+        private static void AssertFormatException(string name, string? value)
         {
             Assert.Throws<FormatException>(() => new NameValueHeaderValue(name, value));
         }

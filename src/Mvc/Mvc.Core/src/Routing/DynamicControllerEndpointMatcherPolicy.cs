@@ -1,11 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,14 +17,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 {
     internal class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
     {
-        private readonly DynamicControllerEndpointSelector _selector;
+        private readonly DynamicControllerEndpointSelectorCache _selectorCache;
         private readonly EndpointMetadataComparer _comparer;
 
-        public DynamicControllerEndpointMatcherPolicy(DynamicControllerEndpointSelector selector, EndpointMetadataComparer comparer)
+        public DynamicControllerEndpointMatcherPolicy(DynamicControllerEndpointSelectorCache selectorCache, EndpointMetadataComparer comparer)
         {
-            if (selector == null)
+            if (selectorCache == null)
             {
-                throw new ArgumentNullException(nameof(selector));
+                throw new ArgumentNullException(nameof(selectorCache));
             }
 
             if (comparer == null)
@@ -29,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(comparer));
             }
 
-            _selector = selector;
+            _selectorCache = selectorCache;
             _comparer = comparer;
         }
 
@@ -78,6 +81,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(candidates));
             }
 
+            // The per-route selector, must be the same for all the endpoints we are dealing with.
+            DynamicControllerEndpointSelector? selector = null;
+
             // There's no real benefit here from trying to avoid the async state machine.
             // We only execute on nodes that contain a dynamic policy, and thus always have
             // to await something.
@@ -89,21 +95,29 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }
 
                 var endpoint = candidates[i].Endpoint;
-                var originalValues = candidates[i].Values;
+                var originalValues = candidates[i].Values!;
 
-                RouteValueDictionary dynamicValues = null;
+                RouteValueDictionary? dynamicValues = null;
 
                 // We don't expect both of these to be provided, and they are internal so there's
                 // no realistic way this could happen.
                 var dynamicControllerMetadata = endpoint.Metadata.GetMetadata<DynamicControllerMetadata>();
                 var transformerMetadata = endpoint.Metadata.GetMetadata<DynamicControllerRouteValueTransformerMetadata>();
+
+                DynamicRouteValueTransformer? transformer = null;
                 if (dynamicControllerMetadata != null)
                 {
                     dynamicValues = dynamicControllerMetadata.Values;
                 }
                 else if (transformerMetadata != null)
                 {
-                    var transformer = (DynamicRouteValueTransformer)httpContext.RequestServices.GetRequiredService(transformerMetadata.SelectorType);
+                    transformer = (DynamicRouteValueTransformer)httpContext.RequestServices.GetRequiredService(transformerMetadata.SelectorType);
+                    if (transformer.State != null)
+                    {
+                        throw new InvalidOperationException(Resources.FormatStateShouldBeNullForRouteValueTransformers(transformerMetadata.SelectorType.Name));
+                    }
+                    transformer.State = transformerMetadata.State;
+
                     dynamicValues = await transformer.TransformAsync(httpContext, originalValues);
                 }
                 else
@@ -118,7 +132,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     continue;
                 }
 
-                var endpoints = _selector.SelectEndpoints(dynamicValues);
+                selector = ResolveSelector(selector, endpoint);
+
+                var endpoints = selector.SelectEndpoints(dynamicValues);
                 if (endpoints.Count == 0 && dynamicControllerMetadata != null)
                 {
                     // Naving no match for a fallback is a configuration error. We can't really check
@@ -146,12 +162,31 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     }
                 }
 
+                if (transformer != null)
+                {
+                    endpoints = await transformer.FilterAsync(httpContext, values, endpoints);
+                    if (endpoints.Count == 0)
+                    {
+                        candidates.ReplaceEndpoint(i, null, null);
+                        continue;
+                    }
+                }
+
                 // Update the route values
                 candidates.ReplaceEndpoint(i, endpoint, values);
 
                 // Expand the list of endpoints
                 candidates.ExpandEndpoint(i, endpoints, _comparer);
             }
+        }
+
+        private DynamicControllerEndpointSelector ResolveSelector(DynamicControllerEndpointSelector? currentSelector, Endpoint endpoint)
+        {
+            var selector = _selectorCache.GetEndpointSelector(endpoint);
+
+            Debug.Assert(currentSelector == null || ReferenceEquals(currentSelector, selector));
+
+            return selector;
         }
     }
 }

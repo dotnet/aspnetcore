@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -35,8 +36,10 @@ namespace Ignitor
             });
         }
 
-        public TimeSpan? DefaultConnectionTimeout { get; set; } = TimeSpan.FromSeconds(20);
-        public TimeSpan? DefaultOperationTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
+        public TimeSpan? DefaultConnectionTimeout { get; set; } = Debugger.IsAttached ?
+            Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(20);
+        public TimeSpan? DefaultOperationTimeout { get; set; } = Debugger.IsAttached ?
+            Timeout.InfiniteTimeSpan : TimeSpan.FromMilliseconds(500);
 
         /// <summary>
         /// Gets or sets a value that determines whether the client will capture data such
@@ -333,11 +336,12 @@ namespace Ignitor
             return null;
         }
 
-        public async Task<bool> ConnectAsync(Uri uri, bool connectAutomatically = true)
+        public async Task<bool> ConnectAsync(Uri uri, bool connectAutomatically = true, Action<HubConnectionBuilder, Uri>? configure = null)
         {
             var builder = new HubConnectionBuilder();
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
-            builder.WithUrl(GetHubUrl(uri));
+            var hubUrl = GetHubUrl(uri);
+            builder.WithUrl(hubUrl);
             builder.ConfigureLogging(l =>
             {
                 l.SetMinimumLevel(LogLevel.Trace);
@@ -347,16 +351,30 @@ namespace Ignitor
                 }
             });
 
+            configure?.Invoke(builder, hubUrl);
+
             _hubConnection = builder.Build();
 
             HubConnection.On<int, string>("JS.AttachComponent", OnAttachComponent);
-            HubConnection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
+            HubConnection.On<int, string, string, int, long>("JS.BeginInvokeJS", OnBeginInvokeJS);
             HubConnection.On<string>("JS.EndInvokeDotNet", OnEndInvokeDotNet);
             HubConnection.On<int, byte[]>("JS.RenderBatch", OnRenderBatch);
             HubConnection.On<string>("JS.Error", OnError);
             HubConnection.Closed += OnClosedAsync;
 
-            await HubConnection.StartAsync(CancellationToken);
+            for (var i = 0; i < 10; i++)
+            {
+                try
+                {
+                    await HubConnection.StartAsync(CancellationToken);
+                    break;
+                }
+                catch
+                {
+                    await Task.Delay(500);
+                    // Retry 10 times
+                }
+            }
 
             if (!connectAutomatically)
             {
@@ -365,7 +383,7 @@ namespace Ignitor
 
             var descriptors = await GetPrerenderDescriptors(uri);
             await ExpectRenderBatch(
-                async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri, descriptors, CancellationToken),
+                async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri, descriptors, null, CancellationToken),
                 DefaultConnectionTimeout);
             return CircuitId != null;
         }
@@ -386,9 +404,9 @@ namespace Ignitor
             NextAttachComponentReceived?.Completion?.TrySetResult(call);
         }
 
-        private void OnBeginInvokeJS(int asyncHandle, string identifier, string argsJson)
+        private void OnBeginInvokeJS(int asyncHandle, string identifier, string argsJson, int resultType, long targetInstanceId)
         {
-            var call = new CapturedJSInteropCall(asyncHandle, identifier, argsJson);
+            var call = new CapturedJSInteropCall(asyncHandle, identifier, argsJson, resultType, targetInstanceId);
             Operations?.JSInteropCalls.Enqueue(call);
             JSInterop?.Invoke(call);
 
@@ -435,7 +453,7 @@ namespace Ignitor
             NextErrorReceived?.Completion?.TrySetResult(null);
         }
 
-        private Task OnClosedAsync(Exception ex)
+        private Task OnClosedAsync(Exception? ex)
         {
             NextDisconnect?.Completion?.TrySetResult(null);
 
@@ -460,7 +478,7 @@ namespace Ignitor
             else
             {
                 var builder = new UriBuilder(uri);
-                builder.Path += builder.Path.EndsWith("/") ? "_blazor" : "/_blazor";
+                builder.Path += builder.Path.EndsWith("/", StringComparison.Ordinal) ? "_blazor" : "/_blazor";
                 return builder.Uri;
             }
         }

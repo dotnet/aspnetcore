@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Localization;
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
             // FileExtensionsAttribute formats the extension list for the error message
             var formattedExtensions = string.Join(", ", expectedExtensions.Split(','));
-            var expectedErrorMessage = string.Format(attribute.ErrorMessage, nameof(Profile.PhotoFileName), formattedExtensions);
+            var expectedErrorMessage = string.Format(CultureInfo.CurrentCulture, attribute.ErrorMessage, nameof(Profile.PhotoFileName), formattedExtensions);
 
             var adapter = new FileExtensionsAttributeAdapter(attribute, stringLocalizer: null);
             var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new Dictionary<string, string>());
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
             // FileExtensionsAttribute formats the extension list for the error message
             var formattedExtensions = string.Join(", ", expectedExtensions.Split(','));
-            var expectedErrorMessage = string.Format(attribute.ErrorMessage, nameof(Profile.PhotoFileName), formattedExtensions);
+            var expectedErrorMessage = string.Format(CultureInfo.CurrentCulture, attribute.ErrorMessage, nameof(Profile.PhotoFileName), formattedExtensions);
 
             var adapter = new FileExtensionsAttributeAdapter(attribute, stringLocalizer: null);
             var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new Dictionary<string, string>());

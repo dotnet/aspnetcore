@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -13,11 +15,17 @@ namespace Microsoft.AspNetCore.Routing.Template
     /// </summary>
     public static class RoutePrecedence
     {
-        // Compute the precedence for matching a provided url
-        // e.g.: /api/template == 1.1
-        //       /api/template/{id} == 1.13
-        //       /api/{id:int} == 1.2
-        //       /api/template/{id:int} == 1.12
+        /// <summary>
+        ///  Compute the precedence for matching a provided url
+        /// </summary>
+        /// <example>
+        ///     e.g.: /api/template == 1.1
+        ///     /api/template/{id} == 1.13
+        ///     /api/{id:int} == 1.2
+        ///     /api/template/{id:int} == 1.12
+        /// </example>
+        /// <param name="template">The <see cref="RouteTemplate"/> to compute precendence for.</param>
+        /// <returns>A <see cref="decimal"/> representing the route's precendence.</returns>
         public static decimal ComputeInbound(RouteTemplate template)
         {
             ValidateSegementLength(template.Segments.Count);
@@ -59,11 +67,17 @@ namespace Microsoft.AspNetCore.Routing.Template
             return precedence;
         }
 
-        // Compute the precedence for generating a url
-        // e.g.: /api/template          == 5.5
-        //       /api/template/{id}     == 5.53
-        //       /api/{id:int}          == 5.4
-        //       /api/template/{id:int} == 5.54
+        /// <summary>
+        ///  Compute the precedence for generating a url.
+        /// </summary>
+        /// <example>
+        ///     e.g.: /api/template    == 5.5
+        ///     /api/template/{id}     == 5.53
+        ///     /api/{id:int}          == 5.4
+        ///     /api/template/{id:int} == 5.54
+        /// </example>
+        /// <param name="template">The <see cref="RouteTemplate"/> to compute precendence for.</param>
+        /// <returns>A <see cref="decimal"/> representing the route's precendence.</returns>
         public static decimal ComputeOutbound(RouteTemplate template)
         {
             ValidateSegementLength(template.Segments.Count);

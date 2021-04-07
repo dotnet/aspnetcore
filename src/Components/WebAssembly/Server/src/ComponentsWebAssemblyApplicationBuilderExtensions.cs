@@ -77,6 +77,7 @@ namespace Microsoft.AspNetCore.Builder
             AddMapping(contentTypeProvider, ".pdb", MediaTypeNames.Application.Octet);
             AddMapping(contentTypeProvider, ".br", MediaTypeNames.Application.Octet);
             AddMapping(contentTypeProvider, ".dat", MediaTypeNames.Application.Octet);
+            AddMapping(contentTypeProvider, ".blat", MediaTypeNames.Application.Octet);
 
             options.ContentTypeProvider = contentTypeProvider;
 
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Builder
                     // When we revisit this, we should consider calculating the original content type and storing it
                     // in the request along with the original target path so that we don't have to calculate it here.
                     var originalPath = Path.GetFileNameWithoutExtension(requestPath.Value);
-                    if (contentTypeProvider.TryGetContentType(originalPath, out var originalContentType))
+                    if (originalPath != null && contentTypeProvider.TryGetContentType(originalPath, out var originalContentType))
                     {
                         fileContext.Context.Response.ContentType = originalContentType;
                     }

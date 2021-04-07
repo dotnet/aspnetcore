@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
     {
         private readonly string _max;
 
-        public MaxLengthAttributeAdapter(MaxLengthAttribute attribute, IStringLocalizer stringLocalizer)
+        public MaxLengthAttributeAdapter(MaxLengthAttribute attribute, IStringLocalizer? stringLocalizer)
             : base(attribute, stringLocalizer)
         {
             _max = Attribute.Length.ToString(CultureInfo.InvariantCulture);
