@@ -50,13 +50,11 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Invoked by the base class when an error is being handled.
+        /// Invoked by the base class when an error is being handled. Typically, derived classes
+        /// should log the exception from this method.
         /// </summary>
         /// <param name="exception">The <see cref="Exception"/> being handled.</param>
-        protected virtual Task OnErrorAsync(Exception exception)
-        {
-            return Task.CompletedTask;
-        }
+        protected abstract Task OnErrorAsync(Exception exception);
 
         void IErrorBoundary.HandleException(Exception exception)
         {

@@ -14,7 +14,11 @@ namespace Microsoft.AspNetCore.Components.Web
     {
         [Inject] private IErrorBoundaryLogger? ErrorBoundaryLogger { get; set; }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Invoked by the base class when an error is being handled. The default implementation
+        /// logs the error.
+        /// </summary>
+        /// <param name="exception">The <see cref="Exception"/> being handled.</param>
         protected override async Task OnErrorAsync(Exception exception)
         {
             await ErrorBoundaryLogger!.LogErrorAsync(exception);

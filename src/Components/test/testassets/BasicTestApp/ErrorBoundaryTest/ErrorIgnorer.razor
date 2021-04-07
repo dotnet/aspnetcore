@@ -4,3 +4,11 @@
     This is to check we still don't retain the descendant component instances.
 *@
 @ChildContent
+
+@code {
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        // Ignore it
+        return Task.CompletedTask;
+    }
+}
