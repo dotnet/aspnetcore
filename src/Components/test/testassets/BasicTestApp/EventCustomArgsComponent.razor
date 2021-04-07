@@ -63,7 +63,7 @@
 
 <button id="trigger-sendjsobject-event-directly"
         onclick="document.getElementById('test-event-target-child').dispatchEvent(new CustomEvent('sendjsobject', { bubbles: true, detail: { jsObject: DotNet.createJSObjectReference({ getMyValue: () => 'Hello!' }) } }))">
-    Trigger testevent directly
+    Trigger sendjsobject event directly
 </button>
 
 
