@@ -1,9 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
@@ -11,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
     // Note: changes made to binding behavior in type should also be made to PageBinderFactory.
     internal static class ControllerBinderDelegateProvider
     {
-        public static ControllerBinderDelegate CreateBinderDelegate(
+        public static ControllerBinderDelegate? CreateBinderDelegate(
             ParameterBinder parameterBinder,
             IModelBinderFactory modelBinderFactory,
             IModelMetadataProvider modelMetadataProvider,
@@ -46,8 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             var parameterBindingInfo = GetParameterBindingInfo(
                 modelBinderFactory,
                 modelMetadataProvider,
-                actionDescriptor,
-                mvcOptions);
+                actionDescriptor);
             var propertyBindingInfo = GetPropertyBindingInfo(modelBinderFactory, modelMetadataProvider, actionDescriptor);
 
             if (parameterBindingInfo == null && propertyBindingInfo == null)
@@ -55,9 +57,21 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 return null;
             }
 
+            var parameters = actionDescriptor.Parameters switch
+            {
+                List<ParameterDescriptor> list => list.ToArray(),
+                _ => actionDescriptor.Parameters.ToArray()
+            };
+
+            var properties = actionDescriptor.BoundProperties switch
+            {
+                List<ParameterDescriptor> list => list.ToArray(),
+                _ => actionDescriptor.BoundProperties.ToArray()
+            };
+
             return Bind;
 
-            async Task Bind(ControllerContext controllerContext, object controller, Dictionary<string, object> arguments)
+            async Task Bind(ControllerContext controllerContext, object controller, Dictionary<string, object?> arguments)
             {
                 var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(controllerContext, controllerContext.ValueProviderFactories);
                 if (!success)
@@ -65,12 +79,12 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                     return;
                 }
 
-                var parameters = actionDescriptor.Parameters;
+                Debug.Assert(valueProvider is not null);
 
-                for (var i = 0; i < parameters.Count; i++)
+                for (var i = 0; i < parameters.Length; i++)
                 {
                     var parameter = parameters[i];
-                    var bindingInfo = parameterBindingInfo[i];
+                    var bindingInfo = parameterBindingInfo![i];
                     var modelMetadata = bindingInfo.ModelMetadata;
 
                     if (!modelMetadata.IsBindingAllowed)
@@ -93,11 +107,10 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                     }
                 }
 
-                var properties = actionDescriptor.BoundProperties;
-                for (var i = 0; i < properties.Count; i++)
+                for (var i = 0; i < properties.Length; i++)
                 {
                     var property = properties[i];
-                    var bindingInfo = propertyBindingInfo[i];
+                    var bindingInfo = propertyBindingInfo![i];
                     var modelMetadata = bindingInfo.ModelMetadata;
 
                     if (!modelMetadata.IsBindingAllowed)
@@ -122,11 +135,10 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             }
         }
 
-        private static BinderItem[] GetParameterBindingInfo(
+        private static BinderItem[]? GetParameterBindingInfo(
             IModelBinderFactory modelBinderFactory,
             IModelMetadataProvider modelMetadataProvider,
-            ControllerActionDescriptor actionDescriptor,
-            MvcOptions mvcOptions)
+            ControllerActionDescriptor actionDescriptor)
         {
             var parameters = actionDescriptor.Parameters;
             if (parameters.Count == 0)
@@ -169,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             return parameterBindingInfo;
         }
 
-        private static BinderItem[] GetPropertyBindingInfo(
+        private static BinderItem[]? GetPropertyBindingInfo(
             IModelBinderFactory modelBinderFactory,
             IModelMetadataProvider modelMetadataProvider,
             ControllerActionDescriptor actionDescriptor)

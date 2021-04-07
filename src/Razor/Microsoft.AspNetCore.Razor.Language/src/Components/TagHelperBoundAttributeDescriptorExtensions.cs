@@ -63,6 +63,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 string.Equals(value, bool.TrueString);
         }
 
+        public static bool IsCascadingTypeParameterProperty(this BoundAttributeDescriptor attribute)
+        {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
+            return
+                attribute.Metadata.TryGetValue(ComponentMetadata.Component.TypeParameterIsCascadingKey, out var value) &&
+                string.Equals(value, bool.TrueString);
+        }
+
         public static bool IsWeaklyTyped(this BoundAttributeDescriptor attribute)
         {
             if (attribute == null)

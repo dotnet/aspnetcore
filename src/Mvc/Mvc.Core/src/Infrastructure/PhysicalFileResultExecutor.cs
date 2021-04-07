@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         /// <inheritdoc/>
-        protected virtual Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue range, long rangeLength)
+        protected virtual Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
         {
             if (context == null)
             {
@@ -126,6 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     BufferSize,
                     FileOptions.Asynchronous | FileOptions.SequentialScan);
         }
+
 
         /// <summary>
         /// Get the file metadata for a path.

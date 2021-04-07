@@ -3,8 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Microsoft.JSInterop.Implementation;
-using Microsoft.JSInterop.Infrastructure;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop
 {
@@ -13,17 +12,7 @@ namespace Microsoft.JSInterop
     /// </summary>
     public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="JSInProcessRuntime"/>.
-        /// </summary>
-        protected JSInProcessRuntime()
-        {
-            JsonSerializerOptions.Converters.Add(
-                new JSObjectReferenceJsonConverter<IJSInProcessObjectReference, JSInProcessObjectReference>(
-                    id => new JSInProcessObjectReference(this, id)));
-        }
-
-        internal TValue Invoke<TValue>(string identifier, long targetInstanceId, params object?[]? args)
+        internal TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, long targetInstanceId, params object?[]? args)
         {
             var resultJson = InvokeJS(
                 identifier,
@@ -49,7 +38,7 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        public TValue Invoke<TValue>(string identifier, params object?[]? args)
+        public TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, params object?[]? args)
             => Invoke<TValue>(identifier, 0, args);
 
         /// <summary>

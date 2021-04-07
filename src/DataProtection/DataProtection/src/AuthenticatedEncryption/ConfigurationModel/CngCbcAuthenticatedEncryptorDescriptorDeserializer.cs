@@ -33,16 +33,16 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             var configuration = new CngCbcAuthenticatedEncryptorConfiguration();
 
-            var encryptionElement = element.Element("encryption");
-            configuration.EncryptionAlgorithm = (string)encryptionElement.Attribute("algorithm");
-            configuration.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
-            configuration.EncryptionAlgorithmProvider = (string)encryptionElement.Attribute("provider"); // could be null
+            var encryptionElement = element.Element("encryption")!;
+            configuration.EncryptionAlgorithm = (string)encryptionElement.Attribute("algorithm")!;
+            configuration.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength")!;
+            configuration.EncryptionAlgorithmProvider = (string?)encryptionElement.Attribute("provider"); // could be null
 
-            var hashElement = element.Element("hash");
-            configuration.HashAlgorithm = (string)hashElement.Attribute("algorithm");
-            configuration.HashAlgorithmProvider = (string)hashElement.Attribute("provider"); // could be null
+            var hashElement = element.Element("hash")!;
+            configuration.HashAlgorithm = (string)hashElement.Attribute("algorithm")!;
+            configuration.HashAlgorithmProvider = (string?)hashElement.Attribute("provider"); // could be null
 
-            Secret masterKey = ((string)element.Element("masterKey")).ToSecret();
+            Secret masterKey = ((string)element.Element("masterKey"))!.ToSecret();
 
             return new CngCbcAuthenticatedEncryptorDescriptor(configuration, masterKey);
         }

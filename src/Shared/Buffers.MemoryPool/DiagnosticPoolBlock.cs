@@ -5,6 +5,8 @@ using System.Threading;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
+#nullable enable
+
 namespace System.Buffers
 {
     /// <summary>
@@ -214,7 +216,7 @@ namespace System.Buffers
             }
         }
 
-        public StackTrace Leaser { get; set; }
+        public StackTrace? Leaser { get; set; }
 
         public void Track()
         {

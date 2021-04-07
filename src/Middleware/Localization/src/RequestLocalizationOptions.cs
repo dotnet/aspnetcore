@@ -94,14 +94,14 @@ namespace Microsoft.AspNetCore.Builder
         /// the current request culture to an entry in this list.
         /// Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </summary>
-        public IList<CultureInfo> SupportedCultures { get; set; } = new List<CultureInfo> { CultureInfo.CurrentCulture };
+        public IList<CultureInfo>? SupportedCultures { get; set; } = new List<CultureInfo> { CultureInfo.CurrentCulture };
 
         /// <summary>
         /// The UI cultures supported by the application. The <see cref="RequestLocalizationMiddleware"/> will only set
         /// the current request culture to an entry in this list.
         /// Defaults to <see cref="CultureInfo.CurrentUICulture"/>.
         /// </summary>
-        public IList<CultureInfo> SupportedUICultures { get; set; } = new List<CultureInfo> { CultureInfo.CurrentUICulture };
+        public IList<CultureInfo>? SupportedUICultures { get; set; } = new List<CultureInfo> { CultureInfo.CurrentUICulture };
 
         /// <summary>
         /// An ordered list of providers used to determine a request's culture information. The first provider that

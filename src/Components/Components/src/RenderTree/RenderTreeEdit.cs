@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="Type"/> value is <see cref="RenderTreeEditType.RemoveAttribute"/>,
         /// gets the name of the attribute that is being removed.
         /// </summary>
-        [FieldOffset(16)] public readonly string RemovedAttributeName;
+        [FieldOffset(16)] public readonly string? RemovedAttributeName;
 
         private RenderTreeEdit(RenderTreeEditType type) : this()
         {

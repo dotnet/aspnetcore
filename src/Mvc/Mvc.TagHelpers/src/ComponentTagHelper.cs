@@ -100,7 +100,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 throw new ArgumentException(Resources.FormatAttributeIsRequired(RenderModeName, TagHelperName), nameof(RenderMode));
             }
 
-            var componentRenderer = ViewContext.HttpContext.RequestServices.GetRequiredService<IComponentRenderer>();
+            var requestServices = ViewContext.HttpContext.RequestServices;
+            var componentRenderer = requestServices.GetRequiredService<IComponentRenderer>();
             var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
 
             // Reset the TagName. We don't want `component` to render.

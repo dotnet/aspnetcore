@@ -4,7 +4,7 @@
 
 @inject LazyAssemblyLoader lazyLoader
 
-<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" AdditionalAssemblies="@lazyLoadedAssemblies" OnNavigateAsync="@OnNavigateAsync" PreferExactMatches="true">
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" AdditionalAssemblies="@lazyLoadedAssemblies" OnNavigateAsync="@OnNavigateAsync">
     <Navigating>
         <div style="padding: 20px;background-color:blue;color:white;" id="loading-banner">
             <p>Loading the requested page...</p>

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Net.Http.Headers;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="location">The location at which the content has been created.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public CreatedResult(string location, object value)
+        public CreatedResult(string location, object? value)
             : base(value)
         {
             if (location == null)
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="location">The location at which the content has been created.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public CreatedResult(Uri location, object value)
+        public CreatedResult(Uri location, object? value)
             : base(value)
         {
             if (location == null)
@@ -68,6 +69,7 @@ namespace Microsoft.AspNetCore.Mvc
         public string Location
         {
             get => _location;
+            [MemberNotNull(nameof(_location))]
             set
             {
                 if (value == null)

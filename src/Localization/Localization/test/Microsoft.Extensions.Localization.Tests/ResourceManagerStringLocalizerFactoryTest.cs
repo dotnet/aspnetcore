@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.Localization.Tests
                 rootNamespaceAttribute: null,
                 loggerFactory: loggerFactory);
             var type = typeof(ResourceManagerStringLocalizerFactoryTest);
-            var assemblyName = new AssemblyName(type.GetTypeInfo().Assembly.FullName);
+            var assemblyName = new AssemblyName(type.Assembly.FullName);
 
             // Act
             typeFactory.Create(type);
@@ -212,7 +212,7 @@ namespace Microsoft.Extensions.Localization.Tests
             options.Setup(o => o.Value).Returns(locOptions);
             var loggerFactory = NullLoggerFactory.Instance;
             var factory = new ResourceManagerStringLocalizerFactory(localizationOptions: options.Object, loggerFactory: loggerFactory);
-            var location = typeof(ResourceManagerStringLocalizer).GetTypeInfo().Assembly.FullName;
+            var location = typeof(ResourceManagerStringLocalizer).Assembly.FullName;
 
             // Act
             var result1 = factory.Create("baseName", location);
@@ -231,7 +231,7 @@ namespace Microsoft.Extensions.Localization.Tests
             options.Setup(o => o.Value).Returns(locOptions);
             var loggerFactory = NullLoggerFactory.Instance;
             var factory = new ResourceManagerStringLocalizerFactory(localizationOptions: options.Object, loggerFactory: loggerFactory);
-            var location = typeof(ResourceManagerStringLocalizer).GetTypeInfo().Assembly.FullName;
+            var location = typeof(ResourceManagerStringLocalizer).Assembly.FullName;
 
             // Act
             var result1 = factory.Create("baseName1", location);
@@ -250,8 +250,8 @@ namespace Microsoft.Extensions.Localization.Tests
             options.Setup(o => o.Value).Returns(locOptions);
             var loggerFactory = NullLoggerFactory.Instance;
             var factory = new ResourceManagerStringLocalizerFactory(localizationOptions: options.Object, loggerFactory: loggerFactory);
-            var location1 = new AssemblyName(typeof(ResourceManagerStringLocalizer).GetTypeInfo().Assembly.FullName).Name;
-            var location2 = new AssemblyName(typeof(ResourceManagerStringLocalizerFactoryTest).GetTypeInfo().Assembly.FullName).Name;
+            var location1 = new AssemblyName(typeof(ResourceManagerStringLocalizer).Assembly.FullName).Name;
+            var location2 = new AssemblyName(typeof(ResourceManagerStringLocalizerFactoryTest).Assembly.FullName).Name;
 
             // Act
             var result1 = factory.Create("baseName", location1);

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    internal sealed class Http2Stream<TContext> : Http2Stream, IHostContextContainer<TContext>
+    internal sealed class Http2Stream<TContext> : Http2Stream, IHostContextContainer<TContext> where TContext : notnull
     {
         private readonly IHttpApplication<TContext> _application;
 
@@ -25,6 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         // Pooled Host context
-        TContext IHostContextContainer<TContext>.HostContext { get; set; }
+        TContext? IHostContextContainer<TContext>.HostContext { get; set; }
     }
 }

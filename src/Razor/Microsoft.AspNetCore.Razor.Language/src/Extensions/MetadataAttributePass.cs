@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -92,10 +92,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 return;
             }
 
+            if (documentNode.Options.SuppressMetadataSourceChecksumAttributes)
+            {
+                // Checksum attributes are turned off (or options not populated), nothing to do.
+                return;
+            }
+
             // Checksum of the main source
             var checksum = codeDocument.Source.GetChecksum();
             var checksumAlgorithm = codeDocument.Source.GetChecksumAlgorithm();
-            if (checksum == null || checksum.Length == 0 || checksumAlgorithm == null || identifier == null)
+            if (checksum == null || checksum.Length == 0 || checksumAlgorithm == null)
             {
                 // Don't generate anything unless we have all of the required information.
                 return;

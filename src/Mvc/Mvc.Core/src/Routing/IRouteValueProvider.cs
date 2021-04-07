@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc.Controllers;
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     /// <example>
     /// For an action like <c>MyApp.Controllers.HomeController.Index()</c>, in order to be selected, the
     /// <see cref="RouteData.Values"/> must contain the values
-    /// { 
+    /// {
     ///     "action": "Index",
     ///     "controller": "Home"
     /// }
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     /// <para>
     /// If areas are in use in the application (see <see cref="AreaAttribute"/> which implements
     /// <see cref="IRouteValueProvider"/>) then all actions are consider either in an area by having a
-    /// non-<c>null</c> area value (specified by <see cref="AreaAttribute"/> or another 
+    /// non-<c>null</c> area value (specified by <see cref="AreaAttribute"/> or another
     /// <see cref="IRouteValueProvider"/>) or are considered 'outside' of areas by having the value <c>null</c>.
     /// </para>
     /// <example>
@@ -44,24 +45,24 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     ///     - <c>MyApp.Areas.Blog.Controllers.HomeController.Index()</c>
     /// where <c>MyApp.Areas.Blog.Controllers.HomeController</c> has an area attribute
     /// <c>[Area("Blog")]</c>.
-    /// 
+    ///
     /// For <see cref="RouteData.Values"/> like:
-    /// { 
+    /// {
     ///     "action": "Index",
     ///     "controller": "Home"
     /// }
-    /// 
+    ///
     /// <c>MyApp.Controllers.HomeController.Index()</c> will be selected.
     /// <c>MyApp.Area.Blog.Controllers.HomeController.Index()</c> is not considered eligible because the
     /// <see cref="RouteData.Values"/> does not contain the value 'Blog' for 'area'.
-    /// 
+    ///
     /// For <see cref="RouteData.Values"/> like:
     /// {
     ///     "area": "Blog",
     ///     "action": "Index",
     ///     "controller": "Home"
     /// }
-    /// 
+    ///
     /// <c>MyApp.Area.Blog.Controllers.HomeController.Index()</c> will be selected.
     /// <c>MyApp.Controllers.HomeController.Index()</c> is not considered eligible because the route values
     /// contain a value for 'area'. <c>MyApp.Controllers.HomeController.Index()</c> cannot match any value
@@ -79,6 +80,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// The route value. If <c>null</c> or empty, requires the route value associated with <see cref="RouteKey"/>
         /// to be missing or <c>null</c>.
         /// </summary>
-        string RouteValue { get; }
+        string? RouteValue { get; }
     }
 }

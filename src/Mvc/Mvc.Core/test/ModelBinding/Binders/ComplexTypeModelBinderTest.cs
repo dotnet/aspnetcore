@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -544,6 +545,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var exception = Assert.Throws<InvalidOperationException>(() => binder.CreateModelPublic(bindingContext));
             Assert.Equal(
                 string.Format(
+                    CultureInfo.CurrentCulture,
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
                     "value types and must have a parameterless constructor.",
                     typeof(PointStruct).FullName),
@@ -585,6 +587,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var exception = Assert.Throws<InvalidOperationException>(() => binder.CreateModelPublic(bindingContext));
             Assert.Equal(
                 string.Format(
+                    CultureInfo.CurrentCulture,
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
                     "value types and must have a parameterless constructor. Alternatively, set the '{1}' property to" +
                     " a non-null value in the '{2}' constructor.",

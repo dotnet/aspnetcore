@@ -148,7 +148,7 @@ body .titleerror {
             WriteLiteral("</h1>\r\n    <p>\r\n");
 #nullable restore
 #line 115 "DatabaseErrorPage.cshtml"
-         for (Exception ex = Model.Exception; ex != null; ex = ex.InnerException)
+         for (Exception? ex = Model.Exception; ex != null; ex = ex.InnerException)
         {
 
 #line default
@@ -352,7 +352,7 @@ body .titleerror {
             WriteLiteral("                    <p>\r\n                        <button id=\"applyMigrations\" onclick=\"ApplyMigrations()\" data-assemblyname=\"");
 #nullable restore
 #line 168 "DatabaseErrorPage.cshtml"
-                                                                                               Write(JavaScriptEncode(context.Type.AssemblyQualifiedName));
+                                                                                               Write(JavaScriptEncode(context.Type.AssemblyQualifiedName!));
 
 #line default
 #line hidden
@@ -360,7 +360,7 @@ body .titleerror {
             WriteLiteral("\">");
 #nullable restore
 #line 168 "DatabaseErrorPage.cshtml"
-                                                                                                                                                      Write(Strings.DatabaseErrorPage_ApplyMigrationsButton);
+                                                                                                                                                       Write(Strings.DatabaseErrorPage_ApplyMigrationsButton);
 
 #line default
 #line hidden
@@ -411,7 +411,7 @@ body .titleerror {
                     req.open(""POST"", """);
 #nullable restore
 #line 196 "DatabaseErrorPage.cshtml"
-                                 Write(JavaScriptEncode(Model.PathBase.Add(Model.Options.MigrationsEndPointPath).Value));
+                                 Write(JavaScriptEncode(Model.PathBase.Add(Model.Options.MigrationsEndPointPath).Value!));
 
 #line default
 #line hidden
@@ -586,7 +586,7 @@ body .titleerror {
 #nullable restore
 #line 11 "DatabaseErrorPage.cshtml"
  
-    public DatabaseErrorPageModel Model { get; set; }
+    public DatabaseErrorPageModel Model { get; set; } = default!;
 
     public string UrlEncode(string content)
     {

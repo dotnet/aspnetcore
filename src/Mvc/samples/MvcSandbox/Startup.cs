@@ -26,8 +26,7 @@ namespace MvcSandbox
                 options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
             });
             services.AddServerSideBlazor();
-            services.AddMvc()
-                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Latest);
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,16 +54,14 @@ namespace MvcSandbox
 
                 builder.MapGet(
                     "/graph",
-                    (httpContext) =>
+                    async (httpContext) =>
                     {
-                        using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
-                        {
-                            var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
-                            var dataSource = httpContext.RequestServices.GetRequiredService<EndpointDataSource>();
-                            graphWriter.Write(dataSource, writer);
-                        }
+                        await using var writer = new StringWriter();
+                        var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
+                        var dataSource = httpContext.RequestServices.GetRequiredService<EndpointDataSource>();
+                        graphWriter.Write(dataSource, writer);
+                        await httpContext.Response.WriteAsync(writer.ToString());
 
-                        return Task.CompletedTask;
                     }).WithDisplayName("DFA Graph");
 
                 builder.MapControllers();

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class HttpConnectionMiddleware<TContext>
+    internal class HttpConnectionMiddleware<TContext> where TContext : notnull
     {
         private readonly ServiceContext _serviceContext;
         private readonly IHttpApplication<TContext> _application;
@@ -26,18 +26,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             var memoryPoolFeature = connectionContext.Features.Get<IMemoryPoolFeature>();
 
-            var httpConnectionContext = new HttpConnectionContext
-            {
-                ConnectionId = connectionContext.ConnectionId,
-                ConnectionContext = connectionContext,
-                Protocols = connectionContext.Features.Get<HttpProtocolsFeature>()?.HttpProtocols ?? _endpointDefaultProtocols,
-                ServiceContext = _serviceContext,
-                ConnectionFeatures = connectionContext.Features,
-                MemoryPool = memoryPoolFeature?.MemoryPool ?? System.Buffers.MemoryPool<byte>.Shared,
-                Transport = connectionContext.Transport,
-                LocalEndPoint = connectionContext.LocalEndPoint as IPEndPoint,
-                RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
-            };
+            var httpConnectionContext = new HttpConnectionContext(
+                connectionContext.ConnectionId,
+                connectionContext.Features.Get<HttpProtocolsFeature>()?.HttpProtocols ?? _endpointDefaultProtocols,
+                connectionContext,
+                _serviceContext,
+                connectionContext.Features,
+                memoryPoolFeature?.MemoryPool ?? System.Buffers.MemoryPool<byte>.Shared,
+                connectionContext.LocalEndPoint as IPEndPoint,
+                connectionContext.RemoteEndPoint as IPEndPoint,
+                connectionContext.Transport);
 
             var connection = new HttpConnection(httpConnectionContext);
 

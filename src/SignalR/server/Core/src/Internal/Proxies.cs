@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _userId = userId;
         }
 
-        public Task SendCoreAsync(string method, object?[]? args, CancellationToken cancellationToken = default)
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendUserAsync(_userId, method, args, cancellationToken);
         }
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _userIds = userIds;
         }
 
-        public Task SendCoreAsync(string method, object?[]? args, CancellationToken cancellationToken = default)
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendUsersAsync(_userIds, method, args, cancellationToken);
         }
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _groupName = groupName;
         }
 
-        public Task SendCoreAsync(string method, object?[]? args, CancellationToken cancellationToken = default)
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendGroupAsync(_groupName, method, args, cancellationToken);
         }
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _groupNames = groupNames;
         }
 
-        public Task SendCoreAsync(string method, object?[]? args, CancellationToken cancellationToken = default)
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendGroupsAsync(_groupNames, method, args, cancellationToken);
         }
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _excludedConnectionIds = excludedConnectionIds;
         }
 
-        public Task SendCoreAsync(string method, object?[]? args, CancellationToken cancellationToken = default)
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendGroupExceptAsync(_groupName, method, args, _excludedConnectionIds, cancellationToken);
         }
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _lifetimeManager = lifetimeManager;
         }
 
-        public Task SendCoreAsync(string method, object?[]? args, CancellationToken cancellationToken = default)
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendAllAsync(method, args, cancellationToken);
         }
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _excludedConnectionIds = excludedConnectionIds;
         }
 
-        public Task SendCoreAsync(string method, object?[]? args, CancellationToken cancellationToken = default)
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendAllExceptAsync(method, args, _excludedConnectionIds, cancellationToken);
         }
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _connectionId = connectionId;
         }
 
-        public Task SendCoreAsync(string method, object?[]? args, CancellationToken cancellationToken = default)
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendConnectionAsync(_connectionId, method, args, cancellationToken);
         }
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _connectionIds = connectionIds;
         }
 
-        public Task SendCoreAsync(string method, object?[]? args, CancellationToken cancellationToken = default)
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendConnectionsAsync(_connectionIds, method, args, cancellationToken);
         }

@@ -17,6 +17,7 @@ kind="micro"
 llvm=false
 monointerpreter=false
 monoaot=false
+monoaot_path=
 run_categories="Libraries Runtime"
 csproj="src\benchmarks\micro\MicroBenchmarks.csproj"
 configurations="CompliationMode=$compilation_mode RunKind=$kind"
@@ -27,9 +28,10 @@ using_mono=false
 wasm_runtime_loc=
 using_wasm=false
 use_latest_dotnet=false
+logical_machine=
 
 while (($# > 0)); do
-  lowerI="$(echo $1 | awk '{print tolower($0)}')"
+  lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
   case $lowerI in
     --sourcedirectory)
       source_directory=$2
@@ -53,6 +55,10 @@ while (($# > 0)); do
       ;;
     --compilationmode)
       compilation_mode=$2
+      shift 2
+      ;;
+    --logicalmachine)
+      logical_machine=$2
       shift 2
       ;;
     --repository)
@@ -88,6 +94,10 @@ while (($# > 0)); do
       internal=true
       shift 1
       ;;
+    --alpine)
+      alpine=true
+      shift 1
+      ;;
     --llvm)
       llvm=true
       shift 1
@@ -98,7 +108,8 @@ while (($# > 0)); do
       ;;
     --monoaot)
       monoaot=true
-      shift 1
+      monoaot_path=$2
+      shift 2
       ;;
     --monodotnet)
       mono_dotnet=$2
@@ -143,6 +154,7 @@ while (($# > 0)); do
       echo "  --monodotnet                   Pass the path to the mono dotnet for mono performance testing."
       echo "  --wasm                         Path to the unpacked wasm runtime pack."
       echo "  --latestdotnet                 --dotnet-versions will not be specified. --dotnet-versions defaults to LKG version in global.json "
+      echo "  --alpine                       Set for runs on Alpine"
       echo ""
       exit 0
       ;;
@@ -174,19 +186,6 @@ queue=Ubuntu.1804.Amd64.Open
 creator=$BUILD_DEFINITIONNAME
 helix_source_prefix="pr"
 
-if [[ "$compare" == true ]]; then
-  extra_benchmark_dotnet_arguments=
-  perflab_arguments=
-
-  # No open queues for arm64
-  if [[ "$architecture" = "arm64" ]]; then
-    echo "Compare not available for arm64"
-    exit 1
-  fi
-
-  queue=Ubuntu.1804.Amd64.Tiger.Perf.Open
-fi
-
 if [[ "$internal" == true ]]; then
     perflab_arguments="--upload-to-perflab-container"
     helix_source_prefix="official"
@@ -196,11 +195,30 @@ if [[ "$internal" == true ]]; then
     if [[ "$architecture" = "arm64" ]]; then
         queue=Ubuntu.1804.Arm64.Perf
     else
-        queue=Ubuntu.1804.Amd64.Tiger.Perf
+        if [[ "$logical_machine" = "perfowl" ]]; then
+            queue=Ubuntu.1804.Amd64.Owl.Perf
+        else
+            queue=Ubuntu.1804.Amd64.Tiger.Perf
+        fi
+    fi
+
+    if [[ "$alpine" = "true" ]]; then
+        queue=alpine.amd64.tiger.perf
+    fi
+else
+    if [[ "$architecture" = "arm64" ]]; then
+        queue=ubuntu.1804.armarch.open
+    else
+        queue=Ubuntu.1804.Amd64.Open
+    fi
+
+    if [[ "$alpine" = "true" ]]; then
+        queue=alpine.amd64.tiger.perf
     fi
 fi
 
 if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "false" ]]; then
+    configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
     extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoMono"
 fi
 
@@ -214,16 +232,13 @@ if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "true" ]]; then
     extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoInterpreter NoMono"
 fi
 
+if [[ "$monoaot" == "true" ]]; then
+    configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoAOT"
+fi
+
 common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations --architecture $architecture"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
-
-
-if [[ "$use_latest_dotnet" = false ]]; then
-    # Get the tools section from the global.json.
-    # This grabs the LKG version number of dotnet and passes it to our scripts
-    dotnet_version=`cat global.json | python3 -c 'import json,sys;obj=json.load(sys.stdin);print(obj["tools"]["dotnet"])'`
-    setup_arguments="--dotnet-versions $dotnet_version $setup_arguments"
-fi
 
 if [[ "$run_from_perf_repo" = true ]]; then
     payload_directory=
@@ -231,7 +246,7 @@ if [[ "$run_from_perf_repo" = true ]]; then
     performance_directory=$workitem_directory
     setup_arguments="--perf-hash $commit_sha $common_setup_arguments"
 else
-    git clone --branch master --depth 1 --quiet https://github.com/dotnet/performance $performance_directory
+    git clone --branch main --depth 1 --quiet https://github.com/dotnet/performance $performance_directory
     
     docs_directory=$performance_directory/docs
     mv $docs_directory $workitem_directory
@@ -244,10 +259,16 @@ if [[ "$wasm_runtime_loc" != "" ]]; then
     extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --wasmMainJS \$HELIX_CORRELATION_PAYLOAD/dotnet-wasm/runtime-test.js --wasmEngine /home/helixbot/.jsvu/v8 --customRuntimePack \$HELIX_CORRELATION_PAYLOAD/dotnet-wasm"
 fi
 
-if [[ "$mono_dotnet" != "" ]]; then
+if [[ "$mono_dotnet" != "" ]] && [[ "$monoaot" == "false" ]]; then
     using_mono=true
     mono_dotnet_path=$payload_directory/dotnet-mono
     mv $mono_dotnet $mono_dotnet_path
+fi
+
+if [[ "$monoaot" == "true" ]]; then
+    monoaot_dotnet_path=$payload_directory/monoaot
+    mv $monoaot_path $monoaot_dotnet_path
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --runtimes monoaotllvm --aotcompilerpath \$HELIX_CORRELATION_PAYLOAD/monoaot/sgen/mini/mono-sgen --customruntimepack \$HELIX_CORRELATION_PAYLOAD/monoaot/pack --aotcompilermode llvm"
 fi
 
 if [[ "$use_core_run" = true ]]; then

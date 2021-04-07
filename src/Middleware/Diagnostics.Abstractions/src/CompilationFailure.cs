@@ -19,10 +19,10 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// </param>
         /// <param name="messages">One or or more <see cref="DiagnosticMessage"/> instances.</param>
         public CompilationFailure(
-            string sourceFilePath,
-            string sourceFileContent,
-            string compiledContent,
-            IEnumerable<DiagnosticMessage> messages)
+            string? sourceFilePath,
+            string? sourceFileContent,
+            string? compiledContent,
+            IEnumerable<DiagnosticMessage>? messages)
             : this(sourceFilePath, sourceFileContent, compiledContent, messages, failureSummary: null)
         {
         }
@@ -37,11 +37,11 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <param name="messages">One or or more <see cref="DiagnosticMessage"/> instances.</param>
         /// <param name="failureSummary">Summary message or instructions to fix the failure.</param>
         public CompilationFailure(
-            string sourceFilePath,
-            string sourceFileContent,
-            string compiledContent,
-            IEnumerable<DiagnosticMessage> messages,
-            string failureSummary)
+            string? sourceFilePath,
+            string? sourceFileContent,
+            string? compiledContent,
+            IEnumerable<DiagnosticMessage?>? messages,
+            string? failureSummary)
         {
             SourceFilePath = sourceFilePath;
             SourceFileContent = sourceFileContent;
@@ -53,12 +53,12 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <summary>
         /// Path of the file that produced the compilation failure.
         /// </summary>
-        public string SourceFilePath { get; }
+        public string? SourceFilePath { get; }
 
         /// <summary>
         /// Contents of the file.
         /// </summary>
-        public string SourceFileContent { get; }
+        public string? SourceFileContent { get; }
 
         /// <summary>
         /// Contents being compiled.
@@ -68,16 +68,16 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <see cref="CompiledContent"/> represents the transformed content. This property can be null if
         /// the exception is encountered during transformation.
         /// </remarks>
-        public string CompiledContent { get; }
+        public string? CompiledContent { get; }
 
         /// <summary>
         /// Gets a sequence of <see cref="DiagnosticMessage"/> produced as a result of compilation.
         /// </summary>
-        public IEnumerable<DiagnosticMessage> Messages { get; }
+        public IEnumerable<DiagnosticMessage?>? Messages { get; }
 
         /// <summary>
         /// Summary message or instructions to fix the failure.
         /// </summary>
-        public string FailureSummary { get; }
+        public string? FailureSummary { get; }
     }
 }

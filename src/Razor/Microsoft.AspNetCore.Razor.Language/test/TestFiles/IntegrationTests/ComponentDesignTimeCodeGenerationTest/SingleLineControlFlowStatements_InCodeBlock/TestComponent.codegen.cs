@@ -45,7 +45,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 #line default
 #line hidden
 #nullable disable
-                                      
+                          
 
         }
         #pragma warning restore 1998

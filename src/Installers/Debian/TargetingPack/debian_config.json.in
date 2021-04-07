@@ -29,7 +29,7 @@
   },
 
   "debian_dependencies": {
-    "dotnet-targeting-pack-${AspNetCoreMajorVersion}.${AspNetCoreMinorVersion}": {
+    "dotnet-targeting-pack-${DotnetTargetingPackDependencyMajorMinorVersion}": {
       "package_version": "${DotnetTargetingPackDependencyVersion}"
     }
   }

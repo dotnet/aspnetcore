@@ -146,12 +146,12 @@ namespace Microsoft.AspNetCore.Http.Connections
                 reader.CheckRead();
                 reader.EnsureObjectStart();
 
-                string connectionId = null;
-                string connectionToken = null;
-                string url = null;
-                string accessToken = null;
-                List<AvailableTransport> availableTransports = null;
-                string error = null;
+                string? connectionId = null;
+                string? connectionToken = null;
+                string? url = null;
+                string? accessToken = null;
+                List<AvailableTransport>? availableTransports = null;
+                string? error = null;
                 int version = 0;
 
                 var completed = false;
@@ -258,16 +258,6 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
         }
 
-        /// <summary>
-        /// <para>
-        ///     This method is obsolete and will be removed in a future version.
-        ///     The recommended alternative is <see cref="ParseResponse(ReadOnlySpan{byte})" />.
-        /// </para>
-        /// </summary>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is ParseResponse(ReadOnlySpan{byte}).")]
-        public static NegotiationResponse ParseResponse(Stream content) =>
-            throw new NotSupportedException("This method is obsolete and will be removed in a future version. The recommended alternative is ParseResponse(ReadOnlySpan{byte}).");
-
         private static AvailableTransport ParseAvailableTransport(ref Utf8JsonReader reader)
         {
             var availableTransport = new AvailableTransport();
@@ -294,7 +284,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                                 switch (reader.TokenType)
                                 {
                                     case JsonTokenType.String:
-                                        availableTransport.TransferFormats.Add(reader.GetString());
+                                        availableTransport.TransferFormats.Add(reader.GetString()!);
                                         break;
                                     case JsonTokenType.EndArray:
                                         completed = true;

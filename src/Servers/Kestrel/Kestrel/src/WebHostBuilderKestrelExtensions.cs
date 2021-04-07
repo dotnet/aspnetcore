@@ -13,6 +13,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Kestrel <see cref="IWebHostBuilder"/> extensions.
+    /// </summary>
     public static class WebHostBuilderKestrelExtensions
     {
         /// <summary>

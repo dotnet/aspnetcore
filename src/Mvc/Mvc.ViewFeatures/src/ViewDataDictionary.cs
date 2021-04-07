@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,9 +13,12 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
-    public class ViewDataDictionary : IDictionary<string, object>
+    /// <summary>
+    /// A <see cref="IDictionary{TKey, TValue}"/> for view data.
+    /// </summary>
+    public class ViewDataDictionary : IDictionary<string, object?>
     {
-        private readonly IDictionary<string, object> _data;
+        private readonly IDictionary<string, object?> _data;
         private readonly Type _declaredModelType;
         private readonly IModelMetadataProvider _metadataProvider;
 
@@ -109,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             : this(metadataProvider,
                    modelState,
                    declaredModelType,
-                   data: new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
+                   data: new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase),
                    templateInfo: new TemplateInfo())
         {
             if (metadataProvider == null)
@@ -178,11 +183,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </para>
         /// </remarks>
         // This is the core constructor called when Model is known.
-        protected ViewDataDictionary(ViewDataDictionary source, object model, Type declaredModelType)
+        protected ViewDataDictionary(ViewDataDictionary source, object? model, Type declaredModelType)
             : this(source._metadataProvider,
                    source.ModelState,
                    declaredModelType,
-                   data: new CopyOnWriteDictionary<string, object>(source, StringComparer.OrdinalIgnoreCase),
+                   data: new CopyOnWriteDictionary<string, object?>(source, StringComparer.OrdinalIgnoreCase),
                    templateInfo: new TemplateInfo(source.TemplateInfo))
         {
             if (source == null)
@@ -250,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IModelMetadataProvider metadataProvider,
             ModelStateDictionary modelState,
             Type declaredModelType,
-            IDictionary<string, object> data,
+            IDictionary<string, object?> data,
             TemplateInfo templateInfo)
         {
             _metadataProvider = metadataProvider;
@@ -263,7 +268,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// Gets or sets the current model.
         /// </summary>
-        public object Model
+        public object? Model
         {
             get
             {
@@ -300,7 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// Gets or sets the <see cref="ViewFeatures.ModelExplorer"/> for the <see cref="Model"/>.
         /// </summary>
-        public ModelExplorer ModelExplorer { get; set; }
+        public ModelExplorer ModelExplorer { get; set; } = default!;
 
         /// <summary>
         /// Gets the <see cref="ViewFeatures.TemplateInfo"/>.
@@ -310,12 +315,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         #region IDictionary properties
         /// <inheritdoc />
         // Do not just pass through to _data: Indexer should not throw a KeyNotFoundException.
-        public object this[string index]
+        public object? this[string index]
         {
             get
             {
-                object result;
-                _data.TryGetValue(index, out result);
+                _data.TryGetValue(index, out var result);
                 return result;
             }
             set
@@ -343,14 +347,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public ICollection<object> Values
+        public ICollection<object?> Values
         {
             get { return _data.Values; }
         }
         #endregion
 
         // for unit testing
-        internal IDictionary<string, object> Data
+        internal IDictionary<string, object?> Data
         {
             get { return _data; }
         }
@@ -364,7 +368,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// Looks up <paramref name="expression"/> in the dictionary first. Falls back to evaluating it against
         /// <see cref="Model"/>.
         /// </remarks>
-        public object Eval(string expression)
+        public object? Eval(string? expression)
         {
             var info = GetViewDataInfo(expression);
             return info?.Value;
@@ -386,7 +390,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// Looks up <paramref name="expression"/> in the dictionary first. Falls back to evaluating it against
         /// <see cref="Model"/>.
         /// </remarks>
-        public string Eval(string expression, string format)
+        public string? Eval(string? expression, string? format)
         {
             var value = Eval(expression);
             return FormatValue(value, format);
@@ -400,7 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx).
         /// </param>
         /// <returns>The formatted <see cref="string"/>.</returns>
-        public static string FormatValue(object value, string format)
+        public static string? FormatValue(object? value, string? format)
         {
             if (value == null)
             {
@@ -430,7 +434,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// Looks up <paramref name="expression"/> in the dictionary first. Falls back to evaluating it against
         /// <see cref="Model"/>.
         /// </remarks>
-        public ViewDataInfo GetViewDataInfo(string expression)
+        public ViewDataInfo? GetViewDataInfo(string? expression)
         {
             return ViewDataEvaluator.Eval(this, expression);
         }
@@ -440,7 +444,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// reflect the new <paramref name="value"/>.
         /// </summary>
         /// <param name="value">New <see cref="Model"/> value.</param>
-        protected virtual void SetModel(object value)
+        protected virtual void SetModel(object? value)
         {
             // Update ModelExplorer to reflect the new value. When possible, preserve ModelMetadata to avoid losing
             // property information.
@@ -486,7 +490,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         // Throw if given value is incompatible with the declared Model Type.
-        private void EnsureCompatible(object value)
+        private void EnsureCompatible(object? value)
         {
             // IsCompatibleObject verifies if the value is either an instance of _declaredModelType or (if value is
             // null) that _declaredModelType is a nullable type.
@@ -509,7 +513,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         // Call after updating the ModelExplorer because this uses both _declaredModelType and ModelMetadata. May
         // otherwise get incorrect compatibility errors.
-        private bool IsCompatibleWithDeclaredType(object value)
+        private bool IsCompatibleWithDeclaredType(object? value)
         {
             if (value == null)
             {
@@ -524,7 +528,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         #region IDictionary methods
         /// <inheritdoc />
-        public void Add(string key, object value)
+        public void Add(string key, object? value)
         {
             if (key == null)
             {
@@ -557,7 +561,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public bool TryGetValue(string key, out object value)
+        public bool TryGetValue(string key, out object? value)
         {
             if (key == null)
             {
@@ -568,7 +572,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public void Add(KeyValuePair<string, object> item)
+        public void Add(KeyValuePair<string, object?> item)
         {
             _data.Add(item);
         }
@@ -580,13 +584,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public bool Contains(KeyValuePair<string, object> item)
+        public bool Contains(KeyValuePair<string, object?> item)
         {
             return _data.Contains(item);
         }
 
         /// <inheritdoc />
-        public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex)
         {
             if (array == null)
             {
@@ -597,13 +601,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public bool Remove(KeyValuePair<string, object> item)
+        public bool Remove(KeyValuePair<string, object?> item)
         {
             return _data.Remove(item);
         }
 
         /// <inheritdoc />
-        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+        IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator()
         {
             return _data.GetEnumerator();
         }

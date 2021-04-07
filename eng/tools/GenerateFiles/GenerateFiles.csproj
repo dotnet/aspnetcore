@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Use fixed version instead of $(DefaultNetCoreTargetFramework) to avoid needing workarounds set up here. -->
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <!-- Update artifacts/bin/GenerateFiles/Directory.Build.* files. -->
@@ -9,11 +10,11 @@
       <_TemplateProperties>
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
         KnownAppHostPackOrFrameworkReferenceTfm=$(KnownAppHostPackOrFrameworkReferenceTfm);
-        MicrosoftAspNetCoreAppRefPackageVersion=$(TargetingPackVersion);
-        MicrosoftAspNetCoreAppRuntimePackageVersion=$(SharedFxVersion);
-        MicrosoftNETCoreAppRefPackageVersion=$(MicrosoftNETCoreAppRefPackageVersion);
+        MicrosoftAspNetCoreAppRefVersion=$(TargetingPackVersion);
+        MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
+        MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);
         MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
-        MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
+        MicrosoftNetCompilersToolsetVersion=$(MicrosoftNetCompilersToolsetVersion);
         SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers.Trim())
       </_TemplateProperties>
     </PropertyGroup>

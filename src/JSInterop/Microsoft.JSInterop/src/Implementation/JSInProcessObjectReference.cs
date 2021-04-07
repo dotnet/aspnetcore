@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop.Implementation
 {
@@ -23,7 +24,7 @@ namespace Microsoft.JSInterop.Implementation
         }
 
         /// <inheritdoc />
-        public TValue Invoke<TValue>(string identifier, params object?[]? args)
+        public TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, params object?[]? args)
         {
             ThrowIfDisposed();
 

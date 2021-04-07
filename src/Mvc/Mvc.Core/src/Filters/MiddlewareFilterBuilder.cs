@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             = new ConcurrentDictionary<Type, Lazy<RequestDelegate>>();
         private readonly MiddlewareFilterConfigurationProvider _configurationProvider;
 
-        public IApplicationBuilder ApplicationBuilder { get; set; }
+        public IApplicationBuilder? ApplicationBuilder { get; set; }
 
         public MiddlewareFilterBuilder(MiddlewareFilterConfigurationProvider configurationProvider)
         {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                         Resources.FormatMiddlewareFilterBuilder_NoMiddlewareFeature(nameof(IMiddlewareFilterFeature)));
                 }
 
-                var resourceExecutionDelegate = feature.ResourceExecutionDelegate;
+                var resourceExecutionDelegate = feature.ResourceExecutionDelegate!;
 
                 var resourceExecutedContext = await resourceExecutionDelegate();
                 if (resourceExecutedContext.ExceptionHandled)

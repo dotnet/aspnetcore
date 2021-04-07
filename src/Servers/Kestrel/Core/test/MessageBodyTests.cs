@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -246,7 +247,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Max is 10 bytes
                 for (int i = 0; i < 11; i++)
                 {
-                    input.Add(i.ToString());
+                    input.Add(i.ToString(CultureInfo.InvariantCulture));
                 }
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -350,9 +351,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var res = await stream.ReadAsync(buffer, 0, buffer.Length);
                     Assert.Equal(0, res);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    throw ex;
+                    throw;
                 }
 
                 await body.StopAsync();
@@ -759,14 +760,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ConsumeAsyncCompletesAndDoesNotThrowOnTimeout()
         {
-            using (var input = new TestInput())
+            var mockTimeoutControl = new Mock<ITimeoutControl>();
+            var mockLogger = new Mock<IKestrelTrace>();
+
+            using (var input = new TestInput(log: mockLogger.Object, timeoutControl: mockTimeoutControl.Object))
             {
-                var mockTimeoutControl = new Mock<ITimeoutControl>();
-                input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
-
-                var mockLogger = new Mock<IKestrelTrace>();
-                input.Http1Connection.ServiceContext.Log = mockLogger.Object;
-
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
                 // Add some input and read it to start PumpAsync
@@ -827,13 +825,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task LogsWhenStartsReadingRequestBody()
         {
-            using (var input = new TestInput())
+            var mockLogger = new Mock<IKestrelTrace>();
+            mockLogger
+                .Setup(logger => logger.IsEnabled(Extensions.Logging.LogLevel.Debug))
+                .Returns(true);
+
+            using (var input = new TestInput(log: mockLogger.Object))
             {
-                var mockLogger = new Mock<IKestrelTrace>();
-                mockLogger
-                    .Setup(logger => logger.IsEnabled(Extensions.Logging.LogLevel.Debug))
-                    .Returns(true);
-                input.Http1Connection.ServiceContext.Log = mockLogger.Object;
                 input.Http1Connection.ConnectionIdFeature = "ConnectionId";
                 input.Http1Connection.TraceIdentifier = "RequestId";
 
@@ -857,17 +855,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task LogsWhenStopsReadingRequestBody()
         {
-            using (var input = new TestInput())
+            var logEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var mockLogger = new Mock<IKestrelTrace>();
+            mockLogger
+                .Setup(logger => logger.RequestBodyDone("ConnectionId", "RequestId"))
+                .Callback(() => logEvent.SetResult());
+            mockLogger
+                .Setup(logger => logger.IsEnabled(Extensions.Logging.LogLevel.Debug))
+                .Returns(true);
+
+            using (var input = new TestInput(log: mockLogger.Object))
             {
-                var logEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                var mockLogger = new Mock<IKestrelTrace>();
-                mockLogger
-                    .Setup(logger => logger.RequestBodyDone("ConnectionId", "RequestId"))
-                    .Callback(() => logEvent.SetResult());
-                mockLogger
-                    .Setup(logger => logger.IsEnabled(Extensions.Logging.LogLevel.Debug))
-                    .Returns(true);
-                input.Http1Connection.ServiceContext.Log = mockLogger.Object;
                 input.Http1Connection.ConnectionIdFeature = "ConnectionId";
                 input.Http1Connection.TraceIdentifier = "RequestId";
 

@@ -15,18 +15,19 @@ namespace Microsoft.AspNetCore.Hosting
     internal class HostingApplication : IHttpApplication<HostingApplication.Context>
     {
         private readonly RequestDelegate _application;
-        private readonly IHttpContextFactory _httpContextFactory;
-        private readonly DefaultHttpContextFactory _defaultHttpContextFactory;
+        private readonly IHttpContextFactory? _httpContextFactory;
+        private readonly DefaultHttpContextFactory? _defaultHttpContextFactory;
         private HostingApplicationDiagnostics _diagnostics;
 
         public HostingApplication(
             RequestDelegate application,
             ILogger logger,
             DiagnosticListener diagnosticSource,
+            ActivitySource activitySource,
             IHttpContextFactory httpContextFactory)
         {
             _application = application;
-            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource);
+            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, activitySource);
             if (httpContextFactory is DefaultHttpContextFactory factory)
             {
                 _defaultHttpContextFactory = factory;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Hosting
         // Set up the request
         public Context CreateContext(IFeatureCollection contextFeatures)
         {
-            Context hostContext;
+            Context? hostContext;
             if (contextFeatures is IHostContextContainer<Context> container)
             {
                 hostContext = container.HostContext;
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Hosting
             HttpContext httpContext;
             if (_defaultHttpContextFactory != null)
             {
-                var defaultHttpContext = (DefaultHttpContext)hostContext.HttpContext;
+                var defaultHttpContext = (DefaultHttpContext?)hostContext.HttpContext;
                 if (defaultHttpContext is null)
                 {
                     httpContext = _defaultHttpContextFactory.Create(contextFeatures);
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
             else
             {
-                httpContext = _httpContextFactory.Create(contextFeatures);
+                httpContext = _httpContextFactory!.Create(contextFeatures);
                 hostContext.HttpContext = httpContext;
             }
 
@@ -84,13 +85,13 @@ namespace Microsoft.AspNetCore.Hosting
         // Execute the request
         public Task ProcessRequestAsync(Context context)
         {
-            return _application(context.HttpContext);
+            return _application(context.HttpContext!);
         }
 
         // Clean up the request
-        public void DisposeContext(Context context, Exception exception)
+        public void DisposeContext(Context context, Exception? exception)
         {
-            var httpContext = context.HttpContext;
+            var httpContext = context.HttpContext!;
             _diagnostics.RequestEnd(httpContext, exception, context);
 
             if (_defaultHttpContextFactory != null)
@@ -107,7 +108,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
             else
             {
-                _httpContextFactory.Dispose(httpContext);
+                _httpContextFactory!.Dispose(httpContext);
             }
 
             _diagnostics.ContextDisposed(context);
@@ -119,10 +120,10 @@ namespace Microsoft.AspNetCore.Hosting
 
         internal class Context
         {
-            public HttpContext HttpContext { get; set; }
-            public IDisposable Scope { get; set; }
-            public Activity Activity { get; set; }
-            internal HostingRequestStartingLog StartLog { get; set; }
+            public HttpContext? HttpContext { get; set; }
+            public IDisposable? Scope { get; set; }
+            public Activity? Activity { get; set; }
+            internal HostingRequestStartingLog? StartLog { get; set; }
 
             public long StartTimestamp { get; set; }
             internal bool HasDiagnosticListener { get; set; }

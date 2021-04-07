@@ -4,7 +4,6 @@
 #pragma once
 
 #include "buffer.h"
-#include "macros.h"
 #include <strsafe.h>
 
 
@@ -17,7 +16,6 @@ class STRA
 public:
 
     STRA(
-        VOID
     );
 
     STRA(
@@ -27,7 +25,6 @@ public:
 
     BOOL
     IsEmpty(
-        VOID
     ) const;
 
     BOOL
@@ -126,34 +123,28 @@ public:
 
     DWORD
     QueryCB(
-        VOID
     ) const;
 
     DWORD
     QueryCCH(
-        VOID
     ) const;
 
     DWORD
     QuerySizeCCH(
-        VOID
     ) const;
 
     DWORD
     QuerySize(
-        VOID
     ) const;
 
     __nullterminated
     __bcount(this->m_cchLen)
     CHAR *
     QueryStr(
-        VOID
     ) const;
 
     VOID
     Reset(
-        VOID
     );
 
     HRESULT
@@ -163,7 +154,6 @@ public:
 
     HRESULT
     SyncWithBuffer(
-        VOID
     );
 
     HRESULT
@@ -252,11 +242,10 @@ public:
         __in PCWSTR  pszAppendW
     )
     {
-        HRESULT     hr;
         size_t      cchLen;
-        hr = StringCchLengthW( pszAppendW,
-                               STRSAFE_MAX_CCH,
-                               &cchLen );
+        HRESULT hr = StringCchLengthW(pszAppendW,
+                                      STRSAFE_MAX_CCH,
+                                      &cchLen);
         if ( FAILED( hr ) )
         {
             return hr;
@@ -326,17 +315,14 @@ public:
 
     HRESULT
     Escape(
-        VOID
     );
 
     HRESULT
     EscapeUtf8(
-        VOID
     );
 
     VOID
     Unescape(
-        VOID
     );
 
     HRESULT

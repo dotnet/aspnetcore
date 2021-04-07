@@ -50,12 +50,16 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                         throw new InvalidOperationException("The MetadataAddress or Authority must use HTTPS unless disabled for development by setting RequireHttpsMetadata=false.");
                     }
 
-                    var httpClient = new HttpClient(options.BackchannelHttpHandler ?? new HttpClientHandler());
-                    httpClient.Timeout = options.BackchannelTimeout;
-                    httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
+                    if (options.Backchannel == null)
+                    {
+                        options.Backchannel = new HttpClient(options.BackchannelHttpHandler ?? new HttpClientHandler());
+                        options.Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core JwtBearer handler");
+                        options.Backchannel.Timeout = options.BackchannelTimeout;
+                        options.Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
+                    }
 
                     options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(options.MetadataAddress, new OpenIdConnectConfigurationRetriever(),
-                        new HttpDocumentRetriever(httpClient) { RequireHttps = options.RequireHttpsMetadata })
+                        new HttpDocumentRetriever(options.Backchannel) { RequireHttps = options.RequireHttpsMetadata })
                     {
                         RefreshInterval = options.RefreshInterval,
                         AutomaticRefreshInterval = options.AutomaticRefreshInterval,

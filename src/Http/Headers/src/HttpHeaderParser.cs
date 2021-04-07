@@ -38,8 +38,7 @@ namespace Microsoft.Net.Http.Headers
 
             // If a parser returns 'null', it means there was no value, but that's valid (e.g. "Accept: "). The caller
             // can ignore the value.
-            T result;
-            if (!TryParseValue(value, ref index, out result))
+            if (!TryParseValue(value, ref index, out var result))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture,
                     "The header contains invalid values at index {0}: '{1}'", index, value.Value ?? "<null>"));
@@ -75,15 +74,14 @@ namespace Microsoft.Net.Http.Headers
 
                 while (!string.IsNullOrEmpty(value) && index < value.Length)
                 {
-                    T output;
-                    if (TryParseValue(value, ref index, out output))
+                    if (TryParseValue(value, ref index, out var output))
                     {
                         // The entry may not contain an actual value, like " , "
                         if (output != null)
                         {
                             if (results == null)
                             {
-                                results = new List<T>();    // Allocate it only when used 
+                                results = new List<T>();    // Allocate it only when used
                             }
                             results.Add(output);
                         }
@@ -133,8 +131,7 @@ namespace Microsoft.Net.Http.Headers
 
                 while (!string.IsNullOrEmpty(value) && index < value.Length)
                 {
-                    T output;
-                    if (TryParseValue(value, ref index, out output))
+                    if (TryParseValue(value, ref index, out var output))
                     {
                         // The entry may not contain an actual value, like " , "
                         if (output != null)

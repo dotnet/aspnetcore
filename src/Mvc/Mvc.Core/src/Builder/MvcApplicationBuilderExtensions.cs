@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Builder
 
             public IApplicationBuilder ApplicationBuilder { get; }
 
-            public IRouter DefaultHandler { get; set; }
+            public IRouter? DefaultHandler { get; set; }
 
             public IServiceProvider ServiceProvider
             {

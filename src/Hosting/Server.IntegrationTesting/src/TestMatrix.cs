@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -124,9 +124,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 switch (RuntimeInformation.OSArchitecture)
                 {
+                    case Architecture.Arm:
                     case Architecture.X86:
                         Architectures.Add(RuntimeArchitecture.x86);
                         break;
+                    case Architecture.Arm64:
                     case Architecture.X64:
                         Architectures.Add(RuntimeArchitecture.x64);
                         break;
@@ -154,13 +156,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 case ServerType.IIS:
                 case ServerType.IISExpress:
                 case ServerType.HttpSys:
-                    skip = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                    skip = !OperatingSystem.IsWindows();
                     break;
                 case ServerType.Kestrel:
                     break;
                 case ServerType.Nginx:
                     // Technically it's possible but we don't test it.
-                    skip = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                    skip = OperatingSystem.IsWindows();
                     break;
                 default:
                     throw new ArgumentException(server.ToString());
@@ -193,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         private static string SkipIfTfmIsNotSupportedOnThisOS(string tfm)
         {
-            if (Tfm.Matches(Tfm.Net461, tfm) && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (Tfm.Matches(Tfm.Net461, tfm) && !OperatingSystem.IsWindows())
             {
                 return "This TFM is not supported on this operating system.";
             }
@@ -261,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
 
             // No x86 runtimes available on MacOS or Linux.
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? null : $"No {arch} available for non-Windows systems.";
+            return OperatingSystem.IsWindows() ? null : $"No {arch} available for non-Windows systems.";
         }
 
         private bool IsArchitectureSupportedOnServer(RuntimeArchitecture arch, ServerType server)

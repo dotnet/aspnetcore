@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -23,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </param>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered <see cref="IHtmlContent" />.
         /// </returns>
-        Task<IHtmlContent> InvokeAsync(string name, object arguments);
+        Task<IHtmlContent> InvokeAsync(string name, object? arguments);
 
         /// <summary>
         /// Invokes a view component of type <paramref name="componentType" />.
@@ -36,6 +38,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// </param>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered <see cref="IHtmlContent" />.
         /// </returns>
-        Task<IHtmlContent> InvokeAsync(Type componentType, object arguments);
+        Task<IHtmlContent> InvokeAsync(Type componentType, object? arguments);
     }
 }

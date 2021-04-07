@@ -13,9 +13,11 @@
         <option value=@HttpTransportType.WebSockets>WebSockets</option>
     </select>
     <button id="hub-connect" @onclick="Connect">Connect</button>
+    <button id="hub-useragent" @onclick="GetUserAgentHeader">GetUserAgent</button>
 </p>
 
 <div>Connected: @IsConnected</div>
+<div id="useragent">User-Agent: @userAgent</div>
 
 <ul id="messagesList">
     @foreach (var message in messages)
@@ -29,6 +31,7 @@
     private HttpTransportType transportType;
     private HubConnection hubConnection;
     private List<string> messages = new List<string>();
+    private string userAgent;
 
     protected async Task Connect()
     {
@@ -45,6 +48,12 @@
 
         await hubConnection.StartAsync();
         await hubConnection.SendAsync("SendMessage", "SignalR Client", $"Echo {transportType}");
+    }
+
+    protected async Task GetUserAgentHeader()
+    {
+        userAgent = await hubConnection.InvokeAsync<string>("GetHeaderValue", "X-SignalR-User-Agent");
+        StateHasChanged();
     }
 
     public bool IsConnected =>

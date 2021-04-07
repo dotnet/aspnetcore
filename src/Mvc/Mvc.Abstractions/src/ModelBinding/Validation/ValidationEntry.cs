@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     public struct ValidationEntry
     {
         private object? _model;
-        private Func<object>? _modelAccessor;
+        private Func<object?>? _modelAccessor;
 
         /// <summary>
         /// Creates a new <see cref="ValidationEntry"/>.
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <param name="metadata">The <see cref="ModelMetadata"/> associated with <paramref name="model"/>.</param>
         /// <param name="key">The model prefix associated with <paramref name="model"/>.</param>
         /// <param name="model">The model object.</param>
-        public ValidationEntry(ModelMetadata metadata, string key, object model)
+        public ValidationEntry(ModelMetadata metadata, string key, object? model)
         {
             if (metadata == null)
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the <see cref="Model"/>.</param>
         /// <param name="key">The model prefix associated with the <see cref="Model"/>.</param>
         /// <param name="modelAccessor">A delegate that will return the <see cref="Model"/>.</param>
-        public ValidationEntry(ModelMetadata metadata, string key, Func<object> modelAccessor)
+        public ValidationEntry(ModelMetadata metadata, string key, Func<object?> modelAccessor)
         {
             if (metadata == null)
             {

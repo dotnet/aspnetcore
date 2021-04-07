@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.SecretManager.Tools
             };
 
             app.HelpOption();
-            app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
+            app.VersionOptionFromAssemblyAttributes(typeof(Program).Assembly);
 
             var optionVerbose = app.VerboseOption();
 

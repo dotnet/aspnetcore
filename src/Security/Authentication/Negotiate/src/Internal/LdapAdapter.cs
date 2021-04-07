@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Security.Claims;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     {
         public static async Task RetrieveClaimsAsync(LdapSettings settings, ClaimsIdentity identity, ILogger logger)
         {
-            var user = identity.Name;
+            var user = identity.Name!;
             var userAccountNameIndex = user.IndexOf('@');
             var userAccountName = userAccountNameIndex == -1 ? user : user.Substring(0, userAccountNameIndex);
 
@@ -40,6 +41,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             var filter = $"(&(objectClass=user)(sAMAccountName={userAccountName}))"; // This is using ldap search query language, it is looking on the server for someUser
             var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree, null);
+
+            Debug.Assert(settings.LdapConnection != null);
             var searchResponse = (SearchResponse) await Task<DirectoryResponse>.Factory.FromAsync(
                 settings.LdapConnection.BeginSendRequest,
                 settings.LdapConnection.EndSendRequest,

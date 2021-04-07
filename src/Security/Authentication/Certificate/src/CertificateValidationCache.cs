@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <param name="context">The HttpContext.</param>
         /// <param name="certificate">The certificate.</param>
         /// <returns>the <see cref="AuthenticateResult"/></returns>
-        public AuthenticateResult Get(HttpContext context, X509Certificate2 certificate)
+        public AuthenticateResult? Get(HttpContext context, X509Certificate2 certificate)
             => _cache.Get<AuthenticateResult>(ComputeKey(certificate))?.Clone();
 
         /// <summary>

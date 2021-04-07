@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { DefaultReconnectPolicy } from "../src/DefaultReconnectPolicy";
+import { HttpConnection, INegotiateResponse } from "../src/HttpConnection";
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
+import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { MessageType } from "../src/IHubProtocol";
 import { RetryContext } from "../src/IRetryPolicy";
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
@@ -10,6 +12,8 @@ import { JsonHubProtocol } from "../src/JsonHubProtocol";
 import { VerifyLogger } from "./Common";
 import { TestConnection } from "./TestConnection";
 import { PromiseSource } from "./Utils";
+import { TestHttpClient } from "./TestHttpClient";
+import { TestWebSocket, TestEvent, TestMessageEvent } from "./TestWebSocket";
 
 describe("auto reconnect", () => {
     it("is not enabled by default", async () => {
@@ -784,5 +788,94 @@ describe("auto reconnect", () => {
                 await hubConnection.stop();
             }
         });
+    });
+
+    it("can be stopped while restarting the underlying connection and negotiate throws", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let onreconnectingCount = 0;
+            let onreconnectedCount = 0;
+            let closeCount = 0;
+
+            const nextRetryDelayCalledPromise = new PromiseSource();
+
+            const defaultConnectionId = "abc123";
+            const defaultConnectionToken = "123abc";
+            const defaultNegotiateResponse: INegotiateResponse = {
+                availableTransports: [
+                    { transport: "WebSockets", transferFormats: ["Text", "Binary"] },
+                    { transport: "ServerSentEvents", transferFormats: ["Text"] },
+                    { transport: "LongPolling", transferFormats: ["Text", "Binary"] },
+                ],
+                connectionId: defaultConnectionId,
+                connectionToken: defaultConnectionToken,
+                negotiateVersion: 1,
+            };
+
+            const startStarted = new PromiseSource();
+            let negotiateCount = 0;
+
+            const options: IHttpConnectionOptions = {
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", async () => {
+                        ++negotiateCount;
+                        if (negotiateCount === 1) {
+                            return defaultNegotiateResponse;
+                        }
+                        startStarted.resolve();
+                        return Promise.reject("Error with negotiate");
+                    })
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), {
+                nextRetryDelayInMilliseconds() {
+                    nextRetryDelayCalledPromise.resolve();
+                    return 0;
+                },
+            });
+
+            hubConnection.onreconnecting(() => {
+                onreconnectingCount++;
+            });
+
+            hubConnection.onreconnected(() => {
+                onreconnectedCount++;
+            });
+
+            hubConnection.onclose(() => {
+                closeCount++;
+            });
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = hubConnection.start();
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            TestWebSocket.webSocket.onmessage(new TestMessageEvent("{}\x1e"));
+
+            await startPromise;
+            TestWebSocket.webSocket.close();
+            TestWebSocket.webSocketSet = new PromiseSource();
+
+            await nextRetryDelayCalledPromise;
+
+            expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(0);
+            expect(closeCount).toBe(0);
+
+            await startStarted;
+            await hubConnection.stop();
+
+            expect(hubConnection.state).toBe(HubConnectionState.Disconnected);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(0);
+            expect(closeCount).toBe(1);
+        },
+        "Failed to complete negotiation with the server: Error with negotiate",
+        "Failed to start the connection: Error: Failed to complete negotiation with the server: Error with negotiate");
     });
 });

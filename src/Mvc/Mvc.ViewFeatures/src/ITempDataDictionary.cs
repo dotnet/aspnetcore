@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
@@ -8,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     /// <summary>
     /// Represents a set of data that persists only from one request to the next.
     /// </summary>
-    public interface ITempDataDictionary : IDictionary<string, object>
+    public interface ITempDataDictionary : IDictionary<string, object?>
     {
         /// <summary>
         /// Loads the dictionary by using the registered <see cref="ITempDataProvider"/>.
@@ -37,6 +39,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </summary>
         /// <param name="key">The key of the element to return.</param>
         /// <returns>An object that contains the element that is associated with the specified key.</returns>
-        object Peek(string key);
+        object? Peek(string key);
     }
 }

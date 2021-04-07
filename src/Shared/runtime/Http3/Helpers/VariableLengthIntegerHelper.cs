@@ -31,10 +31,11 @@ namespace System.Net.Http
         private const uint FourByteLengthMask = 0x80000000;
         private const ulong EightByteLengthMask = 0xC000000000000000;
 
+        // public for internal use in aspnetcore
         public const uint OneByteLimit = (1U << 6) - 1;
-        private const uint TwoByteLimit = (1U << 16) - 1;
-        private const uint FourByteLimit = (1U << 30) - 1;
-        private const long EightByteLimit = (1L << 62) - 1;
+        public const uint TwoByteLimit = (1U << 16) - 1;
+        public const uint FourByteLimit = (1U << 30) - 1;
+        public const long EightByteLimit = (1L << 62) - 1;
 
         public static bool TryRead(ReadOnlySpan<byte> buffer, out long value, out int bytesRead)
         {

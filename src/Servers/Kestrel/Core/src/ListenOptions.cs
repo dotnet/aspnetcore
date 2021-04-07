@@ -5,11 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -44,23 +46,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             EndPoint = new FileHandleEndPoint(fileHandle, handleType);
         }
 
+        /// <summary>
+        /// Gets the <see cref="EndPoint"/>.
+        /// </summary>
         public EndPoint EndPoint { get; internal set; }
 
         // For comparing bound endpoints to changed config during endpoint config reload.
-        internal EndpointConfig EndpointConfig { get; set; }
+        internal EndpointConfig? EndpointConfig { get; set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>
         /// The <see cref="IPEndPoint"/> to bind to.
         /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="IPEndPoint"/>.
         /// </summary>
-        public IPEndPoint IPEndPoint => EndPoint as IPEndPoint;
+        public IPEndPoint? IPEndPoint => EndPoint as IPEndPoint;
 
         /// <summary>
         /// The absolute path to a Unix domain socket to bind to.
         /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="UnixDomainSocketEndPoint"/>.
         /// </summary>
-        public string SocketPath => (EndPoint as UnixDomainSocketEndPoint)?.ToString();
+        public string? SocketPath => (EndPoint as UnixDomainSocketEndPoint)?.ToString();
 
         /// <summary>
         /// A file descriptor for the socket to open.
@@ -72,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Enables connection middleware to resolve and use services registered by the application during startup.
         /// Only set if accessed from the callback of a <see cref="KestrelServerOptions"/> Listen* method.
         /// </summary>
-        public KestrelServerOptions KestrelServerOptions { get; internal set; }
+        public KestrelServerOptions KestrelServerOptions { get; internal set; } = default!; // Set via ConfigureKestrel callback
 
         /// <summary>
         /// The protocols enabled on this endpoint.
@@ -80,7 +85,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <remarks>Defaults to HTTP/1.x and HTTP/2.</remarks>
         public HttpProtocols Protocols { get; set; } = DefaultHttpProtocols;
 
-        public IServiceProvider ApplicationServices => KestrelServerOptions?.ApplicationServices;
+        /// <summary>
+        /// Gets the application <see cref="IServiceProvider"/>.
+        /// </summary>
+        public IServiceProvider ApplicationServices => KestrelServerOptions?.ApplicationServices!; // TODO - Always available?
 
         internal string Scheme
         {
@@ -91,6 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         internal bool IsTls { get; set; }
+        internal HttpsConnectionAdapterOptions? HttpsOptions { get; set; }
 
         /// <summary>
         /// Gets the name of this endpoint to display on command-line when the web server starts.
@@ -110,7 +119,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        public override string ToString() => GetDisplayName();
+        /// <inheritdoc />
+        public override string? ToString() => GetDisplayName();
 
         /// <summary>
         /// Adds a middleware delegate to the connection pipeline.
@@ -131,6 +141,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return this;
         }
 
+        /// <summary>
+        /// Builds the <see cref="ConnectionDelegate"/>.
+        /// </summary>
+        /// <returns>The <see cref="ConnectionDelegate"/>.</returns>
         public ConnectionDelegate Build()
         {
             ConnectionDelegate app = context =>
@@ -138,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 return Task.CompletedTask;
             };
 
-            for (int i = _middleware.Count - 1; i >= 0; i--)
+            for (var i = _middleware.Count - 1; i >= 0; i--)
             {
                 var component = _middleware[i];
                 app = component(app);
@@ -163,9 +177,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return app;
         }
 
-        internal virtual async Task BindAsync(AddressBindContext context)
+        internal virtual async Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
         {
-            await AddressBinder.BindEndpointAsync(this, context).ConfigureAwait(false);
+            await AddressBinder.BindEndpointAsync(this, context, cancellationToken).ConfigureAwait(false);
             context.Addresses.Add(GetDisplayName());
         }
     }
