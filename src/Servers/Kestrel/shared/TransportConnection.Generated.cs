@@ -18,8 +18,7 @@ namespace Microsoft.AspNetCore.Connections
                                                  IConnectionTransportFeature,
                                                  IConnectionItemsFeature,
                                                  IMemoryPoolFeature,
-                                                 IConnectionLifetimeFeature,
-                                                 IConnectionSocketFeature
+                                                 IConnectionLifetimeFeature
     {
         // Implemented features
         internal protected IConnectionIdFeature? _currentIConnectionIdFeature;
@@ -27,6 +26,8 @@ namespace Microsoft.AspNetCore.Connections
         internal protected IConnectionItemsFeature? _currentIConnectionItemsFeature;
         internal protected IMemoryPoolFeature? _currentIMemoryPoolFeature;
         internal protected IConnectionLifetimeFeature? _currentIConnectionLifetimeFeature;
+
+        // Other reserved feature slots
         internal protected IConnectionSocketFeature? _currentIConnectionSocketFeature;
 
         private int _featureRevision;
@@ -40,8 +41,8 @@ namespace Microsoft.AspNetCore.Connections
             _currentIConnectionItemsFeature = this;
             _currentIMemoryPoolFeature = this;
             _currentIConnectionLifetimeFeature = this;
-            _currentIConnectionSocketFeature = this;
 
+            _currentIConnectionSocketFeature = null;
         }
 
         // Internal for testing

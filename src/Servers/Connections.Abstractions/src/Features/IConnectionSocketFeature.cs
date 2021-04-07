@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Connections.Features
         /// <summary>
         /// Gets the underlying <see cref="Socket"/>.
         /// </summary>
-        Socket? Socket { get; }
+        Socket Socket { get; }
     }
 }
