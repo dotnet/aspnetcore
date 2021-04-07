@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net;
+using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -296,29 +298,55 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     httpContext.Items["tryParsable"] = tryParsable;
                 }
 
+                var today = DateTime.Now;
+                var todayOffset = DateTimeOffset.UtcNow;
+                var guid = Guid.NewGuid();
+
                 return new[]
                 {
-                    // User defined!
-                    new object[] { (Action<HttpContext, int>)StoreTryParsableParameter, "42", 42 },
-                    new object[] { (Action<HttpContext, int?>)StoreTryParsableParameter, "42", 42 },
+                    // User defined class!
+                    // User define Enums
+                    // Int32
+                    new object[] { (Action<HttpContext, int>)StoreTryParsableParameter, "-42", -42 },
+                    new object[] { (Action<HttpContext, uint>)StoreTryParsableParameter, "42", 42U },
                     // Byte
+                    new object[] { (Action<HttpContext, bool>)StoreTryParsableParameter, "true", true },
                     // Int16
+                    new object[] { (Action<HttpContext, short>)StoreTryParsableParameter, "-42", (short)-42 },
+                    new object[] { (Action<HttpContext, ushort>)StoreTryParsableParameter, "42", (ushort)42 },
                     // Int64
+                    new object[] { (Action<HttpContext, long>)StoreTryParsableParameter, "-42", -42L },
+                    new object[] { (Action<HttpContext, ulong>)StoreTryParsableParameter, "42", 42UL },
                     // IntPtr
-                    // Unsigned versions of above
+                    new object[] { (Action<HttpContext, IntPtr>)StoreTryParsableParameter, "-42", new IntPtr(-42) },
                     // Char
-                    // Single
+                    new object[] { (Action<HttpContext, char>)StoreTryParsableParameter, "A", 'A' },
                     // Double
+                    new object[] { (Action<HttpContext, double>)StoreTryParsableParameter, "0.5", 0.5 },
+                    // Single
+                    new object[] { (Action<HttpContext, float>)StoreTryParsableParameter, "0.5", 0.5f },
                     // Half
-                    // Enums
+                    new object[] { (Action<HttpContext, Half>)StoreTryParsableParameter, "0.5", (Half)0.5f },
+                    // Decimal
+                    new object[] { (Action<HttpContext, decimal>)StoreTryParsableParameter, "0.5", 0.5m },
                     // DateTime
+                    new object[] { (Action<HttpContext, DateTime>)StoreTryParsableParameter, today.ToString("o"), today },
                     // DateTimeOffset
+                    new object[] { (Action<HttpContext, DateTimeOffset>)StoreTryParsableParameter, todayOffset.ToString("o"), todayOffset },
                     // TimeSpan
+                    new object[] { (Action<HttpContext, TimeSpan>)StoreTryParsableParameter, TimeSpan.FromSeconds(42).ToString(), TimeSpan.FromSeconds(42) },
                     // Guid
+                    new object[] { (Action<HttpContext, Guid>)StoreTryParsableParameter, guid.ToString(), guid },
                     // Version
+                    new object[] { (Action<HttpContext, Version>)StoreTryParsableParameter, "6.0.0.42", new Version("6.0.0.42") },
                     // BigInteger
+                    new object[] { (Action<HttpContext, BigInteger>)StoreTryParsableParameter, "-42", new BigInteger(-42) },
                     // IPAddress
+                    //new object[] { (Action<HttpContext, IPAddress>)StoreTryParsableParameter, "-42", new BigInteger(-42) },
                     // IPEndpoint
+                    // System Enums
+                    // Nullable<T>
+                    new object[] { (Action<HttpContext, int?>)StoreTryParsableParameter, "42", 42 },
                 };
             }
         }

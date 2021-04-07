@@ -285,16 +285,16 @@ namespace Microsoft.AspNetCore.Http
             // {
             //     bool wasTryParseFailure = false;
             //
-            //     // Assume "int id" is the first parameter.
-            //     int param1 =
+            //     // Assume "[FromRoute] int id" is the first parameter.
+            //     int param1 = httpContext.Request.RouteValue["id"] == null ? default :
             //     {
             //          var sourceValue = httpContext.Request.RouteValue["id"];
             //          int parsedValue = default;
             //
             //          if (!int.TryParse(sourceValue, out parsedValue))
             //          {
-            //              Log.ParameterBindingFailed(httpContext, "Int32", "id", sourceValue)
             //              wasTryParseFailure = true;
+            //              Log.ParameterBindingFailed(httpContext, "Int32", "id", sourceValue)
             //          }
             //
             //          return parsedValue;
@@ -527,8 +527,8 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        // Todo: Cache this.
-        // Todo: Use CultureInfo.InvariantCulture where possible.
+        // TODO: Cache this.
+        // TODO: Use InvariantCulture where possible? Or is CurrentCulture fine because it's more flexible?
         private static MethodInfo? FindTryParseMethod(Type type)
         {
             var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
@@ -556,8 +556,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static bool HasTryParseMethod(ParameterInfo parameter)
         {
-            var parameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-            return FindTryParseMethod(parameterType) is not null;
+            var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+            return FindTryParseMethod(nonNullableParameterType) is not null;
         }
 
         private static Expression GetValueFromProperty(Expression sourceExpression, string key)
@@ -578,8 +578,8 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
-                var parameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-                var tryParseMethod = FindTryParseMethod(parameterType);
+                var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+                var tryParseMethod = FindTryParseMethod(nonNullableParameterType);
 
                 if (tryParseMethod is null)
                 {
@@ -589,16 +589,16 @@ namespace Microsoft.AspNetCore.Http
 
                 // bool wasTryParseFailureVariable = false;
                 //
-                // // Assume "int id" is the first parameter.
-                // int param1 =
+                // // Assume "[FromRoute] int id" is the first parameter.
+                // int param1 = httpContext.Request.RouteValue["id"] == null ? default :
                 // {
                 //      var sourceValue = httpContext.Request.RouteValue["id"];
                 //      int parsedValue = default;
                 //
                 //      if (!int.TryParse(sourceValue, out parsedValue))
                 //      {
-                //          Log.ParameterBindingFailed(httpContext, "Int32", "id", sourceValue)
                 //          wasTryParseFailureVariable = true;
+                //          Log.ParameterBindingFailed(httpContext, "Int32", "id", sourceValue)
                 //      }
                 //
                 //      return parsedValue;
@@ -606,11 +606,11 @@ namespace Microsoft.AspNetCore.Http
 
                 factoryContext.CheckForTryParseFailure = true;
 
-                var parsedValue = Expression.Variable(parameter.ParameterType);
+                var parsedValue = Expression.Variable(nonNullableParameterType);
 
                 var tryParseCall = Expression.Call(tryParseMethod, valueExpression, parsedValue);
 
-                var parameterTypeConstant = Expression.Constant(parameterType.Name);
+                var parameterTypeConstant = Expression.Constant(nonNullableParameterType.Name);
                 var parameterNameConstant = Expression.Constant(parameter.Name);
                 var failBlock = Expression.Block(
                     Expression.Assign(WasTryParseFailureVariable, Expression.Constant(true)),
@@ -623,6 +623,7 @@ namespace Microsoft.AspNetCore.Http
                     parsedValue);
             }
 
+            // Convert to nullable if necessary.
             if (argumentExpression.Type != parameter.ParameterType)
             {
                 argumentExpression = Expression.Convert(argumentExpression, parameter.ParameterType);
@@ -632,7 +633,7 @@ namespace Microsoft.AspNetCore.Http
                 Expression.Constant(parameter.DefaultValue) :
                 Expression.Default(parameter.ParameterType);
 
-            // property[key] == null ? default : (ParameterType){Type}.Parse(property[key]);
+            // int param1 = httpContext.Request.RouteValue["id"] == null ? default : ...
             return Expression.Condition(
                 Expression.Equal(valueExpression, Expression.Constant(null)),
                 defaultExpression,
