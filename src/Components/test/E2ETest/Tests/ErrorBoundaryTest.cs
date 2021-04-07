@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             container.FindElement(By.ClassName("throw-after-disposing-component")).Click();
             Browser.Collection(() => container.FindElements(By.ClassName("received-exception")),
-                elem => Assert.Equal($"Delayed asynchronous exception in OnParametersSetAsync", elem.Text));
+                elem => Assert.Equal("Delayed asynchronous exception in OnParametersSetAsync", elem.Text));
 
             AssertGlobalErrorState(false);
         }
@@ -141,6 +141,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // We succeed as long as there's no global error and the rest of the UI is still there
             Browser.Exists(By.Id("error-after-disposal-test"));
+            AssertGlobalErrorState(false);
+        }
+
+        [Fact]
+        public void CanHandleMultipleAsyncErrorsFromDescendants()
+        {
+            var container = Browser.Exists(By.Id("multiple-child-errors-test"));
+            var message = "Delayed asynchronous exception in OnParametersSetAsync";
+
+            container.FindElement(By.ClassName("throw-in-children")).Click();
+            Browser.Collection(() => container.FindElements(By.ClassName("received-exception")),
+                elem => Assert.Equal(message, elem.Text),
+                elem => Assert.Equal(message, elem.Text),
+                elem => Assert.Equal(message, elem.Text));
+
             AssertGlobalErrorState(false);
         }
 

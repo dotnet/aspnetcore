@@ -90,12 +90,14 @@
 <hr />
 <h2>Multiple child errors</h2>
 <p>If several child components trigger asynchronous errors, the error boundary will receive error notifications even when it's already in an errored state. This needs to behave sensibly.</p>
-<CustomErrorBoundary>
-    <DelayedErrorCausingChild ThrowOnParametersSetAsync="@multipleChildrenBeginDelayedError" />
-    <DelayedErrorCausingChild ThrowOnParametersSetAsync="@multipleChildrenBeginDelayedError" />
-    <DelayedErrorCausingChild ThrowOnParametersSetAsync="@multipleChildrenBeginDelayedError" />
-</CustomErrorBoundary>
-<button @onclick="@(() => { multipleChildrenBeginDelayedError = true; })">Cause multiple errors</button>
+<div id="multiple-child-errors-test">
+    <CustomErrorBoundary>
+        <DelayedErrorCausingChild ThrowOnParametersSetAsync="@multipleChildrenBeginDelayedError" />
+        <DelayedErrorCausingChild ThrowOnParametersSetAsync="@multipleChildrenBeginDelayedError" />
+        <DelayedErrorCausingChild ThrowOnParametersSetAsync="@multipleChildrenBeginDelayedError" />
+    </CustomErrorBoundary>
+    <button class="throw-in-children" @onclick="@(() => { multipleChildrenBeginDelayedError = true; })">Cause multiple errors</button>
+</div>
 
 @code {
     private bool throwInOnParametersSet;
