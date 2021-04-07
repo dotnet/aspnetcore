@@ -172,13 +172,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected ValueTask<ReadResult> StartTimingReadAsync(ValueTask<ReadResult> readAwaitable, CancellationToken cancellationToken)
         {
-
-            if (!readAwaitable.IsCompleted && _timingEnabled)
+            if (!readAwaitable.IsCompleted)
             {
                 TryProduceContinue();
 
-                _backpressure = true;
-                _context.TimeoutControl.StartTimingRead();
+                if (_timingEnabled)
+                {
+                    _backpressure = true;
+                    _context.TimeoutControl.StartTimingRead();
+                }
             }
 
             return readAwaitable;
