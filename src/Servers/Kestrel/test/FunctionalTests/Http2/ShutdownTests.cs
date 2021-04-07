@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
@@ -48,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestUnblocked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestStopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockKestrelTrace = new Mock<KestrelTrace>(Logger)
+            var mockKestrelTrace = new Mock<KestrelTrace>(LoggerFactory)
             {
                 CallBase = true
             };

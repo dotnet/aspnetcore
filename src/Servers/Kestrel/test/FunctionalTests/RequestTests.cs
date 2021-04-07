@@ -237,6 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             TestSink.MessageLogged += context =>
             {
                 if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel" &&
+                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Connections" &&
                     context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
                     context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
@@ -718,7 +719,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var abortedRequestId = await registrationTcs.Task.DefaultTimeout();
             Assert.Equal(2, abortedRequestId);
 
-            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel" &&
+            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Connections" &&
                                                      w.EventId == applicationAbortedConnectionId));
         }
 

@@ -151,233 +151,241 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length}.",
                 skipEnabledCheck: true);
 
-        protected readonly ILogger _logger;
+        protected readonly ILogger _generalLogger;
+        protected readonly ILogger _badRequestsLogger;
+        protected readonly ILogger _connectionsLogger;
+        protected readonly ILogger _http2Logger;
+        protected readonly ILogger _http3Logger;
 
-        public KestrelTrace(ILogger logger)
+        public KestrelTrace(ILoggerFactory loggerFactory)
         {
-            _logger = logger;
+            _generalLogger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
+            _badRequestsLogger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.BadRequests");
+            _connectionsLogger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Connections");
+            _http2Logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Http2");
+            _http3Logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Http3");
         }
 
         public virtual void ConnectionAccepted(string connectionId)
         {
-            _connectionAccepted(_logger, connectionId, null);
+            _connectionAccepted(_connectionsLogger, connectionId, null);
         }
 
         public virtual void ConnectionStart(string connectionId)
         {
-            _connectionStart(_logger, connectionId, null);
+            _connectionStart(_connectionsLogger, connectionId, null);
         }
 
         public virtual void ConnectionStop(string connectionId)
         {
-            _connectionStop(_logger, connectionId, null);
+            _connectionStop(_connectionsLogger, connectionId, null);
         }
 
         public virtual void ConnectionPause(string connectionId)
         {
-            _connectionPause(_logger, connectionId, null);
+            _connectionPause(_connectionsLogger, connectionId, null);
         }
 
         public virtual void ConnectionResume(string connectionId)
         {
-            _connectionResume(_logger, connectionId, null);
+            _connectionResume(_connectionsLogger, connectionId, null);
         }
 
         public virtual void ConnectionKeepAlive(string connectionId)
         {
-            _connectionKeepAlive(_logger, connectionId, null);
+            _connectionKeepAlive(_connectionsLogger, connectionId, null);
         }
 
         public virtual void ConnectionRejected(string connectionId)
         {
-            _connectionRejected(_logger, connectionId, null);
+            _connectionRejected(_connectionsLogger, connectionId, null);
         }
 
         public virtual void ConnectionDisconnect(string connectionId)
         {
-            _connectionDisconnect(_logger, connectionId, null);
+            _connectionDisconnect(_connectionsLogger, connectionId, null);
         }
 
         public virtual void ApplicationError(string connectionId, string traceIdentifier, Exception ex)
         {
-            _applicationError(_logger, connectionId, traceIdentifier, ex);
+            _applicationError(_generalLogger, connectionId, traceIdentifier, ex);
         }
 
         public virtual void ConnectionHeadResponseBodyWrite(string connectionId, long count)
         {
-            _connectionHeadResponseBodyWrite(_logger, connectionId, count, null);
+            _connectionHeadResponseBodyWrite(_generalLogger, connectionId, count, null);
         }
 
         public virtual void NotAllConnectionsClosedGracefully()
         {
-            _notAllConnectionsClosedGracefully(_logger, null);
+            _notAllConnectionsClosedGracefully(_connectionsLogger, null);
         }
 
         public virtual void ConnectionBadRequest(string connectionId, Microsoft.AspNetCore.Http.BadHttpRequestException ex)
         {
-            _connectionBadRequest(_logger, connectionId, ex.Message, ex);
+            _connectionBadRequest(_badRequestsLogger, connectionId, ex.Message, ex);
         }
 
         public virtual void RequestProcessingError(string connectionId, Exception ex)
         {
-            _requestProcessingError(_logger, connectionId, ex);
+            _requestProcessingError(_badRequestsLogger, connectionId, ex);
         }
 
         public virtual void NotAllConnectionsAborted()
         {
-            _notAllConnectionsAborted(_logger, null);
+            _notAllConnectionsAborted(_connectionsLogger, null);
         }
 
         public virtual void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now)
         {
-            _heartbeatSlow(_logger, now, heartbeatDuration, interval, null);
+            _heartbeatSlow(_connectionsLogger, now, heartbeatDuration, interval, null);
         }
 
         public virtual void ApplicationNeverCompleted(string connectionId)
         {
-            _applicationNeverCompleted(_logger, connectionId, null);
+            _applicationNeverCompleted(_generalLogger, connectionId, null);
         }
 
         public virtual void RequestBodyStart(string connectionId, string traceIdentifier)
         {
-            _requestBodyStart(_logger, connectionId, traceIdentifier, null);
+            _requestBodyStart(_generalLogger, connectionId, traceIdentifier, null);
         }
 
         public virtual void RequestBodyDone(string connectionId, string traceIdentifier)
         {
-            _requestBodyDone(_logger, connectionId, traceIdentifier, null);
+            _requestBodyDone(_generalLogger, connectionId, traceIdentifier, null);
         }
 
         public virtual void RequestBodyMinimumDataRateNotSatisfied(string connectionId, string? traceIdentifier, double rate)
         {
-            _requestBodyMinimumDataRateNotSatisfied(_logger, connectionId, traceIdentifier, rate, null);
+            _requestBodyMinimumDataRateNotSatisfied(_badRequestsLogger, connectionId, traceIdentifier, rate, null);
         }
 
         public virtual void RequestBodyNotEntirelyRead(string connectionId, string traceIdentifier)
         {
-            _requestBodyNotEntirelyRead(_logger, connectionId, traceIdentifier, null);
+            _requestBodyNotEntirelyRead(_generalLogger, connectionId, traceIdentifier, null);
         }
 
         public virtual void RequestBodyDrainTimedOut(string connectionId, string traceIdentifier)
         {
-            _requestBodyDrainTimedOut(_logger, connectionId, traceIdentifier, null);
+            _requestBodyDrainTimedOut(_generalLogger, connectionId, traceIdentifier, null);
         }
 
         public virtual void ResponseMinimumDataRateNotSatisfied(string connectionId, string? traceIdentifier)
         {
-            _responseMinimumDataRateNotSatisfied(_logger, connectionId, traceIdentifier, null);
+            _responseMinimumDataRateNotSatisfied(_generalLogger, connectionId, traceIdentifier, null);
         }
 
         public virtual void ApplicationAbortedConnection(string connectionId, string traceIdentifier)
         {
-            _applicationAbortedConnection(_logger, connectionId, traceIdentifier, null);
+            _applicationAbortedConnection(_connectionsLogger, connectionId, traceIdentifier, null);
         }
 
         public virtual void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex)
         {
-            _http2ConnectionError(_logger, connectionId, ex);
+            _http2ConnectionError(_http2Logger, connectionId, ex);
         }
 
         public virtual void Http2ConnectionClosing(string connectionId)
         {
-            _http2ConnectionClosing(_logger, connectionId, null);
+            _http2ConnectionClosing(_http2Logger, connectionId, null);
         }
 
         public virtual void Http2ConnectionClosed(string connectionId, int highestOpenedStreamId)
         {
-            _http2ConnectionClosed(_logger, connectionId, highestOpenedStreamId, null);
+            _http2ConnectionClosed(_http2Logger, connectionId, highestOpenedStreamId, null);
         }
 
         public virtual void Http2StreamError(string connectionId, Http2StreamErrorException ex)
         {
-            _http2StreamError(_logger, connectionId, ex);
+            _http2StreamError(_http2Logger, connectionId, ex);
         }
 
         public void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason)
         {
-            _http2StreamResetAbort(_logger, traceIdentifier, error, abortReason);
+            _http2StreamResetAbort(_http2Logger, traceIdentifier, error, abortReason);
         }
 
         public virtual void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
         {
-            _hpackDecodingError(_logger, connectionId, streamId, ex);
+            _hpackDecodingError(_http2Logger, connectionId, streamId, ex);
         }
 
         public virtual void HPackEncodingError(string connectionId, int streamId, HPackEncodingException ex)
         {
-            _hpackEncodingError(_logger, connectionId, streamId, ex);
+            _hpackEncodingError(_http2Logger, connectionId, streamId, ex);
         }
 
         public void Http2FrameReceived(string connectionId, Http2Frame frame)
         {
-            if (_logger.IsEnabled(LogLevel.Trace))
+            if (_http2Logger.IsEnabled(LogLevel.Trace))
             {
-                _http2FrameReceived(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
+                _http2FrameReceived(_http2Logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
             }
         }
 
         public void Http2FrameSending(string connectionId, Http2Frame frame)
         {
-            if (_logger.IsEnabled(LogLevel.Trace))
+            if (_http2Logger.IsEnabled(LogLevel.Trace))
             {
-                _http2FrameSending(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
+                _http2FrameSending(_http2Logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
             }
         }
 
         public void Http2MaxConcurrentStreamsReached(string connectionId)
         {
-            _http2MaxConcurrentStreamsReached(_logger, connectionId, null);
+            _http2MaxConcurrentStreamsReached(_http2Logger, connectionId, null);
         }
 
         public void InvalidResponseHeaderRemoved()
         {
-            _invalidResponseHeaderRemoved(_logger, null);
+            _invalidResponseHeaderRemoved(_generalLogger, null);
         }
 
         public void Http3ConnectionError(string connectionId, Http3ConnectionErrorException ex)
         {
-            _http3ConnectionError(_logger, connectionId, ex);
+            _http3ConnectionError(_http3Logger, connectionId, ex);
         }
 
         public void Http3ConnectionClosing(string connectionId)
         {
-            _http3ConnectionClosing(_logger, connectionId, null);
+            _http3ConnectionClosing(_http3Logger, connectionId, null);
         }
 
         public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId)
         {
-            _http3ConnectionClosed(_logger, connectionId, highestOpenedStreamId, null);
+            _http3ConnectionClosed(_http3Logger, connectionId, highestOpenedStreamId, null);
         }
 
         public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
         {
-            if (_logger.IsEnabled(LogLevel.Debug))
+            if (_http3Logger.IsEnabled(LogLevel.Debug))
             {
-                _http3StreamAbort(_logger, traceIdentifier, Http3Formatting.ToFormattedErrorCode(error), abortReason);
+                _http3StreamAbort(_http3Logger, traceIdentifier, Http3Formatting.ToFormattedErrorCode(error), abortReason);
             }
         }
 
         public void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame)
         {
-            if (_logger.IsEnabled(LogLevel.Trace))
+            if (_http3Logger.IsEnabled(LogLevel.Trace))
             {
-                _http3FrameReceived(_logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.Length, null);
+                _http3FrameReceived(_http3Logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.Length, null);
             }
         }
 
         public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame)
         {
-            if (_logger.IsEnabled(LogLevel.Trace))
+            if (_http3Logger.IsEnabled(LogLevel.Trace))
             {
-                _http3FrameSending(_logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.Length, null);
+                _http3FrameSending(_http3Logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.Length, null);
             }
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-            => _logger.Log(logLevel, eventId, state, exception, formatter);
+            => _generalLogger.Log(logLevel, eventId, state, exception, formatter);
 
-        public virtual bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(logLevel);
+        public virtual bool IsEnabled(LogLevel logLevel) => _generalLogger.IsEnabled(logLevel);
 
-        public virtual IDisposable BeginScope<TState>(TState state) => _logger.BeginScope(state);
+        public virtual IDisposable BeginScope<TState>(TState state) => _generalLogger.BeginScope(state);
     }
 }

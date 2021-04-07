@@ -102,8 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
 
             var serverOptions = options.Value ?? new KestrelServerOptions();
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
-            var trace = new KestrelTrace(logger);
+            var trace = new KestrelTrace(loggerFactory);
             var connectionManager = new ConnectionManager(
                 trace,
                 serverOptions.Limits.MaxConcurrentUpgradedConnections);

@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await appCompletedTcs.Task.DefaultTimeout();
             }
 
-            var coreLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel");
+            var coreLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Connections");
             Assert.Single(coreLogs.Where(w => w.EventId == connectionStopEventId));
 
             var transportLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel" ||
