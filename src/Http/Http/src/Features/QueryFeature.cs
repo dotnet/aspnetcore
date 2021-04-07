@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 if (_accumulator == null)
                 {
-                    _accumulator = new AdaptiveCapacityDictionary<string, StringValues>(capacity: 5, StringComparer.OrdinalIgnoreCase);
+                    _accumulator = new AdaptiveCapacityDictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
                 }
 
                 StringValues values;
