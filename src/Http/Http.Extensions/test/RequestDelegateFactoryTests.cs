@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
                 return new[]
                 {
-                    // String (technically not "TryParseable", but it's the the special case)
+                    // String (technically not "TryParsable", but it's the the special case)
                     new object[] { (Action<HttpContext, string>)Store, "plain string", "plain string" },
                     // Int32
                     new object[] { (Action<HttpContext, int>)Store, "-42", -42 },
@@ -354,20 +354,37 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     new object[] { (Action<HttpContext, AssemblyFlags>)Store, "PublicKey,Retargetable", AssemblyFlags.PublicKey | AssemblyFlags.Retargetable },
                     // Nullable<T>
                     new object[] { (Action<HttpContext, int?>)Store, "42", 42 },
-
                     // Null route and/or query value gives default value.
                     new object?[] { (Action<HttpContext, int>)Store, null, 0 },
                     new object?[] { (Action<HttpContext, int?>)Store, null, null },
-
-                    // User defined class!
-                    // User defined Enums
+                    // Custom Enum
+                    new object[] { (Action<HttpContext, MyEnum>)Store, "ValueB", MyEnum.ValueB },
+                    // Custom record with static TryParse method!
+                    new object[] { (Action<HttpContext, MyTryParsableRecord>)Store, "42", new MyTryParsableRecord(42) },
                 };
+            }
+        }
+
+        private enum MyEnum { ValueA, ValueB, }
+
+        private record MyTryParsableRecord(int State)
+        {
+            public static bool TryParse(string value, out MyTryParsableRecord? result)
+            {
+                if (!int.TryParse(value, out var state))
+                {
+                    result = null;
+                    return false;
+                }
+
+                result = new MyTryParsableRecord(state);
+                return true;
             }
         }
 
         [Theory]
         [MemberData(nameof(TryParsableParameters))]
-        public async Task RequestDelegatePopulatesUnattributedTryParseableParametersFromRouteValue(Delegate action, string? routeValue, object? expectedParameterValue)
+        public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValue(Delegate action, string? routeValue, object? expectedParameterValue)
         {
             var invalidDataException = new InvalidDataException();
             var serviceCollection = new ServiceCollection();
@@ -387,7 +404,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Theory]
         [MemberData(nameof(TryParsableParameters))]
-        public async Task RequestDelegatePopulatesUnattributedTryParseableParametersFromQueryString(Delegate action, string? routeValue, object? expectedParameterValue)
+        public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromQueryString(Delegate action, string? routeValue, object? expectedParameterValue)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
@@ -404,7 +421,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Theory]
         [MemberData(nameof(TryParsableParameters))]
-        public async Task RequestDelegatePopulatesUnattributedTryParseableParametersFromRouteValueBeforeQueryString(Delegate action, string? routeValue, object? expectedParameterValue)
+        public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValueBeforeQueryString(Delegate action, string? routeValue, object? expectedParameterValue)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues["tryParsable"] = routeValue;
