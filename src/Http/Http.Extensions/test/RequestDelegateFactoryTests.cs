@@ -8,8 +8,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Numerics;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -17,6 +19,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -25,7 +28,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
-    public class RequestDelegateFactoryTests
+    public class RequestDelegateFactoryTests : LoggedTest
     {
         public static IEnumerable<object[]> NoResult
         {
@@ -289,74 +292,91 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(0, deserializedRouteParam);
         }
 
-        public static object[][] FromTryParsableParameter
+        public static object?[][] TryParsableParameters
         {
             get
             {
-                void StoreTryParsableParameter<T>(HttpContext httpContext, T tryParsable)
+                void Store<T>(HttpContext httpContext, T tryParsable)
                 {
                     httpContext.Items["tryParsable"] = tryParsable;
                 }
 
-                var today = DateTime.Now;
-                var todayOffset = DateTimeOffset.UtcNow;
+                var now = DateTime.Now;
+                var nowOffset = DateTimeOffset.UtcNow;
                 var guid = Guid.NewGuid();
 
                 return new[]
                 {
-                    // User defined class!
-                    // User define Enums
+                    // String (technically not "TryParseable", but it's the the special case)
+                    new object[] { (Action<HttpContext, string>)Store, "plain string", "plain string" },
                     // Int32
-                    new object[] { (Action<HttpContext, int>)StoreTryParsableParameter, "-42", -42 },
-                    new object[] { (Action<HttpContext, uint>)StoreTryParsableParameter, "42", 42U },
+                    new object[] { (Action<HttpContext, int>)Store, "-42", -42 },
+                    new object[] { (Action<HttpContext, uint>)Store, "42", 42U },
                     // Byte
-                    new object[] { (Action<HttpContext, bool>)StoreTryParsableParameter, "true", true },
+                    new object[] { (Action<HttpContext, bool>)Store, "true", true },
                     // Int16
-                    new object[] { (Action<HttpContext, short>)StoreTryParsableParameter, "-42", (short)-42 },
-                    new object[] { (Action<HttpContext, ushort>)StoreTryParsableParameter, "42", (ushort)42 },
+                    new object[] { (Action<HttpContext, short>)Store, "-42", (short)-42 },
+                    new object[] { (Action<HttpContext, ushort>)Store, "42", (ushort)42 },
                     // Int64
-                    new object[] { (Action<HttpContext, long>)StoreTryParsableParameter, "-42", -42L },
-                    new object[] { (Action<HttpContext, ulong>)StoreTryParsableParameter, "42", 42UL },
+                    new object[] { (Action<HttpContext, long>)Store, "-42", -42L },
+                    new object[] { (Action<HttpContext, ulong>)Store, "42", 42UL },
                     // IntPtr
-                    new object[] { (Action<HttpContext, IntPtr>)StoreTryParsableParameter, "-42", new IntPtr(-42) },
+                    new object[] { (Action<HttpContext, IntPtr>)Store, "-42", new IntPtr(-42) },
                     // Char
-                    new object[] { (Action<HttpContext, char>)StoreTryParsableParameter, "A", 'A' },
+                    new object[] { (Action<HttpContext, char>)Store, "A", 'A' },
                     // Double
-                    new object[] { (Action<HttpContext, double>)StoreTryParsableParameter, "0.5", 0.5 },
+                    new object[] { (Action<HttpContext, double>)Store, "0.5", 0.5 },
                     // Single
-                    new object[] { (Action<HttpContext, float>)StoreTryParsableParameter, "0.5", 0.5f },
+                    new object[] { (Action<HttpContext, float>)Store, "0.5", 0.5f },
                     // Half
-                    new object[] { (Action<HttpContext, Half>)StoreTryParsableParameter, "0.5", (Half)0.5f },
+                    new object[] { (Action<HttpContext, Half>)Store, "0.5", (Half)0.5f },
                     // Decimal
-                    new object[] { (Action<HttpContext, decimal>)StoreTryParsableParameter, "0.5", 0.5m },
+                    new object[] { (Action<HttpContext, decimal>)Store, "0.5", 0.5m },
                     // DateTime
-                    new object[] { (Action<HttpContext, DateTime>)StoreTryParsableParameter, today.ToString("o"), today },
+                    new object[] { (Action<HttpContext, DateTime>)Store, now.ToString("o"), now },
                     // DateTimeOffset
-                    new object[] { (Action<HttpContext, DateTimeOffset>)StoreTryParsableParameter, todayOffset.ToString("o"), todayOffset },
+                    new object[] { (Action<HttpContext, DateTimeOffset>)Store, nowOffset.ToString("o"), nowOffset },
                     // TimeSpan
-                    new object[] { (Action<HttpContext, TimeSpan>)StoreTryParsableParameter, TimeSpan.FromSeconds(42).ToString(), TimeSpan.FromSeconds(42) },
+                    new object[] { (Action<HttpContext, TimeSpan>)Store, TimeSpan.FromSeconds(42).ToString(), TimeSpan.FromSeconds(42) },
                     // Guid
-                    new object[] { (Action<HttpContext, Guid>)StoreTryParsableParameter, guid.ToString(), guid },
+                    new object[] { (Action<HttpContext, Guid>)Store, guid.ToString(), guid },
                     // Version
-                    new object[] { (Action<HttpContext, Version>)StoreTryParsableParameter, "6.0.0.42", new Version("6.0.0.42") },
+                    new object[] { (Action<HttpContext, Version>)Store, "6.0.0.42", new Version("6.0.0.42") },
                     // BigInteger
-                    new object[] { (Action<HttpContext, BigInteger>)StoreTryParsableParameter, "-42", new BigInteger(-42) },
+                    new object[] { (Action<HttpContext, BigInteger>)Store, "-42", new BigInteger(-42) },
                     // IPAddress
-                    //new object[] { (Action<HttpContext, IPAddress>)StoreTryParsableParameter, "-42", new BigInteger(-42) },
-                    // IPEndpoint
+                    new object[] { (Action<HttpContext, IPAddress>)Store, "127.0.0.1", IPAddress.Loopback },
+                    // IPEndPoint
+                    new object[] { (Action<HttpContext, IPEndPoint>)Store, "127.0.0.1:80", new IPEndPoint(IPAddress.Loopback, 80) },
                     // System Enums
+                    new object[] { (Action<HttpContext, AddressFamily>)Store, "Unix", AddressFamily.Unix },
+                    new object[] { (Action<HttpContext, ILOpCode>)Store, "Nop", ILOpCode.Nop },
+                    new object[] { (Action<HttpContext, AssemblyFlags>)Store, "PublicKey,Retargetable", AssemblyFlags.PublicKey | AssemblyFlags.Retargetable },
                     // Nullable<T>
-                    new object[] { (Action<HttpContext, int?>)StoreTryParsableParameter, "42", 42 },
+                    new object[] { (Action<HttpContext, int?>)Store, "42", 42 },
+
+                    // Null route and/or query value gives default value.
+                    new object?[] { (Action<HttpContext, int>)Store, null, 0 },
+                    new object?[] { (Action<HttpContext, int?>)Store, null, null },
+
+                    // User defined class!
+                    // User defined Enums
                 };
             }
         }
 
         [Theory]
-        [MemberData(nameof(FromTryParsableParameter))]
-        public async Task RequestDelegatePopulatesUnattributedTryParseableParametersFromRouteValue(Delegate action, string routeValue, object expectedParameterValue)
+        [MemberData(nameof(TryParsableParameters))]
+        public async Task RequestDelegatePopulatesUnattributedTryParseableParametersFromRouteValue(Delegate action, string? routeValue, object? expectedParameterValue)
         {
+            var invalidDataException = new InvalidDataException();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(LoggerFactory);
+
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues["tryParsable"] = routeValue;
+            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             var requestDelegate = RequestDelegateFactory.Create(action);
 
@@ -366,8 +386,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Theory]
-        [MemberData(nameof(FromTryParsableParameter))]
-        public async Task RequestDelegatePopulatesUnattributedTryParseableParametersFromQueryString(Delegate action, string routeValue, object expectedParameterValue)
+        [MemberData(nameof(TryParsableParameters))]
+        public async Task RequestDelegatePopulatesUnattributedTryParseableParametersFromQueryString(Delegate action, string? routeValue, object? expectedParameterValue)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
@@ -383,8 +403,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Theory]
-        [MemberData(nameof(FromTryParsableParameter))]
-        public async Task RequestDelegatePopulatesUnattributedTryParseableParametersFromRouteValueBeforeQueryString(Delegate action, string routeValue, object expectedParameterValue)
+        [MemberData(nameof(TryParsableParameters))]
+        public async Task RequestDelegatePopulatesUnattributedTryParseableParametersFromRouteValueBeforeQueryString(Delegate action, string? routeValue, object? expectedParameterValue)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues["tryParsable"] = routeValue;

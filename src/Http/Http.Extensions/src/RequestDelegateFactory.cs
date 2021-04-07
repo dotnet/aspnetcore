@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MethodInfo ExecuteTaskResultOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo ExecuteValueResultTaskOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
         private static readonly MethodInfo GetRequiredServiceMethodInfo = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
+        private static readonly MethodInfo EnumTryParseMethodInfo = GetEnumTryParseMethod();
+
         private static readonly MethodInfo ResultWriteResponseAsync = typeof(IResult).GetMethod(nameof(IResult.ExecuteAsync), BindingFlags.Public | BindingFlags.Instance)!;
         private static readonly MethodInfo StringResultWriteResponseAsync = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
         private static readonly MethodInfo JsonResultWriteResponseAsync = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
@@ -527,10 +529,39 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
+        private static MethodInfo GetEnumTryParseMethod()
+        {
+            var staticEnumMethods = typeof(Enum).GetMethods(BindingFlags.Public | BindingFlags.Static);
+
+            foreach (var method in staticEnumMethods)
+            {
+                if (!method.IsGenericMethod || method.Name != "TryParse" || method.ReturnType != typeof(bool))
+                {
+                    continue;
+                }
+
+                var tryParseParameters = method.GetParameters();
+
+                if (tryParseParameters.Length == 2 &&
+                    tryParseParameters[0].ParameterType == typeof(string) &&
+                    tryParseParameters[1].IsOut)
+                {
+                    return method;
+                }
+            }
+
+            throw new Exception("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) does not exist!!?!?");
+        }
+
         // TODO: Cache this.
         // TODO: Use InvariantCulture where possible? Or is CurrentCulture fine because it's more flexible?
         private static MethodInfo? FindTryParseMethod(Type type)
         {
+            if (type.IsEnum)
+            {
+                return EnumTryParseMethodInfo.MakeGenericMethod(type);
+            }
+
             var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
 
             foreach (var method in staticMethods)
