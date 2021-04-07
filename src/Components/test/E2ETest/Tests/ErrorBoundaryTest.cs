@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                     Assert.Empty(elem.FindElements(By.CssSelector("*")));
                 });
 
-            AssertNoGlobalError();
+            AssertGlobalErrorState(false);
         }
 
         [Fact]
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             container.FindElement(By.ClassName("throw-counter-exception")).Click();
             Browser.Collection(() => container.FindElements(By.ClassName("received-exception")),
                 elem => Assert.Equal($"Exception from {nameof(ErrorCausingCounter)}", elem.Text));
-            AssertNoGlobalError();
+            AssertGlobalErrorState(false);
 
             // On recovery, the count is reset, because it's a new instance
             container.FindElement(By.ClassName("recover")).Click();
@@ -94,13 +94,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("0", currentCountAccessor);
             incrementButtonAccessor().Click();
             Browser.Equal("1", currentCountAccessor);
-            AssertNoGlobalError();
+            AssertGlobalErrorState(false);
         }
 
-        void AssertNoGlobalError()
+        [Fact]
+        public void CanHandleErrorsInlineInErrorBoundaryContent()
+        {
+            var container = Browser.Exists(By.Id("inline-error-test"));
+            Browser.Equal("Hello!", () => container.FindElement(By.ClassName("normal-content")).Text);
+            Assert.Empty(container.FindElements(By.ClassName("error-message")));
+
+            // If ChildContent throws during rendering, the error boundary handles it
+            container.FindElement(By.ClassName("throw-in-childcontent")).Click();
+            Browser.Contains("There was an error: System.InvalidTimeZoneException: Inline exception", () => container.FindElement(By.ClassName("error-message")).Text);
+            AssertGlobalErrorState(false);
+
+            // If the ErrorContent throws during rendering, it gets caught by the "infinite error loop" detection logic and is fatal
+            container.FindElement(By.ClassName("throw-in-errorcontent")).Click();
+            AssertGlobalErrorState(true);
+        }
+
+        void AssertGlobalErrorState(bool hasGlobalError)
         {
             var globalErrorUi = Browser.Exists(By.Id("blazor-error-ui"));
-            Assert.Equal("none", globalErrorUi.GetCssValue("display"));
+            Browser.Equal(hasGlobalError ? "block" : "none", () => globalErrorUi.GetCssValue("display"));
         }
     }
 }

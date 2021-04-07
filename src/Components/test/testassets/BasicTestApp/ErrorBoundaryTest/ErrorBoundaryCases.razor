@@ -55,18 +55,20 @@
 <hr />
 <h2>Exception inline in error boundary markup</h2>
 <p>This shows that, if an ErrorBoundary itself fails while rendering its own ChildContent, then it can catch its own exception. But if the error comes from the error content, this triggers the "infinite error loop" detection logic and becomes fatal.</p>
-<ErrorBoundary>
-    <ChildContent>
-        @if (throwInline) { throw new InvalidTimeZoneException("Inline exception"); }
-        <p>Hello!</p>
-    </ChildContent>
-    <ErrorContent>
-        @if (throwInErrorContent) { throw new InvalidTimeZoneException("Inline exception in error content"); }
-        <p>There was an error: @context</p>
-    </ErrorContent>
-</ErrorBoundary>
-<button @onclick="@(() => throwInline = true)">Throw in child content</button>
-<button @onclick="@(() => throwInErrorContent = true)">Throw in error content (causing infinite error loop)</button>
+<div id="inline-error-test">
+    <ErrorBoundary>
+        <ChildContent>
+            @if (throwInline) { throw new InvalidTimeZoneException("Inline exception"); }
+            <p class="normal-content">Hello!</p>
+        </ChildContent>
+        <ErrorContent>
+            @if (throwInErrorContent) { throw new InvalidTimeZoneException("Inline exception in error content"); }
+            <p class="error-message">There was an error: @context</p>
+        </ErrorContent>
+    </ErrorBoundary>
+    <button class="throw-in-childcontent" @onclick="@(() => throwInline = true)">Throw in child content</button>
+    <button class="throw-in-errorcontent" @onclick="@(() => throwInErrorContent = true)">Throw in error content (causing infinite error loop)</button>
+</div>
 
 <hr />
 <h2>Errors after disposal</h2>
