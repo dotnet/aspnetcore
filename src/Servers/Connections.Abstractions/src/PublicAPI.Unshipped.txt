@@ -1,5 +1,7 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Connections.IConnectionListener.AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>
+Microsoft.AspNetCore.Connections.Features.IConnectionSocketFeature
+Microsoft.AspNetCore.Connections.Features.IConnectionSocketFeature.Socket.get -> System.Net.Sockets.Socket?
 Microsoft.AspNetCore.Connections.IConnectionListener.AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
 Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionBuilder
 Microsoft.AspNetCore.Connections.Experimental.IMultiplexedConnectionBuilder.ApplicationServices.get -> System.IServiceProvider!

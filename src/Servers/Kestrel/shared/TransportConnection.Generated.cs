@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.Connections
                                                  IConnectionTransportFeature,
                                                  IConnectionItemsFeature,
                                                  IMemoryPoolFeature,
-                                                 IConnectionLifetimeFeature
+                                                 IConnectionLifetimeFeature,
+                                                 IConnectionSocketFeature
     {
         // Implemented features
         internal protected IConnectionIdFeature? _currentIConnectionIdFeature;
@@ -26,6 +27,7 @@ namespace Microsoft.AspNetCore.Connections
         internal protected IConnectionItemsFeature? _currentIConnectionItemsFeature;
         internal protected IMemoryPoolFeature? _currentIMemoryPoolFeature;
         internal protected IConnectionLifetimeFeature? _currentIConnectionLifetimeFeature;
+        internal protected IConnectionSocketFeature? _currentIConnectionSocketFeature;
 
         private int _featureRevision;
 
@@ -38,6 +40,7 @@ namespace Microsoft.AspNetCore.Connections
             _currentIConnectionItemsFeature = this;
             _currentIMemoryPoolFeature = this;
             _currentIConnectionLifetimeFeature = this;
+            _currentIConnectionSocketFeature = this;
 
         }
 
@@ -130,6 +133,10 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentIConnectionLifetimeFeature;
                 }
+                else if (key == typeof(IConnectionSocketFeature))
+                {
+                    feature = _currentIConnectionSocketFeature;
+                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
@@ -161,6 +168,10 @@ namespace Microsoft.AspNetCore.Connections
                 else if (key == typeof(IConnectionLifetimeFeature))
                 {
                     _currentIConnectionLifetimeFeature = (IConnectionLifetimeFeature?)value;
+                }
+                else if (key == typeof(IConnectionSocketFeature))
+                {
+                    _currentIConnectionSocketFeature = (IConnectionSocketFeature?)value;
                 }
                 else
                 {
@@ -195,6 +206,10 @@ namespace Microsoft.AspNetCore.Connections
             else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
             {
                 feature = Unsafe.As<IConnectionLifetimeFeature?, TFeature?>(ref _currentIConnectionLifetimeFeature);
+            }
+            else if (typeof(TFeature) == typeof(IConnectionSocketFeature))
+            {
+                feature = Unsafe.As<IConnectionSocketFeature?, TFeature?>(ref _currentIConnectionSocketFeature);
             }
             else if (MaybeExtra != null)
             {
@@ -231,6 +246,10 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _currentIConnectionLifetimeFeature = Unsafe.As<TFeature?, IConnectionLifetimeFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IConnectionSocketFeature))
+            {
+                _currentIConnectionSocketFeature = Unsafe.As<TFeature?, IConnectionSocketFeature?>(ref feature);
+            }
             else
             {
                 ExtraFeatureSet(typeof(TFeature), feature);
@@ -258,6 +277,10 @@ namespace Microsoft.AspNetCore.Connections
             if (_currentIConnectionLifetimeFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IConnectionLifetimeFeature), _currentIConnectionLifetimeFeature);
+            }
+            if (_currentIConnectionSocketFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IConnectionSocketFeature), _currentIConnectionSocketFeature);
             }
 
             if (MaybeExtra != null)
