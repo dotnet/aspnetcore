@@ -144,12 +144,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
                 LogLevel.Information,
                 new EventId(1, "JsonResultExecuting"),
-                "Executing JsonResult, writing value of type '{Type}'.");
+                "Executing JsonResult, writing value of type '{Type}'.",
+                skipEnabledCheck: true);
 
             private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
                LogLevel.Debug,
                new EventId(2, "BufferingAsyncEnumerable"),
-               "Buffering IAsyncEnumerable instance of type '{Type}'.");
+               "Buffering IAsyncEnumerable instance of type '{Type}'.",
+                skipEnabledCheck: true);
 
             public static void JsonResultExecuting(ILogger logger, object? value)
             {

@@ -178,21 +178,17 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
         private static class Log
         {
-            private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting;
-            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable;
+            private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
+                LogLevel.Information,
+                new EventId(1, "JsonResultExecuting"),
+                "Executing JsonResult, writing value of type '{Type}'.",
+                skipEnabledCheck: true);
 
-            static Log()
-            {
-                _jsonResultExecuting = LoggerMessage.Define<string?>(
-                    LogLevel.Information,
-                    new EventId(1, "JsonResultExecuting"),
-                    "Executing JsonResult, writing value of type '{Type}'.");
-
-                _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
-                   LogLevel.Debug,
-                   new EventId(1, "BufferingAsyncEnumerable"),
-                   "Buffering IAsyncEnumerable instance of type '{Type}'.");
-            }
+            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
+                LogLevel.Debug,
+                new EventId(1, "BufferingAsyncEnumerable"),
+                "Buffering IAsyncEnumerable instance of type '{Type}'.",
+                skipEnabledCheck: true);
 
             public static void JsonResultExecuting(ILogger logger, object? value)
             {

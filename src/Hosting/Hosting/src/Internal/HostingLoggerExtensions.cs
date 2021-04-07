@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Hosting
     internal static class HostingLoggerExtensions
     {
         private static readonly Action<ILogger, string, Exception?> _startupAssemblyLoaded =
-                LoggerMessage.Define<string>(LogLevel.Debug, LoggerEventIds.HostingStartupAssemblyLoaded, "Loaded hosting startup assembly {assemblyName}");
+                LoggerMessage.Define<string>(LogLevel.Debug, LoggerEventIds.HostingStartupAssemblyLoaded, "Loaded hosting startup assembly {assemblyName}", skipEnabledCheck: true);
 
         private static readonly Action<ILogger, string, Exception?> _listeningOnAddress =
                 LoggerMessage.Define<string>(LogLevel.Information, LoggerEventIds.ServerListeningOnAddresses, "Now listening on: {address}");

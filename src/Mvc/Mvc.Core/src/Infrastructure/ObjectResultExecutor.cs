@@ -168,15 +168,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static class Log
         {
-            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable;
-
-            static Log()
-            {
-                _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
-                   LogLevel.Debug,
-                   new EventId(1, "BufferingAsyncEnumerable"),
-                   "Buffering IAsyncEnumerable instance of type '{Type}'.");
-            }
+            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
+                LogLevel.Debug,
+                new EventId(1, "BufferingAsyncEnumerable"),
+                "Buffering IAsyncEnumerable instance of type '{Type}'.",
+                skipEnabledCheck: true);
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
             {

@@ -23,10 +23,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.BindingToDefault, $"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
 
             private static readonly Action<ILogger, string, Exception?> _clearedAddresses =
-                LoggerMessage.Define<string>(LogLevel.Warning, LoggerEventIds.ClearedAddresses, $"Overriding address(es) '{{ServerAddresses)}}'. Binding to endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} instead.");
+                LoggerMessage.Define<string>(LogLevel.Warning, LoggerEventIds.ClearedAddresses, $"Overriding address(es) '{{ServerAddresses)}}'. Binding to endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} instead.", skipEnabledCheck: true);
 
             private static readonly Action<ILogger, string, Exception?> _clearedPrefixes =
-                LoggerMessage.Define<string>(LogLevel.Warning, LoggerEventIds.ClearedPrefixes, $"Overriding endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true. Binding to address(es) '{{ServerAddresses}}' instead. ");
+                LoggerMessage.Define<string>(LogLevel.Warning, LoggerEventIds.ClearedPrefixes, $"Overriding endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true. Binding to address(es) '{{ServerAddresses}}' instead.", skipEnabledCheck: true);
 
             private static readonly Action<ILogger, Exception?> _requestListenerProcessError =
                 LoggerMessage.Define(LogLevel.Error, LoggerEventIds.RequestListenerProcessError, "ProcessRequestAsync");
