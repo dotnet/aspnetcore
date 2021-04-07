@@ -78,6 +78,25 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Empty(() => container.FindElements(By.ClassName("received-exception")));
         }
 
+        [Fact]
+        public void HandleCustomErrorBoundaryThatIgnoresErrors()
+        {
+            var container = Browser.Exists(By.Id("error-ignorer-test"));
+            Func<IWebElement> incrementButtonAccessor = () => container.FindElement(By.ClassName("increment-count"));
+            Func<string> currentCountAccessor = () => container.FindElement(By.ClassName("current-count")).Text;
+
+            incrementButtonAccessor().Click();
+            incrementButtonAccessor().Click();
+            Browser.Equal("2", currentCountAccessor);
+
+            // If it throws, the child content gets forcibly rebuilt even if the error boundary tries to retain it
+            container.FindElement(By.ClassName("throw-counter-exception")).Click();
+            Browser.Equal("0", currentCountAccessor);
+            incrementButtonAccessor().Click();
+            Browser.Equal("1", currentCountAccessor);
+            AssertNoGlobalError();
+        }
+
         void AssertNoGlobalError()
         {
             var globalErrorUi = Browser.Exists(By.Id("blazor-error-ui"));
