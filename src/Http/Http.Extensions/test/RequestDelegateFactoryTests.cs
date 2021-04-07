@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -419,22 +418,25 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
         }
 
-        [Theory]
-        [MemberData(nameof(TryParsableParameters))]
-        public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValueBeforeQueryString(Delegate action, string? routeValue, object? expectedParameterValue)
+        [Fact]
+        public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValueBeforeQueryString()
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.RouteValues["tryParsable"] = routeValue;
+
+            httpContext.Request.RouteValues["tryParsable"] = "42";
             httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
             {
                 ["tryParsable"] = "invalid!"
             });
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)((httpContext, tryParsable) =>
+            {
+                    httpContext.Items["tryParsable"] = tryParsable;
+            }));
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+            Assert.Equal(42, httpContext.Items["tryParsable"]);
         }
 
         public static object?[][] DelegatesWithInvalidAttributes
@@ -469,24 +471,22 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var invoked = false;
 
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Http.RequestDelegateFactory");
-            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
-
-            void TestAction([FromRoute] int tryParsable)
+            void TestAction([FromRoute] int tryParsable, [FromRoute] int tryParsable2)
             {
                 invoked = true;
             }
 
             var invalidDataException = new InvalidDataException();
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
+            serviceCollection.AddSingleton(LoggerFactory);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues["tryParsable"] = "invalid!";
+            httpContext.Request.RouteValues["tryParsable2"] = "invalid again!";
             httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<int>)TestAction);
+            var requestDelegate = RequestDelegateFactory.Create((Action<int, int>)TestAction);
 
             await requestDelegate(httpContext);
 
@@ -494,10 +494,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.False(httpContext.RequestAborted.IsCancellationRequested);
             Assert.Equal(400, httpContext.Response.StatusCode);
 
-            var log = Assert.Single(sink.Writes);
-            Assert.Equal(new EventId(3, "ParamaterBindingFailed"), log.EventId);
-            Assert.Equal(LogLevel.Debug, log.LogLevel);
-            Assert.Equal(@"Failed to bind parameter ""Int32 tryParsable"" from ""invalid!"".", log.Message);
+            var logs = TestSink.Writes.ToArray();
+
+            Assert.Equal(2, logs.Length);
+
+            Assert.Equal(new EventId(3, "ParamaterBindingFailed"), logs[0].EventId);
+            Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+            Assert.Equal(@"Failed to bind parameter ""Int32 tryParsable"" from ""invalid!"".", logs[0].Message);
+
+            Assert.Equal(new EventId(3, "ParamaterBindingFailed"), logs[0].EventId);
+            Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+            Assert.Equal(@"Failed to bind parameter ""Int32 tryParsable2"" from ""invalid again!"".", logs[1].Message);
         }
 
         [Fact]
@@ -646,9 +653,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var invoked = false;
 
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Http.RequestDelegateFactory");
-            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
-
             void TestAction([FromBody] Todo todo)
             {
                 invoked = true;
@@ -656,7 +660,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var ioException = new IOException();
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
+            serviceCollection.AddSingleton(LoggerFactory);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
@@ -671,7 +675,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.False(invoked);
             Assert.False(httpContext.RequestAborted.IsCancellationRequested);
 
-            var logMessage = Assert.Single(sink.Writes);
+            var logMessage = Assert.Single(TestSink.Writes);
             Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
             Assert.Same(ioException, logMessage.Exception);
@@ -682,9 +686,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var invoked = false;
 
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Http.RequestDelegateFactory");
-            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
-
             void TestAction([FromBody] Todo todo)
             {
                 invoked = true;
@@ -692,7 +693,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invalidDataException = new InvalidDataException();
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
+            serviceCollection.AddSingleton(LoggerFactory);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
@@ -708,7 +709,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.False(httpContext.RequestAborted.IsCancellationRequested);
             Assert.Equal(400, httpContext.Response.StatusCode);
 
-            var logMessage = Assert.Single(sink.Writes);
+            var logMessage = Assert.Single(TestSink.Writes);
             Assert.Equal(new EventId(2, "RequestBodyInvalidDataException"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
             Assert.Same(invalidDataException, logMessage.Exception);
@@ -747,9 +748,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var invoked = false;
 
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Http.RequestDelegateFactory");
-            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
-
             void TestAction([FromForm] int value)
             {
                 invoked = true;
@@ -757,7 +755,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var ioException = new IOException();
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
+            serviceCollection.AddSingleton(LoggerFactory);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
@@ -772,7 +770,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.False(invoked);
             Assert.True(httpContext.RequestAborted.IsCancellationRequested);
 
-            var logMessage = Assert.Single(sink.Writes);
+            var logMessage = Assert.Single(TestSink.Writes);
             Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
             Assert.Same(ioException, logMessage.Exception);
@@ -783,9 +781,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var invoked = false;
 
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Http.RequestDelegateFactory");
-            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
-
             void TestAction([FromForm] int value)
             {
                 invoked = true;
@@ -793,7 +788,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invalidDataException = new InvalidDataException();
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
+            serviceCollection.AddSingleton(LoggerFactory);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
@@ -809,7 +804,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.False(httpContext.RequestAborted.IsCancellationRequested);
             Assert.Equal(400, httpContext.Response.StatusCode);
 
-            var logMessage = Assert.Single(sink.Writes);
+            var logMessage = Assert.Single(TestSink.Writes);
             Assert.Equal(new EventId(2, "RequestBodyInvalidDataException"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
             Assert.Same(invalidDataException, logMessage.Exception);
