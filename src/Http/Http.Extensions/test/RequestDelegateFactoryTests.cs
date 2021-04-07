@@ -397,10 +397,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             await requestDelegate(httpContext);
 
-            //Assert.False(invoked);
-            //Assert.False(httpContext.RequestAborted.IsCancellationRequested);
-            //Assert.Equal(400, httpContext.Response.StatusCode);
-            Assert.True(invoked);
+            Assert.False(invoked);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            Assert.Equal(400, httpContext.Response.StatusCode);
 
             var log = Assert.Single(sink.Writes);
             Assert.Equal(new EventId(3, "ParamaterBindingFailed"), log.EventId);
