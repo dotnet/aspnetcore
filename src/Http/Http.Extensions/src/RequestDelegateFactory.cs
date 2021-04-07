@@ -22,41 +22,36 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class RequestDelegateFactory
     {
-        private static readonly MethodInfo ChangeTypeMethodInfo = GetMethodInfo<Func<object, Type, object>>((value, type) => Convert.ChangeType(value, type, CultureInfo.InvariantCulture));
-        private static readonly MethodInfo ExecuteTaskOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteTaskOfStringMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueTaskOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueTaskMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueTaskOfStringMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteTaskResultOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueResultTaskOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo GetRequiredServiceMethodInfo = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
-        private static readonly MethodInfo EnumTryParseMethodInfo = GetEnumTryParseMethod();
-
-        private static readonly MethodInfo ResultWriteResponseAsync = typeof(IResult).GetMethod(nameof(IResult.ExecuteAsync), BindingFlags.Public | BindingFlags.Instance)!;
-        private static readonly MethodInfo StringResultWriteResponseAsync = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
-        private static readonly MethodInfo JsonResultWriteResponseAsync = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
-
-        private static readonly PropertyInfo CompletedTaskPropertyInfo = (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask);
-
-        private static readonly MethodInfo LogParameterBindingFailure = GetMethodInfo<Action<HttpContext, string, string, string>>((httpContext, parameterType, parameterName, sourceValue) =>
+        private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteTaskResultOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueResultTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo GetRequiredServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
+        private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(IResult).GetMethod(nameof(IResult.ExecuteAsync), BindingFlags.Public | BindingFlags.Instance)!;
+        private static readonly MethodInfo StringResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
+        private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
+        private static readonly MethodInfo EnumTryParseMethod = GetEnumTryParseMethod();
+        private static readonly MethodInfo LogParameterBindingFailureMethod = GetMethodInfo<Action<HttpContext, string, string, string>>((httpContext, parameterType, parameterName, sourceValue) =>
             Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue));
 
-        private static readonly ParameterExpression TargetArg = Expression.Parameter(typeof(object), "target");
-        private static readonly ParameterExpression HttpContextParameter = Expression.Parameter(typeof(HttpContext), "httpContext");
+        private static readonly ParameterExpression TargetExpr = Expression.Parameter(typeof(object), "target");
+        private static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
+        private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
+        private static readonly ParameterExpression WasTryParseFailureExpr = Expression.Variable(typeof(bool), "wasTryParseFailure");
 
-        private static readonly ParameterExpression DeserializedBodyParameter = Expression.Parameter(typeof(object), "bodyValue");
-        private static readonly ParameterExpression WasTryParseFailureVariable = Expression.Variable(typeof(bool), "wasTryParseFailure");
-
-        private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.RequestServices));
-        private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.Request));
-        private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.Response));
-        private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.RequestAborted));
-        private static readonly MemberExpression RouteValuesProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
-        private static readonly MemberExpression QueryProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
-        private static readonly MemberExpression HeadersProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
-        private static readonly MemberExpression FormProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
-        private static readonly MemberExpression StatusCodeProperty = Expression.Property(HttpResponseExpr, nameof(HttpResponse.StatusCode));
+        private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestServices));
+        private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Request));
+        private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Response));
+        private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestAborted));
+        private static readonly MemberExpression RouteValuesExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
+        private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
+        private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
+        private static readonly MemberExpression FormExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
+        private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, nameof(HttpResponse.StatusCode));
+        private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
 
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
@@ -72,7 +67,7 @@ namespace Microsoft.AspNetCore.Http
 
             var targetExpression = action.Target switch
             {
-                object => Expression.Convert(TargetArg, action.Target.GetType()),
+                object => Expression.Convert(TargetExpr, action.Target.GetType()),
                 null => null,
             };
 
@@ -127,7 +122,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentException($"A {nameof(targetFactory)} was provided, but {nameof(methodInfo)} does not have a Declaring type.");
             }
 
-            var targetExpression = Expression.Convert(TargetArg, methodInfo.DeclaringType);
+            var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
             var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression);
 
             return httpContext =>
@@ -194,15 +189,15 @@ namespace Microsoft.AspNetCore.Http
 
             if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
             {
-                return BindParameterFromProperty(parameter, RouteValuesProperty, routeAttribute.Name ?? parameter.Name, factoryContext);
+                return BindParameterFromProperty(parameter, RouteValuesExpr, routeAttribute.Name ?? parameter.Name, factoryContext);
             }
             else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
             {
-                return BindParameterFromProperty(parameter, QueryProperty, queryAttribute.Name ?? parameter.Name, factoryContext);
+                return BindParameterFromProperty(parameter, QueryExpr, queryAttribute.Name ?? parameter.Name, factoryContext);
             }
             else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
             {
-                return BindParameterFromProperty(parameter, HeadersProperty, headerAttribute.Name ?? parameter.Name, factoryContext);
+                return BindParameterFromProperty(parameter, HeadersExpr, headerAttribute.Name ?? parameter.Name, factoryContext);
             }
             else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
             {
@@ -220,7 +215,7 @@ namespace Microsoft.AspNetCore.Http
                 factoryContext.JsonRequestBodyType = parameter.ParameterType;
                 factoryContext.AllowEmptyRequestBody = bodyAttribute.AllowEmpty;
 
-                return Expression.Convert(DeserializedBodyParameter, parameter.ParameterType);
+                return Expression.Convert(BodyValueExpr, parameter.ParameterType);
             }
             else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)
             {
@@ -231,11 +226,11 @@ namespace Microsoft.AspNetCore.Http
 
                 factoryContext.RequestBodyMode = RequestBodyMode.AsForm;
 
-                return BindParameterFromProperty(parameter, FormProperty, formAttribute.Name ?? parameter.Name, factoryContext);
+                return BindParameterFromProperty(parameter, FormExpr, formAttribute.Name ?? parameter.Name, factoryContext);
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
             {
-                return Expression.Call(GetRequiredServiceMethodInfo.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+                return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
             }
             else if (parameter.ParameterType == typeof(IFormCollection))
             {
@@ -250,7 +245,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (parameter.ParameterType == typeof(HttpContext))
             {
-                return HttpContextParameter;
+                return HttpContextExpr;
             }
             else if (parameter.ParameterType == typeof(CancellationToken))
             {
@@ -266,7 +261,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
-                return Expression.Call(GetRequiredServiceMethodInfo.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+                return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
             }
         }
 
@@ -322,7 +317,7 @@ namespace Microsoft.AspNetCore.Http
                 storedArguments[i] = localVariables[i] = Expression.Parameter(parameters[i].ParameterType);
             }
 
-            localVariables[parameters.Length] = WasTryParseFailureVariable;
+            localVariables[parameters.Length] = WasTryParseFailureExpr;
 
             var assignAndCall = new Expression[parameters.Length + 1];
             for (var i = 0; i < parameters.Length; i++)
@@ -331,12 +326,12 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var set400StatusAndReturnCompletedTask = Expression.Block(
-                    Expression.Assign(StatusCodeProperty, Expression.Constant(400)),
-                    Expression.Property(null, CompletedTaskPropertyInfo));
+                    Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
+                    CompletedTaskExpr);
 
             var methodCall = CreateMethodCall(methodInfo, target, storedArguments);
 
-            var checkWasTryParseFailure = Expression.Condition(WasTryParseFailureVariable,
+            var checkWasTryParseFailure = Expression.Condition(WasTryParseFailureExpr,
                 set400StatusAndReturnCompletedTask,
                 AddResponseWritingToMethodCall(methodCall, methodInfo.ReturnType));
 
@@ -350,9 +345,7 @@ namespace Microsoft.AspNetCore.Http
             // Exact request delegate match
             if (returnType == typeof(void))
             {
-                return Expression.Block(
-                    methodCall,
-                    Expression.Property(null, CompletedTaskPropertyInfo));
+                return Expression.Block(methodCall, CompletedTaskExpr);
             }
             else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
             {
@@ -363,7 +356,7 @@ namespace Microsoft.AspNetCore.Http
                 else if (returnType == typeof(ValueTask))
                 {
                     return Expression.Call(
-                        ExecuteValueTaskMethodInfo,
+                        ExecuteValueTaskMethod,
                         methodCall);
                 }
                 else if (returnType.IsGenericType &&
@@ -374,24 +367,24 @@ namespace Microsoft.AspNetCore.Http
                     if (typeof(IResult).IsAssignableFrom(typeArg))
                     {
                         return Expression.Call(
-                            ExecuteTaskResultOfTMethodInfo.MakeGenericMethod(typeArg),
+                            ExecuteTaskResultOfTMethod.MakeGenericMethod(typeArg),
                             methodCall,
-                            HttpContextParameter);
+                            HttpContextExpr);
                     }
                     // ExecuteTask<T>(action(..), httpContext);
                     else if (typeArg == typeof(string))
                     {
                         return Expression.Call(
-                            ExecuteTaskOfStringMethodInfo,
+                            ExecuteTaskOfStringMethod,
                             methodCall,
-                            HttpContextParameter);
+                            HttpContextExpr);
                     }
                     else
                     {
                         return Expression.Call(
-                            ExecuteTaskOfTMethodInfo.MakeGenericMethod(typeArg),
+                            ExecuteTaskOfTMethod.MakeGenericMethod(typeArg),
                             methodCall,
-                            HttpContextParameter);
+                            HttpContextExpr);
                     }
                 }
                 else if (returnType.IsGenericType &&
@@ -402,24 +395,24 @@ namespace Microsoft.AspNetCore.Http
                     if (typeof(IResult).IsAssignableFrom(typeArg))
                     {
                         return Expression.Call(
-                            ExecuteValueResultTaskOfTMethodInfo.MakeGenericMethod(typeArg),
+                            ExecuteValueResultTaskOfTMethod.MakeGenericMethod(typeArg),
                             methodCall,
-                            HttpContextParameter);
+                            HttpContextExpr);
                     }
                     // ExecuteTask<T>(action(..), httpContext);
                     else if (typeArg == typeof(string))
                     {
                         return Expression.Call(
-                            ExecuteValueTaskOfStringMethodInfo,
+                            ExecuteValueTaskOfStringMethod,
                             methodCall,
-                            HttpContextParameter);
+                            HttpContextExpr);
                     }
                     else
                     {
                         return Expression.Call(
-                            ExecuteValueTaskOfTMethodInfo.MakeGenericMethod(typeArg),
+                            ExecuteValueTaskOfTMethod.MakeGenericMethod(typeArg),
                             methodCall,
-                            HttpContextParameter);
+                            HttpContextExpr);
                     }
                 }
                 else
@@ -430,20 +423,20 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (typeof(IResult).IsAssignableFrom(returnType))
             {
-                return Expression.Call(methodCall, ResultWriteResponseAsync, HttpContextParameter);
+                return Expression.Call(methodCall, ResultWriteResponseAsyncMethod, HttpContextExpr);
             }
             else if (returnType == typeof(string))
             {
-                return Expression.Call(StringResultWriteResponseAsync, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
+                return Expression.Call(StringResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
             }
             else if (returnType.IsValueType)
             {
                 var box = Expression.TypeAs(methodCall, typeof(object));
-                return Expression.Call(JsonResultWriteResponseAsync, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
+                return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
             }
             else
             {
-                return Expression.Call(JsonResultWriteResponseAsync, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
+                return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
             }
         }
 
@@ -453,7 +446,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 // We need to generate the code for reading from the body before calling into the delegate
                 var invoker = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(
-                    responseWritingMethodCall, TargetArg, HttpContextParameter, DeserializedBodyParameter).Compile();
+                    responseWritingMethodCall, TargetExpr, HttpContextExpr, BodyValueExpr).Compile();
 
                 var bodyType = factoryContext.JsonRequestBodyType!;
                 object? defaultBodyValue = null;
@@ -496,7 +489,7 @@ namespace Microsoft.AspNetCore.Http
             else if (factoryContext.RequestBodyMode is RequestBodyMode.AsForm)
             {
                 var invoker = Expression.Lambda<Func<object?, HttpContext, Task>>(
-                    responseWritingMethodCall, TargetArg, HttpContextParameter).Compile();
+                    responseWritingMethodCall, TargetExpr, HttpContextExpr).Compile();
 
                 return async (target, httpContext) =>
                 {
@@ -525,7 +518,7 @@ namespace Microsoft.AspNetCore.Http
             else
             {
                 return Expression.Lambda<Func<object?, HttpContext, Task>>(
-                    responseWritingMethodCall, TargetArg, HttpContextParameter).Compile();
+                    responseWritingMethodCall, TargetExpr, HttpContextExpr).Compile();
             }
         }
 
@@ -559,7 +552,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (type.IsEnum)
             {
-                return EnumTryParseMethodInfo.MakeGenericMethod(type);
+                return EnumTryParseMethod.MakeGenericMethod(type);
             }
 
             var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
@@ -644,8 +637,9 @@ namespace Microsoft.AspNetCore.Http
                 var parameterTypeConstant = Expression.Constant(nonNullableParameterType.Name);
                 var parameterNameConstant = Expression.Constant(parameter.Name);
                 var failBlock = Expression.Block(
-                    Expression.Assign(WasTryParseFailureVariable, Expression.Constant(true)),
-                    Expression.Call(LogParameterBindingFailure, HttpContextParameter, parameterTypeConstant, parameterNameConstant, valueExpression));
+                    Expression.Assign(WasTryParseFailureExpr, Expression.Constant(true)),
+                    Expression.Call(LogParameterBindingFailureMethod,
+                        HttpContextExpr, parameterTypeConstant, parameterNameConstant, valueExpression));
 
                 var ifFailExpression = Expression.IfThen(Expression.Not(tryParseCall), failBlock);
 
@@ -676,8 +670,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static Expression BindParameterFromRouteValueOrQueryString(ParameterInfo parameter, string key, FactoryContext factoryContext)
         {
-            var routeValue = GetValueFromProperty(RouteValuesProperty, key);
-            var queryValue = GetValueFromProperty(QueryProperty, key);
+            var routeValue = GetValueFromProperty(RouteValuesExpr, key);
+            var queryValue = GetValueFromProperty(QueryExpr, key);
             return BindParameterFromValue(parameter, Expression.Coalesce(routeValue, queryValue), factoryContext);
         }
 
