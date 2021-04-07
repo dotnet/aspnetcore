@@ -36,11 +36,12 @@
 <hr />
 <h2>Custom error boundary</h2>
 <p>This shows how to create a common custom error UI by subclassing ErrorBoundary.</p>
-
-<CustomErrorBoundary @ref="customErrorBoundary">
-    <ErrorCausingCounter />
-</CustomErrorBoundary>
-<button @onclick="@(() => customErrorBoundary!.Recover())">Recover programmatically</button>
+<div id="custom-error-boundary-test">
+    <CustomErrorBoundary @ref="customErrorBoundary">
+        <ErrorCausingCounter />
+    </CustomErrorBoundary>
+    <button class="recover" @onclick="@(() => customErrorBoundary!.Recover())">Recover programmatically</button>
+</div>
 
 <hr />
 <h2>Custom error boundary that tries to ignore errors</h2>

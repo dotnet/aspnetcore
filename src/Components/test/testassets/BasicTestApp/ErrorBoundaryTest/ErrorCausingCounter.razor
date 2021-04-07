@@ -1,7 +1,7 @@
 ﻿<p>
-    Count: @currentCount
-    <button @onclick="@(() => currentCount++)">Increment</button>
-    <button @onclick="Throw">Throw</button>
+    Count: <span class="current-count">@currentCount</span>
+    <button class="increment-count" @onclick="@(() => currentCount++)">Increment</button>
+    <button class="throw-counter-exception" @onclick="Throw">Throw</button>
 </p>
 
 @code {
