@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
 {
     public class JsonPatchDocumentConverter : JsonConverter
     {
-        internal static IContractResolver DefaultContractResolver { get; } = new DefaultContractResolver();
+        internal static DefaultContractResolver DefaultContractResolver { get; } = new();
 
         public override bool CanConvert(Type objectType)
         {
