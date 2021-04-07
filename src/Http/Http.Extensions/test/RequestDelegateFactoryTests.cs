@@ -371,21 +371,41 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
         }
 
-        [Theory]
-        [MemberData(nameof(FromTryParsableParameter))]
-        public async Task RequestDelegateLogsTryParsableFailuresAsDebugAndSets400Response(Delegate action, string routeValue, object expectedParameterValue)
+        [Fact]
+        public async Task RequestDelegateLogsTryParsableFailuresAsDebugAndSets400Response()
         {
-            // disabling error xUnit1026 the "right" way looks ugly
-            var ignore = routeValue;
+            var invoked = false;
+
+            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Http.RequestDelegateFactory");
+            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            void TestAction([FromRoute] int tryParsable)
+            {
+                invoked = true;
+            }
+
+            var invalidDataException = new InvalidDataException();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues["tryParsable"] = "invalid!";
+            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create(action);
+            var requestDelegate = RequestDelegateFactory.Create((Action<int>)TestAction);
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+            //Assert.False(invoked);
+            //Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            //Assert.Equal(400, httpContext.Response.StatusCode);
+            Assert.True(invoked);
+
+            var log = Assert.Single(sink.Writes);
+            Assert.Equal(new EventId(3, "ParamaterBindingFailed"), log.EventId);
+            Assert.Equal(LogLevel.Debug, log.LogLevel);
+            Assert.Equal(@"Failed to bind parameter ""Int32 tryParsable"" from ""invalid!"".", log.Message);
         }
 
         [Fact]
