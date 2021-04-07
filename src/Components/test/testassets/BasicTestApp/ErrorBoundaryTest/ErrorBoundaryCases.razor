@@ -51,7 +51,7 @@
 
 <hr />
 <h2>Exception inline in error boundary markup</h2>
-<p>This shows that, if an ErrorBoundary itself fails while rendering its own ChildContent, then it can catch its own exception (except if it's already showing an exception, in which case it's fatal).</p>
+<p>This shows that, if an ErrorBoundary itself fails while rendering its own ChildContent, then it can catch its own exception. But if the error comes from the error content, this triggers the "infinite error loop" detection logic and becomes fatal.</p>
 <ErrorBoundary>
     <ChildContent>
         @if (throwInline) { throw new InvalidTimeZoneException("Inline exception"); }
@@ -63,7 +63,7 @@
     </ErrorContent>
 </ErrorBoundary>
 <button @onclick="@(() => throwInline = true)">Throw in child content</button>
-<button @onclick="@(() => throwInErrorContent = true)">Throw in error content</button>
+<button @onclick="@(() => throwInErrorContent = true)">Throw in error content (causing infinite error loop)</button>
 
 <hr />
 <h2>Errors after disposal</h2>

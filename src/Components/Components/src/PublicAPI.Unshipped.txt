@@ -16,6 +16,8 @@ Microsoft.AspNetCore.Components.ErrorBoundaryBase.CurrentException.get -> System
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.ErrorBoundaryBase() -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.ErrorContent.get -> Microsoft.AspNetCore.Components.RenderFragment<System.Exception!>?
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.ErrorContent.set -> void
+Microsoft.AspNetCore.Components.ErrorBoundaryBase.MaximumErrorCount.get -> int
+Microsoft.AspNetCore.Components.ErrorBoundaryBase.MaximumErrorCount.set -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase.Recover() -> void
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime
 Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime.ComponentApplicationLifetime(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Lifetime.ComponentApplicationLifetime!>! logger) -> void

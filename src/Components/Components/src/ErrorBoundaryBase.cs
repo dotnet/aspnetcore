@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public abstract class ErrorBoundaryBase : ComponentBase, IErrorBoundary
     {
+        private int _errorCount;
+
         /// <summary>
         /// The content to be displayed when there is no error.
         /// </summary>
@@ -21,6 +23,12 @@ namespace Microsoft.AspNetCore.Components
         /// The content to be displayed when there is an error.
         /// </summary>
         [Parameter] public RenderFragment<Exception>? ErrorContent { get; set; }
+
+        /// <summary>
+        /// The maximum number of errors that can be handled. If more errors are received,
+        /// they will be treated as fatal. Calling <see cref="Recover"/> resets the count.
+        /// </summary>
+        [Parameter] public int MaximumErrorCount { get; set; } = 100;
 
         /// <summary>
         /// Gets the current exception, or null if there is no exception.
@@ -35,6 +43,7 @@ namespace Microsoft.AspNetCore.Components
         {
             if (CurrentException is not null)
             {
+                _errorCount = 0;
                 CurrentException = null;
                 StateHasChanged();
             }
@@ -51,23 +60,42 @@ namespace Microsoft.AspNetCore.Components
 
         void IErrorBoundary.HandleException(Exception exception)
         {
+            if (exception is null)
+            {
+                // This would be a framework bug if it happened. It should not be possible.
+                throw new ArgumentNullException(nameof(exception));
+            }
+
+            // If rendering the error content itself causes an error, then re-rendering on error risks creating an
+            // infinite error loop. Unfortunately it's very hard to distinguish whether the error source is "child content"
+            // or "error content", since the exceptions can be received asynchronously, arbitrarily long after we switched
+            // between normal and errored states. Without creating a very intricate coupling between ErrorBoundaryBase and
+            // Renderer internals, the obvious options are either:
+            //
+            // [a] Don't re-render if we're already in an error state. This is problematic because the renderer needs to
+            //     discard the error boundary's subtree on every error, in case a custom error boundary fails to do so, and
+            //     hence we'd be left with a blank UI if we didn't re-render.
+            // [b] Do re-render each time, and trust the developer not to cause errors from their error content.
+            //
+            // As a middle ground, we try to detect excessive numbers of errors arriving in between recoveries, and treat
+            // an excess as fatal. This also helps to expose the case where a child continues to throw (e.g., on a timer),
+            // which would be very inefficient.
+            if (++_errorCount > MaximumErrorCount)
+            {
+                ExceptionDispatchInfo.Capture(exception).Throw();
+            }
+
+            // Notify the subclass so it can begin any async operation even before we render, because (for example)
+            // we want logs to be written before rendering in case the rendering throws. But there's no reason to
+            // wait for the async operation to complete before we render.
             var onErrorTask = OnErrorAsync(exception);
             if (!onErrorTask.IsCompletedSuccessfully)
             {
                 _ = HandleOnErrorExceptions(onErrorTask);
             }
 
-            // If there's an error while we're already displaying error content, then it may be either of:
-            //  (a) the error content that is failing
-            //  (b) some earlier child content failing an asynchronous task that began before we entered an error state
-            // In case it's (a), we don't want to risk triggering an infinite error rendering loop by re-rendering.
-            // This isn't harmful in case (b) because we're already in an error state, so don't need to update the UI further.
-            // So, only re-render if we're not currently in an error state.
-            if (CurrentException == null)
-            {
-                CurrentException = exception;
-                StateHasChanged();
-            }
+            CurrentException = exception;
+            StateHasChanged();
         }
 
         private async Task HandleOnErrorExceptions(Task onExceptionTask)
