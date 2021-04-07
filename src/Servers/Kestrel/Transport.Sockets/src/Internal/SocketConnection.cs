@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketConnection : TransportConnection
+    internal sealed partial class SocketConnection : TransportConnection
     {
         private static readonly int MinAllocBufferSize = SlabMemoryPool.BlockSize / 2;
 
@@ -70,6 +70,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // Set the transport and connection id
             Transport = _originalTransport = pair.Transport;
             Application = pair.Application;
+
+            InitiaizeFeatures();
         }
 
         public PipeWriter Input => Application.Output;
