@@ -148,7 +148,6 @@ namespace Microsoft.AspNetCore.Http.Features
                     accumulator.Append(
                         Uri.UnescapeDataString(name.Replace('+', ' ')),
                         Uri.UnescapeDataString(value.Replace('+', ' ')));
-
                     equalIndex = queryString.IndexOf('=', delimiterIndex);
                     if (equalIndex == -1)
                     {
@@ -201,7 +200,7 @@ namespace Microsoft.AspNetCore.Http.Features
                         // Marker entry for this key to indicate entry already in expanding list dictionary
                         _expandingAccumulator[key].Add(value);
                     }
-                    else if (values.Count < 5)
+                    else if (values.Count == 1)
                     {
                         _accumulator[key] = StringValues.Concat(values, value);
                     }
@@ -212,7 +211,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
                         if (_expandingAccumulator == null)
                         {
-                            _expandingAccumulator = new AdaptiveCapacityDictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+                            _expandingAccumulator = new AdaptiveCapacityDictionary<string, List<string>>(5, StringComparer.OrdinalIgnoreCase);
                         }
 
                         // Already 5 entries so use starting allocated as 10; then use List's expansion mechanism for more
