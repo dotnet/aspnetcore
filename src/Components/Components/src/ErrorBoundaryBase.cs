@@ -51,21 +51,23 @@ namespace Microsoft.AspNetCore.Components
 
         void IErrorBoundary.HandleException(Exception exception)
         {
-            if (CurrentException is not null)
-            {
-                // If there's an error while we're already displaying error content, then it's the
-                // error content that's failing. Avoid the risk of an infinite error rendering loop.
-                ExceptionDispatchInfo.Capture(exception).Throw();
-            }
-
             var onErrorTask = OnErrorAsync(exception);
             if (!onErrorTask.IsCompletedSuccessfully)
             {
                 _ = HandleOnErrorExceptions(onErrorTask);
             }
 
-            CurrentException = exception;
-            StateHasChanged();
+            // If there's an error while we're already displaying error content, then it may be either of:
+            //  (a) the error content that is failing
+            //  (b) some earlier child content failing an asynchronous task that began before we entered an error state
+            // In case it's (a), we don't want to risk triggering an infinite error rendering loop by re-rendering.
+            // This isn't harmful in case (b) because we're already in an error state, so don't need to update the UI further.
+            // So, only re-render if we're not currently in an error state.
+            if (CurrentException == null)
+            {
+                CurrentException = exception;
+                StateHasChanged();
+            }
         }
 
         private async Task HandleOnErrorExceptions(Task onExceptionTask)
