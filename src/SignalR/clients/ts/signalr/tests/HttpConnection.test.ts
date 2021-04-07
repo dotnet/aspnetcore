@@ -132,23 +132,30 @@ describe("HttpConnection", () => {
 
     it("can stop a starting connection", async () => {
         await VerifyLogger.run(async (logger) => {
+            const stoppingPromise = new PromiseSource();
+            const startingPromise = new PromiseSource();
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", async () => {
-                        await connection.stop();
+                        startingPromise.resolve();
+                        await stoppingPromise;
                         return "{}";
-                    })
-                    .on("GET", async () => {
-                        await connection.stop();
-                        return "";
                     }),
                 logger,
             } as IHttpConnectionOptions;
 
             const connection = new HttpConnection("http://tempuri.org", options);
 
-            await expect(connection.start(TransferFormat.Text))
+            const startPromise = connection.start(TransferFormat.Text);
+
+            await startingPromise;
+            const stopPromise = connection.stop();
+            stoppingPromise.resolve();
+
+            await stopPromise;
+
+            await expect(startPromise)
                 .rejects
                 .toThrow("The connection was stopped during negotiation.");
         },
