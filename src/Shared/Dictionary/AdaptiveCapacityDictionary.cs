@@ -553,7 +553,6 @@ namespace Microsoft.AspNetCore.Internal
             }
             else
             {
-                // Initial capacity is 5, grows to 10 once.
                 capacity = _arrayStorage.Length == 0 ? DefaultArrayThreshold : _arrayStorage.Length * 2;
                 var array = new KeyValuePair<TKey, TValue>[capacity];
                 if (_count > 0)
