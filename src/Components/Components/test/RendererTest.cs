@@ -4399,7 +4399,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert 2: Error is still handled
             await task;
-            Assert.Equal(3, renderer.Batches.Count);
+            Assert.Equal(2, renderer.Batches.Count); // Didn't re-render as the error boundary was already gone
             Assert.Collection(errorBoundaries,
                 component => Assert.Null(component.ReceivedException),
                 component => Assert.Same(exception, component.ReceivedException));

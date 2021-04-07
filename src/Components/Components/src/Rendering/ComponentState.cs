@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 setParametersAsyncTask = Task.FromException(ex);
             }
 
-            _renderer.AddToPendingTasks(setParametersAsyncTask, Component);
+            _renderer.AddToPendingTasks(setParametersAsyncTask, owningComponentState: this);
         }
 
         private bool AddCascadingParameterSubscriptions()

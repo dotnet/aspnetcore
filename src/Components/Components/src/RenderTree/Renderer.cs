@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
+        private readonly Dictionary<IComponent, ComponentState> _componentStateByComponent = new Dictionary<IComponent, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
         private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
@@ -291,6 +292,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var componentState = new ComponentState(this, componentId, component, parentComponentState);
             Log.InitializingComponent(_logger, componentState, parentComponentState);
             _componentStateById.Add(componentId, componentState);
+            _componentStateByComponent.Add(component, componentState);
             component.Attach(new RenderHandle(this, componentId));
             return componentState;
         }
@@ -317,8 +319,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             Dispatcher.AssertAccess();
 
             var callback = GetRequiredEventCallback(eventHandlerId);
-            IComponent? componentReceiver = callback.Receiver as IComponent; // Null if the receiver is null or isn't a component
             Log.HandlingEvent(_logger, eventHandlerId, eventArgs);
+
+            // Try to match it up with a receiver so that, if the event handler later throws, we can route the error to the
+            // correct error boundary (even if the receiving component got disposed in the meantime).
+            ComponentState? receiverComponentState = null;
+            if (callback.Receiver is IComponent receiverComponent) // The receiver might be null or not an IComponent
+            {
+                // Even if the receiver is an IComponent, it might not be one of ours, or might be disposed already
+                // We can only route errors to error boundaries if the receiver is known and not yet disposed at this stage
+                _componentStateByComponent.TryGetValue(receiverComponent, out receiverComponentState);
+            }
 
             if (fieldInfo != null)
             {
@@ -337,7 +348,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             catch (Exception e)
             {
-                if (!TrySendExceptionToErrorBoundary(componentReceiver, e))
+                if (!TrySendExceptionToErrorBoundary(receiverComponentState, e))
                 {
                     // It's unhandled, so treat as fatal
                     HandleException(e);
@@ -356,11 +367,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             // Task completed synchronously or is still running. We already processed all of the rendering
             // work that was queued so let our error handler deal with it.
-            var result = GetErrorHandledTask(task, componentReceiver);
+            var result = GetErrorHandledTask(task, receiverComponentState);
             return result;
         }
 
-        private bool TrySendExceptionToErrorBoundary(IComponent? errorSource, Exception error)
+        private bool TrySendExceptionToErrorBoundary(ComponentState? errorSource, Exception error)
         {
             if (errorSource is null)
             {
@@ -372,17 +383,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             Dispatcher.AssertAccess();
 
             // Find the closest error boundary, if any
-            var componentState = FindComponentState(errorSource);
-            while (componentState is not null)
+            var candidate = errorSource;
+            while (candidate is not null)
             {
-                if (componentState.Component is IErrorBoundary errorBoundary)
+                if (candidate.Component is IErrorBoundary errorBoundary)
                 {
                     // Even though .Web's ErrorBoundary by default removes its ChildContent from the tree when
                     // switching into an error state, the Renderer doesn't rely on that. To guarantee that
                     // the failed subtree is disposed, forcibly remove it here. If the failed components did
                     // continue to run, it wouldn't harm framework state, but it would be a whole new kind of
                     // edge case to support forever.
-                    AddToRenderQueue(componentState.ComponentId, builder => { });
+                    AddToRenderQueue(candidate.ComponentId, builder => { });
 
                     try
                     {
@@ -399,25 +410,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     return true;
                 }
 
-                componentState = componentState.ParentComponentState;
+                candidate = candidate.ParentComponentState;
             }
 
             return false;
-
-            ComponentState? FindComponentState(IComponent errorSource)
-            {
-                // Slow linear search is fine because this is only during exception handling.
-                // If it becomes problematic, we can maintain a lookup from component instance to ID.
-                foreach (var value in _componentStateById.Values)
-                {
-                    if (value.Component == errorSource)
-                    {
-                        return value;
-                    }
-                }
-
-                return null;
-            }
         }
 
         /// <summary>
@@ -456,7 +452,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             frame.ComponentIdField = newComponentState.ComponentId;
         }
 
-        internal void AddToPendingTasks(Task task, IComponent? owningComponent)
+        internal void AddToPendingTasks(Task task, ComponentState? owningComponentState)
         {
             switch (task == null ? TaskStatus.RanToCompletion : task.Status)
             {
@@ -473,7 +469,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     // the synchronous exceptions will get captured and converted into a faulted
                     // task.
                     var baseException = task.Exception.GetBaseException();
-                    if (!TrySendExceptionToErrorBoundary(owningComponent, baseException))
+                    if (!TrySendExceptionToErrorBoundary(owningComponentState, baseException))
                     {
                         HandleException(baseException);
                     }
@@ -481,7 +477,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 default:
                     // It's important to evaluate the following even if we're not going to use
                     // handledErrorTask below, because it has the side-effect of calling HandleException.
-                    var handledErrorTask = GetErrorHandledTask(task, owningComponent);
+                    var handledErrorTask = GetErrorHandledTask(task, owningComponentState);
 
                     // The pendingTasks collection is only used during prerendering to track quiescence,
                     // so will be null at other times.
@@ -762,7 +758,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 }
                 else if (task.Status == TaskStatus.Faulted)
                 {
-                    if (!TrySendExceptionToErrorBoundary(state.Component, task.Exception))
+                    if (!TrySendExceptionToErrorBoundary(state, task.Exception))
                     {
                         HandleException(task.Exception);
                     }
@@ -773,7 +769,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // The Task is incomplete.
             // Queue up the task and we can inspect it later.
             batch = batch ?? new List<Task>();
-            batch.Add(GetErrorHandledTask(task, state.Component));
+            batch.Add(GetErrorHandledTask(task, state));
         }
 
         private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)
@@ -781,7 +777,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var componentState = renderQueueEntry.ComponentState;
             Log.RenderingComponent(_logger, componentState);
             componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment, out var renderFragmentException);
-            if (renderFragmentException != null && !TrySendExceptionToErrorBoundary(componentState.Component, renderFragmentException))
+            if (renderFragmentException != null && !TrySendExceptionToErrorBoundary(componentState, renderFragmentException))
             {
                 // Exception from render fragment could not be handled by an error boundary, so treat as unhandled (fatal)
                 ExceptionDispatchInfo.Capture(renderFragmentException).Throw();
@@ -816,8 +812,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     }
                     else
                     {
-                        // We set owningComponent to null because we don't want exceptions during disposal to be recoverable
-                        AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result), owningComponent: null);
+                        // We set owningComponentState to null because we don't want exceptions during disposal to be recoverable
+                        AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result), owningComponentState: null);
 
                         async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
                         {
@@ -834,6 +830,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 }
 
                 _componentStateById.Remove(disposeComponentId);
+                _componentStateByComponent.Remove(disposeComponentState.Component);
                 _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
             }
 
@@ -895,7 +892,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
         }
 
-        private async Task GetErrorHandledTask(Task taskToHandle, IComponent? owningComponent)
+        private async Task GetErrorHandledTask(Task taskToHandle, ComponentState? owningComponentState)
         {
             try
             {
@@ -906,7 +903,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // Ignore errors due to task cancellations.
                 if (!taskToHandle.IsCanceled)
                 {
-                    if (!TrySendExceptionToErrorBoundary(owningComponent, ex))
+                    if (!TrySendExceptionToErrorBoundary(owningComponentState, ex))
                     {
                         // It's unhandled, so treat as fatal
                         HandleException(ex);
@@ -980,6 +977,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
 
             _componentStateById.Clear(); // So we know they were all disposed
+            _componentStateByComponent.Clear();
             _batchBuilder.Dispose();
 
             NotifyExceptions(exceptions);
