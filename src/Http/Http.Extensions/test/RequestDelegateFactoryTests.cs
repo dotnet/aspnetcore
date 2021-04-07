@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
@@ -439,7 +440,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(42, httpContext.Items["tryParsable"]);
         }
 
-        public static object?[][] DelegatesWithInvalidAttributes
+        public static object[][] DelegatesWithInvalidAttributes
         {
             get
             {
@@ -464,6 +465,15 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
             Assert.Equal("No public static bool Object.TryParse(string, out Object) method found for notTryParsable.", ex.Message);
+        }
+
+        [Fact]
+        public void CreateThrowsInvalidOperationExceptionGivenUnnamedArgument()
+        {
+            var unnamedParameter = Expression.Parameter(typeof(int));
+            var lambda = Expression.Lambda(Expression.Block(), unnamedParameter);
+            var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int>)lambda.Compile()));
+            Assert.Equal("A parameter does not have a name! Was it genererated? All parameters must be named.", ex.Message);
         }
 
         [Fact]
