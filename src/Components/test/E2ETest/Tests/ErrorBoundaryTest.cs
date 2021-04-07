@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using BasicTestApp;
 using BasicTestApp.ErrorBoundaryTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -112,6 +113,35 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // If the ErrorContent throws during rendering, it gets caught by the "infinite error loop" detection logic and is fatal
             container.FindElement(By.ClassName("throw-in-errorcontent")).Click();
             AssertGlobalErrorState(true);
+        }
+
+        [Fact]
+        public void CanHandleErrorsAfterDisposingComponent()
+        {
+            var container = Browser.Exists(By.Id("error-after-disposal-test"));
+
+            container.FindElement(By.ClassName("throw-after-disposing-component")).Click();
+            Browser.Collection(() => container.FindElements(By.ClassName("received-exception")),
+                elem => Assert.Equal($"Delayed asynchronous exception in OnParametersSetAsync", elem.Text));
+
+            AssertGlobalErrorState(false);
+        }
+
+        [Fact]
+        public async Task CanHandleErrorsAfterDisposingErrorBoundary()
+        {
+            var container = Browser.Exists(By.Id("error-after-disposal-test"));
+            container.FindElement(By.ClassName("throw-after-disposing-errorboundary")).Click();
+
+            // Because we've actually removed the error boundary, there isn't any UI for us to assert about.
+            // The following delay is a cheap way to check for that - in the worst case, we could get a false
+            // test pass here if the delay is somehow not long enough, but this should never lead to a false
+            // failure (i.e., flakiness).
+            await Task.Delay(1000); // The test exception occurs after 500ms
+
+            // We succeed as long as there's no global error and the rest of the UI is still there
+            Browser.Exists(By.Id("error-after-disposal-test"));
+            AssertGlobalErrorState(false);
         }
 
         void AssertGlobalErrorState(bool hasGlobalError)

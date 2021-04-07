@@ -73,17 +73,19 @@
 <hr />
 <h2>Errors after disposal</h2>
 <p>Long-running tasks could fail after the component has been removed from the tree. We still want these failures to be captured by the error boundary they were inside when the task began, even if that error boundary itself has also since been disposed. Otherwise, error handling would behave differently based on whether the user has navigated away while processing was in flight, which would be very unexpected and hard to handle.</p>
-@if (!disposalTestRemoveErrorBoundary)
-{
-    <CustomErrorBoundary>
-        @if (!disposalTestRemoveComponent)
-        {
-            <DelayedErrorCausingChild ThrowOnParametersSetAsync="@disposalTestBeginDelayedError" />
-        }
-    </CustomErrorBoundary>
-}
-<button @onclick="@ThrowAfterDisposalOfComponent">Throw after disposal of component</button>
-<button @onclick="@ThrowAfterDisposalOfErrorBoundary">Throw after disposal of enclosing error boundary</button>
+<div id="error-after-disposal-test">
+    @if (!disposalTestRemoveErrorBoundary)
+    {
+        <CustomErrorBoundary>
+            @if (!disposalTestRemoveComponent)
+            {
+                <DelayedErrorCausingChild ThrowOnParametersSetAsync="@disposalTestBeginDelayedError" />
+            }
+        </CustomErrorBoundary>
+    }
+    <button class="throw-after-disposing-component" @onclick="@ThrowAfterDisposalOfComponent">Throw after disposal of component</button>
+    <button class="throw-after-disposing-errorboundary" @onclick="@ThrowAfterDisposalOfErrorBoundary">Throw after disposal of enclosing error boundary</button>
+</div>
 
 <hr />
 <h2>Multiple child errors</h2>
