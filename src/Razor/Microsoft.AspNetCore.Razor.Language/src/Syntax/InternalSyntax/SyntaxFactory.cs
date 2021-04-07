@@ -1,7 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 {
@@ -9,9 +7,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     {
         internal static SyntaxToken Token(SyntaxKind kind, string content, params RazorDiagnostic[] diagnostics)
         {
-            if (SyntaxTokenCache.CanBeCached(kind, diagnostics))
+            if (SyntaxTokenCache.Instance.CanBeCached(kind, diagnostics))
             {
-                return SyntaxTokenCache.GetCachedToken(kind, content);
+                return SyntaxTokenCache.Instance.GetCachedToken(kind, content);
             }
 
             return new SyntaxToken(kind, content, diagnostics);
