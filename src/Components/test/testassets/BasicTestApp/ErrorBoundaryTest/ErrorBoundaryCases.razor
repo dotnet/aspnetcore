@@ -65,6 +65,31 @@
 <button @onclick="@(() => throwInline = true)">Throw in child content</button>
 <button @onclick="@(() => throwInErrorContent = true)">Throw in error content</button>
 
+<hr />
+<h2>Errors after disposal</h2>
+<p>Long-running tasks could fail after the component has been removed from the tree. We still want these failures to be captured by the error boundary they were inside when the task began, even if that error boundary itself has also since been disposed. Otherwise, error handling would behave differently based on whether the user has navigated away while processing was in flight, which would be very unexpected and hard to handle.</p>
+@if (!disposalTestRemoveErrorBoundary)
+{
+    <CustomErrorBoundary>
+        @if (!disposalTestRemoveComponent)
+        {
+            <DelayedErrorCausingChild ThrowOnParametersSetAsync="@disposalTestBeginDelayedError" />
+        }
+    </CustomErrorBoundary>
+}
+<button @onclick="@ThrowAfterDisposalOfComponent">Throw after disposal of component</button>
+<button @onclick="@ThrowAfterDisposalOfErrorBoundary">Throw after disposal of enclosing error boundary</button>
+
+<hr />
+<h2>Multiple child errors</h2>
+<p>If several child components trigger asynchronous errors, the error boundary will receive error notifications even when it's already in an errored state. This needs to behave sensibly.</p>
+<CustomErrorBoundary>
+    <DelayedErrorCausingChild ThrowOnParametersSetAsync="@multipleChildrenBeginDelayedError" />
+    <DelayedErrorCausingChild ThrowOnParametersSetAsync="@multipleChildrenBeginDelayedError" />
+    <DelayedErrorCausingChild ThrowOnParametersSetAsync="@multipleChildrenBeginDelayedError" />
+</CustomErrorBoundary>
+<button @onclick="@(() => { multipleChildrenBeginDelayedError = true; })">Cause multiple errors</button>
+
 @code {
     private bool throwInOnParametersSet;
     private bool throwInOnParametersSetAsync;
@@ -75,7 +100,11 @@
     private bool throwWhileRendering;
     private bool throwInline;
     private bool throwInErrorContent;
-    private ErrorBoundaryBase customErrorBoundary;
+    private CustomErrorBoundary customErrorBoundary;
+    private bool disposalTestRemoveComponent;
+    private bool disposalTestRemoveErrorBoundary;
+    private bool disposalTestBeginDelayedError;
+    private bool multipleChildrenBeginDelayedError;
 
     void EventHandlerErrorSync()
         => throw new InvalidTimeZoneException("Synchronous error from event handler");
@@ -84,5 +113,25 @@
     {
         await Task.Yield();
         throw new InvalidTimeZoneException("Asynchronous error from event handler");
+    }
+
+    async Task ThrowAfterDisposalOfComponent()
+    {
+        // Begin an async process that will result in an exception from a child component
+        disposalTestBeginDelayedError = true;
+        await Task.Yield();
+
+        // Before it completes, dispose that child component
+        disposalTestRemoveComponent = true;
+    }
+
+    async Task ThrowAfterDisposalOfErrorBoundary()
+    {
+        // Begin an async process that will result in an exception from a child component
+        disposalTestBeginDelayedError = true;
+        await Task.Yield();
+
+        // Before it completes, dispose its enclosing error boundary
+        disposalTestRemoveErrorBoundary = true;
     }
 }
