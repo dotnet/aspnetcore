@@ -437,6 +437,33 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
         }
 
+        public static object?[][] DelegatesWithInvalidAttributes
+        {
+            get
+            {
+                void InvalidFromRoute([FromRoute] object notTryParsable) { }
+                void InvalidFromQuery([FromQuery] object notTryParsable) { }
+                void InvalidFromHeader([FromHeader] object notTryParsable) { }
+                void InvalidFromForm([FromForm] object notTryParsable) { }
+
+                return new[]
+                {
+                    new object[] { (Action<object>)InvalidFromRoute },
+                    new object[] { (Action<object>)InvalidFromQuery },
+                    new object[] { (Action<object>)InvalidFromHeader },
+                    new object[] { (Action<object>)InvalidFromForm },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DelegatesWithInvalidAttributes))]
+        public void CreateThrowsInvalidOperationExceptionWhenAttributeRequiresTryParseMethodThatDoesNotExist(Delegate action)
+        {
+            var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
+            Assert.Equal("No public static bool Object.TryParse(string, out Object) method found for notTryParsable.", ex.Message);
+        }
+
         [Fact]
         public async Task RequestDelegateLogsTryParsableFailuresAsDebugAndSets400Response()
         {

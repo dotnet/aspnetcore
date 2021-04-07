@@ -606,8 +606,7 @@ namespace Microsoft.AspNetCore.Http
 
                 if (tryParseMethod is null)
                 {
-                    // TODO: Add test!
-                    throw new InvalidOperationException($"No public static {parameter.ParameterType}.TryParse(string, out {parameter.ParameterType}) method found for {parameter}.");
+                    throw new InvalidOperationException($"No public static bool {parameter.ParameterType.Name}.TryParse(string, out {parameter.ParameterType.Name}) method found for {parameter.Name}.");
                 }
 
                 // bool wasTryParseFailureVariable = false;
