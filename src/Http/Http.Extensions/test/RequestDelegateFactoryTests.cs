@@ -300,6 +300,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 {
                     // User defined!
                     new object[] { (Action<HttpContext, int>)StoreTryParsableParameter, "42", 42 },
+                    new object[] { (Action<HttpContext, int?>)StoreTryParsableParameter, "42", 42 },
                     // Byte
                     // Int16
                     // Int64

@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Http
             //
             //          if (!int.TryParse(sourceValue, out parsedValue))
             //          {
-            //              Log.ParameterBindingFailed(httpContext, "int", "id", sourceValue)
+            //              Log.ParameterBindingFailed(httpContext, "Int32", "id", sourceValue)
             //              wasTryParseFailure = true;
             //          }
             //
@@ -597,7 +597,7 @@ namespace Microsoft.AspNetCore.Http
                 //
                 //      if (!int.TryParse(sourceValue, out parsedValue))
                 //      {
-                //          Log.ParameterBindingFailed(httpContext, "int", "id", sourceValue)
+                //          Log.ParameterBindingFailed(httpContext, "Int32", "id", sourceValue)
                 //          wasTryParseFailureVariable = true;
                 //      }
                 //
