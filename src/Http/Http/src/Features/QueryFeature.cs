@@ -148,6 +148,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     accumulator.Append(
                         Uri.UnescapeDataString(name.Replace('+', ' ')),
                         Uri.UnescapeDataString(value.Replace('+', ' ')));
+
                     equalIndex = queryString.IndexOf('=', delimiterIndex);
                     if (equalIndex == -1)
                     {
@@ -189,7 +190,7 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 if (_accumulator == null)
                 {
-                    _accumulator = new AdaptiveCapacityDictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+                    _accumulator = new AdaptiveCapacityDictionary<string, StringValues>(capacity: 5, StringComparer.OrdinalIgnoreCase);
                 }
 
                 StringValues values;
