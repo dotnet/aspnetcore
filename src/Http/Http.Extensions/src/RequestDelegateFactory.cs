@@ -41,9 +41,10 @@ namespace Microsoft.AspNetCore.Http
 
         private static readonly ParameterExpression TargetArg = Expression.Parameter(typeof(object), "target");
         private static readonly ParameterExpression HttpContextParameter = Expression.Parameter(typeof(HttpContext), "httpContext");
-        private static readonly ParameterExpression DeserializedBodyArg = Expression.Parameter(typeof(object), "bodyValue");
-        private static readonly ParameterExpression WasTryParseFailureVariable = Expression.Variable(typeof(bool), "wasTryParseFailureVariable");
+
+        private static readonly ParameterExpression DeserializedBodyParameter = Expression.Parameter(typeof(object), "bodyParameter");
         private static readonly ParameterExpression WasTryParseFailureParameter = Expression.Parameter(typeof(bool), "wasTryParseFailureParameter");
+        private static readonly ParameterExpression WasTryParseFailureVariable = Expression.Variable(typeof(bool), "wasTryParseFailureVariable");
 
         private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.RequestServices));
         private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.Request));
@@ -216,7 +217,7 @@ namespace Microsoft.AspNetCore.Http
                 factoryContext.JsonRequestBodyType = parameter.ParameterType;
                 factoryContext.AllowEmptyRequestBody = bodyAttribute.AllowEmpty;
 
-                return Expression.Convert(DeserializedBodyArg, parameter.ParameterType);
+                return Expression.Convert(DeserializedBodyParameter, parameter.ParameterType);
             }
             else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)
             {
@@ -266,21 +267,55 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        private static Expression CreateMethodCallExpression(MethodInfo methodInfo, Expression? target, Expression[] arguments, FactoryContext factoryContext)
+        private static Expression CreateMethodCallExpression(MethodInfo methodInfo, Expression? target, Expression[] arguments, FactoryContext factoryContext) =>
+            factoryContext.CheckForTryParseFailure ?
+                CreateTryParseCheckingMethodCallExpression(methodInfo, target, arguments) :
+                CreateInnerMethodCallExpression(methodInfo, target, arguments);
+
+        private static Expression CreateInnerMethodCallExpression(MethodInfo methodInfo, Expression? target, Expression[] arguments) =>
+            target is null ?
+                Expression.Call(methodInfo, arguments) :
+                Expression.Call(target, methodInfo, arguments);
+
+        // If we're calling TryParse and the WasTryParseFailureVariable indicates it failed, set a 400 StatusCode instead of calling the method.
+        private static Expression CreateTryParseCheckingMethodCallExpression(MethodInfo methodInfo, Expression? target, Expression[] arguments)
         {
-            Expression CreateInnerMethodCall(Expression[] innerArguments)
-            {
-                return target is null ?
-                    Expression.Call(methodInfo, innerArguments) :
-                    Expression.Call(target, methodInfo, innerArguments);
-            }
+            // {
+            //     bool wasTryParseFailureVariable = false;
+            //
+            //     // Assume "id" is the first parameter. There could be more.
+            //     int ParseIdFromRouteValue()
+            //     {
+            //          var sourceValue = httpContext.Request.RouteValue["id"];
+            //          int parsedValue = default;
+            //
+            //          if (!int.TryParse(sourceValue, out parsedValue))
+            //          {
+            //              Log.ParameterBindingFailed(httpContext, "int", "id", sourceValue)
+            //              wasTryParseFailureVariable = true;
+            //          }
+            //
+            //          return parsedValue;
+            //     }
+            //
+            //     // More Parse methods...
+            //
+            //     // "Lambda" allows us to check for failure after evaluating parameters but before invoking the action
+            //     // without a heap allocation by inserting a stack frame in-between.
+            //     static TResult Lambda(int id, ..., bool wasTryParseFailureParameter)
+            //     {
+            //         if (wasTryParseFailureParameter)
+            //         {
+            //             httpContext.Response.StatusCode = 400;
+            //             return default;
+            //         }
+            //
+            //         return action(id, ...);
+            //     }
+            //
+            //     return Lambda(ParseIdFromRouteValue(), ..., wasTryParseFailureVariable);
+            // }
 
-            if (!factoryContext.CheckForTryParseFailure)
-            {
-                return CreateInnerMethodCall(arguments);
-            }
-
-            // If we're calling TryParse and the WasTryParseFailureVariable indicates it failed, set a 400 StatusCode instead of calling the method.
             var parameters = methodInfo.GetParameters();
             var lambdaParameters = new ParameterExpression[parameters.Length + 1];
 
@@ -295,7 +330,9 @@ namespace Microsoft.AspNetCore.Http
             Array.Copy(arguments, lambdaArgs, parameters.Length);
             lambdaArgs[parameters.Length] = WasTryParseFailureVariable;
 
-            var innerCall = CreateInnerMethodCall(lambdaParameters.AsMemory(0, parameters.Length).ToArray());
+            var passthroughArgs = lambdaParameters.AsMemory(0, parameters.Length).ToArray();
+            var innerCall = CreateInnerMethodCallExpression(methodInfo, target, passthroughArgs);
+
             var checkTryParseBlock = innerCall;
 
             var lambda = Expression.Lambda(checkTryParseBlock, lambdaParameters);
@@ -410,7 +447,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 // We need to generate the code for reading from the body before calling into the delegate
                 var invoker = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(
-                    callMethodAndWriteResponse, TargetArg, HttpContextParameter, DeserializedBodyArg).Compile();
+                    callMethodAndWriteResponse, TargetArg, HttpContextParameter, DeserializedBodyParameter).Compile();
 
                 var bodyType = factoryContext.JsonRequestBodyType!;
                 object? defaultBodyValue = null;
@@ -544,6 +581,22 @@ namespace Microsoft.AspNetCore.Http
                     // TODO: Add test!
                     throw new InvalidOperationException($"No public static {parameter.ParameterType}.TryParse(string, out {parameter.ParameterType}) method found for {parameter}.");
                 }
+
+                // bool wasTryParseFailureVariable = false;
+                //
+                // int ParseIdFromRouteValue()
+                // {
+                //      var sourceValue = httpContext.Request.RouteValue["id"];
+                //      int parsedValue = default;
+                //
+                //      if (!int.TryParse(sourceValue, out parsedValue))
+                //      {
+                //          Log.ParameterBindingFailed(httpContext, "int", "id", sourceValue)
+                //          wasTryParseFailureVariable = true;
+                //      }
+                //
+                //      return parsedValue;
+                // }
 
                 factoryContext.CheckForTryParseFailure = true;
 
