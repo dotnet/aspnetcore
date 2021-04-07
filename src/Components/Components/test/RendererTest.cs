@@ -4355,6 +4355,56 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(errorThrowingComponentId, renderer.Batches[1].DisposedComponentIDs.Single());
         }
 
+        [Fact]
+        public async Task EventDispatchExceptionsCanBeHandledByClosestErrorBoundary_AfterDisposal()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var disposeChildren = false;
+            var exception = new InvalidTimeZoneException("Error during event");
+            var rootComponent = new TestComponent(builder =>
+            {
+                if (!disposeChildren)
+                {
+                    TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                    {
+                        builder.OpenComponent<ErrorThrowingComponent>(0);
+                        builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringEventAsync), exception);
+                        builder.CloseComponent();
+                    });
+                }
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            renderer.RenderRootComponent(rootComponentId);
+            var errorBoundaries = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>()
+                .Select(f => (TestErrorBoundary)f.Component);
+            var errorThrowingComponentId = renderer.Batches.Single()
+                .GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+            var eventHandlerId = renderer.Batches.Single().ReferenceFrames
+                .Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onmakeerror")
+                .AttributeEventHandlerId;
+
+            // Act/Assert 1: No error synchronously
+            var task = renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
+            Assert.Single(renderer.Batches);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Null(component.ReceivedException));
+
+            // Act 2: Before the async error occurs, dispose the hierarchy containing the error boundary and erroring component
+            disposeChildren = true;
+            rootComponent.TriggerRender();
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Contains(errorThrowingComponentId, renderer.Batches.Last().DisposedComponentIDs);
+
+            // Assert 2: Error is still handled
+            await task;
+            Assert.Equal(3, renderer.Batches.Count);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+        }
+
         private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
         {
             public List<Type> RequestedComponentTypes { get; } = new List<Type>();
