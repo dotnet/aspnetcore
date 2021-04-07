@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -52,6 +53,8 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression FormExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
         private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, nameof(HttpResponse.StatusCode));
         private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
+
+        private static ConcurrentDictionary<Type, MethodInfo?> TryParseMethodCache = new();
 
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
@@ -278,7 +281,6 @@ namespace Microsoft.AspNetCore.Http
         // If we're calling TryParse and the WasTryParseFailureVariable indicates it failed, set a 400 StatusCode instead of calling the method.
         private static Expression CreateTryParseCheckingResponseWritingMethodCall(MethodInfo methodInfo, Expression? target, Expression[] arguments)
         {
-
             // {
             //     bool wasTryParseFailureVariable = false;
             //     string tempSourceString;
@@ -553,9 +555,8 @@ namespace Microsoft.AspNetCore.Http
             throw new Exception("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) does not exist!!?!?");
         }
 
-        // TODO: Cache this.
         // TODO: Use InvariantCulture where possible? Or is CurrentCulture fine because it's more flexible?
-        private static MethodInfo? FindTryParseMethod(Type type)
+        private static MethodInfo? FindTryParseMethodUncached(Type type)
         {
             if (type.IsEnum)
             {
@@ -583,6 +584,11 @@ namespace Microsoft.AspNetCore.Http
             }
 
             return null;
+        }
+
+        private static MethodInfo? FindTryParseMethod(Type type)
+        {
+            return TryParseMethodCache.GetOrAdd(type, FindTryParseMethodUncached);
         }
 
         private static bool HasTryParseMethod(ParameterInfo parameter)
