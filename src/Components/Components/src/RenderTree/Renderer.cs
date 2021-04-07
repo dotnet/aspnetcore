@@ -267,51 +267,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="exception">The <see cref="Exception"/>.</param>
         protected abstract void HandleException(Exception exception);
 
-        /// <summary>
-        /// If the exception can be routed to an error boundary around <paramref name="errorSourceOrNull"/>, do so.
-        /// Otherwise handle it as fatal.
-        /// </summary>
-        private void HandleExceptionViaErrorBoundary(Exception error, ComponentState? errorSourceOrNull)
-        {
-            // We only get here in specific situations. Currently, all of them are when we're
-            // already on the sync context (and if not, we have a bug we want to know about).
-            Dispatcher.AssertAccess();
-
-            // Find the closest error boundary, if any
-            var candidate = errorSourceOrNull;
-            while (candidate is not null)
-            {
-                if (candidate.Component is IErrorBoundary errorBoundary)
-                {
-                    // Even though .Web's ErrorBoundary by default removes its ChildContent from the tree when
-                    // switching into an error state, the Renderer doesn't rely on that. To guarantee that
-                    // the failed subtree is disposed, forcibly remove it here. If the failed components did
-                    // continue to run, it wouldn't harm framework state, but it would be a whole new kind of
-                    // edge case to support forever.
-                    AddToRenderQueue(candidate.ComponentId, builder => { });
-
-                    try
-                    {
-                        errorBoundary.HandleException(error);
-                    }
-                    catch (Exception errorBoundaryException)
-                    {
-                        // If *notifying* about an exception fails, it's OK for that to be fatal. This is
-                        // different from an IErrorBoundary component throwing during its own rendering or
-                        // lifecycle methods, which can be handled that error boundary or an ancestor.
-                        HandleException(errorBoundaryException);
-                    }
-
-                    return; // Handled successfully
-                }
-
-                candidate = candidate.ParentComponentState;
-            }
-
-            // It's unhandled, so treat as fatal
-            HandleException(error);
-        }
-
         private async Task ProcessAsynchronousWork()
         {
             // Child components SetParametersAsync are stored in the queue of pending tasks,
@@ -907,6 +862,47 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     eventHandlerId,
                     fieldInfo.FieldValue);
             }
+        }
+
+        /// <summary>
+        /// If the exception can be routed to an error boundary around <paramref name="errorSourceOrNull"/>, do so.
+        /// Otherwise handle it as fatal.
+        /// </summary>
+        private void HandleExceptionViaErrorBoundary(Exception error, ComponentState? errorSourceOrNull)
+        {
+            // We only get here in specific situations. Currently, all of them are when we're
+            // already on the sync context (and if not, we have a bug we want to know about).
+            Dispatcher.AssertAccess();
+
+            // Find the closest error boundary, if any
+            var candidate = errorSourceOrNull;
+            while (candidate is not null)
+            {
+                if (candidate.Component is IErrorBoundary errorBoundary)
+                {
+                    // Don't just trust the error boundary to dispose its subtree - force it to do so by
+                    // making it render an empty fragment. Ensures that failed components don't continue to
+                    // operate, which would be a whole new kind of edge case to support forever.
+                    AddToRenderQueue(candidate.ComponentId, builder => { });
+
+                    try
+                    {
+                        errorBoundary.HandleException(error);
+                    }
+                    catch (Exception errorBoundaryException)
+                    {
+                        // If *notifying* about an exception fails, it's OK for that to be fatal
+                        HandleException(errorBoundaryException);
+                    }
+
+                    return; // Handled successfully
+                }
+
+                candidate = candidate.ParentComponentState;
+            }
+
+            // It's unhandled, so treat as fatal
+            HandleException(error);
         }
 
         /// <summary>
