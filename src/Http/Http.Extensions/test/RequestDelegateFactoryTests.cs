@@ -307,60 +307,37 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
                 return new[]
                 {
-                    // String (technically not "TryParsable", but it's the the special case)
+                    // string is not technically "TryParsable", but it's the special case.
                     new object[] { (Action<HttpContext, string>)Store, "plain string", "plain string" },
-                    // Int32
                     new object[] { (Action<HttpContext, int>)Store, "-42", -42 },
                     new object[] { (Action<HttpContext, uint>)Store, "42", 42U },
-                    // Byte
                     new object[] { (Action<HttpContext, bool>)Store, "true", true },
-                    // Int16
                     new object[] { (Action<HttpContext, short>)Store, "-42", (short)-42 },
                     new object[] { (Action<HttpContext, ushort>)Store, "42", (ushort)42 },
-                    // Int64
                     new object[] { (Action<HttpContext, long>)Store, "-42", -42L },
                     new object[] { (Action<HttpContext, ulong>)Store, "42", 42UL },
-                    // IntPtr
                     new object[] { (Action<HttpContext, IntPtr>)Store, "-42", new IntPtr(-42) },
-                    // Char
                     new object[] { (Action<HttpContext, char>)Store, "A", 'A' },
-                    // Double
                     new object[] { (Action<HttpContext, double>)Store, "0.5", 0.5 },
-                    // Single
                     new object[] { (Action<HttpContext, float>)Store, "0.5", 0.5f },
-                    // Half
                     new object[] { (Action<HttpContext, Half>)Store, "0.5", (Half)0.5f },
-                    // Decimal
                     new object[] { (Action<HttpContext, decimal>)Store, "0.5", 0.5m },
-                    // DateTime
                     new object[] { (Action<HttpContext, DateTime>)Store, now.ToString("o"), now },
-                    // DateTimeOffset
                     new object[] { (Action<HttpContext, DateTimeOffset>)Store, nowOffset.ToString("o"), nowOffset },
-                    // TimeSpan
                     new object[] { (Action<HttpContext, TimeSpan>)Store, TimeSpan.FromSeconds(42).ToString(), TimeSpan.FromSeconds(42) },
-                    // Guid
                     new object[] { (Action<HttpContext, Guid>)Store, guid.ToString(), guid },
-                    // Version
                     new object[] { (Action<HttpContext, Version>)Store, "6.0.0.42", new Version("6.0.0.42") },
-                    // BigInteger
                     new object[] { (Action<HttpContext, BigInteger>)Store, "-42", new BigInteger(-42) },
-                    // IPAddress
                     new object[] { (Action<HttpContext, IPAddress>)Store, "127.0.0.1", IPAddress.Loopback },
-                    // IPEndPoint
                     new object[] { (Action<HttpContext, IPEndPoint>)Store, "127.0.0.1:80", new IPEndPoint(IPAddress.Loopback, 80) },
-                    // System Enums
                     new object[] { (Action<HttpContext, AddressFamily>)Store, "Unix", AddressFamily.Unix },
                     new object[] { (Action<HttpContext, ILOpCode>)Store, "Nop", ILOpCode.Nop },
                     new object[] { (Action<HttpContext, AssemblyFlags>)Store, "PublicKey,Retargetable", AssemblyFlags.PublicKey | AssemblyFlags.Retargetable },
-                    // Nullable<T>
                     new object[] { (Action<HttpContext, int?>)Store, "42", 42 },
-                    // Null route and/or query value gives default value.
+                    new object[] { (Action<HttpContext, MyEnum>)Store, "ValueB", MyEnum.ValueB },
+                    new object[] { (Action<HttpContext, MyTryParsableRecord>)Store, "42", new MyTryParsableRecord(42) },
                     new object?[] { (Action<HttpContext, int>)Store, null, 0 },
                     new object?[] { (Action<HttpContext, int?>)Store, null, null },
-                    // Custom Enum
-                    new object[] { (Action<HttpContext, MyEnum>)Store, "ValueB", MyEnum.ValueB },
-                    // Custom record with static TryParse method!
-                    new object[] { (Action<HttpContext, MyTryParsableRecord>)Store, "42", new MyTryParsableRecord(42) },
                 };
             }
         }

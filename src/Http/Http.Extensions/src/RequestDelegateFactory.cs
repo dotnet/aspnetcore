@@ -284,7 +284,6 @@ namespace Microsoft.AspNetCore.Http
             //     // Assume "[FromRoute] int id" is the first parameter.
             //
             //     tempSourceString = httpContext.RequestValue["id"];
-            //    
             //     int param1 = tempSourceString == null ? default :
             //     {
             //          int parsedValue = default;
@@ -552,39 +551,39 @@ namespace Microsoft.AspNetCore.Http
         }
 
         // TODO: Use InvariantCulture where possible? Or is CurrentCulture fine because it's more flexible?
-        private static MethodInfo? FindTryParseMethodUncached(Type type)
-        {
-            if (type.IsEnum)
-            {
-                return EnumTryParseMethod.MakeGenericMethod(type);
-            }
-
-            var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
-
-            foreach (var method in staticMethods)
-            {
-                if (method.Name != "TryParse" || method.ReturnType != typeof(bool))
-                {
-                    continue;
-                }
-
-                var tryParseParameters = method.GetParameters();
-
-                if (tryParseParameters.Length == 2 &&
-                    tryParseParameters[0].ParameterType == typeof(string) &&
-                    tryParseParameters[1].IsOut &&
-                    tryParseParameters[1].ParameterType == type.MakeByRefType())
-                {
-                    return method;
-                }
-            }
-
-            return null;
-        }
-
         private static MethodInfo? FindTryParseMethod(Type type)
         {
-            return TryParseMethodCache.GetOrAdd(type, FindTryParseMethodUncached);
+            static MethodInfo? Finder(Type type)
+            {
+                if (type.IsEnum)
+                {
+                    return EnumTryParseMethod.MakeGenericMethod(type);
+                }
+
+                var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
+
+                foreach (var method in staticMethods)
+                {
+                    if (method.Name != "TryParse" || method.ReturnType != typeof(bool))
+                    {
+                        continue;
+                    }
+
+                    var tryParseParameters = method.GetParameters();
+
+                    if (tryParseParameters.Length == 2 &&
+                        tryParseParameters[0].ParameterType == typeof(string) &&
+                        tryParseParameters[1].IsOut &&
+                        tryParseParameters[1].ParameterType == type.MakeByRefType())
+                    {
+                        return method;
+                    }
+                }
+
+                return null;
+            }
+
+            return TryParseMethodCache.GetOrAdd(type, Finder);
         }
 
         private static bool HasTryParseMethod(ParameterInfo parameter)
@@ -621,7 +620,6 @@ namespace Microsoft.AspNetCore.Http
             // string tempSourceString;
             //
             // // Assume "[FromRoute] int id" is the first parameter.
-            //
             // tempSourceString = httpContext.RequestValue["id"];
             //
             // int param1 = tempSourceString == null ? default :
@@ -666,7 +664,7 @@ namespace Microsoft.AspNetCore.Http
                 Expression.Constant(parameter.DefaultValue) :
                 Expression.Default(parameter.ParameterType);
 
-            // tempSourceString = httpContext.RequestValue["id];
+            // tempSourceString = httpContext.RequestValue["id"];
             var storeValueToTemp = Expression.Assign(TempSourceStringExpr, valueExpression);
 
             // int param1 = tempSourcString == null ? default : ...
