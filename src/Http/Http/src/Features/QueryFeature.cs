@@ -2,7 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
@@ -109,59 +113,77 @@ namespace Microsoft.AspNetCore.Http.Features
         /// </summary>
         /// <param name="queryString">The raw query string value, with or without the leading '?'.</param>
         /// <returns>A collection of parsed keys and values, null if there are no entries.</returns>
+        [SkipLocalsInit]
         internal static AdaptiveCapacityDictionary<string, StringValues>? ParseNullableQueryInternal(string? queryString)
         {
-            var accumulator = new KvpAccumulator();
-
-            if (string.IsNullOrEmpty(queryString) || queryString == "?")
+            if (string.IsNullOrEmpty(queryString) || (queryString.Length == 1 && queryString[0] == '?'))
             {
                 return null;
             }
 
-            int scanIndex = 0;
-            if (queryString[0] == '?')
+            KvpAccumulator accumulator = new();
+            int queryStringLength = queryString.Length;
+
+            char[]? arryToReturnToPool = null;
+            Span<char> query = (queryStringLength <= 128
+                ? stackalloc char[128]
+                : arryToReturnToPool = ArrayPool<char>.Shared.Rent(queryStringLength)
+            ).Slice(0, queryStringLength);
+
+            queryString.AsSpan().CopyTo(query);
+
+            if (query[0] == '?')
             {
-                scanIndex = 1;
+                query = query[1..];
             }
 
-            int textLength = queryString.Length;
-            int equalIndex = queryString.IndexOf('=');
-            if (equalIndex == -1)
+            while (!query.IsEmpty)
             {
-                equalIndex = textLength;
-            }
-            while (scanIndex < textLength)
-            {
-                int delimiterIndex = queryString.IndexOf('&', scanIndex);
-                if (delimiterIndex == -1)
+                int delimiterIndex = query.IndexOf('&');
+
+                Span<char> querySegment = delimiterIndex >= 0
+                    ? query.Slice(0, delimiterIndex)
+                    : query;
+
+                int equalIndex = querySegment.IndexOf('=');
+
+                if (equalIndex >= 0)
                 {
-                    delimiterIndex = textLength;
-                }
-                if (equalIndex < delimiterIndex)
-                {
-                    while (scanIndex != equalIndex && char.IsWhiteSpace(queryString[scanIndex]))
+                    int i = 0;
+                    for (; i < querySegment.Length; ++i)
                     {
-                        ++scanIndex;
+                        if (!char.IsWhiteSpace(querySegment[i]))
+                        {
+                            break;
+                        }
                     }
-                    string name = queryString.Substring(scanIndex, equalIndex - scanIndex);
-                    string value = queryString.Substring(equalIndex + 1, delimiterIndex - equalIndex - 1);
+
+                    Span<char> name = querySegment[i..equalIndex];
+                    Span<char> value = querySegment.Slice(equalIndex + 1);
+
+                    name.ReplacePlusWithSpaceInPlace();
+                    value.ReplacePlusWithSpaceInPlace();
+
                     accumulator.Append(
-                        Uri.UnescapeDataString(name.Replace('+', ' ')),
-                        Uri.UnescapeDataString(value.Replace('+', ' ')));
-                    equalIndex = queryString.IndexOf('=', delimiterIndex);
-                    if (equalIndex == -1)
-                    {
-                        equalIndex = textLength;
-                    }
+                        Uri.UnescapeDataString(name.ToString()),
+                        Uri.UnescapeDataString(value.ToString()));
                 }
                 else
                 {
-                    if (delimiterIndex > scanIndex)
-                    {
-                        accumulator.Append(queryString.Substring(scanIndex, delimiterIndex - scanIndex), string.Empty);
-                    }
+                    accumulator.Append(querySegment);
                 }
-                scanIndex = delimiterIndex + 1;
+
+                if (delimiterIndex < 0)
+                {
+                    break;
+                }
+
+                query = query.Slice(delimiterIndex + 1);
+            }
+
+            if (arryToReturnToPool is not null)
+            {
+                ArrayPool<char>.Shared.Return(arryToReturnToPool);
             }
 
             if (!accumulator.HasValues)
@@ -180,6 +202,9 @@ namespace Microsoft.AspNetCore.Http.Features
             /// </summary>
             private AdaptiveCapacityDictionary<string, StringValues> _accumulator;
             private AdaptiveCapacityDictionary<string, List<string>> _expandingAccumulator;
+
+            public void Append(ReadOnlySpan<char> key, ReadOnlySpan<char> value = default)
+                => Append(key.ToString(), value.IsEmpty ? string.Empty : value.ToString());
 
             /// <summary>
             /// This API supports infrastructure and is not intended to be used
@@ -266,6 +291,48 @@ namespace Microsoft.AspNetCore.Http.Features
                 }
 
                 return _accumulator ?? new AdaptiveCapacityDictionary<string, StringValues>(0, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+    }
+
+    internal static class MySpanExtensions
+    {
+        public static void ReplacePlusWithSpaceInPlace(this Span<char> span)
+            => ReplaceInPlace(span, '+', ' ');
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void ReplaceInPlace(this Span<char> span, char oldChar, char newChar)
+        {
+            nint i = 0;
+            nint n = (nint)(uint)span.Length;
+
+            fixed (char* ptr = span)
+            {
+                ushort* pVec = (ushort*)ptr;
+
+                if (Sse41.IsSupported && n >= Vector128<ushort>.Count)
+                {
+                    Vector128<ushort> vecOldChar = Vector128.Create((ushort)oldChar);
+                    Vector128<ushort> vecNewChar = Vector128.Create((ushort)newChar);
+
+                    do
+                    {
+                        Vector128<ushort> vec = Sse2.LoadVector128(pVec + i);
+                        Vector128<ushort> mask = Sse2.CompareEqual(vec, vecOldChar);
+                        Vector128<ushort> res = Sse41.BlendVariable(vec, vecNewChar, mask);
+                        Sse2.Store(pVec + i, res);
+
+                        i += Vector128<ushort>.Count;
+                    } while (i <= n - Vector128<ushort>.Count);
+                }
+
+                for (; i < n; ++i)
+                {
+                    if (ptr[i] == oldChar)
+                    {
+                        ptr[i] = newChar;
+                    }
+                }
             }
         }
     }
