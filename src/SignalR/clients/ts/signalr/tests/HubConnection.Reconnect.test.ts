@@ -11,8 +11,6 @@ import { JsonHubProtocol } from "../src/JsonHubProtocol";
 
 import { VerifyLogger } from "./Common";
 import { TestConnection } from "./TestConnection";
-import { TestHttpClient } from "./TestHttpClient";
-import { TestEvent, TestMessageEvent, TestWebSocket } from "./TestWebSocket";
 import { PromiseSource } from "./Utils";
 import { TestHttpClient } from "./TestHttpClient";
 import { TestWebSocket, TestEvent, TestMessageEvent } from "./TestWebSocket";
