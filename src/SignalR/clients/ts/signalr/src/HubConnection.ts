@@ -75,6 +75,8 @@ export class HubConnection {
      *
      * The default value is 15,000 milliseconds (15 seconds).
      * Allows the server to detect hard disconnects (like when a client unplugs their computer).
+     * The ping will happen at most as often as the server pings.
+     * If the server pings every 5 seconds, a value lower than 5 will ping every 5 seconds.
      */
     public keepAliveIntervalInMilliseconds: number;
 
