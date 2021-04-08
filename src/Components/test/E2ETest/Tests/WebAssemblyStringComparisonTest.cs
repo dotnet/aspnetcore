@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38126")]
+        [Fact]
         public void InvariantCultureWorksAsExpected()
         {
             Navigate(ServerPathBase, noReload: false);
