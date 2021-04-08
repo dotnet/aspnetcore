@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
     {
         private readonly ILogger _logger;
         private readonly int _webAssemblyRendererId;
+        private readonly QueueWithLast<IncomingEventInfo> deferredIncomingEvents = new();
 
         private bool isDispatchingEvent;
-        private QueueWithLast<IncomingEventInfo> deferredIncomingEvents = new();
 
         /// <summary>
         /// Constructs an instance of <see cref="WebAssemblyRenderer"/>.
