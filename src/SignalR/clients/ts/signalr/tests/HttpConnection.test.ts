@@ -152,7 +152,7 @@ describe("HttpConnection", () => {
 
             const connection = new HttpConnection("http://tempuri.org", options);
 
-            const startPromise = connection.start(TransferFormat.Text)
+            const startPromise = connection.start(TransferFormat.Text);
 
             await startingPromise;
             const stopPromise = connection.stop();
