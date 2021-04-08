@@ -274,11 +274,11 @@ namespace Microsoft.AspNetCore.Http
             return AddResponseWritingToMethodCall(callMethod, methodInfo.ReturnType);
         }
 
-        // If we're calling TryParse and the WasTryParseFailureVariable indicates it failed, set a 400 StatusCode instead of calling the method.
+        // If we're calling TryParse and wasTryParseFailure indicates it failed, set a 400 StatusCode instead of calling the method.
         private static Expression CreateTryParseCheckingResponseWritingMethodCall(MethodInfo methodInfo, Expression? target, Expression[] arguments)
         {
             // {
-            //     bool wasTryParseFailureVariable = false;
+            //     bool wasTryParseFailure = false;
             //     string tempSourceString;
             //
             //     // Assume "[FromRoute] int id" is the first parameter.
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Http
             //
             //          if (!int.TryParse(tempSourceString, out parsedValue))
             //          {
-            //              wasTryParseFailureVariable = true;
+            //              wasTryParseFailure = true;
             //              Log.ParameterBindingFailed(httpContext, "Int32", "id", tempSourceString)
             //          }
             //
@@ -616,7 +616,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new InvalidOperationException($"No public static bool {parameter.ParameterType.Name}.TryParse(string, out {parameter.ParameterType.Name}) method found for {parameter.Name}.");
             }
 
-            // bool wasTryParseFailureVariable = false;
+            // bool wasTryParseFailure = false;
             // string tempSourceString;
             //
             // // Assume "[FromRoute] int id" is the first parameter.
@@ -628,7 +628,7 @@ namespace Microsoft.AspNetCore.Http
             //
             //      if (!int.TryParse(tempSourceString, out parsedValue))
             //      {
-            //          wasTryParseFailureVariable = true;
+            //          wasTryParseFailure = true;
             //          Log.ParameterBindingFailed(httpContext, "Int32", "id", tempSourceString)
             //      }
             //
