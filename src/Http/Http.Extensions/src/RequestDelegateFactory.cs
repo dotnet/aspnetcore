@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, nameof(HttpResponse.StatusCode));
         private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
 
-        private static ConcurrentDictionary<Type, MethodInfo?> TryParseMethodCache = new();
+        private static readonly ConcurrentDictionary<Type, MethodInfo?> TryParseMethodCache = new();
 
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.

@@ -296,14 +296,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             get
             {
-                void Store<T>(HttpContext httpContext, T tryParsable)
+                static void Store<T>(HttpContext httpContext, T tryParsable)
                 {
                     httpContext.Items["tryParsable"] = tryParsable;
                 }
 
                 var now = DateTime.Now;
-                var nowOffset = DateTimeOffset.UtcNow;
-                var guid = Guid.NewGuid();
 
                 return new[]
                 {
@@ -323,9 +321,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     new object[] { (Action<HttpContext, Half>)Store, "0.5", (Half)0.5f },
                     new object[] { (Action<HttpContext, decimal>)Store, "0.5", 0.5m },
                     new object[] { (Action<HttpContext, DateTime>)Store, now.ToString("o"), now },
-                    new object[] { (Action<HttpContext, DateTimeOffset>)Store, nowOffset.ToString("o"), nowOffset },
-                    new object[] { (Action<HttpContext, TimeSpan>)Store, TimeSpan.FromSeconds(42).ToString(), TimeSpan.FromSeconds(42) },
-                    new object[] { (Action<HttpContext, Guid>)Store, guid.ToString(), guid },
+                    new object[] { (Action<HttpContext, DateTimeOffset>)Store, "1970-01-01T00:00:00.0000000+00:00", DateTimeOffset.UnixEpoch },
+                    new object[] { (Action<HttpContext, TimeSpan>)Store, "00:00:42", TimeSpan.FromSeconds(42) },
+                    new object[] { (Action<HttpContext, Guid>)Store, "00000000-0000-0000-0000-000000000000", Guid.Empty },
                     new object[] { (Action<HttpContext, Version>)Store, "6.0.0.42", new Version("6.0.0.42") },
                     new object[] { (Action<HttpContext, BigInteger>)Store, "-42", new BigInteger(-42) },
                     new object[] { (Action<HttpContext, IPAddress>)Store, "127.0.0.1", IPAddress.Loopback },
