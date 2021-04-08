@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 // and they are queued up with any other calls from JS such as event calls. If we didn't
                 // do this, then the order of execution could be inconsistent with Server, and in fact
                 // leads to a specific bug: https://github.com/dotnet/aspnetcore/issues/26838
-                return deferredIncomingEvents.Last.DispatcherCompletionSource.Task;
+                return deferredIncomingEvents.Last.StartHandlerCompletionSource.Task;
             }
         }
 
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             {
                 var info = new IncomingEventInfo(eventHandlerId, eventFieldInfo, eventArgs);
                 deferredIncomingEvents.Enqueue(info);
-                return info.HandlerCompletionSource.Task;
+                return info.FinishHandlerCompletionSource.Task;
             }
             else
             {
@@ -191,16 +191,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             try
             {
                 var handlerTask = DispatchEventAsync(info.EventHandlerId, info.EventFieldInfo, info.EventArgs);
-                info.DispatcherCompletionSource.SetResult();
+                info.StartHandlerCompletionSource.SetResult();
                 await handlerTask;
-                info.HandlerCompletionSource.SetResult();
+                info.FinishHandlerCompletionSource.SetResult();
             }
             catch (Exception ex)
             {
                 // Even if the handler threw synchronously, we at least started processing, so always complete successfully
-                info.DispatcherCompletionSource.TrySetResult();
+                info.StartHandlerCompletionSource.TrySetResult();
 
-                info.HandlerCompletionSource.SetException(ex);
+                info.FinishHandlerCompletionSource.SetException(ex);
             }
         }
 
@@ -209,16 +209,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             public readonly ulong EventHandlerId;
             public readonly EventFieldInfo? EventFieldInfo;
             public readonly EventArgs EventArgs;
-            public readonly TaskCompletionSource DispatcherCompletionSource; // Notifies when we start processing the event
-            public readonly TaskCompletionSource HandlerCompletionSource;    // Notifies when we finish processing the event
+            public readonly TaskCompletionSource StartHandlerCompletionSource;
+            public readonly TaskCompletionSource FinishHandlerCompletionSource;
 
             public IncomingEventInfo(ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
             {
                 EventHandlerId = eventHandlerId;
                 EventFieldInfo = eventFieldInfo;
                 EventArgs = eventArgs;
-                DispatcherCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                HandlerCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                StartHandlerCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                FinishHandlerCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
         }
 
