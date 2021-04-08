@@ -30,6 +30,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
         }
 
+        public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
+
         internal void Initialize(CircuitClientProxy clientProxy)
         {
             _clientProxy = clientProxy ?? throw new ArgumentNullException(nameof(clientProxy));
