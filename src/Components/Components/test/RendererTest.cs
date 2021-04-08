@@ -4242,13 +4242,14 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var renderer = new TestRenderer();
-            Exception exception = null;
+            var exception = new InvalidTimeZoneException("Error during SetParametersAsync");
+            TaskCompletionSource exceptionTcs = null;
             var rootComponent = new TestComponent(builder =>
             {
                 TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
                 {
                     builder.OpenComponent<ErrorThrowingComponent>(0);
-                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringParameterSettingAsync), exception);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringParameterSettingAsync), exceptionTcs?.Task);
                     builder.CloseComponent();
                 });
             });
@@ -4260,11 +4261,12 @@ namespace Microsoft.AspNetCore.Components.Test
                 .GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
 
             // Act/Assert 1: No synchronous errors
-            exception = new InvalidTimeZoneException("Error during SetParametersAsync");
+            exceptionTcs = new TaskCompletionSource();
             rootComponent.TriggerRender();
             Assert.Equal(2, renderer.Batches.Count);
 
             // Act/Assert 2: Asynchronous error
+            exceptionTcs.SetException(exception);
             await errorBoundaries[1].ReceivedErrorTask;
             Assert.Equal(3, renderer.Batches.Count);
             Assert.Collection(errorBoundaries,
@@ -4319,12 +4321,13 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var renderer = new TestRenderer();
             var exception = new InvalidTimeZoneException("Error during event");
+            var exceptionTcs = new TaskCompletionSource();
             var rootComponentId = renderer.AssignRootComponentId(new TestComponent(builder =>
             {
                 TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
                 {
                     builder.OpenComponent<ErrorThrowingComponent>(0);
-                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringEventAsync), exception);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringEventAsync), exceptionTcs.Task);
                     builder.CloseComponent();
                 });
             }));
@@ -4338,14 +4341,15 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act/Assert 1: No error synchronously
-            var task = renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
+            var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
             Assert.Single(renderer.Batches);
             Assert.Collection(errorBoundaries,
                 component => Assert.Null(component.ReceivedException),
                 component => Assert.Null(component.ReceivedException));
 
             // Act/Assert 2: Error is handled asynchronously
-            await task;
+            exceptionTcs.SetException(exception);
+            await dispatchEventTask;
             Assert.Equal(2, renderer.Batches.Count);
             Assert.Collection(errorBoundaries,
                 component => Assert.Null(component.ReceivedException),
@@ -4362,6 +4366,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderer = new TestRenderer();
             var disposeChildren = false;
             var exception = new InvalidTimeZoneException("Error during event");
+            var exceptionTcs = new TaskCompletionSource();
             var rootComponent = new TestComponent(builder =>
             {
                 if (!disposeChildren)
@@ -4369,7 +4374,7 @@ namespace Microsoft.AspNetCore.Components.Test
                     TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
                     {
                         builder.OpenComponent<ErrorThrowingComponent>(0);
-                        builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringEventAsync), exception);
+                        builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringEventAsync), exceptionTcs.Task);
                         builder.CloseComponent();
                     });
                 }
@@ -4385,7 +4390,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act/Assert 1: No error synchronously
-            var task = renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
+            var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
             Assert.Single(renderer.Batches);
             Assert.Collection(errorBoundaries,
                 component => Assert.Null(component.ReceivedException),
@@ -4398,7 +4403,8 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Contains(errorThrowingComponentId, renderer.Batches.Last().DisposedComponentIDs);
 
             // Assert 2: Error is still handled
-            await task;
+            exceptionTcs.SetException(exception);
+            await dispatchEventTask;
             Assert.Equal(2, renderer.Batches.Count); // Didn't re-render as the error boundary was already gone
             Assert.Collection(errorBoundaries,
                 component => Assert.Null(component.ReceivedException),
@@ -5240,9 +5246,9 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             [Parameter] public Exception ThrowDuringRender { get; set; }
             [Parameter] public Exception ThrowDuringEventSync { get; set; }
-            [Parameter] public Exception ThrowDuringEventAsync { get; set; }
+            [Parameter] public Task ThrowDuringEventAsync { get; set; }
             [Parameter] public Exception ThrowDuringParameterSettingSync { get; set; }
-            [Parameter] public Exception ThrowDuringParameterSettingAsync { get; set; }
+            [Parameter] public Task ThrowDuringParameterSettingAsync { get; set; }
 
             public override async Task SetParametersAsync(ParameterView parameters)
             {
@@ -5255,8 +5261,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
                 if (ThrowDuringParameterSettingAsync is not null)
                 {
-                    await Task.Delay(100);
-                    throw ThrowDuringParameterSettingAsync;
+                    await ThrowDuringParameterSettingAsync;
                 }
             }
 
@@ -5282,8 +5287,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
                 if (ThrowDuringEventAsync is not null)
                 {
-                    await Task.Delay(100);
-                    throw ThrowDuringEventAsync;
+                    await ThrowDuringEventAsync;
                 }
             }
         }
