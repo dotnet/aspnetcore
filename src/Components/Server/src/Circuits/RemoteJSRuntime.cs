@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public ElementReferenceContext ElementReferenceContext { get; }
 
+        public bool IsInitialized => _clientProxy is not null;
+
         public RemoteJSRuntime(IOptions<CircuitOptions> options, ILogger<RemoteJSRuntime> logger)
         {
             _options = options.Value;
