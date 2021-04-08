@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 
 using System;
 using System.Collections.Generic;
@@ -28,9 +29,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 if (reader.ValueTextEquals(Errors.EncodedUtf8Bytes))
                 {
                     var errors = JsonSerializer.Deserialize<Dictionary<string, string[]>>(ref reader, options);
-                    foreach (var item in errors)
+                    if (errors is not null)
                     {
-                        problemDetails.Errors[item.Key] = item.Value;
+                        foreach (var item in errors)
+                        {
+                            problemDetails.Errors[item.Key] = item.Value;
+                        }
                     }
                 }
                 else

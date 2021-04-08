@@ -11,9 +11,9 @@ import { JsonHubProtocol } from "../src/JsonHubProtocol";
 
 import { VerifyLogger } from "./Common";
 import { TestConnection } from "./TestConnection";
-import { TestHttpClient } from "./TestHttpClient";
-import { TestEvent, TestMessageEvent, TestWebSocket } from "./TestWebSocket";
 import { PromiseSource } from "./Utils";
+import { TestHttpClient } from "./TestHttpClient";
+import { TestWebSocket, TestEvent, TestMessageEvent } from "./TestWebSocket";
 
 describe("auto reconnect", () => {
     it("is not enabled by default", async () => {
@@ -876,6 +876,6 @@ describe("auto reconnect", () => {
             expect(closeCount).toBe(1);
         },
         "Failed to complete negotiation with the server: Error with negotiate",
-        "Failed to start the connection: Error with negotiate");
+        "Failed to start the connection: Error: Failed to complete negotiation with the server: Error with negotiate");
     });
 });

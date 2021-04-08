@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -54,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <typeparam name="TComponent">The <see cref="Type"/> of the view component.</typeparam>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered <see cref="IHtmlContent" />.
         /// </returns>
-        public static Task<IHtmlContent> InvokeAsync<TComponent>(this IViewComponentHelper helper, object arguments)
+        public static Task<IHtmlContent> InvokeAsync<TComponent>(this IViewComponentHelper helper, object? arguments)
         {
             if (helper == null)
             {

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 
@@ -16,13 +18,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// exception <paramref name="message"/>.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public UnsupportedContentTypeException(string message)
+        public UnsupportedContentTypeException(string? message)
             : base(message)
         {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
         }
     }
 }

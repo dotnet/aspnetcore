@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -76,6 +77,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             return _pageActivator.CreateReleaser(descriptor);
+        }
+
+        public Func<PageContext, ViewContext, object, ValueTask> CreateAsyncPageDisposer(CompiledPageActionDescriptor descriptor)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            return _pageActivator.CreateAsyncReleaser(descriptor);
         }
     }
 }

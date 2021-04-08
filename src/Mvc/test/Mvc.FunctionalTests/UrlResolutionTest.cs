@@ -40,11 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             responseContent = responseContent.Trim();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Fact]
@@ -61,11 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             responseContent = responseContent.Trim();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
     }
 }

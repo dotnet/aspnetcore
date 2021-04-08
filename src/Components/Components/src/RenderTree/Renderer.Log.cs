@@ -14,16 +14,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         internal static class Log
         {
             private static readonly Action<ILogger, int, Type, int, Type, Exception> _initializingChildComponent =
-                LoggerMessage.Define<int, Type, int, Type>(LogLevel.Debug, new EventId(1, "InitializingChildComponent"), "Initializing component {ComponentId} ({ComponentType}) as child of {ParentComponentId} ({ParentComponentId})");
+                LoggerMessage.Define<int, Type, int, Type>(LogLevel.Debug, new EventId(1, "InitializingChildComponent"), "Initializing component {ComponentId} ({ComponentType}) as child of {ParentComponentId} ({ParentComponentId})", skipEnabledCheck: true);
 
             private static readonly Action<ILogger, int, Type, Exception> _initializingRootComponent =
-                LoggerMessage.Define<int, Type>(LogLevel.Debug, new EventId(2, "InitializingRootComponent"), "Initializing root component {ComponentId} ({ComponentType})");
+                LoggerMessage.Define<int, Type>(LogLevel.Debug, new EventId(2, "InitializingRootComponent"), "Initializing root component {ComponentId} ({ComponentType})", skipEnabledCheck: true);
 
             private static readonly Action<ILogger, int, Type, Exception> _renderingComponent =
-                LoggerMessage.Define<int, Type>(LogLevel.Debug, new EventId(3, "RenderingComponent"), "Rendering component {ComponentId} of type {ComponentType}");
+                LoggerMessage.Define<int, Type>(LogLevel.Debug, new EventId(3, "RenderingComponent"), "Rendering component {ComponentId} of type {ComponentType}", skipEnabledCheck: true);
 
             private static readonly Action<ILogger, int, Type, Exception> _disposingComponent =
-                LoggerMessage.Define<int, Type>(LogLevel.Debug, new EventId(4, "DisposingComponent"), "Disposing component {ComponentId} of type {ComponentType}");
+                LoggerMessage.Define<int, Type>(LogLevel.Debug, new EventId(4, "DisposingComponent"), "Disposing component {ComponentId} of type {ComponentType}", skipEnabledCheck: true);
 
             private static readonly Action<ILogger, ulong, string, Exception> _handlingEvent =
                 LoggerMessage.Define<ulong, string>(LogLevel.Debug, new EventId(5, "HandlingEvent"), "Handling event {EventId} of type '{EventType}'");

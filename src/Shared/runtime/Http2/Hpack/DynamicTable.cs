@@ -3,7 +3,7 @@
 
 namespace System.Net.Http.HPack
 {
-    internal class DynamicTable
+    internal sealed class DynamicTable
     {
         private HeaderField[] _buffer;
         private int _maxSize;

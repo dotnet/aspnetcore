@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
-    /// An implementation of <see cref="IUrlHelper"/> that uses <see cref="LinkGenerator"/> to build URLs 
+    /// An implementation of <see cref="IUrlHelper"/> that uses <see cref="LinkGenerator"/> to build URLs
     /// for ASP.NET MVC within an application.
     /// </summary>
     internal class EndpointRoutingUrlHelper : UrlHelperBase
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         /// <inheritdoc />
-        public override string Action(UrlActionContext urlActionContext)
+        public override string? Action(UrlActionContext urlActionContext)
         {
             if (urlActionContext == null)
             {
@@ -85,12 +86,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 ActionContext.HttpContext,
                 routeName: null,
                 values,
-                fragment: new FragmentString(urlActionContext.Fragment == null ? null : "#" + urlActionContext.Fragment));
+                fragment: urlActionContext.Fragment == null ? FragmentString.Empty : new FragmentString("#" + urlActionContext.Fragment));
             return GenerateUrl(urlActionContext.Protocol, urlActionContext.Host, path);
         }
 
         /// <inheritdoc />
-        public override string RouteUrl(UrlRouteContext routeContext)
+        public override string? RouteUrl(UrlRouteContext routeContext)
         {
             if (routeContext == null)
             {
@@ -101,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 ActionContext.HttpContext,
                 routeContext.RouteName,
                 routeContext.Values,
-                fragment: new FragmentString(routeContext.Fragment == null ? null : "#" + routeContext.Fragment));
+                fragment: routeContext.Fragment == null ? FragmentString.Empty : new FragmentString("#" + routeContext.Fragment));
             return GenerateUrl(routeContext.Protocol, routeContext.Host, path);
         }
     }

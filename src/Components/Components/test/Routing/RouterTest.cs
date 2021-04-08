@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
                 onNavigateInvoked += 1;
-                if (args.Path.EndsWith("jan"))
+                if (args.Path.EndsWith("jan", StringComparison.Ordinal))
                 {
                     await Task.Delay(Timeout.Infinite, args.CancellationToken);
                     throw new Exception("This is an uncaught exception.");
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             var triggerCancel = new TaskCompletionSource();
             Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
-                if (args.Path.EndsWith("jan"))
+                if (args.Path.EndsWith("jan", StringComparison.Ordinal))
                 {
                     var tcs = new TaskCompletionSource();
                     await triggerCancel.Task;
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             // Arrange
             Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
-                if (args.Path.EndsWith("jan"))
+                if (args.Path.EndsWith("jan", StringComparison.Ordinal))
                 {
                     await Task.Delay(Timeout.Infinite, args.CancellationToken);
                 }
@@ -183,29 +183,6 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         }
 
         [Fact]
-        public async Task UsesLegacyRouteMatchingByDefault()
-        {
-            // Arrange
-            // Legacy routing prefers {*someWildcard} over any other pattern than has more segments,
-            // even if the other pattern is an exact match
-            _navigationManager.NotifyLocationChanged("https://www.example.com/subdir/a/b", false);
-            var parameters = new Dictionary<string, object>
-            {
-                { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
-                { nameof(Router.NotFound), (RenderFragment)(builder => { }) },
-            };
-
-            // Act
-            await _renderer.Dispatcher.InvokeAsync(() =>
-                _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
-
-            // Assert
-            var renderedFrame = _renderer.Batches.First().ReferenceFrames.First();
-            Assert.Equal(RenderTreeFrameType.Text, renderedFrame.FrameType);
-            Assert.Equal($"Rendering route matching {typeof(MatchAnythingComponent)}", renderedFrame.TextContent);
-        }
-
-        [Fact]
         public async Task UsesCurrentRouteMatchingIfSpecified()
         {
             // Arrange
@@ -216,7 +193,6 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
                 { nameof(Router.NotFound), (RenderFragment)(builder => { }) },
-                { nameof(Router.PreferExactMatches), true },
             };
 
             // Act

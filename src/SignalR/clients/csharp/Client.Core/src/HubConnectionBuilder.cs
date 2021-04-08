@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var endPoint = serviceProvider.GetService<EndPoint>() ??
                 throw new InvalidOperationException($"Cannot create {nameof(HubConnection)} instance. An {nameof(EndPoint)} was not configured.");
 
-            return serviceProvider.GetService<HubConnection>();
+            return serviceProvider.GetRequiredService<HubConnection>();
         }
 
         // Prevents from being displayed in intellisense
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         // Prevents from being displayed in intellisense
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return base.Equals(obj);
         }
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         // Prevents from being displayed in intellisense
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString()
+        public override string? ToString()
         {
             return base.ToString();
         }

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="UnprocessableEntityObjectResult"/> instance.
         /// </summary>
         /// <param name="error">Contains errors to be returned to the client.</param>
-        public UnprocessableEntityObjectResult([ActionResultObjectValue] object error)
+        public UnprocessableEntityObjectResult([ActionResultObjectValue] object? error)
             : base(error)
         {
             StatusCode = DefaultStatusCode;

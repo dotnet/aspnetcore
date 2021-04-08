@@ -574,7 +574,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         internal abstract string ReadAsync_ComplexPoco_Expected { get; }
 
-        protected abstract TextInputFormatter GetInputFormatter();
+        protected abstract TextInputFormatter GetInputFormatter(bool allowInputFormatterExceptionMessages = true);
 
         protected static HttpContext GetHttpContext(
             byte[] contentBytes,

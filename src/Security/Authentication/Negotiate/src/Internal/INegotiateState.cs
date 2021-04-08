@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     // For testing
     internal interface INegotiateState : IDisposable
     {
-        string GetOutgoingBlob(string incomingBlob, out BlobErrorType status, out Exception error);
+        string? GetOutgoingBlob(string incomingBlob, out BlobErrorType status, out Exception? error);
 
         bool IsCompleted { get; }
 

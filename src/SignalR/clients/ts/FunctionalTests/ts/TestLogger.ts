@@ -5,7 +5,7 @@ import { ILogger, LogLevel } from "@microsoft/signalr";
 import { ConsoleLogger } from "@microsoft/signalr/dist/esm/Utils";
 
 export class TestLog {
-    public messages: Array<[Date, LogLevel, string]> = [];
+    public messages: [Date, LogLevel, string][] = [];
 
     public addMessage(timestamp: Date, logLevel: LogLevel, message: string): void {
         this.messages.push([timestamp, logLevel, message]);
@@ -33,7 +33,7 @@ export class TestLog {
 
 export class TestLogger implements ILogger {
     public static instance: TestLogger = new TestLogger();
-    private static consoleLogger: ConsoleLogger = new ConsoleLogger(LogLevel.Trace);
+    private static _consoleLogger: ConsoleLogger = new ConsoleLogger(LogLevel.Trace);
 
     public currentLog: TestLog = new TestLog();
 
@@ -41,7 +41,7 @@ export class TestLogger implements ILogger {
         this.currentLog.addMessage(new Date(), logLevel, message);
 
         // Also write to browser console
-        TestLogger.consoleLogger.log(logLevel, message);
+        TestLogger._consoleLogger.log(logLevel, message);
     }
 
     public static saveLogsAndReset(): TestLog {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -10,12 +11,12 @@ namespace Microsoft.AspNetCore.Mvc
     /// Specifies that a parameter or property should be bound using form-data in the request body.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class FromFormAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider
+    public class FromFormAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider, IFromFormMetadata
     {
         /// <inheritdoc />
         public BindingSource BindingSource => BindingSource.Form;
 
         /// <inheritdoc />
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

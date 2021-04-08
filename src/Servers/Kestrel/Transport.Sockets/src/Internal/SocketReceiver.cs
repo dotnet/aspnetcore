@@ -4,37 +4,48 @@
 using System;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketReceiver : SocketSenderReceiverBase
+    internal sealed class SocketReceiver : SocketAwaitableEventArgs
     {
-        public SocketReceiver(Socket socket, PipeScheduler scheduler) : base(socket, scheduler)
+        public SocketReceiver(PipeScheduler ioScheduler) : base(ioScheduler)
         {
         }
 
-        public SocketAwaitableEventArgs WaitForDataAsync()
+        public ValueTask<int> WaitForDataAsync(Socket socket)
         {
-            _awaitableEventArgs.SetBuffer(Memory<byte>.Empty);
+            SetBuffer(Memory<byte>.Empty);
 
-            if (!_socket.ReceiveAsync(_awaitableEventArgs))
+            if (socket.ReceiveAsync(this))
             {
-                _awaitableEventArgs.Complete();
+                return new ValueTask<int>(this, 0);
             }
 
-            return _awaitableEventArgs;
+            var bytesTransferred = BytesTransferred;
+            var error = SocketError;
+
+            return error == SocketError.Success ?
+                new ValueTask<int>(bytesTransferred) :
+               ValueTask.FromException<int>(CreateException(error));
         }
 
-        public SocketAwaitableEventArgs ReceiveAsync(Memory<byte> buffer)
+        public ValueTask<int> ReceiveAsync(Socket socket, Memory<byte> buffer)
         {
-            _awaitableEventArgs.SetBuffer(buffer);
+            SetBuffer(buffer);
 
-            if (!_socket.ReceiveAsync(_awaitableEventArgs))
+            if (socket.ReceiveAsync(this))
             {
-                _awaitableEventArgs.Complete();
+                return new ValueTask<int>(this, 0);
             }
 
-            return _awaitableEventArgs;
+            var bytesTransferred = BytesTransferred;
+            var error = SocketError;
+
+            return error == SocketError.Success ?
+                new ValueTask<int>(bytesTransferred) :
+               ValueTask.FromException<int>(CreateException(error));
         }
     }
 }

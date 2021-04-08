@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
     internal sealed class DataAnnotationsModelValidatorProvider : IMetadataBasedModelValidatorProvider
     {
         private readonly IOptions<MvcDataAnnotationsLocalizationOptions> _options;
-        private readonly IStringLocalizerFactory _stringLocalizerFactory;
+        private readonly IStringLocalizerFactory? _stringLocalizerFactory;
         private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         public DataAnnotationsModelValidatorProvider(
             IValidationAttributeAdapterProvider validationAttributeAdapterProvider,
             IOptions<MvcDataAnnotationsLocalizationOptions> options,
-            IStringLocalizerFactory stringLocalizerFactory)
+            IStringLocalizerFactory? stringLocalizerFactory)
         {
             if (validationAttributeAdapterProvider == null)
             {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
         public void CreateValidators(ModelValidatorProviderContext context)
         {
-            IStringLocalizer stringLocalizer = null;
+            IStringLocalizer? stringLocalizer = null;
             if (_stringLocalizerFactory != null && _options.Value.DataAnnotationLocalizerProvider != null)
             {
                 stringLocalizer = _options.Value.DataAnnotationLocalizerProvider(

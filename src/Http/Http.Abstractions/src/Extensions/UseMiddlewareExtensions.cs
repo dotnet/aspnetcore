@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="args">The arguments to pass to the middleware type instance's constructor.</param>
         /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
-        public static IApplicationBuilder UseMiddleware<[DynamicallyAccessedMembers(MiddlewareAccessibility)]TMiddleware>(this IApplicationBuilder app, params object[] args)
+        public static IApplicationBuilder UseMiddleware<[DynamicallyAccessedMembers(MiddlewareAccessibility)]TMiddleware>(this IApplicationBuilder app, params object?[] args)
         {
             return app.UseMiddleware(typeof(TMiddleware), args);
         }
@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="middleware">The middleware type.</param>
         /// <param name="args">The arguments to pass to the middleware type instance's constructor.</param>
         /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
-        public static IApplicationBuilder UseMiddleware(this IApplicationBuilder app, [DynamicallyAccessedMembers(MiddlewareAccessibility)] Type middleware, params object[] args)
+        public static IApplicationBuilder UseMiddleware(this IApplicationBuilder app, [DynamicallyAccessedMembers(MiddlewareAccessibility)] Type middleware, params object?[] args)
         {
-            if (typeof(IMiddleware).GetTypeInfo().IsAssignableFrom(middleware.GetTypeInfo()))
+            if (typeof(IMiddleware).IsAssignableFrom(middleware))
             {
                 // IMiddleware doesn't support passing args directly since it's
                 // activated from the container

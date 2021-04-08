@@ -17,7 +17,7 @@ export class TestWebSocket {
 
     public static webSocketSet: PromiseSource;
     public static webSocket: TestWebSocket;
-    public receivedData: Array<(string | ArrayBuffer | Blob | ArrayBufferView)>;
+    public receivedData: (string | ArrayBuffer | Blob | ArrayBufferView)[];
 
     // tslint:disable-next-line:variable-name
     private _onopen?: (this: WebSocket, evt: Event) => any;
@@ -103,7 +103,12 @@ export class TestWebSocket {
     public static readonly OPEN: number = 4;
 }
 
-export class TestEvent {
+export class TestEvent implements Event {
+    public composed: boolean = false;
+    public composedPath(): EventTarget[];
+    public composedPath(): any[] {
+        throw new Error("Method not implemented.");
+    }
     public bubbles: boolean = false;
     public cancelBubble: boolean = false;
     public cancelable: boolean = false;
@@ -181,7 +186,12 @@ export class TestErrorEvent {
     public NONE: number = 0;
 }
 
-export class TestCloseEvent {
+export class TestCloseEvent implements Event {
+    public composed: boolean = false;
+    public composedPath(): EventTarget[];
+    public composedPath(): any[] {
+        throw new Error("Method not implemented.");
+    }
     public code: number = 0;
     public reason: string = "";
     public wasClean: boolean = false;
@@ -229,8 +239,8 @@ export class TestMessageEvent implements MessageEvent {
     public data: any;
     public lastEventId: string = "";
     public origin: string = "";
-    public ports: MessagePort[] = [];
-    public source: Window | null = null;
+    public ports: readonly MessagePort[] = [];
+    public source: MessagePort | Window | ServiceWorker | null = null;
     public composed: boolean = false;
     public composedPath(): EventTarget[];
     public composedPath(): any[] {
@@ -239,7 +249,7 @@ export class TestMessageEvent implements MessageEvent {
     public code: number = 0;
     public reason: string = "";
     public wasClean: boolean = false;
-    public initMessageEvent(typeArg: string, canBubbleArg: boolean, cancelableArg: boolean, data: any, origin: string, lastEventId: string): void {
+    public initCloseEvent(typeArg: string, canBubbleArg: boolean, cancelableArg: boolean, wasCleanArg: boolean, codeArg: number, reasonArg: string): void {
         throw new Error("Method not implemented.");
     }
     public bubbles: boolean = false;

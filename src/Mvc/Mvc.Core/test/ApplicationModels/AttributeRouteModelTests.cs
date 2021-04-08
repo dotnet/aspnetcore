@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Routing;
 using Xunit;
@@ -32,14 +33,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 var value1 = property.GetValue(route);
                 var value2 = property.GetValue(route2);
 
-                if (typeof(IEnumerable<object>).GetTypeInfo().IsAssignableFrom(property.PropertyType.GetTypeInfo()))
+                if (typeof(IEnumerable<object>).IsAssignableFrom(property.PropertyType))
                 {
                     Assert.Equal<object>((IEnumerable<object>)value1, (IEnumerable<object>)value2);
 
                     // Ensure non-default value
                     Assert.NotEmpty((IEnumerable<object>)value1);
                 }
-                else if (property.PropertyType.GetTypeInfo().IsValueType ||
+                else if (property.PropertyType.IsValueType ||
                     Nullable.GetUnderlyingType(property.PropertyType) != null)
                 {
                     Assert.Equal(value1, value2);
@@ -165,6 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             // Arrange
             var expected = string.Format(
+                CultureInfo.InvariantCulture,
                 "The route template '{0}' has invalid syntax. {1}",
                 template,
                 reason);

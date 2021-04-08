@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
-using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -19,6 +20,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    /// <summary>
+    /// A <see cref="IActionResultExecutor{ViewComponentResult}"/> for <see cref="ViewComponentResult"/>.
+    /// </summary>
     public class ViewComponentResultExecutor : IActionResultExecutor<ViewComponentResult>
     {
         private readonly HtmlEncoder _htmlEncoder;
@@ -26,19 +30,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly ILogger<ViewComponentResult> _logger;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataDictionaryFactory;
-        private IHttpResponseStreamWriterFactory _writerFactory;
+        private readonly IHttpResponseStreamWriterFactory _writerFactory;
 
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public ViewComponentResultExecutor(
-            IOptions<MvcViewOptions> mvcHelperOptions,
-            ILoggerFactory loggerFactory,
-            HtmlEncoder htmlEncoder,
-            IModelMetadataProvider modelMetadataProvider,
-            ITempDataDictionaryFactory tempDataDictionaryFactory)
-            : this(mvcHelperOptions, loggerFactory, htmlEncoder, modelMetadataProvider, tempDataDictionaryFactory, null)
-        {
-        }
-
+        /// <summary>
+        /// Initialize a new instance of <see cref="ViewComponentResultExecutor"/>
+        /// </summary>
+        /// <param name="mvcHelperOptions">The <see cref="IOptions{MvcViewOptions}"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        /// <param name="tempDataDictionaryFactory">The <see cref="ITempDataDictionaryFactory"/>.</param>
+        /// <param name="writerFactory">The <see cref=" IHttpResponseStreamWriterFactory"/>.</param>
         public ViewComponentResultExecutor(
             IOptions<MvcViewOptions> mvcHelperOptions,
             ILoggerFactory loggerFactory,
@@ -121,42 +123,38 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 response.StatusCode = result.StatusCode.Value;
             }
 
-            _writerFactory ??= context.HttpContext.RequestServices.GetRequiredService<IHttpResponseStreamWriterFactory>();
+            await using var writer = _writerFactory.CreateWriter(response.Body, resolvedContentTypeEncoding);
+            var viewContext = new ViewContext(
+                context,
+                NullView.Instance,
+                viewData,
+                tempData,
+                writer,
+                _htmlHelperOptions);
 
-            await using (var writer = _writerFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+            OnExecuting(viewContext);
+
+            // IViewComponentHelper is stateful, we want to make sure to retrieve it every time we need it.
+            var viewComponentHelper = context.HttpContext.RequestServices.GetRequiredService<IViewComponentHelper>();
+            (viewComponentHelper as IViewContextAware)?.Contextualize(viewContext);
+            var viewComponentResult = await GetViewComponentResult(viewComponentHelper, _logger, result);
+
+            if (viewComponentResult is ViewBuffer viewBuffer)
             {
-                var viewContext = new ViewContext(
-                    context,
-                    NullView.Instance,
-                    viewData,
-                    tempData,
-                    writer,
-                    _htmlHelperOptions);
-
-                OnExecuting(viewContext);
-
-                // IViewComponentHelper is stateful, we want to make sure to retrieve it every time we need it.
-                var viewComponentHelper = context.HttpContext.RequestServices.GetRequiredService<IViewComponentHelper>();
-                (viewComponentHelper as IViewContextAware)?.Contextualize(viewContext);
-                var viewComponentResult = await GetViewComponentResult(viewComponentHelper, _logger, result);
-
-                if (viewComponentResult is ViewBuffer viewBuffer)
+                // In the ordinary case, DefaultViewComponentHelper will return an instance of ViewBuffer. We can simply
+                // invoke WriteToAsync on it.
+                await viewBuffer.WriteToAsync(writer, _htmlEncoder);
+                await writer.FlushAsync();
+            }
+            else
+            {
+                await using var bufferingStream = new FileBufferingWriteStream();
+                await using (var intermediateWriter = _writerFactory.CreateWriter(bufferingStream, resolvedContentTypeEncoding))
                 {
-                    // In the ordinary case, DefaultViewComponentHelper will return an instance of ViewBuffer. We can simply
-                    // invoke WriteToAsync on it.
-                    await viewBuffer.WriteToAsync(writer, _htmlEncoder);
-                    await writer.FlushAsync();
+                    viewComponentResult.WriteTo(intermediateWriter, _htmlEncoder);
                 }
-                else
-                {
-                    await using var bufferingStream = new FileBufferingWriteStream();
-                    await using (var intermediateWriter = _writerFactory.CreateWriter(bufferingStream, resolvedContentTypeEncoding))
-                    {
-                        viewComponentResult.WriteTo(intermediateWriter, _htmlEncoder);
-                    }
 
-                    await bufferingStream.DrainBufferAsync(response.Body);
-                }
+                await bufferingStream.DrainBufferAsync(response.Body);
             }
         }
 
@@ -180,7 +178,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             else if (result.ViewComponentType == null)
             {
                 logger.ViewComponentResultExecuting(result.ViewComponentName);
-                return viewComponentHelper.InvokeAsync(result.ViewComponentName, result.Arguments);
+                return viewComponentHelper.InvokeAsync(result.ViewComponentName!, result.Arguments);
             }
             else
             {

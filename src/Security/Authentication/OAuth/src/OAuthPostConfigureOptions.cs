@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (options.StateDataFormat == null)
             {
                 var dataProtector = options.DataProtectionProvider.CreateProtector(
-                    typeof(THandler).FullName, name, "v1");
+                    typeof(THandler).FullName!, name, "v1");
                 options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }
         }

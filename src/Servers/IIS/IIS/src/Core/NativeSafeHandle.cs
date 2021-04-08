@@ -7,9 +7,9 @@ using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
-    internal class NativeSafeHandle : SafeHandle, IValueTaskSource<object>
+    internal class NativeSafeHandle : SafeHandle, IValueTaskSource<object?>
     {
-        private ManualResetValueTaskSourceCore<object> _core; // mutable struct; do not make this readonly
+        private ManualResetValueTaskSourceCore<object?> _core; // mutable struct; do not make this readonly
 
         public override bool IsInvalid => handle == IntPtr.Zero;
         public short Version => _core.Version;
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return true;
         }
 
-        public object GetResult(short token)
+        public object? GetResult(short token)
         {
             return _core.GetResult(token);
         }
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return _core.GetStatus(token);
         }
 
-        public void OnCompleted(Action<object> continuation, object state, short token, ValueTaskSourceOnCompletedFlags flags)
+        public void OnCompleted(Action<object?> continuation, object? state, short token, ValueTaskSourceOnCompletedFlags flags)
         {
             _core.OnCompleted(continuation, state, token, flags);
         }

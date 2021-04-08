@@ -15,6 +15,6 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// <summary>
         /// Gets or sets the <see cref="System.Reflection.ParameterInfo"/>.
         /// </summary>
-        public ParameterInfo ParameterInfo { get; set; }
+        public ParameterInfo ParameterInfo { get; set; } = default!;
     }
 }

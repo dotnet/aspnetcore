@@ -24,21 +24,21 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
         /// </summary>
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
+        public OpenIdConnectMessage ProtocolMessage { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the validated security token.
         /// </summary>
-        public JwtSecurityToken SecurityToken { get; set; }
+        public JwtSecurityToken SecurityToken { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the token endpoint response.
         /// </summary>
-        public OpenIdConnectMessage TokenEndpointResponse { get; set; }
+        public OpenIdConnectMessage? TokenEndpointResponse { get; set; }
 
         /// <summary>
         /// Gets or sets the protocol nonce.
         /// </summary>
-        public string Nonce { get; set; }
+        public string? Nonce { get; set; }
     }
 }

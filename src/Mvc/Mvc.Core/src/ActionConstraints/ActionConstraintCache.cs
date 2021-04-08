@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         private readonly IActionDescriptorCollectionProvider _collectionProvider;
         private readonly IActionConstraintProvider[] _actionConstraintProviders;
 
-        private volatile InnerCache _currentCache;
+        private volatile InnerCache? _currentCache;
 
         public ActionConstraintCache(
             IActionDescriptorCollectionProvider collectionProvider,
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
             }
         }
 
-        public IReadOnlyList<IActionConstraint> GetActionConstraints(HttpContext httpContext, ActionDescriptor action)
+        public IReadOnlyList<IActionConstraint>? GetActionConstraints(HttpContext httpContext, ActionDescriptor action)
         {
             var cache = CurrentCache;
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
 
             if (allActionConstraintsCached)
             {
-                entry = new CacheEntry(actionConstraints);
+                entry = new CacheEntry(actionConstraints!);
             }
             else
             {
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
             return actionConstraints;
         }
 
-        private IReadOnlyList<IActionConstraint> GetActionConstraintsFromEntry(CacheEntry entry, HttpContext httpContext, ActionDescriptor action)
+        private IReadOnlyList<IActionConstraint>? GetActionConstraintsFromEntry(CacheEntry entry, HttpContext httpContext, ActionDescriptor action)
         {
             Debug.Assert(entry.ActionConstraints != null || entry.Items != null);
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
                 return entry.ActionConstraints;
             }
 
-            var items = new List<ActionConstraintItem>(entry.Items.Count);
+            var items = new List<ActionConstraintItem>(entry.Items!.Count);
             for (var i = 0; i < entry.Items.Count; i++)
             {
                 var item = entry.Items[i];
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
             }
         }
 
-        private IReadOnlyList<IActionConstraint> ExtractActionConstraints(List<ActionConstraintItem> items)
+        private IReadOnlyList<IActionConstraint>? ExtractActionConstraints(List<ActionConstraintItem> items)
         {
             var count = 0;
             for (var i = 0; i < items.Count; i++)
@@ -193,9 +193,9 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
                 ActionConstraints = null;
             }
 
-            public IReadOnlyList<IActionConstraint> ActionConstraints { get; }
+            public IReadOnlyList<IActionConstraint>? ActionConstraints { get; }
 
-            public List<ActionConstraintItem> Items { get; }
+            public List<ActionConstraintItem>? Items { get; }
         }
     }
 }

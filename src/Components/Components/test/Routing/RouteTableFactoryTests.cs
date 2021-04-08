@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.Extensions.DependencyModel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test.Routing
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanDiscoverRoute()
         {
             // Arrange & Act
-            var routes = RouteTableFactory.Create(new[] { typeof(MyComponent), });
+            var routes = RouteTableFactory.Create(new List<Type> { typeof(MyComponent), });
 
             // Assert
             Assert.Equal("Test1", Assert.Single(routes.Routes).Template.TemplateText);
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanDiscoverRoutes_WithInheritance()
         {
             // Arrange & Act
-            var routes = RouteTableFactory.Create(new[] { typeof(MyComponent), typeof(MyInheritedComponent), });
+            var routes = RouteTableFactory.Create(new List<Type> { typeof(MyComponent), typeof(MyInheritedComponent), });
 
             // Assert
             Assert.Collection(
@@ -479,7 +479,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 // Segments present in the path have the corresponding value.
                 Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
-                Assert.Equal(i.ToString(), value);
+                Assert.Equal(i.ToString(CultureInfo.InvariantCulture), value);
             }
             for (int i = segments + 1; i <= 3; i++)
             {
@@ -513,7 +513,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 // Segments present in the path have the corresponding value.
                 Assert.True(context.Parameters.TryGetValue($"param{i}", out var value));
-                Assert.Equal(i.ToString(), value);
+                Assert.Equal(i.ToString(CultureInfo.InvariantCulture), value);
             }
             for (int i = segments + 1; i <= 3; i++)
             {
@@ -936,7 +936,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Assert.Equal(17, routeTable.Routes.Length);
             for (var i = 0; i < 17; i++)
             {
-                var templateText = "r" + i.ToString().PadLeft(2, '0');
+                var templateText = "r" + i.ToString(CultureInfo.InvariantCulture).PadLeft(2, '0');
                 Assert.Equal(templateText, routeTable.Routes[i].Template.TemplateText);
             }
         }

@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var viewBufferScope = serviceProvider.GetRequiredService<IViewBufferScope>();
 
             var content = new HtmlContentBuilder(modelExplorer.Metadata.Properties.Count);
-            foreach (var propertyExplorer in modelExplorer.Properties)
+            foreach (var propertyExplorer in modelExplorer.PropertiesInternal)
             {
                 var propertyMetadata = propertyExplorer.Metadata;
                 if (!ShouldShow(propertyExplorer, templateInfo))

@@ -45,6 +45,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// The value for <c>APIExplorer.ApiDescription.GroupName</c> of
         /// <c>APIExplorer.ApiDescription</c> objects created for the associated controller or action.
         /// </summary>
-        public string GroupName { get; set; }
+        public string? GroupName { get; set; }
     }
 }

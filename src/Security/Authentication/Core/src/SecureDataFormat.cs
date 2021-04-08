@@ -48,15 +48,13 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <inheritdoc />
-        [return: MaybeNull]
-        public TData Unprotect(string protectedText)
+        public TData? Unprotect(string? protectedText)
         {
             return Unprotect(protectedText, purpose: null);
         }
 
         /// <inheritdoc />
-        [return: MaybeNull]
-        public TData Unprotect(string protectedText, string? purpose)
+        public TData? Unprotect(string? protectedText, string? purpose)
         {
             try
             {

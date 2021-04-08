@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Exists(By.Id("culture-selector"));
         }
 
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24692")]
         [Theory]
         [InlineData("en-US")]
         [InlineData("fr-FR")]

@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
@@ -68,11 +67,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return stringResult;
             }
 
-            var firstProperty = modelExplorer.Properties.FirstOrDefault();
-            if (firstProperty == null)
+            if (modelExplorer.PropertiesInternal.Length == 0)
             {
                 return string.Empty;
             }
+
+            var firstProperty = modelExplorer.PropertiesInternal[0];
 
             if (firstProperty.Model == null)
             {

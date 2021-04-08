@@ -65,20 +65,5 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
-        // Used to ensure that there's always a sign in scheme
-        private class EnsureSignInScheme<TOptions> : IPostConfigureOptions<TOptions> where TOptions : RemoteAuthenticationOptions
-        {
-            private readonly AuthenticationOptions _authOptions;
-
-            public EnsureSignInScheme(IOptions<AuthenticationOptions> authOptions)
-            {
-                _authOptions = authOptions.Value;
-            }
-
-            public void PostConfigure(string name, TOptions options)
-            {
-                options.SignInScheme ??= _authOptions.DefaultSignInScheme;
-            }
-        }
     }
 }

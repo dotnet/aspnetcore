@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public Task Invoke(HttpContext httpContext)
         {
-            // There's already an endpoint, skip maching completely
+            // There's already an endpoint, skip matching completely
             var endpoint = httpContext.GetEndpoint();
             if (endpoint != null)
             {

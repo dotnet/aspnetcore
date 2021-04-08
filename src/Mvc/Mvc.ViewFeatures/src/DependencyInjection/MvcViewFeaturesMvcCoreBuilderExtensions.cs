@@ -5,7 +5,10 @@ using System;
 using System.Buffers;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -24,8 +27,16 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Static class that adds extension methods to <see cref="IMvcCoreBuilder"/>. This class cannot be inherited.
+    /// </summary>
     public static class MvcViewFeaturesMvcCoreBuilderExtensions
     {
+        /// <summary>
+        /// Add view related services.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddViews(this IMvcCoreBuilder builder)
         {
             if (builder == null)
@@ -69,6 +80,12 @@ namespace Microsoft.Extensions.DependencyInjection
             }
         }
 
+        /// <summary>
+        /// Add view related services.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">The setup action for <see cref="MvcViewOptions"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddViews(
             this IMvcCoreBuilder builder,
             Action<MvcViewOptions> setupAction)
@@ -119,6 +136,12 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// Configures <see cref="MvcViewOptions"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">The setup action.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder ConfigureViews(
             this IMvcCoreBuilder builder,
             Action<MvcViewOptions> setupAction)
@@ -212,9 +235,13 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             services.TryAddScoped<IComponentRenderer, ComponentRenderer>();
             services.TryAddScoped<StaticComponentRenderer>();
+            services.TryAddScoped<HtmlRenderer>();
             services.TryAddScoped<NavigationManager, HttpNavigationManager>();
             services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
             services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
+            services.TryAddScoped<ComponentApplicationLifetime>();
+            services.TryAddScoped<ComponentApplicationState>(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
+            services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
 
             services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();
 

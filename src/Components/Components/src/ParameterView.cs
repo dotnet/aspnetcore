@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="defaultValue">The default value to return if no such parameter exists in the collection.</param>
         /// <returns>The parameter value if found; otherwise <paramref name="defaultValue"/>.</returns>
         public TValue GetValueOrDefault<TValue>(string parameterName, TValue defaultValue)
-            => TryGetValue<TValue>(parameterName, out TValue result) ? result : defaultValue;
+            => TryGetValue<TValue>(parameterName, out TValue? result) ? result : defaultValue;
 
         /// <summary>
         /// Returns a dictionary populated with the contents of the <see cref="ParameterView"/>.
@@ -114,6 +114,21 @@ namespace Microsoft.AspNetCore.Components
                 result[entry.Name] = entry.Value;
             }
             return result;
+        }
+
+        internal ParameterView Clone()
+        {
+            if (ReferenceEquals(_frames, _emptyFrames))
+            {
+                return Empty;
+            }
+
+            var numEntries = GetEntryCount();
+            var cloneBuffer = new RenderTreeFrame[1 + numEntries];
+            cloneBuffer[0] = RenderTreeFrame.PlaceholderChildComponentWithSubtreeLength(1 + numEntries);
+            _frames.AsSpan(1, numEntries).CopyTo(cloneBuffer.AsSpan(1));
+
+            return new ParameterView(Lifetime, cloneBuffer, _ownerIndex);
         }
 
         internal ParameterView WithCascadingParameters(IReadOnlyList<CascadingParameterState> cascadingParameters)
@@ -189,11 +204,7 @@ namespace Microsoft.AspNetCore.Components
         {
             builder.Clear();
 
-            var numEntries = 0;
-            foreach (var entry in this)
-            {
-                numEntries++;
-            }
+            var numEntries = GetEntryCount();
 
             // We need to prefix the captured frames with an "owner" frame that
             // describes the length of the buffer so that ParameterView
@@ -207,12 +218,23 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
+        private int GetEntryCount()
+        {
+            var numEntries = 0;
+            foreach (var _ in this)
+            {
+                numEntries++;
+            }
+
+            return numEntries;
+        }
+
         /// <summary>
         /// Creates a new <see cref="ParameterView"/> from the given <see cref="IDictionary{TKey, TValue}"/>.
         /// </summary>
         /// <param name="parameters">The <see cref="IDictionary{TKey, TValue}"/> with the parameters.</param>
         /// <returns>A <see cref="ParameterView"/>.</returns>
-        public static ParameterView FromDictionary(IDictionary<string, object> parameters)
+        public static ParameterView FromDictionary(IDictionary<string, object?> parameters)
         {
             var frames = new RenderTreeFrame[parameters.Count + 1];
             frames[0] = RenderTreeFrame.Element(0, GeneratedParameterViewElementName);

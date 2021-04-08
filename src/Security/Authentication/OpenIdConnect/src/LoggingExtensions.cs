@@ -7,58 +7,58 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception> _redirectToIdentityProviderForSignOutHandledResponse;
-        private static Action<ILogger, Exception> _redirectToIdentityProviderHandledResponse;
-        private static Action<ILogger, Exception> _signOutCallbackRedirectHandledResponse;
-        private static Action<ILogger, Exception> _signOutCallbackRedirectSkipped;
-        private static Action<ILogger, Exception> _updatingConfiguration;
-        private static Action<ILogger, Exception> _receivedIdToken;
-        private static Action<ILogger, Exception> _redeemingCodeForTokens;
-        private static Action<ILogger, string, Exception> _enteringOpenIdAuthenticationHandlerHandleRemoteAuthenticateAsync;
-        private static Action<ILogger, string, Exception> _enteringOpenIdAuthenticationHandlerHandleUnauthorizedAsync;
-        private static Action<ILogger, string, Exception> _enteringOpenIdAuthenticationHandlerHandleSignOutAsync;
-        private static Action<ILogger, string, Exception> _messageReceived;
-        private static Action<ILogger, Exception> _messageReceivedContextHandledResponse;
-        private static Action<ILogger, Exception> _messageReceivedContextSkipped;
-        private static Action<ILogger, Exception> _authorizationCodeReceived;
-        private static Action<ILogger, Exception> _configurationManagerRequestRefreshCalled;
-        private static Action<ILogger, Exception> _tokenResponseReceived;
-        private static Action<ILogger, Exception> _tokenValidatedHandledResponse;
-        private static Action<ILogger, Exception> _tokenValidatedSkipped;
-        private static Action<ILogger, Exception> _authenticationFailedContextHandledResponse;
-        private static Action<ILogger, Exception> _authenticationFailedContextSkipped;
-        private static Action<ILogger, Exception> _authorizationCodeReceivedContextHandledResponse;
-        private static Action<ILogger, Exception> _authorizationCodeReceivedContextSkipped;
-        private static Action<ILogger, Exception> _tokenResponseReceivedHandledResponse;
-        private static Action<ILogger, Exception> _tokenResponseReceivedSkipped;
-        private static Action<ILogger, string, Exception> _userInformationReceived;
-        private static Action<ILogger, Exception> _userInformationReceivedHandledResponse;
-        private static Action<ILogger, Exception> _userInformationReceivedSkipped;
-        private static Action<ILogger, string, Exception> _invalidLogoutQueryStringRedirectUrl;
-        private static Action<ILogger, Exception> _nullOrEmptyAuthorizationResponseState;
-        private static Action<ILogger, Exception> _unableToReadAuthorizationResponseState;
-        private static Action<ILogger, string, string, string, Exception> _responseError;
-        private static Action<ILogger, string, string, string, int, Exception> _responseErrorWithStatusCode;
+        private static Action<ILogger, Exception?> _redirectToIdentityProviderForSignOutHandledResponse;
+        private static Action<ILogger, Exception?> _redirectToIdentityProviderHandledResponse;
+        private static Action<ILogger, Exception?> _signOutCallbackRedirectHandledResponse;
+        private static Action<ILogger, Exception?> _signOutCallbackRedirectSkipped;
+        private static Action<ILogger, Exception?> _updatingConfiguration;
+        private static Action<ILogger, Exception?> _receivedIdToken;
+        private static Action<ILogger, Exception?> _redeemingCodeForTokens;
+        private static Action<ILogger, string, Exception?> _enteringOpenIdAuthenticationHandlerHandleRemoteAuthenticateAsync;
+        private static Action<ILogger, string, Exception?> _enteringOpenIdAuthenticationHandlerHandleUnauthorizedAsync;
+        private static Action<ILogger, string, Exception?> _enteringOpenIdAuthenticationHandlerHandleSignOutAsync;
+        private static Action<ILogger, string, Exception?> _messageReceived;
+        private static Action<ILogger, Exception?> _messageReceivedContextHandledResponse;
+        private static Action<ILogger, Exception?> _messageReceivedContextSkipped;
+        private static Action<ILogger, Exception?> _authorizationCodeReceived;
+        private static Action<ILogger, Exception?> _configurationManagerRequestRefreshCalled;
+        private static Action<ILogger, Exception?> _tokenResponseReceived;
+        private static Action<ILogger, Exception?> _tokenValidatedHandledResponse;
+        private static Action<ILogger, Exception?> _tokenValidatedSkipped;
+        private static Action<ILogger, Exception?> _authenticationFailedContextHandledResponse;
+        private static Action<ILogger, Exception?> _authenticationFailedContextSkipped;
+        private static Action<ILogger, Exception?> _authorizationCodeReceivedContextHandledResponse;
+        private static Action<ILogger, Exception?> _authorizationCodeReceivedContextSkipped;
+        private static Action<ILogger, Exception?> _tokenResponseReceivedHandledResponse;
+        private static Action<ILogger, Exception?> _tokenResponseReceivedSkipped;
+        private static Action<ILogger, string, Exception?> _userInformationReceived;
+        private static Action<ILogger, Exception?> _userInformationReceivedHandledResponse;
+        private static Action<ILogger, Exception?> _userInformationReceivedSkipped;
+        private static Action<ILogger, string, Exception?> _invalidLogoutQueryStringRedirectUrl;
+        private static Action<ILogger, Exception?> _nullOrEmptyAuthorizationResponseState;
+        private static Action<ILogger, Exception?> _unableToReadAuthorizationResponseState;
+        private static Action<ILogger, string, string, string, Exception?> _responseError;
+        private static Action<ILogger, string, string, string, int, Exception?> _responseErrorWithStatusCode;
         private static Action<ILogger, Exception> _exceptionProcessingMessage;
-        private static Action<ILogger, Exception> _accessTokenNotAvailable;
-        private static Action<ILogger, Exception> _retrievingClaims;
-        private static Action<ILogger, Exception> _userInfoEndpointNotSet;
+        private static Action<ILogger, Exception?> _accessTokenNotAvailable;
+        private static Action<ILogger, Exception?> _retrievingClaims;
+        private static Action<ILogger, Exception?> _userInfoEndpointNotSet;
         private static Action<ILogger, Exception> _unableToProtectNonceCookie;
-        private static Action<ILogger, string, Exception> _invalidAuthenticationRequestUrl;
-        private static Action<ILogger, string, Exception> _unableToReadIdToken;
-        private static Action<ILogger, string, Exception> _invalidSecurityTokenType;
-        private static Action<ILogger, string, Exception> _unableToValidateIdToken;
-        private static Action<ILogger, string, Exception> _postAuthenticationLocalRedirect;
-        private static Action<ILogger, string, Exception> _postSignOutRedirect;
-        private static Action<ILogger, Exception> _remoteSignOutHandledResponse;
-        private static Action<ILogger, Exception> _remoteSignOutSkipped;
-        private static Action<ILogger, Exception> _remoteSignOut;
-        private static Action<ILogger, Exception> _remoteSignOutSessionIdMissing;
-        private static Action<ILogger, Exception> _remoteSignOutSessionIdInvalid;
-        private static Action<ILogger, string, Exception> _authenticationSchemeSignedOut;
-        private static Action<ILogger, string, string, Exception> _handleChallenge;
-        private static Action<ILogger, Exception> _remoteSignOutIssuerMissing;
-        private static Action<ILogger, Exception> _remoteSignOutIssuerInvalid;
+        private static Action<ILogger, string, Exception?> _invalidAuthenticationRequestUrl;
+        private static Action<ILogger, string, Exception?> _unableToReadIdToken;
+        private static Action<ILogger, string?, Exception?> _invalidSecurityTokenType;
+        private static Action<ILogger, string, Exception?> _unableToValidateIdToken;
+        private static Action<ILogger, string, Exception?> _postAuthenticationLocalRedirect;
+        private static Action<ILogger, string, Exception?> _postSignOutRedirect;
+        private static Action<ILogger, Exception?> _remoteSignOutHandledResponse;
+        private static Action<ILogger, Exception?> _remoteSignOutSkipped;
+        private static Action<ILogger, Exception?> _remoteSignOut;
+        private static Action<ILogger, Exception?> _remoteSignOutSessionIdMissing;
+        private static Action<ILogger, Exception?> _remoteSignOutSessionIdInvalid;
+        private static Action<ILogger, string, Exception?> _authenticationSchemeSignedOut;
+        private static Action<ILogger, string, string, Exception?> _handleChallenge;
+        private static Action<ILogger, Exception?> _remoteSignOutIssuerMissing;
+        private static Action<ILogger, Exception?> _remoteSignOutIssuerInvalid;
 
         static LoggingExtensions()
         {
@@ -211,7 +211,7 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(39, "AuthenticationFailedContextSkipped"),
                 logLevel: LogLevel.Debug,
                 formatString: "AuthenticationFailedContext.Skipped");
-            _invalidSecurityTokenType = LoggerMessage.Define<string>(
+            _invalidSecurityTokenType = LoggerMessage.Define<string?>(
                 eventId: new EventId(40, "InvalidSecurityTokenType"),
                 logLevel: LogLevel.Error,
                 formatString: "The Validated Security Token must be of type JwtSecurityToken, but instead its type is: '{SecurityTokenType}'");
@@ -454,7 +454,7 @@ namespace Microsoft.Extensions.Logging
             _unableToReadIdToken(logger, idToken, null);
         }
 
-        public static void InvalidSecurityTokenType(this ILogger logger, string tokenType)
+        public static void InvalidSecurityTokenType(this ILogger logger, string? tokenType)
         {
             _invalidSecurityTokenType(logger, tokenType, null);
         }

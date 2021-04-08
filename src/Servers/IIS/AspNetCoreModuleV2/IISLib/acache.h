@@ -10,11 +10,9 @@ class ALLOC_CACHE_HANDLER
 public:
 
     ALLOC_CACHE_HANDLER(
-        VOID
     );
 
     ~ALLOC_CACHE_HANDLER(
-        VOID
     );
 
     HRESULT
@@ -25,7 +23,6 @@ public:
 
     LPVOID
     Alloc(
-        VOID
     );
 
     VOID
@@ -38,12 +35,10 @@ private:
 
     VOID
     CleanupLookaside(
-        VOID
     );
 
     DWORD
     QueryDepthForAllSLists(
-        VOID
     );
 
     LONG                    m_nThreshold;
@@ -64,13 +59,11 @@ public:
     static
     HRESULT
     StaticInitialize(
-        VOID
     );
     
     static
     VOID
     StaticTerminate(
-        VOID
     );
 
     static

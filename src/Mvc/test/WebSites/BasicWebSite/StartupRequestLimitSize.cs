@@ -17,8 +17,7 @@ namespace BasicWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc()
-                .AddNewtonsoftJson()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddNewtonsoftJson();
             services.ConfigureBaseWebSiteAuthPolicies();
         }
 

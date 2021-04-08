@@ -83,6 +83,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                 AppContext.BaseDirectory :
                 Path.GetDirectoryName(assembly.Location);
 
+            if (string.IsNullOrEmpty(assemblyDirectory))
+            {
+                return Array.Empty<Assembly>();
+            }
+
             var relatedAssemblies = new List<Assembly>();
             for (var i = 0; i < attributes.Length; i++)
             {

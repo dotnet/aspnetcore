@@ -15,8 +15,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
-import io.reactivex.Single;
-import io.reactivex.subjects.CompletableSubject;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.subjects.CompletableSubject;
 
 public class LongPollingTransportTest {
 

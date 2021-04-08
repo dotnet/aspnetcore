@@ -26,8 +26,8 @@ namespace Microsoft.Extensions.CommandLineUtils
             => command.Option(
                 template,
                 description,
-                template.IndexOf('<') != -1
-                    ? template.EndsWith(">...") ? CommandOptionType.MultipleValue : CommandOptionType.SingleValue
+                template.IndexOf("<", StringComparison.Ordinal) != -1
+                    ? template.EndsWith(">...", StringComparison.Ordinal) ? CommandOptionType.MultipleValue : CommandOptionType.SingleValue
                     : CommandOptionType.NoValue);
 
         public static void VersionOptionFromAssemblyAttributes(this CommandLineApplication app)

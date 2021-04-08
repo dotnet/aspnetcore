@@ -24,7 +24,7 @@ describe("LongPollingTransport", () => {
                         return new HttpResponse(200);
                     } else {
                         // Turn 'onabort' into a promise.
-                        const abort = new Promise((resolve) => {
+                        const abort = new Promise<void>((resolve) => {
                             if (r.abortSignal!.aborted) {
                                 resolve();
                             } else {

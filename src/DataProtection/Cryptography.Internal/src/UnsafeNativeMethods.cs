@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Cryptography
         internal static extern int BCryptOpenAlgorithmProvider(
             [Out] out BCryptAlgorithmHandle phAlgorithm,
             [In, MarshalAs(UnmanagedType.LPWStr)] string pszAlgId,
-            [In, MarshalAs(UnmanagedType.LPWStr)] string pszImplementation,
+            [In, MarshalAs(UnmanagedType.LPWStr)] string? pszImplementation,
             [In] uint dwFlags);
 
         [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
@@ -319,16 +319,16 @@ namespace Microsoft.AspNetCore.Cryptography
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ThrowExceptionForBCryptStatusImpl(int ntstatus)
         {
-            string message = _lazyBCryptLibHandle.Value.FormatMessage(ntstatus);
+            var message = _lazyBCryptLibHandle.Value.FormatMessage(ntstatus);
             throw new CryptographicException(message);
         }
 
         public static void ThrowExceptionForLastCrypt32Error()
         {
-            int lastError = Marshal.GetLastWin32Error();
+            var lastError = Marshal.GetLastWin32Error();
             Debug.Assert(lastError != 0, "This method should only be called if there was an error.");
 
-            string message = _lazyCrypt32LibHandle.Value.FormatMessage(lastError);
+            var message = _lazyCrypt32LibHandle.Value.FormatMessage(lastError);
             throw new CryptographicException(message);
         }
 
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Cryptography
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void ThrowExceptionForNCryptStatusImpl(int ntstatus)
         {
-            string message = _lazyNCryptLibHandle.Value.FormatMessage(ntstatus);
+            var message = _lazyNCryptLibHandle.Value.FormatMessage(ntstatus);
             throw new CryptographicException(message);
         }
     }

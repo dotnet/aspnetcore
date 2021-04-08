@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Hosting
 {
     internal class StartupMethods
     {
-        public StartupMethods(object instance, Action<IApplicationBuilder> configure, Func<IServiceCollection, IServiceProvider> configureServices)
+        public StartupMethods(object? instance, Action<IApplicationBuilder> configure, Func<IServiceCollection, IServiceProvider> configureServices)
         {
             Debug.Assert(configure != null);
             Debug.Assert(configureServices != null);
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Hosting
             ConfigureServicesDelegate = configureServices;
         }
 
-        public object StartupInstance { get; }
+        public object? StartupInstance { get; }
         public Func<IServiceCollection, IServiceProvider> ConfigureServicesDelegate { get; }
         public Action<IApplicationBuilder> ConfigureDelegate { get; }
 

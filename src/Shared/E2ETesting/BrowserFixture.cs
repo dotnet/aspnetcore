@@ -33,6 +33,8 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public IMessageSink DiagnosticsMessageSink { get; }
 
+        public string UserProfileDir { get; private set; }
+
         public static void EnforceSupportedConfigurations()
         {
             // Do not change the current platform support without explicit approval.
@@ -70,6 +72,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             var browsers = await Task.WhenAll(_browsers.Values);
             foreach (var (browser, log) in browsers)
             {
+                browser?.Quit();
                 browser?.Dispose();
             }
 
@@ -137,13 +140,17 @@ namespace Microsoft.AspNetCore.E2ETesting
         {
             var opts = new ChromeOptions();
 
-            // Comment this out if you want to watch or interact with the browser (e.g., for debugging)
-            if (!Debugger.IsAttached)
+            // Force language to english for tests
+            opts.AddUserProfilePreference("intl.accept_languages", "en");
+
+            if (!Debugger.IsAttached &&
+                !string.Equals(Environment.GetEnvironmentVariable("E2E_TEST_VISIBLE"), "true", StringComparison.OrdinalIgnoreCase))
             {
                 opts.AddArgument("--headless");
             }
 
             opts.AddArgument("--no-sandbox");
+            opts.AddArgument("--ignore-certificate-errors");
 
             // Log errors
             opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
@@ -159,10 +166,12 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
 
             var userProfileDirectory = UserProfileDirectory(context);
+            UserProfileDir = userProfileDirectory;
             if (!string.IsNullOrEmpty(userProfileDirectory))
             {
                 Directory.CreateDirectory(userProfileDirectory);
                 opts.AddArgument($"--user-data-dir={userProfileDirectory}");
+                opts.AddUserProfilePreference("download.default_directory", Path.Combine(userProfileDirectory, "Downloads"));
             }
 
             var instance = await SeleniumStandaloneServer.GetInstanceAsync(output);
@@ -239,7 +248,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
             DriverOptions options;
 
-            switch (sauce.BrowserName.ToLower())
+            switch (sauce.BrowserName.ToLowerInvariant())
             {
                 case "chrome":
                     options = new ChromeOptions();
@@ -320,7 +329,9 @@ namespace Microsoft.AspNetCore.E2ETesting
                         capabilities,
                         TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
 
-                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
+                    // Make sure implicit waits are disabled as they don't mix well with explicit waiting
+                    // see https://www.selenium.dev/documentation/en/webdriver/waits/#implicit-wait
+                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.Zero;
                     var logs = new RemoteLogs(driver);
 
                     return (driver, logs);

@@ -8,58 +8,75 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketSender : SocketSenderReceiverBase
+    internal sealed class SocketSender : SocketAwaitableEventArgs
     {
-        private List<ArraySegment<byte>> _bufferList;
+        private List<ArraySegment<byte>>? _bufferList;
 
-        public SocketSender(Socket socket, PipeScheduler scheduler) : base(socket, scheduler)
+        public SocketSender(PipeScheduler scheduler) : base(scheduler)
         {
         }
 
-        public SocketAwaitableEventArgs SendAsync(in ReadOnlySequence<byte> buffers)
+        public ValueTask<int> SendAsync(Socket socket, in ReadOnlySequence<byte> buffers)
         {
             if (buffers.IsSingleSegment)
             {
-                return SendAsync(buffers.First);
+                return SendAsync(socket, buffers.First);
             }
 
-            if (!_awaitableEventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
+            SetBufferList(buffers);
+
+            if (socket.SendAsync(this))
             {
-                _awaitableEventArgs.SetBuffer(null, 0, 0);
+                return new ValueTask<int>(this, 0);
             }
 
-            _awaitableEventArgs.BufferList = GetBufferList(buffers);
+            var bytesTransferred = BytesTransferred;
+            var error = SocketError;
 
-            if (!_socket.SendAsync(_awaitableEventArgs))
-            {
-                _awaitableEventArgs.Complete();
-            }
-
-            return _awaitableEventArgs;
+            return error == SocketError.Success ?
+                new ValueTask<int>(bytesTransferred) :
+               ValueTask.FromException<int>(CreateException(error));
         }
 
-        private SocketAwaitableEventArgs SendAsync(ReadOnlyMemory<byte> memory)
+        public void Reset()
         {
-            // The BufferList getter is much less expensive then the setter.
-            if (_awaitableEventArgs.BufferList != null)
+            // We clear the buffer and buffer list before we put it back into the pool
+            // it's a small performance hit but it removes the confusion when looking at dumps to see this still
+            // holds onto the buffer when it's back in the pool
+            if (BufferList != null)
             {
-                _awaitableEventArgs.BufferList = null;
+                BufferList = null;
+
+                _bufferList?.Clear();
             }
-
-            _awaitableEventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
-
-            if (!_socket.SendAsync(_awaitableEventArgs))
+            else
             {
-                _awaitableEventArgs.Complete();
+                SetBuffer(null, 0, 0);
             }
-
-            return _awaitableEventArgs;
         }
 
-        private List<ArraySegment<byte>> GetBufferList(in ReadOnlySequence<byte> buffer)
+        private ValueTask<int> SendAsync(Socket socket, ReadOnlyMemory<byte> memory)
+        {
+            SetBuffer(MemoryMarshal.AsMemory(memory));
+
+            if (socket.SendAsync(this))
+            {
+                return new ValueTask<int>(this, 0);
+            }
+
+            var bytesTransferred = BytesTransferred;
+            var error = SocketError;
+
+            return error == SocketError.Success ?
+                new ValueTask<int>(bytesTransferred) :
+               ValueTask.FromException<int>(CreateException(error));
+        }
+
+        private void SetBufferList(in ReadOnlySequence<byte> buffer)
         {
             Debug.Assert(!buffer.IsEmpty);
             Debug.Assert(!buffer.IsSingleSegment);
@@ -68,18 +85,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 _bufferList = new List<ArraySegment<byte>>();
             }
-            else
-            {
-                // Buffers are pooled, so it's OK to root them until the next multi-buffer write.
-                _bufferList.Clear();
-            }
 
             foreach (var b in buffer)
             {
                 _bufferList.Add(b.GetArray());
             }
 
-            return _bufferList;
+            // The act of setting this list, sets the buffers in the internal buffer list
+            BufferList = _bufferList;
         }
     }
 }

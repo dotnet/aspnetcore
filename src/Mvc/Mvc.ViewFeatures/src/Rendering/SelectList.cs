@@ -13,6 +13,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     /// </summary>
     public class SelectList : MultiSelectList
     {
+        /// <summary>
+        /// Initialize a new instance of <see cref="SelectList"/>.
+        /// </summary>
+        /// <param name="items">The items.</param>
         public SelectList(IEnumerable items)
             : this(items, selectedValue: null)
         {
@@ -22,6 +26,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
         }
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="SelectList"/>.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="selectedValue">The selected value.</param>
         public SelectList(IEnumerable items, object selectedValue)
             : this(items, dataValueField: null, dataTextField: null, selectedValue: selectedValue)
         {
@@ -31,6 +40,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
         }
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="SelectList"/>.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="dataValueField">The data value field.</param>
+        /// <param name="dataTextField">The data text field.</param>
         public SelectList(IEnumerable items, string dataValueField, string dataTextField)
             : this(items, dataValueField, dataTextField, selectedValue: null)
         {
@@ -40,6 +55,13 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
         }
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="SelectList"/>.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="dataValueField">The data value field.</param>
+        /// <param name="dataTextField">The data text field.</param>
+        /// <param name="selectedValue">The selected value.</param>
         public SelectList(
             IEnumerable items,
             string dataValueField,
@@ -84,6 +106,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             SelectedValue = selectedValue;
         }
 
+        /// <summary>
+        /// The selected value.
+        /// </summary>
         public object SelectedValue { get; }
 
         private static IEnumerable ToEnumerable(object selectedValue)

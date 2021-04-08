@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             FilePath = filePath;
         }
 
-        public SourceSpan(int absoluteIndex, int lineIndex, int characterIndex, int length) 
+        public SourceSpan(int absoluteIndex, int lineIndex, int characterIndex, int length)
             : this(filePath: null, absoluteIndex: absoluteIndex, lineIndex: lineIndex, characterIndex: characterIndex, length: length)
         {
         }
@@ -57,13 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override bool Equals(object obj)
         {
-            var other = obj as SourceSpan?;
-            if (ReferenceEquals(other, null))
-            {
-                return false;
-            }
-
-            return Equals(other.Value);
+            return obj is SourceSpan span && Equals(span);
         }
 
         public override int GetHashCode()
@@ -91,33 +85,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static bool operator ==(SourceSpan left, SourceSpan right)
         {
-            if (ReferenceEquals(left, right))
-            {
-                // Exact equality e.g. both objects are null.
-                return true;
-            }
-
-            if (ReferenceEquals(left, null))
-            {
-                return false;
-            }
-
             return left.Equals(right);
         }
 
         public static bool operator !=(SourceSpan left, SourceSpan right)
         {
-            if (ReferenceEquals(left, right))
-            {
-                // Exact equality e.g. both objects are null.
-                return false;
-            }
-
-            if (ReferenceEquals(left, null))
-            {
-                return true;
-            }
-
             return !left.Equals(right);
         }
     }

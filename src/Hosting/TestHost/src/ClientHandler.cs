@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.TestHost
             _application = application ?? throw new ArgumentNullException(nameof(application));
 
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
-            if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
+            if (pathBase.HasValue && pathBase.Value.EndsWith('/'))
             {
                 pathBase = new PathString(pathBase.Value[..^1]); // All but the last character
             }
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.TestHost
                 }
                 req.Method = request.Method.ToString();
 
-                req.Scheme = request.RequestUri.Scheme;
+                req.Scheme = request.RequestUri!.Scheme;
 
                 var canHaveBody = false;
                 if (requestContent != null)
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.TestHost
             // Copy trailers to the response message when the response stream is complete
             contextBuilder.RegisterResponseReadCompleteCallback(context =>
             {
-                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>()!;
 
                 foreach (var trailer in responseTrailersFeature.Trailers)
                 {
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.TestHost
             var httpContext = await contextBuilder.SendAsync(cancellationToken);
 
             response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
-            response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
+            response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>()!.ReasonPhrase;
             response.RequestMessage = request;
             response.Version = request.Version;
 

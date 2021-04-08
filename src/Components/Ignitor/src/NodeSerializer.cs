@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 #nullable enable
@@ -154,7 +155,7 @@ namespace Ignitor
                         Write(" ");
                         Write(evt.Value.EventName);
                         Write("(");
-                        Write(evt.Value.EventId.ToString());
+                        Write(evt.Value.EventId.ToString(CultureInfo.InvariantCulture));
                         Write(")");
                     }
                     Write("]");
@@ -181,7 +182,7 @@ namespace Ignitor
             private void SerializeComponent(ComponentNode component)
             {
                 Write("[Component ( ");
-                Write(component.ComponentId.ToString());
+                Write(component.ComponentId.ToString(CultureInfo.InvariantCulture));
                 WriteLine(" )]");
                 _depth++;
                 SerializeChildren(component);
