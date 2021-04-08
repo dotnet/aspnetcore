@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
-        /// </summary>Microsoft.AspNetCore.Routing.MapAction"
+        /// </summary>
         /// <param name="methodInfo">A static request handler with any number of custom parameters that often produces a response with its return value.</param>
         /// <returns>The <see cref="RequestDelegate"/>.</returns>
         public static RequestDelegate Create(MethodInfo methodInfo)
@@ -253,11 +253,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 return RequestAbortedExpr;
             }
-            else if (parameter.ParameterType == typeof(string))
-            {
-                return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
-            }
-            else if (HasTryParseMethod(parameter))
+            else if (parameter.ParameterType == typeof(string) || HasTryParseMethod(parameter))
             {
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
             }
@@ -296,7 +292,7 @@ namespace Microsoft.AspNetCore.Http
             //          if (!int.TryParse(tempSourceString, out parsedValue))
             //          {
             //              wasTryParseFailureVariable = true;
-            //              Log.ParameterBindingFailed(httpContext, "Int32", "id", sourceValue)
+            //              Log.ParameterBindingFailed(httpContext, "Int32", "id", tempSourceString)
             //          }
             //
             //          return parsedValue;
@@ -635,7 +631,7 @@ namespace Microsoft.AspNetCore.Http
             //      if (!int.TryParse(tempSourceString, out parsedValue))
             //      {
             //          wasTryParseFailureVariable = true;
-            //          Log.ParameterBindingFailed(httpContext, "Int32", "id", sourceValue)
+            //          Log.ParameterBindingFailed(httpContext, "Int32", "id", tempSourceString)
             //      }
             //
             //      return parsedValue;
