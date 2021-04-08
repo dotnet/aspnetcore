@@ -6,7 +6,8 @@
     <TestGroupName>Interop.FunctionalTests</TestGroupName>
     <!-- WebDriver is not strong named, so this test assembly cannot be strong-named either. -->
     <SignAssembly>false</SignAssembly>
-    <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64'">false</BuildHelixPayload>
+    <SkipHelixArm>true</SkipHelixArm>
+    <SkipHelixAlpine>true</SkipHelixAlpine>
   </PropertyGroup>
 
   <ItemGroup>

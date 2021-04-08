@@ -1,0 +1,13 @@
+﻿@page
+@implements IAsyncDisposable
+@using RazorPagesWebSite
+@inject PageTestDisposeAsync TestDisposeAsync
+Hello, World!
+
+@functions{
+    public ValueTask DisposeAsync()
+    {
+        TestDisposeAsync.DisposeAsyncInvoked = true;
+        return default;
+    }
+}

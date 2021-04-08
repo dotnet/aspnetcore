@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -11,9 +12,9 @@ namespace Microsoft.AspNetCore.Components
     // A cache for root component types
     internal class RootComponentTypeCache
     {
-        private readonly ConcurrentDictionary<Key, Type> _typeToKeyLookUp = new ConcurrentDictionary<Key, Type>();
+        private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
 
-        public Type GetRootComponent(string assembly, string type)
+        public Type? GetRootComponent(string assembly, string type)
         {
             var key = new Key(assembly, type);
             if (_typeToKeyLookUp.TryGetValue(key, out var resolvedType))
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
-        private static Type ResolveType(Key key, Assembly[] assemblies)
+        private static Type? ResolveType(Key key, Assembly[] assemblies)
         {
             var assembly = assemblies
                 .FirstOrDefault(a => string.Equals(a.GetName().Name, key.Assembly, StringComparison.Ordinal));
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Components
 
             public string Type { get; }
 
-            public override bool Equals(object obj) => Equals((Key)obj);
+            public override bool Equals(object? obj) => obj is Key key && Equals(key);
 
             public bool Equals(Key other) => string.Equals(Assembly, other.Assembly, StringComparison.Ordinal) &&
                 string.Equals(Type, other.Type, StringComparison.Ordinal);

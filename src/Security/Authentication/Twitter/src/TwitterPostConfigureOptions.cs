@@ -14,6 +14,10 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     {
         private readonly IDataProtectionProvider _dp;
 
+        /// <summary>
+        /// Initializes the <see cref="TwitterPostConfigureOptions"/>.
+        /// </summary>
+        /// <param name="dataProtection">The <see cref="IDataProtectionProvider"/>.</param>
         public TwitterPostConfigureOptions(IDataProtectionProvider dataProtection)
         {
             _dp = dataProtection;
@@ -31,7 +35,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             if (options.StateDataFormat == null)
             {
                 var dataProtector = options.DataProtectionProvider.CreateProtector(
-                    typeof(TwitterHandler).FullName, name, "v1");
+                    typeof(TwitterHandler).FullName!, name, "v1");
                 options.StateDataFormat = new SecureDataFormat<RequestToken>(
                     new RequestTokenSerializer(),
                     dataProtector);

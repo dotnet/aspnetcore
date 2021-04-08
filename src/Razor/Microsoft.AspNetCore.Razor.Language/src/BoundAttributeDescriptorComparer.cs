@@ -67,7 +67,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            hash.Add(descriptor.Metadata.Count);
+            foreach (var metadata in descriptor.Metadata)
+            {
+                hash.Add(metadata.Key);
+                hash.Add(metadata.Value);
+            }
 
             return hash.CombinedHash;
         }

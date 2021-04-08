@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: true);
-            Browser.MountTestComponent<EventBubblingComponent>();
         }
 
         [Fact]
@@ -177,6 +176,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31195")]
         public void PreventDefault_DotNotApplyByDefault()
         {
             var appElement = Browser.MountTestComponent<EventPreventDefaultComponent>();
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1987")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31195")]
         public void InputEvent_RespondsOnKeystrokes()
         {
             Browser.MountTestComponent<InputEventComponent>();
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23757")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31195")]
         public void InputEvent_RespondsOnKeystrokes_EvenIfUpdatesAreLaggy()
         {
             // This test doesn't mean much on WebAssembly - it just shows that even if the CPU is locked
@@ -297,6 +297,31 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var expectedContent = "success";
 
             Browser.Contains(expectedContent, () => element.Text);
+        }
+
+        [Fact]
+        public void PolymorphicEventHandlersReceiveCorrectArgsSubclass()
+        {
+            // This is to show that the type of event argument received corresponds to the declared event
+            // name, and not to the argument type on the event handler delegate. Note that this is only
+            // supported (for back-compat) for the built-in standard web event types. For custom events,
+            // the eventargs deserialization type is determined purely by the delegate's parameters list.
+            Browser.MountTestComponent<MouseEventComponent>();
+
+            var elem = Browser.Exists(By.Id("polymorphic_event_elem"));
+
+            // Output is initially empty
+            var output = Browser.Exists(By.Id("output"));
+            Assert.Equal(string.Empty, output.Text);
+
+            // We can trigger a pointer event and receive a PointerEventArgs
+            new Actions(Browser).Click(elem).Perform();
+            Browser.Equal("Microsoft.AspNetCore.Components.Web.PointerEventArgs:mouse", () => output.Text);
+
+            // We can trigger a drag event and receive a DragEventArgs *on the same handler delegate*
+            Browser.FindElement(By.Id("clear_event_log")).Click();
+            new Actions(Browser).DragAndDrop(elem, Browser.FindElement(By.Id("other"))).Perform();
+            Browser.Equal("Microsoft.AspNetCore.Components.Web.DragEventArgs:1", () => output.Text);
         }
 
         void SendKeysSequentially(IWebElement target, string text)

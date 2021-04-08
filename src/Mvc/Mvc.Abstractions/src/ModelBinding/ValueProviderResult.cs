@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <param name="values">The submitted values.</param>
         /// <param name="culture">The <see cref="CultureInfo"/> associated with this value.</param>
-        public ValueProviderResult(StringValues values, CultureInfo culture)
+        public ValueProviderResult(StringValues values, CultureInfo? culture)
         {
             Values = values;
             Culture = culture ?? _invariantCulture;

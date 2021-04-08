@@ -32,11 +32,13 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.ProjectTemplates.3.1",
             "Microsoft.DotNet.Web.ProjectTemplates.5.0",
+            "Microsoft.DotNet.Web.ProjectTemplates.6.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0",
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates",
             "Microsoft.AspNetCore.Blazor.Templates",
         };
@@ -52,6 +54,7 @@ namespace Templates.Test.Helpers
             await ProcessLock.DotNetNewLock.WaitAsync();
             try
             {
+                output.WriteLine("Acquired DotNetNewLock");
                 if (!_haveReinstalledTemplatePackages)
                 {
                     if (Directory.Exists(CustomHivePath))
@@ -65,6 +68,7 @@ namespace Templates.Test.Helpers
             finally
             {
                 ProcessLock.DotNetNewLock.Release();
+                output.WriteLine("Released DotNetNewLock");
             }
         }
 
@@ -129,7 +133,7 @@ namespace Templates.Test.Helpers
                 foreach (var command in lines.Where(l => l.Contains("dotnet new") && l.Contains(packageName, StringComparison.OrdinalIgnoreCase)))
                 {
                     var uninstallCommand = command.TrimStart();
-                    Debug.Assert(uninstallCommand.StartsWith("dotnet new"));
+                    Debug.Assert(uninstallCommand.StartsWith("dotnet new", StringComparison.Ordinal));
                     uninstallCommand = uninstallCommand.Substring("dotnet new".Length);
                     await RunDotNetNew(output, uninstallCommand);
                 }
@@ -173,7 +177,7 @@ namespace Templates.Test.Helpers
             {
                 var proc = await RunDotNetNew(output, $"\"{templateName}\"");
 
-                if (!proc.Output.Contains("Couldn't find an installed template that matches the input, searching online for one that does..."))
+                if (!proc.Error.Contains("No templates found matching:"))
                 {
                     throw new InvalidOperationException($"Failed to uninstall previous templates. The template '{templateName}' could still be found.");
                 }

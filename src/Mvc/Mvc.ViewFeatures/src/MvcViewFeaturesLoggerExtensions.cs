@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Logging;
@@ -43,13 +44,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _viewComponentExecuting = LoggerMessage.Define<string, string[]>(
                 LogLevel.Debug,
                 new EventId(1, "ViewComponentExecuting"),
-                "Executing view component {ViewComponentName} with arguments ({Arguments}).");
+                "Executing view component {ViewComponentName} with arguments ({Arguments}).",
+                skipEnabledCheck: true);
 
             _viewComponentExecuted = LoggerMessage.Define<string, double, string>(
                 LogLevel.Debug,
                 new EventId(2, "ViewComponentExecuted"),
                 "Executed view component {ViewComponentName} in {ElapsedMilliseconds}ms and returned " +
-                "{ViewComponentResult}");
+                "{ViewComponentResult}",
+                skipEnabledCheck: true);
 
             _partialViewResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
@@ -79,7 +82,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _viewComponentResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
                 new EventId(1, "ViewComponentResultExecuting"),
-                "Executing ViewComponentResult, running {ViewComponentName}.");
+                "Executing ViewComponentResult, running {ViewComponentName}.",
+                skipEnabledCheck: true);
 
             _viewResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
@@ -134,8 +138,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             ViewComponentContext context,
             object[] arguments)
         {
-            var formattedArguments = GetFormattedArguments(arguments);
-            _viewComponentExecuting(logger, context.ViewComponentDescriptor.DisplayName, formattedArguments, null);
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var formattedArguments = GetFormattedArguments(arguments);
+                _viewComponentExecuting(logger, context.ViewComponentDescriptor.DisplayName, formattedArguments, null);
+            }
         }
 
         private static string[] GetFormattedArguments(object[] arguments)
@@ -148,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var formattedArguments = new string[arguments.Length];
             for (var i = 0; i < formattedArguments.Length; i++)
             {
-                formattedArguments[i] = Convert.ToString(arguments[i]);
+                formattedArguments[i] = Convert.ToString(arguments[i], CultureInfo.InvariantCulture);
             }
 
             return formattedArguments;
@@ -161,12 +168,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             object result)
         {
             // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
-            _viewComponentExecuted(
-                logger,
-                context.ViewComponentDescriptor.DisplayName,
-                timespan.TotalMilliseconds,
-                Convert.ToString(result),
-                null);
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                _viewComponentExecuted(
+                    logger,
+                    context.ViewComponentDescriptor.DisplayName,
+                    timespan.TotalMilliseconds,
+                    Convert.ToString(result, CultureInfo.InvariantCulture),
+                    null);
+            }
         }
 
         public static void PartialViewFound(

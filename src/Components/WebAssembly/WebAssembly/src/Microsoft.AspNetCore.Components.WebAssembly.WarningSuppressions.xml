@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Components.WebAssembly, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.ComponentParametersTypeCache.GetParameterType(System.String,System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.RootComponentTypeCache.ResolveType(Microsoft.AspNetCore.Components.RootComponentTypeCache.Key,System.Reflection.Assembly[])</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.InitializeRegisteredRootComponents(Microsoft.JSInterop.IJSUnmarshalledRuntime)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.ApplyHotReloadDelta(System.String,System.Byte[],System.Byte[])</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader.&lt;LoadAssembliesInClientAsync&gt;d__8.MoveNext</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.Web.WebEventData.ParseEventArgsJson(Microsoft.AspNetCore.Components.RenderTree.Renderer,System.UInt64,System.String,System.String)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.InitializeRegisteredRootComponents(Microsoft.JSInterop.IJSUnmarshalledRuntime)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssemblyComponentParameterDeserializer.DeserializeParameters(System.Collections.Generic.IList{Microsoft.AspNetCore.Components.ComponentParameter},System.Collections.Generic.IList{System.Object})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2075</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.ApplyHotReloadDelta(System.String,System.Byte[],System.Byte[])</property>
+    </attribute>
+  </assembly>
+</linker>

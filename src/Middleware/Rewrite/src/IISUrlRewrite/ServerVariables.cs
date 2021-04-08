@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
         /// <returns>The matching <see cref="PatternSegment"/></returns>
         public static PatternSegment FindServerVariable(string serverVariable, ParserContext context, UriMatchPart uriMatchPart, bool alwaysUseManagedServerVariables)
         {
-            Func<PatternSegment> managedVariableThunk = default;
+            Func<PatternSegment>? managedVariableThunk = default;
 
             switch (serverVariable)
             {

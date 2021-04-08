@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost Start(string url, RequestDelegate app)
         {
-            var startupAssemblyName = app.GetMethodInfo().DeclaringType!.GetTypeInfo().Assembly.GetName().Name;
+            var startupAssemblyName = app.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
             return StartWith(url: url, configureServices: null, app: appBuilder => appBuilder.Run(app), applicationName: startupAssemblyName);
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost Start(string url, Action<IRouteBuilder> routeBuilder)
         {
-            var startupAssemblyName = routeBuilder.GetMethodInfo().DeclaringType!.GetTypeInfo().Assembly.GetName().Name;
+            var startupAssemblyName = routeBuilder.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
             return StartWith(url, services => services.AddRouting(), appBuilder => appBuilder.UseRouter(routeBuilder), applicationName: startupAssemblyName);
         }
 

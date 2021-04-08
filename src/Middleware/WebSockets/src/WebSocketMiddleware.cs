@@ -118,15 +118,16 @@ namespace Microsoft.AspNetCore.WebSockets
                         }
                         else
                         {
-                            var headers = new List<KeyValuePair<string, string>>();
-                            foreach (string headerName in HandshakeHelpers.NeededHeaders)
+                            var requestHeaders = _context.Request.Headers;
+                            var interestingHeaders = new List<KeyValuePair<string, string>>();
+                            foreach (var headerName in HandshakeHelpers.NeededHeaders)
                             {
-                                foreach (var value in _context.Request.Headers.GetCommaSeparatedValues(headerName))
+                                foreach (var value in requestHeaders.GetCommaSeparatedValues(headerName))
                                 {
-                                    headers.Add(new KeyValuePair<string, string>(headerName, value));
+                                    interestingHeaders.Add(new KeyValuePair<string, string>(headerName, value));
                                 }
                             }
-                            _isWebSocketRequest = HandshakeHelpers.CheckSupportedWebSocketRequest(_context.Request.Method, headers);
+                            _isWebSocketRequest = HandshakeHelpers.CheckSupportedWebSocketRequest(_context.Request.Method, interestingHeaders, requestHeaders);
                         }
                     }
                     return _isWebSocketRequest.Value;
@@ -140,7 +141,7 @@ namespace Microsoft.AspNetCore.WebSockets
                     throw new InvalidOperationException("Not a WebSocket request."); // TODO: LOC
                 }
 
-                string subProtocol = null;
+                string? subProtocol = null;
                 if (acceptContext != null)
                 {
                     subProtocol = acceptContext.SubProtocol;

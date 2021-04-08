@@ -49,14 +49,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// <see cref="ViewLocationCacheItem"/> for the located view.
         /// </summary>
-        /// <remarks><c>null</c> if <see cref="Success"/> is <c>false</c>.</remarks>
+        /// <remarks>Uninitialized when <see cref="Success"/> is <c>false</c>.</remarks>
         public ViewLocationCacheItem ViewEntry { get; }
 
         /// <summary>
         /// <see cref="ViewLocationCacheItem"/>s for applicable _ViewStarts.
         /// </summary>
         /// <remarks><c>null</c> if <see cref="Success"/> is <c>false</c>.</remarks>
-        public IReadOnlyList<ViewLocationCacheItem> ViewStartEntries { get; }
+        public IReadOnlyList<ViewLocationCacheItem>? ViewStartEntries { get; }
 
         /// <summary>
         /// The sequence of locations that were searched.
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// a view at <see cref="ViewEntry"/>. When <see cref="Success"/> is <c>false</c>, this includes
         /// all search paths.
         /// </remarks>
-        public IEnumerable<string> SearchedLocations { get; }
+        public IEnumerable<string>? SearchedLocations { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the view was successfully found.

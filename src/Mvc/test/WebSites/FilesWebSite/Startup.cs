@@ -15,8 +15,7 @@ namespace FilesWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers()
-                .AddNewtonsoftJson()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddNewtonsoftJson();
         }
 
         public void Configure(IApplicationBuilder app)

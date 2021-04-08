@@ -12,6 +12,10 @@
           <add name="DOTNET_ROOT" value="%XDT_EXTENSIONPATH%" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
         </environmentVariables>
       </runtime>
+
+      <globalModules>
+        <add name="AspNetCoreModuleV2" image="%XDT_EXTENSIONPATH%\ancm\aspnetcorev2.dll" xdt:Locator="Match(name)" xdt:Transform="Replace" />
+      </globalModules>
     </system.webServer>
 
     <location>

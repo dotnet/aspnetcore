@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace System.Net.Http.HPack
 {
-    internal class IntegerDecoder
+    internal sealed class IntegerDecoder
     {
         private int _i;
         private int _m;

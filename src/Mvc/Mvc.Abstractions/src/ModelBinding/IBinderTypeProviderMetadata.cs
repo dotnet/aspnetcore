@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// A <see cref="Type"/> which implements either <see cref="IModelBinder"/>.
         /// </summary>
-        Type BinderType { get; }
+        Type? BinderType { get; }
     }
 }

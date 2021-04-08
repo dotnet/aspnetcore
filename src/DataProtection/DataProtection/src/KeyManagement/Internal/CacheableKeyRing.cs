@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
 
         internal IKeyRing KeyRing { get; }
 
-        internal static bool IsValid(CacheableKeyRing keyRing, DateTime utcNow)
+        internal static bool IsValid([NotNullWhen(true)] CacheableKeyRing? keyRing, DateTime utcNow)
         {
             return keyRing != null
                 && !keyRing._expirationToken.IsCancellationRequested

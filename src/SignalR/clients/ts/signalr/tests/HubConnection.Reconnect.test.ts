@@ -14,6 +14,8 @@ import { TestConnection } from "./TestConnection";
 import { TestHttpClient } from "./TestHttpClient";
 import { TestEvent, TestMessageEvent, TestWebSocket } from "./TestWebSocket";
 import { PromiseSource } from "./Utils";
+import { TestHttpClient } from "./TestHttpClient";
+import { TestWebSocket, TestEvent, TestMessageEvent } from "./TestWebSocket";
 
 describe("auto reconnect", () => {
     it("is not enabled by default", async () => {

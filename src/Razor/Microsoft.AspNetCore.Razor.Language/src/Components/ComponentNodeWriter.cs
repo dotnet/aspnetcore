@@ -54,10 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(node));
             }
 
-            // This is ugly because CodeWriter doesn't allow us to erase, but we need to comma-delimit. So we have to
-            // materizalize something can iterate, or use string.Join. We'll need this multiple times, so materializing
-            // it.
-            var parameters = GetParameterDeclarations();
+            var parameters = GetTypeInferenceMethodParameters(node);
 
             // This is really similar to the code in WriteComponentAttribute and WriteComponentChildContent - except simpler because
             // attributes and child contents look like variables. 
@@ -82,7 +79,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             writer.Write("public static void ");
             writer.Write(node.MethodName);
-
             writer.Write("<");
             writer.Write(string.Join(", ", node.Component.Component.GetTypeParameters().Select(a => a.Name)));
             writer.Write(">");
@@ -102,13 +98,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             for (var i = 0; i < parameters.Count; i++)
             {
-                writer.Write("int ");
-                writer.Write(parameters[i].seqName);
+                if (!string.IsNullOrEmpty(parameters[i].SeqName))
+                {
+                    writer.Write("int ");
+                    writer.Write(parameters[i].SeqName);
+                    writer.Write(", ");
+                }
 
-                writer.Write(", ");
-                writer.Write(parameters[i].typeName);
+                writer.Write(parameters[i].TypeName);
                 writer.Write(" ");
-                writer.Write(parameters[i].parameterName);
+                writer.Write(parameters[i].ParameterName);
 
                 if (i < parameters.Count - 1)
                 {
@@ -132,131 +131,253 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             context.CodeWriter.Write(");");
             context.CodeWriter.WriteLine();
 
-            var index = 0;
-
-            // Preserve order of attributes and splat.
-            foreach (var child in node.Component.Children)
+            foreach (var parameter in parameters)
             {
-                if (child is ComponentAttributeIntermediateNode attribute)
+                switch (parameter.Source)
                 {
-                    context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.AddAttribute);
-                    context.CodeWriter.Write(parameters[index].seqName);
-                    context.CodeWriter.Write(", ");
+                    case ComponentAttributeIntermediateNode attribute:
+                        context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.AddAttribute);
+                        context.CodeWriter.Write(parameter.SeqName);
+                        context.CodeWriter.Write(", ");
 
-                    context.CodeWriter.Write($"\"{attribute.AttributeName}\"");
-                    context.CodeWriter.Write(", ");
+                        context.CodeWriter.Write($"\"{attribute.AttributeName}\"");
+                        context.CodeWriter.Write(", ");
 
-                    context.CodeWriter.Write(parameters[index].parameterName);
-                    context.CodeWriter.WriteEndMethodInvocation();
-                    index++;
+                        context.CodeWriter.Write(parameter.ParameterName);
+                        context.CodeWriter.WriteEndMethodInvocation();
+                        break;
+
+                    case SplatIntermediateNode:
+                        context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.AddMultipleAttributes);
+                        context.CodeWriter.Write(parameter.SeqName);
+                        context.CodeWriter.Write(", ");
+
+                        context.CodeWriter.Write(parameter.ParameterName);
+                        context.CodeWriter.WriteEndMethodInvocation();
+                        break;
+
+                    case ComponentChildContentIntermediateNode childContent:
+                        context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.AddAttribute);
+                        context.CodeWriter.Write(parameter.SeqName);
+                        context.CodeWriter.Write(", ");
+
+                        context.CodeWriter.Write($"\"{childContent.AttributeName}\"");
+                        context.CodeWriter.Write(", ");
+
+                        context.CodeWriter.Write(parameter.ParameterName);
+                        context.CodeWriter.WriteEndMethodInvocation();
+                        break;
+
+                    case SetKeyIntermediateNode:
+                        context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.SetKey);
+                        context.CodeWriter.Write(parameter.ParameterName);
+                        context.CodeWriter.WriteEndMethodInvocation();
+                        break;
+
+                    case ReferenceCaptureIntermediateNode capture:
+                        context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, capture.IsComponentCapture ? ComponentsApi.RenderTreeBuilder.AddComponentReferenceCapture : ComponentsApi.RenderTreeBuilder.AddElementReferenceCapture);
+                        context.CodeWriter.Write(parameter.SeqName);
+                        context.CodeWriter.Write(", ");
+
+                        var cast = capture.IsComponentCapture ? $"({capture.ComponentCaptureTypeName})" : string.Empty;
+                        context.CodeWriter.Write($"(__value) => {{ {parameter.ParameterName}({cast}__value); }}");
+                        context.CodeWriter.WriteEndMethodInvocation();
+                        break;
+
+                    case CascadingGenericTypeParameter:
+                        // We only use the synthetic cascading parameters for type inference
+                        break;
+
+                    default:
+                        throw new InvalidOperationException($"Not implemented: type inference method parameter from source {parameter.Source}");
                 }
-                else if (child is SplatIntermediateNode)
-                {
-                    context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.AddMultipleAttributes);
-                    context.CodeWriter.Write(parameters[index].seqName);
-                    context.CodeWriter.Write(", ");
-
-                    context.CodeWriter.Write(parameters[index].parameterName);
-                    context.CodeWriter.WriteEndMethodInvocation();
-                    index++;
-                }
-            }
-
-            foreach (var childContent in node.Component.ChildContents)
-            {
-                context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.AddAttribute);
-                context.CodeWriter.Write(parameters[index].seqName);
-                context.CodeWriter.Write(", ");
-
-                context.CodeWriter.Write($"\"{childContent.AttributeName}\"");
-                context.CodeWriter.Write(", ");
-
-                context.CodeWriter.Write(parameters[index].parameterName);
-                context.CodeWriter.WriteEndMethodInvocation();
-
-                index++;
-            }
-
-            foreach (var setKey in node.Component.SetKeys)
-            {
-                context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.SetKey);
-                context.CodeWriter.Write(parameters[index].parameterName);
-                context.CodeWriter.WriteEndMethodInvocation();
-
-                index++;
-            }
-
-            foreach (var capture in node.Component.Captures)
-            {
-                context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, capture.IsComponentCapture ? ComponentsApi.RenderTreeBuilder.AddComponentReferenceCapture : ComponentsApi.RenderTreeBuilder.AddElementReferenceCapture);
-                context.CodeWriter.Write(parameters[index].seqName);
-                context.CodeWriter.Write(", ");
-
-                var cast = capture.IsComponentCapture ? $"({capture.ComponentCaptureTypeName})" : string.Empty;
-                context.CodeWriter.Write($"(__value) => {{ {parameters[index].parameterName}({cast}__value); }}");
-                context.CodeWriter.WriteEndMethodInvocation();
-
-                index++;
             }
 
             context.CodeWriter.WriteInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.CloseComponent);
 
             writer.WriteLine("}");
 
-            List<(string seqName, string typeName, string parameterName)> GetParameterDeclarations()
+            if (node.Component.Component.SuppliesCascadingGenericParameters())
             {
-                var p = new List<(string seqName, string typeName, string parameterName)>();
+                // If this component cascades any generic parameters, we'll need to be able to capture its type inference
+                // args at the call site. The point of this is to ensure that:
+                //
+                // [1] We only evaluate each expression once
+                // [2] We evaluate them in the correct order matching the developer's source
+                // [3] We can even make variables for lambdas or other expressions that can't just be assigned to implicitly-typed vars.
+                //
+                // We do that by emitting a method like the following. It has exactly the same generic type inference
+                // characteristics as the regular CreateFoo_0 method emitted earlier
+                //
+                //  public static void CreateFoo_0_CaptureParameters<T1, T2>(T1 __arg0, out T1 __arg0_out, global::System.Collections.Generic.List<T2> __arg1, out global::System.Collections.Generic.List<T2> __arg1_out, int __seq2, string __arg2, out string __arg2_out)
+                //  {
+                //      __arg0_out = __arg0;
+                //      __arg1_out = __arg1;
+                //      __arg2_out = __arg2;
+                //  }
+                //
+                writer.WriteLine();
+                writer.Write("public static void ");
+                writer.Write(node.MethodName);
+                writer.Write("_CaptureParameters<");
+                writer.Write(string.Join(", ", node.Component.Component.GetTypeParameters().Select(a => a.Name)));
+                writer.Write(">");
 
-                // Preserve order between attributes and splats
-                foreach (var child in node.Component.Children)
+                writer.Write("(");
+                var isFirst = true;
+                foreach (var parameter in parameters.Where(p => p.UsedForTypeInference))
                 {
-                    if (child is ComponentAttributeIntermediateNode attribute)
+                    if (isFirst)
                     {
-                        string typeName;
-                        if (attribute.GloballyQualifiedTypeName != null)
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        writer.Write(", ");
+                    }
+
+                    writer.Write(parameter.TypeName);
+                    writer.Write(" ");
+                    writer.Write(parameter.ParameterName);
+                    writer.Write(", out ");
+                    writer.Write(parameter.TypeName);
+                    writer.Write(" ");
+                    writer.Write(parameter.ParameterName);
+                    writer.Write("_out");
+                }
+
+                writer.WriteLine(")");
+                writer.WriteLine("{");
+                foreach (var parameter in parameters.Where(p => p.UsedForTypeInference))
+                {
+                    writer.Write("    ");
+                    writer.Write(parameter.ParameterName);
+                    writer.Write("_out = ");
+                    writer.Write(parameter.ParameterName);
+                    writer.WriteLine(";");
+                }
+                writer.WriteLine("}");
+            }
+        }
+
+        protected List<TypeInferenceMethodParameter> GetTypeInferenceMethodParameters(ComponentTypeInferenceMethodIntermediateNode node)
+        {
+            var p = new List<TypeInferenceMethodParameter>();
+
+            // Preserve order between attributes and splats
+            foreach (var child in node.Component.Children)
+            {
+                if (child is ComponentAttributeIntermediateNode attribute)
+                {
+                    string typeName;
+                    if (attribute.GloballyQualifiedTypeName != null)
+                    {
+                        typeName = attribute.GloballyQualifiedTypeName;
+                    }
+                    else
+                    {
+                        typeName = attribute.TypeName;
+                        if (attribute.BoundAttribute != null && !attribute.BoundAttribute.IsGenericTypedProperty())
                         {
-                            typeName = attribute.GloballyQualifiedTypeName;
+                            typeName = "global::" + typeName;
                         }
-                        else
-                        {
-                            typeName = attribute.TypeName;
-                            if (attribute.BoundAttribute != null && !attribute.BoundAttribute.IsGenericTypedProperty())
-                            {
-                                typeName = "global::" + typeName;
-                            }
-                        }
-
-                        p.Add(($"__seq{p.Count}", typeName, $"__arg{p.Count}"));
                     }
-                    else if (child is SplatIntermediateNode splat)
+
+                    p.Add(new TypeInferenceMethodParameter($"__seq{p.Count}", typeName, $"__arg{p.Count}", usedForTypeInference: true, attribute));
+                }
+                else if (child is SplatIntermediateNode splat)
+                {
+                    var typeName = ComponentsApi.AddMultipleAttributesTypeFullName;
+                    p.Add(new TypeInferenceMethodParameter($"__seq{p.Count}", typeName, $"__arg{p.Count}", usedForTypeInference: false, splat));
+                }
+            }
+
+            foreach (var childContent in node.Component.ChildContents)
+            {
+                var typeName = childContent.TypeName;
+                if (childContent.BoundAttribute != null && !childContent.BoundAttribute.IsGenericTypedProperty())
+                {
+                    typeName = "global::" + typeName;
+                }
+                p.Add(new TypeInferenceMethodParameter($"__seq{p.Count}", typeName, $"__arg{p.Count}", usedForTypeInference: false, childContent));
+            }
+
+            foreach (var capture in node.Component.SetKeys)
+            {
+                p.Add(new TypeInferenceMethodParameter($"__seq{p.Count}", "object", $"__arg{p.Count}", usedForTypeInference: false, capture));
+            }
+
+            foreach (var capture in node.Component.Captures)
+            {
+                // The capture type name should already contain the global:: prefix.
+                p.Add(new TypeInferenceMethodParameter($"__seq{p.Count}", capture.TypeName, $"__arg{p.Count}", usedForTypeInference: false, capture));
+            }
+
+            // Insert synthetic args for cascaded type inference at the start of the list
+            // We do this last so that the indices above aren't affected
+            if (node.ReceivesCascadingGenericTypes != null)
+            {
+                var i = 0;
+                foreach (var cascadingGenericType in node.ReceivesCascadingGenericTypes)
+                {
+                    p.Insert(i, new TypeInferenceMethodParameter(null, cascadingGenericType.ValueType, $"__syntheticArg{i}", usedForTypeInference: true, cascadingGenericType));
+                    i++;
+                }
+            }
+
+            return p;
+        }
+
+        protected static void UseCapturedCascadingGenericParameterVariable(ComponentIntermediateNode node, TypeInferenceMethodParameter parameter, string variableName)
+        {
+            // If this captured variable corresponds to a generic type we want to cascade to
+            // descendants, supply that info to descendants
+            if (node.ProvidesCascadingGenericTypes != null)
+            {
+                foreach (var cascadeGeneric in node.ProvidesCascadingGenericTypes.Values)
+                {
+                    if (cascadeGeneric.ValueSourceNode == parameter.Source)
                     {
-                        var typeName = ComponentsApi.AddMultipleAttributesTypeFullName;
-                        p.Add(($"__seq{p.Count}", typeName, $"__arg{p.Count}"));
+                        cascadeGeneric.ValueExpression = variableName;
                     }
                 }
+            }
 
-                foreach (var childContent in node.Component.ChildContents)
-                {
-                    var typeName = childContent.TypeName;
-                    if (childContent.BoundAttribute != null && !childContent.BoundAttribute.IsGenericTypedProperty())
-                    {
-                        typeName = "global::" + typeName;
-                    }
-                    p.Add(($"__seq{p.Count}", typeName, $"__arg{p.Count}"));
-                }
+            // Since we've now evaluated and captured this expression, use the variable
+            // instead of the expression from now on
+            parameter.ReplaceSourceWithCapturedVariable(variableName);
+        }
 
-                foreach (var capture in node.Component.SetKeys)
-                {
-                    p.Add(($"__seq{p.Count}", "object", $"__arg{p.Count}"));
-                }
+        protected class TypeInferenceMethodParameter
+        {
+            public string SeqName { get; private set; }
+            public string TypeName { get; private set; }
+            public string ParameterName { get; private set; }
+            public bool UsedForTypeInference { get; private set; }
+            public object Source { get; private set; }
 
-                foreach (var capture in node.Component.Captures)
-                {
-                    // The capture type name should already contain the global:: prefix.
-                    p.Add(($"__seq{p.Count}", capture.TypeName, $"__arg{p.Count}"));
-                }
+            public TypeInferenceMethodParameter(string seqName, string typeName, string parameterName, bool usedForTypeInference, object source)
+            {
+                SeqName = seqName;
+                TypeName = typeName;
+                ParameterName = parameterName;
+                UsedForTypeInference = usedForTypeInference;
+                Source = source;
+            }
 
-                return p;
+            public void ReplaceSourceWithCapturedVariable(string variableName)
+            {
+                Source = new TypeInferenceCapturedVariable(variableName);
+            }
+        }
+
+        protected class TypeInferenceCapturedVariable
+        {
+            public string VariableName { get; private set; }
+
+            public TypeInferenceCapturedVariable(string variableName)
+            {
+                VariableName = variableName;
             }
         }
     }

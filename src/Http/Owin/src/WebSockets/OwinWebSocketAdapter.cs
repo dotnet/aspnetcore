@@ -32,6 +32,9 @@ namespace Microsoft.AspNetCore.Owin
         bool, // end of message?
         int>; // count
 
+    /// <summary>
+    /// OWIN WebSocket adapter.
+    /// </summary>
     public class OwinWebSocketAdapter : WebSocket
     {
         private const int _rentedBufferSize = 1024;
@@ -42,6 +45,11 @@ namespace Microsoft.AspNetCore.Owin
         private WebSocketState _state;
         private string _subProtocol;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OwinWebSocketAdapter"/>.
+        /// </summary>
+        /// <param name="websocketContext">WebSocket context options.</param>
+        /// <param name="subProtocol">The WebSocket subprotocol.</param>
         public OwinWebSocketAdapter(IDictionary<string, object> websocketContext, string subProtocol)
         {
             _websocketContext = websocketContext;
@@ -52,6 +60,7 @@ namespace Microsoft.AspNetCore.Owin
             _subProtocol = subProtocol;
         }
 
+        /// <inheritdocs />
         public override WebSocketCloseStatus? CloseStatus
         {
             get
@@ -65,6 +74,7 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
+        /// <inheritdocs />
         public override string CloseStatusDescription
         {
             get
@@ -78,6 +88,7 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
+        /// <inheritdocs />
         public override string SubProtocol
         {
             get
@@ -86,6 +97,7 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
+        /// <inheritdocs />
         public override WebSocketState State
         {
             get
@@ -94,6 +106,7 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
+        /// <inheritdocs />
         public override async Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
         {
             var rawResult = await _receiveAsync(buffer, cancellationToken);
@@ -116,11 +129,13 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
+        /// <inheritdocs />
         public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
         {
             return _sendAsync(buffer, EnumToOpCode(messageType), endOfMessage, cancellationToken);
         }
 
+        /// <inheritdocs />
         public override async Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
         {
             if (State == WebSocketState.Open || State == WebSocketState.CloseReceived)
@@ -143,6 +158,7 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
+        /// <inheritdocs />
         public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
         {
             // TODO: Validate state
@@ -157,11 +173,13 @@ namespace Microsoft.AspNetCore.Owin
             return _closeAsync((int)closeStatus, statusDescription, cancellationToken);
         }
 
+        /// <inheritdocs />
         public override void Abort()
         {
             _state = WebSocketState.Aborted;
         }
 
+        /// <inheritdocs />
         public override void Dispose()
         {
             _state = WebSocketState.Closed;

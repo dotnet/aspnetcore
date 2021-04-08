@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
@@ -62,7 +63,33 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             // Arrange
             var masterKey = Secret.Random(512 / 8);
-            var control = new GcmAuthenticatedEncryptor(
+            var control = new CngGcmAuthenticatedEncryptor(
+                keyDerivationKey: masterKey,
+                symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_GCM,
+                symmetricAlgorithmKeySizeInBytes: (uint)(keyLengthInBits / 8));
+            var test = CreateEncryptorInstanceFromDescriptor(CreateDescriptor(encryptionAlgorithm, ValidationAlgorithm.HMACSHA256 /* unused */, masterKey));
+
+            // Act & assert - data round trips properly from control to test
+            byte[] plaintext = new byte[] { 1, 2, 3, 4, 5 };
+            byte[] aad = new byte[] { 2, 4, 6, 8, 0 };
+            byte[] ciphertext = control.Encrypt(new ArraySegment<byte>(plaintext), new ArraySegment<byte>(aad));
+            byte[] roundTripPlaintext = test.Decrypt(new ArraySegment<byte>(ciphertext), new ArraySegment<byte>(aad));
+            Assert.Equal(plaintext, roundTripPlaintext);
+        }
+
+        [ConditionalTheory]
+        [ConditionalRunTestOnlyOnWindows]
+        [InlineData(EncryptionAlgorithm.AES_128_GCM)]
+        [InlineData(EncryptionAlgorithm.AES_192_GCM)]
+        [InlineData(EncryptionAlgorithm.AES_256_GCM)]
+        public void CreateAuthenticatedEncryptor_RoundTripsData_AesGcmImplementation(EncryptionAlgorithm encryptionAlgorithm)
+        {
+            // Parse test input
+            int keyLengthInBits = Int32.Parse(Regex.Match(encryptionAlgorithm.ToString(), @"^AES_(?<keyLength>\d{3})_GCM$").Groups["keyLength"].Value, CultureInfo.InvariantCulture);
+
+            // Arrange
+            var masterKey = Secret.Random(512 / 8);
+            var control = new CngGcmAuthenticatedEncryptor(
                 keyDerivationKey: masterKey,
                 symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_GCM,
                 symmetricAlgorithmKeySizeInBytes: (uint)(keyLengthInBits / 8));
@@ -118,20 +145,20 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public void ExportToXml_ProducesCorrectPayload_Cbc()
         {
             // Arrange
-            var masterKey = "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret();
-            var descriptor = CreateDescriptor(EncryptionAlgorithm.AES_192_CBC, ValidationAlgorithm.HMACSHA512, masterKey);
+            var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
+            var descriptor = CreateDescriptor(EncryptionAlgorithm.AES_192_CBC, ValidationAlgorithm.HMACSHA512, masterKey.ToSecret());
 
             // Act
             var retVal = descriptor.ExportToXml();
 
             // Assert
             Assert.Equal(typeof(AuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            const string expectedXml = @"
+            var expectedXml = $@"
                 <descriptor>
                   <encryption algorithm='AES_192_CBC' />
                   <validation algorithm='HMACSHA512' />
                   <masterKey enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
-                    <value>k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==</value>
+                    <value>{masterKey}</value>
                   </masterKey>
                 </descriptor>";
             XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
@@ -141,20 +168,20 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public void ExportToXml_ProducesCorrectPayload_Gcm()
         {
             // Arrange
-            var masterKey = "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret();
-            var descriptor = CreateDescriptor(EncryptionAlgorithm.AES_192_GCM, ValidationAlgorithm.HMACSHA512, masterKey);
+            var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
+            var descriptor = CreateDescriptor(EncryptionAlgorithm.AES_192_GCM, ValidationAlgorithm.HMACSHA512, masterKey.ToSecret());
 
             // Act
             var retVal = descriptor.ExportToXml();
 
             // Assert
             Assert.Equal(typeof(AuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            const string expectedXml = @"
+            var expectedXml = $@"
                 <descriptor>
                   <encryption algorithm='AES_192_GCM' />
                   <!-- some comment here -->
                   <masterKey enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
-                    <value>k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==</value>
+                    <value>{masterKey}</value>
                   </masterKey>
                 </descriptor>";
             XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);

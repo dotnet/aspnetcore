@@ -52,7 +52,7 @@
       "src\\Middleware\\Localization\\testassets\\ResourcesClassLibraryWithAttribute\\ResourcesClassLibraryWithAttribute.csproj",
       "src\\Middleware\\Localization.Routing\\src\\Microsoft.AspNetCore.Localization.Routing.csproj",
       "src\\Middleware\\Localization.Routing\\test\\Microsoft.AspNetCore.Localization.Routing.Tests.csproj",
-      "src\\Middleware\\ResponseCompression\\perf\\Microsoft.AspNetCore.ResponseCompression.Performance.csproj",
+      "src\\Middleware\\ResponseCompression\\perf\\Microbenchmarks\\Microsoft.AspNetCore.ResponseCompression.Microbenchmarks.csproj",
       "src\\Middleware\\WebSockets\\test\\ConformanceTests\\AutobahnTestApp\\AutobahnTestApp.csproj",
       "src\\Middleware\\CORS\\src\\Microsoft.AspNetCore.Cors.csproj",
       "src\\Middleware\\CORS\\test\\UnitTests\\Microsoft.AspNetCore.Cors.Test.csproj",

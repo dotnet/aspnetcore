@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Filter instances will be created using
         /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities"/>.
         /// Use <see cref="AddService(Type)"/> to register a service as a filter.
+        /// The added filter will be assigned an order of 0.
         /// </remarks>
         public IFilterMetadata Add<TFilterType>() where TFilterType : IFilterMetadata
         {
@@ -36,6 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Filter instances will be created using
         /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities"/>.
         /// Use <see cref="AddService(Type)"/> to register a service as a filter.
+        /// The added filter will be assigned an order of 0.
         /// </remarks>
         public IFilterMetadata Add(Type filterType)
         {
@@ -103,6 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Filter instances will be created through dependency injection. Use
         /// <see cref="Add(Type)"/> to register a service that will be created via
         /// type activation.
+        /// The added filter will be assigned an order of 0.
         /// </remarks>
         public IFilterMetadata AddService<TFilterType>() where TFilterType : IFilterMetadata
         {
@@ -118,6 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Filter instances will be created through dependency injection. Use
         /// <see cref="Add(Type)"/> to register a service that will be created via
         /// type activation.
+        /// The added filter will be assigned an order of 0.
         /// </remarks>
         public IFilterMetadata AddService(Type filterType)
         {

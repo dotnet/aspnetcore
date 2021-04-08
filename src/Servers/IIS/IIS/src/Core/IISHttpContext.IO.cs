@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal partial class IISHttpContext
     {
         private long _consumedBytes;
+        internal bool ClientDisconnected { get; private set; }
 
         /// <summary>
         /// Reads data from the Input pipe to the user.
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             while (true)
             {
-                var result = await _bodyInputPipe.Reader.ReadAsync(cancellationToken);
+                var result = await _bodyInputPipe!.Reader.ReadAsync(cancellationToken);
                 var readableBuffer = result.Buffer;
                 try
                 {
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 InitializeRequestIO();
             }
 
-            return _bodyInputPipe.Reader.CopyToAsync(destination, cancellationToken);
+            return _bodyInputPipe!.Reader.CopyToAsync(destination, cancellationToken);
         }
 
         /// <summary>
@@ -98,14 +99,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private async Task ReadBody()
         {
-            Exception error = null;
+            Exception? error = null;
             try
             {
                 while (true)
                 {
-                    var memory = _bodyInputPipe.Writer.GetMemory();
+                    var memory = _bodyInputPipe!.Writer.GetMemory();
 
-                    var read = await AsyncIO.ReadAsync(memory);
+                    var read = await AsyncIO!.ReadAsync(memory);
 
                     // End of body
                     if (read == 0)
@@ -145,13 +146,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             finally
             {
-                _bodyInputPipe.Writer.Complete(error);
+                _bodyInputPipe!.Writer.Complete(error);
             }
         }
 
         private async Task WriteBody(bool flush = false)
         {
-            Exception error = null;
+            Exception? error = null;
             try
             {
                 while (true)
@@ -163,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     {
                         if (!buffer.IsEmpty)
                         {
-                            await AsyncIO.WriteAsync(buffer);
+                            await AsyncIO!.WriteAsync(buffer);
                         }
 
                         // if request is done no need to flush, http.sys would do it for us
@@ -176,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                             }
 
                             // Done with response, say there is no more data after writing trailers.
-                            await AsyncIO.FlushAsync(moreData: false);
+                            await AsyncIO!.FlushAsync(moreData: false);
 
                             break;
                         }
@@ -185,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                         if (flush)
                         {
-                            await AsyncIO.FlushAsync(moreData: true);
+                            await AsyncIO!.FlushAsync(moreData: true);
                             flush = false;
                         }
                     }
@@ -226,6 +227,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _requestAborted = true;
             }
 
+            lock (_contextLock)
+            {
+                ClientDisconnected = clientDisconnect;
+            }
+
             if (clientDisconnect)
             {
                 Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
@@ -246,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 {
                     try
                     {
-                        CancellationTokenSource localAbortCts = null;
+                        CancellationTokenSource? localAbortCts = null;
 
                         lock (ctx._abortLock)
                         {
@@ -263,7 +269,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
                     catch (Exception ex)
                     {
-                        Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier, ex);
+                        Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier!, ex); // TODO: Can TraceIdentifier be null?
                     }
                 }, this, preferLocal: false);
         }

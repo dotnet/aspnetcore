@@ -512,8 +512,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private static RouteCollection GetNestedRouteCollection(string[] routeNames)
         {
-            var random = new Random();
-            int index = random.Next(0, routeNames.Length - 1);
+            int index = Random.Shared.Next(0, routeNames.Length - 1);
             var first = routeNames.Take(index).ToArray();
             var second = routeNames.Skip(index).ToArray();
 

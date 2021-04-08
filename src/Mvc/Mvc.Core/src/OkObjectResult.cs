@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Initializes a new instance of the <see cref="OkObjectResult"/> class.
         /// </summary>
         /// <param name="value">The content to format into the entity body.</param>
-        public OkObjectResult(object value)
+        public OkObjectResult(object? value)
             : base(value)
         {
             StatusCode = DefaultStatusCode;

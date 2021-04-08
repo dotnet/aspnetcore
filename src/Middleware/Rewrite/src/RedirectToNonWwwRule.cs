@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Rewrite
     {
         private const string WwwDot = "www.";
 
-        private readonly string[] _domains;
+        private readonly string[]? _domains;
         private readonly int _statusCode;
 
         public RedirectToNonWwwRule(int statusCode)

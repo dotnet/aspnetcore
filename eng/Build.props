@@ -21,22 +21,35 @@
                       $(RepoRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
                       $(RepoRoot)src\Tools\Tests.Common\TestProjects\**\*.csproj;
                       $(RepoRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
+                      $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
+                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
+                      $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.csproj;
+                      " />
+
+    <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
+    <ProjectToExclude Include="
                       $(RepoRoot)src\submodules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.csproj;
-                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
-                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
+                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;
                       " />
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Components\benchmarkapps\BlazingPizza.Server\**\*.csproj;
-                      $(RepoRoot)src\Mvc\benchmarkapps\**\*.csproj;
+                      $(RepoRoot)src\Mvc\perf\**\*.csproj;
                       $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
+                      " />
+
+    <!-- Exclude WinForms and WPF-related projects on non-Windows -->
+    <ProjectToExclude Condition="'$(TargetOsName)' != 'win'"
+                      Include="
+                      $(RepoRoot)src\Components\WebView\Platforms\WindowsForms\**\*.csproj;
+                      $(RepoRoot)src\Components\WebView\Platforms\Wpf\**\*.csproj;
+                      $(RepoRoot)src\Components\WebView\Samples\BlazorWinFormsApp\**\*.csproj;
+                      $(RepoRoot)src\Components\WebView\Samples\BlazorWpfApp\**\*.csproj;
                       " />
   </ItemGroup>
 
@@ -82,8 +95,8 @@
       </ItemGroup>
 
       <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'arm64' ">
-        <!-- We don't build the bundle here because we'd have to bundle the x86 installer which gets built in a different leg.
-        Instead we only provide the ARM64 MSI-->
+        <!-- We don't build the targeting pack installer here because it's built in the x86/x64 leg.
+        Instead we only provide the ARM64 SharedFramework MSI-->
 
         <!-- Build the SharedFramework wixlib -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
@@ -139,13 +152,15 @@
                           $(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj;
                           $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
                           $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
+                          $(RepoRoot)src\Caching\**\*.*proj;
                           $(RepoRoot)src\DefaultBuilder\**\*.*proj;
                           $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
                           $(RepoRoot)src\DataProtection\**\*.*proj;
                           $(RepoRoot)src\Antiforgery\**\*.*proj;
                           $(RepoRoot)src\Hosting\**\*.*proj;
                           $(RepoRoot)src\Http\**\*.*proj;
-                          $(RepoRoot)src\Html\**\*.*proj;
+                          $(RepoRoot)src\HttpClientFactory\**\*.*proj;
+                          $(RepoRoot)src\Html.Abstractions\*.*proj;
                           $(RepoRoot)src\Identity\**\*.*proj;
                           $(RepoRoot)src\Servers\**\*.csproj;
                           $(RepoRoot)src\Security\**\*.*proj;
@@ -176,20 +191,20 @@
                         Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
-                          $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
-                          $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
         <DotNetProjects Include="
+                          $(RepoRoot)src\Caching\**\src\*.csproj;
                           $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
                           $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
                           $(RepoRoot)src\DataProtection\**\src\*.csproj;
                           $(RepoRoot)src\Antiforgery\**\src\*.csproj;
                           $(RepoRoot)src\Hosting\**\src\*.csproj;
                           $(RepoRoot)src\Http\**\src\*.csproj;
-                          $(RepoRoot)src\Html\**\src\*.csproj;
+                          $(RepoRoot)src\HttpClientFactory\**\src\*.csproj;
+                          $(RepoRoot)src\Html.Abstractions\src\*.csproj;
                           $(RepoRoot)src\Identity\**\src\*.csproj;
                           $(RepoRoot)src\Servers\**\src\*.csproj;
                           $(RepoRoot)src\Security\**\src\*.csproj;
@@ -214,7 +229,6 @@
                         Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
-                          $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"

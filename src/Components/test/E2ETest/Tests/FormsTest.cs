@@ -195,7 +195,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/3615")]
         public void InputDateInteractsWithEditContext_NonNullableDateTime()
         {
             var appElement = MountTypicalValidationComponent();
@@ -207,7 +206,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validates on edit
             Browser.Equal("valid", () => renewalDateInput.GetAttribute("class"));
-            renewalDateInput.ReplaceText("01/01/2000\t");
+            renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+            renewalDateInput.SendKeys("01/01/2000\t");
             Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
 
             // Can become invalid
@@ -216,12 +216,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
             // Empty is invalid, because it's not nullable
-            renewalDateInput.ReplaceText($"{Keys.Backspace}");
+            renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
             Browser.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
             // Can become valid
-            renewalDateInput.ReplaceText("01/01/01");
+            renewalDateInput.SendKeys("01/01/01\t");
             Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
             Browser.Empty(messagesAccessor);
         }
@@ -303,7 +303,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24850")]
         public void InputRadioGroupWithoutNameInteractsWithEditContext()
         {
             var appElement = MountTypicalValidationComponent();
@@ -343,7 +342,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24850")]
         public void InputRadioGroupsWithNamesNestedInteractWithEditContext()
         {
             var appElement = MountTypicalValidationComponent();
@@ -408,7 +406,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified valid", () => acceptsTermsInput.GetAttribute("class"));
             Browser.Equal(string.Empty, () => submissionStatus.Text);
             submitButton.Click();
-            Browser.True(() => submissionStatus.Text.StartsWith("Submitted"));
+            Browser.True(() => submissionStatus.Text.StartsWith("Submitted", StringComparison.Ordinal));
 
             // Fields can revert to unmodified
             Browser.Equal("valid", () => userNameInput.GetAttribute("class"));
@@ -572,6 +570,32 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var log = Browser.Manage().Logs.GetLog(LogType.Browser);
             Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
+        }
+
+        [Fact]
+        public void CanRemoveAndReAddDataAnnotationsSupport()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+            var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
+            Func<string> lastLogEntryAccessor = () => appElement.FindElement(By.CssSelector(".submission-log-entry:last-of-type")).Text;
+
+            nameInput.SendKeys("01234567890123456789\t");
+            Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
+            Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
+
+            // Remove DataAnnotations support
+            appElement.FindElement(By.Id("toggle-dataannotations")).Click();
+            Browser.Equal("DataAnnotations support is now disabled", lastLogEntryAccessor);
+            Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
+            Browser.Empty(messagesAccessor);
+
+            // Re-add DataAnnotations support
+            appElement.FindElement(By.Id("toggle-dataannotations")).Click();
+            nameInput.SendKeys("0\t");
+            Browser.Equal("DataAnnotations support is now enabled", lastLogEntryAccessor);
+            Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
+            Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
         }
 
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)

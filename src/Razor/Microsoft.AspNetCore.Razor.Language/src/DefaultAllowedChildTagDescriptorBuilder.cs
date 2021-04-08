@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var descriptor = new DefaultAllowedChildTagDescriptor(
                 Name,
                 displayName,
-                diagnostics?.ToArray() ?? Array.Empty<RazorDiagnostic>());
+                diagnostics.ToArray());
 
             return descriptor;
         }

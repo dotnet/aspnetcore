@@ -184,7 +184,8 @@ namespace Microsoft.AspNetCore.Routing
             private static readonly Action<ILogger, IEnumerable<string>, object, Exception> _endpointsFound = LoggerMessage.Define<IEnumerable<string>, object>(
                 LogLevel.Debug,
                 EventIds.EndpointsFound,
-                "Found the endpoints {Endpoints} for address {Address}");
+                "Found the endpoints {Endpoints} for address {Address}",
+                skipEnabledCheck: true);
 
             private static readonly Action<ILogger, object, Exception> _endpointsNotFound = LoggerMessage.Define<object>(
                 LogLevel.Debug,
@@ -194,12 +195,14 @@ namespace Microsoft.AspNetCore.Routing
             private static readonly Action<ILogger, string, string, Exception> _pathParsingSucceeded = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 EventIds.PathParsingSucceeded,
-                "Path parsing succeeded for endpoint {Endpoint} and URI path {URI}");
+                "Path parsing succeeded for endpoint {Endpoint} and URI path {URI}",
+                skipEnabledCheck: true);
 
             private static readonly Action<ILogger, IEnumerable<string>, string, Exception> _pathParsingFailed = LoggerMessage.Define<IEnumerable<string>, string>(
                 LogLevel.Debug,
                 EventIds.PathParsingFailed,
-                "Path parsing failed for endpoints {Endpoints} and URI path {URI}");
+                "Path parsing failed for endpoints {Endpoints} and URI path {URI}",
+                skipEnabledCheck: true);
 
             public static void EndpointsFound(ILogger logger, object address, IEnumerable<Endpoint> endpoints)
             {

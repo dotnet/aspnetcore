@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Xunit;
@@ -208,6 +209,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Arrange
             var scopeManager = CreateDefaultScopeManager();
             var expectedError = string.Format(
+                CultureInfo.CurrentCulture,
                 "Must call '{2}.{1}' before calling '{2}.{0}'.",
                 nameof(TagHelperScopeManager.End),
                 nameof(TagHelperScopeManager.Begin),

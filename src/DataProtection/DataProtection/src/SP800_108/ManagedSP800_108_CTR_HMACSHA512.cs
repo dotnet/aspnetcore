@@ -29,8 +29,8 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
                 prfInput[prfInput.Length - 1] = (byte)(outputSizeInBits);
 
                 // Copy label and context to prfInput since they're stable over all iterations
-                Buffer.BlockCopy(label.Array, label.Offset, prfInput, sizeof(uint), label.Count);
-                Buffer.BlockCopy(context.Array, context.Offset, prfInput, sizeof(int) + label.Count + 1, context.Count);
+                Buffer.BlockCopy(label.Array!, label.Offset, prfInput, sizeof(uint), label.Count);
+                Buffer.BlockCopy(context.Array!, context.Offset, prfInput, sizeof(int) + label.Count + 1, context.Count);
 
                 var prfOutputSizeInBytes = prf.GetDigestSizeInBytes();
                 for (uint i = 1; outputCount > 0; i++)
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
                     var prfOutput = prf.ComputeHash(prfInput);
                     CryptoUtil.Assert(prfOutputSizeInBytes == prfOutput.Length, "prfOutputSizeInBytes == prfOutput.Length");
                     var numBytesToCopyThisIteration = Math.Min(prfOutputSizeInBytes, outputCount);
-                    Buffer.BlockCopy(prfOutput, 0, output.Array, outputOffset, numBytesToCopyThisIteration);
+                    Buffer.BlockCopy(prfOutput, 0, output.Array!, outputOffset, numBytesToCopyThisIteration);
                     Array.Clear(prfOutput, 0, prfOutput.Length); // contains key material, so delete it
 
                     // adjust offsets
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
         {
             var combinedContext = new byte[checked(contextHeader.Length + context.Count)];
             Buffer.BlockCopy(contextHeader, 0, combinedContext, 0, contextHeader.Length);
-            Buffer.BlockCopy(context.Array, context.Offset, combinedContext, contextHeader.Length, context.Count);
+            Buffer.BlockCopy(context.Array!, context.Offset, combinedContext, contextHeader.Length, context.Count);
             DeriveKeys(kdk, label, new ArraySegment<byte>(combinedContext), prfFactory, output);
         }
     }

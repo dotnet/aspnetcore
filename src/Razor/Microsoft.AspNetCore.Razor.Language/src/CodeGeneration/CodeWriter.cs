@@ -18,9 +18,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         private int _currentLineIndex;
         private int _currentLineCharacterIndex;
 
-        public CodeWriter()
+        public CodeWriter() : this(Environment.NewLine, RazorCodeGenerationOptions.CreateDefault())
         {
-            NewLine = Environment.NewLine;
+        }
+
+        public CodeWriter(string newLine, RazorCodeGenerationOptions options)
+        {
+            NewLine = newLine;
+            IndentWithTabs = options.IndentWithTabs;
+            TabSize = options.IndentSize;
             _builder = new StringBuilder();
         }
 
@@ -47,6 +53,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
+        public bool IndentWithTabs { get; }
+
+        public int TabSize { get; }
+
         public SourceLocation Location => new SourceLocation(_absoluteIndex, _currentLineIndex, _currentLineCharacterIndex);
 
         public char this[int index]
@@ -62,16 +72,34 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        // Internal for testing.
-        internal CodeWriter Indent(int size)
+        public CodeWriter Indent(int size)
         {
-            if (Length == 0 || this[Length - 1] == '\n')
+            if (size == 0 || (Length != 0 && this[Length - 1] != '\n'))
             {
-                _builder.Append(' ', size);
-
-                _currentLineCharacterIndex += size;
-                _absoluteIndex += size;
+                return this;
             }
+
+            var actualSize = 0;
+            if (IndentWithTabs)
+            {
+                // Avoid writing directly to the StringBuilder here, that will throw off the manual indexing 
+                // done by the base class.
+                var tabs = size / TabSize;
+                actualSize += tabs;
+                _builder.Append('\t', tabs);
+
+                var spaces = size % TabSize;
+                actualSize += spaces;
+                _builder.Append(' ', spaces);
+            }
+            else
+            {
+                actualSize = size;
+                _builder.Append(' ', size);
+            }
+
+            _currentLineCharacterIndex += actualSize;
+            _absoluteIndex += actualSize;
 
             return this;
         }

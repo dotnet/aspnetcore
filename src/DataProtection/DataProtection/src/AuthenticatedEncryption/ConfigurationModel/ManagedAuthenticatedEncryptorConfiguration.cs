@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         [ApplyPolicy]
         public Type ValidationAlgorithmType { get; set; } = typeof(HMACSHA256);
 
+        /// <inheritdoc />
         public override IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
         {
             var internalConfiguration = (IInternalAlgorithmConfiguration)this;
@@ -101,7 +102,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             }
             else
             {
-                return type.AssemblyQualifiedName;
+                return type.AssemblyQualifiedName!;
             }
         }
     }

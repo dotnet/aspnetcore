@@ -35,19 +35,19 @@ Generated Location: (2126:73,38 [18] )
 Source Location: (557:12,84 [6] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     |
-Generated Location: (2353:78,96 [6] )
+Generated Location: (2341:78,84 [6] )
 |
     |
 
 Source Location: (589:13,30 [10] x:\dir\subdir\Test\TestComponent.cshtml)
 |myVariable|
-Generated Location: (2540:83,30 [10] )
+Generated Location: (2528:83,30 [10] )
 |myVariable|
 
 Source Location: (637:13,78 [3] x:\dir\subdir\Test\TestComponent.cshtml)
 |
 }|
-Generated Location: (2905:92,78 [3] )
+Generated Location: (2893:92,78 [3] )
 |
 }|
 
@@ -62,7 +62,7 @@ Source Location: (651:16,7 [245] x:\dir\subdir\Test\TestComponent.cshtml)
         for (var i = 0; i < 10; i++)
         {
             |
-Generated Location: (3087:102,7 [245] )
+Generated Location: (3075:102,7 [245] )
 |
     ElementReference myElementReference;
     TemplatedComponent myComponentReference;
@@ -76,12 +76,12 @@ Generated Location: (3087:102,7 [245] )
 
 Source Location: (912:25,28 [1] x:\dir\subdir\Test\TestComponent.cshtml)
 |i|
-Generated Location: (3499:119,28 [1] )
+Generated Location: (3487:119,28 [1] )
 |i|
 
 Source Location: (925:25,41 [1] x:\dir\subdir\Test\TestComponent.cshtml)
 |i|
-Generated Location: (3675:127,41 [1] )
+Generated Location: (3663:127,41 [1] )
 |i|
 
 Source Location: (931:25,47 [166] x:\dir\subdir\Test\TestComponent.cshtml)
@@ -93,7 +93,7 @@ Source Location: (931:25,47 [166] x:\dir\subdir\Test\TestComponent.cshtml)
         System.GC.KeepAlive(myVariable);
     }
 |
-Generated Location: (3847:134,47 [166] )
+Generated Location: (3835:134,47 [166] )
 |
         }
 

@@ -33,6 +33,7 @@
 #define ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG    L"Application '%s' with physical root '%s' has exited from Program.Main with exit code = '%d'. First 30KB characters of captured stdout and stderr logs:\r\n%s"
 #define ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_MSG           L"Application '%s' with physical root '%s' has exited from Program.Main with exit code = '%d'. Please check the stderr logs for more information."
 #define ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG              L"Application '%s' was recycled after detecting app_offline.htm."
+#define ASPNETCORE_EVENT_RECYCLE_FILECHANGE_MSG              L"Application '%s' was recycled after detecting file change in application directory."
 #define ASPNETCORE_EVENT_MONITOR_APPOFFLINE_ERROR_MSG        L"Failed to monitor app_offline.htm for application '%s', ErrorCode '0x%x'. "
 #define ASPNETCORE_EVENT_RECYCLE_CONFIGURATION_MSG           L"Application '%s' was recycled due to configuration change"
 #define ASPNETCORE_EVENT_RECYCLE_FAILURE_CONFIGURATION_MSG   L"Failed to recycle application after a configuration change at '%s'. Recycling worker process."

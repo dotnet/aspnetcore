@@ -17,7 +17,7 @@ export class HttpError extends Error {
      */
     constructor(errorMessage: string, statusCode: number) {
         const trueProto = new.target.prototype;
-        super(errorMessage);
+        super(`${errorMessage}: Status code '${statusCode}'`);
         this.statusCode = statusCode;
 
         // Workaround issue in Typescript compiler

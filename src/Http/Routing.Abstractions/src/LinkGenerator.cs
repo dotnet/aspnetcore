@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Routing
         public abstract string? GetUriByAddress<TAddress>(
             TAddress address,
             RouteValueDictionary values,
-            string scheme,
+            string? scheme,
             HostString host,
             PathString pathBase = default,
             FragmentString fragment = default,

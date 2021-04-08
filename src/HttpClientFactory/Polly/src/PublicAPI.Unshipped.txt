@@ -1,0 +1,2 @@
+#nullable enable
+~static Microsoft.Extensions.DependencyInjection.PollyServiceCollectionExtensions.AddPolicyRegistry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<System.IServiceProvider, Polly.Registry.IPolicyRegistry<string>> configureRegistry) -> Microsoft.Extensions.DependencyInjection.IServiceCollection

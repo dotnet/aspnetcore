@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Xunit;
@@ -263,7 +264,7 @@ namespace Ignitor
                 {
                     // Assume enums are represented as ints
                     var expectedEntry = expectedEntryIterationVar.GetType().IsEnum
-                        ? Convert.ToInt32(expectedEntryIterationVar)
+                        ? Convert.ToInt32(expectedEntryIterationVar, CultureInfo.InvariantCulture)
                         : expectedEntryIterationVar;
 
                     if (expectedEntry is int expectedInt)

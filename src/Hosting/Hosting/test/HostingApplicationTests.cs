@@ -102,6 +102,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 ctx => Task.CompletedTask,
                 NullLogger.Instance,
                 new DiagnosticListener("Microsoft.AspNetCore"),
+                new ActivitySource("Microsoft.AspNetCore"),
                 httpContextFactory);
 
             return hostingApplication;

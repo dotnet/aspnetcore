@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
@@ -36,14 +36,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             finally
             {
                 context.Transport = oldTransport;
-            }
-        }
-
-        private class LoggingDuplexPipe : DuplexPipeStreamAdapter<LoggingStream>
-        {
-            public LoggingDuplexPipe(IDuplexPipe transport, ILogger logger) :
-                base(transport, stream => new LoggingStream(stream, logger))
-            {
             }
         }
     }

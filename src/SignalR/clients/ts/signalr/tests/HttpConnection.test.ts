@@ -35,6 +35,9 @@ const defaultNegotiateResponse: INegotiateResponse = {
     negotiateVersion: 1,
 };
 
+function ServerSentEventsNotAllowed() { throw new Error("Don't allow ServerSentEvents."); }
+function WebSocketNotAllowed() { throw new Error("Don't allow Websockets."); }
+
 registerUnhandledRejectionHandler();
 
 describe("HttpConnection", () => {
@@ -64,9 +67,9 @@ describe("HttpConnection", () => {
 
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toBe("error");
+                .toThrow(new Error("Failed to complete negotiation with the server: error"));
         },
-        "Failed to start the connection: error",
+        "Failed to start the connection: Error: Failed to complete negotiation with the server: error",
         "Failed to complete negotiation with the server: error");
     });
 
@@ -122,14 +125,14 @@ describe("HttpConnection", () => {
 
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toBe("reached negotiate.");
+                .toThrow(new Error("Failed to complete negotiation with the server: reached negotiate."));
 
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toBe("reached negotiate.");
+                .toThrow(new Error("Failed to complete negotiation with the server: reached negotiate."));
         },
         "Failed to complete negotiation with the server: reached negotiate.",
-        "Failed to start the connection: reached negotiate.");
+        "Failed to start the connection: Error: Failed to complete negotiation with the server: reached negotiate.");
     });
 
     it("can stop a starting connection", async () => {
@@ -226,22 +229,24 @@ describe("HttpConnection", () => {
             const connection = new HttpConnection("http://tempuri.org", options);
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("Unable to connect to the server with any of the available transports. WebSockets failed: Error: There was an error with the transport. " +
-                "ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+                .toThrow("Unable to connect to the server with any of the available transports. WebSockets failed: Error: WebSocket failed to connect. " +
+                "The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, " +
+                "or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled. ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
 
             expect(negotiateCount).toEqual(1);
         },
-        "Failed to start the transport 'WebSockets': Error: There was an error with the transport.",
-        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: Error: There was an error with the transport. " +
-        "ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+        "Failed to start the transport 'WebSockets': Error: WebSocket failed to connect. The connection could not be found on the server, " +
+        "either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.",
+        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: " +
+        "Error: WebSocket failed to connect. The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled. ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
     });
 
     it("negotiate called again when transport fails to start and falls back", async () => {
         await VerifyLogger.run(async (loggerImpl) => {
             let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
-                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
-                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                EventSource: ServerSentEventsNotAllowed,
+                WebSocket: WebSocketNotAllowed,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", () =>  {
@@ -271,8 +276,8 @@ describe("HttpConnection", () => {
         await VerifyLogger.run(async (loggerImpl) => {
             let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
-                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
-                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                EventSource: ServerSentEventsNotAllowed,
+                WebSocket: WebSocketNotAllowed,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", () =>  {
@@ -297,7 +302,7 @@ describe("HttpConnection", () => {
         },
         "Failed to start the transport 'WebSockets': Error: Don't allow Websockets.",
         "Failed to complete negotiation with the server: Error: negotiate failed",
-        "Failed to start the connection: Error: negotiate failed");
+        "Failed to start the connection: Error: Failed to complete negotiation with the server: Error: negotiate failed");
     });
 
     it("can stop a non-started connection", async () => {
@@ -375,7 +380,7 @@ describe("HttpConnection", () => {
                     ...commonOptions,
                     httpClient: new TestHttpClient()
                         .on("POST", (r) => {
-                            negotiateUrl.resolve(r.url);
+                            negotiateUrl.resolve(r.url || "");
                             throw new HttpError("We don't care how this turns out", 500);
                         })
                         .on("GET", () => {
@@ -396,8 +401,8 @@ describe("HttpConnection", () => {
                     await connection.stop();
                 }
             },
-            "Failed to complete negotiation with the server: Error: We don't care how this turns out",
-            "Failed to start the connection: Error: We don't care how this turns out");
+            "Failed to complete negotiation with the server: Error: We don't care how this turns out: Status code '500'",
+            "Failed to start the connection: Error: Failed to complete negotiation with the server: Error: We don't care how this turns out: Status code '500'");
         });
     });
 
@@ -599,7 +604,7 @@ describe("HttpConnection", () => {
                         firstPoll = false;
                         return "";
                     }
-                    return new HttpResponse(204, "No Content", "");
+                    return new HttpResponse(200);
                 })
                 .on("DELETE", () => new HttpResponse(202));
 
@@ -614,7 +619,7 @@ describe("HttpConnection", () => {
             try {
                 await connection.start(TransferFormat.Text);
 
-                expect(httpClient.sentRequests.length).toBe(4);
+                expect(httpClient.sentRequests.length).toBeGreaterThanOrEqual(4);
                 expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate?negotiateVersion=1");
                 expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate?negotiateVersion=1");
                 expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
@@ -1092,7 +1097,6 @@ describe("HttpConnection", () => {
             let negotiateCount: number = 0;
             let getCount: number = 0;
             let connection: HttpConnection;
-            let connectionId: string | undefined;
             const options: IHttpConnectionOptions = {
                 WebSocket: TestWebSocket,
                 ...commonOptions,
@@ -1106,8 +1110,7 @@ describe("HttpConnection", () => {
                         if (getCount === 1) {
                             return new HttpResponse(200);
                         }
-                        connectionId = connection.connectionId;
-                        return new HttpResponse(204);
+                        return new HttpResponse(200);
                     })
                     .on("DELETE", () => new HttpResponse(202)),
 
@@ -1121,16 +1124,19 @@ describe("HttpConnection", () => {
 
             await TestWebSocket.webSocketSet;
             await TestWebSocket.webSocket.closeSet;
-            TestWebSocket.webSocket.onerror(new TestEvent());
+            TestWebSocket.webSocket.onclose(new TestEvent());
 
             try {
                 await startPromise;
             } catch { }
 
             expect(negotiateCount).toEqual(2);
-            expect(connectionId).toEqual("2");
+            expect(connection.connectionId).toEqual("2");
+
+            await connection.stop();
         },
-        "Failed to start the transport 'WebSockets': Error: There was an error with the transport.");
+        "Failed to start the transport 'WebSockets': Error: WebSocket failed to connect. The connection could not be found on the server, " +
+        "either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.");
     });
 
     it("user agent header set on negotiate", async () => {

@@ -2,28 +2,29 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
 {
     internal class QuicTrace : IQuicTrace
     {
-        private static readonly Action<ILogger, string, Exception> _acceptedConnection =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, nameof(NewConnection)), @"Connection id ""{ConnectionId}"" accepted.");
-        private static readonly Action<ILogger, string, Exception> _acceptedStream =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, nameof(NewStream)), @"Stream id ""{ConnectionId}"" accepted.");
-        private static readonly Action<ILogger, string, string, Exception> _connectionError =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(6, nameof(ConnectionError)), @"Connection id ""{ConnectionId}"" hit an exception: ""{Reason}"".");
-        private static readonly Action<ILogger, string, string, Exception> _streamError =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamError)), @"Connection id ""{ConnectionId}"" hit an exception: ""{Reason}"".");
-        private static readonly Action<ILogger, string, Exception> _streamPause =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(StreamPause)), @"Stream id ""{ConnectionId}"" paused.");
-        private static readonly Action<ILogger, string, Exception> _streamResume =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(StreamResume)), @"Stream id ""{ConnectionId}"" resumed.");
-        private static readonly Action<ILogger, string, string, Exception> _streamShutdownWrite =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamShutdownWrite)), @"Stream id ""{ConnectionId}"" shutting down writes, exception: ""{Reason}"".");
-        private static readonly Action<ILogger, string, string, Exception> _streamAborted =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, nameof(StreamShutdownWrite)), @"Stream id ""{ConnectionId}"" aborted by application, exception: ""{Reason}"".");
+        private static readonly Action<ILogger, string, Exception?> _acceptedConnection =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "AcceptedConnection"), @"Connection id ""{ConnectionId}"" accepted.", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, Exception?> _acceptedStream =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "AcceptedStream"), @"Stream id ""{ConnectionId}"" accepted.", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, Exception?> _connectionError =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "ConnectionError"), @"Connection id ""{ConnectionId}"" unexpected error.", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, Exception?> _streamError =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "StreamError"), @"Stream id ""{ConnectionId}"" unexpected error.", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, Exception?> _streamPause =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "StreamPause"), @"Stream id ""{ConnectionId}"" paused.", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, Exception?> _streamResume =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "StreamResume"), @"Stream id ""{ConnectionId}"" resumed.", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, string, Exception?> _streamShutdownWrite =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(7, "StreamShutdownWrite"), @"Stream id ""{ConnectionId}"" shutting down writes because: ""{Reason}"".", skipEnabledCheck: true);
+        private static readonly Action<ILogger, string, string, Exception?> _streamAborted =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(8, "StreamAbort"), @"Stream id ""{ConnectionId}"" aborted by application because: ""{Reason}"".", skipEnabledCheck: true);
 
         private ILogger _logger;
 
@@ -36,46 +37,71 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
         public bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(logLevel);
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             => _logger.Log(logLevel, eventId, state, exception, formatter);
 
-        public void NewConnection(string connectionId)
+        public void AcceptedConnection(BaseConnectionContext connection)
         {
-            _acceptedConnection(_logger, connectionId, null);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _acceptedConnection(_logger, connection.ConnectionId, null);
+            }
         }
 
-        public void NewStream(string streamId)
+        public void AcceptedStream(QuicStreamContext streamContext)
         {
-            _acceptedStream(_logger, streamId, null);
-        }
-        public void ConnectionError(string connectionId, Exception ex)
-        {
-            _connectionError(_logger, connectionId, ex.Message, ex);
-        }
-
-        public void StreamError(string streamId, Exception ex)
-        {
-            _streamError(_logger, streamId, ex.Message, ex);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _acceptedStream(_logger, streamContext.ConnectionId, null);
+            }
         }
 
-        public void StreamPause(string streamId)
+        public void ConnectionError(BaseConnectionContext connection, Exception ex)
         {
-            _streamPause(_logger, streamId, null);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _connectionError(_logger, connection.ConnectionId, ex);
+            }
         }
 
-        public void StreamResume(string streamId)
+        public void StreamError(QuicStreamContext streamContext, Exception ex)
         {
-            _streamResume(_logger, streamId, null);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _streamError(_logger, streamContext.ConnectionId, ex);
+            }
         }
 
-        public void StreamShutdownWrite(string streamId, Exception ex)
+        public void StreamPause(QuicStreamContext streamContext)
         {
-            _streamShutdownWrite(_logger, streamId, ex.Message, ex);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _streamPause(_logger, streamContext.ConnectionId, null);
+            }
         }
 
-        public void StreamAbort(string streamId, Exception ex)
+        public void StreamResume(QuicStreamContext streamContext)
         {
-            _streamAborted(_logger, streamId, ex.Message, ex);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _streamResume(_logger, streamContext.ConnectionId, null);
+            }
+        }
+
+        public void StreamShutdownWrite(QuicStreamContext streamContext, string reason)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _streamShutdownWrite(_logger, streamContext.ConnectionId, reason, null);
+            }
+        }
+
+        public void StreamAbort(QuicStreamContext streamContext, string reason)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _streamAborted(_logger, streamContext.ConnectionId, reason, null);
+            }
         }
     }
 }

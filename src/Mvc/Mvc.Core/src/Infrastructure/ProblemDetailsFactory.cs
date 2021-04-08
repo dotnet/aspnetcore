@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -24,10 +25,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public abstract ProblemDetails CreateProblemDetails(
             HttpContext httpContext,
             int? statusCode = null,
-            string title = null,
-            string type = null,
-            string detail = null,
-            string instance = null);
+            string? title = null,
+            string? type = null,
+            string? detail = null,
+            string? instance = null);
 
         /// <summary>
         /// Creates a <see cref="ValidationProblemDetails" /> instance that configures defaults based on values specified in <see cref="ApiBehaviorOptions" />.
@@ -44,9 +45,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             HttpContext httpContext,
             ModelStateDictionary modelStateDictionary,
             int? statusCode = null,
-            string title = null,
-            string type = null,
-            string detail = null,
-            string instance = null);
+            string? title = null,
+            string? type = null,
+            string? detail = null,
+            string? instance = null);
     }
 }

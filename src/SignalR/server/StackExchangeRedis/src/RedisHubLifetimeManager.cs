@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         private readonly HubConnectionStore _connections = new HubConnectionStore();
         private readonly RedisSubscriptionManager _groups = new RedisSubscriptionManager();
         private readonly RedisSubscriptionManager _users = new RedisSubscriptionManager();
-        private IConnectionMultiplexer _redisServerConnection;
-        private ISubscriber _bus;
+        private IConnectionMultiplexer? _redisServerConnection;
+        private ISubscriber? _bus;
         private readonly ILogger _logger;
         private readonly RedisOptions _options;
         private readonly RedisChannels _channels;
@@ -62,13 +62,13 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         public RedisHubLifetimeManager(ILogger<RedisHubLifetimeManager<THub>> logger,
                                        IOptions<RedisOptions> options,
                                        IHubProtocolResolver hubProtocolResolver,
-                                       IOptions<HubOptions> globalHubOptions,
-                                       IOptions<HubOptions<THub>> hubOptions)
+                                       IOptions<HubOptions>? globalHubOptions,
+                                       IOptions<HubOptions<THub>>? hubOptions)
         {
             _logger = logger;
             _options = options.Value;
             _ackHandler = new AckHandler();
-            _channels = new RedisChannels(typeof(THub).FullName);
+            _channels = new RedisChannels(typeof(THub).FullName!);
             if (globalHubOptions != null && hubOptions != null)
             {
                 _protocol = new RedisProtocol(new DefaultHubMessageSerializer(hubProtocolResolver, globalHubOptions.Value.SupportedProtocols, hubOptions.Value.SupportedProtocols));
@@ -114,9 +114,9 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
 
             var connectionChannel = _channels.Connection(connection.ConnectionId);
             RedisLog.Unsubscribe(_logger, connectionChannel);
-            tasks.Add(_bus.UnsubscribeAsync(connectionChannel));
+            tasks.Add(_bus!.UnsubscribeAsync(connectionChannel));
 
-            var feature = connection.Features.Get<IRedisFeature>();
+            var feature = connection.Features.Get<IRedisFeature>()!;
             var groupNames = feature.Groups;
 
             if (groupNames != null)
@@ -140,21 +140,21 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         }
 
         /// <inheritdoc />
-        public override Task SendAllAsync(string methodName, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendAllAsync(string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             var message = _protocol.WriteInvocation(methodName, args);
             return PublishAsync(_channels.All, message);
         }
 
         /// <inheritdoc />
-        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
+        public override Task SendAllExceptAsync(string methodName, object?[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
             var message = _protocol.WriteInvocation(methodName, args, excludedConnectionIds);
             return PublishAsync(_channels.All, message);
         }
 
         /// <inheritdoc />
-        public override Task SendConnectionAsync(string connectionId, string methodName, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendConnectionAsync(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
             {
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         }
 
         /// <inheritdoc />
-        public override Task SendGroupAsync(string groupName, string methodName, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendGroupAsync(string groupName, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             if (groupName == null)
             {
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         }
 
         /// <inheritdoc />
-        public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
+        public override Task SendGroupExceptAsync(string groupName, string methodName, object?[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
             if (groupName == null)
             {
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         }
 
         /// <inheritdoc />
-        public override Task SendUserAsync(string userId, string methodName, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendUserAsync(string userId, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             var message = _protocol.WriteInvocation(methodName, args);
             return PublishAsync(_channels.User(userId), message);
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         }
 
         /// <inheritdoc />
-        public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             if (connectionIds == null)
             {
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         }
 
         /// <inheritdoc />
-        public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             if (groupNames == null)
             {
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         }
 
         /// <inheritdoc />
-        public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object?[] args, CancellationToken cancellationToken = default)
         {
             if (userIds.Count > 0)
             {
@@ -315,12 +315,12 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         {
             await EnsureRedisServerConnection();
             RedisLog.PublishToChannel(_logger, channel);
-            await _bus.PublishAsync(channel, payload);
+            await _bus!.PublishAsync(channel, payload);
         }
 
         private Task AddGroupAsyncCore(HubConnectionContext connection, string groupName)
         {
-            var feature = connection.Features.Get<IRedisFeature>();
+            var feature = connection.Features.Get<IRedisFeature>()!;
             var groupNames = feature.Groups;
 
             lock (groupNames)
@@ -347,10 +347,10 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             await _groups.RemoveSubscriptionAsync(groupChannel, connection, channelName =>
             {
                 RedisLog.Unsubscribe(_logger, channelName);
-                return _bus.UnsubscribeAsync(channelName);
+                return _bus!.UnsubscribeAsync(channelName);
             });
 
-            var feature = connection.Features.Get<IRedisFeature>();
+            var feature = connection.Features.Get<IRedisFeature>()!;
             var groupNames = feature.Groups;
             if (groupNames != null)
             {
@@ -374,12 +374,12 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
 
         private Task RemoveUserAsync(HubConnectionContext connection)
         {
-            var userChannel = _channels.User(connection.UserIdentifier);
+            var userChannel = _channels.User(connection.UserIdentifier!);
 
             return _users.RemoveSubscriptionAsync(userChannel, connection, channelName =>
             {
                 RedisLog.Unsubscribe(_logger, channelName);
-                return _bus.UnsubscribeAsync(channelName);
+                return _bus!.UnsubscribeAsync(channelName);
             });
         }
 
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         private async Task SubscribeToAll()
         {
             RedisLog.Subscribing(_logger, _channels.All);
-            var channel = await _bus.SubscribeAsync(_channels.All);
+            var channel = await _bus!.SubscribeAsync(_channels.All);
             channel.OnMessage(async channelMessage =>
             {
                 try
@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
 
         private async Task SubscribeToGroupManagementChannel()
         {
-            var channel = await _bus.SubscribeAsync(_channels.GroupManagement);
+            var channel = await _bus!.SubscribeAsync(_channels.GroupManagement);
             channel.OnMessage(async channelMessage =>
             {
                 try
@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         private async Task SubscribeToAckChannel()
         {
             // Create server specific channel in order to send an ack to a single server
-            var channel = await _bus.SubscribeAsync(_channels.Ack(_serverName));
+            var channel = await _bus!.SubscribeAsync(_channels.Ack(_serverName));
             channel.OnMessage(channelMessage =>
             {
                 var ackId = _protocol.ReadAck((byte[])channelMessage.Message);
@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             var connectionChannel = _channels.Connection(connection.ConnectionId);
 
             RedisLog.Subscribing(_logger, connectionChannel);
-            var channel = await _bus.SubscribeAsync(connectionChannel);
+            var channel = await _bus!.SubscribeAsync(connectionChannel);
             channel.OnMessage(channelMessage =>
             {
                 var invocation = _protocol.ReadInvocation((byte[])channelMessage.Message);
@@ -487,12 +487,12 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
 
         private Task SubscribeToUser(HubConnectionContext connection)
         {
-            var userChannel = _channels.User(connection.UserIdentifier);
+            var userChannel = _channels.User(connection.UserIdentifier!);
 
             return _users.AddSubscriptionAsync(userChannel, connection, async (channelName, subscriptions) =>
             {
                 RedisLog.Subscribing(_logger, channelName);
-                var channel = await _bus.SubscribeAsync(channelName);
+                var channel = await _bus!.SubscribeAsync(channelName);
                 channel.OnMessage(async channelMessage =>
                 {
                     try
@@ -518,7 +518,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         private async Task SubscribeToGroupAsync(string groupChannel, HubConnectionStore groupConnections)
         {
             RedisLog.Subscribing(_logger, groupChannel);
-            var channel = await _bus.SubscribeAsync(groupChannel);
+            var channel = await _bus!.SubscribeAsync(groupChannel);
             channel.OnMessage(async (channelMessage) =>
             {
                 try
@@ -626,7 +626,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
 
             }
 
-            public override void WriteLine(string value)
+            public override void WriteLine(string? value)
             {
                 RedisLog.ConnectionMultiplexerMessage(_logger, value);
             }

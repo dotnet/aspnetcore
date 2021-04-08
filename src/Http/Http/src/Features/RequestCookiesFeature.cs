@@ -8,6 +8,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Default implementation for <see cref="IRequestCookiesFeature"/>.
+    /// </summary>
     public class RequestCookiesFeature : IRequestCookiesFeature
     {
         // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
@@ -17,6 +20,10 @@ namespace Microsoft.AspNetCore.Http.Features
         private StringValues _original;
         private IRequestCookieCollection? _parsedValues;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RequestCookiesFeature"/>.
+        /// </summary>
+        /// <param name="cookies">The <see cref="IRequestCookieCollection"/> to use as backing store.</param>
         public RequestCookiesFeature(IRequestCookieCollection cookies)
         {
             if (cookies == null)
@@ -27,6 +34,10 @@ namespace Microsoft.AspNetCore.Http.Features
             _parsedValues = cookies;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="RequestCookiesFeature"/>.
+        /// </summary>
+        /// <param name="features">The <see cref="IFeatureCollection"/> to initialize.</param>
         public RequestCookiesFeature(IFeatureCollection features)
         {
             if (features == null)
@@ -40,6 +51,7 @@ namespace Microsoft.AspNetCore.Http.Features
         private IHttpRequestFeature HttpRequestFeature =>
             _features.Fetch(ref _features.Cache, _nullRequestFeature)!;
 
+        /// <inheritdoc />
         public IRequestCookieCollection Cookies
         {
             get
@@ -63,7 +75,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 if (_parsedValues == null || _original != current)
                 {
                     _original = current;
-                    _parsedValues = RequestCookieCollection.Parse(current.ToArray());
+                    _parsedValues = RequestCookieCollection.Parse(current);
                 }
 
                 return _parsedValues;

@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await request.Body.CopyToAsync(data);
             var bytes = data.ToArray();
 
-            response.Headers["Content-Length"] = bytes.Length.ToString();
+            response.Headers["Content-Length"] = bytes.Length.ToString(CultureInfo.InvariantCulture);
             await response.Body.WriteAsync(bytes, 0, bytes.Length);
         }
 

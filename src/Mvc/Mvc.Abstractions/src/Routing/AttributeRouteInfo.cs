@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     public class AttributeRouteInfo
     {
         /// <summary>
-        /// The route template. May be null if the action has no attribute routes.
+        /// The route template. May be <see langword="null" /> if the action has no attribute routes.
         /// </summary>
         public string? Template { get; set; }
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// to generate a link by referring to the route by name instead of attempting to match a
         /// route by provided route data.
         /// </summary>
-        public string Name { get; set; } = default!;
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets a value that determines if the route entry associated with this model participates in link generation.

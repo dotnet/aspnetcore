@@ -959,10 +959,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected void MapDirectives(Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax> handler, params string[] directives)
+        // Internal for testing.
+        internal void MapDirectives(Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax> handler, params string[] directives)
         {
             foreach (var directive in directives)
             {
+                if (_directiveParserMap.ContainsKey(directive))
+                {
+                    // It is possible for the list to contain duplicates in cases when the project is misconfigured.
+                    // In those cases, we shouldn't register multiple handlers per keyword.
+                    continue;
+                }
+
                 _directiveParserMap.Add(directive, (builder, transition) =>
                 {
                     handler(builder, transition);
@@ -1219,8 +1227,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (lookupStrings == null ||
                 lookupStrings.Any(string.IsNullOrWhiteSpace) ||
                 lookupStrings.Length != 2 ||
-                text.StartsWith("'") ||
-                text.EndsWith("'"))
+                text.StartsWith("'", StringComparison.Ordinal) ||
+                text.EndsWith("'", StringComparison.Ordinal))
             {
                 errors.Add(
                     RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(

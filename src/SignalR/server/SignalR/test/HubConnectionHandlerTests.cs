@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -3592,7 +3593,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 foreach (var spot in order)
                 {
-                    await client.SendHubMessageAsync(new StreamItemMessage(spot.ToString(), words[spot][pos[spot]])).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamItemMessage(spot.ToString(CultureInfo.InvariantCulture), words[spot][pos[spot]])).OrTimeout();
                     pos[spot] += 1;
                 }
 
@@ -3601,7 +3602,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await client.SendHubMessageAsync(CompletionMessage.Empty(id)).OrTimeout();
                     var response = await client.ReadAsync().OrTimeout();
                     Debug.Write(response);
-                    Assert.Equal(words[int.Parse(id)], ((CompletionMessage)response).Result);
+                    Assert.Equal(words[int.Parse(id, CultureInfo.InvariantCulture)], ((CompletionMessage)response).Result);
                 }
             }
         }
