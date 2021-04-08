@@ -48,7 +48,6 @@ namespace Microsoft.AspNetCore.Identity.Test
                         continue;
                     }
 
-                    _output.WriteLine($"Retrieving script from {script.Src}");
                     using (var resp = await client.GetStreamAsync(script.Src))
                     using (var alg = SHA384.Create())
                     {
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             });
         }
 
-        class RetryHandler : DelegatingHandler
+        private class RetryHandler : DelegatingHandler
         {
             private readonly ITestOutputHelper _output;
 
@@ -76,21 +75,40 @@ namespace Microsoft.AspNetCore.Identity.Test
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 HttpResponseMessage result = null;
-                for (var i = 0; i < 10; i++)
-                {
-                    result = await base.SendAsync(request, cancellationToken);
-                    if (result.IsSuccessStatusCode)
-                    {
-                        return result;
-                    }
-                    else
-                    {
-                        _output.WriteLine($"Try {i} failed, returning {result.StatusCode}, '{result.ReasonPhrase}'.");
-                    }
+                var method = request.Method;
+                var url = request.RequestUri;
+                var waitIntervalBeforeRetry = 1;
 
-                    await Task.Delay(1000);
+                // Try 6 times with 1, 2, 4, 8, 16 seconds between attempts. Last attempt may throw or report
+                // error to caller.
+                for (var i = 0; i < 5; i++)
+                {
+                    try
+                    {
+                        _output.WriteLine($"Sending request '{method} - {url}' {i+1} attempt.");
+                        result = await base.SendAsync(request, cancellationToken);
+                        if (result.IsSuccessStatusCode)
+                        {
+                            return result;
+                        }
+                        else
+                        {
+                            _output.WriteLine($"Request '{method} - {url}' failed with {result.StatusCode}.");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _output.WriteLine($"Request '{method} - {url}' failed with {e.ToString()}");
+                    }
+                    finally
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(waitIntervalBeforeRetry), cancellationToken);
+                        waitIntervalBeforeRetry = waitIntervalBeforeRetry * 2;
+                    }
                 }
-                return result;
+
+                // Try one last time to show the actual error.
+                return await base.SendAsync(request, cancellationToken);
             }
         }
 
