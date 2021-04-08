@@ -34,8 +34,8 @@ RUN apt-get update && \
     locale-gen "en_US.UTF-8"
 
 # Use clang as c++ compiler
-RUN update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-3.5 100
-RUN update-alternatives --set c++ /usr/bin/clang++-3.5
+RUN update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-3.9 100
+RUN update-alternatives --set c++ /usr/bin/clang++-3.9
 
 # Setup User to match Host User, and give superuser permissions
 ARG USER_ID=0
