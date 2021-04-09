@@ -1,0 +1,6 @@
+#nullable enable
+Microsoft.AspNetCore.Builder.HttpLoggingBuilderExtensions
+Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware
+Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Builder.HttpLoggingBuilderExtensions.UseHttpLogging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+~Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware.HttpLoggingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!>! options, Microsoft.Extensions.Configuration.IConfiguration! config, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void

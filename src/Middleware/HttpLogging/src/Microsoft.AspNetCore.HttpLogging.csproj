@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <Description>
-      ASP.NET Core basic middleware for supporting HTTPS Redirection and HTTP Strict-Transport-Security.
+      ASP.NET Core middleware for logging HTTP requests and responses.
     </Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>aspnetcore;https;hsts</PackageTags>
+    <PackageTags>aspnetcore;logging;http</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
