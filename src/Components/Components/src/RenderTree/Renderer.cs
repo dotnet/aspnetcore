@@ -518,6 +518,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             return eventHandlerId;
         }
 
+        internal void ReplaceDelegateForEventHandlerForId(ulong attributeEventHandlerIdField, MulticastDelegate newDelegate)
+        {
+            // replaces the current event callback with the specified delegate for a certain event handler id.
+            // This is deliberately done within blazor only, not in javascript. For the conditions allowing
+            // for this replacement, refer to the calling method.
+            this._eventBindings[attributeEventHandlerIdField] = new EventCallback(newDelegate.Target as IHandleEvent, newDelegate);
+        }
+        internal void ReplaceEventCallBackForEventHandlerForId(ulong attributeEventHandlerIdField, ref EventCallback eventCallback)
+        {
+            // replaces the current event callback with the specified event callback for a certain event handler id.
+            // This is deliberately done within blazor only, not in javascript. For the conditions allowing
+            // for this replacement, refer to the calling method.
+            this._eventBindings[attributeEventHandlerIdField] = eventCallback;
+        }
+
         private ComponentState GetRequiredComponentState(int componentId)
             => _componentStateById.TryGetValue(componentId, out var componentState)
                 ? componentState
