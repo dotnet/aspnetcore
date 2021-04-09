@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,7 +24,9 @@ namespace Microsoft.AspNetCore.Identity.Test
             _output = output;
         }
 
-        [Fact]
+        // Because this test runs on .NET Core and seems reliable there, likely not worth running on .NET Framework.
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "At least flaky on .NET Framework.")]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck()
         {
             var slnDir = GetSolutionDir();
