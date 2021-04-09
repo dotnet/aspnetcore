@@ -14,13 +14,6 @@ namespace TriageBuildFailures
         /// </summary>
         private const int MaxRetryMinutes = 15;
 
-        private static int TotalRetriesUsed;
-
-        public static int GetTotalRetriesUsed()
-        {
-            return TotalRetriesUsed;
-        }
-
         public static async Task RetryAsync(Func<Task> action, IReporter reporter)
         {
             await RetryAsync<object>(
@@ -36,7 +29,7 @@ namespace TriageBuildFailures
         {
             Exception firstException = null;
 
-            var retriesRemaining = 10;
+            var retriesRemaining = 5;
             var retryDelayInMinutes = 1;
 
             while (retriesRemaining > 0)
@@ -49,14 +42,15 @@ namespace TriageBuildFailures
                 {
                     firstException = firstException ?? e;
                     reporter.Output($"Exception thrown! {e.Message}");
+
+                    retriesRemaining--;
                     reporter.Output($"Waiting {retryDelayInMinutes} minute(s) to retry ({retriesRemaining} left)...");
+
                     await Task.Delay(retryDelayInMinutes * 60 * 1000);
 
-                    // Do exponential back-off, but limit it (1, 2, 4, 8, 15, 15, 15, ...)
-                    // With MaxRetryMinutes=15 and MaxRetries=10, this will delay a maximum of 105 minutes
+                    // Do exponential back-off, but limit it (1, 2, 4, 8, 15)
+                    // With MaxRetryMinutes=15 and MaxRetries=5, this will delay a maximum of 30 minutes (1/3 job timeout).
                     retryDelayInMinutes = Math.Min(2 * retryDelayInMinutes, MaxRetryMinutes);
-                    retriesRemaining--;
-                    TotalRetriesUsed++;
                 }
             }
             throw new InvalidOperationException("Max exception retries reached, giving up.", firstException);

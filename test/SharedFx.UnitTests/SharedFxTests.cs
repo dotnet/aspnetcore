@@ -17,11 +17,16 @@ namespace Microsoft.AspNetCore
 {
     public class SharedFxTests
     {
-
         [Theory]
         [MemberData(nameof(GetSharedFxConfig))]
         public async Task BaselineTest(SharedFxConfig config)
         {
+            if (!TestData.GetValidateBaseline())
+            {
+                // Inability to validate the package baselines indicates dotnetcli is not up-to-date.
+                return;
+            }
+
             var previousVersion = TestData.GetPreviousAspNetCoreReleaseVersion();
             var url = new Uri($"https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/" + previousVersion + "/aspnetcore-runtime-internal-" + previousVersion + "-win-x64.zip");
             var zipName = "assemblies.zip";
