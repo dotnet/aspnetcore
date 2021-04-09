@@ -15,3 +15,4 @@ Microsoft.AspNetCore.Http.Features.IFeatureCollection.Set<TFeature>(TFeature? in
 Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string?
 Microsoft.AspNetCore.Http.ISession.TryGetValue(string! key, out byte[]? value) -> bool
 Microsoft.AspNetCore.Http.Features.FeatureCollection.FeatureCollection(int initialCapacity) -> void
+Microsoft.AspNetCore.Http.IResponseCookies.Append(System.Collections.Generic.IDictionary<string!, string!>! keyValuePairs, Microsoft.AspNetCore.Http.CookieOptions! options) -> void

@@ -222,7 +222,6 @@ Microsoft.AspNetCore.Http.IRequestCookieCollection.this[string! key].get -> stri
 Microsoft.AspNetCore.Http.IResponseCookies
 Microsoft.AspNetCore.Http.IResponseCookies.Append(string! key, string! value) -> void
 Microsoft.AspNetCore.Http.IResponseCookies.Append(string! key, string! value, Microsoft.AspNetCore.Http.CookieOptions! options) -> void
-Microsoft.AspNetCore.Http.IResponseCookies.Append(System.Collections.Generic.IDictionary<string!, string!>! keyValuePairs, Microsoft.AspNetCore.Http.CookieOptions! options) -> void
 Microsoft.AspNetCore.Http.IResponseCookies.Delete(string! key) -> void
 Microsoft.AspNetCore.Http.IResponseCookies.Delete(string! key, Microsoft.AspNetCore.Http.CookieOptions! options) -> void
 Microsoft.AspNetCore.Http.ISession
