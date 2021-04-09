@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     new object[] { (Action<HttpContext, AssemblyFlags>)Store, "PublicKey,Retargetable", AssemblyFlags.PublicKey | AssemblyFlags.Retargetable },
                     new object[] { (Action<HttpContext, int?>)Store, "42", 42 },
                     new object[] { (Action<HttpContext, MyEnum>)Store, "ValueB", MyEnum.ValueB },
-                    new object[] { (Action<HttpContext, MyTryParsableRecord>)Store, "42", new MyTryParsableRecord(42) },
+                    new object[] { (Action<HttpContext, MyTryParsableRecord>)Store, "https://example.org", new MyTryParsableRecord(new Uri("https://example.org")) },
                     new object?[] { (Action<HttpContext, int>)Store, null, 0 },
                     new object?[] { (Action<HttpContext, int?>)Store, null, null },
                 };
@@ -342,17 +342,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private enum MyEnum { ValueA, ValueB, }
 
-        private record MyTryParsableRecord(int State)
+        private record MyTryParsableRecord(Uri Uri)
         {
-            public static bool TryParse(string value, out MyTryParsableRecord? result)
+            public static bool TryParse(string? value, out MyTryParsableRecord? result)
             {
-                if (!int.TryParse(value, out var state))
+                if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
                 {
                     result = null;
                     return false;
                 }
 
-                result = new MyTryParsableRecord(state);
+                result = new MyTryParsableRecord(uri);
                 return true;
             }
         }
