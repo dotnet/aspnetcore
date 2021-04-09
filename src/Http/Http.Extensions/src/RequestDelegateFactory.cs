@@ -428,7 +428,7 @@ namespace Microsoft.AspNetCore.Http
             var invoker = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(
                 responseWritingMethodCall, TargetExpr, HttpContextExpr, BodyValueExpr).Compile();
 
-            var bodyType = factoryContext.JsonRequestBodyType!;
+            var bodyType = factoryContext.JsonRequestBodyType;
             object? defaultBodyValue = null;
 
             if (factoryContext.AllowEmptyRequestBody && bodyType.IsValueType)

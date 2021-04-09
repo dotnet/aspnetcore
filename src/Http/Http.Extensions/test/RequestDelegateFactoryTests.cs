@@ -542,20 +542,36 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(originalHeaderParam, deserializedRouteParam);
         }
 
-        [Fact]
-        public async Task RequestDelegatePopulatesFromBodyParameter()
+        public static object[][] FromBodyActions
+        {
+            get
+            {
+                void TestExplicitFromBody(HttpContext httpContext, [FromBody] Todo todo)
+                {
+                    httpContext.Items.Add("body", todo);
+                }
+
+                void TestImpliedFromBody(HttpContext httpContext, Todo myService)
+                {
+                    httpContext.Items.Add("body", myService);
+                }
+
+                return new[]
+                {
+                    new[] { (Action<HttpContext, Todo>)TestExplicitFromBody },
+                    new[] { (Action<HttpContext, Todo>)TestImpliedFromBody },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(FromBodyActions))]
+        public async Task RequestDelegatePopulatesFromBodyParameter(Delegate action)
         {
             Todo originalTodo = new()
             {
                 Name = "Write more tests!"
             };
-
-            Todo? deserializedRequestBody = null;
-
-            void TestAction([FromBody] Todo todo)
-            {
-                deserializedRequestBody = todo;
-            }
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
@@ -563,18 +579,19 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
             httpContext.Request.Body = new MemoryStream(requestBodyBytes);
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<Todo>)TestAction);
+            var requestDelegate = RequestDelegateFactory.Create(action);
 
             await requestDelegate(httpContext);
 
+            var deserializedRequestBody = httpContext.Items["body"];
             Assert.NotNull(deserializedRequestBody);
-            Assert.Equal(originalTodo.Name, deserializedRequestBody!.Name);
+            Assert.Equal(originalTodo.Name, ((Todo)deserializedRequestBody!).Name);
         }
 
         [Fact]
         public async Task RequestDelegateRejectsEmptyBodyGivenDefaultFromBodyParameter()
         {
-            void TestAction([FromBody] Todo todo)
+            void TestAction(Todo todo)
             {
             }
 
@@ -702,12 +719,14 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [Fact]
         public void BuildRequestDelegateThrowsInvalidOperationExceptionGivenFromBodyOnMultipleParameters()
         {
-            void TestAction([FromBody] int value1, [FromBody] int value2) { }
+            void TestExplicitlyInvalidAction([FromBody] int value1, [FromBody] int value2) { }
+            void TestInferredInvalidAction(Todo value1, Todo value2) { }
 
-            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int, int>)TestAction));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int, int>)TestExplicitlyInvalidAction));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<Todo, Todo>)TestInferredInvalidAction));
         }
 
-        public static object[][] FromServiceParameter
+        public static object[][] FromServiceActions
         {
             get
             {
@@ -716,7 +735,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     httpContext.Items.Add("service", myService);
                 }
 
-                void TestImpliedFromService(HttpContext httpContext, MyService myService)
+                void TestImpliedFromService(HttpContext httpContext, IMyService myService)
                 {
                     httpContext.Items.Add("service", myService);
                 }
@@ -730,13 +749,14 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Theory]
-        [MemberData(nameof(FromServiceParameter))]
+        [MemberData(nameof(FromServiceActions))]
         public async Task RequestDelegatePopulatesParametersFromServiceWithAndWithoutAttribute(Delegate action)
         {
             var myOriginalService = new MyService();
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(myOriginalService);
+            serviceCollection.AddSingleton<IMyService>(myOriginalService);
 
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
@@ -749,7 +769,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Theory]
-        [MemberData(nameof(FromServiceParameter))]
+        [MemberData(nameof(FromServiceActions))]
         public async Task RequestDelegateRequiresServiceForAllFromServiceParameters(Delegate action)
         {
             var httpContext = new DefaultHttpContext();
@@ -1058,7 +1078,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
         }
 
-        private class MyService
+        private interface IMyService
+        {
+        }
+
+        private class MyService : IMyService
         {
         }
 
