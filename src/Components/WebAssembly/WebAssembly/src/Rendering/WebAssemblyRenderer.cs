@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
     {
         private readonly ILogger _logger;
         private readonly int _webAssemblyRendererId;
+        private readonly QueueWithLast<IncomingEventInfo> deferredIncomingEvents = new();
 
         private bool isDispatchingEvent;
-        private Queue<IncomingEventInfo> deferredIncomingEvents = new Queue<IncomingEventInfo>();
 
         /// <summary>
         /// Constructs an instance of <see cref="WebAssemblyRenderer"/>.
@@ -103,7 +103,23 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 _webAssemblyRendererId,
                 batch);
 
-            return Task.CompletedTask;
+            if (deferredIncomingEvents.Count == 0)
+            {
+                // In the vast majority of cases, since the call to update the UI is synchronous,
+                // we just return a pre-completed task from here.
+                return Task.CompletedTask;
+            }
+            else
+            {
+                // However, in the rare case where JS sent us any event notifications that we had to
+                // defer until later, we behave as if the renderbatch isn't acknowledged until we have at
+                // least dispatched those event calls. This is to make the WebAssembly behavior more
+                // consistent with the Server behavior, which receives batch acknowledgements asynchronously
+                // and they are queued up with any other calls from JS such as event calls. If we didn't
+                // do this, then the order of execution could be inconsistent with Server, and in fact
+                // leads to a specific bug: https://github.com/dotnet/aspnetcore/issues/26838
+                return deferredIncomingEvents.Last.StartHandlerCompletionSource.Task;
+            }
         }
 
         /// <inheritdoc />
@@ -144,7 +160,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             {
                 var info = new IncomingEventInfo(eventHandlerId, eventFieldInfo, eventArgs);
                 deferredIncomingEvents.Enqueue(info);
-                return info.TaskCompletionSource.Task;
+                return info.FinishHandlerCompletionSource.Task;
             }
             else
             {
@@ -171,16 +187,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         private async Task ProcessNextDeferredEventAsync()
         {
             var info = deferredIncomingEvents.Dequeue();
-            var taskCompletionSource = info.TaskCompletionSource;
 
             try
             {
-                await DispatchEventAsync(info.EventHandlerId, info.EventFieldInfo, info.EventArgs);
-                taskCompletionSource.SetResult();
+                var handlerTask = DispatchEventAsync(info.EventHandlerId, info.EventFieldInfo, info.EventArgs);
+                info.StartHandlerCompletionSource.SetResult();
+                await handlerTask;
+                info.FinishHandlerCompletionSource.SetResult();
             }
             catch (Exception ex)
             {
-                taskCompletionSource.SetException(ex);
+                // Even if the handler threw synchronously, we at least started processing, so always complete successfully
+                info.StartHandlerCompletionSource.TrySetResult();
+
+                info.FinishHandlerCompletionSource.SetException(ex);
             }
         }
 
@@ -189,14 +209,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             public readonly ulong EventHandlerId;
             public readonly EventFieldInfo? EventFieldInfo;
             public readonly EventArgs EventArgs;
-            public readonly TaskCompletionSource TaskCompletionSource;
+            public readonly TaskCompletionSource StartHandlerCompletionSource;
+            public readonly TaskCompletionSource FinishHandlerCompletionSource;
 
             public IncomingEventInfo(ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
             {
                 EventHandlerId = eventHandlerId;
                 EventFieldInfo = eventFieldInfo;
                 EventArgs = eventArgs;
-                TaskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                StartHandlerCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                FinishHandlerCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
         }
 
@@ -223,6 +245,31 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                     logger,
                     exception.Message,
                     exception);
+            }
+        }
+
+        private class QueueWithLast<T>
+        {
+            private readonly Queue<T> _items = new();
+
+            public int Count => _items.Count;
+
+            public T? Last { get; private set; }
+
+            public T Dequeue()
+            {
+                if (_items.Count == 1)
+                {
+                    Last = default;
+                }
+
+                return _items.Dequeue();
+            }
+
+            public void Enqueue(T item)
+            {
+                Last = item;
+                _items.Enqueue(item);
             }
         }
     }
