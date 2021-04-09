@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public class MapActionEndpointDataSourceBuilderExtensionsTest
+    public class MinimalActionEndpointDataSourceBuilderExtensionsTest
     {
         private ModelEndpointDataSource GetBuilderEndpointDataSource(IEndpointRouteBuilder endpointRouteBuilder)
         {
