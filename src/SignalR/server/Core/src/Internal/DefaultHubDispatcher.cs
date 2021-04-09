@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             }
                         }
 
-                        invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubMethodInvocationMessage, isStreamCall); ;
+                        invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubMethodInvocationMessage, isStreamCall);
                     }
 
                     if (isStreamCall || isStreamResponse)
