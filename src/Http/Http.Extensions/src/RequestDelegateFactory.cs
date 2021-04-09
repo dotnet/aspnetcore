@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -23,28 +22,39 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class RequestDelegateFactory
     {
-        private static readonly MethodInfo ChangeTypeMethodInfo = GetMethodInfo<Func<object, Type, object>>((value, type) => Convert.ChangeType(value, type, CultureInfo.InvariantCulture));
-        private static readonly MethodInfo ExecuteTaskOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteTaskOfStringMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueTaskOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueTaskMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueTaskOfStringMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteTaskResultOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo ExecuteValueResultTaskOfTMethodInfo = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
-        private static readonly MethodInfo GetRequiredServiceMethodInfo = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
-        private static readonly MethodInfo ResultWriteResponseAsync = typeof(IResult).GetMethod(nameof(IResult.ExecuteAsync), BindingFlags.Public | BindingFlags.Instance)!;
-        private static readonly MethodInfo StringResultWriteResponseAsync = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
-        private static readonly MethodInfo JsonResultWriteResponseAsync = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
-        private static readonly MemberInfo CompletedTaskMemberInfo = GetMemberInfo<Func<Task>>(() => Task.CompletedTask);
+        private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteTaskResultOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo ExecuteValueResultTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+        private static readonly MethodInfo GetRequiredServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
+        private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(IResult).GetMethod(nameof(IResult.ExecuteAsync), BindingFlags.Public | BindingFlags.Instance)!;
+        private static readonly MethodInfo StringResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, string, Task>>((response, text) => HttpResponseWritingExtensions.WriteAsync(response, text, default));
+        private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
+        private static readonly MethodInfo EnumTryParseMethod = GetEnumTryParseMethod();
+        private static readonly MethodInfo LogParameterBindingFailureMethod = GetMethodInfo<Action<HttpContext, string, string, string>>((httpContext, parameterType, parameterName, sourceValue) =>
+            Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue));
 
-        private static readonly ParameterExpression TargetArg = Expression.Parameter(typeof(object), "target");
-        private static readonly ParameterExpression HttpContextParameter = Expression.Parameter(typeof(HttpContext), "httpContext");
-        private static readonly ParameterExpression DeserializedBodyArg = Expression.Parameter(typeof(object), "bodyValue");
+        private static readonly ParameterExpression TargetExpr = Expression.Parameter(typeof(object), "target");
+        private static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
+        private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
+        private static readonly ParameterExpression WasTryParseFailureExpr = Expression.Variable(typeof(bool), "wasTryParseFailure");
+        private static readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
 
-        private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.RequestServices));
-        private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.Request));
-        private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.Response));
-        private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextParameter, nameof(HttpContext.RequestAborted));
+        private static readonly MemberExpression RequestServicesExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestServices));
+        private static readonly MemberExpression HttpRequestExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Request));
+        private static readonly MemberExpression HttpResponseExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.Response));
+        private static readonly MemberExpression RequestAbortedExpr = Expression.Property(HttpContextExpr, nameof(HttpContext.RequestAborted));
+        private static readonly MemberExpression RouteValuesExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
+        private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
+        private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
+        private static readonly MemberExpression FormExpr = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
+        private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, nameof(HttpResponse.StatusCode));
+        private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
+
+        private static readonly ConcurrentDictionary<Type, MethodInfo?> TryParseMethodCache = new();
 
         /// <summary>
         /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="action"/>.
@@ -60,15 +70,15 @@ namespace Microsoft.AspNetCore.Http
 
             var targetExpression = action.Target switch
             {
-                object => Expression.Convert(TargetArg, action.Target.GetType()),
+                object => Expression.Convert(TargetExpr, action.Target.GetType()),
                 null => null,
             };
 
-            var untargetedRequestDelegate = CreateRequestDelegate(action.Method, targetExpression);
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(action.Method, targetExpression);
 
             return httpContext =>
             {
-                return untargetedRequestDelegate(action.Target, httpContext);
+                return targetableRequestDelegate(action.Target, httpContext);
             };
         }
 
@@ -84,11 +94,11 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(methodInfo));
             }
 
-            var untargetedRequestDelegate = CreateRequestDelegate(methodInfo, targetExpression: null);
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression: null);
 
             return httpContext =>
             {
-                return untargetedRequestDelegate(null, httpContext);
+                return targetableRequestDelegate(null, httpContext);
             };
         }
 
@@ -115,16 +125,16 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentException($"A {nameof(targetFactory)} was provided, but {nameof(methodInfo)} does not have a Declaring type.");
             }
 
-            var targetExpression = Expression.Convert(TargetArg, methodInfo.DeclaringType);
-            var untargetedRequestDelegate = CreateRequestDelegate(methodInfo, targetExpression);
+            var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
+            var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression);
 
             return httpContext =>
             {
-                return untargetedRequestDelegate(targetFactory(httpContext), httpContext);
+                return targetableRequestDelegate(targetFactory(httpContext), httpContext);
             };
         }
 
-        private static Func<object?, HttpContext, Task> CreateRequestDelegate(MethodInfo methodInfo, Expression? targetExpression)
+        private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression)
         {
             // Non void return type
 
@@ -142,235 +152,319 @@ namespace Microsoft.AspNetCore.Http
             //     return default;
             // }
 
-            var consumeBodyDirectly = false;
-            var consumeBodyAsForm = false;
-            Type? bodyType = null;
-            var allowEmptyBody = false;
+            var factoryContext = new FactoryContext();
 
-            // This argument represents the deserialized body returned from IHttpRequestReader
-            // when the method has a FromBody attribute declared
+            var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
 
-            var methodParameters = methodInfo.GetParameters();
-            var args = new List<Expression>(methodParameters.Length);
+            var responseWritingMethodCall = factoryContext.CheckForTryParseFailure ?
+                CreateTryParseCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments) :
+                CreateResponseWritingMethodCall(methodInfo, targetExpression, arguments);
 
-            foreach (var parameter in methodParameters)
+            return HandleRequestBodyAndCompileRequestDelegate(responseWritingMethodCall, factoryContext);
+        }
+
+        private static Expression[] CreateArguments(ParameterInfo[]? parameters, FactoryContext factoryContext)
+        {
+            if (parameters is null || parameters.Length == 0)
             {
-                Expression paramterExpression = Expression.Default(parameter.ParameterType);
-
-                var parameterCustomAttributes = parameter.GetCustomAttributes();
-
-                if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
-                {
-                    var routeValuesProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.RouteValues));
-                    paramterExpression = BindParamenter(routeValuesProperty, parameter, routeAttribute.Name);
-                }
-                else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
-                {
-                    var queryProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Query));
-                    paramterExpression = BindParamenter(queryProperty, parameter, queryAttribute.Name);
-                }
-                else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
-                {
-                    var headersProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Headers));
-                    paramterExpression = BindParamenter(headersProperty, parameter, headerAttribute.Name);
-                }
-                else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
-                {
-                    if (consumeBodyDirectly)
-                    {
-                        throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
-                    }
-
-                    if (consumeBodyAsForm)
-                    {
-                        ThrowCannotReadBodyDirectlyAndAsForm();
-                    }
-
-                    consumeBodyDirectly = true;
-                    allowEmptyBody = bodyAttribute.AllowEmpty;
-                    bodyType = parameter.ParameterType;
-                    paramterExpression = Expression.Convert(DeserializedBodyArg, bodyType);
-                }
-                else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)
-                {
-                    if (consumeBodyDirectly)
-                    {
-                        ThrowCannotReadBodyDirectlyAndAsForm();
-                    }
-
-                    consumeBodyAsForm = true;
-
-                    var formProperty = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
-                    paramterExpression = BindParamenter(formProperty, parameter, parameter.Name);
-                }
-                else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
-                {
-                    paramterExpression = Expression.Call(GetRequiredServiceMethodInfo.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
-                }
-                else if (parameter.ParameterType == typeof(IFormCollection))
-                {
-                    if (consumeBodyDirectly)
-                    {
-                        ThrowCannotReadBodyDirectlyAndAsForm();
-                    }
-
-                    consumeBodyAsForm = true;
-
-                    paramterExpression = Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
-                }
-                else if (parameter.ParameterType == typeof(HttpContext))
-                {
-                    paramterExpression = HttpContextParameter;
-                }
-                else if (parameter.ParameterType == typeof(CancellationToken))
-                {
-                    paramterExpression = RequestAbortedExpr;
-                }
-
-                args.Add(paramterExpression);
+                return Array.Empty<Expression>();
             }
 
-            Expression? body = null;
+            var args = new Expression[parameters.Length];
 
-            MethodCallExpression methodCall;
-
-            if (targetExpression is null)
+            for (var i = 0; i < parameters.Length; i++)
             {
-                methodCall = Expression.Call(methodInfo, args);
+                args[i] = CreateArgument(parameters[i], factoryContext);
+            }
+
+            return args;
+        }
+
+        private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext)
+        {
+            if (parameter.Name is null)
+            {
+                throw new InvalidOperationException("A parameter does not have a name! Was it genererated? All parameters must be named.");
+            }
+
+            var parameterCustomAttributes = parameter.GetCustomAttributes();
+
+            if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
+            {
+                return BindParameterFromProperty(parameter, RouteValuesExpr, routeAttribute.Name ?? parameter.Name, factoryContext);
+            }
+            else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
+            {
+                return BindParameterFromProperty(parameter, QueryExpr, queryAttribute.Name ?? parameter.Name, factoryContext);
+            }
+            else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
+            {
+                return BindParameterFromProperty(parameter, HeadersExpr, headerAttribute.Name ?? parameter.Name, factoryContext);
+            }
+            else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
+            {
+                if (factoryContext.RequestBodyMode is RequestBodyMode.AsJson)
+                {
+                    throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
+                }
+
+                if (factoryContext.RequestBodyMode is RequestBodyMode.AsForm)
+                {
+                    ThrowCannotReadBodyDirectlyAndAsForm();
+                }
+
+                factoryContext.RequestBodyMode = RequestBodyMode.AsJson;
+                factoryContext.JsonRequestBodyType = parameter.ParameterType;
+                factoryContext.AllowEmptyRequestBody = bodyAttribute.AllowEmpty;
+
+                return Expression.Convert(BodyValueExpr, parameter.ParameterType);
+            }
+            else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)
+            {
+                if (factoryContext.RequestBodyMode is RequestBodyMode.AsJson)
+                {
+                    ThrowCannotReadBodyDirectlyAndAsForm();
+                }
+
+                factoryContext.RequestBodyMode = RequestBodyMode.AsForm;
+
+                return BindParameterFromProperty(parameter, FormExpr, formAttribute.Name ?? parameter.Name, factoryContext);
+            }
+            else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
+            {
+                return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+            }
+            else if (parameter.ParameterType == typeof(IFormCollection))
+            {
+                if (factoryContext.RequestBodyMode is RequestBodyMode.AsJson)
+                {
+                    ThrowCannotReadBodyDirectlyAndAsForm();
+                }
+
+                factoryContext.RequestBodyMode = RequestBodyMode.AsForm;
+
+                return Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
+            }
+            else if (parameter.ParameterType == typeof(HttpContext))
+            {
+                return HttpContextExpr;
+            }
+            else if (parameter.ParameterType == typeof(CancellationToken))
+            {
+                return RequestAbortedExpr;
+            }
+            else if (parameter.ParameterType == typeof(string) || HasTryParseMethod(parameter))
+            {
+                return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
             }
             else
             {
-                methodCall = Expression.Call(targetExpression, methodInfo, args);
+                return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+            }
+        }
+
+        private static Expression CreateMethodCall(MethodInfo methodInfo, Expression? target, Expression[] arguments) =>
+            target is null ?
+                Expression.Call(methodInfo, arguments) :
+                Expression.Call(target, methodInfo, arguments);
+
+        private static Expression CreateResponseWritingMethodCall(MethodInfo methodInfo, Expression? target, Expression[] arguments)
+        {
+            var callMethod = CreateMethodCall(methodInfo, target, arguments);
+            return AddResponseWritingToMethodCall(callMethod, methodInfo.ReturnType);
+        }
+
+        // If we're calling TryParse and wasTryParseFailure indicates it failed, set a 400 StatusCode instead of calling the method.
+        private static Expression CreateTryParseCheckingResponseWritingMethodCall(MethodInfo methodInfo, Expression? target, Expression[] arguments)
+        {
+            // {
+            //     bool wasTryParseFailure = false;
+            //     string tempSourceString;
+            //
+            //     // Assume "[FromRoute] int id" is the first parameter.
+            //
+            //     tempSourceString = httpContext.RequestValue["id"];
+            //     int param1 = tempSourceString == null ? default :
+            //     {
+            //          int parsedValue = default;
+            //
+            //          if (!int.TryParse(tempSourceString, out parsedValue))
+            //          {
+            //              wasTryParseFailure = true;
+            //              Log.ParameterBindingFailed(httpContext, "Int32", "id", tempSourceString)
+            //          }
+            //
+            //          return parsedValue;
+            //     };
+            //
+            //     tempSourceString = httpContext.RequestValue["param2"];
+            //     int param2 = tempSourceString == null ? default :
+            //     // ...
+            //
+            //     return wasTryParseFailure ?
+            //         {
+            //              httpContext.Response.StatusCode = 400;
+            //              return Task.CompletedTask;
+            //         } :
+            //         {
+            //             // Logic generated by AddResponseWritingToMethodCall() that calls action(param1, parm2, ...)
+            //         };
+            // }
+
+            var parameters = methodInfo.GetParameters();
+            var storedArguments = new ParameterExpression[parameters.Length];
+            var localVariables = new ParameterExpression[parameters.Length + 2];
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                storedArguments[i] = localVariables[i] = Expression.Parameter(parameters[i].ParameterType);
             }
 
+            localVariables[parameters.Length] = WasTryParseFailureExpr;
+            localVariables[parameters.Length + 1] = TempSourceStringExpr;
+
+            var assignAndCall = new Expression[parameters.Length + 1];
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                assignAndCall[i] = Expression.Assign(localVariables[i], arguments[i]);
+            }
+
+            var set400StatusAndReturnCompletedTask = Expression.Block(
+                    Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
+                    CompletedTaskExpr);
+
+            var methodCall = CreateMethodCall(methodInfo, target, storedArguments);
+
+            var checkWasTryParseFailure = Expression.Condition(WasTryParseFailureExpr,
+                set400StatusAndReturnCompletedTask,
+                AddResponseWritingToMethodCall(methodCall, methodInfo.ReturnType));
+
+            assignAndCall[parameters.Length] = checkWasTryParseFailure;
+
+            return Expression.Block(localVariables, assignAndCall);
+        }
+
+        private static Expression AddResponseWritingToMethodCall(Expression methodCall, Type returnType)
+        {
             // Exact request delegate match
-            if (methodInfo.ReturnType == typeof(void))
+            if (returnType == typeof(void))
             {
-                var bodyExpressions = new List<Expression>
-                {
-                    methodCall,
-                    Expression.Property(null, (PropertyInfo)CompletedTaskMemberInfo)
-                };
-
-                body = Expression.Block(bodyExpressions);
+                return Expression.Block(methodCall, CompletedTaskExpr);
             }
-            else if (AwaitableInfo.IsTypeAwaitable(methodInfo.ReturnType, out var info))
+            else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
             {
-                if (methodInfo.ReturnType == typeof(Task))
+                if (returnType == typeof(Task))
                 {
-                    body = methodCall;
+                    return methodCall;
                 }
-                else if (methodInfo.ReturnType == typeof(ValueTask))
+                else if (returnType == typeof(ValueTask))
                 {
-                    body = Expression.Call(
-                                        ExecuteValueTaskMethodInfo,
-                                        methodCall);
+                    return Expression.Call(
+                        ExecuteValueTaskMethod,
+                        methodCall);
                 }
-                else if (methodInfo.ReturnType.IsGenericType &&
-                         methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+                else if (returnType.IsGenericType &&
+                         returnType.GetGenericTypeDefinition() == typeof(Task<>))
                 {
-                    var typeArg = methodInfo.ReturnType.GetGenericArguments()[0];
+                    var typeArg = returnType.GetGenericArguments()[0];
 
                     if (typeof(IResult).IsAssignableFrom(typeArg))
                     {
-                        body = Expression.Call(
-                                           ExecuteTaskResultOfTMethodInfo.MakeGenericMethod(typeArg),
-                                           methodCall,
-                                           HttpContextParameter);
+                        return Expression.Call(
+                            ExecuteTaskResultOfTMethod.MakeGenericMethod(typeArg),
+                            methodCall,
+                            HttpContextExpr);
+                    }
+                    // ExecuteTask<T>(action(..), httpContext);
+                    else if (typeArg == typeof(string))
+                    {
+                        return Expression.Call(
+                            ExecuteTaskOfStringMethod,
+                            methodCall,
+                            HttpContextExpr);
                     }
                     else
                     {
-                        // ExecuteTask<T>(action(..), httpContext);
-                        if (typeArg == typeof(string))
-                        {
-                            body = Expression.Call(
-                                             ExecuteTaskOfStringMethodInfo,
-                                             methodCall,
-                                             HttpContextParameter);
-                        }
-                        else
-                        {
-                            body = Expression.Call(
-                                             ExecuteTaskOfTMethodInfo.MakeGenericMethod(typeArg),
-                                             methodCall,
-                                             HttpContextParameter);
-                        }
+                        return Expression.Call(
+                            ExecuteTaskOfTMethod.MakeGenericMethod(typeArg),
+                            methodCall,
+                            HttpContextExpr);
                     }
                 }
-                else if (methodInfo.ReturnType.IsGenericType &&
-                         methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+                else if (returnType.IsGenericType &&
+                         returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
                 {
-                    var typeArg = methodInfo.ReturnType.GetGenericArguments()[0];
+                    var typeArg = returnType.GetGenericArguments()[0];
 
                     if (typeof(IResult).IsAssignableFrom(typeArg))
                     {
-                        body = Expression.Call(
-                                           ExecuteValueResultTaskOfTMethodInfo.MakeGenericMethod(typeArg),
-                                           methodCall,
-                                           HttpContextParameter);
+                        return Expression.Call(
+                            ExecuteValueResultTaskOfTMethod.MakeGenericMethod(typeArg),
+                            methodCall,
+                            HttpContextExpr);
+                    }
+                    // ExecuteTask<T>(action(..), httpContext);
+                    else if (typeArg == typeof(string))
+                    {
+                        return Expression.Call(
+                            ExecuteValueTaskOfStringMethod,
+                            methodCall,
+                            HttpContextExpr);
                     }
                     else
                     {
-                        // ExecuteTask<T>(action(..), httpContext);
-                        if (typeArg == typeof(string))
-                        {
-                            body = Expression.Call(
-                                       ExecuteValueTaskOfStringMethodInfo,
-                                       methodCall,
-                                       HttpContextParameter);
-                        }
-                        else
-                        {
-                            body = Expression.Call(
-                                       ExecuteValueTaskOfTMethodInfo.MakeGenericMethod(typeArg),
-                                       methodCall,
-                                       HttpContextParameter);
-                        }
+                        return Expression.Call(
+                            ExecuteValueTaskOfTMethod.MakeGenericMethod(typeArg),
+                            methodCall,
+                            HttpContextExpr);
                     }
                 }
                 else
                 {
                     // TODO: Handle custom awaitables
-                    throw new NotSupportedException($"Unsupported return type: {methodInfo.ReturnType}");
+                    throw new NotSupportedException($"Unsupported return type: {returnType}");
                 }
             }
-            else if (typeof(IResult).IsAssignableFrom(methodInfo.ReturnType))
+            else if (typeof(IResult).IsAssignableFrom(returnType))
             {
-                body = Expression.Call(methodCall, ResultWriteResponseAsync, HttpContextParameter);
+                return Expression.Call(methodCall, ResultWriteResponseAsyncMethod, HttpContextExpr);
             }
-            else if (methodInfo.ReturnType == typeof(string))
+            else if (returnType == typeof(string))
             {
-                body = Expression.Call(StringResultWriteResponseAsync, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
+                return Expression.Call(StringResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
             }
-            else if (methodInfo.ReturnType.IsValueType)
+            else if (returnType.IsValueType)
             {
                 var box = Expression.TypeAs(methodCall, typeof(object));
-                body = Expression.Call(JsonResultWriteResponseAsync, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
+                return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
             }
             else
             {
-                body = Expression.Call(JsonResultWriteResponseAsync, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
+                return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
             }
+        }
 
-            Func<object?, HttpContext, Task>? requestDelegate = null;
-
-            if (consumeBodyDirectly)
+        private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegate(Expression responseWritingMethodCall, FactoryContext factoryContext)
+        {
+            if (factoryContext.RequestBodyMode is RequestBodyMode.AsJson)
             {
                 // We need to generate the code for reading from the body before calling into the delegate
-                var lambda = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(body, TargetArg, HttpContextParameter, DeserializedBodyArg);
-                var invoker = lambda.Compile();
+                var invoker = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(
+                    responseWritingMethodCall, TargetExpr, HttpContextExpr, BodyValueExpr).Compile();
+
+                var bodyType = factoryContext.JsonRequestBodyType!;
                 object? defaultBodyValue = null;
 
-                if (allowEmptyBody && bodyType!.IsValueType)
+                if (factoryContext.AllowEmptyRequestBody && bodyType.IsValueType)
                 {
                     defaultBodyValue = Activator.CreateInstance(bodyType);
                 }
 
-                requestDelegate = async (target, httpContext) =>
+                return async (target, httpContext) =>
                 {
                     object? bodyValue;
 
-                    if (allowEmptyBody && httpContext.Request.ContentLength == 0)
+                    if (factoryContext.AllowEmptyRequestBody && httpContext.Request.ContentLength == 0)
                     {
                         bodyValue = defaultBodyValue;
                     }
@@ -378,17 +472,16 @@ namespace Microsoft.AspNetCore.Http
                     {
                         try
                         {
-                            bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType!);
+                            bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
                         }
                         catch (IOException ex)
                         {
-                            Log.RequestBodyIOException(GetLogger(httpContext), ex);
-                            httpContext.Abort();
+                            Log.RequestBodyIOException(httpContext, ex);
                             return;
                         }
                         catch (InvalidDataException ex)
                         {
-                            Log.RequestBodyInvalidDataException(GetLogger(httpContext), ex);
+                            Log.RequestBodyInvalidDataException(httpContext, ex);
                             httpContext.Response.StatusCode = 400;
                             return;
                         }
@@ -397,12 +490,12 @@ namespace Microsoft.AspNetCore.Http
                     await invoker(target, httpContext, bodyValue);
                 };
             }
-            else if (consumeBodyAsForm)
+            else if (factoryContext.RequestBodyMode is RequestBodyMode.AsForm)
             {
-                var lambda = Expression.Lambda<Func<object?, HttpContext, Task>>(body, TargetArg, HttpContextParameter);
-                var invoker = lambda.Compile();
+                var invoker = Expression.Lambda<Func<object?, HttpContext, Task>>(
+                    responseWritingMethodCall, TargetExpr, HttpContextExpr).Compile();
 
-                requestDelegate = async (target, httpContext) =>
+                return async (target, httpContext) =>
                 {
                     // Generating async code would just be insane so if the method needs the form populate it here
                     // so the within the method it's cached
@@ -412,13 +505,13 @@ namespace Microsoft.AspNetCore.Http
                     }
                     catch (IOException ex)
                     {
-                        Log.RequestBodyIOException(GetLogger(httpContext), ex);
+                        Log.RequestBodyIOException(httpContext, ex);
                         httpContext.Abort();
                         return;
                     }
                     catch (InvalidDataException ex)
                     {
-                        Log.RequestBodyInvalidDataException(GetLogger(httpContext), ex);
+                        Log.RequestBodyInvalidDataException(httpContext, ex);
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
@@ -428,74 +521,169 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
-                var lambda = Expression.Lambda<Func<object?, HttpContext, Task>>(body, TargetArg, HttpContextParameter);
-                var invoker = lambda.Compile();
-
-                requestDelegate = invoker;
+                return Expression.Lambda<Func<object?, HttpContext, Task>>(
+                    responseWritingMethodCall, TargetExpr, HttpContextExpr).Compile();
             }
-
-            return requestDelegate;
         }
 
-        private static ILogger GetLogger(HttpContext httpContext)
+        private static MethodInfo GetEnumTryParseMethod()
         {
-            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            return loggerFactory.CreateLogger("Microsoft.AspNetCore.Routing.MapAction");
+            var staticEnumMethods = typeof(Enum).GetMethods(BindingFlags.Public | BindingFlags.Static);
+
+            foreach (var method in staticEnumMethods)
+            {
+                if (!method.IsGenericMethod || method.Name != "TryParse" || method.ReturnType != typeof(bool))
+                {
+                    continue;
+                }
+
+                var tryParseParameters = method.GetParameters();
+
+                if (tryParseParameters.Length == 2 &&
+                    tryParseParameters[0].ParameterType == typeof(string) &&
+                    tryParseParameters[1].IsOut)
+                {
+                    return method;
+                }
+            }
+
+            throw new Exception("static bool System.Enum.TryParse<TEnum>(string? value, out TEnum result) does not exist!!?!?");
         }
 
-        private static Expression BindParamenter(Expression sourceExpression, ParameterInfo parameter, string? name)
+        // TODO: Use InvariantCulture where possible? Or is CurrentCulture fine because it's more flexible?
+        private static MethodInfo? FindTryParseMethod(Type type)
         {
-            var key = name ?? parameter.Name;
-            var type = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-            var valueArg = Expression.Convert(
-                                Expression.MakeIndex(sourceExpression,
-                                                     sourceExpression.Type.GetProperty("Item"),
-                                                     new[] { Expression.Constant(key) }),
-                                typeof(string));
-
-            MethodInfo parseMethod = (from m in type.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                                      let parameters = m.GetParameters()
-                                      where m.Name == "Parse" && parameters.Length == 1 && parameters[0].ParameterType == typeof(string)
-                                      select m).FirstOrDefault()!;
-
-            Expression? expr = null;
-
-            if (parseMethod != null)
+            static MethodInfo? Finder(Type type)
             {
-                expr = Expression.Call(parseMethod, valueArg);
-            }
-            else if (parameter.ParameterType != valueArg.Type)
-            {
-                // Convert.ChangeType()
-                expr = Expression.Call(ChangeTypeMethodInfo, valueArg, Expression.Constant(type));
-            }
-            else
-            {
-                expr = valueArg;
-            }
+                if (type.IsEnum)
+                {
+                    return EnumTryParseMethod.MakeGenericMethod(type);
+                }
 
-            if (expr.Type != parameter.ParameterType)
-            {
-                expr = Expression.Convert(expr, parameter.ParameterType);
+                var staticMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
+
+                foreach (var method in staticMethods)
+                {
+                    if (method.Name != "TryParse" || method.ReturnType != typeof(bool))
+                    {
+                        continue;
+                    }
+
+                    var tryParseParameters = method.GetParameters();
+
+                    if (tryParseParameters.Length == 2 &&
+                        tryParseParameters[0].ParameterType == typeof(string) &&
+                        tryParseParameters[1].IsOut &&
+                        tryParseParameters[1].ParameterType == type.MakeByRefType())
+                    {
+                        return method;
+                    }
+                }
+
+                return null;
             }
 
-            Expression defaultExpression;
-            if (parameter.HasDefaultValue)
+            return TryParseMethodCache.GetOrAdd(type, Finder);
+        }
+
+        private static bool HasTryParseMethod(ParameterInfo parameter)
+        {
+            var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+            return FindTryParseMethod(nonNullableParameterType) is not null;
+        }
+
+        private static Expression GetValueFromProperty(Expression sourceExpression, string key)
+        {
+            var itemProperty = sourceExpression.Type.GetProperty("Item");
+            var indexArguments = new[] { Expression.Constant(key) };
+            var indexExpression = Expression.MakeIndex(sourceExpression, itemProperty, indexArguments);
+            return Expression.Convert(indexExpression, typeof(string));
+        }
+
+        private static Expression BindParameterFromValue(ParameterInfo parameter, Expression valueExpression, FactoryContext factoryContext)
+        {
+            if (parameter.ParameterType == typeof(string))
             {
-                defaultExpression = Expression.Constant(parameter.DefaultValue);
-            }
-            else
-            {
-                defaultExpression = Expression.Default(parameter.ParameterType);
+                return valueExpression;
             }
 
-            // property[key] == null ? default : (ParameterType){Type}.Parse(property[key]);
-            expr = Expression.Condition(
-                Expression.Equal(valueArg, Expression.Constant(null)),
+            var underlyingNullableType = Nullable.GetUnderlyingType(parameter.ParameterType);
+            var nonNullableParameterType = underlyingNullableType ?? parameter.ParameterType;
+            var tryParseMethod = FindTryParseMethod(nonNullableParameterType);
+
+            if (tryParseMethod is null)
+            {
+                throw new InvalidOperationException($"No public static bool {parameter.ParameterType.Name}.TryParse(string, out {parameter.ParameterType.Name}) method found for {parameter.Name}.");
+            }
+
+            // bool wasTryParseFailure = false;
+            // string tempSourceString;
+            //
+            // // Assume "[FromRoute] int id" is the first parameter.
+            // tempSourceString = httpContext.RequestValue["id"];
+            //
+            // int param1 = tempSourceString == null ? default :
+            // {
+            //      int parsedValue = default;
+            //
+            //      if (!int.TryParse(tempSourceString, out parsedValue))
+            //      {
+            //          wasTryParseFailure = true;
+            //          Log.ParameterBindingFailed(httpContext, "Int32", "id", tempSourceString)
+            //      }
+            //
+            //      return parsedValue;
+            // };
+
+            factoryContext.CheckForTryParseFailure = true;
+
+            var parsedValue = Expression.Variable(nonNullableParameterType);
+
+            var parameterTypeNameConstant = Expression.Constant(parameter.ParameterType.Name);
+            var parameterNameConstant = Expression.Constant(parameter.Name);
+
+            var failBlock = Expression.Block(
+                Expression.Assign(WasTryParseFailureExpr, Expression.Constant(true)),
+                Expression.Call(LogParameterBindingFailureMethod,
+                    HttpContextExpr, parameterTypeNameConstant, parameterNameConstant, TempSourceStringExpr));
+
+            var tryParseCall = Expression.Call(tryParseMethod, TempSourceStringExpr, parsedValue);
+            var ifFailExpression = Expression.IfThen(Expression.Not(tryParseCall), failBlock);
+
+            Expression parsedValueExpression = Expression.Block(new[] { parsedValue },
+                ifFailExpression,
+                parsedValue);
+
+            // Convert back to nullable if necessary.
+            if (underlyingNullableType is not null)
+            {
+                parsedValueExpression = Expression.Convert(parsedValueExpression, parameter.ParameterType);
+            }
+
+            Expression defaultExpression = parameter.HasDefaultValue ?
+                Expression.Constant(parameter.DefaultValue) :
+                Expression.Default(parameter.ParameterType);
+
+            // tempSourceString = httpContext.RequestValue["id"];
+            var storeValueToTemp = Expression.Assign(TempSourceStringExpr, valueExpression);
+
+            // int param1 = tempSourcString == null ? default : ...
+            var ternary = Expression.Condition(
+                Expression.Equal(TempSourceStringExpr, Expression.Constant(null)),
                 defaultExpression,
-                expr);
+                parsedValueExpression);
 
-            return expr;
+            return Expression.Block(storeValueToTemp, ternary);
+        }
+
+        private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, string key, FactoryContext factoryContext) =>
+            BindParameterFromValue(parameter, GetValueFromProperty(property, key), factoryContext);
+
+        private static Expression BindParameterFromRouteValueOrQueryString(ParameterInfo parameter, string key, FactoryContext factoryContext)
+        {
+            var routeValue = GetValueFromProperty(RouteValuesExpr, key);
+            var queryValue = GetValueFromProperty(QueryExpr, key);
+            return BindParameterFromValue(parameter, Expression.Coalesce(routeValue, queryValue), factoryContext);
         }
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
@@ -611,6 +799,22 @@ namespace Microsoft.AspNetCore.Http
             throw new InvalidOperationException("Action cannot mix FromBody and FromForm on the same method.");
         }
 
+        private enum RequestBodyMode
+        {
+            None,
+            AsJson,
+            AsForm,
+        }
+
+        private class FactoryContext
+        {
+            public RequestBodyMode RequestBodyMode { get; set; }
+            public Type? JsonRequestBodyType { get; set; }
+            public bool AllowEmptyRequestBody { get; set; }
+
+            public bool CheckForTryParseFailure { get; set; }
+        }
+
         private static class Log
         {
             private static readonly Action<ILogger, Exception> _requestBodyIOException = LoggerMessage.Define(
@@ -623,14 +827,30 @@ namespace Microsoft.AspNetCore.Http
                 new EventId(2, "RequestBodyInvalidDataException"),
                 "Reading the request body failed with an InvalidDataException.");
 
-            public static void RequestBodyIOException(ILogger logger, IOException exception)
+            private static readonly Action<ILogger, string, string, string, Exception?> _parameterBindingFailed = LoggerMessage.Define<string, string, string>(
+                LogLevel.Debug,
+                new EventId(3, "ParamaterBindingFailed"),
+                @"Failed to bind parameter ""{ParameterType} {ParameterName}"" from ""{SourceValue}"".");
+
+            public static void RequestBodyIOException(HttpContext httpContext, IOException exception)
             {
-                _requestBodyIOException(logger, exception);
+                _requestBodyIOException(GetLogger(httpContext), exception);
             }
 
-            public static void RequestBodyInvalidDataException(ILogger logger, InvalidDataException exception)
+            public static void RequestBodyInvalidDataException(HttpContext httpContext, InvalidDataException exception)
             {
-                _requestBodyInvalidDataException(logger, exception);
+                _requestBodyInvalidDataException(GetLogger(httpContext), exception);
+            }
+
+            public static void ParameterBindingFailed(HttpContext httpContext, string parameterTypeName, string parameterName, string sourceValue)
+            {
+                _parameterBindingFailed(GetLogger(httpContext), parameterTypeName, parameterName, sourceValue, null);
+            }
+
+            private static ILogger GetLogger(HttpContext httpContext)
+            {
+                var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+                return loggerFactory.CreateLogger(typeof(RequestDelegateFactory));
             }
         }
     }
