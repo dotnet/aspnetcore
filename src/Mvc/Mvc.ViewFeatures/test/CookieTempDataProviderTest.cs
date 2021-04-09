@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -415,6 +415,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
+            }
+
+            public void Append(IDictionary<string, string> keyValuePairs, CookieOptions options)
+            {
+                foreach (var keyValuePair in keyValuePairs)
+                {
+                    _cookies[keyValuePair.Key] = new CookieInfo()
+                    {
+                        Key = keyValuePair.Key,
+                        Value = keyValuePair.Value,
+                        Options = options
+                    };
+                }
             }
         }
 

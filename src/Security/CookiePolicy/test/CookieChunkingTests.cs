@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Internal
             {
                 Domain = "foo.com",
                 HttpOnly = true,
-                SameSite = SameSiteMode.Strict,
+                SameSite = Http.SameSiteMode.Strict,
                 Path = "/bar",
                 Secure = true,
                 Expires = now.AddMinutes(5),
