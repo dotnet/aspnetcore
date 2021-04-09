@@ -38,16 +38,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 ValueTask<FlushResult> continueTask = TryProduceContinueAsync();
                 if (!continueTask.IsCompletedSuccessfully)
                 {
-                    return OnReadStartedAwaited(continueTask);
+                    return continueTask.AsTask();
                 }
             }
 
             return Task.CompletedTask;
-        }
-
-        private async Task OnReadStartedAwaited(ValueTask<FlushResult> continueTask)
-        {
-            await continueTask;
         }
 
         public override void Reset()

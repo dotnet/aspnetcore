@@ -143,15 +143,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Task readTask = OnReadStartedAsync();
             if (!readTask.IsCompletedSuccessfully)
             {
-                return TryStartAwaited(readTask);
+                return readTask;
             }
 
             return Task.CompletedTask;
-        }
-
-        private async Task TryStartAwaited(Task readTask)
-        {
-            await readTask;
         }
 
         protected void TryStop()
