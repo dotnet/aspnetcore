@@ -35,8 +35,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // Produce 100-continue if no request body data for the stream has arrived yet.
             if (!_context.RequestBodyStarted)
             {
-                TryProduceContinue();
+                ValueTask<FlushResult> continueTask = TryProduceContinue();
+                if (!continueTask.IsCompleted)
+                {
+                    OnReadStartedAwaited(continueTask);
+                }
             }
+        }
+
+        private async void OnReadStartedAwaited(ValueTask<FlushResult> continueTask)
+        {
+            await continueTask;
         }
 
         public override void Reset()

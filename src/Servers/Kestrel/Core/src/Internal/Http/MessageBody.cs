@@ -93,13 +93,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _examinedUnconsumedBytes = 0;
         }
 
-        protected void TryProduceContinue()
+        protected ValueTask<FlushResult> TryProduceContinue()
         {
             if (_send100Continue)
             {
-                _context.HttpResponseControl.ProduceContinue();
                 _send100Continue = false;
+                return _context.HttpResponseControl.ProduceContinue();
             }
+
+            return default;
         }
 
         protected void TryStart()
@@ -183,7 +185,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (!readAwaitable.IsCompleted)
             {
-                TryProduceContinue();
+                ValueTask<FlushResult> continueTask = TryProduceContinue();
+                if (!continueTask.IsCompleted)
+                {
+                    return StartTimingReadAwaited(continueTask, readAwaitable, cancellationToken);
+                }
 
                 if (_timingEnabled)
                 {
@@ -193,6 +199,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return readAwaitable;
+        }
+
+        protected async ValueTask<ReadResult> StartTimingReadAwaited(ValueTask<FlushResult> continueTask, ValueTask<ReadResult> readAwaitable, CancellationToken cancellationToken)
+        {
+            await continueTask;
+
+            if (_timingEnabled)
+            {
+                _backpressure = true;
+                _context.TimeoutControl.StartTimingRead();
+            }
+
+            return await readAwaitable;
         }
 
         protected void CountBytesRead(long bytesInReadResult)

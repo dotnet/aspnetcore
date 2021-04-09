@@ -101,7 +101,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 if (!awaitable.IsCompleted)
                 {
-                    TryProduceContinue();
+                    ValueTask<FlushResult> continueTask = TryProduceContinue();
+                    if (!continueTask.IsCompleted)
+                    {
+                        await continueTask;
+                    }
                 }
 
                 while (true)
