@@ -28,7 +28,7 @@
         SharedFxVersion=$(SharedFxVersion);
       </_RuntimeConfigProperties>
 
-      <_RuntimeConfigPath>$(IntermediateOutputPath)blazor-devserver.runtimeconfig.json</_RuntimeConfigPath>
+      <_RuntimeConfigPath>$(OutputPath)blazor-devserver.runtimeconfig.json</_RuntimeConfigPath>
     </PropertyGroup>
 
     <GenerateFileFromTemplate
@@ -46,7 +46,7 @@
 
   <ItemGroup>
     <NuspecProperty Include="publishDir=$(PublishDir)" />
-    <NuspecProperty Include="objDir=$(IntermediateOutputPath)" />
+    <NuspecProperty Include="binDir=$(OutputPath)" />
     <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
   </ItemGroup>
 
