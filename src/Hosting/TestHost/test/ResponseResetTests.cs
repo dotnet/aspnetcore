@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.TestHost
 
                 var feature = httpContext.Features.Get<IHttpResetFeature>();
                 feature.Reset(12345);
-                await requestAborted.Task.WaitAsync(DefaultTimeout);
+                await requestAborted.Task.DefaultTimeout();
             });
 
             var client = host.GetTestServer().CreateClient();
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.TestHost
             var rex = await Assert.ThrowsAsync<HttpResetTestException>(() => client.GetAsync("/"));
             Assert.Equal("The application reset the request with error code 12345.", rex.Message);
             Assert.Equal(12345, rex.ErrorCode);
-            await requestAborted.Task.WaitAsync(DefaultTimeout);
+            await requestAborted.Task.DefaultTimeout();
         }
 
         [Fact]
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 var feature = httpContext.Features.Get<IHttpResetFeature>();
                 feature.Reset(12345);
-                await resetReceived.Task.WaitAsync(DefaultTimeout);
+                await resetReceived.Task.DefaultTimeout();
             });
 
             var client = host.GetTestServer().CreateClient();
@@ -97,10 +98,10 @@ namespace Microsoft.AspNetCore.TestHost
             using var host = await CreateHost(async httpContext =>
             {
                 await httpContext.Response.Body.FlushAsync();
-                await responseReceived.Task.WaitAsync(DefaultTimeout);
+                await responseReceived.Task.DefaultTimeout();
                 var feature = httpContext.Features.Get<IHttpResetFeature>();
                 feature.Reset(12345);
-                await resetReceived.Task.WaitAsync(DefaultTimeout);
+                await resetReceived.Task.DefaultTimeout();
             });
 
             var client = host.GetTestServer().CreateClient();
@@ -123,10 +124,10 @@ namespace Microsoft.AspNetCore.TestHost
             using var host = await CreateHost(async httpContext =>
             {
                 await httpContext.Response.WriteAsync("Hello World");
-                await responseReceived.Task.WaitAsync(DefaultTimeout);
+                await responseReceived.Task.DefaultTimeout();
                 var feature = httpContext.Features.Get<IHttpResetFeature>();
                 feature.Reset(12345);
-                await resetReceived.Task.WaitAsync(DefaultTimeout);
+                await resetReceived.Task.DefaultTimeout();
             });
 
             var client = host.GetTestServer().CreateClient();

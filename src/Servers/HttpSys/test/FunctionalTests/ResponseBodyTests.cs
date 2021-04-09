@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 await httpContext.Response.StartAsync();
                 Assert.True(httpContext.Response.HasStarted);
                 Assert.True(httpContext.Response.Headers.IsReadOnly);
-                await startingTcs.Task.WaitAsync(DefaultTimeout);
+                await startingTcs.Task.DefaultTimeout();
                 await httpContext.Response.WriteAsync("Hello World");
             }))
             {
@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 await httpContext.Response.CompleteAsync();
                 Assert.True(httpContext.Response.HasStarted);
                 Assert.True(httpContext.Response.Headers.IsReadOnly);
-                await startingTcs.Task.WaitAsync(DefaultTimeout);
-                await responseReceived.Task.WaitAsync(DefaultTimeout);
+                await startingTcs.Task.DefaultTimeout();
+                await responseReceived.Task.DefaultTimeout();
             }))
             {
                 var response = await SendRequestAsync(address);
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 var memory = writer.GetMemory();
                 writer.Advance(memory.Length);
                 await httpContext.Response.CompleteAsync();
-                await responseReceived.Task.WaitAsync(DefaultTimeout);
+                await responseReceived.Task.DefaultTimeout();
             }))
             {
                 var response = await SendRequestAsync(address);

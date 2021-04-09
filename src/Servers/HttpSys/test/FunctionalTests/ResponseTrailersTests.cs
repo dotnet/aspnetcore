@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 httpContext.Response.AppendTrailer("trailername", "TrailerValue");
                 await httpContext.Response.CompleteAsync();
-                await trailersReceived.Task.WaitAsync(DefaultTimeout);
+                await trailersReceived.Task.DefaultTimeout();
             }))
             {
                 var response = await SendRequestAsync(address);
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 await httpContext.Response.WriteAsync("Hello World");
                 httpContext.Response.AppendTrailer("TrailerName", "Trailer Value");
                 await httpContext.Response.CompleteAsync();
-                await trailersReceived.Task.WaitAsync(DefaultTimeout);
+                await trailersReceived.Task.DefaultTimeout();
             }))
             {
                 var response = await SendRequestAsync(address);

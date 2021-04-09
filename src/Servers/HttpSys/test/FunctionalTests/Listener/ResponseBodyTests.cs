@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 // Make sure the client is aborted
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
-                await disconnectCts.Task.WaitAsync(DefaultTimeout);
+                await disconnectCts.Task.DefaultTimeout();
 
                 await Assert.ThrowsAsync<IOException>(async () =>
                 {
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
-                await disconnectCts.Task.WaitAsync(DefaultTimeout);
+                await disconnectCts.Task.DefaultTimeout();
 
                 await Assert.ThrowsAsync<IOException>(async () =>
                 {
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
-                await disconnectCts.Task.WaitAsync(DefaultTimeout);
+                await disconnectCts.Task.DefaultTimeout();
 
                 // It can take several tries before Write notices the disconnect.
                 for (int i = 0; i < Utilities.WriteRetryLimit; i++)
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
-                await disconnectCts.Task.WaitAsync(DefaultTimeout);
+                await disconnectCts.Task.DefaultTimeout();
 
                 // It can take several tries before Write notices the disconnect.
                 for (int i = 0; i < Utilities.WriteRetryLimit; i++)
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var response = await responseTask;
                     response.EnsureSuccessStatusCode();
                     response.Dispose();
-                    await disconnectCts.Task.WaitAsync(DefaultTimeout);
+                    await disconnectCts.Task.DefaultTimeout();
                 }
 
                 await Assert.ThrowsAsync<IOException>(async () =>
@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var response = await responseTask;
                     response.EnsureSuccessStatusCode();
                     response.Dispose();
-                    await disconnectCts.Task.WaitAsync(DefaultTimeout);
+                    await disconnectCts.Task.DefaultTimeout();
                 }
 
                 await Assert.ThrowsAsync<IOException>(async () =>
@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var response = await responseTask;
                     response.EnsureSuccessStatusCode();
                     response.Dispose();
-                    await disconnectCts.Task.WaitAsync(DefaultTimeout);
+                    await disconnectCts.Task.DefaultTimeout();
                 }
 
                 // It can take several tries before Write notices the disconnect.
@@ -491,7 +491,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var response = await responseTask;
                     response.EnsureSuccessStatusCode();
                     response.Dispose();
-                    await disconnectCts.Task.WaitAsync(DefaultTimeout);
+                    await disconnectCts.Task.DefaultTimeout();
                 }
 
                 // It can take several tries before Write notices the disconnect.

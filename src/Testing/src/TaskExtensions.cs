@@ -12,6 +12,28 @@ namespace Microsoft.AspNetCore.Testing
 {
     public static class TaskExtensions
     {
+        public static TimeSpan DefaultTimeoutTimeSpan { get; } = TimeSpan.FromSeconds(30);
+
+        public static Task<T> DefaultTimeout<T>(this ValueTask<T> task)
+        {
+            return task.AsTask().TimeoutAfter(DefaultTimeoutTimeSpan);
+        }
+
+        public static Task DefaultTimeout(this ValueTask task)
+        {
+            return task.AsTask().TimeoutAfter(DefaultTimeoutTimeSpan);
+        }
+
+        public static Task<T> DefaultTimeout<T>(this Task<T> task)
+        {
+            return task.TimeoutAfter(DefaultTimeoutTimeSpan);
+        }
+
+        public static Task DefaultTimeout(this Task task)
+        {
+            return task.TimeoutAfter(DefaultTimeoutTimeSpan);
+        }
+
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout,
             [CallerFilePath] string filePath = null,
@@ -23,7 +45,16 @@ namespace Microsoft.AspNetCore.Testing
             {
                 return await task;
             }
-
+#if NET6_0
+            try
+            {
+                return await task.WaitAsync(timeout);
+            }
+            catch (TimeoutException)
+            {
+                throw new TimeoutException(CreateMessage(timeout, filePath, lineNumber));
+            }
+#else
             var cts = new CancellationTokenSource();
             if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)))
             {
@@ -34,6 +65,7 @@ namespace Microsoft.AspNetCore.Testing
             {
                 throw new TimeoutException(CreateMessage(timeout, filePath, lineNumber));
             }
+#endif
         }
 
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
@@ -48,7 +80,16 @@ namespace Microsoft.AspNetCore.Testing
                 await task;
                 return;
             }
-
+#if NET6_0
+            try
+            {
+                await task.WaitAsync(timeout);
+            }
+            catch (TimeoutException)
+            {
+                throw new TimeoutException(CreateMessage(timeout, filePath, lineNumber));
+            }
+#else
             var cts = new CancellationTokenSource();
             if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)))
             {
@@ -59,6 +100,7 @@ namespace Microsoft.AspNetCore.Testing
             {
                 throw new TimeoutException(CreateMessage(timeout, filePath, lineNumber));
             }
+#endif
         }
 
         private static string CreateMessage(TimeSpan timeout, string filePath, int lineNumber)
