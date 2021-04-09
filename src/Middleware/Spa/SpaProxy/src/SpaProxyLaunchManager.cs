@@ -63,7 +63,9 @@ namespace Microsoft.AspNetCore.SpaProxy
                 var running = response.IsSuccessStatusCode;
                 return running;
             }
-            catch (Exception exception) when (exception is HttpRequestException || exception is TaskCanceledException)
+            catch (Exception exception) when (exception is HttpRequestException ||
+                  exception is TaskCanceledException ||
+                  exception is OperationCanceledException)
             {
                 _logger.LogDebug(exception, "Failed to connect to the SPA Development proxy.");
                 return false;
