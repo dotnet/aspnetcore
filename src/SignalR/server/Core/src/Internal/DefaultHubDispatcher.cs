@@ -334,19 +334,30 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     else
                     {
                         // Invoke or Send
-                        async Task ExecuteInvocation()
+                        static async Task ExecuteInvocation(DefaultHubDispatcher<THub> dispatcher,
+                                                            ObjectMethodExecutor methodExecutor,
+                                                            THub hub,
+                                                            object?[] arguments,
+                                                            IServiceScope scope,
+                                                            IHubActivator<THub> hubActivator,
+                                                            HubConnectionContext connection,
+                                                            HubMethodInvocationMessage hubMethodInvocationMessage,
+                                                            bool isStreamCall)
                         {
+                            var logger = dispatcher._logger;
+                            var enableDetailedErrors = dispatcher._enableDetailedErrors;
+
                             object? result;
                             try
                             {
-                                result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
-                                Log.SendingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
+                                result = await dispatcher.ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                                Log.SendingResult(logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                             }
                             catch (Exception ex)
                             {
-                                Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
-                                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
-                                    ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
+                                Log.FailedInvokingHubMethod(logger, hubMethodInvocationMessage.Target, ex);
+                                await dispatcher.SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                                    ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, enableDetailedErrors));
                                 return;
                             }
                             finally
@@ -355,7 +366,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 // And normal invocations handle cleanup below in the finally
                                 if (isStreamCall)
                                 {
-                                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                                    await dispatcher.CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
                                 }
                             }
 
@@ -366,7 +377,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 await connection.WriteAsync(CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
                             }
                         }
-                        invocation = ExecuteInvocation();
+
+                        invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubMethodInvocationMessage, isStreamCall); ;
                     }
 
                     if (isStreamCall || isStreamResponse)
