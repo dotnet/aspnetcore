@@ -36,7 +36,7 @@
       "src\\Http\\WebUtilities\\perf\\Microbenchmarks\\Microsoft.AspNetCore.WebUtilities.Microbenchmarks.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
       "src\\Http\\WebUtilities\\test\\Microsoft.AspNetCore.WebUtilities.Tests.csproj",
-      "src\\Http\\samples\\MapActionSample\\MapActionSample.csproj",
+      "src\\Http\\samples\\MinimalSample\\MinimalSample.csproj",
       "src\\Http\\samples\\SampleApp\\HttpAbstractions.SampleApp.csproj",
       "src\\Middleware\\CORS\\src\\Microsoft.AspNetCore.Cors.csproj",
       "src\\Middleware\\HttpOverrides\\src\\Microsoft.AspNetCore.HttpOverrides.csproj",

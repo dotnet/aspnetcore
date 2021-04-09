@@ -203,47 +203,19 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
             {
-                if (factoryContext.RequestBodyMode is RequestBodyMode.AsJson)
+                if (factoryContext.JsonRequestBodyType is not null)
                 {
                     throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
                 }
 
-                if (factoryContext.RequestBodyMode is RequestBodyMode.AsForm)
-                {
-                    ThrowCannotReadBodyDirectlyAndAsForm();
-                }
-
-                factoryContext.RequestBodyMode = RequestBodyMode.AsJson;
                 factoryContext.JsonRequestBodyType = parameter.ParameterType;
                 factoryContext.AllowEmptyRequestBody = bodyAttribute.AllowEmpty;
 
                 return Expression.Convert(BodyValueExpr, parameter.ParameterType);
             }
-            else if (parameterCustomAttributes.OfType<IFromFormMetadata>().FirstOrDefault() is { } formAttribute)
-            {
-                if (factoryContext.RequestBodyMode is RequestBodyMode.AsJson)
-                {
-                    ThrowCannotReadBodyDirectlyAndAsForm();
-                }
-
-                factoryContext.RequestBodyMode = RequestBodyMode.AsForm;
-
-                return BindParameterFromProperty(parameter, FormExpr, formAttribute.Name ?? parameter.Name, factoryContext);
-            }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
             {
                 return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
-            }
-            else if (parameter.ParameterType == typeof(IFormCollection))
-            {
-                if (factoryContext.RequestBodyMode is RequestBodyMode.AsJson)
-                {
-                    ThrowCannotReadBodyDirectlyAndAsForm();
-                }
-
-                factoryContext.RequestBodyMode = RequestBodyMode.AsForm;
-
-                return Expression.Property(HttpRequestExpr, nameof(HttpRequest.Form));
             }
             else if (parameter.ParameterType == typeof(HttpContext))
             {
@@ -446,67 +418,41 @@ namespace Microsoft.AspNetCore.Http
 
         private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegate(Expression responseWritingMethodCall, FactoryContext factoryContext)
         {
-            if (factoryContext.RequestBodyMode is RequestBodyMode.AsJson)
+            if (factoryContext.JsonRequestBodyType is null)
             {
-                // We need to generate the code for reading from the body before calling into the delegate
-                var invoker = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(
-                    responseWritingMethodCall, TargetExpr, HttpContextExpr, BodyValueExpr).Compile();
-
-                var bodyType = factoryContext.JsonRequestBodyType!;
-                object? defaultBodyValue = null;
-
-                if (factoryContext.AllowEmptyRequestBody && bodyType.IsValueType)
-                {
-                    defaultBodyValue = Activator.CreateInstance(bodyType);
-                }
-
-                return async (target, httpContext) =>
-                {
-                    object? bodyValue;
-
-                    if (factoryContext.AllowEmptyRequestBody && httpContext.Request.ContentLength == 0)
-                    {
-                        bodyValue = defaultBodyValue;
-                    }
-                    else
-                    {
-                        try
-                        {
-                            bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
-                        }
-                        catch (IOException ex)
-                        {
-                            Log.RequestBodyIOException(httpContext, ex);
-                            return;
-                        }
-                        catch (InvalidDataException ex)
-                        {
-                            Log.RequestBodyInvalidDataException(httpContext, ex);
-                            httpContext.Response.StatusCode = 400;
-                            return;
-                        }
-                    }
-
-                    await invoker(target, httpContext, bodyValue);
-                };
-            }
-            else if (factoryContext.RequestBodyMode is RequestBodyMode.AsForm)
-            {
-                var invoker = Expression.Lambda<Func<object?, HttpContext, Task>>(
+                return Expression.Lambda<Func<object?, HttpContext, Task>>(
                     responseWritingMethodCall, TargetExpr, HttpContextExpr).Compile();
+            }
 
-                return async (target, httpContext) =>
+            // We need to generate the code for reading from the body before calling into the delegate
+            var invoker = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(
+                responseWritingMethodCall, TargetExpr, HttpContextExpr, BodyValueExpr).Compile();
+
+            var bodyType = factoryContext.JsonRequestBodyType!;
+            object? defaultBodyValue = null;
+
+            if (factoryContext.AllowEmptyRequestBody && bodyType.IsValueType)
+            {
+                defaultBodyValue = Activator.CreateInstance(bodyType);
+            }
+
+            return async (target, httpContext) =>
+            {
+                object? bodyValue;
+
+                if (factoryContext.AllowEmptyRequestBody && httpContext.Request.ContentLength == 0)
                 {
-                    // Generating async code would just be insane so if the method needs the form populate it here
-                    // so the within the method it's cached
+                    bodyValue = defaultBodyValue;
+                }
+                else
+                {
                     try
                     {
-                        await httpContext.Request.ReadFormAsync();
+                        bodyValue = await httpContext.Request.ReadFromJsonAsync(bodyType);
                     }
                     catch (IOException ex)
                     {
                         Log.RequestBodyIOException(httpContext, ex);
-                        httpContext.Abort();
                         return;
                     }
                     catch (InvalidDataException ex)
@@ -515,15 +461,10 @@ namespace Microsoft.AspNetCore.Http
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
+                }
 
-                    await invoker(target, httpContext);
-                };
-            }
-            else
-            {
-                return Expression.Lambda<Func<object?, HttpContext, Task>>(
-                    responseWritingMethodCall, TargetExpr, HttpContextExpr).Compile();
-            }
+                await invoker(target, httpContext, bodyValue);
+            };
         }
 
         private static MethodInfo GetEnumTryParseMethod()
@@ -793,22 +734,8 @@ namespace Microsoft.AspNetCore.Http
             await (await task).ExecuteAsync(httpContext);
         }
 
-        [StackTraceHidden]
-        private static void ThrowCannotReadBodyDirectlyAndAsForm()
-        {
-            throw new InvalidOperationException("Action cannot mix FromBody and FromForm on the same method.");
-        }
-
-        private enum RequestBodyMode
-        {
-            None,
-            AsJson,
-            AsForm,
-        }
-
         private class FactoryContext
         {
-            public RequestBodyMode RequestBodyMode { get; set; }
             public Type? JsonRequestBodyType { get; set; }
             public bool AllowEmptyRequestBody { get; set; }
 

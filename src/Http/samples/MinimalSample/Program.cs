@@ -22,8 +22,10 @@ using var host = Host.CreateDefaultBuilder(args)
 
                 object Json() => new { message = "Hello, World!" };
                 endpoints.MapGet("/json", (Func<object>)Json);
-            });
 
+                string SayHello(string name) => $"Hello {name}";
+                endpoints.MapGet("/hello/{name}", (Func<string, string>)SayHello);
+            });
         });
     })
     .Build();
