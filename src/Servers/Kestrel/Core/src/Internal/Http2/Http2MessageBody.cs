@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             if (!_context.RequestBodyStarted)
             {
                 ValueTask<FlushResult> continueTask = TryProduceContinueAsync();
-                if (!continueTask.IsCompleted)
+                if (!continueTask.IsCompletedSuccessfully)
                 {
                     return OnReadStartedAwaited(continueTask);
                 }
