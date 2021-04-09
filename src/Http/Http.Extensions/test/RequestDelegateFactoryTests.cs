@@ -361,14 +361,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [MemberData(nameof(TryParsableParameters))]
         public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValue(Delegate action, string? routeValue, object? expectedParameterValue)
         {
-            var invalidDataException = new InvalidDataException();
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(LoggerFactory);
-
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues["tryParsable"] = routeValue;
-            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
-            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             var requestDelegate = RequestDelegateFactory.Create(action);
 
@@ -460,7 +454,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 invoked = true;
             }
 
-            var invalidDataException = new InvalidDataException();
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(LoggerFactory);
 
@@ -588,18 +581,15 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(originalTodo.Name, ((Todo)deserializedRequestBody!).Name);
         }
 
-        [Fact]
-        public async Task RequestDelegateRejectsEmptyBodyGivenDefaultFromBodyParameter()
+        [Theory]
+        [MemberData(nameof(FromBodyActions))]
+        public async Task RequestDelegateRejectsEmptyBodyGivenFromBodyParameter(Delegate action)
         {
-            void TestAction(Todo todo)
-            {
-            }
-
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "0";
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<Todo>)TestAction);
+            var requestDelegate = RequestDelegateFactory.Create(action);
 
             await Assert.ThrowsAsync<JsonException>(() => requestDelegate(httpContext));
         }
@@ -775,7 +765,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         public async Task RequestDelegateRequiresServiceForAllFromServiceParameters(Delegate action)
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = (new ServiceCollection()).BuildServiceProvider();
+            httpContext.RequestServices = new ServiceCollection().BuildServiceProvider();
 
             var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, MyService>)action);
 
