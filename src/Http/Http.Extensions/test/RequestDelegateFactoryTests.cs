@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(42, httpContext.Items["tryParsable"]);
         }
 
-        public static object[][] DelegatesWithInvalidAttributes
+        public static object[][] DelegatesWithAttributesOnNotTryParsableParameters
         {
             get
             {
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Theory]
-        [MemberData(nameof(DelegatesWithInvalidAttributes))]
+        [MemberData(nameof(DelegatesWithAttributesOnNotTryParsableParameters))]
         public void CreateThrowsInvalidOperationExceptionWhenAttributeRequiresTryParseMethodThatDoesNotExist(Delegate action)
         {
             var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
@@ -719,11 +719,13 @@ namespace Microsoft.AspNetCore.Routing.Internal
         [Fact]
         public void BuildRequestDelegateThrowsInvalidOperationExceptionGivenFromBodyOnMultipleParameters()
         {
-            void TestExplicitlyInvalidAction([FromBody] int value1, [FromBody] int value2) { }
+            void TestAttributedInvalidAction([FromBody] int value1, [FromBody] int value2) { }
             void TestInferredInvalidAction(Todo value1, Todo value2) { }
+            void TestBothInvalidAction(Todo value1, [FromBody] int value2) { }
 
-            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int, int>)TestExplicitlyInvalidAction));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int, int>)TestAttributedInvalidAction));
             Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<Todo, Todo>)TestInferredInvalidAction));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<Todo, int>)TestBothInvalidAction));
         }
 
         public static object[][] FromServiceActions

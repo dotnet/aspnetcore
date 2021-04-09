@@ -203,15 +203,7 @@ namespace Microsoft.AspNetCore.Http
             }
             else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
             {
-                if (factoryContext.JsonRequestBodyType is not null)
-                {
-                    throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
-                }
-
-                factoryContext.JsonRequestBodyType = parameter.ParameterType;
-                factoryContext.AllowEmptyRequestBody = bodyAttribute.AllowEmpty;
-
-                return Expression.Convert(BodyValueExpr, parameter.ParameterType);
+                return BindParameterFromBody(parameter.ParameterType, bodyAttribute.AllowEmpty, factoryContext);
             }
             else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
             {
@@ -229,9 +221,13 @@ namespace Microsoft.AspNetCore.Http
             {
                 return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
             }
-            else
+            else if (parameter.ParameterType.IsInterface)
             {
                 return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
+            }
+            else
+            {
+                return BindParameterFromBody(parameter.ParameterType, allowEmpty: false, factoryContext);
             }
         }
 
@@ -625,6 +621,19 @@ namespace Microsoft.AspNetCore.Http
             var routeValue = GetValueFromProperty(RouteValuesExpr, key);
             var queryValue = GetValueFromProperty(QueryExpr, key);
             return BindParameterFromValue(parameter, Expression.Coalesce(routeValue, queryValue), factoryContext);
+        }
+
+        private static Expression BindParameterFromBody(Type parameterType, bool allowEmpty, FactoryContext factoryContext)
+        {
+            if (factoryContext.JsonRequestBodyType is not null)
+            {
+                throw new InvalidOperationException("Action cannot have more than one FromBody attribute.");
+            }
+
+            factoryContext.JsonRequestBodyType = parameterType;
+            factoryContext.AllowEmptyRequestBody = allowEmpty;
+
+            return Expression.Convert(BodyValueExpr, parameterType);
         }
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
