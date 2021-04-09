@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Internal
@@ -144,6 +145,49 @@ namespace Microsoft.AspNetCore.Internal
                 "TestCookieC6=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
                 "TestCookieC7=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
             }, cookies);
+        }
+
+
+
+        [Fact]
+        public void DeleteChunkedCookieWithOptionsAndResponseCookies_AllDeleted()
+        {
+            var chunkingCookieManager = new ChunkingCookieManager();
+            HttpContext httpContext = new DefaultHttpContext();
+            
+            httpContext.Request.Headers["Cookie"] = new[]
+            {
+                "TestCookie=chunks-7; domain=foo.com; path=/; secure",
+                "TestCookieC1=abcdefghi; domain=foo.com; path=/; secure",
+                "TestCookieC2=jklmnopqr; domain=foo.com; path=/; secure",
+                "TestCookieC3=stuvwxyz0; domain=foo.com; path=/; secure",
+                "TestCookieC4=123456789; domain=foo.com; path=/; secure",
+                "TestCookieC5=ABCDEFGHI; domain=foo.com; path=/; secure",
+                "TestCookieC6=JKLMNOPQR; domain=foo.com; path=/; secure",
+                "TestCookieC7=STUVWXYZ; domain=foo.com; path=/; secure"
+            };
+
+            var cookieOptions = new CookieOptions()
+            {
+                Domain = "foo.com",
+                Path = "/",
+                Secure = true
+            };
+
+            httpContext.Response.Headers[HeaderNames.SetCookie] = new[]
+            {
+                "TestCookie=chunks-7; domain=foo.com; path=/; secure",
+                "TestCookieC1=abcdefghi; domain=foo.com; path=/; secure",
+                "TestCookieC2=jklmnopqr; domain=foo.com; path=/; secure",
+                "TestCookieC3=stuvwxyz0; domain=foo.com; path=/; secure",
+                "TestCookieC4=123456789; domain=foo.com; path=/; secure",
+                "TestCookieC5=ABCDEFGHI; domain=foo.com; path=/; secure",
+                "TestCookieC6=JKLMNOPQR; domain=foo.com; path=/; secure",
+                "TestCookieC7=STUVWXYZ; domain=foo.com; path=/; secure"
+            };
+
+            chunkingCookieManager.DeleteCookie(httpContext, "TestCookie", cookieOptions);
+            Assert.Equal(8, httpContext.Response.Headers[HeaderNames.SetCookie].Count);
         }
     }
 }

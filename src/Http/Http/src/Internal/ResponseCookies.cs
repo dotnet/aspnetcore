@@ -89,6 +89,57 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <inheritdoc />
+        public void Append(IDictionary<string, string> keyValuePairs, CookieOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            // SameSite=None cookies must be marked as Secure.
+            if (!options.Secure && options.SameSite == SameSiteMode.None)
+            {
+                if (_logger == null)
+                {
+                    var services = _features.Get<Features.IServiceProvidersFeature>()?.RequestServices;
+                    _logger = services?.GetService<ILogger<ResponseCookies>>();
+                }
+
+                if (_logger != null)
+                {
+                    foreach (var keyValuePair in keyValuePairs)
+                    {
+                        Log.SameSiteCookieNotSecure(_logger, keyValuePair.Key);
+                    }
+                }
+            }
+
+            var setCookieHeaderValue = new SetCookieHeaderValue(string.Empty)
+            {
+                Domain = options.Domain,
+                Path = options.Path,
+                Expires = options.Expires,
+                MaxAge = options.MaxAge,
+                Secure = options.Secure,
+                SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
+                HttpOnly = options.HttpOnly
+            };
+
+            var cookierHeaderValue = setCookieHeaderValue.ToString()[1..];
+            var cookies = new string[keyValuePairs.Count];
+            var position = 0;
+
+            foreach (var keyValuePair in keyValuePairs)
+            {
+                cookies[position] = $"{keyValuePair.Key}={keyValuePair.Value}{cookierHeaderValue}";
+                position++;
+            }
+
+            Headers.Append(HeaderNames.SetCookie, cookies);
+            
+        }
+
+        /// <inheritdoc />
         public void Delete(string key)
         {
             Delete(key, new CookieOptions() { Path = "/" });

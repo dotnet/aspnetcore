@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -150,6 +151,33 @@ namespace Microsoft.AspNetCore.CookiePolicy
             {
                 _logger.CookieSuppressed(key);
             }
+        }
+
+        public void Append(IDictionary<string, string> keyValuePairs, CookieOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            var nonSuppressedValues = new Dictionary<string, string>();
+
+            foreach (var keyValuePair in keyValuePairs)
+            {
+                var key = keyValuePair.Key;
+                var value = keyValuePair.Value;
+
+                if (ApplyAppendPolicy(ref key, ref value, options))
+                {
+                    nonSuppressedValues.Add(key, value);
+                }
+                else
+                {
+                    _logger.CookieSuppressed(keyValuePair.Key);
+                }
+            }
+
+            Cookies.Append(nonSuppressedValues, options);
         }
 
         private bool ApplyAppendPolicy(ref string key, ref string value, CookieOptions options)
