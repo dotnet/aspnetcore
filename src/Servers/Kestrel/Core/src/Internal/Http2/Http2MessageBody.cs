@@ -30,20 +30,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        protected override void OnReadStarted()
+        protected override Task OnReadStartedAsync()
         {
             // Produce 100-continue if no request body data for the stream has arrived yet.
             if (!_context.RequestBodyStarted)
             {
-                ValueTask<FlushResult> continueTask = TryProduceContinue();
+                ValueTask<FlushResult> continueTask = TryProduceContinueAsync();
                 if (!continueTask.IsCompleted)
                 {
-                    OnReadStartedAwaited(continueTask);
+                    return OnReadStartedAwaited(continueTask);
                 }
             }
+
+            return Task.CompletedTask;
         }
 
-        private async void OnReadStartedAwaited(ValueTask<FlushResult> continueTask)
+        private async Task OnReadStartedAwaited(ValueTask<FlushResult> continueTask)
         {
             await continueTask;
         }
@@ -68,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override bool TryRead(out ReadResult readResult)
         {
-            TryStart();
+            TryStartAsync();
 
             var hasResult = _context.RequestBodyPipe.Reader.TryRead(out readResult);
 
@@ -89,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            TryStart();
+            await TryStartAsync();
 
             try
             {

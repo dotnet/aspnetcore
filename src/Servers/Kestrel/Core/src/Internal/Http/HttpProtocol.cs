@@ -909,7 +909,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
 
-        public ValueTask<FlushResult> ProduceContinue()
+        public ValueTask<FlushResult> ProduceContinueAsync()
         {
             if (HasResponseStarted)
             {

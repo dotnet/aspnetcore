@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal interface IHttpResponseControl
     {
-        ValueTask<FlushResult> ProduceContinue();
+        ValueTask<FlushResult> ProduceContinueAsync();
         Memory<byte> GetMemory(int sizeHint = 0);
         Span<byte> GetSpan(int sizeHint = 0);
         void Advance(int bytes);

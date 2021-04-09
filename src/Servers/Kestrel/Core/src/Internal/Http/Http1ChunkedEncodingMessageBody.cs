@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override bool TryReadInternal(out ReadResult readResult)
         {
-            TryStart();
+            TryStartAsync();
 
             var boolResult = _requestBodyPipe.Reader.TryRead(out _readResult);
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
         {
-            TryStart();
+            await TryStartAsync();
 
             try
             {
@@ -101,11 +101,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 if (!awaitable.IsCompleted)
                 {
-                    ValueTask<FlushResult> continueTask = TryProduceContinue();
-                    if (!continueTask.IsCompleted)
-                    {
-                        await continueTask;
-                    }
+                    ValueTask<FlushResult> continueTask = TryProduceContinueAsync();
+                    await continueTask;
                 }
 
                 while (true)
@@ -175,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // call complete here on the reader
             _requestBodyPipe.Reader.Complete();
 
-            Debug.Assert(_pumpTask != null, "OnReadStarted must have been called.");
+            Debug.Assert(_pumpTask != null, "OnReadStartedAsync must have been called.");
 
             // PumpTask catches all Exceptions internally.
             if (_pumpTask.IsCompleted)
@@ -199,9 +196,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestBodyPipe.Reset();
         }
 
-        protected override void OnReadStarted()
+        protected override Task OnReadStartedAsync()
         {
             _pumpTask = PumpAsync();
+            return Task.CompletedTask;
         }
 
         private bool Read(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
