@@ -6,6 +6,7 @@
 *REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteName.get -> string!
 *REMOVED*Microsoft.AspNetCore.Routing.RouteNameMetadata.RouteNameMetadata(string! routeName) -> void
 Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder
+Microsoft.AspNetCore.Builder.MinimalActionEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
 Microsoft.AspNetCore.Builder.MinmalActionEndpointRouteBuilderExtensions
 Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokens.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 Microsoft.AspNetCore.Routing.DataTokensMetadata.DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string!, object?>! dataTokens) -> void
