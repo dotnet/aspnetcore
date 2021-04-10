@@ -212,7 +212,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(originalRouteParam, httpContext.Items["input"]);
         }
 
-        private static void TestAction(HttpContext httpContext, [FromRoute] int value = 42)
+        private static void TestOptional(HttpContext httpContext, [FromRoute] int value = 42)
+        {
+            httpContext.Items.Add("input", value);
+        }
+
+        private static void TestOptionalNullable(HttpContext httpContext, int? value = 42)
+        {
+            httpContext.Items.Add("input", value);
+        }
+
+        private static void TestOptionalString(HttpContext httpContext, string value = "default")
         {
             httpContext.Items.Add("input", value);
         }
@@ -222,16 +232,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestAction);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestOptional);
 
             await requestDelegate(httpContext);
 
             Assert.Equal(42, httpContext.Items["input"]);
-        }
-
-        private static void TestActionNullable(HttpContext httpContext, int? value = 42)
-        {
-            httpContext.Items.Add("input", value);
         }
 
         [Fact]
@@ -239,11 +244,23 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestAction);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestOptional);
 
             await requestDelegate(httpContext);
 
             Assert.Equal(42, httpContext.Items["input"]);
+        }
+
+        [Fact]
+        public async Task RequestDelegatePopulatesFromOptionalStringParameter()
+        {
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, string>)TestOptionalString);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal("default", httpContext.Items["input"]);
         }
 
         [Fact]
@@ -256,7 +273,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestAction);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestOptional);
 
             await requestDelegate(httpContext);
 

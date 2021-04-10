@@ -54,6 +54,8 @@ namespace Microsoft.AspNetCore.Http
         private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, nameof(HttpResponse.StatusCode));
         private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
 
+        private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
+
         private static readonly ConcurrentDictionary<Type, MethodInfo?> TryParseMethodCache = new();
 
         /// <summary>
@@ -512,6 +514,7 @@ namespace Microsoft.AspNetCore.Http
                 return null;
             }
 
+
             return TryParseMethodCache.GetOrAdd(type, Finder);
         }
 
@@ -533,10 +536,24 @@ namespace Microsoft.AspNetCore.Http
         {
             if (parameter.ParameterType == typeof(string))
             {
-                return valueExpression;
+                if (!parameter.HasDefaultValue)
+                {
+                    return valueExpression;
+                }
+
+                // Use an "inner"TempSourceString because tempSourceString might not exist.
+                var innerTempSourceString = Expression.Variable(typeof(string), "innerTempSourceString");
+                return Expression.Block(
+                    new[] { innerTempSourceString },
+                    Expression.Assign(innerTempSourceString, valueExpression),
+                    Expression.Condition(Expression.NotEqual(innerTempSourceString, Expression.Constant(null)),
+                        innerTempSourceString,
+                        Expression.Constant(parameter.DefaultValue)));
             }
 
             var underlyingNullableType = Nullable.GetUnderlyingType(parameter.ParameterType);
+            var isNotNullable = underlyingNullableType is null;
+
             var nonNullableParameterType = underlyingNullableType ?? parameter.ParameterType;
             var tryParseMethod = FindTryParseMethod(nonNullableParameterType);
 
@@ -584,7 +601,8 @@ namespace Microsoft.AspNetCore.Http
 
             var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
-            var parsedValue = underlyingNullableType is null ? argument : Expression.Variable(nonNullableParameterType, "parsedValue");
+            // If the parameter is nullable, create a "parsedValue" local to TryParse into since we cannot the parameter directly.
+            var parsedValue = isNotNullable ? argument : Expression.Variable(nonNullableParameterType, "parsedValue");
 
             var parameterTypeNameConstant = Expression.Constant(parameter.ParameterType.Name);
             var parameterNameConstant = Expression.Constant(parameter.Name);
@@ -596,18 +614,19 @@ namespace Microsoft.AspNetCore.Http
 
             var tryParseCall = Expression.Call(tryParseMethod, TempSourceStringExpr, parsedValue);
 
-            Expression tryParseExpression = underlyingNullableType is null ?
+            // If the parameter is nullable, we need to assign the "parsedValue" local to the nullable parameter on success.
+            Expression tryParseExpression = isNotNullable ?
                 Expression.IfThen(Expression.Not(tryParseCall), failBlock) :
                 Expression.Block(new[] { parsedValue },
                     Expression.IfThenElse(tryParseCall,
                         Expression.Assign(argument, Expression.Convert(parsedValue, parameter.ParameterType)),
                         failBlock));
 
-            var ifNotNull = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
-
             var ifNotNullTryParse = !parameter.HasDefaultValue ?
-                Expression.IfThen(ifNotNull, tryParseExpression) :
-                Expression.IfThenElse(ifNotNull, tryParseExpression, Expression.Assign(argument, Expression.Constant(parameter.DefaultValue)));
+                Expression.IfThen(TempSourceStringNotNullExpr, tryParseExpression) :
+                Expression.IfThenElse(TempSourceStringNotNullExpr,
+                    tryParseExpression,
+                    Expression.Assign(argument, Expression.Constant(parameter.DefaultValue)));
 
             var fullTryParseBlock = Expression.Block(
                 // tempSourceString = httpContext.RequestValue["id"];
