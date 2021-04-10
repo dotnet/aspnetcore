@@ -162,6 +162,11 @@ namespace Microsoft.AspNetCore.Http
                 CreateTryParseCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments, factoryContext) :
                 CreateResponseWritingMethodCall(methodInfo, targetExpression, arguments);
 
+            if (factoryContext.UsingTempSourceString)
+            {
+                responseWritingMethodCall = Expression.Block(new[] { TempSourceStringExpr }, responseWritingMethodCall);
+            }
+
             return HandleRequestBodyAndCompileRequestDelegate(responseWritingMethodCall, factoryContext);
         }
 
@@ -249,8 +254,8 @@ namespace Microsoft.AspNetCore.Http
             MethodInfo methodInfo, Expression? target, Expression[] arguments, FactoryContext factoryContext)
         {
             // {
-            //     bool wasTryParseFailure = false;
             //     string tempSourceString;
+            //     bool wasTryParseFailure = false;
             //
             //     // Assume "int param1" is the first parameter and "int? param2 = 2" is the second parameter.
             //     int param1_local;
@@ -280,7 +285,7 @@ namespace Microsoft.AspNetCore.Http
             //         };
             // }
 
-            var localVariables = new ParameterExpression[factoryContext.TryParseParams.Count + 2];
+            var localVariables = new ParameterExpression[factoryContext.TryParseParams.Count + 1];
             var tryParseAndCallMethod = new Expression[factoryContext.TryParseParams.Count + 1];
 
             for (var i = 0; i < factoryContext.TryParseParams.Count; i++)
@@ -289,7 +294,6 @@ namespace Microsoft.AspNetCore.Http
             }
 
             localVariables[factoryContext.TryParseParams.Count] = WasTryParseFailureExpr;
-            localVariables[factoryContext.TryParseParams.Count + 1] = TempSourceStringExpr;
 
             var set400StatusAndReturnCompletedTask = Expression.Block(
                     Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
@@ -514,7 +518,6 @@ namespace Microsoft.AspNetCore.Http
                 return null;
             }
 
-
             return TryParseMethodCache.GetOrAdd(type, Finder);
         }
 
@@ -541,15 +544,15 @@ namespace Microsoft.AspNetCore.Http
                     return valueExpression;
                 }
 
-                // Use an "inner"TempSourceString because tempSourceString might not exist.
-                var innerTempSourceString = Expression.Variable(typeof(string), "innerTempSourceString");
+                factoryContext.UsingTempSourceString = true;
                 return Expression.Block(
-                    new[] { innerTempSourceString },
-                    Expression.Assign(innerTempSourceString, valueExpression),
-                    Expression.Condition(Expression.NotEqual(innerTempSourceString, Expression.Constant(null)),
-                        innerTempSourceString,
+                    Expression.Assign(TempSourceStringExpr, valueExpression),
+                    Expression.Condition(TempSourceStringNotNullExpr,
+                        TempSourceStringExpr,
                         Expression.Constant(parameter.DefaultValue)));
             }
+
+            factoryContext.UsingTempSourceString = true;
 
             var underlyingNullableType = Nullable.GetUnderlyingType(parameter.ParameterType);
             var isNotNullable = underlyingNullableType is null;
@@ -562,8 +565,8 @@ namespace Microsoft.AspNetCore.Http
                 throw new InvalidOperationException($"No public static bool {parameter.ParameterType.Name}.TryParse(string, out {parameter.ParameterType.Name}) method found for {parameter.Name}.");
             }
 
-            // bool wasTryParseFailure = false;
             // string tempSourceString;
+            // bool wasTryParseFailure = false;
             //
             // // Assume "int param1" is the first parameter and "int? param2 = 2" is the second parameter.
             // int param1_local;
@@ -774,6 +777,7 @@ namespace Microsoft.AspNetCore.Http
             public Type? JsonRequestBodyType { get; set; }
             public bool AllowEmptyRequestBody { get; set; }
 
+            public bool UsingTempSourceString { get; set; }
             public List<(ParameterExpression, Expression)> TryParseParams { get; } = new();
         }
 
