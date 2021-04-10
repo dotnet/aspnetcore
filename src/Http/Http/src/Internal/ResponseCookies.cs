@@ -132,7 +132,6 @@ namespace Microsoft.AspNetCore.Http
 
             foreach (var keyValuePair in keyValuePairs)
             {
-
                 cookies[position] = string.Concat(_enableCookieNameEncoding ? Uri.EscapeDataString(keyValuePair.Key) : keyValuePair.Key, "=", Uri.EscapeDataString(keyValuePair.Value), cookierHeaderValue);
                 position++;
             }
