@@ -229,6 +229,23 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(42, httpContext.Items["input"]);
         }
 
+        private static void TestActionNullable(HttpContext httpContext, int? value = 42)
+        {
+            httpContext.Items.Add("input", value);
+        }
+
+        [Fact]
+        public async Task RequestDelegatePopulatesFromNullableOptionalParameter()
+        {
+            var httpContext = new DefaultHttpContext();
+
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(42, httpContext.Items["input"]);
+        }
+
         [Fact]
         public async Task RequestDelegatePopulatesFromRouteOptionalParameterBasedOnParameterName()
         {
