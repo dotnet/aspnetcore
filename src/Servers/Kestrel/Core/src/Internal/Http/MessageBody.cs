@@ -173,9 +173,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _observedBytes += observedBytes;
 
-            if (_observedBytes > _context.MaxRequestBodySize)
+            var maxRequestBodySize = _context.MaxRequestBodySize;
+            if (_observedBytes > maxRequestBodySize)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString());
             }
         }
 
