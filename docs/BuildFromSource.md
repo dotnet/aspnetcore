@@ -322,7 +322,7 @@ Common properties include:
 
 ### Resx files
 
-If you need to make changes to a .resx file, run `dotnet msbuild t:/Resgen <path to csproj>`. This will update the generated C#.
+If you need to make changes to a .resx file, run `dotnet msbuild /t:Resgen <path to csproj>`. This will update the generated C#.
 
 ## Step 5: Use the result of your build
 
