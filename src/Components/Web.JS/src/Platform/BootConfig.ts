@@ -13,12 +13,13 @@ export class BootConfigResult {
     // hosts may not. Assume 'Production' in the absence of any specified value.
     const applicationEnvironment = environment || bootConfigResponse.headers.get('Blazor-Environment') || 'Production';
     const bootConfig: BootJsonData = await bootConfigResponse.json();
+    bootConfig.modifiableAssemblies = bootConfigResponse.headers.get('DOTNET-MODIFIABLE-ASSEMBLIES');
 
     return new BootConfigResult(bootConfig, applicationEnvironment);
   };
 }
 
-// Keep in sync with bootJsonData in Microsoft.AspNetCore.Components.WebAssembly.Build
+// Keep in sync with bootJsonData from the BlazorWebAssemblySDK
 export interface BootJsonData {
   readonly entryAssembly: string;
   readonly resources: ResourceGroups;
@@ -28,6 +29,9 @@ export interface BootJsonData {
   readonly cacheBootResources: boolean;
   readonly config: string[];
   readonly icuDataMode: ICUDataMode;
+
+  // These properties are tacked on, and not found in the boot.json file
+  modifiableAssemblies: string | null;
 }
 
 export interface ResourceGroups {

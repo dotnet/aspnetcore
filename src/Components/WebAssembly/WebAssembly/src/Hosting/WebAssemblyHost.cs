@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.Extensions.Configuration;
@@ -148,6 +147,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             await manager.RestoreStateAsync(store);
 
+            var initializeTask = InitializeHotReloadAsync();
+            if (initializeTask is not null)
+            {
+                // The returned value will be "null" in a trimmed app
+                await initializeTask;
+            }
+
             var tcs = new TaskCompletionSource();
 
             using (cancellationToken.Register(() => tcs.TrySetResult()))
@@ -166,6 +172,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
                 await tcs.Task;
             }
+        }
+
+        private Task? InitializeHotReloadAsync()
+        {
+            // In Development scenarios, wait for hot reload to apply deltas before initiating rendering.
+            return WebAssemblyHotReload.InitializeAsync();
         }
     }
 }
