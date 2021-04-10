@@ -76,11 +76,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
             context.Request.Headers.TryGetValue(entry.InboundHeaderName, out var value);
             if (entry.ValueFilter != null)
             {
-                var filtered = entry.ValueFilter(new HeaderPropagationContext(context, entry.InboundHeaderName, value));
-                if (!StringValues.IsNullOrEmpty(filtered))
-                {
-                    value = filtered;
-                }
+                value = entry.ValueFilter(new HeaderPropagationContext(context, entry.InboundHeaderName, value));
             }
 
             return value;

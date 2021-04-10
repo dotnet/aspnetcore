@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// The <see cref="BindingInfo"/>.
         /// </summary>
-        BindingInfo BindingInfo { get; set; }
+        BindingInfo? BindingInfo { get; set; }
     }
 }

@@ -58,6 +58,7 @@ stages:
             PdbArtifacts/**
             BlobArtifacts/**
           downloadPath: '$(Build.ArtifactStagingDirectory)'
+          checkDownloadedFiles: true
 
       # This is necessary whenever we want to publish/restore to an AzDO private feed
       # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
@@ -124,6 +125,7 @@ stages:
             BlobArtifacts/**
             AssetManifests/**
           downloadPath: '$(Build.ArtifactStagingDirectory)'
+          checkDownloadedFiles: true
 
       - task: NuGetToolInstaller@1
         displayName: 'Install NuGet.exe'

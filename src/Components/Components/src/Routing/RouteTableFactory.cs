@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
@@ -27,13 +28,30 @@ namespace Microsoft.AspNetCore.Components
                 return resolvedComponents;
             }
 
-            var componentTypes = key.Assemblies.SelectMany(a => a.ExportedTypes.Where(t => typeof(IComponent).IsAssignableFrom(t)));
+            var componentTypes = GetRouteableComponents(key.Assemblies);
             var routeTable = Create(componentTypes);
             Cache.TryAdd(key, routeTable);
             return routeTable;
         }
 
-        internal static RouteTable Create(IEnumerable<Type> componentTypes)
+        private static List<Type> GetRouteableComponents(IEnumerable<Assembly> assemblies)
+        {
+            var routeableComponents = new List<Type>();
+            foreach (var assembly in assemblies)
+            {
+                foreach (var type in assembly.ExportedTypes)
+                {
+                    if (typeof(IComponent).IsAssignableFrom(type) && type.IsDefined(typeof(RouteAttribute)))
+                    {
+                        routeableComponents.Add(type);
+                    }
+                }
+            }
+
+            return routeableComponents;
+        }
+
+        internal static RouteTable Create(List<Type> componentTypes)
         {
             var templatesByHandler = new Dictionary<Type, string[]>();
             foreach (var componentType in componentTypes)

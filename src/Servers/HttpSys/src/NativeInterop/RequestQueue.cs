@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private bool _disposed;
 
         internal RequestQueue(string requestQueueName, string urlPrefix, ILogger logger, bool receiver)
-            : this(urlGroup: null, requestQueueName, RequestQueueMode.Attach, logger, receiver)
+            : this(urlGroup: null!, requestQueueName, RequestQueueMode.Attach, logger, receiver)
         {
             try
             {
@@ -33,11 +33,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        internal RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, ILogger logger)
+        internal RequestQueue(UrlGroup urlGroup, string? requestQueueName, RequestQueueMode mode, ILogger logger)
             : this(urlGroup, requestQueueName, mode, logger, false)
         { }
 
-        private RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, ILogger logger, bool receiver)
+        private RequestQueue(UrlGroup urlGroup, string? requestQueueName, RequestQueueMode mode, ILogger logger, bool receiver)
         {
             _mode = mode;
             UrlGroup = urlGroup;
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (!Created)
             {
-                _logger.LogInformation(LoggerEventIds.AttachedToQueue, "Attached to an existing request queue '{requestQueueName}', some options do not apply.", requestQueueName);
+                Log.AttachedToQueue(_logger, requestQueueName);
             }
         }
 
@@ -205,6 +205,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (_disposed)
             {
                 throw new ObjectDisposedException(this.GetType().FullName);
+            }
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string?, Exception?> _attachedToQueue =
+                LoggerMessage.Define<string?>(LogLevel.Information, LoggerEventIds.AttachedToQueue, "Attached to an existing request queue '{RequestQueueName}', some options do not apply.");
+
+            public static void AttachedToQueue(ILogger logger, string? requestQueueName)
+            {
+                _attachedToQueue(logger, requestQueueName, null);
             }
         }
     }

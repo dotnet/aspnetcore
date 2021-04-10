@@ -4,9 +4,6 @@
 using System;
 using Microsoft.Win32.SafeHandles;
 
-// Remove once HttpSys has enabled nullable
-#nullable enable
-
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal sealed class HeapAllocHandle : SafeHandleZeroOrMinusOneIsInvalid

@@ -7,6 +7,12 @@
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Default</AnalysisMode>
+  </PropertyGroup>
+
   <!-- Defines project type conventions. -->
   <PropertyGroup>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
@@ -14,6 +20,7 @@
     <IsBenchmarkProject Condition=" $(MSBuildProjectName.EndsWith('.Performance')) OR
         $(RepoRelativeProjectDir.Contains('perf')) OR
         $(RepoRelativeProjectDir.Contains('benchmarkapps')) ">true</IsBenchmarkProject>
+    <IsMicrobenchmarksProject Condition=" $(MSBuildProjectName.EndsWith('.Microbenchmarks')) ">true</IsMicrobenchmarksProject>
     <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
     <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' ">false</IsUnitTestProject>
     <IsUnitTestProject Condition=" '$(IsSpecificationTestProject)' != 'true' AND

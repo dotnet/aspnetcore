@@ -86,46 +86,22 @@
   </ItemGroup>
 
   <!--
-      Turn Reference items into a ProjectReference when UseProjectReferences is true. Order matters; this
-      comes before package resolution because projects should be used when possible instead of packages.
+    Turn Reference items into a ProjectReference when UseProjectReferences is true. Order matters; this
+    comes before package resolution because projects should be used when possible instead of packages.
     -->
   <ItemGroup Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND '$(UseProjectReferences)' == 'true' ">
-    <!-- Copy then Update / Copy to intersect the ProjectReferenceProvider and Reference item groups. -->
-    <_AllProjectReference Include="@(ProjectReferenceProvider)" />
+    <!--
+      For the _CheckForReferenceBoundaries target, mark project reference providers that _should_ be referenced with
+      Reference items but weren't. General principle is to use only Reference items when referencing a provider.
+      This simplifies project moves and shortens files.
+    -->
+    <ProjectReferenceProvider Update="@(ProjectReference->'%(Filename)')" DirectUse="1" />
 
-    <!-- Use only Reference items when project is a reference provider. Simplifies project moves and shortens files. -->
-    <_AllProjectReference Update="@(ProjectReference->'%(Filename)')" DirectUse="1" />
+    <!-- Find Reference items satisfied using project reference providers. -->
+    <Reference Update="@(ProjectReferenceProvider)" ProjectPath="%(ProjectReferenceProvider.ProjectPath)" />
 
-    <_AllProjectReference Update="@(Reference)" Use="1">
-      <!--
-        Metadata list is long because (a) Update defaults to copying no metadata and (b) ProjectReference metadata
-        may include (real) Reference metadata and MSBuild task parameters. Even so, the list below is not exhaustive.
-      -->
-      <Aliases>%(Reference.Aliases)</Aliases>
-      <BuildInParallel>%(Reference.BuildInParallel)</BuildInParallel>
-      <DoNotHarvest>%(Reference.DoNotHarvest)</DoNotHarvest>
-      <ExcludeAssets>%(Reference.ExcludeAssets)</ExcludeAssets>
-      <IncludeAssets>%(Reference.IncludeAssets)</IncludeAssets>
-      <IsNativeImage>%(Reference.IsNativeImage)</IsNativeImage>
-      <LinkBase>%(Reference.LinkBase)</LinkBase>
-      <Name>%(Reference.Name)</Name>
-      <OutputItemType>%(Reference.OutputItemType)</OutputItemType>
-      <Package>%(Reference.Package)</Package>
-      <Private>%(Reference.Private)</Private>
-      <PrivateAssets>%(Reference.PrivateAssets)</PrivateAssets>
-      <Project>%(Reference.Project)</Project>
-      <Properties>%(Reference.Properties)</Properties>
-      <Publish>%(Reference.Publish)</Publish>
-      <ReferenceOutputAssembly>%(Reference.ReferenceOutputAssembly)</ReferenceOutputAssembly>
-      <SetPlatform>%(Reference.SetPlatform)</SetPlatform>
-      <SkipGetTargetFrameworkProperties>%(Reference.SkipGetTargetFrameworkProperties)</SkipGetTargetFrameworkProperties>
-      <Targets>%(Reference.Targets)</Targets>
-      <UndefineProperties>%(Reference.UndefineProperties)</UndefineProperties>
-      <Watch>%(Reference.Watch)</Watch>
-    </_AllProjectReference>
-
-    <ProjectReference Include="@(_AllProjectReference->WithMetadataValue('Use', '1')->'%(ProjectPath)')" Use="" />
-    <Reference Remove="@(_AllProjectReference->WithMetadataValue('Use', '1'))" />
+    <ProjectReference Include="@(Reference->Distinct()->'%(ProjectPath)')" />
+    <Reference Remove="@(Reference->HasMetadata('ProjectPath'))" />
   </ItemGroup>
 
   <!--
@@ -135,16 +111,12 @@
   -->
   <Target Name="_CheckForReferenceBoundaries" BeforeTargets="CollectPackageReferences;ResolveReferences">
     <Error
-        Condition="@(_InvalidReferenceToSharedFxOnlyAssembly->Count()) != 0"
-        Text="Cannot reference &quot;%(_InvalidReferenceToSharedFxOnlyAssembly.Identity)&quot; directly because it is part of the shared framework and this project is not. Use &lt;FrameworkReference Include=&quot;Microsoft.AspNetCore.App&quot; /&gt; instead." />
-
-    <Error
         Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0 AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'"
-        Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
+        Text="Cannot reference &quot;%(Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
 
     <Error
-        Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND @(_AllProjectReference->WithMetadataValue('DirectUse', '1')->Count()) != 0 "
-        Text="Cannot reference &quot;%(_AllProjectReference.Identity)&quot; with a ProjectReference item; use a Reference item." />
+        Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND @(ProjectReferenceProvider->WithMetadataValue('DirectUse', '1')->Count()) != 0 "
+        Text="Cannot reference &quot;%(Identity)&quot; with a ProjectReference item; use a Reference item." />
   </Target>
 
   <Target Name="_WarnAboutRedundantRef" AfterTargets="ResolveFrameworkReferences;ProcessFrameworkReferences">
@@ -248,45 +220,6 @@
         Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;. Did you update baselines and dependencies lists? See docs/ReferenceResolution.md for more details." />
   </Target>
 
-  <!--
-    Change @(ResolvedCompileFileDefinitions) items between generation and use in order to compile against RTM lib/
-    or ref/ assemblies. The approach works for all TFMs because it happens after a specific assembly is chosen for
-    compilation; no need to restrict this to (say) the default TFM.
-
-    This target could get confused if the layout changes for one of the dozen special-cased packages during servicing.
-    E.g. ResolvePackageAssets picks a compatible assembly from the 5.0.1 package and _UseRTMReferenceAssemblies
-    changes the path to one not present in the 5.0.0 package. Fortunately, this will break the build with complaints
-    about the "invalid strong name".
-  -->
-  <Target Name="_UseRTMReferenceAssemblies"
-      Condition=" '$(MSBuildProjectName)' != 'RepoTasks' "
-      AfterTargets="ResolvePackageAssets"
-      BeforeTargets="GenerateBuildDependencyFile;GeneratePublishDependencyFile;ILLink;ResolveLockFileReferences"
-      DependsOnTargets="ResolvePackageAssets">
-    <Error Condition=" !EXISTS('$(RepoRoot)artifacts\obj\RepoTasks\RepoTasks.csproj.nuget.g.props') "
-        Text="The eng/tools/RepoTasks project must be restored before building other projects." />
-
-    <JoinItems Left="@(ResolvedCompileFileDefinitions)"
-        Right="@(LatestPackageReference->HasMetadata('RTMVersion'))"
-        LeftKey="Filename"
-        ItemSpecToUse="Left"
-        LeftMetadata="*"
-        RightMetadata="RTMVersion;Version">
-      <Output TaskParameter="JoinResult" ItemName="_ResolvedCompileFileDefinitionsToChange" />
-    </JoinItems>
-
-    <ItemGroup>
-      <ResolvedCompileFileDefinitions Remove="@(_ResolvedCompileFileDefinitionsToChange)" />
-
-      <!-- Ignore %(NuGetPackageVersion) when doing substitution because some projects use downlevel packages. -->
-      <_ResolvedCompileFileDefinitionsToChange
-          HintPath="$([System.String]::new('%(Identity)').Replace('\%(Version)\', '\%(RTMVersion)\').Replace('/%(Version)/', '/%(RTMVersion)/'))" />
-      <ResolvedCompileFileDefinitions Include="@(_ResolvedCompileFileDefinitionsToChange -> '%(HintPath)')" />
-
-      <_ResolvedCompileFileDefinitionsToChange Remove="@(_ResolvedCompileFileDefinitionsToChange)" />
-    </ItemGroup>
-  </Target>
-
   <PropertyGroup>
     <_CompileTfmUsingReferenceAssemblies>false</_CompileTfmUsingReferenceAssemblies>
     <_CompileTfmUsingReferenceAssemblies
@@ -300,8 +233,8 @@
       '$(MSBuildProjectName)' != 'RepoTasks' AND
       ($(_CompileTfmUsingReferenceAssemblies) OR
        ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
-    <PackageReference Include="Microsoft.Extensions.Internal.Transport"
-        Version="$(MicrosoftExtensionsInternalTransportVersion)"
+    <PackageReference Include="Microsoft.AspNetCore.Internal.Transport"
+        Version="$(MicrosoftAspNetCoreInternalTransportVersion)"
         IsImplicitlyDefined="true"
         IncludeAssets="Compile"
         PrivateAssets="All"
@@ -309,7 +242,7 @@
   </ItemGroup>
 
   <!--
-    Remove compile-time assets for packages that overlap Microsoft.Extensions.Internal.Transport. Serviced packages
+    Remove compile-time assets for packages that overlap Microsoft.AspNetCore.Internal.Transport. Serviced packages
     may otherwise increase the referenced version. Avoid this because change reduces compatible runtime versions.
     That's not a big deal within the shared framework but can cause problems for shipped packages. Leave test
     projects and Ignitor alone because they may transitively reference newer netstandard assemblies and need a
@@ -317,7 +250,7 @@
   -->
   <Target Name="RemoveExtensionsCompileAssets"
       AfterTargets="ResolvePackageAssets"
-      Condition=" '$(PkgMicrosoft_Extensions_Internal_Transport)' != '' AND
+      Condition=" '$(PkgMicrosoft_AspNetCore_Internal_Transport)' != '' AND
           '$(IsServicingBuild)' == 'true' AND
           '$(IsImplementationProject)' == 'true' AND
           '$(MSBuildProjectName)' != 'Ignitor' AND
@@ -326,8 +259,8 @@
            ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
     <ItemGroup>
       <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)"
-          Condition=" '%(NuGetPackageId)' != 'Microsoft.Extensions.Internal.Transport' AND
-              EXISTS('$(PkgMicrosoft_Extensions_Internal_Transport)\ref\$(TargetFramework)\%(Filename).dll') AND
+          Condition=" '%(NuGetPackageId)' != 'Microsoft.AspNetCore.Internal.Transport' AND
+              EXISTS('$(PkgMicrosoft_AspNetCore_Internal_Transport)\ref\$(TargetFramework)\%(Filename).dll') AND
               $([System.String]::new('%(Directory)').Contains('$(TargetFramework)')) " />
     </ItemGroup>
   </Target>

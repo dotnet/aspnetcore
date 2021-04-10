@@ -1,19 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <!-- Shared testing infrastructure for running E2E tests using selenium -->
-  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
+    <RemoveDevicePlatformSupport>true</RemoveDevicePlatformSupport>
 
-    <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
+    <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
-    <!--Do not run this test project on Helix.-->
-    <BuildHelixPayload>false</BuildHelixPayload>
     <SkipHelixArm>true</SkipHelixArm>
-
     <BaseOutputPath />
     <OutputPath />
 
@@ -22,7 +16,14 @@
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+    <TestDependsOnMssql>true</TestDependsOnMssql>
+    <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="template-baselines.json" />
@@ -31,17 +32,40 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="playwrightSettings.*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DependentUpon>playwrightSettings.json</DependentUpon>
+    </Content>
+    <Content Include="playwrightSettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Configuration" />
+    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Reference Include="Anglesharp" />
+    <Reference Include="PlaywrightSharp" Condition="'$(TargetOsName)' != 'linux-musl'" />
+    <Reference Include="PlaywrightSharp" ExcludeAssets="build" Condition="'$(TargetOsName)' == 'linux-musl'" />
     <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
     <ProjectReference Include="../testassets/DotNetToolsInstaller/DotNetToolsInstaller.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
-    <Reference Include="Microsoft.NET.Sdk.Razor" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
-  <!-- Shared testing infrastructure for running E2E tests using selenium -->
-  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
+  <!-- Shared testing infrastructure for running E2E template tests -->
   <Import Project="..\TestInfrastructure\PrepareForTest.targets" />
+
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(OutputPath).playwright\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)\.playwright\%(_PublishFiles.RecursiveDir)\" />
+  </Target>
+
+
 </Project>

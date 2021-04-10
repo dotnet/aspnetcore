@@ -6,7 +6,7 @@ usage()
 {
     echo "Usage: $0 [BuildArch] [CodeName] [lldbx.y] [--skipunmount] --rootfsdir <directory>]"
     echo "BuildArch can be: arm(default), armel, arm64, x86"
-    echo "CodeName - optional, Code name for Linux, can be: trusty, xenial(default), zesty, bionic, alpine. If BuildArch is armel, LinuxCodeName is jessie(default) or tizen."
+    echo "CodeName - optional, Code name for Linux, can be: trusty, xenial(default), zesty, bionic, alpine, alpine3.9 or alpine3.13. If BuildArch is armel, LinuxCodeName is jessie(default) or tizen."
     echo "                              for FreeBSD can be: freebsd11 or freebsd12."
     echo "                              for illumos can be: illumos."
     echo "lldbx.y - optional, LLDB version, can be: lldb3.9(default), lldb4.0, lldb5.0, lldb6.0 no-lldb. Ignored for alpine and FReeBSD"
@@ -183,9 +183,20 @@ while :; do
             __UbuntuRepo=
             __Tizen=tizen
             ;;
-        alpine)
+        alpine|alpine3.9)
             __CodeName=alpine
             __UbuntuRepo=
+            __AlpineVersion=3.9
+            ;;
+        alpine3.13)
+            __CodeName=alpine
+            __UbuntuRepo=
+            __AlpineVersion=3.13
+            # Alpine 3.13 has all the packages we need in the 3.13 repository
+            __AlpinePackages+=$__AlpinePackagesEdgeCommunity
+            __AlpinePackagesEdgeCommunity=
+            __AlpinePackages+=$__AlpinePackagesEdgeMain
+            __AlpinePackagesEdgeMain=
             ;;
         freebsd11)
             __FreeBSDBase="11.3-RELEASE"
@@ -243,7 +254,6 @@ __RootfsDir="$( cd "$__RootfsDir" && pwd )"
 
 if [[ "$__CodeName" == "alpine" ]]; then
     __ApkToolsVersion=2.9.1
-    __AlpineVersion=3.9
     __ApkToolsDir=$(mktemp -d)
     wget https://github.com/alpinelinux/apk-tools/releases/download/v$__ApkToolsVersion/apk-tools-$__ApkToolsVersion-x86_64-linux.tar.gz -P $__ApkToolsDir
     tar -xf $__ApkToolsDir/apk-tools-$__ApkToolsVersion-x86_64-linux.tar.gz -C $__ApkToolsDir
@@ -256,15 +266,19 @@ if [[ "$__CodeName" == "alpine" ]]; then
       -U --allow-untrusted --root $__RootfsDir --arch $__AlpineArch --initdb \
       add $__AlpinePackages
 
-    $__ApkToolsDir/apk-tools-$__ApkToolsVersion/apk \
-      -X http://dl-cdn.alpinelinux.org/alpine/edge/main \
-      -U --allow-untrusted --root $__RootfsDir --arch $__AlpineArch --initdb \
-      add $__AlpinePackagesEdgeMain
+    if [[ -n "$__AlpinePackagesEdgeMain" ]]; then
+      $__ApkToolsDir/apk-tools-$__ApkToolsVersion/apk \
+        -X http://dl-cdn.alpinelinux.org/alpine/edge/main \
+        -U --allow-untrusted --root $__RootfsDir --arch $__AlpineArch --initdb \
+        add $__AlpinePackagesEdgeMain
+    fi
 
-    $__ApkToolsDir/apk-tools-$__ApkToolsVersion/apk \
-      -X http://dl-cdn.alpinelinux.org/alpine/edge/community \
-      -U --allow-untrusted --root $__RootfsDir --arch $__AlpineArch --initdb \
-      add $__AlpinePackagesEdgeCommunity
+    if [[ -n "$__AlpinePackagesEdgeCommunity" ]]; then
+      $__ApkToolsDir/apk-tools-$__ApkToolsVersion/apk \
+        -X http://dl-cdn.alpinelinux.org/alpine/edge/community \
+        -U --allow-untrusted --root $__RootfsDir --arch $__AlpineArch --initdb \
+        add $__AlpinePackagesEdgeCommunity
+    fi
 
     rm -r $__ApkToolsDir
 elif [[ "$__CodeName" == "freebsd" ]]; then

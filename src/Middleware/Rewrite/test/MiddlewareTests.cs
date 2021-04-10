@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -45,10 +46,19 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             Assert.Equal("http://example.com/foo", response);
         }
 
-        [Fact]
-        public async Task CheckRedirectPath()
+        [Theory]
+        [InlineData("(.*)", "http://example.com/$1", null, "path", "http://example.com/path")]
+        [InlineData("(.*)", "http://example.com", null, "", "http://example.com/")]
+        [InlineData("(z*)", "$1", null, "path", "/")]
+        [InlineData("(z*)", "http://example.com/$1", null, "path", "http://example.com/")]
+        [InlineData("(z*)", "$1", "http://example.com/pathBase", "/pathBase/path", "/pathBase")]
+        [InlineData("path/(.*)", "path?value=$1", null, "path/value", "/path?value=value")]
+        [InlineData("path/(.*)", "path?param=$1", null, "path/value?param1=OtherValue", "/path?param1=OtherValue&param=value")]
+        [InlineData("path/(.*)", "http://example.com/pathBase/path?param=$1", "http://example.com/pathBase", "path/value?param1=OtherValue", "http://example.com/pathBase/path?param1=OtherValue&param=value")]
+        [InlineData("path/(.*)", "http://hoψst.com/pÂthBase/path?parãm=$1", "http://example.com/pathBase", "path/value?päram1=OtherValüe", "http://xn--host-cpd.com/p%C3%82thBase/path?p%C3%A4ram1=OtherVal%C3%BCe&parãm=value")]
+        public async Task CheckRedirectPath(string pattern, string replacement, string baseAddress, string requestUrl, string expectedUrl)
         {
-            var options = new RewriteOptions().AddRedirect("(.*)", "http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
+            var options = new RewriteOptions().AddRedirect(pattern, replacement, statusCode: StatusCodes.Status301MovedPermanently);
             using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
@@ -63,10 +73,14 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             await host.StartAsync();
 
             var server = host.GetTestServer();
+            if (!string.IsNullOrEmpty(baseAddress))
+            {
+                server.BaseAddress = new Uri(baseAddress);
+            }
 
-            var response = await server.CreateClient().GetAsync("foo");
+            var response = await server.CreateClient().GetAsync(requestUrl);
 
-            Assert.Equal("http://example.com/foo", response.Headers.Location.OriginalString);
+            Assert.Equal(expectedUrl, response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -128,7 +142,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [InlineData(StatusCodes.Status302Found)]
         [InlineData(StatusCodes.Status307TemporaryRedirect)]
         [InlineData(StatusCodes.Status308PermanentRedirect)]
-        public async Task CheckRedirectToHttps(int statusCode)
+        public async Task CheckRedirectToHttpsStatus(int statusCode)
         {
             var options = new RewriteOptions().AddRedirectToHttps(statusCode: statusCode);
             using var host = new HostBuilder()
@@ -150,6 +164,78 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(statusCode, (int)response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(123)]
+        public async Task CheckRedirectToHttpsSslPort(int? sslPort)
+        {
+            var options = new RewriteOptions().AddRedirectToHttps(statusCode: StatusCodes.Status302Found, sslPort: sslPort);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+
+            var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
+
+            if (sslPort.HasValue)
+            {
+                Assert.Equal($"https://example.com:{sslPort.GetValueOrDefault().ToString(CultureInfo.InvariantCulture)}/", response.Headers.Location.OriginalString);
+            }
+            else
+            {
+                Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
+            }
+        }
+
+        [Theory]
+        [InlineData(null, "example.com", "example.com/")]
+        [InlineData(null, "example.com/path", "example.com/path")]
+        [InlineData(null, "example.com/path?name=value", "example.com/path?name=value")]
+        [InlineData(null, "hoψst.com", "xn--host-cpd.com/")]
+        [InlineData(null, "hoψst.com/path", "xn--host-cpd.com/path")]
+        [InlineData(null, "hoψst.com/path?name=value", "xn--host-cpd.com/path?name=value")]
+        [InlineData(null, "example.com/pãth", "example.com/p%C3%A3th")]
+        [InlineData(null, "example.com/path?näme=valüe", "example.com/path?n%C3%A4me=val%C3%BCe")]
+        [InlineData("example.com/pathBase", "example.com/pathBase/path", "example.com/pathBase/path")]
+        [InlineData("example.com/pathBase", "example.com/pathBase", "example.com/pathBase")]
+        [InlineData("example.com/pâthBase", "example.com/pâthBase/path", "example.com/p%C3%A2thBase/path")]
+        public async Task CheckRedirectToHttpsUrl(string baseAddress, string hostPathAndQuery, string expectedHostPathAndQuery)
+        {
+            var options = new RewriteOptions().AddRedirectToHttps();
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+            if (!string.IsNullOrEmpty(baseAddress))
+            {
+                server.BaseAddress = new Uri("http://" + baseAddress);
+            }
+
+            var response = await server.CreateClient().GetAsync(new Uri("http://" + hostPathAndQuery));
+
+            Assert.Equal("https://" + expectedHostPathAndQuery, response.Headers.Location.OriginalString);
         }
 
         [Fact]

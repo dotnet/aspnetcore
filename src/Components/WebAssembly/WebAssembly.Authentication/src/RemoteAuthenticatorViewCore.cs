@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
@@ -103,9 +102,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         /// <summary>
         /// Gets or sets a default <see cref="IRemoteAuthenticationPathsProvider"/> to use as fallback if an <see cref="ApplicationPaths"/> has not been explicitly specified.
         /// </summary>
-#pragma warning disable PUB0001 // Pubternal type in public API
         [Inject] internal IRemoteAuthenticationPathsProvider RemoteApplicationPathsProvider { get; set; }
-#pragma warning restore PUB0001 // Pubternal type in public API
 
         /// <summary>
         /// Gets or sets a default <see cref="AuthenticationStateProvider"/> with the current user.

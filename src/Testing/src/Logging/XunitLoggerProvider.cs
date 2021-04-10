@@ -96,7 +96,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
             // Remove the last line-break, because ITestOutputHelper only has WriteLine.
             var message = messageBuilder.ToString();
-            if (message.EndsWith(Environment.NewLine))
+            if (message.EndsWith(Environment.NewLine, StringComparison.Ordinal))
             {
                 message = message.Substring(0, message.Length - Environment.NewLine.Length);
             }

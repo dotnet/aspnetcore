@@ -20,7 +20,8 @@
     <NoWarn Condition=" '$(IsTestProject)' == 'true' OR
         '$(IsTestAssetProject)' == 'true' OR
         '$(ISBenchmarkProject)' == 'true' OR
-        '$(IsSampleProject)' == 'true' ">$(NoWarn);CA1416</NoWarn>
+        '$(IsSampleProject)' == 'true' OR
+        '$(IsMicrobenchmarksProject)' == 'true'">$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(DotNetBuildFromSource)' != 'true' AND $(AddPublicApiAnalyzers) ">
@@ -61,6 +62,11 @@
         <_Parameter1>Serviceable</_Parameter1>
         <_Parameter2>True</_Parameter2>
       </AssemblyAttribute>
+
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(Trimmable)' == 'true'">
+        <_Parameter1>IsTrimmable</_Parameter1>
+        <_Parameter2>True</_Parameter2>
+      </AssemblyAttribute>
     </ItemGroup>
   </Target>
 
@@ -80,7 +86,8 @@
 
         SuppressNullableAttributesImport to disable. Used when attributes are already present from another project because of InternalsVisibleTo.
      -->
-    <When Condition="'$(Nullable)' != '' AND '$(SuppressNullableAttributesImport)' != 'true' AND ('$(TargetFrameworkIdentifier)' == '.NETStandard' OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
+    <When Condition="'$(Nullable)' != '' AND '$(SuppressNullableAttributesImport)' != 'true' AND
+        (('$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.0'))) OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
       <PropertyGroup>
         <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
         <NoWarn>$(NoWarn);nullable</NoWarn>
@@ -90,6 +97,17 @@
       </ItemGroup>
     </When>
   </Choose>
+
+  <Target Name="ValidateBenchmarks" BeforeTargets="Test" Condition="'$(IsMicrobenchmarksProject)' == 'true' AND '$(SkipMicrobenchmarksValidation)' != 'true'">
+    <Message Text="%0ARunning benchmark validation for:%0A$(MSBuildProjectName)%0A"
+    Importance="High" />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="GetTargetPath">
+      <Output TaskParameter="TargetOutputs" PropertyName="ExecPath" />
+    </MSBuild>
+
+    <Exec Command="dotnet $(ExecPath) -f * --validate-fast" IgnoreStandardErrorWarningFormat="true" StandardOutputImportance="low" />
+  </Target>
 
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />

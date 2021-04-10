@@ -55,6 +55,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 hubConnectionBuilder.AddMessagePackProtocol();
             }
 
+            hubConnectionBuilder.WithUrl("http://doesntmatter");
+
             var delegateConnectionFactory = new DelegateConnectionFactory(endPoint =>
             {
                 var connection = new DefaultConnectionContext();

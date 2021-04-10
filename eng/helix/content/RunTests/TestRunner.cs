@@ -8,6 +8,9 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+#if INSTALLPLAYWRIGHT
+using PlaywrightSharp;
+#endif
 
 namespace RunTests
 {
@@ -39,6 +42,18 @@ namespace RunTests
                 var dotnetEFFullPath = Path.Combine(nugetRestore, helixDir, "dotnet-ef.exe");
                 Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
                 EnvironmentVariables.Add("DotNetEfFullPath", dotnetEFFullPath);
+
+#if INSTALLPLAYWRIGHT
+                // Playwright will download and look for browsers to this directory
+                var playwrightBrowsers = Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH");
+                Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
+                EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
+                var playrightDriver = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
+                Console.WriteLine($"Setting PLAYWRIGHT_DRIVER_PATH: {playrightDriver}");
+                EnvironmentVariables.Add("PLAYWRIGHT_DRIVER_PATH", playrightDriver);
+#else
+                Console.WriteLine($"Skipping setting PLAYWRIGHT_BROWSERS_PATH");
+#endif
 
                 Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
                 Directory.CreateDirectory(nugetRestore);
@@ -79,6 +94,24 @@ namespace RunTests
                 Console.WriteLine($"Exception in DisplayContents: {e.ToString()}");
             }
         }
+
+#if INSTALLPLAYWRIGHT
+        public async Task<bool> InstallPlaywrightAsync()
+        {
+            try
+            {
+                Console.WriteLine($"Installing Playwright to Browsers: {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")} Driver: {Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH")}");
+                await Playwright.InstallAsync(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"), Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH"));
+                DisplayContents(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"));
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception installing playwright: {e.ToString()}");
+                return false;
+            }
+        }
+#endif
 
         public async Task<bool> InstallAspNetAppIfNeededAsync()
         {
@@ -130,6 +163,14 @@ namespace RunTests
 
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                         $"tool install dotnet-ef --version {Options.EfVersion} --tool-path {Options.HELIX_WORKITEM_ROOT}",
+                        environmentVariables: EnvironmentVariables,
+                        outputDataReceived: Console.WriteLine,
+                        errorDataReceived: Console.Error.WriteLine,
+                        throwOnError: false,
+                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
+                    await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                        $"tool install dotnet-serve --tool-path {Options.HELIX_WORKITEM_ROOT}",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
@@ -231,7 +272,7 @@ namespace RunTests
             {
                 // Timeout test run 5 minutes before the Helix job would timeout
                 var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
-                var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=5m\"";
+                var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\"";
                 if (Options.Quarantined)
                 {
                     Console.WriteLine("Running quarantined tests.");
@@ -306,9 +347,7 @@ namespace RunTests
                     // Combine the directory name + log name for the copied log file name to avoid overwriting duplicate test names in different test projects
                     var logName = $"{Path.GetFileName(Path.GetDirectoryName(file))}_{Path.GetFileName(file)}";
                     Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName)}");
-                    // Need to copy to HELIX_WORKITEM_UPLOAD_ROOT and HELIX_WORKITEM_UPLOAD_ROOT/../ in order for Azure Devops attachments to link properly and for Helix to store the logs
                     File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName));
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", logName));
                 }
             }
             else
@@ -322,9 +361,7 @@ namespace RunTests
                 {
                     var fileName = Path.GetFileName(file);
                     Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
-                    // Need to copy to HELIX_WORKITEM_UPLOAD_ROOT and HELIX_WORKITEM_UPLOAD_ROOT/../ in order for Azure Devops attachments to link properly and for Helix to store the logs
                     File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", fileName));
                 }
             }
             else

@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public IISTestSiteFixture Fixture { get; }
 
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28265")]
         [ConditionalTheory]
         [InlineData("GET")]
         [InlineData("HEAD")]
@@ -125,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [InlineData("PATCH")]
         [InlineData("DELETE")]
         [InlineData("CUSTOM")]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Http2 requires Win10, and older versions of Win10 send some odd empty data frames.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Http2 requires Win10, and older versions of Win10 send some odd empty data frames.")]
         public async Task Http2_RequestWithDataAndContentLength_Success(string method)
         {
             await new HostBuilder()
@@ -195,7 +194,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [InlineData("PATCH")]
         [InlineData("DELETE")]
         [InlineData("CUSTOM")]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Http2 requires Win10, and older versions of Win10 send some odd empty data frames.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Http2 requires Win10, and older versions of Win10 send some odd empty data frames.")]
         public async Task Http2_RequestWithDataAndNoContentLength_Success(string method)
         {
             await new HostBuilder()
@@ -257,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Http2 requires Win10, and older versions of Win10 send some odd empty data frames.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Http2 requires Win10, and older versions of Win10 send some odd empty data frames.")]
         public async Task Http2_ResponseWithData_Success()
         {
             await new HostBuilder()

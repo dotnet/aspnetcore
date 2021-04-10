@@ -1,0 +1,81 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Metadata" />
+    <Reference Include="Microsoft.AspNetCore.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Components.Forms" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
+    <Reference Include="Microsoft.Authentication.WebAssembly.Msal" />
+    <Reference Include="Microsoft.JSInterop" />
+    <Reference Include="Microsoft.JSInterop.WebAssembly" />
+  </ItemGroup>
+  <Target Name="ILLinkTrimWasmProjects" DependsOnTargets="ResolveReferences" AfterTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true' AND '$(SkipTestBuild)' != 'true'">
+    <PropertyGroup>
+      <LibrariesTrimmedArtifactsPath>$(TargetDir)wasm-linked\</LibrariesTrimmedArtifactsPath>
+      <!-- Link all assemblies -->
+      <ILLinkArgs>$(ILLinkArgs) --action link</ILLinkArgs>
+      <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' == 'true'">$(ILLinkArgs) --generate-warning-suppressions xml</ILLinkArgs>
+    </PropertyGroup>
+    <ItemGroup>
+      <RootAssemblies Include="@(ReferencePath->HasMetadata('ProjectPath'))" RootMode="visible" />
+      <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.ProjectPath)'))))\%(FileName).WarningSuppressions.xml"
+        SuppressionFileName="%(FileName).WarningSuppressions" />
+      <ILLinkSuppressionFile Condition="Exists(%(_ILLinkSuppressionFile.Identity))" Include="%(_ILLinkSuppressionFile.Identity)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' != 'true' AND @(ILLinkSuppressionFile->Count()) != 0">$(ILLinkArgs) --link-attributes @(ILLinkSuppressionFile->'%(FullPath)', ' --link-attributes ')</ILLinkArgs>
+    </PropertyGroup>
+
+    <!--
+        When running from Desktop MSBuild, DOTNET_HOST_PATH is not set.
+        In this case, explicitly specify the path to the dotnet host.
+        -->
+    <PropertyGroup Condition=" '$(DOTNET_HOST_PATH)' == '' ">
+      <!-- This is defined when building in Visual Studio. -->
+      <_DotNetHostDirectory>$(NetCoreRoot)</_DotNetHostDirectory>
+      <_DotNetHostFileName>$([System.IO.Path]::GetFileName('$(DotNetTool)'))</_DotNetHostFileName>
+    </PropertyGroup>
+    <ILLink
+        AssemblyPaths=""
+        RootAssemblyNames="@(RootAssemblies)"
+        OutputDirectory="$(LibrariesTrimmedArtifactsPath)"
+        ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'))"
+        ExtraArgs="$(ILLinkArgs)"
+        TrimMode="link"
+        ToolExe="$(_DotNetHostFileName)"
+        ToolPath="$(_DotNetHostDirectory)" />
+
+      <ItemGroup Condition="'$(GenerateLinkerWarningSuppressions)' == 'true'">
+        <_UpdatedILLinkSuppressionFile Include="$(LibrariesTrimmedArtifactsPath)\*.WarningSuppressions.xml" />
+        <_UpdatedILLinkSuppressionFile SourcePath="%(FullPath)" />
+      </ItemGroup>
+
+       <JoinItems
+         Left="@(_ILLinkSuppressionFile)"
+         Right="@(_UpdatedILLinkSuppressionFile)"
+         LeftMetadata="*"
+         RightMetadata="SourcePath"
+         LeftKey="SuppressionFileName"
+         RightKey="FileName"
+         ItemSpecToUse="Left">
+
+        <Output TaskParameter="JoinResult" ItemName="_ILLinkFileToUpdate" />
+       </JoinItems>
+
+       <Copy
+        SourceFiles="%(_ILLinkFileToUpdate.SourcePath)"
+        DestinationFiles="%(_ILLinkFileToUpdate.FullPath)"
+        OverwriteReadOnlyFiles="true"
+        Condition="'$(GenerateLinkerWarningSuppressions)' == 'true'" />
+
+  </Target>
+</Project>

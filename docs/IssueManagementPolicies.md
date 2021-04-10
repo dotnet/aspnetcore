@@ -1,6 +1,6 @@
 # Issue Management Policies
 
-We have a lot of issue traffic to manage, so we have a few policies in place to help us do that. This is a brief summary of some of the policies we have in place and the justification for them.
+We have a lot of issue traffic to manage, so we have some policies in place to help us do that. This is a brief summary of some of the policies we have in place and the justification for them.
 
 ## Commenting on closed issues
 
@@ -13,6 +13,10 @@ In general, we recommend you open a new issue if you have a bug, feature request
 If a contributor reviews an issue and determines that more information is needed from the author, they will post a comment requesting that information and apply the `Needs: Author Feedback` label. This label indicates that the author needs to post a response in order for us to continue investigating the issue.
 
 If the author does not post a response within **7 days**, the issue will be automatically closed. If the author responds within **7 days** after the issue is closed, the issue will be automatically re-opened. We recognize that you may not be able to respond immediately to our requests, we're happy to hear from you whenever you're able to provide the new information.
+
+### PR: pending author input
+Similar to the `Needs Author Feedback` process above, PRs also require author input from time to time. When a member of our team asks for some follow-up changes from the author, we mark these PRs with `pr: pending author input` label. After doing so, we expect the author to respond within 14 days.
+If the author does not post a response or updates the PR within **14 days**, the issue will be automatically closed. If the author responds within **7 days** after the issue is closed, the issue will be automatically re-opened. We recognize that you may not be able to respond immediately to our requests, we're happy to hear from you whenever you're able to provide the new information.
 
 ## Duplicate issues
 

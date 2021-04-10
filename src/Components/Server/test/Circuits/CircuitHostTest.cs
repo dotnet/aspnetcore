@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web.Rendering;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -157,7 +158,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var circuitHost = TestCircuitHost.Create(handlers: new[] { handler1.Object, handler2.Object });
 
             // Act
-            await circuitHost.InitializeAsync(cancellationToken);
+            await circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), cancellationToken);
 
             // Assert
             handler1.VerifyAll();
@@ -185,7 +186,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             };
 
             // Act
-            var initializeAsyncTask = circuitHost.InitializeAsync(new CancellationToken());
+            var initializeAsyncTask = circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), new CancellationToken());
 
             // Assert: No synchronous exceptions
             handler.VerifyAll();

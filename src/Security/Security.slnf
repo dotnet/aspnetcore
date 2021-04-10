@@ -58,7 +58,7 @@
       "src\\Security\\CookiePolicy\\samples\\CookiePolicySample\\CookiePolicySample.csproj",
       "src\\Security\\CookiePolicy\\src\\Microsoft.AspNetCore.CookiePolicy.csproj",
       "src\\Security\\CookiePolicy\\test\\Microsoft.AspNetCore.CookiePolicy.Test.csproj",
-      "src\\Security\\benchmarks\\Microsoft.AspNetCore.Security.Performance\\Microsoft.AspNetCore.Security.Performance.csproj",
+      "src\\Security\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Security.Microbenchmarks.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
       "src\\Servers\\HttpSys\\src\\Microsoft.AspNetCore.Server.HttpSys.csproj",
       "src\\Servers\\IIS\\IISIntegration\\src\\Microsoft.AspNetCore.Server.IISIntegration.csproj",

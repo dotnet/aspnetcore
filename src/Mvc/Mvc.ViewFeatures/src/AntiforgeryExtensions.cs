@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.IO;
 using System.Text.Encodings.Web;
@@ -52,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             public InputContent(AntiforgeryTokenSet tokenSet)
             {
                 _fieldName = tokenSet.FormFieldName;
-                _requestToken = tokenSet.RequestToken;
+                _requestToken = tokenSet.RequestToken!;
             }
 
             // Though _requestToken normally contains only US-ASCII letters, numbers, '-', and '_', must assume the

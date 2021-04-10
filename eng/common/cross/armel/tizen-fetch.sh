@@ -157,7 +157,7 @@ fetch_tizen_pkgs()
 Inform "Initialize arm base"
 fetch_tizen_pkgs_init standard base
 Inform "fetch common packages"
-fetch_tizen_pkgs armv7l gcc glibc glibc-devel libicu libicu-devel libatomic linux-glibc-devel
+fetch_tizen_pkgs armv7l gcc gcc-devel-static glibc glibc-devel libicu libicu-devel libatomic linux-glibc-devel keyutils keyutils-devel libkeyutils
 Inform "fetch coreclr packages"
 fetch_tizen_pkgs armv7l lldb lldb-devel libgcc libstdc++ libstdc++-devel libunwind libunwind-devel lttng-ust-devel lttng-ust userspace-rcu-devel userspace-rcu
 Inform "fetch corefx packages"

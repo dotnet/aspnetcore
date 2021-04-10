@@ -27,6 +27,14 @@ namespace RunTests
                 {
                     keepGoing = runner.InstallAspNetRefIfNeeded();
                 }
+#if INSTALLPLAYWRIGHT
+                if (keepGoing)
+                {
+                    keepGoing = await runner.InstallPlaywrightAsync();
+                }
+#else                
+                Console.WriteLine("Playwright install skipped.");
+#endif
 
                 runner.DisplayContents();
 

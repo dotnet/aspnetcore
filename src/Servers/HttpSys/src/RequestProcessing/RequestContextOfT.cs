@@ -2,11 +2,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+using Log = Microsoft.AspNetCore.Server.HttpSys.RequestContextLog;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal sealed class RequestContext<TContext> : RequestContext
+    internal sealed partial class RequestContext<TContext> : RequestContext where TContext : notnull
     {
         private readonly IHttpApplication<TContext> _application;
         private readonly MessagePump _messagePump;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     return;
                 }
 
-                TContext context = default;
+                TContext? context = default;
                 messagePump.IncrementOutstandingRequest();
                 try
                 {
@@ -52,8 +52,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(LoggerEventIds.RequestProcessError, ex, "ProcessRequestAsync");
-                    application.DisposeContext(context, ex);
+                    Log.RequestProcessError(Logger, ex);
+                    if (context != null)
+                    {
+                        application.DisposeContext(context, ex);
+                    }
                     if (Response.HasStarted)
                     {
                         // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
@@ -83,17 +86,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (messagePump.DecrementOutstandingRequest() == 0 && messagePump.Stopping)
                     {
-                        Logger.LogInformation(LoggerEventIds.RequestsDrained, "All requests drained.");
+                        Log.RequestsDrained(Logger);
                         messagePump.SetShutdownSignal();
                     }
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(LoggerEventIds.RequestError, ex, "ProcessRequestAsync");
+                Log.RequestError(Logger, ex);
                 Abort();
             }
         }
     }
-
 }

@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace System.Net.Http.HPack
 {
-    internal class HPackDecoder
+    internal sealed class HPackDecoder
     {
         private enum State : byte
         {

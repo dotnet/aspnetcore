@@ -14,22 +14,17 @@
       "src\\Razor\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\\test\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.Test.csproj",
       "src\\Razor\\Microsoft.AspNetCore.Razor.Language\\src\\Microsoft.AspNetCore.Razor.Language.csproj",
       "src\\Razor\\Microsoft.AspNetCore.Razor.Language\\test\\Microsoft.AspNetCore.Razor.Language.Test.csproj",
-      "src\\Razor\\Microsoft.AspNetCore.Razor.Tools\\src\\rzc.csproj",
-      "src\\Razor\\Microsoft.AspNetCore.Razor.Tools\\test\\Microsoft.AspNetCore.Razor.Tools.Test.csproj",
       "src\\Razor\\Microsoft.CodeAnalysis.Razor\\src\\Microsoft.CodeAnalysis.Razor.csproj",
       "src\\Razor\\Microsoft.CodeAnalysis.Razor\\test\\Microsoft.CodeAnalysis.Razor.Test.csproj",
       "src\\Razor\\tools\\Microsoft.AspNetCore.Razor.Internal.Transport\\Microsoft.AspNetCore.Razor.Internal.Transport.csproj",
       "src\\Razor\\tools\\RazorSyntaxGenerator\\RazorSyntaxGenerator.csproj",
-      "src\\Razor\\perf\\Microsoft.AspNetCore.Razor.Performance\\Microsoft.AspNetCore.Razor.Performance.csproj",
-      "src\\Razor\\Microsoft.NET.Sdk.Razor\\src\\Microsoft.NET.Sdk.Razor.csproj",
-      "src\\Razor\\Microsoft.NET.Sdk.Razor\\test\\Microsoft.NET.Sdk.Razor.Test.csproj",
+      "src\\Razor\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Razor.Microbenchmarks.csproj",
       "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.Common\\Microsoft.AspNetCore.Razor.Test.Common.csproj",
       "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.ComponentShim\\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj",
       "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.MvcShim\\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj",
       "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj",
       "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X\\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.csproj",
       "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.csproj",
-      "src\\Razor\\Microsoft.NET.Sdk.Razor\\integrationtests\\Microsoft.NET.Sdk.Razor.IntegrationTests.csproj"
     ]
   }
 }

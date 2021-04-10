@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             JsonSerializer.Create(JsonSerializerSettingsProvider.CreateSerializerSettings());
 
         private static readonly MethodInfo _convertArrayMethodInfo = typeof(BsonTempDataSerializer).GetMethod(
-            nameof(ConvertArray), BindingFlags.Static | BindingFlags.NonPublic);
+            nameof(ConvertArray), BindingFlags.Static | BindingFlags.NonPublic)!;
         private static readonly MethodInfo _convertDictionaryMethodInfo = typeof(BsonTempDataSerializer).GetMethod(
-            nameof(ConvertDictionary), BindingFlags.Static | BindingFlags.NonPublic);
+            nameof(ConvertDictionary), BindingFlags.Static | BindingFlags.NonPublic)!;
 
         private static readonly ConcurrentDictionary<Type, Func<JArray, object>> _arrayConverters =
             new ConcurrentDictionary<Type, Func<JArray, object>>();
@@ -43,21 +43,21 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             { JTokenType.Uri, typeof(Uri) },
         };
 
-        public override IDictionary<string, object> Deserialize(byte[] value)
+        public override IDictionary<string, object?> Deserialize(byte[] value)
         {
-            Dictionary<string, object> tempDataDictionary;
+            Dictionary<string, object?> tempDataDictionary;
 
             using (var memoryStream = new MemoryStream(value))
             using (var reader = new BsonDataReader(memoryStream))
             {
-                tempDataDictionary = _jsonSerializer.Deserialize<Dictionary<string, object>>(reader);
+                tempDataDictionary = _jsonSerializer.Deserialize<Dictionary<string, object?>>(reader);
                 if (tempDataDictionary == null)
                 {
-                    return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                    return new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
                 }
             }
 
-            var convertedDictionary = new Dictionary<string, object>(
+            var convertedDictionary = new Dictionary<string, object?>(
                 tempDataDictionary,
                 StringComparer.OrdinalIgnoreCase);
             foreach (var item in tempDataDictionary)
@@ -124,10 +124,9 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             return convertedDictionary;
         }
 
-        public override byte[] Serialize(IDictionary<string, object> values)
+        public override byte[] Serialize(IDictionary<string, object?> values)
         {
-            var hasValues = (values != null && values.Count > 0);
-            if (hasValues)
+            if (values?.Count > 0)
             {
                 foreach (var item in values.Values)
                 {
@@ -167,13 +166,13 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
         public override bool CanSerializeType(Type type) => CanSerializeType(type, out _);
 
-        private static bool CanSerializeType(Type typeToSerialize, out string errorMessage)
+        private static bool CanSerializeType(Type typeToSerialize, out string? errorMessage)
         {
             typeToSerialize = typeToSerialize ?? throw new ArgumentNullException(nameof(typeToSerialize));
 
             errorMessage = null;
 
-            Type actualType = null;
+            Type? actualType = null;
             if (typeToSerialize.IsArray)
             {
                 actualType = typeToSerialize.GetElementType();
@@ -209,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 }
             }
 
-            actualType = actualType ?? typeToSerialize;
+            actualType ??= typeToSerialize;
             actualType = Nullable.GetUnderlyingType(actualType) ?? actualType;
 
             if (!IsSimpleType(actualType))

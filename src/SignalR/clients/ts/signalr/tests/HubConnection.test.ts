@@ -109,7 +109,7 @@ describe("HubConnection", () => {
     });
 
     describe("ping", () => {
-        it("automatically sends multiple pings", async () => {
+        it("sends pings when receiving pings", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
@@ -118,7 +118,14 @@ describe("HubConnection", () => {
 
                 try {
                     await hubConnection.start();
+
+                    const pingInterval = setInterval(async () => {
+                        await connection.receive({ type: MessageType.Ping });
+                    }, 5);
+
                     await delayUntil(500);
+
+                    clearInterval(pingInterval);
 
                     const numPings = connection.sentData.filter((s) => JSON.parse(s).type === MessageType.Ping).length;
                     expect(numPings).toBeGreaterThanOrEqual(2);
@@ -1293,7 +1300,7 @@ describe("HubConnection", () => {
                     const timeoutInMilliseconds = 400;
                     hubConnection.serverTimeoutInMilliseconds = timeoutInMilliseconds;
 
-                    const p = new PromiseSource<Error>();
+                    const p = new PromiseSource<Error | undefined>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
@@ -1323,7 +1330,7 @@ describe("HubConnection", () => {
                 try {
                     hubConnection.serverTimeoutInMilliseconds = 100;
 
-                    const p = new PromiseSource<Error>();
+                    const p = new PromiseSource<Error | undefined>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
@@ -1368,15 +1375,15 @@ class TestProtocol implements IHubProtocol {
 class TestObserver implements IStreamSubscriber<any> {
     public readonly closed: boolean = false;
     public itemsReceived: any[];
-    private itemsSource: PromiseSource<any[]>;
+    private _itemsSource: PromiseSource<any[]>;
 
     get completed(): Promise<any[]> {
-        return this.itemsSource.promise;
+        return this._itemsSource.promise;
     }
 
     constructor() {
         this.itemsReceived = [];
-        this.itemsSource = new PromiseSource<any[]>();
+        this._itemsSource = new PromiseSource<any[]>();
     }
 
     public next(value: any) {
@@ -1384,11 +1391,11 @@ class TestObserver implements IStreamSubscriber<any> {
     }
 
     public error(err: any) {
-        this.itemsSource.reject(new Error(err));
+        this._itemsSource.reject(new Error(err));
     }
 
     public complete() {
-        this.itemsSource.resolve(this.itemsReceived);
+        this._itemsSource.resolve(this.itemsReceived);
     }
 }
 

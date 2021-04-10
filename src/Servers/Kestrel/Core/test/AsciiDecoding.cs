@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Numerics;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     var byteRange = Enumerable.Range(1, length).Select(x => (byte)x).ToArray();
                     byteRange[position] = b;
-                    
+
                     Assert.Throws<InvalidOperationException>(() => new Span<byte>(byteRange).GetAsciiStringNonNullCharacters());
                 }
             }
@@ -110,6 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31500")]
         private void AsciiBytesEqualAsciiStrings()
         {
             var byteRange = Enumerable.Range(1, 127).Select(x => (byte)x);
@@ -147,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     // Change byte back for next iteration, ensure is equal again
                     asciiBytes[i] = b;
-                    Assert.True(StringUtilities.BytesOrdinalEqualsStringAndAscii(s, asciiBytes));
+                    Assert.True(StringUtilities.BytesOrdinalEqualsStringAndAscii(s, asciiBytes), s);
                 }
             }
         }

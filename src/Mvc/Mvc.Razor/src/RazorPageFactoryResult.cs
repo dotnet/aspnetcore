@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <param name="viewDescriptor">The <see cref="CompiledViewDescriptor"/>.</param>
         public RazorPageFactoryResult(
             CompiledViewDescriptor viewDescriptor,
-            Func<IRazorPage> razorPageFactory)
+            Func<IRazorPage>? razorPageFactory)
         {
             ViewDescriptor = viewDescriptor ?? throw new ArgumentNullException(nameof(viewDescriptor));
             RazorPageFactory = razorPageFactory;
@@ -29,16 +30,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// The <see cref="IRazorPage"/> factory.
         /// </summary>
         /// <remarks>This property is <c>null</c> when <see cref="Success"/> is <c>false</c>.</remarks>
-        public Func<IRazorPage> RazorPageFactory { get; }
+        public Func<IRazorPage>? RazorPageFactory { get; }
 
         /// <summary>
         /// Gets the <see cref="CompiledViewDescriptor"/>.
         /// </summary>
-        public CompiledViewDescriptor ViewDescriptor { get; }
+        public CompiledViewDescriptor? ViewDescriptor { get; }
 
         /// <summary>
         /// Gets a value that determines if the page was successfully located.
         /// </summary>
+        [MemberNotNullWhen(true, nameof(RazorPageFactory))]
         public bool Success => RazorPageFactory != null;
     }
 }

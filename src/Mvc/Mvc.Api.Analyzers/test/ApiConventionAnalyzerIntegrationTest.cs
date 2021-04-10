@@ -109,6 +109,36 @@ namespace Test
         }
 
         [Fact]
+        public async Task DiagnosticsAreReturned_ForNotFoundNullActionResults()
+        {
+            // Arrange
+            var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    [Route(""[controller]"")]
+    public class TestController : ControllerBase
+    {
+        [HttpGet]
+        public ActionResult<string> Test()
+        {
+            return NotFound(null);
+        }
+    }
+}";
+            var testSource = TestSource.Read(source);
+            var expectedLocation = testSource.DefaultMarkerLocation;
+
+            // Act
+            var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+            // Assert
+            Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+        }
+
+        [Fact]
         public Task DiagnosticsAreReturned_IfMethodWithProducesResponseTypeAttribute_ReturnsUndocumentedStatusCode()
             => RunTest(ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode, 404);
 

@@ -9,7 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.reactivex.Completable;
+import io.reactivex.rxjava3.core.Completable;
 
 class WebSocketTransport implements Transport {
     private WebSocketWrapper webSocketClient;

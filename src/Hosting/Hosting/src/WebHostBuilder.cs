@@ -229,13 +229,20 @@ namespace Microsoft.AspNetCore.Hosting
             if (!_options.PreventHostingStartup)
             {
                 var exceptions = new List<Exception>();
+                var processed = new HashSet<Assembly>();
 
                 // Execute the hosting startup assemblies
-                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies().Distinct(StringComparer.OrdinalIgnoreCase))
+                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies())
                 {
                     try
                     {
                         var assembly = Assembly.Load(new AssemblyName(assemblyName));
+
+                        if (!processed.Add(assembly))
+                        {
+                            // Already processed, skip it
+                            continue;
+                        }
 
                         foreach (var attribute in assembly.GetCustomAttributes<HostingStartupAttribute>())
                         {
@@ -283,9 +290,9 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddSingleton<IConfiguration>(_ => configuration);
             _context.Configuration = configuration;
 
-            var listener = new DiagnosticListener("Microsoft.AspNetCore");
-            services.AddSingleton<DiagnosticListener>(listener);
-            services.AddSingleton<DiagnosticSource>(listener);
+            services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
+            services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
+            services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
 
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, DefaultHttpContextFactory>();
@@ -340,6 +347,9 @@ namespace Microsoft.AspNetCore.Hosting
             var listener = hostingServiceProvider.GetService<DiagnosticListener>();
             services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticListener), listener!));
             services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticSource), listener!));
+
+            var activitySource = hostingServiceProvider.GetService<ActivitySource>();
+            services.Replace(ServiceDescriptor.Singleton(typeof(ActivitySource), activitySource!));
         }
 
         private string ResolveContentRootPath(string contentRootPath, string basePath)

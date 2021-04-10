@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
@@ -68,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         // Model parameter type is object to allow "model: null" calls even when TModel is a value type. A TModel
         // parameter would likely require IEquatable<TModel> type restrictions to pass expected null value to the base
         // constructor.
-        public ViewDataDictionary(ViewDataDictionary source, object model)
+        public ViewDataDictionary(ViewDataDictionary source, object? model)
             : base(source, model, declaredModelType: typeof(TModel))
         {
         }
@@ -84,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public new TModel Model
+        public new TModel? Model
         {
             get
             {

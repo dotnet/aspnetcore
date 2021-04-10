@@ -40,6 +40,13 @@
           ]
         },
         {
+          "condition": "(!RequiresHttps)",
+          "exclude": [
+            "ClientApp/aspnetcore-https.js",
+            "ClientApp/aspnetcore-react.js"
+          ]
+        },
+        {
           "condition": "(!IndividualLocalAuth || UseLocalDB)",
           "exclude": [
             "app.db"

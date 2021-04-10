@@ -17,7 +17,7 @@ export class TestWebSocket {
 
     public static webSocketSet: PromiseSource;
     public static webSocket: TestWebSocket;
-    public receivedData: Array<(string | ArrayBuffer | Blob | ArrayBufferView)>;
+    public receivedData: (string | ArrayBuffer | Blob | ArrayBufferView)[];
 
     // tslint:disable-next-line:variable-name
     private _onopen?: (this: WebSocket, evt: Event) => any;
@@ -103,7 +103,12 @@ export class TestWebSocket {
     public static readonly OPEN: number = 4;
 }
 
-export class TestEvent {
+export class TestEvent implements Event {
+    public composed: boolean = false;
+    public composedPath(): EventTarget[];
+    public composedPath(): any[] {
+        throw new Error("Method not implemented.");
+    }
     public bubbles: boolean = false;
     public cancelBubble: boolean = false;
     public cancelable: boolean = false;
@@ -181,7 +186,66 @@ export class TestErrorEvent {
     public NONE: number = 0;
 }
 
-export class TestCloseEvent {
+export class TestCloseEvent implements Event {
+    public composed: boolean = false;
+    public composedPath(): EventTarget[];
+    public composedPath(): any[] {
+        throw new Error("Method not implemented.");
+    }
+    public code: number = 0;
+    public reason: string = "";
+    public wasClean: boolean = false;
+    public initCloseEvent(typeArg: string, canBubbleArg: boolean, cancelableArg: boolean, wasCleanArg: boolean, codeArg: number, reasonArg: string): void {
+        throw new Error("Method not implemented.");
+    }
+    public bubbles: boolean = false;
+    public cancelBubble: boolean = false;
+    public cancelable: boolean = false;
+    public currentTarget!: EventTarget;
+    public defaultPrevented: boolean = false;
+    public eventPhase: number = 0;
+    public isTrusted: boolean = false;
+    public returnValue: boolean = false;
+    public scoped: boolean = false;
+    public srcElement!: Element | null;
+    public target!: EventTarget;
+    public timeStamp: number = 0;
+    public type: string = "";
+    public deepPath(): EventTarget[] {
+        throw new Error("Method not implemented.");
+    }
+    public initEvent(type: string, bubbles?: boolean | undefined, cancelable?: boolean | undefined): void {
+        throw new Error("Method not implemented.");
+    }
+    public preventDefault(): void {
+        throw new Error("Method not implemented.");
+    }
+    public stopImmediatePropagation(): void {
+        throw new Error("Method not implemented.");
+    }
+    public stopPropagation(): void {
+        throw new Error("Method not implemented.");
+    }
+    public AT_TARGET: number = 0;
+    public BUBBLING_PHASE: number = 0;
+    public CAPTURING_PHASE: number = 0;
+    public NONE: number = 0;
+}
+
+export class TestMessageEvent implements MessageEvent {
+    constructor(data: any) {
+        this.data = data;
+    }
+    public data: any;
+    public lastEventId: string = "";
+    public origin: string = "";
+    public ports: readonly MessagePort[] = [];
+    public source: MessagePort | Window | ServiceWorker | null = null;
+    public composed: boolean = false;
+    public composedPath(): EventTarget[];
+    public composedPath(): any[] {
+        throw new Error("Method not implemented.");
+    }
     public code: number = 0;
     public reason: string = "";
     public wasClean: boolean = false;

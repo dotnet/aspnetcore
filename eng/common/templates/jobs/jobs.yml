@@ -7,7 +7,14 @@ parameters:
 
   # Optional: Enable publishing using release pipelines
   enablePublishUsingPipelines: false
-  
+
+  # Optional: Enable running the source-build jobs to build repo from source
+  enableSourceBuild: false
+
+  # Optional: Parameters for source-build template.
+  #           See /eng/common/templates/jobs/source-build.yml for options
+  sourceBuildParameters: []
+
   graphFileGeneration:
     # Optional: Enable generating the graph files at the end of the build
     enabled: false
@@ -23,13 +30,6 @@ parameters:
   # Optional: should run as a public build even in the internal project
   #           if 'true', the build won't run any of the internal only steps, even if it is running in non-public projects.
   runAsPublic: false
-
-  # Optional: Enable running the source-build jobs to build repo from source
-  runSourceBuild: false
-
-  # Optional: Parameters for source-build template.
-  #           See /eng/common/templates/jobs/source-build.yml for options
-  sourceBuildParameters: []
 
   enableSourceIndex: false
   sourceIndexParams: {}
@@ -53,7 +53,7 @@ jobs:
 
       name: ${{ job.job }}
 
-- ${{ if eq(parameters.runSourceBuild, true) }}:
+- ${{ if eq(parameters.enableSourceBuild, true) }}:
   - template: /eng/common/templates/jobs/source-build.yml
     parameters:
       allCompletedJobId: Source_Build_Complete
@@ -80,7 +80,7 @@ jobs:
         - ${{ if eq(parameters.publishBuildAssetsDependsOn, '') }}:
           - ${{ each job in parameters.jobs }}:
             - ${{ job.job }}
-        - ${{ if eq(parameters.runSourceBuild, true) }}:
+        - ${{ if eq(parameters.enableSourceBuild, true) }}:
           - Source_Build_Complete
         pool:
           vmImage: vs2017-win2016

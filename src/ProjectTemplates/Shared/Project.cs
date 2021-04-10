@@ -40,6 +40,7 @@ namespace Templates.Test.Helpers
         public string TemplateOutputDir { get; set; }
         public string TargetFramework { get; set; } = GetAssemblyMetadata("Test.DefaultTargetFramework");
         public string RuntimeIdentifier { get; set; } = string.Empty;
+        public static DevelopmentCertificate DevCert { get; } = DevelopmentCertificate.Create(AppContext.BaseDirectory);
 
         public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework, RuntimeIdentifier);
         public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, RuntimeIdentifier, "publish");
@@ -101,6 +102,8 @@ namespace Templates.Test.Helpers
             try
             {
                 Output.WriteLine("Acquired DotNetNewLock");
+                // Temporary while investigating why this process occasionally never runs or exits on Debian 9
+                environmentVariables.Add("COREHOST_TRACE", "1");
                 using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
                 await execution.Exited;
                 return new ProcessResult(execution);
@@ -178,7 +181,7 @@ namespace Templates.Test.Helpers
             }
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
-            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri, logger: logger);
+            return new AspNetProcess(DevCert, Output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri, logger: logger);
         }
 
         internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true, bool usePublishedAppHost = false)
@@ -193,7 +196,7 @@ namespace Templates.Test.Helpers
             };
 
             var projectDll = Path.Combine(TemplatePublishDir, $"{ProjectName}.dll");
-            return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri, usePublishedAppHost: usePublishedAppHost);
+            return new AspNetProcess(DevCert, Output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri, usePublishedAppHost: usePublishedAppHost);
         }
 
         internal async Task<ProcessResult> RunDotNetEfCreateMigrationAsync(string migrationName)
@@ -231,11 +234,7 @@ namespace Templates.Test.Helpers
         {
             var assembly = typeof(ProjectFactoryFixture).Assembly;
 
-            var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(attribute => attribute.Key == "DotNetEfFullPath")
-                .Value;
-
-            var args = $"\"{dotNetEfFullPath}\" --verbose --no-build database update";
+            var args = "--verbose --no-build database update";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
@@ -243,7 +242,17 @@ namespace Templates.Test.Helpers
             try
             {
                 Output.WriteLine("Acquired DotNetNewLock");
-                using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
+                var command = DotNetMuxer.MuxerPathOrDefault();
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
+                {
+                    args = $"\"{DotNetEfFullPath}\" " + args;
+                }
+                else
+                {
+                    command = "dotnet-ef";
+                }
+
+                using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
                 await result.Exited;
                 return new ProcessResult(result);
             }

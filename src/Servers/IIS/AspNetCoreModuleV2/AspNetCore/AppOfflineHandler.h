@@ -9,10 +9,10 @@
 class AppOfflineHandler: public REQUEST_HANDLER
 {
 public:
-    AppOfflineHandler(IHttpContext& pContext, const std::string appOfflineContent)
+    AppOfflineHandler(IHttpContext& pContext, const std::string& appOfflineContent)
         : REQUEST_HANDLER(pContext),
-          m_pContext(pContext),
-          m_strAppOfflineContent(appOfflineContent)
+        m_pContext(pContext),
+        m_strAppOfflineContent(appOfflineContent)
     {
     }
 

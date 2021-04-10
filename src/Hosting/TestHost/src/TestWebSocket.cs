@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.TestHost
             ThrowIfInputClosed();
             ValidateSegment(buffer);
             // TODO: InvalidOperationException if any receives are currently in progress.
-            
+
             Message? receiveMessage = _receiveMessage;
             _receiveMessage = null;
             if (receiveMessage == null)
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.TestHost
                 Array.Copy(receiveMessage.Buffer.Array!, receiveMessage.Buffer.Offset, buffer.Array!, buffer.Offset, count);
                 if (!endOfMessage)
                 {
-                    receiveMessage.Buffer = new ArraySegment<byte>(receiveMessage.Buffer.Array, receiveMessage.Buffer.Offset + count, receiveMessage.Buffer.Count - count);
+                    receiveMessage.Buffer = new ArraySegment<byte>(receiveMessage.Buffer.Array!, receiveMessage.Buffer.Offset + count, receiveMessage.Buffer.Count - count);
                     _receiveMessage = receiveMessage;
                 }
                 endOfMessage = endOfMessage && receiveMessage.EndOfMessage;
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.TestHost
             private bool _disposed;
             private readonly SemaphoreSlim _sem;
             private readonly Queue<Message> _messageQueue;
-            
+
             public ReceiverSenderBuffer()
             {
                 _sem = new SemaphoreSlim(0);

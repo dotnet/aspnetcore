@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using MessagePack;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const int VoidResult = 2;
         private const int NonVoidResult = 3;
 
-        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage? message)
+        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, [NotNullWhen(true)] out HubMessage? message)
         {
             if (!BinaryMessageParser.TryParseMessage(ref input, out var payload))
             {
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             var reader = new MessagePackReader(payload);
             message = ParseMessage(ref reader, binder);
-            return true;
+            return message != null;
         }
 
         private HubMessage? ParseMessage(ref MessagePackReader reader, IInvocationBinder binder)

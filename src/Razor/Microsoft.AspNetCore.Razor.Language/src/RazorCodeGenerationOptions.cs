@@ -108,6 +108,15 @@ namespace Microsoft.AspNetCore.Razor.Language
         public virtual bool SuppressMetadataAttributes { get; protected set; }
 
         /// <summary>
+        /// Gets a value that indicates whether to suppress the <c>RazorSourceChecksumAttribute</c>.
+        /// <para>
+        /// Used by default in .NET 6 apps since including a type-level attribute that changes on every
+        /// edit are treated as rude edits by hot reload.
+        /// </para>
+        /// </summary>
+        internal bool SuppressMetadataSourceChecksumAttributes { get; set; }
+
+        /// <summary>
         /// Gets or sets a value that determines if an empty body is generated for the primary method.
         /// </summary>
         public virtual bool SuppressPrimaryMethodBody { get; protected set; }

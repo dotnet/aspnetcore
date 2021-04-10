@@ -3,9 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Reflection;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -112,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         /// </summary>
         [HtmlAttributeNotBound]
         [ViewContext]
-        public ViewContext ViewContext { get; set; }
+        public ViewContext ViewContext { get; set; } = default!;
 
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
@@ -132,8 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                 return;
             }
 
-            string[] attributeNames;
-            if (ElementAttributeLookups.TryGetValue(output.TagName, out attributeNames))
+            if (ElementAttributeLookups.TryGetValue(output.TagName, out var attributeNames))
             {
                 for (var i = 0; i < attributeNames.Length; i++)
                 {
@@ -178,8 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                 var stringValue = attribute.Value as string;
                 if (stringValue != null)
                 {
-                    string resolvedUrl;
-                    if (TryResolveUrl(stringValue, resolvedUrl: out resolvedUrl))
+                    if (TryResolveUrl(stringValue, resolvedUrl: out string? resolvedUrl))
                     {
                         attributes[i] = new TagHelperAttribute(
                             attribute.Name,
@@ -207,8 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                             }
                         }
 
-                        IHtmlContent resolvedUrl;
-                        if (TryResolveUrl(stringValue, resolvedUrl: out resolvedUrl))
+                        if (TryResolveUrl(stringValue, resolvedUrl: out IHtmlContent? resolvedUrl))
                         {
                             attributes[i] = new TagHelperAttribute(
                                 attribute.Name,
@@ -235,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         /// <param name="resolvedUrl">Absolute URL beginning with the application's virtual root. <c>null</c> if
         /// <paramref name="url"/> could not be resolved.</param>
         /// <returns><c>true</c> if the <paramref name="url"/> could be resolved; <c>false</c> otherwise.</returns>
-        protected bool TryResolveUrl(string url, out string resolvedUrl)
+        protected bool TryResolveUrl(string url, out string? resolvedUrl)
         {
             resolvedUrl = null;
             var start = FindRelativeStart(url);
@@ -261,7 +257,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         /// not be resolved.
         /// </param>
         /// <returns><c>true</c> if the <paramref name="url"/> could be resolved; <c>false</c> otherwise.</returns>
-        protected bool TryResolveUrl(string url, out IHtmlContent resolvedUrl)
+        protected bool TryResolveUrl(string url, [NotNullWhen(true)] out IHtmlContent? resolvedUrl)
         {
             resolvedUrl = null;
             var start = FindRelativeStart(url);
@@ -347,15 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
 
         private static bool IsCharWhitespace(char ch)
         {
-            for (var i = 0; i < ValidAttributeWhitespaceChars.Length; i++)
-            {
-                if (ValidAttributeWhitespaceChars[i] == ch)
-                {
-                    return true;
-                }
-            }
-            // the character is not white space
-            return false;
+            return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
         }
 
         private class EncodeFirstSegmentContent : IHtmlContent
