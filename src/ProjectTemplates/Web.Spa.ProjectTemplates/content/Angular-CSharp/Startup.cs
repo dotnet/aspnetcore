@@ -54,6 +54,7 @@ namespace Company.WebApplication1
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 #endif
+
             services.AddControllersWithViews();
 #if (IndividualLocalAuth)
             services.AddRazorPages();
