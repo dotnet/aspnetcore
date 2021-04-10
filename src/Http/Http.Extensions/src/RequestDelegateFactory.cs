@@ -257,9 +257,10 @@ namespace Microsoft.AspNetCore.Http
             //     string tempSourceString;
             //     bool wasTryParseFailure = false;
             //
-            //     // Assume "int param1" is the first parameter and "int? param2 = 2" is the second parameter.
+            //     // Assume "int param1" is the first parameter, "[FromRoute] int? param2 = 42" is the second parameter ...
             //     int param1_local;
             //     int? param2_local;
+            //     // ...
             //
             //     tempSourceString = httpContext.RouteValue["param1"] ?? httpContext.Query["param1"];
             //
@@ -272,7 +273,7 @@ namespace Microsoft.AspNetCore.Http
             //         }
             //     }
             //
-            //     tempSourceString = httpContext.RouteValue["param2"] ?? httpContext.Query["param2"];
+            //     tempSourceString = httpContext.RouteValue["param2"];
             //     // ...
             //
             //     return wasTryParseFailure ?
@@ -568,7 +569,7 @@ namespace Microsoft.AspNetCore.Http
             // string tempSourceString;
             // bool wasTryParseFailure = false;
             //
-            // // Assume "int param1" is the first parameter and "int? param2 = 2" is the second parameter.
+            // // Assume "int param1" is the first parameter and "[FromRoute] int? param2 = 42" is the second parameter.
             // int param1_local;
             // int? param2_local;
             //
@@ -583,7 +584,7 @@ namespace Microsoft.AspNetCore.Http
             //     }
             // }
             //
-            // tempSourceString = httpContext.RouteValue["param2"] ?? httpContext.Query["param2"];
+            // tempSourceString = httpContext.RouteValue["param2"];
             //
             // if (tempSourceString != null)
             // {
@@ -599,7 +600,7 @@ namespace Microsoft.AspNetCore.Http
             // }
             // else
             // {
-            //     param2_local = 2;
+            //     param2_local = 42;
             // }
 
             var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
