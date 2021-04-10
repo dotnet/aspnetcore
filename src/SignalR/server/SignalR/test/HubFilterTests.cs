@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -116,22 +117,22 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                await tcsService.StartedMethod.Task.OrTimeout();
-                await client.Connected.OrTimeout();
-                await tcsService.EndMethod.Task.OrTimeout();
+                await tcsService.StartedMethod.Task.DefaultTimeout();
+                await client.Connected.DefaultTimeout();
+                await tcsService.EndMethod.Task.DefaultTimeout();
 
                 tcsService.Reset();
-                var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
-                await tcsService.EndMethod.Task.OrTimeout();
+                var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
+                await tcsService.EndMethod.Task.DefaultTimeout();
                 tcsService.Reset();
 
                 Assert.Null(message.Error);
 
                 client.Dispose();
 
-                await connectionHandlerTask.OrTimeout();
+                await connectionHandlerTask.DefaultTimeout();
 
-                await tcsService.EndMethod.Task.OrTimeout();
+                await tcsService.EndMethod.Task.DefaultTimeout();
             }
         }
 
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await client.Connected.OrTimeout();
+                    await client.Connected.DefaultTimeout();
 
                     var completion = await client.InvokeAsync(nameof(DynamicTestHub.Echo), "hello");
                     Assert.Null(completion.Error);
@@ -164,7 +165,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
                 }
             }
         }
@@ -191,17 +192,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await tcsService1.StartedMethod.Task.OrTimeout();
-                    await tcsService2.StartedMethod.Task.OrTimeout();
-                    await client.Connected.OrTimeout();
-                    await tcsService1.EndMethod.Task.OrTimeout();
-                    await tcsService2.EndMethod.Task.OrTimeout();
+                    await tcsService1.StartedMethod.Task.DefaultTimeout();
+                    await tcsService2.StartedMethod.Task.DefaultTimeout();
+                    await client.Connected.DefaultTimeout();
+                    await tcsService1.EndMethod.Task.DefaultTimeout();
+                    await tcsService2.EndMethod.Task.DefaultTimeout();
 
                     tcsService1.Reset();
                     tcsService2.Reset();
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
-                    await tcsService1.EndMethod.Task.OrTimeout();
-                    await tcsService2.EndMethod.Task.OrTimeout();
+                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
+                    await tcsService1.EndMethod.Task.DefaultTimeout();
+                    await tcsService2.EndMethod.Task.DefaultTimeout();
                     tcsService1.Reset();
                     tcsService2.Reset();
 
@@ -209,10 +210,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
 
-                    await tcsService1.EndMethod.Task.OrTimeout();
-                    await tcsService2.EndMethod.Task.OrTimeout();
+                    await tcsService1.EndMethod.Task.DefaultTimeout();
+                    await tcsService2.EndMethod.Task.DefaultTimeout();
                 }
             }
         }
@@ -241,17 +242,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await tcsService1.StartedMethod.Task.OrTimeout();
-                    await tcsService2.StartedMethod.Task.OrTimeout();
-                    await client.Connected.OrTimeout();
-                    await tcsService1.EndMethod.Task.OrTimeout();
-                    await tcsService2.EndMethod.Task.OrTimeout();
+                    await tcsService1.StartedMethod.Task.DefaultTimeout();
+                    await tcsService2.StartedMethod.Task.DefaultTimeout();
+                    await client.Connected.DefaultTimeout();
+                    await tcsService1.EndMethod.Task.DefaultTimeout();
+                    await tcsService2.EndMethod.Task.DefaultTimeout();
 
                     tcsService1.Reset();
                     tcsService2.Reset();
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
-                    await tcsService1.EndMethod.Task.OrTimeout();
-                    await tcsService2.EndMethod.Task.OrTimeout();
+                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
+                    await tcsService1.EndMethod.Task.DefaultTimeout();
+                    await tcsService2.EndMethod.Task.DefaultTimeout();
                     tcsService1.Reset();
                     tcsService2.Reset();
 
@@ -259,10 +260,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
 
-                    await tcsService1.EndMethod.Task.OrTimeout();
-                    await tcsService2.EndMethod.Task.OrTimeout();
+                    await tcsService1.EndMethod.Task.DefaultTimeout();
+                    await tcsService2.EndMethod.Task.DefaultTimeout();
                 }
             }
         }
@@ -292,17 +293,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await tcsService1.StartedMethod.Task.OrTimeout();
-                    await tcsService2.StartedMethod.Task.OrTimeout();
-                    await client.Connected.OrTimeout();
-                    await tcsService1.EndMethod.Task.OrTimeout();
-                    await tcsService2.EndMethod.Task.OrTimeout();
+                    await tcsService1.StartedMethod.Task.DefaultTimeout();
+                    await tcsService2.StartedMethod.Task.DefaultTimeout();
+                    await client.Connected.DefaultTimeout();
+                    await tcsService1.EndMethod.Task.DefaultTimeout();
+                    await tcsService2.EndMethod.Task.DefaultTimeout();
 
                     tcsService1.Reset();
                     tcsService2.Reset();
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
-                    await tcsService1.EndMethod.Task.OrTimeout();
-                    await tcsService2.EndMethod.Task.OrTimeout();
+                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
+                    await tcsService1.EndMethod.Task.DefaultTimeout();
+                    await tcsService2.EndMethod.Task.DefaultTimeout();
                     tcsService1.Reset();
                     tcsService2.Reset();
 
@@ -310,10 +311,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
 
-                    await tcsService1.EndMethod.Task.OrTimeout();
-                    await tcsService2.EndMethod.Task.OrTimeout();
+                    await tcsService1.EndMethod.Task.DefaultTimeout();
+                    await tcsService2.EndMethod.Task.DefaultTimeout();
                 }
             }
         }
@@ -340,39 +341,39 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await syncPoints1[0].WaitForSyncPoint().OrTimeout();
+                    await syncPoints1[0].WaitForSyncPoint().DefaultTimeout();
                     // Second filter wont run yet because first filter is waiting on SyncPoint
                     Assert.False(syncPoints2[0].WaitForSyncPoint().IsCompleted);
                     syncPoints1[0].Continue();
 
-                    await syncPoints2[0].WaitForSyncPoint().OrTimeout();
+                    await syncPoints2[0].WaitForSyncPoint().DefaultTimeout();
                     syncPoints2[0].Continue();
-                    await client.Connected.OrTimeout();
+                    await client.Connected.DefaultTimeout();
 
                     var invokeTask = client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!");
 
-                    await syncPoints1[1].WaitForSyncPoint().OrTimeout();
+                    await syncPoints1[1].WaitForSyncPoint().DefaultTimeout();
                     // Second filter wont run yet because first filter is waiting on SyncPoint
                     Assert.False(syncPoints2[1].WaitForSyncPoint().IsCompleted);
                     syncPoints1[1].Continue();
 
-                    await syncPoints2[1].WaitForSyncPoint().OrTimeout();
+                    await syncPoints2[1].WaitForSyncPoint().DefaultTimeout();
                     syncPoints2[1].Continue();
-                    var message = await invokeTask.OrTimeout();
+                    var message = await invokeTask.DefaultTimeout();
 
                     Assert.Null(message.Error);
 
                     client.Dispose();
 
-                    await syncPoints1[2].WaitForSyncPoint().OrTimeout();
+                    await syncPoints1[2].WaitForSyncPoint().DefaultTimeout();
                     // Second filter wont run yet because first filter is waiting on SyncPoint
                     Assert.False(syncPoints2[2].WaitForSyncPoint().IsCompleted);
                     syncPoints1[2].Continue();
 
-                    await syncPoints2[2].WaitForSyncPoint().OrTimeout();
+                    await syncPoints2[2].WaitForSyncPoint().DefaultTimeout();
                     syncPoints2[2].Continue();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
                 }
             }
         }
@@ -400,39 +401,39 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await syncPoints1[0].WaitForSyncPoint().OrTimeout();
+                    await syncPoints1[0].WaitForSyncPoint().DefaultTimeout();
                     // Second filter wont run yet because first filter is waiting on SyncPoint
                     Assert.False(syncPoints2[0].WaitForSyncPoint().IsCompleted);
                     syncPoints1[0].Continue();
 
-                    await syncPoints2[0].WaitForSyncPoint().OrTimeout();
+                    await syncPoints2[0].WaitForSyncPoint().DefaultTimeout();
                     syncPoints2[0].Continue();
-                    await client.Connected.OrTimeout();
+                    await client.Connected.DefaultTimeout();
 
                     var invokeTask = client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!");
 
-                    await syncPoints1[1].WaitForSyncPoint().OrTimeout();
+                    await syncPoints1[1].WaitForSyncPoint().DefaultTimeout();
                     // Second filter wont run yet because first filter is waiting on SyncPoint
                     Assert.False(syncPoints2[1].WaitForSyncPoint().IsCompleted);
                     syncPoints1[1].Continue();
 
-                    await syncPoints2[1].WaitForSyncPoint().OrTimeout();
+                    await syncPoints2[1].WaitForSyncPoint().DefaultTimeout();
                     syncPoints2[1].Continue();
-                    var message = await invokeTask.OrTimeout();
+                    var message = await invokeTask.DefaultTimeout();
 
                     Assert.Null(message.Error);
 
                     client.Dispose();
 
-                    await syncPoints1[2].WaitForSyncPoint().OrTimeout();
+                    await syncPoints1[2].WaitForSyncPoint().DefaultTimeout();
                     // Second filter wont run yet because first filter is waiting on SyncPoint
                     Assert.False(syncPoints2[2].WaitForSyncPoint().IsCompleted);
                     syncPoints1[2].Continue();
 
-                    await syncPoints2[2].WaitForSyncPoint().OrTimeout();
+                    await syncPoints2[2].WaitForSyncPoint().DefaultTimeout();
                     syncPoints2[2].Continue();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
                 }
             }
         }
@@ -462,39 +463,39 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await syncPoints1[0].WaitForSyncPoint().OrTimeout();
+                    await syncPoints1[0].WaitForSyncPoint().DefaultTimeout();
                     // Second filter wont run yet because first filter is waiting on SyncPoint
                     Assert.False(syncPoints2[0].WaitForSyncPoint().IsCompleted);
                     syncPoints1[0].Continue();
 
-                    await syncPoints2[0].WaitForSyncPoint().OrTimeout();
+                    await syncPoints2[0].WaitForSyncPoint().DefaultTimeout();
                     syncPoints2[0].Continue();
-                    await client.Connected.OrTimeout();
+                    await client.Connected.DefaultTimeout();
 
                     var invokeTask = client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!");
 
-                    await syncPoints1[1].WaitForSyncPoint().OrTimeout();
+                    await syncPoints1[1].WaitForSyncPoint().DefaultTimeout();
                     // Second filter wont run yet because first filter is waiting on SyncPoint
                     Assert.False(syncPoints2[1].WaitForSyncPoint().IsCompleted);
                     syncPoints1[1].Continue();
 
-                    await syncPoints2[1].WaitForSyncPoint().OrTimeout();
+                    await syncPoints2[1].WaitForSyncPoint().DefaultTimeout();
                     syncPoints2[1].Continue();
-                    var message = await invokeTask.OrTimeout();
+                    var message = await invokeTask.DefaultTimeout();
 
                     Assert.Null(message.Error);
 
                     client.Dispose();
 
-                    await syncPoints1[2].WaitForSyncPoint().OrTimeout();
+                    await syncPoints1[2].WaitForSyncPoint().DefaultTimeout();
                     // Second filter wont run yet because first filter is waiting on SyncPoint
                     Assert.False(syncPoints2[2].WaitForSyncPoint().IsCompleted);
                     syncPoints1[2].Continue();
 
-                    await syncPoints2[2].WaitForSyncPoint().OrTimeout();
+                    await syncPoints2[2].WaitForSyncPoint().DefaultTimeout();
                     syncPoints2[2].Continue();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
                 }
             }
         }
@@ -542,13 +543,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await client.Connected.OrTimeout();
+                    await client.Connected.DefaultTimeout();
                     // Filter is transient, so these counts are reset every time the filter is created
                     Assert.Equal(1, counter.OnConnectedAsyncCount);
                     Assert.Equal(0, counter.InvokeMethodAsyncCount);
                     Assert.Equal(0, counter.OnDisconnectedAsyncCount);
 
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
+                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
                     // Filter is transient, so these counts are reset every time the filter is created
                     Assert.Equal(0, counter.OnConnectedAsyncCount);
                     Assert.Equal(1, counter.InvokeMethodAsyncCount);
@@ -558,7 +559,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
 
                     // Filter is transient, so these counts are reset every time the filter is created
                     Assert.Equal(0, counter.OnConnectedAsyncCount);
@@ -591,12 +592,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await client.Connected.OrTimeout();
+                    await client.Connected.DefaultTimeout();
                     Assert.Equal(1, counter.OnConnectedAsyncCount);
                     Assert.Equal(0, counter.InvokeMethodAsyncCount);
                     Assert.Equal(0, counter.OnDisconnectedAsyncCount);
 
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
+                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
                     Assert.Equal(1, counter.OnConnectedAsyncCount);
                     Assert.Equal(1, counter.InvokeMethodAsyncCount);
                     Assert.Equal(0, counter.OnDisconnectedAsyncCount);
@@ -605,7 +606,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
 
                     Assert.Equal(1, counter.OnConnectedAsyncCount);
                     Assert.Equal(1, counter.InvokeMethodAsyncCount);
@@ -640,7 +641,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
                 }
             }
         }
@@ -671,7 +672,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
                 }
             }
         }
@@ -695,16 +696,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await client.Connected.OrTimeout();
+                    await client.Connected.DefaultTimeout();
 
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").OrTimeout();
+                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
 
                     Assert.Null(message.Error);
                     Assert.Null(message.Result);
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
                 }
             }
         }
@@ -733,19 +734,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
                     // OnConnectedAsync creates and destroys the filter
-                    await tcsService.StartedMethod.Task.OrTimeout();
+                    await tcsService.StartedMethod.Task.DefaultTimeout();
                     tcsService.Reset();
 
                     var message = await client.InvokeAsync("Echo", "Hello");
                     Assert.Equal("Hello", message.Result);
-                    await tcsService.StartedMethod.Task.OrTimeout();
+                    await tcsService.StartedMethod.Task.DefaultTimeout();
                     tcsService.Reset();
 
                     client.Dispose();
 
                     // OnDisconnectedAsync creates and destroys the filter
-                    await tcsService.StartedMethod.Task.OrTimeout();
-                    await connectionHandlerTask.OrTimeout();
+                    await tcsService.StartedMethod.Task.DefaultTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
                 }
             }
         }
@@ -778,7 +779,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
 
                     Assert.False(tcsService.StartedMethod.Task.IsCompleted);
                 }
@@ -809,19 +810,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
                     // OnConnectedAsync creates and destroys the filter
-                    await tcsService.StartedMethod.Task.OrTimeout();
+                    await tcsService.StartedMethod.Task.DefaultTimeout();
                     tcsService.Reset();
 
                     var message = await client.InvokeAsync("Echo", "Hello");
                     Assert.Equal("Hello", message.Result);
-                    await tcsService.StartedMethod.Task.OrTimeout();
+                    await tcsService.StartedMethod.Task.DefaultTimeout();
                     tcsService.Reset();
 
                     client.Dispose();
 
                     // OnDisconnectedAsync creates and destroys the filter
-                    await tcsService.StartedMethod.Task.OrTimeout();
-                    await connectionHandlerTask.OrTimeout();
+                    await tcsService.StartedMethod.Task.DefaultTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
                 }
             }
         }
@@ -854,7 +855,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
 
                     Assert.False(tcsService.StartedMethod.Task.IsCompleted);
                 }
@@ -892,7 +893,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     client.Dispose();
 
-                    await connectionHandlerTask.OrTimeout();
+                    await connectionHandlerTask.DefaultTimeout();
                 }
             }
         }

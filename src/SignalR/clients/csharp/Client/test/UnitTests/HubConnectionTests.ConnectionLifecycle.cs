@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using Newtonsoft.Json.Linq;
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
                     Assert.Equal(HubConnectionState.Connected, connection.State);
                 });
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.False(firstStart.IsCompleted);
 
                     // Wait for us to be in IConnectionFactory.ConnectAsync
-                    await syncPoint.WaitForSyncPoint().OrTimeout();
+                    await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
                     // Try starting again
                     var secondStart = connection.StartAsync();
@@ -69,8 +70,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     syncPoint.Continue();
 
                     // The first start should finish fine, but the second throws an InvalidOperationException.
-                    await firstStart.OrTimeout();
-                    await Assert.ThrowsAsync<InvalidOperationException>(() => secondStart).OrTimeout();
+                    await firstStart.DefaultTimeout();
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => secondStart).DefaultTimeout();
                 });
             }
 
@@ -92,14 +93,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                     Assert.Equal(1, createCount);
                     Assert.Equal(HubConnectionState.Connected, connection.State);
 
-                    await connection.StopAsync().OrTimeout();
+                    await connection.StopAsync().DefaultTimeout();
                     Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                     Assert.Equal(2, createCount);
                     Assert.Equal(HubConnectionState.Connected, connection.State);
                 });
@@ -123,13 +124,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 await AsyncUsing(builder.Build(), async connection =>
                 {
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                     Assert.Equal(1, createCount);
 
                     var stopTask = connection.StopAsync();
 
                     // Wait to hit DisposeAsync on TestConnection (which should be after StopAsync has cleared the connection state)
-                    await syncPoint.WaitForSyncPoint().OrTimeout();
+                    await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
                     // We should not yet be able to start now because StopAsync hasn't completed
                     Assert.False(stopTask.IsCompleted);
@@ -138,10 +139,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     // When we release the sync point, the StopAsync task will finish
                     syncPoint.Continue();
-                    await stopTask.OrTimeout();
+                    await stopTask.DefaultTimeout();
 
                     // Which will then allow StartAsync to finish.
-                    await startTask.OrTimeout();
+                    await startTask.DefaultTimeout();
                 });
             }
 
@@ -174,12 +175,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         testConnection.Transport.Input.Complete();
                         try
                         {
-                            await connection.StartAsync().OrTimeout();
+                            await connection.StartAsync().DefaultTimeout();
                         }
                         catch
                         { }
 
-                        await connection.StopAsync().OrTimeout();
+                        await connection.StopAsync().DefaultTimeout();
                         Assert.True(testConnection.Started.IsCompleted);
                     });
                 }
@@ -196,7 +197,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testConnection = new TestConnection();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => method(connection)).OrTimeout();
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => method(connection)).DefaultTimeout();
                     Assert.Equal($"The '{name}' method cannot be called if the connection is not active", ex.Message);
                 });
             }
@@ -214,7 +215,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     // Start, and wait for the sync point to be hit
                     var startTask = connection.StartAsync();
                     Assert.False(startTask.IsCompleted);
-                    await syncPoint.WaitForSyncPoint().OrTimeout();
+                    await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
                     // Run the method, but it will be waiting for the lock
                     var targetTask = method(connection);
@@ -223,16 +224,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     syncPoint.Continue();
 
                     // Wait for start to finish
-                    await startTask.OrTimeout();
+                    await startTask.DefaultTimeout();
 
                     // We need some special logic to ensure InvokeAsync completes.
                     if (string.Equals(name, nameof(HubConnection.InvokeCoreAsync)))
                     {
-                        await ForceLastInvocationToComplete(testConnection).OrTimeout();
+                        await ForceLastInvocationToComplete(testConnection).DefaultTimeout();
                     }
 
                     // Wait for the method to complete.
-                    await targetTask.OrTimeout();
+                    await targetTask.DefaultTimeout();
                 });
             }
 
@@ -246,7 +247,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     // Start, and wait for the sync point to be hit
                     var startTask = connection.StartAsync();
                     Assert.False(startTask.IsCompleted);
-                    await syncPoint.WaitForSyncPoint().OrTimeout();
+                    await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
                     Assert.Equal(HubConnectionState.Connecting, connection.State);
 
@@ -254,7 +255,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     syncPoint.Continue();
 
                     // Wait for start to finish
-                    await startTask.OrTimeout();
+                    await startTask.DefaultTimeout();
 
                     Assert.Equal(HubConnectionState.Connected, connection.State);
                 });
@@ -276,15 +277,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
                     Assert.Equal(HubConnectionState.Connected, connection.State);
 
-                    await connection.StopAsync().OrTimeout();
-                    await testConnection.Disposed.OrTimeout();
+                    await connection.StopAsync().DefaultTimeout();
+                    await testConnection.Disposed.DefaultTimeout();
                     Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
-                    await closed.Task.OrTimeout();
+                    await closed.Task.DefaultTimeout();
                 });
             }
 
@@ -294,11 +295,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testConnection = new TestConnection();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
 
-                    await connection.StopAsync().OrTimeout();
-                    await testConnection.Disposed.OrTimeout();
+                    await connection.StopAsync().DefaultTimeout();
+                    await testConnection.Disposed.DefaultTimeout();
                 });
             }
 
@@ -308,7 +309,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testConnection = new TestConnection();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    await connection.StopAsync().OrTimeout();
+                    await connection.StopAsync().DefaultTimeout();
                     Assert.False(testConnection.Disposed.IsCompleted);
                 });
             }
@@ -321,15 +322,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
                     Assert.Equal(HubConnectionState.Connected, connection.State);
 
-                    await connection.StopAsync().OrTimeout();
-                    await testConnection.Disposed.OrTimeout();
+                    await connection.StopAsync().DefaultTimeout();
+                    await testConnection.Disposed.DefaultTimeout();
                     Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
-                    await connection.StopAsync().OrTimeout();
+                    await connection.StopAsync().DefaultTimeout();
                     Assert.Equal(HubConnectionState.Disconnected, connection.State);
                 });
             }
@@ -344,11 +345,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
-                    await connection.StopAsync().OrTimeout();
+                    await connection.StopAsync().DefaultTimeout();
                     Assert.False(testConnection.Disposed.IsCompleted);
                     Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
                     Assert.Equal(HubConnectionState.Connected, connection.State);
                 });
@@ -366,15 +367,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         closed.TrySetResult();
                         return Task.CompletedTask;
                     };
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
 
                     // Complete the transport side and wait for the connection to close
                     testConnection.CompleteFromTransport();
-                    await closed.Task.OrTimeout();
+                    await closed.Task.DefaultTimeout();
 
                     // We should be stopped now
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo")).OrTimeout();
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo")).DefaultTimeout();
                     Assert.Equal($"The '{nameof(HubConnection.SendCoreAsync)}' method cannot be called if the connection is not active", ex.Message);
                 });
             }
@@ -392,7 +393,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         return Task.CompletedTask;
                     };
 
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
 
                     // Start shutting down and complete the transport side
@@ -403,16 +404,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await testConnection.Transport.Input.CompleteAsync();
 
                     // The stop should be completed.
-                    await stopTask.OrTimeout();
+                    await stopTask.DefaultTimeout();
 
                     // The HubConnection should now be closed.
-                    await connectionClosed.Task.OrTimeout();
+                    await connectionClosed.Task.DefaultTimeout();
 
                     // We should be stopped now
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo")).OrTimeout();
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo")).DefaultTimeout();
                     Assert.Equal($"The '{nameof(HubConnection.SendCoreAsync)}' method cannot be called if the connection is not active", ex.Message);
 
-                    await testConnection.Disposed.OrTimeout();
+                    await testConnection.Disposed.DefaultTimeout();
 
                     Assert.Equal(1, testConnection.DisposeCount);
                 });
@@ -431,7 +432,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         return Task.CompletedTask;
                     };
 
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
 
                     // Complete the transport side and wait for the connection to close
@@ -440,14 +441,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     // Start stopping manually (these can't be synchronized by a Sync Point because the transport is disposed outside the lock)
                     var stopTask = connection.StopAsync();
 
-                    await testConnection.Disposed.OrTimeout();
+                    await testConnection.Disposed.DefaultTimeout();
 
                     // Wait for the stop task to complete and the closed event to fire
-                    await stopTask.OrTimeout();
-                    await connectionClosed.Task.OrTimeout();
+                    await stopTask.DefaultTimeout();
+                    await connectionClosed.Task.DefaultTimeout();
 
                     // We should be stopped now
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo")).OrTimeout();
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SendAsync("Foo")).DefaultTimeout();
                     Assert.Equal($"The '{nameof(HubConnection.SendCoreAsync)}' method cannot be called if the connection is not active", ex.Message);
                 });
             }
@@ -462,14 +463,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testConnection = new TestConnection(onDispose: SyncPoint.Create(out var syncPoint));
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
 
                     // Stop and invoke the method. These two aren't synchronizable via a Sync Point any more because the transport is disposed
                     // outside the lock :(
                     var disposeTask = connection.StopAsync();
 
                     // Wait to hit DisposeAsync on TestConnection (which should be after StopAsync has cleared the connection state)
-                    await syncPoint.WaitForSyncPoint().OrTimeout();
+                    await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
                     var targetTask = method(connection);
 
@@ -477,10 +478,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     syncPoint.Continue();
 
                     // Wait for the method to complete, with an expected error.
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => targetTask).OrTimeout();
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => targetTask).DefaultTimeout();
                     Assert.Equal($"The '{methodName}' method cannot be called if the connection is not active", ex.Message);
 
-                    await disposeTask.OrTimeout();
+                    await disposeTask.DefaultTimeout();
                 });
             }
 
@@ -513,13 +514,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     {
                         hubConnection.HandshakeTimeout = TimeSpan.FromMilliseconds(1);
 
-                        await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync()).OrTimeout();
+                        await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync()).DefaultTimeout();
                         Assert.Equal(HubConnectionState.Disconnected, hubConnection.State);
                     }
                     finally
                     {
-                        await hubConnection.DisposeAsync().OrTimeout();
-                        await connection.DisposeAsync().OrTimeout();
+                        await hubConnection.DisposeAsync().DefaultTimeout();
+                        await connection.DisposeAsync().DefaultTimeout();
                     }
                 }
 
@@ -540,13 +541,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                     try
                     {
-                        await Assert.ThrowsAsync<TaskCanceledException>(() => hubConnection.StartAsync(new CancellationToken(canceled: true))).OrTimeout();
+                        await Assert.ThrowsAsync<TaskCanceledException>(() => hubConnection.StartAsync(new CancellationToken(canceled: true))).DefaultTimeout();
                         Assert.False(onStartCalled);
                     }
                     finally
                     {
-                        await hubConnection.DisposeAsync().OrTimeout();
-                        await connection.DisposeAsync().OrTimeout();
+                        await hubConnection.DisposeAsync().DefaultTimeout();
+                        await connection.DisposeAsync().DefaultTimeout();
                     }
                 }
             }
@@ -587,16 +588,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     {
                         var startTask = hubConnection.StartAsync(cts.Token);
 
-                        await connection.ReadSentTextMessageAsync().OrTimeout();
+                        await connection.ReadSentTextMessageAsync().DefaultTimeout();
                         cts.Cancel();
 
                         // We aren't worried about the exact message and it's localized so asserting it is non-trivial.
-                        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startTask).OrTimeout();
+                        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startTask).DefaultTimeout();
                     }
                     finally
                     {
-                        await hubConnection.DisposeAsync().OrTimeout();
-                        await connection.DisposeAsync().OrTimeout();
+                        await hubConnection.DisposeAsync().DefaultTimeout();
+                        await connection.DisposeAsync().DefaultTimeout();
                     }
                 }
 
@@ -621,12 +622,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return Task.CompletedTask;
                 };
 
-                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.StartAsync().DefaultTimeout();
 
-                await innerConnection.Application.Output.WriteAsync(Encoding.UTF8.GetBytes(new[] { '{' })).OrTimeout();
+                await innerConnection.Application.Output.WriteAsync(Encoding.UTF8.GetBytes(new[] { '{' })).DefaultTimeout();
                 innerConnection.Application.Output.Complete();
 
-                var exception = await closedEventTcs.Task.OrTimeout();
+                var exception = await closedEventTcs.Task.DefaultTimeout();
                 Assert.Equal("Connection terminated while reading a message.", exception.Message);
             }
 

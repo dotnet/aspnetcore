@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Moq;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests.Internal
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                     send.Complete();
                 });
 
-            await task.OrTimeout();
+            await task.DefaultTimeout();
         }
 
         [Fact]
@@ -59,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                     send.Complete();
                 });
 
-            await task.OrTimeout();
+            await task.DefaultTimeout();
         }
 
         [Fact]
@@ -95,8 +94,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                     send2.Complete();
                 });
 
-            await task1.OrTimeout();
-            await task2.OrTimeout();
+            await task1.DefaultTimeout();
+            await task2.DefaultTimeout();
         }
 
         [Fact]
@@ -130,8 +129,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                     send2.Complete();
                 });
 
-            await task1.OrTimeout();
-            await task2.OrTimeout();
+            await task1.DefaultTimeout();
+            await task2.DefaultTimeout();
         }
 
         [Fact]
