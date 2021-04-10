@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <inheritdoc />
-        public void Append(IDictionary<string, string> keyValuePairs, CookieOptions options)
+        public void Append(IEnumerable<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
         {
             if (options == null)
             {
@@ -126,17 +127,17 @@ namespace Microsoft.AspNetCore.Http
             };
 
             var cookierHeaderValue = setCookieHeaderValue.ToString()[1..];
-            var cookies = new string[keyValuePairs.Count];
+            var cookies = new string[keyValuePairs.Count()];
             var position = 0;
 
             foreach (var keyValuePair in keyValuePairs)
             {
-                cookies[position] = $"{keyValuePair.Key}={keyValuePair.Value}{cookierHeaderValue}";
+
+                cookies[position] = string.Concat(_enableCookieNameEncoding ? Uri.EscapeDataString(keyValuePair.Key) : keyValuePair.Key, "=", Uri.EscapeDataString(keyValuePair.Value), cookierHeaderValue);
                 position++;
             }
 
             Headers.Append(HeaderNames.SetCookie, cookies);
-            
         }
 
         /// <inheritdoc />

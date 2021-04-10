@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="keyValuePairs">Key value pair collections whose elements will be added as cookies.</param>
         /// <param name="options"><see cref="CookieOptions"/> included in new cookie settings.</param>
-        void Append(IDictionary<string, string> keyValuePairs, CookieOptions options);
+        void Append(IEnumerable<KeyValuePair<string, string>> keyValuePairs, CookieOptions options);
 
         /// <summary>
         /// Sets an expired cookie.

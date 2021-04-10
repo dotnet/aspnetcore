@@ -486,7 +486,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                     throw new NotImplementedException();
                 }
 
-                public void Append(IDictionary<string, string> keyValuePairs, CookieOptions options)
+                public void Append(IEnumerable<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
                 {
                     throw new NotImplementedException();
                 }

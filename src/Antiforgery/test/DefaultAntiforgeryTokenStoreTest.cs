@@ -491,7 +491,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 throw new NotImplementedException();
             }
 
-            public void Append(IDictionary<string, string> keyValuePairs, CookieOptions options)
+            public void Append(IEnumerable<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
             {
                 throw new NotImplementedException();
             }
