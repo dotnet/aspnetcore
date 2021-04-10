@@ -74,6 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         public override async Task OnConnectedAsync(HubConnectionContext connection)
         {
             var scope = _serviceScopeFactory.CreateScope();
+            connection.HubCallerClients =  new HubCallerClients(_hubContext.Clients, connection.ConnectionId);
 
             try
             {
@@ -558,7 +559,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private void InitializeHub(THub hub, HubConnectionContext connection)
         {
-            hub.Clients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId);
+            hub.Clients = connection.HubCallerClients;
             hub.Context = connection.HubCallerContext;
             hub.Groups = _hubContext.Groups;
         }
