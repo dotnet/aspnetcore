@@ -33,6 +33,9 @@
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">bin\</BaseOutputPath>
     <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' == 'AnyCPU'">$(BaseOutputPath)$(Configuration)\</OutputPath>
     <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' != 'AnyCPU'">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
+    
+    <!-- TODO figure out how to get this -->
+    <SharedFxVersion>6.0.0-ci</SharedFxVersion>
   </PropertyGroup>
 
   <!-- Specify the runtime we need which will be included as a correlation payload -->
