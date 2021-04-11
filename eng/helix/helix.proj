@@ -80,7 +80,7 @@
   </ItemGroup>
 
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather">
-    <Unzip SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetArchitecture).$(SharedFxVersion).nupkg" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw" />
+    <Unzip SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetOsName)-$(TargetArchitecture).$(SharedFxVersion).nupkg" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw" />
     
     <ItemGroup>
       <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.txt" />
