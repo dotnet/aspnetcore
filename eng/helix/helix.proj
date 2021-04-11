@@ -76,6 +76,22 @@
     <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
   </ItemGroup>
 
+  <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather">
+    <Unzip SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetArchitecture).$(SharedFxVersion).nupkg" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw" />
+    
+    <ItemGroup>
+      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.txt" />
+      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.json" />
+      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.dll" />
+      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.xml" />
+    </ItemGroup>
+    
+    <Copy SourceFiles="@(_appRuntimeFiles)" DestinationFiles="$(OutputPath)\AspNetCoreAppRuntimeHelix" />
+    <ZipDirectory SourceDirectory="$(OutputPath)\AspNetCoreAppRuntimeHelix" DestinationFile="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Overwrite="true" />
+    
+    <HelixCorrelationPayload Include="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Destination="$(DotNetCliDestination)\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
+  </Target>
+  
   <Target Name="Gather" BeforeTargets="Build">
     <MSBuild Projects="@(ProjectToBuild)"
               Targets="CreateHelixPayload"
