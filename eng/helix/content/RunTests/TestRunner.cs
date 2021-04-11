@@ -123,12 +123,12 @@ namespace RunTests
             {
                 if (File.Exists(Options.AspNetRuntime))
                 {
-                    var appRuntimePath = $"{Options.HELIX_WORKITEM_ROOT}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
+                    var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
                     Console.WriteLine($"Creating directory: {appRuntimePath}");
                     Directory.CreateDirectory(appRuntimePath);
                     Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
                     EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
-                    Console.WriteLine($"Found AspNetRuntime: {Options.AspNetRuntime}, extracting *.txt,json,dll,xml to {appRuntimePath}");
+/*                    Console.WriteLine($"Found AspNetRuntime: {Options.AspNetRuntime}, extracting *.txt,json,dll,xml to {appRuntimePath}");
                     using (var archive = ZipFile.OpenRead(Options.AspNetRuntime))
                     {
                         foreach (var entry in archive.Entries)
@@ -142,7 +142,7 @@ namespace RunTests
                                 entry.ExtractToFile(Path.Combine(appRuntimePath, entry.Name), overwrite: true);
                             }
                         }
-                    }
+                    }*/
 
                     DisplayContents(appRuntimePath);
 
