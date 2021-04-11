@@ -21,13 +21,13 @@ namespace Microsoft.AspNetCore.Testing
         [Fact]
         public async Task TimeoutAfter_DoesNotThrowWhenCompleted()
         {
-            await Task.FromResult(true).TimeoutAfter(TimeSpan.FromMilliseconds(50));
+            await Task.FromResult(true).TimeoutAfter(TimeSpan.FromMilliseconds(30000));
         }
 
         [Fact]
         public async Task TimeoutAfter_DoesNotThrow_WithinTimeoutPeriod()
         {
-            await Task.Delay(10).TimeoutAfter(TimeSpan.FromMilliseconds(50));
+            await Task.Delay(10).TimeoutAfter(TimeSpan.FromMilliseconds(30000));
         }
 
         [Fact]
@@ -58,6 +58,32 @@ namespace Microsoft.AspNetCore.Testing
         public async Task DefaultTimeout_DoesNotThrowWhenCompleted()
         {
             await Task.FromResult(true).DefaultTimeout();
+        }
+
+        [Theory]
+        [InlineData("This is my custom timeout exception message.")]
+        public async Task Task_TimeoutAfter_DoesNotRethrow_NonWaitAsyncTimeouts(string message)
+        {
+            async Task ExpectedTimeout()
+            {
+                await Task.Delay(10);
+                throw new TimeoutException(message);
+            }
+            var exception = await Assert.ThrowsAsync<TimeoutException>(() => ExpectedTimeout().TimeoutAfter(TimeSpan.FromMilliseconds(30000)));
+            Assert.Equal(message, exception.Message);
+        }
+
+        [Theory]
+        [InlineData("This is my custom timeout exception message.")]
+        public async Task TaskT_TimeoutAfter_DoesNotRethrow_NonWaitAsyncTimeouts(string message)
+        {
+            async Task<bool> ExpectedTimeout()
+            {
+                await Task.Delay(10);
+                throw new TimeoutException(message);
+            }
+            var exception = await Assert.ThrowsAsync<TimeoutException>(() => ExpectedTimeout().TimeoutAfter(TimeSpan.FromMilliseconds(30000)));
+            Assert.Equal(message, exception.Message);
         }
 
     }

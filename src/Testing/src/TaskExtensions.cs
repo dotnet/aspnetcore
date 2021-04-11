@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Testing
             return task.TimeoutAfter(timeout, filePath, lineNumber);
         }
 
-        public static Task<T> DefaultTimeout<T>(this ValueTask<T> task, int milliseconds = DefaultTimeoutDuration, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = default) 
+        public static Task<T> DefaultTimeout<T>(this ValueTask<T> task, int milliseconds = DefaultTimeoutDuration, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = default)
         {
             return task.AsTask().TimeoutAfter(TimeSpan.FromMilliseconds(milliseconds), filePath, lineNumber);
         }
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Testing
             {
                 return await task.WaitAsync(timeout);
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex) when (ex.Source == nameof(Microsoft.AspNetCore.Testing))
             {
                 throw new TimeoutException(CreateMessage(timeout, filePath, lineNumber));
             }
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Testing
             {
                 await task.WaitAsync(timeout);
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex) when (ex.Source == nameof(Microsoft.AspNetCore.Testing))
             {
                 throw new TimeoutException(CreateMessage(timeout, filePath, lineNumber));
             }
