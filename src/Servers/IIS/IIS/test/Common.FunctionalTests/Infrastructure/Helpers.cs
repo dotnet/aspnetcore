@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 {
                     logger.LogError($"{hostingProcess.ProcessName} pid: {hostingProcess.Id} hasExited: {hostingProcess.HasExited.ToString()}");
                 }
-                throw ex;
+                throw;
             }
         }
 

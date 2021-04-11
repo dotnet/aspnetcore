@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using BasicTestApp;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
 using Xunit;
@@ -29,6 +31,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29739")]
         public void DownloadFileFromAnchor()
         {
             // Arrange
@@ -43,9 +46,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // URL should still be same as before click
             Assert.Equal(initialUrl, Browser.Url);
 
-            // File should be requested
+            // File should be requested or downloaded to to disk
             var requestedPaths = GetAndClearRequestedPaths();
-            Assert.NotEmpty(requestedPaths.Where(path => path.EndsWith("blazor_logo_1000x.png", StringComparison.InvariantCultureIgnoreCase)));
+            var downloadPath = Path.Combine(BrowserFixture.UserProfileDir, "Downloads", "blazor_logo_1000x.png");
+            var fileExists = File.Exists(downloadPath);
+            var requestSent = requestedPaths.Any(path => path.EndsWith("blazor_logo_1000x.png", StringComparison.InvariantCultureIgnoreCase));
+            Assert.True(fileExists || requestSent);
         }
 
         protected IWebElement MountAndNavigateToRouterTest()

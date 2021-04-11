@@ -383,7 +383,7 @@ namespace Ignitor
 
             var descriptors = await GetPrerenderDescriptors(uri);
             await ExpectRenderBatch(
-                async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri, descriptors, CancellationToken),
+                async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri, descriptors, null, CancellationToken),
                 DefaultConnectionTimeout);
             return CircuitId != null;
         }
@@ -453,7 +453,7 @@ namespace Ignitor
             NextErrorReceived?.Completion?.TrySetResult(null);
         }
 
-        private Task OnClosedAsync(Exception ex)
+        private Task OnClosedAsync(Exception? ex)
         {
             NextDisconnect?.Completion?.TrySetResult(null);
 

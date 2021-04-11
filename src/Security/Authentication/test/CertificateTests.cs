@@ -284,6 +284,30 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
+        
+        [Fact]
+        public async Task VerifyValidationFailureCanBeHandled()
+        {
+            var failCalled = false;
+            using var host = await CreateHost(
+                new CertificateAuthenticationOptions
+                {
+                    Events = new CertificateAuthenticationEvents()
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            context.Fail("Validation failed: " + context.Exception);
+                            failCalled = true;
+                            return Task.CompletedTask;
+                        }
+                    }
+                }, Certificates.SignedClient);
+
+            using var server = host.GetTestServer();
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            Assert.True(failCalled);
+        }
 
         [Fact]
         public async Task VerifyClientCertWithUntrustedRootAndTrustedChainEndsUpInForbidden()
@@ -317,6 +341,41 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyValidClientCertWithAdditionalCertificatesAuthenticates()
+        {
+            using var host = await CreateHost(
+                new CertificateAuthenticationOptions
+                {
+                    Events = successfulValidationEvents,
+                    ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
+                    CustomTrustStore = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, },
+                    AdditionalChainCertificates = new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
+                    RevocationMode = X509RevocationMode.NoCheck
+                }, Certificates.SignedClient);
+
+            using var server = host.GetTestServer();
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyValidClientCertFailsWithoutAdditionalCertificatesAuthenticates()
+        {
+            using var host = await CreateHost(
+                new CertificateAuthenticationOptions
+                {
+                    Events = successfulValidationEvents,
+                    ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
+                    CustomTrustStore = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, },
+                    RevocationMode = X509RevocationMode.NoCheck
+                }, Certificates.SignedClient);
+
+            using var server = host.GetTestServer();
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
         [Fact]
@@ -570,7 +629,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(Expected, name.First().Value);
             count = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "ValidationCount");
             Assert.Single(count);
-            var expected = cache ? "1" : "2"; 
+            var expected = cache ? "1" : "2";
             Assert.Equal(expected, count.First().Value);
         }
 
@@ -693,6 +752,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                                 options.RevocationFlag = configureOptions.RevocationFlag;
                                 options.RevocationMode = configureOptions.RevocationMode;
                                 options.ValidateValidityPeriod = configureOptions.ValidateValidityPeriod;
+                                options.AdditionalChainCertificates = configureOptions.AdditionalChainCertificates;
                             });
                         }
                         else
@@ -715,7 +775,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 .Build();
 
             await host.StartAsync();
-
 
             var server = host.GetTestServer();
             server.BaseAddress = baseAddress;

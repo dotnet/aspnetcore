@@ -19,6 +19,10 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public sealed class DefaultHttpContext : HttpContext
     {
+        // The initial size of the feature collection when using the default constructor; based on number of common features
+        // https://github.com/dotnet/aspnetcore/issues/31249
+        private const int DefaultFeatureCollectionSize = 10;
+
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IItemsFeature> _newItemsFeature = f => new ItemsFeature();
         private readonly static Func<DefaultHttpContext, IServiceProvidersFeature> _newServiceProvidersFeature = context => new RequestServicesFeature(context, context.ServiceScopeFactory);
@@ -36,11 +40,15 @@ namespace Microsoft.AspNetCore.Http
         private DefaultConnectionInfo? _connection;
         private DefaultWebSocketManager? _websockets;
 
+        // This is field exists to make analyzing memory dumps easier.
+        // https://github.com/dotnet/aspnetcore/issues/29709
+        internal bool _active;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHttpContext"/> class.
         /// </summary>
         public DefaultHttpContext()
-            : this(new FeatureCollection())
+            : this(new FeatureCollection(DefaultFeatureCollectionSize))
         {
             Features.Set<IHttpRequestFeature>(new HttpRequestFeature());
             Features.Set<IHttpResponseFeature>(new HttpResponseFeature());
@@ -73,6 +81,7 @@ namespace Microsoft.AspNetCore.Http
             _response.Initialize(revision);
             _connection?.Initialize(features, revision);
             _websockets?.Initialize(features, revision);
+            _active = true;
         }
 
         /// <summary>
@@ -85,6 +94,7 @@ namespace Microsoft.AspNetCore.Http
             _response.Uninitialize();
             _connection?.Uninitialize();
             _websockets?.Uninitialize();
+            _active = false;
         }
 
         /// <summary>

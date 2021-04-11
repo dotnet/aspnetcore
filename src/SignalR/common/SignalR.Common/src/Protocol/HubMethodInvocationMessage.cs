@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <summary>
         /// Gets the target method arguments.
         /// </summary>
-        public object?[]? Arguments { get; }
+        public object?[] Arguments { get; }
 
         /// <summary>
         /// The target methods stream IDs.
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="target">The target method name.</param>
         /// <param name="arguments">The target method arguments.</param>
         /// <param name="streamIds">The target methods stream IDs.</param>
-        protected HubMethodInvocationMessage(string? invocationId, string target, object?[]? arguments, string[]? streamIds)
+        protected HubMethodInvocationMessage(string? invocationId, string target, object?[] arguments, string[]? streamIds)
             : this(invocationId, target, arguments)
         {
             StreamIds = streamIds;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="invocationId">The invocation ID.</param>
         /// <param name="target">The target method name.</param>
         /// <param name="arguments">The target method arguments.</param>
-        protected HubMethodInvocationMessage(string? invocationId, string target, object?[]? arguments)
+        protected HubMethodInvocationMessage(string? invocationId, string target, object?[] arguments)
             : base(invocationId)
         {
             if (string.IsNullOrEmpty(target))
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// </summary>
         /// <param name="target">The target method name.</param>
         /// <param name="arguments">The target method arguments.</param>
-        public InvocationMessage(string target, object?[]? arguments)
+        public InvocationMessage(string target, object?[] arguments)
             : this(null, target, arguments)
         {
         }
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="invocationId">The invocation ID.</param>
         /// <param name="target">The target method name.</param>
         /// <param name="arguments">The target method arguments.</param>
-        public InvocationMessage(string? invocationId, string target, object?[]? arguments)
+        public InvocationMessage(string? invocationId, string target, object?[] arguments)
             : base(invocationId, target, arguments)
         {
         }
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="target">The target method name.</param>
         /// <param name="arguments">The target method arguments.</param>
         /// <param name="streamIds">The target methods stream IDs.</param>
-        public InvocationMessage(string? invocationId, string target, object?[]? arguments, string[]? streamIds)
+        public InvocationMessage(string? invocationId, string target, object?[] arguments, string[]? streamIds)
             : base(invocationId, target, arguments, streamIds)
         {
         }
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="invocationId">The invocation ID.</param>
         /// <param name="target">The target method name.</param>
         /// <param name="arguments">The target method arguments.</param>
-        public StreamInvocationMessage(string invocationId, string target, object[] arguments)
+        public StreamInvocationMessage(string invocationId, string target, object?[] arguments)
             : base(invocationId, target, arguments)
         {
         }
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="target">The target method name.</param>
         /// <param name="arguments">The target method arguments.</param>
         /// <param name="streamIds">The target methods stream IDs.</param>
-        public StreamInvocationMessage(string invocationId, string target, object[] arguments, string[]? streamIds)
+        public StreamInvocationMessage(string invocationId, string target, object?[] arguments, string[]? streamIds)
             : base(invocationId, target, arguments, streamIds)
         {
         }

@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 Events = Context.RequestServices.GetRequiredService(Options.EventsType);
             }
-            Events = Events ?? await CreateEventsAsync();
+            Events ??= await CreateEventsAsync();
         }
 
         /// <summary>

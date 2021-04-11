@@ -88,13 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// <summary>
         /// Indicates if <see cref="GetChildContentAsync"/> has been called.
         /// </summary>
-        public bool ChildContentRetrieved
-        {
-            get
-            {
-                return _childContent != null;
-            }
-        }
+        public bool ChildContentRetrieved => _childContent != null;
 
         /// <summary>
         /// Gets the collection of items used to communicate with other <see cref="ITagHelper"/>s.
@@ -104,13 +98,9 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// <summary>
         /// <see cref="ITagHelper"/>s that should be run.
         /// </summary>
-        public IList<ITagHelper> TagHelpers
-        {
-            get
-            {
-                return _tagHelpers;
-            }
-        }
+        public IList<ITagHelper> TagHelpers => _tagHelpers;
+
+        internal List<ITagHelper> TagHelperList => _tagHelpers;
 
         // Internal set for testing.
         /// <summary>

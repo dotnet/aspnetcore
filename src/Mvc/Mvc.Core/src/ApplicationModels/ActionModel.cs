@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Attributes = new List<object>(attributes);
             Filters = new List<IFilterMetadata>();
             Parameters = new List<ParameterModel>();
-            RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            RouteValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
             Properties = new Dictionary<object, object>();
             Selectors = new List<SelectorModel>();
         }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilterMetadata>(other.Filters);
             Properties = new Dictionary<object, object>(other.Properties);
-            RouteValues = new Dictionary<string, string>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
+            RouteValues = new Dictionary<string, string?>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
 
             // Make a deep copy of other 'model' types.
             ApiExplorer = new ApiExplorerModel(other.ApiExplorer);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets the action name.
         /// </summary>
-        public string ActionName { get; set; }
+        public string ActionName { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ApiExplorerModel"/> for this action.
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets or sets the <see cref="ControllerModel"/>.
         /// </summary>
-        public ControllerModel Controller { get; set; }
+        public ControllerModel Controller { get; set; } = default!;
 
         /// <summary>
         /// Gets the <see cref="IFilterMetadata"/> instances associated with the action.
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// This feature only applies when using endpoint routing.
         /// </para>
         /// </remarks>
-        public IOutboundParameterTransformer RouteParameterTransformer { get; set; }
+        public IOutboundParameterTransformer? RouteParameterTransformer { get; set; }
 
         /// <summary>
         /// Gets a collection of route values that must be present in the 
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <see cref="ControllerModel.RouteValues"/>.
         /// </para>
         /// </remarks>
-        public IDictionary<string, string> RouteValues { get; }
+        public IDictionary<string, string?> RouteValues { get; }
 
         /// <summary>
         /// Gets a set of properties associated with the action.

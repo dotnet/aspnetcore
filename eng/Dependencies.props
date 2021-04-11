@@ -56,7 +56,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Options" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
-    <LatestPackageReference Include="Microsoft.Win32.SystemEvents" />
     <LatestPackageReference Include="System.Buffers" />
     <LatestPackageReference Include="System.CodeDom" />
     <LatestPackageReference Include="System.CommandLine.Experimental" />
@@ -65,7 +64,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" />
     <LatestPackageReference Include="System.DirectoryServices.Protocols" />
-    <LatestPackageReference Include="System.Drawing.Common" />
     <LatestPackageReference Include="System.IO.Pipelines" />
     <LatestPackageReference Include="System.Net.Http" />
     <LatestPackageReference Include="System.Net.Http.Json" />
@@ -73,17 +71,13 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
-    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. -->
-    <LatestPackageReference Include="System.Security.AccessControl" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
-    <LatestPackageReference Include="System.Security.Permissions" />
     <LatestPackageReference Include="System.Security.Principal.Windows" />
     <LatestPackageReference Include="System.Text.Encodings.Web" />
     <LatestPackageReference Include="System.Text.Json" />
     <LatestPackageReference Include="System.Threading.Channels" />
-    <LatestPackageReference Include="System.Windows.Extensions" />
     <LatestPackageReference Include="System.ValueTuple" />
 
     <!-- Runtime packages required for crossgen -->
@@ -109,8 +103,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x64" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Internal.Transport" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
@@ -121,22 +115,20 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.SqlServer" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
-    <LatestPackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" />
     <LatestPackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />
-    <LatestPackageReference Include="Microsoft.Extensions.Internal.Transport" />
     <LatestPackageReference Include="Microsoft.NETCore.Windows.ApiSets" />
     <LatestPackageReference Include="Microsoft.NETCore.BrowserDebugHost.Transport" />
     <LatestPackageReference Include="Microsoft.Owin.Security.Cookies" />
     <LatestPackageReference Include="Microsoft.Owin.Testing" />
     <LatestPackageReference Include="Microsoft.Web.Administration" />
+    <LatestPackageReference Include="Microsoft.Web.WebView2" />
     <LatestPackageReference Include="Microsoft.Web.Xdt" />
     <LatestPackageReference Include="NETStandard.Library" />
     <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <LatestPackageReference Include="System.Net.Experimental.MsQuic" />
     <LatestPackageReference Include="System.Net.Http.WinHttpHandler" />
-    <LatestPackageReference Include="System.Net.WebSockets.WebSocketProtocol" />
     <LatestPackageReference Include="System.ServiceProcess.ServiceController" />
     <LatestPackageReference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
@@ -175,13 +167,14 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Moq" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />
+    <LatestPackageReference Include="NuGet.Frameworks" />
     <LatestPackageReference Include="NuGet.Versioning" />
+    <LatestPackageReference Include="PlaywrightSharp" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />
     <LatestPackageReference Include="Selenium.Support" />
     <LatestPackageReference Include="Selenium.WebDriver" />
     <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" />
-    <LatestPackageReference Include="Selenium.WebDriver.MicrosoftDriver" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" />
     <LatestPackageReference Include="Serilog.Sinks.File" />
     <LatestPackageReference Include="StackExchange.Redis" />
@@ -202,6 +195,9 @@ and are generated based on the last package release.
     <!-- Get versions. -->
     <LatestPackageReference Update="@(LatestPackageReference)">
       <Version>$(%(VersionName)Version)</Version>
+
+      <!-- Remove excess metadata. -->
+      <VersionName />
     </LatestPackageReference>
 
     <!--

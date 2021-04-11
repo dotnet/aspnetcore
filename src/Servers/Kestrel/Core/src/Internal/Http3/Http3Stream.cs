@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool _isMethodConnect;
 
         private readonly Http3Connection _http3Connection;
-        private bool _receivedHeaders;
         private TaskCompletionSource? _appCompleted;
 
         public Pipe RequestBodyPipe { get; }
@@ -388,6 +387,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 error = ex;
                 Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
             }
+            catch (Http3ConnectionErrorException ex)
+            {
+                error = ex;
+                _errorCodeFeature.Error = (long)ex.ErrorCode;
+
+                Log.Http3ConnectionError(_http3Connection.ConnectionId, ex);
+                _http3Connection.Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
+
+                // TODO: HTTP/3 stream will be aborted by connection. Check this is correct.
+            }
             catch (Exception ex)
             {
                 error = ex;
@@ -417,6 +426,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 finally
                 {
+                    await _context.StreamContext.DisposeAsync();
+
                     _http3Connection.RemoveStream(_streamIdFeature.StreamId);
                 }
             }
@@ -445,14 +456,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     return ProcessDataFrameAsync(payload);
                 case Http3FrameType.Headers:
                     return ProcessHeadersFrameAsync(application, payload);
-                // need to be on control stream
-                case Http3FrameType.DuplicatePush:
-                case Http3FrameType.PushPromise:
                 case Http3FrameType.Settings:
-                case Http3FrameType.GoAway:
                 case Http3FrameType.CancelPush:
+                case Http3FrameType.GoAway:
                 case Http3FrameType.MaxPushId:
-                    throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
+                    // These frames need to be on a control stream
+                    throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
+                case Http3FrameType.PushPromise:
+                    // The server should never receive push promise
+                    throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
                 default:
                     return ProcessUnknownFrameAsync();
             }
@@ -460,25 +473,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private Task ProcessUnknownFrameAsync()
         {
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-9
             // Unknown frames must be explicitly ignored.
             return Task.CompletedTask;
         }
 
         private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload) where TContext : notnull
         {
+            // HEADERS frame after trailing headers is invalid.
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+            {
+                throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame);
+            }
+
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
+            {
+                _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
+            }
+
             QPackDecoder.Decode(payload, handler: this);
             QPackDecoder.Reset();
 
-            // start off a request once qpack has decoded
-            // Make sure to await this task.
-            if (_receivedHeaders)
+            switch (_requestHeaderParsingState)
             {
-                // trailers
-                // TODO figure out if there is anything else to do here.
-                return Task.CompletedTask;
+                case RequestHeaderParsingState.Ready:
+                case RequestHeaderParsingState.PseudoHeaderFields:
+                    _requestHeaderParsingState = RequestHeaderParsingState.Headers;
+                    break;
+                case RequestHeaderParsingState.Headers:
+                    break;
+                case RequestHeaderParsingState.Trailers:
+                    // trailers
+                    // TODO figure out if there is anything else to do here.
+                    return Task.CompletedTask;
+                default:
+                    Debug.Fail("Unexpected header parsing state.");
+                    break;
             }
 
-            _receivedHeaders = true;
             InputRemaining = HttpRequestHeaders.ContentLength;
 
             _appCompleted = new TaskCompletionSource();
@@ -490,6 +523,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)
         {
+            // DATA frame before headers is invalid.
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
+            {
+                throw new Http3ConnectionErrorException(CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders, Http3ErrorCode.UnexpectedFrame);
+            }
+
+            // DATA frame after trailing headers is invalid.
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+            {
+                var message = CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data)));
+                throw new Http3ConnectionErrorException(message, Http3ErrorCode.UnexpectedFrame);
+            }
+
             if (InputRemaining.HasValue)
             {
                 // https://tools.ietf.org/html/rfc7540#section-8.1.2.6
@@ -529,7 +577,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         protected override void OnReset()
         {
-            ResetHttp3Features();
+            // Reset Http3 Features
+            _currentIHttpMinRequestBodyDataRateFeature = this;
+            _currentIHttpResponseTrailersFeature = this;
+            _currentIHttpResetFeature = this;
         }
 
         protected override void ApplicationAbort() => ApplicationAbort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication), Http3ErrorCode.InternalError);

@@ -59,10 +59,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string>(LogLevel.Warning, new EventId(24, "ConnectionRejected"), @"Connection id ""{ConnectionId}"" rejected because the maximum number of concurrent connections has been reached.");
 
         private static readonly Action<ILogger, string, string, Exception?> _requestBodyStart =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(25, "RequestBodyStart"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": started reading request body.");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(25, "RequestBodyStart"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": started reading request body.", skipEnabledCheck: true);
 
         private static readonly Action<ILogger, string, string, Exception?> _requestBodyDone =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(26, "RequestBodyDone"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(26, "RequestBodyDone"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.", skipEnabledCheck: true);
 
         private static readonly Action<ILogger, string, string?, double, Exception?> _requestBodyMinimumDataRateNotSatisfied =
             LoggerMessage.Define<string, string?, double>(LogLevel.Debug, new EventId(27, "RequestBodyMinimumDataRateNotSatisfied"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(33, "RequestBodyDrainTimedOut"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": automatic draining of the request body timed out after taking over 5 seconds.");
 
         private static readonly Action<ILogger, string, string, Exception?> _applicationAbortedConnection =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(34, "RequestBodyDrainTimedOut"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.");
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(34, "ApplicationAbortedConnection"), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.");
 
         private static readonly Action<ILogger, string, Http2ErrorCode, Exception> _http2StreamResetAbort =
             LoggerMessage.Define<string, Http2ErrorCode>(LogLevel.Debug, new EventId(35, "Http2StreamResetAbort"),
@@ -102,11 +102,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception?> _http2FrameReceived =
             LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, "Http2FrameReceived"),
-                @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length} and flags {flags}.");
+                @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length} and flags {flags}.",
+                skipEnabledCheck: true);
 
         private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception?> _http2FrameSending =
             LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(49, "Http2FrameSending"),
-                @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length} and flags {flags}.");
+                @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length} and flags {flags}.",
+                skipEnabledCheck: true);
 
         private static readonly Action<ILogger, string, int, Exception> _hpackEncodingError =
             LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(38, "HPackEncodingError"),
@@ -134,17 +136,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(44, "Http3ConnectionClosed"),
                 @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
 
-        private static readonly Action<ILogger, string, Http3ErrorCode, Exception> _http3StreamAbort =
-            LoggerMessage.Define<string, Http3ErrorCode>(LogLevel.Debug, new EventId(45, "Http3StreamAbort"),
-                @"Trace id ""{TraceIdentifier}"": HTTP/3 stream error ""{error}"". An abort is being sent to the stream.");
+        private static readonly Action<ILogger, string, string, Exception> _http3StreamAbort =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(45, "Http3StreamAbort"),
+                @"Trace id ""{TraceIdentifier}"": HTTP/3 stream error ""{error}"". An abort is being sent to the stream.",
+                skipEnabledCheck: true);
 
-        private static readonly Action<ILogger, string, Http3FrameType, long, long, Exception?> _http3FrameReceived =
-            LoggerMessage.Define<string, Http3FrameType, long, long>(LogLevel.Trace, new EventId(46, "Http3FrameReceived"),
-                @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length}.");
+        private static readonly Action<ILogger, string, string, long, long, Exception?> _http3FrameReceived =
+            LoggerMessage.Define<string, string, long, long>(LogLevel.Trace, new EventId(46, "Http3FrameReceived"),
+                @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length}.",
+                skipEnabledCheck: true);
 
-        private static readonly Action<ILogger, string, Http3FrameType, long, long, Exception?> _http3FrameSending =
-            LoggerMessage.Define<string, Http3FrameType, long, long>(LogLevel.Trace, new EventId(47, "Http3FrameSending"),
-                @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length}.");
+        private static readonly Action<ILogger, string, string, long, long, Exception?> _http3FrameSending =
+            LoggerMessage.Define<string, string, long, long>(LogLevel.Trace, new EventId(47, "Http3FrameSending"),
+                @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length}.",
+                skipEnabledCheck: true);
 
         protected readonly ILogger _logger;
 
@@ -329,7 +334,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _invalidResponseHeaderRemoved(_logger, null);
         }
 
-        public void Http3ConnectionError(string connectionId, Http3ConnectionException ex)
+        public void Http3ConnectionError(string connectionId, Http3ConnectionErrorException ex)
         {
             _http3ConnectionError(_logger, connectionId, ex);
         }
@@ -346,17 +351,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
         {
-            _http3StreamAbort(_logger, traceIdentifier, error, abortReason);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _http3StreamAbort(_logger, traceIdentifier, Http3Formatting.ToFormattedErrorCode(error), abortReason);
+            }
         }
 
         public void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame)
         {
-            _http3FrameReceived(_logger, connectionId, frame.Type, streamId, frame.Length, null);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _http3FrameReceived(_logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.Length, null);
+            }
         }
 
         public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame)
         {
-            _http3FrameSending(_logger, connectionId, frame.Type, streamId, frame.Length, null);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _http3FrameSending(_logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.Length, null);
+            }
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)

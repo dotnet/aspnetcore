@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -126,7 +128,82 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 endpoint => throw new AddressInUseException("already in use"));
 
             await Assert.ThrowsAsync<IOException>(() =>
-                AddressBinder.BindAsync(options.ListenOptions, addressBindContext));
+                AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None));
+        }
+
+        [Fact]
+        public void LogsWarningWhenHostingAddressesAreOverridden()
+        {
+            var logger = new TestApplicationErrorLogger();
+
+            var overriddenAddress = "http://localhost:5000";
+            var addresses = new ServerAddressesFeature();
+            addresses.InternalCollection.Add(overriddenAddress);
+
+            var options = new KestrelServerOptions();
+            options.ListenAnyIP(8080);
+
+            var addressBindContext = TestContextFactory.CreateAddressBindContext(
+                addresses,
+                options,
+                logger,
+                endpoint => Task.CompletedTask);
+
+            var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+            Assert.True(bindTask.IsCompletedSuccessfully);
+
+            var log = Assert.Single(logger.Messages);
+            Assert.Equal(LogLevel.Warning, log.LogLevel);
+            Assert.Equal(CoreStrings.FormatOverridingWithKestrelOptions(overriddenAddress), log.Message);
+        }
+
+        [Fact]
+        public void LogsInformationWhenKestrelAddressesAreOverridden()
+        {
+            var logger = new TestApplicationErrorLogger();
+
+            var overriddenAddress = "http://localhost:5000";
+            var addresses = new ServerAddressesFeature();
+            addresses.InternalCollection.Add(overriddenAddress);
+
+            var options = new KestrelServerOptions();
+            options.ListenAnyIP(8080);
+
+            var addressBindContext = TestContextFactory.CreateAddressBindContext(
+                addresses,
+                options,
+                logger,
+                endpoint => Task.CompletedTask);
+
+            addressBindContext.ServerAddressesFeature.PreferHostingUrls = true;
+
+            var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+            Assert.True(bindTask.IsCompletedSuccessfully);
+
+            var log = Assert.Single(logger.Messages);
+            Assert.Equal(LogLevel.Information, log.LogLevel);
+            Assert.Equal(CoreStrings.FormatOverridingWithPreferHostingUrls(nameof(addressBindContext.ServerAddressesFeature.PreferHostingUrls), overriddenAddress), log.Message);
+        }
+
+        [Fact]
+        public async Task FlowsCancellationTokenToCreateBinddingCallback()
+        {
+            var addresses = new ServerAddressesFeature();
+            addresses.InternalCollection.Add("http://localhost:5000");
+            var options = new KestrelServerOptions();
+
+            var addressBindContext = TestContextFactory.CreateAddressBindContext(
+                addresses,
+                options,
+                NullLogger.Instance,
+                (endpoint, cancellationToken) =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return Task.CompletedTask;
+                });
+
+            await Assert.ThrowsAsync<OperationCanceledException>(() =>
+                AddressBinder.BindAsync(options.ListenOptions, addressBindContext, new CancellationToken(true)));
         }
 
         [Theory]
@@ -163,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     return Task.CompletedTask;
                 });
 
-            await AddressBinder.BindAsync(options.ListenOptions, addressBindContext);
+            await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
 
             Assert.True(ipV4Attempt, "Should have attempted to bind to IPAddress.Any");
             Assert.True(ipV6Attempt, "Should have attempted to bind to IPAddress.IPv6Any");
@@ -205,7 +282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     return Task.CompletedTask;
                 });
 
-            await AddressBinder.BindAsync(options.ListenOptions, addressBindContext);
+            await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
 
             Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5000 && !e.IsTls);
             Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5001 && e.IsTls);

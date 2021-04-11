@@ -34,11 +34,13 @@ namespace Microsoft.Extensions.Logging
             _sessionStarted = LoggerMessage.Define<string, string>(
                 eventId: new EventId(3, "SessionStarted"),
                 logLevel: LogLevel.Information,
-                formatString: "Session started; Key:{sessionKey}, Id:{sessionId}");
+                formatString: "Session started; Key:{sessionKey}, Id:{sessionId}",
+                skipEnabledCheck: true);
             _sessionLoaded = LoggerMessage.Define<string, string, int>(
                 eventId: new EventId(4, "SessionLoaded"),
                 logLevel: LogLevel.Debug,
-                formatString: "Session loaded; Key:{sessionKey}, Id:{sessionId}, Count:{count}");
+                formatString: "Session loaded; Key:{sessionKey}, Id:{sessionId}, Count:{count}",
+                skipEnabledCheck: true);
             _sessionStored = LoggerMessage.Define<string, string, int>(
                 eventId: new EventId(5, "SessionStored"),
                 logLevel: LogLevel.Debug,
@@ -46,7 +48,8 @@ namespace Microsoft.Extensions.Logging
             _sessionCacheReadException = LoggerMessage.Define<string>(
                 eventId: new EventId(6, "SessionCacheReadException"),
                 logLevel: LogLevel.Error,
-                formatString: "Session cache read exception, Key:{sessionKey}");
+                formatString: "Session cache read exception, Key:{sessionKey}",
+                skipEnabledCheck: true);
             _errorUnprotectingCookie = LoggerMessage.Define(
                 eventId: new EventId(7, "ErrorUnprotectingCookie"),
                 logLevel: LogLevel.Warning,

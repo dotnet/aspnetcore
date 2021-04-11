@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         // Used for testing
         internal HostingEventSource(string eventSourceName)
-            : base(eventSourceName)
+            : base(eventSourceName, EventSourceSettings.EtwManifestEventFormat)
         {
         }
 

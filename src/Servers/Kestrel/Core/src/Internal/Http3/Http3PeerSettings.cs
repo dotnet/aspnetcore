@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (MaxRequestHeaderFieldSize != DefaultMaxRequestHeaderFieldSize)
             {
-                list.Add(new Http3PeerSetting(Http3SettingType.MaxHeaderListSize, MaxRequestHeaderFieldSize));
+                list.Add(new Http3PeerSetting(Http3SettingType.MaxFieldSectionSize, MaxRequestHeaderFieldSize));
             }
 
             return list;

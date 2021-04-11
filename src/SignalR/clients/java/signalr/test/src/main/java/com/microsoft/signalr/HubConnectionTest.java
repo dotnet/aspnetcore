@@ -19,15 +19,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import io.reactivex.Completable;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-import io.reactivex.subjects.CompletableSubject;
-import io.reactivex.subjects.PublishSubject;
-import io.reactivex.subjects.ReplaySubject;
-import io.reactivex.subjects.SingleSubject;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subjects.CompletableSubject;
+import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.ReplaySubject;
+import io.reactivex.rxjava3.subjects.SingleSubject;
 
 class HubConnectionTest {
     private static final String RECORD_SEPARATOR = "\u001e";
@@ -1423,7 +1423,7 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\"}" + RECORD_SEPARATOR);
 
-        assertNull(result.timeout(30, TimeUnit.SECONDS).blockingGet());
+        assertTrue(result.blockingAwait(30, TimeUnit.SECONDS));
         assertTrue(done.get());
     }
 
@@ -1445,7 +1445,7 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage(ByteBuffer.wrap(new byte[] { 0x06, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x02 }));
 
-        assertNull(result.timeout(30, TimeUnit.SECONDS).blockingGet());
+        assertTrue(result.blockingAwait(30, TimeUnit.SECONDS));
         assertTrue(done.get());
     }
 
@@ -1466,7 +1466,7 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
 
-        assertNull(result.timeout(30, TimeUnit.SECONDS).blockingGet());
+        assertTrue(result.blockingAwait(30, TimeUnit.SECONDS));
         assertTrue(done.get());
     }
 
@@ -1488,7 +1488,7 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage(ByteBuffer.wrap(new byte[] { 0x07, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA1, 0x31, 0x03, 0x2A }));
 
-        assertNull(result.timeout(30, TimeUnit.SECONDS).blockingGet());
+        assertTrue(result.blockingAwait(30, TimeUnit.SECONDS));
         assertTrue(done.get());
     }
 
@@ -1529,7 +1529,7 @@ class HubConnectionTest {
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"error\":\"There was an error\"}" + RECORD_SEPARATOR);
 
-        result.timeout(30, TimeUnit.SECONDS).blockingGet();
+        assertTrue(result.onErrorComplete().blockingAwait(30, TimeUnit.SECONDS));
 
         AtomicReference<String> errorMessage = new AtomicReference<>();
         result.doOnError(error -> {
@@ -1559,7 +1559,7 @@ class HubConnectionTest {
                 0x72, 0x65, 0x20, 0x77, 0x61, 0x73, 0x20, 0x61, 0x6E, 0x20, 0x65, 0x72, 0x72, 0x6F, 0x72 };
         mockTransport.receiveMessage(ByteBuffer.wrap(completionMessageErrorBytes));
 
-        result.timeout(30, TimeUnit.SECONDS).blockingGet();
+        assertTrue(result.onErrorComplete().blockingAwait(30, TimeUnit.SECONDS));
 
         AtomicReference<String> errorMessage = new AtomicReference<>();
         result.doOnError(error -> {
@@ -2744,6 +2744,63 @@ class HubConnectionTest {
     }
 
     @Test
+    public void SkippingNegotiateDoesNotNegotiate() {
+        try (TestLogger logger = new TestLogger(WebSocketTransport.class.getName())) {
+            AtomicBoolean negotiateCalled = new AtomicBoolean(false);
+            TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> {
+                        negotiateCalled.set(true);
+                        return Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                    });
+
+            HubConnection hubConnection = HubConnectionBuilder
+                    .create("http://example")
+                    .withTransport(TransportEnum.WEBSOCKETS)
+                    .shouldSkipNegotiate(true)
+                    .withHttpClient(client)
+                    .build();
+
+            try {
+                hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+            } catch (Exception e) {
+                assertEquals("WebSockets isn't supported in testing currently.", e.getMessage());
+            }
+            assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+            assertFalse(negotiateCalled.get());
+
+            logger.assertLog("Starting Websocket connection.");
+        }
+    }
+
+    @Test
+    public void ThrowsIfSkipNegotiationSetAndTransportIsNotWebSockets() {
+        AtomicBoolean negotiateCalled = new AtomicBoolean(false);
+        TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> {
+                    negotiateCalled.set(true);
+                    return Single.just(new HttpResponse(200, "",
+                        TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                });
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example")
+                .shouldSkipNegotiate(true)
+                .withHttpClient(client)
+                .build();
+
+        try {
+            hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        } catch (Exception e) {
+            assertEquals("Negotiation can only be skipped when using the WebSocket transport directly with '.withTransport(TransportEnum.WEBSOCKETS)' on the 'HubConnectionBuilder'.", e.getMessage());
+        }
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        assertFalse(negotiateCalled.get());
+    }
+
+    @Test
     public void connectionIdIsAvailableAfterStart() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
@@ -3828,6 +3885,6 @@ class HubConnectionTest {
             assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         }
 
-        close.timeout(30, TimeUnit.SECONDS).blockingGet();
+        assertTrue(close.blockingAwait(30, TimeUnit.SECONDS));
     }
 }

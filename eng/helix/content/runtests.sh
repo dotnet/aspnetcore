@@ -2,6 +2,8 @@
 
 dotnet_sdk_version="$2"
 dotnet_runtime_version="$3"
+helixQueue="$5"
+installPlaywright="${10}"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -25,6 +27,48 @@ export DOTNET_CLI_HOME="$DIR/.home$RANDOM"
 
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
+# Set playwright stuff
+export PLAYWRIGHT_BROWSERS_PATH="$DIR/ms-playwright"
+if [[ "$helixQueue" == *"OSX"* ]]; then
+    export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/osx/native/playwright.sh"
+    PLAYWRIGHT_NODE_PATH=$DIR/.playwright/osx/native/node
+else
+    export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/unix/native/playwright.sh"
+    PLAYWRIGHT_NODE_PATH=$DIR/.playwright/unix/native/node
+fi
+export InstallPlaywright="$installPlaywright"
+if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
+    if [[ "$helixQueue" != *"OSX"* ]]; then
+        echo "Installing Playwright requirements..."
+        sudo apt-get install -y libdbus-glib-1-2
+        sudo apt-get install -y libbrotli1
+        sudo apt-get install -y libegl1
+        sudo apt-get install -y libnotify4
+        sudo apt-get install -y libvpx5
+        sudo apt-get install -y libopus0
+        sudo apt-get install -y libwoff1
+        sudo apt-get install -y libgstreamer-plugins-base1.0-0
+        sudo apt-get install -y libgstreamer1.0-0
+        sudo apt-get install -y libgstreamer-gl1.0-0
+        sudo apt-get install -y libgstreamer-plugins-bad1.0-0
+        sudo apt-get install -y libopenjp2-7
+        sudo apt-get install -y libwebpdemux2
+        sudo apt-get install -y libwebp6
+        sudo apt-get install -y libenchant1c2a
+        sudo apt-get install -y libsecret-1-0
+        sudo apt-get install -y libhyphen0
+        sudo apt-get install -y libgles2
+        sudo apt-get install -y gstreamer1.0-libav
+        sudo apt-get install -y libxkbcommon0
+        sudo apt-get install -y libgtk-3-0
+        sudo apt-get install -y libharfbuzz-icu0
+    fi
+    echo "chmod +x $PLAYWRIGHT_DRIVER_PATH"
+    chmod +x $PLAYWRIGHT_DRIVER_PATH
+    echo "chmod +x $PLAYWRIGHT_NODE_PATH"
+    chmod +x $PLAYWRIGHT_NODE_PATH
+fi
+
 RESET="\033[0m"
 RED="\033[0;31m"
 YELLOW="\033[0;33m"
@@ -32,7 +76,7 @@ MAGENTA="\033[0;95m"
 
 . eng/common/tools.sh
 
-if [[ -z "${10:-}" ]]; then
+if [[ -z "${11:-}" ]]; then
     echo "InstallDotNet $DOTNET_ROOT $dotnet_sdk_version '' '' true"
     InstallDotNet $DOTNET_ROOT $dotnet_sdk_version "" "" true || {
       exit_code=$?
@@ -49,7 +93,7 @@ if [[ -z "${10:-}" ]]; then
     }
 else
     echo "InstallDotNet $DOTNET_ROOT $dotnet_sdk_version '' '' true https://dotnetclimsrc.blob.core.windows.net/dotnet ..."
-    InstallDotNet $DOTNET_ROOT $dotnet_sdk_version "" "" true https://dotnetclimsrc.blob.core.windows.net/dotnet ${10} || {
+    InstallDotNet $DOTNET_ROOT $dotnet_sdk_version "" "" true https://dotnetclimsrc.blob.core.windows.net/dotnet ${11} || {
       exit_code=$?
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
       ExitWithExitCode $exit_code
@@ -57,7 +101,7 @@ else
     echo
 
     echo "InstallDotNet $DOTNET_ROOT $dotnet_runtime_version '' dotnet true https://dotnetclimsrc.blob.core.windows.net/dotnet ..."
-    InstallDotNet $DOTNET_ROOT $dotnet_runtime_version "" dotnet true https://dotnetclimsrc.blob.core.windows.net/dotnet ${10} || {
+    InstallDotNet $DOTNET_ROOT $dotnet_runtime_version "" dotnet true https://dotnetclimsrc.blob.core.windows.net/dotnet ${11} || {
       exit_code=$?
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
       ExitWithExitCode $exit_code
@@ -80,8 +124,8 @@ exit_code=0
 echo "Restore: $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --ignore-failed-sources"
 $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --ignore-failed-sources
 
-echo "Running tests: $DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --helixTimeout $9"
-$DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --helixTimeout $9
+echo "Running tests: $DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $helixQueue --arch $6 --quarantined $7 --ef $8 --helixTimeout $9"
+$DOTNET_ROOT/dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $helixQueue --arch $6 --quarantined $7 --ef $8 --helixTimeout $9
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 

@@ -2,17 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -23,6 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     {
         private Func<IServiceProvider> _createServiceProvider;
         private RootComponentTypeCache? _rootComponentCache;
+        private string? _persistedState;
 
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -30,6 +36,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         /// <param name="args">The argument passed to the application's main method.</param>
         /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(EntrypointInvoker))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(JSInteropMethods))]
+        [DynamicDependency(JsonSerialized, typeof(WebEventDescriptor))]
         public static WebAssemblyHostBuilder CreateDefault(string[]? args = default)
         {
             // We don't use the args for anything right now, but we want to accept them
@@ -60,6 +69,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Retrieve required attributes from JSRuntimeInvoker
             InitializeNavigationManager(jsRuntime);
             InitializeRegisteredRootComponents(jsRuntime);
+            InitializePersistedState(jsRuntime);
             InitializeDefaultServices();
 
             var hostEnvironment = InitializeEnvironment(jsRuntime);
@@ -106,6 +116,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
                 RootComponents.Add(componentType, registeredComponent.PrerenderId!, parameters);
             }
+        }
+
+        private void InitializePersistedState(IJSUnmarshalledRuntime jsRuntime)
+        {
+            _persistedState = jsRuntime.InvokeUnmarshalled<string>("Blazor._internal.getPersistedState");
         }
 
         private void InitializeNavigationManager(IJSUnmarshalledRuntime jsRuntime)
@@ -220,7 +235,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var services = _createServiceProvider();
             var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
-            return new WebAssemblyHost(services, scope, Configuration, RootComponents.ToArray());
+            return new WebAssemblyHost(services, scope, Configuration, RootComponents.ToArray(), _persistedState);
         }
 
         internal void InitializeDefaultServices()
@@ -229,6 +244,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
             Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
+            Services.AddSingleton<ComponentApplicationLifetime>();
+            Services.AddSingleton<ComponentApplicationState>(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
+            Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
             Services.AddLogging(builder =>
             {
                 builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));

@@ -2,15 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Options;
@@ -19,11 +16,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     internal class DefaultPageLoader : PageLoader
     {
-        private readonly IPageApplicationModelProvider[] _applicationModelProviders;
         private readonly IViewCompilerProvider _viewCompilerProvider;
+        private readonly CompiledPageActionDescriptorFactory _compiledPageActionDescriptorFactory;
         private readonly ActionEndpointFactory _endpointFactory;
-        private readonly PageConventionCollection _conventions;
-        private readonly FilterCollection _globalFilters;
 
         public DefaultPageLoader(
             IEnumerable<IPageApplicationModelProvider> applicationModelProviders,
@@ -32,22 +27,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IOptions<RazorPagesOptions> pageOptions,
             IOptions<MvcOptions> mvcOptions)
         {
-            _applicationModelProviders = applicationModelProviders
-                .OrderBy(p => p.Order)
-                .ToArray();
-
             _viewCompilerProvider = viewCompilerProvider;
             _endpointFactory = endpointFactory;
-            _conventions = pageOptions.Value.Conventions ?? throw new ArgumentNullException(nameof(RazorPagesOptions.Conventions));
-            _globalFilters = mvcOptions.Value.Filters;
+            _compiledPageActionDescriptorFactory = new CompiledPageActionDescriptorFactory(applicationModelProviders, mvcOptions.Value, pageOptions.Value);
         }
 
         private IViewCompiler Compiler => _viewCompilerProvider.GetCompiler();
 
+        [Obsolete]
         public override Task<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor)
             => LoadAsync(actionDescriptor, EndpointMetadataCollection.Empty);
 
-        internal Task<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor, EndpointMetadataCollection endpointMetadata)
+        public override Task<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor, EndpointMetadataCollection endpointMetadata)
         {
             if (actionDescriptor == null)
             {
@@ -67,25 +58,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private async Task<CompiledPageActionDescriptor> LoadAsyncCore(PageActionDescriptor actionDescriptor, EndpointMetadataCollection endpointMetadata)
         {
             var viewDescriptor = await Compiler.CompileAsync(actionDescriptor.RelativePath);
-            var context = new PageApplicationModelProviderContext(actionDescriptor, viewDescriptor.Type.GetTypeInfo());
-            for (var i = 0; i < _applicationModelProviders.Length; i++)
-            {
-                _applicationModelProviders[i].OnProvidersExecuting(context);
-            }
+            var compiled = _compiledPageActionDescriptorFactory.CreateCompiledDescriptor(actionDescriptor, viewDescriptor);
 
-            for (var i = _applicationModelProviders.Length - 1; i >= 0; i--)
-            {
-                _applicationModelProviders[i].OnProvidersExecuted(context);
-            }
-
-            ApplyConventions(_conventions, context.PageApplicationModel);
-
-            var compiled = CompiledPageActionDescriptorBuilder.Build(context.PageApplicationModel, _globalFilters);
-
-            // We need to create an endpoint for routing to use and attach it to the CompiledPageActionDescriptor...
-            // routing for pages is two-phase. First we perform routing using the route info - we can do this without
-            // compiling/loading the page. Then once we have a match we load the page and we can create an endpoint
-            // with all of the information we get from the compiled action descriptor.
             var endpoints = new List<Endpoint>();
             _endpointFactory.AddEndpoints(
                 endpoints,
@@ -96,6 +70,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 {
                     b =>
                     {
+                        // Copy Endpoint metadata for PageActionActionDescriptor to the compiled one.
+                        // This is particularly important for the runtime compiled scenario where endpoint metadata is added
+                        // to the PageActionDescriptor, which needs to be accounted for when constructing the
+                        // CompiledPageActionDescriptor as part of the one of the many matcher policies.
                         // Metadata from PageActionDescriptor is less significant than the one discovered from the compiled type.
                         // Consequently, we'll insert it at the beginning.
                         for (var i = endpointMetadata.Count - 1; i >=0; i--)
@@ -111,55 +89,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             compiled.Endpoint = endpoints.SingleOrDefault();
 
             return compiled;
-        }
-
-        internal static void ApplyConventions(
-            PageConventionCollection conventions,
-            PageApplicationModel pageApplicationModel)
-        {
-            var applicationModelConventions = GetConventions<IPageApplicationModelConvention>(pageApplicationModel.HandlerTypeAttributes);
-            foreach (var convention in applicationModelConventions)
-            {
-                convention.Apply(pageApplicationModel);
-            }
-
-            var handlers = pageApplicationModel.HandlerMethods.ToArray();
-            foreach (var handlerModel in handlers)
-            {
-                var handlerModelConventions = GetConventions<IPageHandlerModelConvention>(handlerModel.Attributes);
-                foreach (var convention in handlerModelConventions)
-                {
-                    convention.Apply(handlerModel);
-                }
-
-                var parameterModels = handlerModel.Parameters.ToArray();
-                foreach (var parameterModel in parameterModels)
-                {
-                    var parameterModelConventions = GetConventions<IParameterModelBaseConvention>(parameterModel.Attributes);
-                    foreach (var convention in parameterModelConventions)
-                    {
-                        convention.Apply(parameterModel);
-                    }
-                }
-            }
-
-            var properties = pageApplicationModel.HandlerProperties.ToArray();
-            foreach (var propertyModel in properties)
-            {
-                var propertyModelConventions = GetConventions<IParameterModelBaseConvention>(propertyModel.Attributes);
-                foreach (var convention in propertyModelConventions)
-                {
-                    convention.Apply(propertyModel);
-                }
-            }
-
-            IEnumerable<TConvention> GetConventions<TConvention>(
-                IReadOnlyList<object> attributes)
-            {
-                return Enumerable.Concat(
-                    conventions.OfType<TConvention>(),
-                    attributes.OfType<TConvention>());
-            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,33 +15,33 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
-        private SafeNativeOverlapped _overlapped;
+        private SafeNativeOverlapped? _overlapped;
         private IntPtr _pinnedBuffer;
         private uint _dataAlreadyRead;
         private TaskCompletionSource<int> _tcs;
         private RequestStream _requestStream;
-        private AsyncCallback _callback;
+        private AsyncCallback? _callback;
         private CancellationTokenRegistration _cancellationRegistration;
 
-        internal RequestStreamAsyncResult(RequestStream requestStream, object userState, AsyncCallback callback)
+        internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback)
         {
             _requestStream = requestStream;
             _tcs = new TaskCompletionSource<int>(userState);
             _callback = callback;
         }
 
-        internal RequestStreamAsyncResult(RequestStream requestStream, object userState, AsyncCallback callback, uint dataAlreadyRead)
+        internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, uint dataAlreadyRead)
             : this(requestStream, userState, callback)
         {
             _dataAlreadyRead = dataAlreadyRead;
         }
 
-        internal RequestStreamAsyncResult(RequestStream requestStream, object userState, AsyncCallback callback, byte[] buffer, int offset, uint dataAlreadyRead)
+        internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, byte[] buffer, int offset, uint dataAlreadyRead)
             : this(requestStream, userState, callback, buffer, offset, dataAlreadyRead, new CancellationTokenRegistration())
         {
         }
 
-        internal RequestStreamAsyncResult(RequestStream requestStream, object userState, AsyncCallback callback, byte[] buffer, int offset, uint dataAlreadyRead, CancellationTokenRegistration cancellationRegistration)
+        internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, byte[] buffer, int offset, uint dataAlreadyRead, CancellationTokenRegistration cancellationRegistration)
             : this(requestStream, userState, callback)
         {
             _dataAlreadyRead = dataAlreadyRead;
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             get { return _requestStream; }
         }
 
-        internal SafeNativeOverlapped NativeOverlapped
+        internal SafeNativeOverlapped? NativeOverlapped
         {
             get { return _overlapped; }
         }
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private static unsafe void Callback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
         {
-            var asyncResult = (RequestStreamAsyncResult)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped);
+            var asyncResult = (RequestStreamAsyncResult)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped)!;
             IOCompleted(asyncResult, errorCode, numBytes);
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public object AsyncState
+        public object? AsyncState
         {
             get { return _tcs.Task.AsyncState; }
         }

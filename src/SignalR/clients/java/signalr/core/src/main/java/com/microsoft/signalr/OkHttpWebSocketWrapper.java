@@ -11,8 +11,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.reactivex.Completable;
-import io.reactivex.subjects.CompletableSubject;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.subjects.CompletableSubject;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -125,6 +125,9 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
                 stateLock.unlock();
             }
             checkStartFailure(null);
+
+            // Send the close frame response if this was a server initiated close, otherwise noops
+            webSocket.close(1000, "");
         }
 
         @Override

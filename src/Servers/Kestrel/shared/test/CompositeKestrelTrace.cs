@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.InvalidResponseHeaderRemoved();
         }
 
-        public void Http3ConnectionError(string connectionId, Http3ConnectionException ex)
+        public void Http3ConnectionError(string connectionId, Http3ConnectionErrorException ex)
         {
             _trace1.Http3ConnectionError(connectionId, ex);
             _trace2.Http3ConnectionError(connectionId, ex);

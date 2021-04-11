@@ -47,6 +47,8 @@ namespace Microsoft.AspNetCore.DataProtection
             IKeyRingProvider keyringProvider;
             if (OSVersionUtil.IsWindows())
             {
+                // Assertion for platform compat analyzer
+                Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
                 // Fastest implementation: AES-256-GCM [CNG]
                 keyringProvider = new EphemeralKeyRing<CngGcmAuthenticatedEncryptorConfiguration>(loggerFactory);
             }
@@ -81,9 +83,6 @@ namespace Microsoft.AspNetCore.DataProtection
             {
                 DefaultAuthenticatedEncryptor = GetDefaultEncryptor(loggerFactory);
             }
-
-            // Currently hardcoded to a 512-bit KDK.
-            private const int NUM_BYTES_IN_KDK = 512 / 8;
 
             public IAuthenticatedEncryptor? DefaultAuthenticatedEncryptor { get; }
 

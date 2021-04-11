@@ -87,7 +87,7 @@ public:
                           (str.QueryCCH()) * sizeof(CHAR)); }
 
     // Resets the internal string to be NULL string. Buffer remains cached.
-    VOID Reset( VOID)
+    VOID Reset()
     { DBG_ASSERT( QueryPtr() != NULL);
       QueryStr()[0] = L'\0';
       QueryStr()[1] = L'\0';
@@ -109,19 +109,19 @@ public:
     //  Returns the number of bytes in the string including the terminating
     //  NULLs
     //
-    UINT QueryCB( VOID ) const
+    UINT QueryCB() const
         { return ( m_cchLen * sizeof(CHAR)); }
 
     //
     //  Returns # of characters in the string including the terminating NULLs
     //
-    UINT QueryCCH( VOID ) const { return (m_cchLen); }
+    UINT QueryCCH() const { return (m_cchLen); }
 
     //
     //  Returns # of strings in the MULTISZA.
     //
 
-    DWORD QueryStringCount( VOID ) const { return m_cStrings; }
+    DWORD QueryStringCount() const { return m_cStrings; }
 
     //
     // Makes a copy of the stored string in given buffer
@@ -131,8 +131,8 @@ public:
     //
     //  Return the string buffer
     //
-    CHAR * QueryStrA( VOID ) const { return ( QueryStr()); }
-    CHAR * QueryStr( VOID ) const { return ((CHAR *) QueryPtr()); }
+    CHAR * QueryStrA() const { return ( QueryStr()); }
+    CHAR * QueryStr() const { return reinterpret_cast<CHAR*>(QueryPtr()); }
 
     //
     //  Makes a clone of the current string in the string pointer passed in.
@@ -151,7 +151,7 @@ public:
     //  directly
     //
 
-    VOID RecalcLen( VOID )
+    VOID RecalcLen()
         { m_cchLen = MULTISZA::CalcLength( QueryStr(), &m_cStrings ); }
 
     //
@@ -166,19 +166,19 @@ public:
     // Determine if the MULTISZA contains a specific string.
     //
 
-    BOOL FindString( const CHAR * str );
+    BOOL FindString( const CHAR * str ) const;
 
-    BOOL FindString( STRA & str )
-        { return FindString( str.QueryStr() ); }
+    BOOL FindString( STRA & str ) const
+    { return FindString( str.QueryStr() ); }
 
     //
     // Determine if the MULTISZA contains a specific string - case-insensitive
     //
 
-    BOOL FindStringNoCase( const CHAR * str );
+    BOOL FindStringNoCase( const CHAR * str ) const;
 
-    BOOL FindStringNoCase( STRA & str )
-        { return FindStringNoCase( str.QueryStr() ); }
+    BOOL FindStringNoCase( STRA & str ) const
+    { return FindStringNoCase( str.QueryStr() ); }
 
     //
     // Used for scanning a MULTISZA.
@@ -194,7 +194,7 @@ public:
     BOOL
     Equals(
         MULTISZA* pmszRhs
-    );
+    ) const;
 
 private:
 

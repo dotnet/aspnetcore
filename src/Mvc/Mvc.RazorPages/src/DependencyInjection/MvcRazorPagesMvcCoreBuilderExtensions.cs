@@ -102,14 +102,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Transient<IConfigureOptions<RazorPagesOptions>, RazorPagesOptionsSetup>());
 
             // Routing
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, PageLoaderMatcherPolicy>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicPageEndpointMatcherPolicy>());
             services.TryAddSingleton<DynamicPageEndpointSelectorCache>();
             services.TryAddSingleton<PageActionEndpointDataSourceIdProvider>();
 
             // Action description and invocation
             services.TryAddEnumerable(
-                ServiceDescriptor.Singleton<IActionDescriptorProvider, PageActionDescriptorProvider>());
+                ServiceDescriptor.Singleton<IActionDescriptorProvider, CompiledPageActionDescriptorProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageRouteModelProvider, CompiledPageRouteModelProvider>());
             services.TryAddSingleton<PageActionEndpointDataSourceFactory>();

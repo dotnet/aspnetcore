@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // Assert
             Assert.NotNull(context.Result);
             Assert.IsType<PageActionInvoker>(context.Result);
-            loader.Verify(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()), Times.Never());
+            loader.Verify(l => l.LoadAsync(It.IsAny<PageActionDescriptor>(), It.IsAny<EndpointMetadataCollection>()), Times.Never());
         }
 
         [Fact]
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
 
             var loader = new Mock<PageLoader>();
-            loader.Setup(l => l.LoadAsync(descriptor))
+            loader.Setup(l => l.LoadAsync(descriptor, EndpointMetadataCollection.Empty))
                 .ReturnsAsync(CreateCompiledPageActionDescriptor(descriptor));
 
             var invokerProvider = CreateInvokerProvider(
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // Assert
             Assert.NotNull(context.Result);
             Assert.IsType<PageActionInvoker>(context.Result);
-            loader.Verify(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()), Times.Once());
+            loader.Verify(l => l.LoadAsync(It.IsAny<PageActionDescriptor>(), It.IsAny<EndpointMetadataCollection>()), Times.Once());
         }
 
         [Fact]
@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             var loader = new Mock<PageLoader>();
             loader
-                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()))
+                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>(), It.IsAny<EndpointMetadataCollection>()))
                 .ReturnsAsync(compiledPageDescriptor);
 
             var mock = new Mock<IRazorPageFactoryProvider>(MockBehavior.Strict);
@@ -432,7 +432,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             var loader = new Mock<PageLoader>();
             loader
-                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()))
+                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>(), It.IsAny<EndpointMetadataCollection>()))
                 .ReturnsAsync(CreateCompiledPageActionDescriptor(descriptor, typeof(TestPageModel)));
 
             var pageFactory = new Mock<IRazorPageFactoryProvider>();

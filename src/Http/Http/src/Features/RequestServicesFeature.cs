@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <inheritdoc />
         public void Dispose()
         {
-            DisposeAsync().GetAwaiter().GetResult();
+            DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
     }
 }

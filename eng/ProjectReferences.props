@@ -35,7 +35,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Routing" ProjectPath="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebUtilities" ProjectPath="$(RepoRoot)src\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Http.Polly" ProjectPath="$(RepoRoot)src\HttpClientFactory\Polly\src\Microsoft.Extensions.Http.Polly.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Html.Abstractions" ProjectPath="$(RepoRoot)src\Html\Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Html.Abstractions" ProjectPath="$(RepoRoot)src\Html.Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" ProjectPath="$(RepoRoot)src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity" ProjectPath="$(RepoRoot)src\Identity\Core\src\Microsoft.AspNetCore.Identity.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" ProjectPath="$(RepoRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
@@ -69,7 +69,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.CookiePolicy" ProjectPath="$(RepoRoot)src\Security\CookiePolicy\src\Microsoft.AspNetCore.CookiePolicy.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Web.Xdt.Extensions" ProjectPath="$(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" />
     <ProjectReferenceProvider Include="dotnet-getdocument" ProjectPath="$(RepoRoot)src\Tools\dotnet-getdocument\src\dotnet-getdocument.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Watch.BrowserRefresh" ProjectPath="$(RepoRoot)src\Tools\dotnet-watch\BrowserRefresh\src\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Client" ProjectPath="$(RepoRoot)src\Tools\Extensions.ApiDescription.Client\src\Microsoft.Extensions.ApiDescription.Client.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Server" ProjectPath="$(RepoRoot)src\Tools\Extensions.ApiDescription.Server\src\Microsoft.Extensions.ApiDescription.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" ProjectPath="$(RepoRoot)src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj" />
@@ -94,16 +93,15 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.ResponseCompression" ProjectPath="$(RepoRoot)src\Middleware\ResponseCompression\src\Microsoft.AspNetCore.ResponseCompression.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Rewrite" ProjectPath="$(RepoRoot)src\Middleware\Rewrite\src\Microsoft.AspNetCore.Rewrite.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Session" ProjectPath="$(RepoRoot)src\Middleware\Session\src\Microsoft.AspNetCore.Session.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices.Extensions" ProjectPath="$(RepoRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaProxy" ProjectPath="$(RepoRoot)src\Middleware\Spa\SpaProxy\src\Microsoft.AspNetCore.SpaProxy.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices.Extensions" ProjectPath="$(RepoRoot)src\Middleware\Spa\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.StaticFiles" ProjectPath="$(RepoRoot)src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebSockets" ProjectPath="$(RepoRoot)src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Language" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Razor.Language\src\Microsoft.AspNetCore.Razor.Language.csproj" />
-    <ProjectReferenceProvider Include="rzc" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Razor.Tools\src\rzc.csproj" />
     <ProjectReferenceProvider Include="Microsoft.CodeAnalysis.Razor" ProjectPath="$(RepoRoot)src\Razor\Microsoft.CodeAnalysis.Razor\src\Microsoft.CodeAnalysis.Razor.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.NET.Sdk.Razor" ProjectPath="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Runtime" ProjectPath="$(RepoRoot)src\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor" ProjectPath="$(RepoRoot)src\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Abstractions" ProjectPath="$(RepoRoot)src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
@@ -147,10 +145,13 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepoRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Authentication.WebAssembly.Msal" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj" />
     <ProjectReferenceProvider Include="Microsoft.JSInterop.WebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.NET.Sdk.BlazorWebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Sdk\src\Microsoft.NET.Sdk.BlazorWebAssembly.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Server" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebView.WebView2" ProjectPath="$(RepoRoot)src\Components\WebView\Platforms\WebView2\src\Microsoft.AspNetCore.Components.WebView.WebView2.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" ProjectPath="$(RepoRoot)src\Components\WebView\Platforms\WindowsForms\src\Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebView.Wpf" ProjectPath="$(RepoRoot)src\Components\WebView\Platforms\Wpf\src\Microsoft.AspNetCore.Components.WebView.Wpf.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebView" ProjectPath="$(RepoRoot)src\Components\WebView\WebView\src\Microsoft.AspNetCore.Components.WebView.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Web" ProjectPath="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileProviders.Embedded" ProjectPath="$(RepoRoot)src\FileProviders\Embedded\src\Microsoft.Extensions.FileProviders.Embedded.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Configuration.KeyPerFile" ProjectPath="$(RepoRoot)src\Configuration.KeyPerFile\src\Microsoft.Extensions.Configuration.KeyPerFile.csproj" />

@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="format">The format value.</param>
         /// <returns>The media type for input format.</returns>
-        public string GetMediaTypeMappingForFormat(string format)
+        public string? GetMediaTypeMappingForFormat(string format)
         {
             if (string.IsNullOrEmpty(format))
             {

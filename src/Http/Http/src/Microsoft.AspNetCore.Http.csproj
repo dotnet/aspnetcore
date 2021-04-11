@@ -15,7 +15,11 @@
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" Link="Internal\StreamCopyOperationInternal.cs" />
+    <Compile Include="..\..\Shared\CookieHeaderParserShared.cs" Link="Internal\CookieHeaderParserShared.cs" />
+    <Compile Include="..\..\Shared\HttpRuleParser.cs" LinkBase="Internal" />
+    <Compile Include="..\..\Shared\HttpParseResult.cs" LinkBase="Internal" />
     <Compile Include="..\..\WebUtilities\src\AspNetCoreTempDirectory.cs" LinkBase="Internal" />
+    <Compile Include="..\..\..\Shared\Dictionary\AdaptiveCapacityDictionary.cs" LinkBase="Internal" />
   </ItemGroup>
 
   <ItemGroup>

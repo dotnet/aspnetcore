@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Http.Features
     {
         private static readonly KeyComparer FeatureKeyComparer = new KeyComparer();
         private readonly IFeatureCollection? _defaults;
+        private readonly int _initialCapacity;
         private IDictionary<Type, object>? _features;
         private volatile int _containerRevision;
 
@@ -23,6 +24,21 @@ namespace Microsoft.AspNetCore.Http.Features
         /// </summary>
         public FeatureCollection()
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="FeatureCollection"/> with the specified initial capacity.
+        /// </summary>
+        /// <param name="initialCapacity">The initial number of elements that the collection can contain.</param>
+        /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="initialCapacity"/> is less than 0</exception>
+        public FeatureCollection(int initialCapacity)
+        {
+            if (initialCapacity < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(initialCapacity));
+            }
+
+            _initialCapacity = initialCapacity;
         }
 
         /// <summary>
@@ -73,7 +89,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
                 if (_features == null)
                 {
-                    _features = new Dictionary<Type, object>();
+                    _features = new Dictionary<Type, object>(_initialCapacity);
                 }
                 _features[key] = value;
                 _containerRevision++;

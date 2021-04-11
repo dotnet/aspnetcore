@@ -7,6 +7,7 @@
     <RootNamespace>Microsoft.AspNetCore.DeveloperCertificates.Tools</RootNamespace>
     <PackageTags>dotnet;developercertificates</PackageTags>
     <PackAsTool>true</PackAsTool>
+    <RemoveDevicePlatformSupport>true</RemoveDevicePlatformSupport>
     <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
     <IsShippingPackage>false</IsShippingPackage>
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>

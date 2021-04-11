@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public PropertyModel(
             PropertyInfo propertyInfo,
             IReadOnlyList<object> attributes)
-            : base(propertyInfo?.PropertyType, attributes)
+            : base(propertyInfo.PropertyType, attributes)
         {
             PropertyInfo = propertyInfo ?? throw new ArgumentNullException(nameof(propertyInfo));
         }
@@ -41,14 +41,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
 
             Controller = other.Controller;
-            BindingInfo = BindingInfo == null ? null : new BindingInfo(other.BindingInfo);
+            BindingInfo = other.BindingInfo == null ? null : new BindingInfo(other.BindingInfo);
             PropertyInfo = other.PropertyInfo;
         }
 
         /// <summary>
         /// Gets or sets the <see cref="ControllerModel"/> this <see cref="PropertyModel"/> is associated with.
         /// </summary>
-        public ControllerModel Controller { get; set; }
+        public ControllerModel Controller { get; set; } = default!;
 
         MemberInfo ICommonModel.MemberInfo => PropertyInfo;
 

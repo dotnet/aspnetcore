@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Mvc.Filters
@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     /// </summary>
     internal interface IMiddlewareFilterFeature
     {
-        ResourceExecutingContext ResourceExecutingContext { get; }
+        ResourceExecutingContext? ResourceExecutingContext { get; }
 
-        ResourceExecutionDelegate ResourceExecutionDelegate { get; }
+        ResourceExecutionDelegate? ResourceExecutionDelegate { get; }
     }
 }

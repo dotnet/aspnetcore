@@ -167,6 +167,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             return "Application 'MACHINE/WEBROOT/APPHOST/.*?' has shutdown.";
         }
 
+        public static string ShutdownFileChange(IISDeploymentResult deploymentResult)
+        {
+            return $"Application '{EscapedContentRoot(deploymentResult)}' was recycled after detecting file change in application directory.";
+        }
+
         public static string InProcessFailedToStop(IISDeploymentResult deploymentResult, string reason)
         {
             return "Failed to gracefully shutdown application 'MACHINE/WEBROOT/APPHOST/.*?'.";

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Cryptography;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static bool SatisfiesRule(
             string tagNameWithoutPrefix,
             string parentTagNameWithoutPrefix,
-            IEnumerable<KeyValuePair<string, string>> tagAttributes,
+            IReadOnlyList<KeyValuePair<string, string>> tagAttributes,
             TagMatchingRuleDescriptor rule)
         {
             if (tagNameWithoutPrefix == null)
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return true;
         }
 
-        public static bool SatisfiesAttributes(IEnumerable<KeyValuePair<string, string>> tagAttributes, TagMatchingRuleDescriptor rule)
+        public static bool SatisfiesAttributes(IReadOnlyList<KeyValuePair<string, string>> tagAttributes, TagMatchingRuleDescriptor rule)
         {
             if (tagAttributes == null)
             {
@@ -118,8 +118,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             if (!rule.Attributes.All(
-                requiredAttribute => tagAttributes.Any(
-                    attribute => SatisfiesRequiredAttribute(attribute.Key, attribute.Value, requiredAttribute))))
+                static (requiredAttribute, tagAttributes) => tagAttributes.Any(
+                    static (attribute, requiredAttribute) => SatisfiesRequiredAttribute(attribute.Key, attribute.Value, requiredAttribute),
+                    requiredAttribute),
+                tagAttributes))
             {
                 return false;
             }

@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            _logger.LogInformation("User asked for their personal data.");
+            _logger.LogInformation(LoggerEventIds.PersonalDataRequested, "User asked for their personal data.");
 
             // Only include personal data for download
             var personalData = new Dictionary<string, string>();

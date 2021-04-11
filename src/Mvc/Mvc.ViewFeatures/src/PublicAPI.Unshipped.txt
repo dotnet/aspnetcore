@@ -1,4 +1,598 @@
 #nullable enable
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewComponentResultExecutor.ViewComponentResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> mvcHelperOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataDictionaryFactory) -> void
 ~Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentFactory.ReleaseViewComponentAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context, object component) -> System.Threading.Tasks.ValueTask
 ~Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentActivator.ReleaseAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context, object viewComponent) -> System.Threading.Tasks.ValueTask
 ~Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentFactory.ReleaseViewComponentAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context, object component) -> System.Threading.Tasks.ValueTask
+*REMOVED*~Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute.CreateInstance(System.IServiceProvider serviceProvider) -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
+*REMOVED*~Microsoft.AspNetCore.Mvc.Controller.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.Controller.TempData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Controller.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.Controller.ViewData.set -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.Controller.ViewBag.get -> dynamic
+*REMOVED*Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ViewBag.get -> dynamic
+*REMOVED*Microsoft.AspNetCore.Mvc.ViewComponent.ViewBag.get -> dynamic
+*REMOVED*Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel
+*REMOVED*~Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute.CreateInstance(System.IServiceProvider serviceProvider) -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
+*REMOVED*~Microsoft.AspNetCore.Mvc.Controller.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.Controller.TempData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Controller.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.Controller.ViewData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.IViewComponentHelper.InvokeAsync(System.Type componentType, object arguments) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent>
+*REMOVED*~Microsoft.AspNetCore.Mvc.IViewComponentHelper.InvokeAsync(string name, object arguments) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent>
+*REMOVED*~Microsoft.AspNetCore.Mvc.MvcViewOptions.ClientModelValidatorProviders.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidatorProvider>
+*REMOVED*~Microsoft.AspNetCore.Mvc.MvcViewOptions.HtmlHelperOptions.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions
+*REMOVED*~Microsoft.AspNetCore.Mvc.MvcViewOptions.HtmlHelperOptions.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.MvcViewOptions.ViewEngines.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine>
+*REMOVED*~Microsoft.AspNetCore.Mvc.PageRemoteAttribute.PageHandler.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.PageRemoteAttribute.PageHandler.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.PageRemoteAttribute.PageName.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.PageRemoteAttribute.PageName.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.PartialViewResult.ContentType.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.PartialViewResult.ContentType.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.PartialViewResult.Model.get -> object
+*REMOVED*~Microsoft.AspNetCore.Mvc.PartialViewResult.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.PartialViewResult.TempData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.PartialViewResult.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.PartialViewResult.ViewData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.PartialViewResult.ViewEngine.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine
+*REMOVED*~Microsoft.AspNetCore.Mvc.PartialViewResult.ViewEngine.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.PartialViewResult.ViewName.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.PartialViewResult.ViewName.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.RemoteAttribute.RemoteAttribute(string action, string controller) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.RemoteAttribute.RemoteAttribute(string action, string controller, string areaName) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.RemoteAttribute.RemoteAttribute(string routeName) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.RemoteAttribute.RouteName.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.RemoteAttribute.RouteName.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.RemoteAttributeBase.AdditionalFields.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.RemoteAttributeBase.AdditionalFields.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.RemoteAttributeBase.FormatAdditionalFieldsForClientValidation(string property) -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.RemoteAttributeBase.HttpMethod.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.RemoteAttributeBase.HttpMethod.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.RemoteAttributeBase.RouteData.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.AddCssClass(string value) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.Attributes.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.GenerateId(string name, string invalidCharReplacement) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.InnerHtml.get -> Microsoft.AspNetCore.Html.IHtmlContentBuilder
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.MergeAttribute(string key, string value) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.MergeAttribute(string key, string value, bool replaceExisting) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.MergeAttributes<TKey, TValue>(System.Collections.Generic.IDictionary<TKey, TValue> attributes) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.MergeAttributes<TKey, TValue>(System.Collections.Generic.IDictionary<TKey, TValue> attributes, bool replaceExisting) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.RenderBody() -> Microsoft.AspNetCore.Html.IHtmlContent
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.RenderEndTag() -> Microsoft.AspNetCore.Html.IHtmlContent
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.RenderSelfClosingTag() -> Microsoft.AspNetCore.Html.IHtmlContent
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.RenderStartTag() -> Microsoft.AspNetCore.Html.IHtmlContent
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.TagBuilder(Microsoft.AspNetCore.Mvc.Rendering.TagBuilder tagBuilder) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.TagBuilder(string tagName) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.TagName.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ExecutingFilePath.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ExecutingFilePath.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.GetFormContextForClientValidation() -> Microsoft.AspNetCore.Mvc.ViewFeatures.FormContext
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.TempData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ValidationMessageElement.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ValidationMessageElement.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ValidationSummaryMessageElement.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ValidationSummaryMessageElement.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.View.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IView
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.View.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ViewContext(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ViewEngines.IView view, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary viewData, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary tempData, System.IO.TextWriter writer, Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions htmlHelperOptions) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ViewContext(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, Microsoft.AspNetCore.Mvc.ViewEngines.IView view, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary viewData, System.IO.TextWriter writer) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ViewData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.Writer.get -> System.IO.TextWriter
+*REMOVED*~Microsoft.AspNetCore.Mvc.Rendering.ViewContext.Writer.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.TempDataAttribute.Key.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.TempDataAttribute.Key.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute.CreateInstance(System.IServiceProvider serviceProvider) -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.Content(string content) -> Microsoft.AspNetCore.Mvc.ViewComponents.ContentViewComponentResult
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.ModelState.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.Request.get -> Microsoft.AspNetCore.Http.HttpRequest
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.RouteData.get -> Microsoft.AspNetCore.Routing.RouteData
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.Url.get -> Microsoft.AspNetCore.Mvc.IUrlHelper
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.Url.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.User.get -> System.Security.Principal.IPrincipal
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.UserClaimsPrincipal.get -> System.Security.Claims.ClaimsPrincipal
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.View() -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.View(string viewName) -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.View<TModel>(TModel model) -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.View<TModel>(string viewName, TModel model) -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.ViewComponentContext.get -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.ViewComponentContext.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.ViewContext.get -> Microsoft.AspNetCore.Mvc.Rendering.ViewContext
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.ViewEngine.get -> Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponent.ViewEngine.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.Arguments.get -> object
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.Arguments.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.ContentType.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.ContentType.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.Model.get -> object
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.TempData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewComponentName.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewComponentName.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewComponentType.get -> System.Type
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewComponentType.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ContentViewComponentResult.Content.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ContentViewComponentResult.ContentViewComponentResult(string content) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ContentViewComponentResult.Execute(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ContentViewComponentResult.ExecuteAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentHelper.Contextualize(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentHelper.DefaultViewComponentHelper(Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentDescriptorCollectionProvider descriptorProvider, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentSelector selector, Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentInvokerFactory invokerFactory, Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.IViewBufferScope viewBufferScope) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentHelper.InvokeAsync(System.Type componentType, object arguments) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentHelper.InvokeAsync(string name, object arguments) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.HtmlContentViewComponentResult.EncodedContent.get -> Microsoft.AspNetCore.Html.IHtmlContent
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.HtmlContentViewComponentResult.Execute(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.HtmlContentViewComponentResult.ExecuteAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.HtmlContentViewComponentResult.HtmlContentViewComponentResult(Microsoft.AspNetCore.Html.IHtmlContent encodedContent) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.Arguments.get -> System.Collections.Generic.IDictionary<string, object>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.Arguments.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.HtmlEncoder.get -> System.Text.Encodings.Web.HtmlEncoder
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.HtmlEncoder.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewComponentContext(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentDescriptor viewComponentDescriptor, System.Collections.Generic.IDictionary<string, object> arguments, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, System.IO.TextWriter writer) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewComponentDescriptor.get -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentDescriptor
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewComponentDescriptor.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewContext.get -> Microsoft.AspNetCore.Mvc.Rendering.ViewContext
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewContext.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.Writer.get -> System.IO.TextWriter
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.Execute(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ExecuteAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.TempData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewEngine.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewEngine.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewName.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewName.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewDataAttribute.Key.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewDataAttribute.Key.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.CompositeViewEngine(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> optionsAccessor) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.FindView(Microsoft.AspNetCore.Mvc.ActionContext context, string viewName, bool isMainPage) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.GetView(string executingFilePath, string viewPath, bool isMainPage) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.ViewEngines.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine.ViewEngines.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.IView.Path.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.IView.RenderAsync(Microsoft.AspNetCore.Mvc.Rendering.ViewContext context) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine.FindView(Microsoft.AspNetCore.Mvc.ActionContext context, string viewName, bool isMainPage) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine.GetView(string executingFilePath, string viewPath, bool isMainPage) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.EnsureSuccessful(System.Collections.Generic.IEnumerable<string> originalLocations) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.SearchedLocations.get -> System.Collections.Generic.IEnumerable<string>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.View.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IView
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.ViewName.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Add(System.Collections.Generic.KeyValuePair<string, string> item) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Add(string key, string value) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Contains(System.Collections.Generic.KeyValuePair<string, string> item) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.ContainsKey(string key) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.CopyTo(System.Collections.Generic.KeyValuePair<string, string>[] array, int arrayIndex) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string, string>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Enumerator(Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary attributes) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Keys.get -> System.Collections.Generic.ICollection<string>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Remove(System.Collections.Generic.KeyValuePair<string, string> item) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Remove(string key) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.TryGetValue(string key, out string value) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Values.get -> System.Collections.Generic.ICollection<string>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.this[string key].get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.this[string key].set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary.Keep(string key) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary.Peek(string key) -> object
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.Logger.get -> Microsoft.Extensions.Logging.ILogger
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.PartialViewResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataFactory, System.Diagnostics.DiagnosticListener diagnosticListener, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.SaveTempDataAttribute.CreateInstance(System.IServiceProvider serviceProvider) -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.StringHtmlContent.StringHtmlContent(string input) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.StringHtmlContent.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Add(string key, object value) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.ContainsKey(string key) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.ContainsValue(object value) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Keep(string key) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Keys.get -> System.Collections.Generic.ICollection<string>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Peek(string key) -> object
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Remove(string key) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.TempDataDictionary(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider provider) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.TryGetValue(string key, out object value) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Values.get -> System.Collections.Generic.ICollection<object>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.this[string key].get -> object
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.this[string key].set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewComponentResultExecutor.ViewComponentResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> mvcHelperOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataDictionaryFactory, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Add(System.Collections.Generic.KeyValuePair<string, object> item) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Add(string key, object value) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Contains(System.Collections.Generic.KeyValuePair<string, object> item) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ContainsKey(string key) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.CopyTo(System.Collections.Generic.KeyValuePair<string, object>[] array, int arrayIndex) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Eval(string expression) -> object
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Eval(string expression, string format) -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.GetViewDataInfo(string expression) -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataInfo
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Keys.get -> System.Collections.Generic.ICollection<string>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Model.get -> object
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Model.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ModelExplorer.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ModelExplorer.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ModelMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ModelState.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Remove(System.Collections.Generic.KeyValuePair<string, object> item) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Remove(string key) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.TemplateInfo.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.TemplateInfo
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.TryGetValue(string key, out object value) -> bool
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Values.get -> System.Collections.Generic.ICollection<object>
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState, System.Type declaredModelType) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, System.Type declaredModelType) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary source) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary source, System.Type declaredModelType) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary source, object model, System.Type declaredModelType) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.this[string index].get -> object
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.this[string index].set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary source) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary source, object model) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.DiagnosticListener.get -> System.Diagnostics.DiagnosticListener
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, string contentType, int? statusCode) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ModelMetadataProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.TempDataFactory.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewEngine.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, System.Diagnostics.DiagnosticListener diagnosticListener) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataFactory, System.Diagnostics.DiagnosticListener diagnosticListener, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewOptions.get -> Microsoft.AspNetCore.Mvc.MvcViewOptions
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.WriterFactory.get -> Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.ViewResult result) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.Logger.get -> Microsoft.Extensions.Logging.ILogger
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.ViewResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataFactory, System.Diagnostics.DiagnosticListener diagnosticListener, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider) -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewResult.ContentType.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewResult.ContentType.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewResult.Model.get -> object
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewResult.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewResult.TempData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewResult.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewResult.ViewData.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewResult.ViewEngine.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewResult.ViewEngine.set -> void
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewResult.ViewName.get -> string
+*REMOVED*~Microsoft.AspNetCore.Mvc.ViewResult.ViewName.set -> void
+*REMOVED*~abstract Microsoft.AspNetCore.Mvc.RemoteAttributeBase.GetUrl(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) -> string
+*REMOVED*~override Microsoft.AspNetCore.Mvc.PageRemoteAttribute.GetUrl(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) -> string
+*REMOVED*~override Microsoft.AspNetCore.Mvc.PartialViewResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) -> System.Threading.Tasks.Task
+*REMOVED*~override Microsoft.AspNetCore.Mvc.RemoteAttribute.GetUrl(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) -> string
+*REMOVED*~override Microsoft.AspNetCore.Mvc.RemoteAttributeBase.FormatErrorMessage(string name) -> string
+*REMOVED*~override Microsoft.AspNetCore.Mvc.RemoteAttributeBase.IsValid(object value) -> bool
+*REMOVED*~override Microsoft.AspNetCore.Mvc.ViewComponentResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) -> System.Threading.Tasks.Task
+*REMOVED*~override Microsoft.AspNetCore.Mvc.ViewResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) -> System.Threading.Tasks.Task
+*REMOVED*~static Microsoft.AspNetCore.Mvc.RemoteAttributeBase.FormatPropertyForClientValidation(string property) -> string
+*REMOVED*~static Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.CreateSanitizedId(string name, string invalidCharReplacement) -> string
+*REMOVED*~static Microsoft.AspNetCore.Mvc.Rendering.ViewComponentHelperExtensions.InvokeAsync(this Microsoft.AspNetCore.Mvc.IViewComponentHelper helper, System.Type componentType) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent>
+*REMOVED*~static Microsoft.AspNetCore.Mvc.Rendering.ViewComponentHelperExtensions.InvokeAsync(this Microsoft.AspNetCore.Mvc.IViewComponentHelper helper, string name) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent>
+*REMOVED*~static Microsoft.AspNetCore.Mvc.Rendering.ViewComponentHelperExtensions.InvokeAsync<TComponent>(this Microsoft.AspNetCore.Mvc.IViewComponentHelper helper) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent>
+*REMOVED*~static Microsoft.AspNetCore.Mvc.Rendering.ViewComponentHelperExtensions.InvokeAsync<TComponent>(this Microsoft.AspNetCore.Mvc.IViewComponentHelper helper, object arguments) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent>
+*REMOVED*~static Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.Found(string viewName, Microsoft.AspNetCore.Mvc.ViewEngines.IView view) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult
+*REMOVED*~static Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.NotFound(string viewName, System.Collections.Generic.IEnumerable<string> searchedLocations) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult
+*REMOVED*~static Microsoft.AspNetCore.Mvc.ViewFeatures.AntiforgeryExtensions.GetHtml(this Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery, Microsoft.AspNetCore.Http.HttpContext httpContext) -> Microsoft.AspNetCore.Html.IHtmlContent
+*REMOVED*~static Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.FormatValue(object value, string format) -> string
+*REMOVED*~static readonly Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.DefaultContentType -> string
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.Json(object data) -> Microsoft.AspNetCore.Mvc.JsonResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.Json(object data, object serializerSettings) -> Microsoft.AspNetCore.Mvc.JsonResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context) -> void
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context) -> void
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.OnActionExecutionAsync(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context, Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate next) -> System.Threading.Tasks.Task
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.PartialView() -> Microsoft.AspNetCore.Mvc.PartialViewResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.PartialView(object model) -> Microsoft.AspNetCore.Mvc.PartialViewResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.PartialView(string viewName) -> Microsoft.AspNetCore.Mvc.PartialViewResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.PartialView(string viewName, object model) -> Microsoft.AspNetCore.Mvc.PartialViewResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.View() -> Microsoft.AspNetCore.Mvc.ViewResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.View(object model) -> Microsoft.AspNetCore.Mvc.ViewResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.View(string viewName) -> Microsoft.AspNetCore.Mvc.ViewResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.View(string viewName, object model) -> Microsoft.AspNetCore.Mvc.ViewResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.ViewComponent(System.Type componentType) -> Microsoft.AspNetCore.Mvc.ViewComponentResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.ViewComponent(System.Type componentType, object arguments) -> Microsoft.AspNetCore.Mvc.ViewComponentResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.ViewComponent(string componentName) -> Microsoft.AspNetCore.Mvc.ViewComponentResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Controller.ViewComponent(string componentName, object arguments) -> Microsoft.AspNetCore.Mvc.ViewComponentResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.RemoteAttributeBase.AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) -> void
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Rendering.ViewContext.FormContext.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.FormContext
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.Rendering.ViewContext.FormContext.set -> void
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ViewEngines.IView view, Microsoft.AspNetCore.Mvc.PartialViewResult viewResult) -> System.Threading.Tasks.Task
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.PartialViewResult result) -> System.Threading.Tasks.Task
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.FindView(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.PartialViewResult viewResult) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.ViewComponentResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.ViewComponentResult result) -> System.Threading.Tasks.Task
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.SetModel(object value) -> void
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ViewEngines.IView view, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary viewData, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary tempData, string contentType, int? statusCode) -> System.Threading.Tasks.Task
+*REMOVED*~virtual Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.FindView(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ViewResult viewResult) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult
+Microsoft.AspNetCore.Mvc.Controller.ViewBag.get -> dynamic!
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ViewBag.get -> dynamic!
+Microsoft.AspNetCore.Mvc.ViewComponent.ViewBag.get -> dynamic!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel?
+Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute.CreateInstance(System.IServiceProvider! serviceProvider) -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!
+Microsoft.AspNetCore.Mvc.Controller.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary!
+Microsoft.AspNetCore.Mvc.Controller.TempData.set -> void
+Microsoft.AspNetCore.Mvc.Controller.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary!
+Microsoft.AspNetCore.Mvc.Controller.ViewData.set -> void
+Microsoft.AspNetCore.Mvc.IViewComponentHelper.InvokeAsync(System.Type! componentType, object? arguments) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent!>!
+Microsoft.AspNetCore.Mvc.IViewComponentHelper.InvokeAsync(string! name, object? arguments) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent!>!
+Microsoft.AspNetCore.Mvc.MvcViewOptions.ClientModelValidatorProviders.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidatorProvider!>!
+Microsoft.AspNetCore.Mvc.MvcViewOptions.HtmlHelperOptions.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions!
+Microsoft.AspNetCore.Mvc.MvcViewOptions.HtmlHelperOptions.set -> void
+Microsoft.AspNetCore.Mvc.MvcViewOptions.ViewEngines.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine!>!
+Microsoft.AspNetCore.Mvc.PageRemoteAttribute.PageHandler.get -> string?
+Microsoft.AspNetCore.Mvc.PageRemoteAttribute.PageHandler.set -> void
+Microsoft.AspNetCore.Mvc.PageRemoteAttribute.PageName.get -> string?
+Microsoft.AspNetCore.Mvc.PageRemoteAttribute.PageName.set -> void
+Microsoft.AspNetCore.Mvc.PartialViewResult.ContentType.get -> string?
+Microsoft.AspNetCore.Mvc.PartialViewResult.ContentType.set -> void
+Microsoft.AspNetCore.Mvc.PartialViewResult.Model.get -> object?
+Microsoft.AspNetCore.Mvc.PartialViewResult.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary!
+Microsoft.AspNetCore.Mvc.PartialViewResult.TempData.set -> void
+Microsoft.AspNetCore.Mvc.PartialViewResult.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary!
+Microsoft.AspNetCore.Mvc.PartialViewResult.ViewData.set -> void
+Microsoft.AspNetCore.Mvc.PartialViewResult.ViewEngine.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine?
+Microsoft.AspNetCore.Mvc.PartialViewResult.ViewEngine.set -> void
+Microsoft.AspNetCore.Mvc.PartialViewResult.ViewName.get -> string?
+Microsoft.AspNetCore.Mvc.PartialViewResult.ViewName.set -> void
+Microsoft.AspNetCore.Mvc.RemoteAttribute.RemoteAttribute(string! action, string! controller) -> void
+Microsoft.AspNetCore.Mvc.RemoteAttribute.RemoteAttribute(string! action, string! controller, string! areaName) -> void
+Microsoft.AspNetCore.Mvc.RemoteAttribute.RemoteAttribute(string! routeName) -> void
+Microsoft.AspNetCore.Mvc.RemoteAttribute.RouteName.get -> string?
+Microsoft.AspNetCore.Mvc.RemoteAttribute.RouteName.set -> void
+Microsoft.AspNetCore.Mvc.RemoteAttributeBase.AdditionalFields.get -> string!
+Microsoft.AspNetCore.Mvc.RemoteAttributeBase.AdditionalFields.set -> void
+Microsoft.AspNetCore.Mvc.RemoteAttributeBase.FormatAdditionalFieldsForClientValidation(string! property) -> string!
+Microsoft.AspNetCore.Mvc.RemoteAttributeBase.HttpMethod.get -> string?
+Microsoft.AspNetCore.Mvc.RemoteAttributeBase.HttpMethod.set -> void
+Microsoft.AspNetCore.Mvc.RemoteAttributeBase.RouteData.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.AddCssClass(string! value) -> void
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.Attributes.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary!
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.GenerateId(string! name, string! invalidCharReplacement) -> void
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.InnerHtml.get -> Microsoft.AspNetCore.Html.IHtmlContentBuilder!
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.MergeAttribute(string! key, string? value) -> void
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.MergeAttribute(string! key, string? value, bool replaceExisting) -> void
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.MergeAttributes<TKey, TValue>(System.Collections.Generic.IDictionary<TKey, TValue?>! attributes) -> void
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.MergeAttributes<TKey, TValue>(System.Collections.Generic.IDictionary<TKey, TValue?>! attributes, bool replaceExisting) -> void
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.RenderBody() -> Microsoft.AspNetCore.Html.IHtmlContent?
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.RenderEndTag() -> Microsoft.AspNetCore.Html.IHtmlContent!
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.RenderSelfClosingTag() -> Microsoft.AspNetCore.Html.IHtmlContent!
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.RenderStartTag() -> Microsoft.AspNetCore.Html.IHtmlContent!
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.TagBuilder(Microsoft.AspNetCore.Mvc.Rendering.TagBuilder! tagBuilder) -> void
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.TagBuilder(string! tagName) -> void
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.TagName.get -> string!
+Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.WriteTo(System.IO.TextWriter! writer, System.Text.Encodings.Web.HtmlEncoder! encoder) -> void
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ExecutingFilePath.get -> string?
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ExecutingFilePath.set -> void
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.GetFormContextForClientValidation() -> Microsoft.AspNetCore.Mvc.ViewFeatures.FormContext?
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary!
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.TempData.set -> void
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ValidationMessageElement.get -> string!
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ValidationMessageElement.set -> void
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ValidationSummaryMessageElement.get -> string!
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ValidationSummaryMessageElement.set -> void
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.View.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IView!
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.View.set -> void
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ViewContext(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, Microsoft.AspNetCore.Mvc.ViewEngines.IView! view, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary! viewData, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary! tempData, System.IO.TextWriter! writer, Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions! htmlHelperOptions) -> void
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ViewContext(Microsoft.AspNetCore.Mvc.Rendering.ViewContext! viewContext, Microsoft.AspNetCore.Mvc.ViewEngines.IView! view, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary! viewData, System.IO.TextWriter! writer) -> void
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary!
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.ViewData.set -> void
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.Writer.get -> System.IO.TextWriter!
+Microsoft.AspNetCore.Mvc.Rendering.ViewContext.Writer.set -> void
+Microsoft.AspNetCore.Mvc.TempDataAttribute.Key.get -> string?
+Microsoft.AspNetCore.Mvc.TempDataAttribute.Key.set -> void
+Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute.CreateInstance(System.IServiceProvider! serviceProvider) -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!
+Microsoft.AspNetCore.Mvc.ViewComponent.Content(string! content) -> Microsoft.AspNetCore.Mvc.ViewComponents.ContentViewComponentResult!
+Microsoft.AspNetCore.Mvc.ViewComponent.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Mvc.ViewComponent.ModelState.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary!
+Microsoft.AspNetCore.Mvc.ViewComponent.Request.get -> Microsoft.AspNetCore.Http.HttpRequest!
+Microsoft.AspNetCore.Mvc.ViewComponent.RouteData.get -> Microsoft.AspNetCore.Routing.RouteData!
+Microsoft.AspNetCore.Mvc.ViewComponent.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary!
+Microsoft.AspNetCore.Mvc.ViewComponent.Url.get -> Microsoft.AspNetCore.Mvc.IUrlHelper!
+Microsoft.AspNetCore.Mvc.ViewComponent.Url.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponent.User.get -> System.Security.Principal.IPrincipal!
+Microsoft.AspNetCore.Mvc.ViewComponent.UserClaimsPrincipal.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Mvc.ViewComponent.View() -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult!
+Microsoft.AspNetCore.Mvc.ViewComponent.View(string? viewName) -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult!
+Microsoft.AspNetCore.Mvc.ViewComponent.View<TModel>(TModel? model) -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult!
+Microsoft.AspNetCore.Mvc.ViewComponent.View<TModel>(string? viewName, TModel? model) -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult!
+Microsoft.AspNetCore.Mvc.ViewComponent.ViewComponentContext.get -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext!
+Microsoft.AspNetCore.Mvc.ViewComponent.ViewComponentContext.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponent.ViewContext.get -> Microsoft.AspNetCore.Mvc.Rendering.ViewContext!
+Microsoft.AspNetCore.Mvc.ViewComponent.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary!
+Microsoft.AspNetCore.Mvc.ViewComponent.ViewEngine.get -> Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine!
+Microsoft.AspNetCore.Mvc.ViewComponent.ViewEngine.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponentResult.Arguments.get -> object?
+Microsoft.AspNetCore.Mvc.ViewComponentResult.Arguments.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponentResult.ContentType.get -> string?
+Microsoft.AspNetCore.Mvc.ViewComponentResult.ContentType.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponentResult.Model.get -> object?
+Microsoft.AspNetCore.Mvc.ViewComponentResult.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary!
+Microsoft.AspNetCore.Mvc.ViewComponentResult.TempData.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewComponentName.get -> string?
+Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewComponentName.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewComponentType.get -> System.Type?
+Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewComponentType.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary!
+Microsoft.AspNetCore.Mvc.ViewComponentResult.ViewData.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ContentViewComponentResult.Content.get -> string!
+Microsoft.AspNetCore.Mvc.ViewComponents.ContentViewComponentResult.ContentViewComponentResult(string! content) -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ContentViewComponentResult.Execute(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext! context) -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ContentViewComponentResult.ExecuteAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentHelper.Contextualize(Microsoft.AspNetCore.Mvc.Rendering.ViewContext! viewContext) -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentHelper.DefaultViewComponentHelper(Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentDescriptorCollectionProvider! descriptorProvider, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentSelector! selector, Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentInvokerFactory! invokerFactory, Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.IViewBufferScope! viewBufferScope) -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentHelper.InvokeAsync(System.Type! componentType, object? arguments) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent!>!
+Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentHelper.InvokeAsync(string! name, object? arguments) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent!>!
+Microsoft.AspNetCore.Mvc.ViewComponents.HtmlContentViewComponentResult.EncodedContent.get -> Microsoft.AspNetCore.Html.IHtmlContent!
+Microsoft.AspNetCore.Mvc.ViewComponents.HtmlContentViewComponentResult.Execute(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext! context) -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.HtmlContentViewComponentResult.ExecuteAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.ViewComponents.HtmlContentViewComponentResult.HtmlContentViewComponentResult(Microsoft.AspNetCore.Html.IHtmlContent! encodedContent) -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.Arguments.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.Arguments.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.HtmlEncoder.get -> System.Text.Encodings.Web.HtmlEncoder!
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.HtmlEncoder.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary!
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewComponentContext(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentDescriptor! viewComponentDescriptor, System.Collections.Generic.IDictionary<string!, object?>! arguments, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, Microsoft.AspNetCore.Mvc.Rendering.ViewContext! viewContext, System.IO.TextWriter! writer) -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewComponentDescriptor.get -> Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentDescriptor!
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewComponentDescriptor.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewContext.get -> Microsoft.AspNetCore.Mvc.Rendering.ViewContext!
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewContext.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary!
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext.Writer.get -> System.IO.TextWriter!
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.Execute(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext! context) -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ExecuteAsync(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary!
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.TempData.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary?
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewData.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewEngine.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine?
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewEngine.set -> void
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewName.get -> string?
+Microsoft.AspNetCore.Mvc.ViewComponents.ViewViewComponentResult.ViewName.set -> void
+Microsoft.AspNetCore.Mvc.ViewDataAttribute.Key.get -> string?
+Microsoft.AspNetCore.Mvc.ViewDataAttribute.Key.set -> void
+~Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.CompositeViewEngine(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! optionsAccessor) -> void
+Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.FindView(Microsoft.AspNetCore.Mvc.ActionContext! context, string! viewName, bool isMainPage) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!
+Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.GetView(string? executingFilePath, string! viewPath, bool isMainPage) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!
+Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.ViewEngines.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine!>!
+Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine.ViewEngines.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine!>!
+Microsoft.AspNetCore.Mvc.ViewEngines.IView.Path.get -> string!
+Microsoft.AspNetCore.Mvc.ViewEngines.IView.RenderAsync(Microsoft.AspNetCore.Mvc.Rendering.ViewContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine.FindView(Microsoft.AspNetCore.Mvc.ActionContext! context, string! viewName, bool isMainPage) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!
+Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine.GetView(string? executingFilePath, string! viewPath, bool isMainPage) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!
+Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.EnsureSuccessful(System.Collections.Generic.IEnumerable<string!>? originalLocations) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!
+Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.SearchedLocations.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.View.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IView?
+Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.ViewName.get -> string!
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Add(System.Collections.Generic.KeyValuePair<string!, string?> item) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Add(string! key, string? value) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Contains(System.Collections.Generic.KeyValuePair<string!, string?> item) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.ContainsKey(string! key) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.CopyTo(System.Collections.Generic.KeyValuePair<string!, string?>[]! array, int arrayIndex) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string!, string?>
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Enumerator(Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary! attributes) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Keys.get -> System.Collections.Generic.ICollection<string!>!
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Remove(System.Collections.Generic.KeyValuePair<string!, string?> item) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Remove(string! key) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.TryGetValue(string! key, out string? value) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Values.get -> System.Collections.Generic.ICollection<string?>!
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.this[string! key].get -> string?
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.this[string! key].set -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary.Keep(string! key) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary.Peek(string! key) -> object?
+Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+~Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.PartialViewResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine! viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataFactory, System.Diagnostics.DiagnosticListener! diagnosticListener, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.SaveTempDataAttribute.CreateInstance(System.IServiceProvider! serviceProvider) -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!
+Microsoft.AspNetCore.Mvc.ViewFeatures.StringHtmlContent.StringHtmlContent(string! input) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.StringHtmlContent.WriteTo(System.IO.TextWriter! writer, System.Text.Encodings.Web.HtmlEncoder! encoder) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Add(string! key, object? value) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.ContainsKey(string! key) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.ContainsValue(object? value) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string!, object?>>!
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Keep(string! key) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Keys.get -> System.Collections.Generic.ICollection<string!>!
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Peek(string! key) -> object?
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Remove(string! key) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.TempDataDictionary(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider! provider) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.TryGetValue(string! key, out object? value) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.Values.get -> System.Collections.Generic.ICollection<object?>!
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.this[string! key].get -> object?
+Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary.this[string! key].set -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewComponentResultExecutor.ViewComponentResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! mvcHelperOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataDictionaryFactory, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Add(System.Collections.Generic.KeyValuePair<string!, object?> item) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Add(string! key, object? value) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Contains(System.Collections.Generic.KeyValuePair<string!, object?> item) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ContainsKey(string! key) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.CopyTo(System.Collections.Generic.KeyValuePair<string!, object?>[]! array, int arrayIndex) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Eval(string? expression) -> object?
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Eval(string? expression, string? format) -> string?
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.GetViewDataInfo(string? expression) -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataInfo?
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Keys.get -> System.Collections.Generic.ICollection<string!>!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Model.get -> object?
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Model.set -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ModelExplorer.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ModelExplorer.set -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ModelMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ModelState.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Remove(System.Collections.Generic.KeyValuePair<string!, object?> item) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Remove(string! key) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.TemplateInfo.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.TemplateInfo!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.TryGetValue(string! key, out object? value) -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.Values.get -> System.Collections.Generic.ICollection<object?>!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! modelState) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! modelState, System.Type! declaredModelType) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! metadataProvider, System.Type! declaredModelType) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary! source) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary! source, System.Type! declaredModelType) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary! source, object? model, System.Type! declaredModelType) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.this[string! index].get -> object?
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.this[string! index].set -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! modelState) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary! source) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary! source, object? model) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.DiagnosticListener.get -> System.Diagnostics.DiagnosticListener!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.Rendering.ViewContext! viewContext, string? contentType, int? statusCode) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ModelMetadataProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider?
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.TempDataFactory.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory?
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewEngine.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine! viewEngine, System.Diagnostics.DiagnosticListener! diagnosticListener) -> void
+~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine! viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataFactory, System.Diagnostics.DiagnosticListener! diagnosticListener, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewOptions.get -> Microsoft.AspNetCore.Mvc.MvcViewOptions?
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.WriterFactory.get -> Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.ViewResult! result) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.ViewResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine! viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataFactory, System.Diagnostics.DiagnosticListener! diagnosticListener, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider) -> void
+Microsoft.AspNetCore.Mvc.ViewResult.ContentType.get -> string?
+Microsoft.AspNetCore.Mvc.ViewResult.ContentType.set -> void
+Microsoft.AspNetCore.Mvc.ViewResult.Model.get -> object?
+Microsoft.AspNetCore.Mvc.ViewResult.TempData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary!
+Microsoft.AspNetCore.Mvc.ViewResult.TempData.set -> void
+Microsoft.AspNetCore.Mvc.ViewResult.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary!
+Microsoft.AspNetCore.Mvc.ViewResult.ViewData.set -> void
+Microsoft.AspNetCore.Mvc.ViewResult.ViewEngine.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine?
+Microsoft.AspNetCore.Mvc.ViewResult.ViewEngine.set -> void
+Microsoft.AspNetCore.Mvc.ViewResult.ViewName.get -> string?
+Microsoft.AspNetCore.Mvc.ViewResult.ViewName.set -> void
+abstract Microsoft.AspNetCore.Mvc.RemoteAttributeBase.GetUrl(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext! context) -> string!
+override Microsoft.AspNetCore.Mvc.PageRemoteAttribute.GetUrl(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext! context) -> string!
+override Microsoft.AspNetCore.Mvc.PartialViewResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext! context) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Mvc.RemoteAttribute.GetUrl(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext! context) -> string!
+override Microsoft.AspNetCore.Mvc.RemoteAttributeBase.FormatErrorMessage(string! name) -> string!
+override Microsoft.AspNetCore.Mvc.RemoteAttributeBase.IsValid(object? value) -> bool
+override Microsoft.AspNetCore.Mvc.ViewComponentResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext! context) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Mvc.ViewResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext! context) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Mvc.RemoteAttributeBase.FormatPropertyForClientValidation(string! property) -> string!
+static Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.CreateSanitizedId(string? name, string! invalidCharReplacement) -> string!
+static Microsoft.AspNetCore.Mvc.Rendering.ViewComponentHelperExtensions.InvokeAsync(this Microsoft.AspNetCore.Mvc.IViewComponentHelper! helper, System.Type! componentType) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent!>!
+static Microsoft.AspNetCore.Mvc.Rendering.ViewComponentHelperExtensions.InvokeAsync(this Microsoft.AspNetCore.Mvc.IViewComponentHelper! helper, string! name) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent!>!
+static Microsoft.AspNetCore.Mvc.Rendering.ViewComponentHelperExtensions.InvokeAsync<TComponent>(this Microsoft.AspNetCore.Mvc.IViewComponentHelper! helper) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent!>!
+static Microsoft.AspNetCore.Mvc.Rendering.ViewComponentHelperExtensions.InvokeAsync<TComponent>(this Microsoft.AspNetCore.Mvc.IViewComponentHelper! helper, object? arguments) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent!>!
+static Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.Found(string! viewName, Microsoft.AspNetCore.Mvc.ViewEngines.IView! view) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!
+static Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult.NotFound(string! viewName, System.Collections.Generic.IEnumerable<string!>! searchedLocations) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!
+static Microsoft.AspNetCore.Mvc.ViewFeatures.AntiforgeryExtensions.GetHtml(this Microsoft.AspNetCore.Antiforgery.IAntiforgery! antiforgery, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> Microsoft.AspNetCore.Html.IHtmlContent!
+static Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.FormatValue(object? value, string? format) -> string?
+static readonly Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.DefaultContentType -> string!
+virtual Microsoft.AspNetCore.Mvc.Controller.Json(object? data) -> Microsoft.AspNetCore.Mvc.JsonResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.Json(object? data, object? serializerSettings) -> Microsoft.AspNetCore.Mvc.JsonResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext! context) -> void
+virtual Microsoft.AspNetCore.Mvc.Controller.OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext! context) -> void
+virtual Microsoft.AspNetCore.Mvc.Controller.OnActionExecutionAsync(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext! context, Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate! next) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.Controller.PartialView() -> Microsoft.AspNetCore.Mvc.PartialViewResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.PartialView(object? model) -> Microsoft.AspNetCore.Mvc.PartialViewResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.PartialView(string? viewName) -> Microsoft.AspNetCore.Mvc.PartialViewResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.PartialView(string? viewName, object? model) -> Microsoft.AspNetCore.Mvc.PartialViewResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.View() -> Microsoft.AspNetCore.Mvc.ViewResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.View(object? model) -> Microsoft.AspNetCore.Mvc.ViewResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.View(string? viewName) -> Microsoft.AspNetCore.Mvc.ViewResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.View(string? viewName, object? model) -> Microsoft.AspNetCore.Mvc.ViewResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.ViewComponent(System.Type! componentType) -> Microsoft.AspNetCore.Mvc.ViewComponentResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.ViewComponent(System.Type! componentType, object? arguments) -> Microsoft.AspNetCore.Mvc.ViewComponentResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.ViewComponent(string! componentName) -> Microsoft.AspNetCore.Mvc.ViewComponentResult!
+virtual Microsoft.AspNetCore.Mvc.Controller.ViewComponent(string! componentName, object? arguments) -> Microsoft.AspNetCore.Mvc.ViewComponentResult!
+virtual Microsoft.AspNetCore.Mvc.RemoteAttributeBase.AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext! context) -> void
+virtual Microsoft.AspNetCore.Mvc.Rendering.ViewContext.FormContext.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.FormContext!
+virtual Microsoft.AspNetCore.Mvc.Rendering.ViewContext.FormContext.set -> void
+virtual Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, Microsoft.AspNetCore.Mvc.ViewEngines.IView! view, Microsoft.AspNetCore.Mvc.PartialViewResult! viewResult) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.PartialViewResult! result) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.FindView(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, Microsoft.AspNetCore.Mvc.PartialViewResult! viewResult) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!
+virtual Microsoft.AspNetCore.Mvc.ViewFeatures.ViewComponentResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.ViewComponentResult! result) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.SetModel(object? value) -> void
+virtual Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, Microsoft.AspNetCore.Mvc.ViewEngines.IView! view, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary! viewData, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary! tempData, string? contentType, int? statusCode) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.FindView(Microsoft.AspNetCore.Mvc.ActionContext! actionContext, Microsoft.AspNetCore.Mvc.ViewResult! viewResult) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!

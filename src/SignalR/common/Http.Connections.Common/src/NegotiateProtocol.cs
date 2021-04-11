@@ -146,12 +146,12 @@ namespace Microsoft.AspNetCore.Http.Connections
                 reader.CheckRead();
                 reader.EnsureObjectStart();
 
-                string connectionId = null;
-                string connectionToken = null;
-                string url = null;
-                string accessToken = null;
-                List<AvailableTransport> availableTransports = null;
-                string error = null;
+                string? connectionId = null;
+                string? connectionToken = null;
+                string? url = null;
+                string? accessToken = null;
+                List<AvailableTransport>? availableTransports = null;
+                string? error = null;
                 int version = 0;
 
                 var completed = false;
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                                 switch (reader.TokenType)
                                 {
                                     case JsonTokenType.String:
-                                        availableTransport.TransferFormats.Add(reader.GetString());
+                                        availableTransport.TransferFormats.Add(reader.GetString()!);
                                         break;
                                     case JsonTokenType.EndArray:
                                         completed = true;

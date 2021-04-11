@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class ApiBehaviorOptions : IEnumerable<ICompatibilitySwitch>
     {
         private readonly IReadOnlyList<ICompatibilitySwitch> _switches = Array.Empty<ICompatibilitySwitch>();
-        private Func<ActionContext, IActionResult> _invalidModelStateResponseFactory;
+        private Func<ActionContext, IActionResult> _invalidModelStateResponseFactory = default!;
 
         /// <summary>
         /// Delegate invoked on actions annotated with <see cref="ApiControllerAttribute"/> to convert invalid

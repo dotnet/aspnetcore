@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.CommandLineUtils
 
         static DotNetMuxer()
         {
-            MuxerPath = TryFindMuxerPath();
+            MuxerPath = TryFindMuxerPath(Process.GetCurrentProcess().MainModule?.FileName);
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         public static string MuxerPathOrDefault()
             => MuxerPath ?? MuxerName;
 
-        private static string? TryFindMuxerPath()
+        internal static string? TryFindMuxerPath(string? mainModule)
         {
             var fileName = MuxerName;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -46,11 +46,10 @@ namespace Microsoft.Extensions.CommandLineUtils
                 fileName += ".exe";
             }
 
-            var mainModule = Process.GetCurrentProcess().MainModule;
-            if (!string.IsNullOrEmpty(mainModule?.FileName)
-                && string.Equals(Path.GetFileName(mainModule!.FileName), fileName, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(mainModule)
+                && string.Equals(Path.GetFileName(mainModule!), fileName, StringComparison.OrdinalIgnoreCase))
             {
-                return mainModule.FileName;
+                return mainModule;
             }
 
             return null;

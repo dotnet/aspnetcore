@@ -53,7 +53,7 @@ Visual Studio 2019 (16.8) is required to build the repo locally. If you don't ha
 > You can do so by running the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` command
 > in PowerShell. For more information on execution policies, you can read the [execution policy docs](https://docs.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy).
 
-The  [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.json](/eng/scripts/vs.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
+The [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.json](/eng/scripts/vs.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
 
 > :bulb: The `InstallVisualStudio.ps1` script mentioned above reads from the `vs.json` file to determine what components to install.
 
@@ -63,7 +63,7 @@ If you're reading this, you probably already have Git installed to support cloni
 
 #### [NodeJS](https://nodejs.org) on Windows
 
-Building the repo requires version 10.14.2 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
+Building the repo requires version 10.17.0 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
 
 #### [Yarn](https://yarnpkg.com/) on Windows
 
@@ -94,6 +94,14 @@ The build should find any JDK 11 or newer installation on the machine as long as
 #### Chrome
 
 This repo contains a Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>.
+
+#### Visual Studio Code Extension
+
+The following extensions are recommended when developing in the ASP.NET Core repository with Visual Studio Code.
+
+- [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
+
+- [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
 
 #### WiX (Optional)
 
@@ -155,9 +163,11 @@ Studio because those projects are not listed in AspNetCore.sln.
 This will download the required tools and restore all projects inside the repository. At that point, you should be able
 to open the .sln file or one of the project specific .slnf files to work on the projects you care about.
 
-   > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master
-   > branch, we regularly update the versions of .NET Core SDK required to build the repo.
-   > You will need to restart Visual Studio every time we update the .NET Core SDK.
+
+> :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the main
+> branch, we regularly update the versions of .NET Core SDK required to build the repo.
+> You will need to restart Visual Studio every time we update the .NET Core SDK.
+
 
 > :bulb: Rerunning the above command or, perhaps, the quicker `.\build.cmd -noBuildNative -noBuildManaged` may be
 > necessary after switching branches, especially if the `$(DefaultNetCoreTargetFramework)` value changes.
@@ -195,6 +205,8 @@ These principles guide how we create and manage .slnf files:
 Before opening the project in Visual Studio Code, you will need to make sure that you have built the project.
 You can find more info on this in the "Building on command-line" section below.
 
+To open specific folder inside Visual studio code, you have to open it with `startvscode.cmd` file. Ths will setup neccessary environment variables and will open given directory in Visual Studio Code.
+
 Using Visual Studio Code with this repo requires setting environment variables on command line first.
 Use these command to launch VS Code with the right settings.
 
@@ -216,7 +228,7 @@ code .
 ```
 
 > :bulb: Note that if you are using the "Remote-WSL" extension in VSCode, the environment is not supplied
-> to the process in WSL.  You can workaround this by explicitly setting the environment variables
+> to the process in WSL. You can workaround this by explicitly setting the environment variables
 > in `~/.vscode-server/server-env-setup`.
 > See <https://code.visualstudio.com/docs/remote/wsl#_advanced-environment-setup-script> for details.
 
@@ -224,17 +236,27 @@ code .
 
 When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](using-dotnet-on-command-line-in-this-repo).
 
-On Windows:
+> :warning: Most of the time, you will want to build a particular project instead of the entire repository. It's faster and will allow you to focus on a particular area of concern. If you need to build all code in the repo for any reason, you can use the top-level build script located under `eng\build.cmd` or `eng\build.sh`.
+
+The source code in this repo is divided into directories for each project area. Each directory will typically contain a `src` directory that contains the source files for a project and a `test` directory that contains the test projects and assets within a project.
+
+Some projects, like the `Components` project or the `Razor` project, might contain additional subdirectories.
+
+To build a code change associated with a modification, run the build script in the directory closest to the modified file. For example, if you've modified `src/Components/WebAssembly/Server/src/WebAssemblyNetDebugProxyAppBuilderExtensions.cs` then run the build script located in `src/Components`.
+
+On Windows, you can run the command script:
 
 ```powershell
 .\build.cmd
 ```
 
-On macOS/Linux:
+On macOS/Linux, you can run the shell script:
 
 ```bash
 ./build.sh
 ```
+
+> :bulb: Before using the `build.cmd` or `build.sh` at the top-level or in a subfolder, you will need to make sure that [the dependencies documented above](#step-2-install-pre-requisites) have been installed.
 
 By default, all of the C# projects are built. Some C# projects require NodeJS to be installed to compile JavaScript assets which are then checked in as source. If NodeJS is detected on the path, the NodeJS projects will be compiled as part of building C# projects. If NodeJS is not detected on the path, the JavaScript assets checked in previously will be used instead. To disable building NodeJS projects, specify `-noBuildNodeJS` or `--no-build-nodejs` on the command line.
 
@@ -266,7 +288,7 @@ source ./activate.sh
 
 ### Running tests on command-line
 
-Tests are not run by default. Use the `-test` option to run tests in addition to building.
+Tests are not run by default. When invoking a `build.cmd`/`build.sh` script, use the `-test` option to run tests in addition to building.
 
 On Windows:
 
@@ -282,24 +304,6 @@ On macOS/Linux:
 
 > :bulb: If you're working on changes for a particular subset of the project, you might not want to execute the entire test suite. Instead, only run the tests within the subdirectory where changes were made. This can be accomplished by passing the `projects` property like so: `.\build.cmd -test -projects .\src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj`.
 
-### Building a subset of the code
-
-When working in the repository, you'll typically be focused on one project area, such as Blazor and SignalR. In that case, it's easier to use the `build.cmd` and `build.sh` that are available in each subfolder. When invoked in a subfolder on Windows:
-
-```ps1
-.\build.cmd
-```
-
-Or on macOS or Linux:
-
-```bash
-./build.sh
-```
-
-> :bulb: Before using the `build.cmd` or `build.sh` at the top-level or in a subfolder, you will need to make sure that [the dependencies documented above](#step-2-install-pre-requisites) have been installed.
-
-These scripts will build and test the projects within a specific directory. Furthermore, you can use flags on `build.cmd`/`.sh` to build subsets based on language type, like C++, TypeScript, or C#. Run `build.sh --help` or `build.cmd -help` for details.
-
 ### Build properties
 
 Additional properties can be added as an argument in the form `/property:$name=$value`, or `/p:$name=$value` for short. For example:
@@ -310,11 +314,11 @@ Additional properties can be added as an argument in the form `/property:$name=$
 
 Common properties include:
 
-Property                 | Description
--------------------------|-------------------------------------------------------------------------------------------------------------
-Configuration            | `Debug` or `Release`. Default = `Debug`.
-TargetArchitecture       | The CPU architecture to build for (x64, x86, arm, arm64).
-TargetOsName             | The base runtime identifier to build for (win, linux, osx, linux-musl).
+| Property           | Description                                                             |
+| ------------------ | ----------------------------------------------------------------------- |
+| Configuration      | `Debug` or `Release`. Default = `Debug`.                                |
+| TargetArchitecture | The CPU architecture to build for (x64, x86, arm, arm64).               |
+| TargetOsName       | The base runtime identifier to build for (win, linux, osx, linux-musl). |
 
 ### Resx files
 
@@ -333,7 +337,7 @@ Building installers does not run as part of `build.cmd` run without parameters, 
 .\build.cmd -buildInstallers
 ```
 
-*Note*: Additional build steps listed above aren't necessary on Linux or macOS.
+_Note_: Additional build steps listed above aren't necessary on Linux or macOS.
 
 - Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 - Add a NuGet.Config to your project directory with the following content:
@@ -349,7 +353,7 @@ Building installers does not run as part of `build.cmd` run without parameters, 
   </configuration>
   ```
 
-  *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
+  _NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine._
 
 - Update the versions on `PackageReference` items in your .csproj project file to point to the version from your local build.
 

@@ -273,8 +273,7 @@ function GetDotNetInstallScript {
     if command -v curl > /dev/null; then
       # first, try directly, if this fails we will retry with verbose logging
       curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
-        if command -v openssl &> /dev/null
-        then
+        if command -v openssl &> /dev/null; then
           echo "Curl failed; dumping some information about dotnet.microsoft.com for later investigation"
           echo | openssl s_client -showcerts -servername dotnet.microsoft.com  -connect dotnet.microsoft.com:443
         fi
@@ -307,7 +306,7 @@ function InitializeBuildTool {
   # return values
   _InitializeBuildTool="$_InitializeDotNetCli/dotnet"
   _InitializeBuildToolCommand="msbuild"
-  _InitializeBuildToolFramework="netcoreapp2.1"
+  _InitializeBuildToolFramework="netcoreapp3.1"
 }
 
 # Set RestoreNoCache as a workaround for https://github.com/NuGet/Home/issues/3116
@@ -414,11 +413,24 @@ function MSBuild {
     fi
 
     local toolset_dir="${_InitializeToolset%/*}"
-    local logger_path="$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.ArcadeLogging.dll"
-    if [[ ! -f $logger_path ]]; then
-      logger_path="$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
+    # new scripts need to work with old packages, so we need to look for the old names/versions
+    local selectedPath=
+    local possiblePaths=()
+    possiblePaths+=( "$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.ArcadeLogging.dll" )
+    possiblePaths+=( "$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll" )
+    possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.ArcadeLogging.dll" )
+    possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.Arcade.Sdk.dll" )
+    for path in "${possiblePaths[@]}"; do
+      if [[ -f $path ]]; then
+        selectedPath=$path
+        break
+      fi
+    done
+    if [[ -z "$selectedPath" ]]; then
+      Write-PipelineTelemetryError -category 'Build'  "Unable to find arcade sdk logger assembly."
+      ExitWithExitCode 1
     fi
-    args=( "${args[@]}" "-logger:$logger_path" )
+    args+=( "-logger:$selectedPath" )
   fi
 
   MSBuild-Core ${args[@]}

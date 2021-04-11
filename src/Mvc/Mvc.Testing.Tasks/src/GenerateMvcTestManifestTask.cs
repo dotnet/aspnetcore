@@ -35,7 +35,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Tasks
         {
             using var fileStream = File.Create(ManifestPath);
             var output = new Dictionary<string, string>();
-
             foreach (var project in Projects)
             {
                 var contentRoot = project.GetMetadata("ContentRoot");

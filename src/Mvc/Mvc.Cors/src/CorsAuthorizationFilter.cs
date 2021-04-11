@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
         /// <summary>
         /// The policy name used to fetch a <see cref="CorsPolicy"/>.
         /// </summary>
-        public string PolicyName { get; set; }
+        public string? PolicyName { get; set; }
 
         /// <inheritdoc />
         // Since clients' preflight requests would not have data to authenticate requests, this
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
         public int Order => int.MinValue + 100;
 
         /// <inheritdoc />
-        public async Task OnAuthorizationAsync(Filters.AuthorizationFilterContext context)
+        public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             if (context == null)
             {
