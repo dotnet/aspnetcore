@@ -66,6 +66,7 @@ namespace RunTests
 
                 DisplayContents(Path.Combine(Options.DotnetRoot, "host", "fxr"));
                 DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.NETCore.App"));
+                DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.AspNetCore.App"));
                 
                 return true;
             }
