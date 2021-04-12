@@ -65,7 +65,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override bool TryRead(out ReadResult readResult)
         {
-            TryStartAsync();
+            Task startTask = TryStartAsync();
+            Debug.Assert(startTask.IsCompleted);
 
             var hasResult = _context.RequestBodyPipe.Reader.TryRead(out readResult);
 
