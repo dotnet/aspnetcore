@@ -125,25 +125,8 @@ namespace RunTests
                 if (File.Exists(Options.AspNetRuntime))
                 {
                     var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
-                    Console.WriteLine($"Creating directory: {appRuntimePath}");
-                    Directory.CreateDirectory(appRuntimePath);
                     Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
                     EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
-/*                    Console.WriteLine($"Found AspNetRuntime: {Options.AspNetRuntime}, extracting *.txt,json,dll,xml to {appRuntimePath}");
-                    using (var archive = ZipFile.OpenRead(Options.AspNetRuntime))
-                    {
-                        foreach (var entry in archive.Entries)
-                        {
-                            // These are the only extensions that end up in the shared fx directory
-                            if (entry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) ||
-                                entry.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
-                                entry.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
-                                entry.Name.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
-                            {
-                                entry.ExtractToFile(Path.Combine(appRuntimePath, entry.Name), overwrite: true);
-                            }
-                        }
-                    }*/
 
                     DisplayContents(appRuntimePath);
 
