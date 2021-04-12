@@ -244,9 +244,10 @@ namespace Templates.Test
         [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
         
+        [ConditionalTheory]
         [InlineData("SingleOrg", new string[] { "--calls-graph" })]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31729")]
-        public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
+        public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes_WithSingleOrg(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
 
         private async Task<Project> BuildAndPublishRazorPagesTemplate(string auth, string[] args)
         {
