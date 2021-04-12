@@ -7,7 +7,6 @@ param(
     [string]$EF,
     [string]$HelixTimeout,
     [string]$InstallPlaywright,
-    [string]$FeedCred
 )
 
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
