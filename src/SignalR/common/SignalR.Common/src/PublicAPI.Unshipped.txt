@@ -12,6 +12,7 @@
 *REMOVED*Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage.StreamInvocationMessage(string! invocationId, string! target, object![]! arguments, string![]! streamIds) -> void
 *REMOVED*Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol.TryParseMessage(ref System.Buffers.ReadOnlySequence<byte> input, Microsoft.AspNetCore.SignalR.IInvocationBinder! binder, out Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message) -> bool
 Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage.InvocationBindingFailureMessage(string? invocationId, string! target, System.Runtime.ExceptionServices.ExceptionDispatchInfo! bindingFailure) -> void
+Microsoft.AspNetCore.SignalR.Protocol.StreamItemMessage.Item.set -> void
 static Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.WithError(string! invocationId, string? error) -> Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage!
 static Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.WithResult(string! invocationId, object? payload) -> Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage!
 Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage.Arguments.get -> object?[]!
