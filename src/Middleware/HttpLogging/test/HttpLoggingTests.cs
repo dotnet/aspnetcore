@@ -20,7 +20,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 {
-    public class HstsMiddlewareTests
+    public class HttpLoggingTests
     {
         [Fact]
         public async Task SetOptionsWithDefault_SetsMaxAgeToCorrectValue()
