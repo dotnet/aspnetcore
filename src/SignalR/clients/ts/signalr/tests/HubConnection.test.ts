@@ -109,7 +109,7 @@ describe("HubConnection", () => {
     });
 
     describe("ping", () => {
-        it("automatically sends multiple pings", async () => {
+        it("sends pings when receiving pings", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
@@ -118,7 +118,14 @@ describe("HubConnection", () => {
 
                 try {
                     await hubConnection.start();
+
+                    const pingInterval = setInterval(async () => {
+                        await connection.receive({ type: MessageType.Ping });
+                    }, 5);
+
                     await delayUntil(500);
+
+                    clearInterval(pingInterval);
 
                     const numPings = connection.sentData.filter((s) => JSON.parse(s).type === MessageType.Ping).length;
                     expect(numPings).toBeGreaterThanOrEqual(2);
