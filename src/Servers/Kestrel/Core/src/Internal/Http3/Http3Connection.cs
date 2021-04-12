@@ -178,12 +178,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (!previousState)
             {
+                _errorCodeFeature.Error = (long)errorCode;
+
                 if (TryClose())
                 {
                     SendGoAway(_highestOpenedStreamId).Preserve();
                 }
 
-                _errorCodeFeature.Error = (long)errorCode;
                 _multiplexedContext.Abort(ex);
             }
         }
