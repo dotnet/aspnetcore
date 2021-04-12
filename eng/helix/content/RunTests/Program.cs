@@ -23,10 +23,6 @@ namespace RunTests
                 {
                     keepGoing = await runner.InstallAspNetAppIfNeededAsync();
                 }
-                if (keepGoing)
-                {
-                    keepGoing = runner.InstallAspNetRefIfNeeded();
-                }
 #if INSTALLPLAYWRIGHT
                 if (keepGoing)
                 {
