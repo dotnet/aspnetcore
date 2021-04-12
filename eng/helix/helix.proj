@@ -33,9 +33,6 @@
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">bin\</BaseOutputPath>
     <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' == 'AnyCPU'">$(BaseOutputPath)$(Configuration)\</OutputPath>
     <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' != 'AnyCPU'">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
-    
-    <!-- TODO figure out how to get this -->
-    <SharedFxVersion>6.0.0-ci</SharedFxVersion>
   </PropertyGroup>
 
   <!-- Specify the runtime we need which will be included as a correlation payload -->
@@ -80,6 +77,17 @@
   </ItemGroup>
 
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather">
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+        Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
+        Targets="_GetPackageVersionInfo"
+        SkipNonexistentProjects="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
+    </PropertyGroup>    
+    
     <Unzip SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetOsName)-$(TargetArchitecture).$(SharedFxVersion).nupkg" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw" />
     <ItemGroup>
       <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.txt" />
