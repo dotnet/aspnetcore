@@ -132,8 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
             }
 
-            Task startTask = TryStartAsync();
-            Debug.Assert(startTask.IsCompleted);
+            TryStartAsync();
 
             // The while(true) because we don't want to return a canceled ReadResult if the user themselves didn't cancel it.
             while (true)
