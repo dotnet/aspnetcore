@@ -89,11 +89,11 @@
       <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.xml" />
     </ItemGroup>
     
-    <Copy SourceFiles="@(_appRuntimeFiles)" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix" />
+    <Copy SourceFiles="@(_appRuntimeFiles)" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
     <ZipDirectory SourceDirectory="$(OutputPath)\AspNetCoreAppRuntimeHelix" DestinationFile="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Overwrite="true" />
     
     <ItemGroup>
-      <HelixCorrelationPayload Include="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Destination="$(DotNetCliDestination)\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
+      <HelixCorrelationPayload Include="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Destination="$(DotNetCliDestination)" />
     </ItemGroup>
   </Target>
   
