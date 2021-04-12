@@ -6,7 +6,7 @@ param(
     [string]$Quarantined,
     [string]$EF,
     [string]$HelixTimeout,
-    [string]$InstallPlaywright,
+    [string]$InstallPlaywright
 )
 
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
