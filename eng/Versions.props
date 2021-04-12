@@ -246,7 +246,7 @@
     <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
     <PlaywrightSharpVersion>0.192.0</PlaywrightSharpVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
-    <PollyVersion>7.1.0</PollyVersion>
+    <PollyVersion>7.2.2</PollyVersion>
     <SeleniumSupportVersion>4.0.0-beta1</SeleniumSupportVersion>
     <SeleniumWebDriverChromeDriverVersion>89.0.4389.2300-beta</SeleniumWebDriverChromeDriverVersion>
     <SeleniumWebDriverVersion>4.0.0-beta1</SeleniumWebDriverVersion>
