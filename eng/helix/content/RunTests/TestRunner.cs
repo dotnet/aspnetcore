@@ -67,6 +67,7 @@ namespace RunTests
                 DisplayContents(Path.Combine(Options.DotnetRoot, "host", "fxr"));
                 DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.NETCore.App"));
                 DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.AspNetCore.App"));
+                DisplayContents(Path.Combine(Options.DotnetRoot, "packs", "Microsoft.AspNetCore.App.Ref"));
                 
                 return true;
             }
@@ -195,38 +196,6 @@ namespace RunTests
             catch (Exception e)
             {
                 Console.WriteLine($"Exception in InstallAspNetAppIfNeeded: {e.ToString()}");
-                return false;
-            }
-        }
-
-        public bool InstallAspNetRefIfNeeded()
-        {
-            try
-            {
-                if (File.Exists(Options.AspNetRef))
-                {
-                    var refPath = $"{Options.HELIX_WORKITEM_ROOT}/packs/Microsoft.AspNetCore.App.Ref/{Options.RuntimeVersion}";
-                    if (Directory.Exists(refPath))
-                    {
-                        Console.WriteLine($"AspNetRef install skipped: {refPath} already exists.");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Found AspNetRef: {Options.AspNetRef}, extracting to {refPath}");
-                        ZipFile.ExtractToDirectory(Options.AspNetRef, refPath);
-                    }
-
-                    DisplayContents(refPath);
-                }
-                else
-                {
-                    Console.WriteLine($"No AspNetRef found: {Options.AspNetRef}, skipping...");
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Exception in InstallAspNetRefIfNeeded: {e.ToString()}");
                 return false;
             }
         }
