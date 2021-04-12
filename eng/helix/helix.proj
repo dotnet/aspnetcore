@@ -81,15 +81,15 @@
 
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather">
     <Unzip SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetOsName)-$(TargetArchitecture).$(SharedFxVersion).nupkg" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw" />
-    
     <ItemGroup>
       <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.txt" />
       <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.json" />
       <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.dll" />
       <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.xml" />
     </ItemGroup>
-    
     <Copy SourceFiles="@(_appRuntimeFiles)" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
+    <Unzip SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix\packs\Microsoft.AspNetCore.App.Ref\$(SharedFxVersion)" />
+    
     <ZipDirectory SourceDirectory="$(OutputPath)\AspNetCoreAppRuntimeHelix" DestinationFile="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Overwrite="true" />
     
     <ItemGroup>
