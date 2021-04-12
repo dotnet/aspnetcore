@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-16.04-cross-arm64-alpine10fcdcf-20190208200917
+FROM mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-cross-arm64-alpine-85814b7-20200327151156
 ARG USER
 ARG USER_ID
 ARG GROUP_ID
