@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return GetEnumerator();
             }
 
-            public void Append(IEnumerable<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
+            public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
             {
                 foreach (var keyValuePair in keyValuePairs)
                 {

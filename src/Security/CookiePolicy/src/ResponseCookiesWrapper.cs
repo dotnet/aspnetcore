@@ -153,14 +153,14 @@ namespace Microsoft.AspNetCore.CookiePolicy
             }
         }
 
-        public void Append(IEnumerable<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
+        public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var nonSuppressedValues = new Dictionary<string, string>();
+            var nonSuppressedValues = new List<KeyValuePair<string, string>>();
 
             foreach (var keyValuePair in keyValuePairs)
             {
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
 
                 if (ApplyAppendPolicy(ref key, ref value, options))
                 {
-                    nonSuppressedValues.Add(key, value);
+                    nonSuppressedValues.Add(KeyValuePair.Create(key, value));
                 }
                 else
                 {
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
                 }
             }
 
-            Cookies.Append(nonSuppressedValues, options);
+            Cookies.Append(nonSuppressedValues.ToArray(), options);
         }
 
         private bool ApplyAppendPolicy(ref string key, ref string value, CookieOptions options)

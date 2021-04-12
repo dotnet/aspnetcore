@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Http
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="keyValuePairs">Key value pair collections whose elements will be added as cookies.</param>
         /// <param name="options"><see cref="CookieOptions"/> included in new cookie settings.</param>
-        void Append(IEnumerable<KeyValuePair<string, string>> keyValuePairs, CookieOptions options);
+        void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options);
 
         /// <summary>
         /// Sets an expired cookie.

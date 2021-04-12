@@ -208,11 +208,9 @@ namespace Microsoft.AspNetCore.Internal
                 var dataSizePerCookie = ChunkSize.Value - templateLength - 3; // Budget 3 chars for the chunkid.
                 var cookieChunkCount = (int)Math.Ceiling(value.Length * 1.0 / dataSizePerCookie);
 
-                List<KeyValuePair<string, string>> keyValuePairs = new(cookieChunkCount)
-                {
-                    KeyValuePair.Create(key, ChunkCountPrefix + cookieChunkCount.ToString(CultureInfo.InvariantCulture))
-                };
-
+                var keyValuePairs = new KeyValuePair<string, string>[cookieChunkCount + 1];
+                keyValuePairs[0] = KeyValuePair.Create(key, ChunkCountPrefix + cookieChunkCount.ToString(CultureInfo.InvariantCulture));
+                
                 var offset = 0;
                 for (var chunkId = 1; chunkId <= cookieChunkCount; chunkId++)
                 {
@@ -220,7 +218,7 @@ namespace Microsoft.AspNetCore.Internal
                     var length = Math.Min(dataSizePerCookie, remainingLength);
                     var segment = value.Substring(offset, length);
                     offset += length;
-                    keyValuePairs.Add(KeyValuePair.Create(string.Concat(key, ChunkKeySuffix, chunkId.ToString(CultureInfo.InvariantCulture)), segment));
+                    keyValuePairs[chunkId] = KeyValuePair.Create(string.Concat(key, ChunkKeySuffix, chunkId.ToString(CultureInfo.InvariantCulture)), segment);
                 }
 
                 responseCookies.Append(keyValuePairs, options);    
@@ -306,14 +304,12 @@ namespace Microsoft.AspNetCore.Internal
 
             var responseCookies = context.Response.Cookies;
 
-            List<KeyValuePair<string, string>> keyValuePairs = new(chunks)
-            {
-                KeyValuePair.Create(key, string.Empty)
-            };
-
+            var keyValuePairs = new KeyValuePair<string, string>[chunks + 1];
+            keyValuePairs[0] = KeyValuePair.Create(key, string.Empty);
+            
             for (var i = 1; i <= chunks; i++)
             {
-                keyValuePairs.Add(KeyValuePair.Create(string.Concat(key, "C", i.ToString(CultureInfo.InvariantCulture)), string.Empty));
+                keyValuePairs[i] = KeyValuePair.Create(string.Concat(key, "C", i.ToString(CultureInfo.InvariantCulture)), string.Empty);
             }
 
             responseCookies.Append(keyValuePairs, new CookieOptions()
