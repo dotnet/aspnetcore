@@ -92,7 +92,9 @@
     <Copy SourceFiles="@(_appRuntimeFiles)" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix" />
     <ZipDirectory SourceDirectory="$(OutputPath)\AspNetCoreAppRuntimeHelix" DestinationFile="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Overwrite="true" />
     
-    <HelixCorrelationPayload Include="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Destination="$(DotNetCliDestination)\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
+    <ItemGroup>
+      <HelixCorrelationPayload Include="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Destination="$(DotNetCliDestination)\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
+    </ItemGroup>
   </Target>
   
   <Target Name="Gather" BeforeTargets="Build">
