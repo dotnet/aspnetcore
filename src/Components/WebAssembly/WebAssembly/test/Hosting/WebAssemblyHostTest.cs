@@ -22,12 +22,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Arrange
             var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var host = builder.Build();
-            host.CultureProvider = new TestSatelliteResourcesLoader();
+            var cultureProvider = new TestSatelliteResourcesLoader();
 
             var cts = new CancellationTokenSource();
 
             // Act
-            var task = host.RunAsyncCore(cts.Token);
+            var task = host.RunAsyncCore(cts.Token, cultureProvider);
 
             cts.Cancel();
             await task.TimeoutAfter(TimeSpan.FromSeconds(3));
@@ -41,10 +41,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Arrange
             var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             var host = builder.Build();
-            host.CultureProvider = new TestSatelliteResourcesLoader();
+            var cultureProvider = new TestSatelliteResourcesLoader();
 
             var cts = new CancellationTokenSource();
-            var task = host.RunAsyncCore(cts.Token);
+            var task = host.RunAsyncCore(cts.Token, cultureProvider);
 
             // Act
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.RunAsyncCore(cts.Token));
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime());
             builder.Services.AddSingleton<DisposableService>();
             var host = builder.Build();
-            host.CultureProvider = new TestSatelliteResourcesLoader();
+            var cultureProvider = new TestSatelliteResourcesLoader();
 
             var disposable = host.Services.GetRequiredService<DisposableService>();
 
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // Act
             await using (host)
             {
-                var task = host.RunAsyncCore(cts.Token);
+                var task = host.RunAsyncCore(cts.Token, cultureProvider);
 
                 cts.Cancel();
                 await task.TimeoutAfter(TimeSpan.FromSeconds(3));

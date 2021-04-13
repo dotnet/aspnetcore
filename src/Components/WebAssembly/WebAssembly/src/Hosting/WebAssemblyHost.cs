@@ -67,8 +67,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         public IServiceProvider Services => _scope.ServiceProvider;
 
-        internal WebAssemblyCultureProvider CultureProvider => WebAssemblyCultureProvider.Instance!;
-
         /// <summary>
         /// Disposes the host asynchronously.
         /// </summary>
@@ -123,7 +121,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         }
 
         // Internal for testing.
-        internal async Task RunAsyncCore(CancellationToken cancellationToken)
+        internal async Task RunAsyncCore(CancellationToken cancellationToken, WebAssemblyCultureProvider? cultureProvider = null)
         {
             if (_started)
             {
@@ -132,12 +130,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             _started = true;
 
-            CultureProvider.ThrowIfCultureChangeIsUnsupported();
+            cultureProvider ??= WebAssemblyCultureProvider.Instance!;
+            cultureProvider.ThrowIfCultureChangeIsUnsupported();
 
             // Application developers might have configured the culture based on some ambient state
             // such as local storage, url etc as part of their Program.Main(Async).
             // This is the earliest opportunity to fetch satellite assemblies for this selection.
-            await CultureProvider.LoadCurrentCultureResourcesAsync();
+            await cultureProvider.LoadCurrentCultureResourcesAsync();
 
             var manager = Services.GetRequiredService<ComponentApplicationLifetime>();
             var store = !string.IsNullOrEmpty(_persistedState) ?
