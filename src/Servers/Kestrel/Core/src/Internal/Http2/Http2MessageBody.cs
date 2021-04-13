@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 ValueTask<FlushResult> continueTask = TryProduceContinueAsync();
                 if (!continueTask.IsCompletedSuccessfully)
                 {
-                    return continueTask.AsTask();
+                    return continueTask.GetAsTask();
                 }
             }
 
@@ -66,8 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override bool TryRead(out ReadResult readResult)
         {
-            Task startTask = TryStartAsync();
-            Debug.Assert(startTask.IsCompleted);
+            TryStartAsync();
 
             var hasResult = _context.RequestBodyPipe.Reader.TryRead(out readResult);
 

@@ -44,8 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override bool TryReadInternal(out ReadResult readResult)
         {
-            Task startTask = TryStartAsync();
-            Debug.Assert(startTask.IsCompleted);
+            TryStartAsync();
 
             var boolResult = _requestBodyPipe.Reader.TryRead(out _readResult);
 

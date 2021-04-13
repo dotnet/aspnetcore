@@ -140,13 +140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            Task readTask = OnReadStartedAsync();
-            if (!readTask.IsCompletedSuccessfully)
-            {
-                return readTask;
-            }
-
-            return Task.CompletedTask;
+            return OnReadStartedAsync();
         }
 
         protected void TryStop()
@@ -206,6 +200,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!continueTask.IsCompletedSuccessfully)
                 {
                     return StartTimingReadAwaited(continueTask, readAwaitable, cancellationToken);
+                }
+                else
+                {
+                    continueTask.GetAwaiter().GetResult();
                 }
 
                 if (_timingEnabled)
