@@ -34,7 +34,7 @@
     <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) || exit /b 1" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TestDependsOnAspNetRuntime)' == 'true' ">
+  <ItemGroup Condition=" '$(TestDependsOnTemplates)' == 'true' ">
     <!-- Grab all shipping template packages. -->
     <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*Templates*$(SharedFxVersion).nupkg" />
   </ItemGroup>
