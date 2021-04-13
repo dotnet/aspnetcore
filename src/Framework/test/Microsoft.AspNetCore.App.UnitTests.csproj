@@ -4,14 +4,10 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
     <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
+    <TestDependsOnTemplates>true</TestDependsOnTemplates>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(IsHelixJob)' == 'true' ">
-    <!-- TargetingPackTests need the full nupkg -->
-    <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.*$(SharedFxVersion).nupkg" />
-  </ItemGroup>
-  
   <ItemGroup>
     <!-- Ignore aspnetcorev2_inprocess because tests expect only managed assemblies in this item group. -->
     <_SharedFrameworkBinariesFromRepo Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage)" />
