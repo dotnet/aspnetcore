@@ -17,11 +17,7 @@ namespace RunTests
                 var keepGoing = runner.SetupEnvironment();
                 if (keepGoing)
                 {
-                    keepGoing = await runner.InstallDotnetDump();
-                }
-                if (keepGoing)
-                {
-                    keepGoing = await runner.InstallAspNetAppIfNeededAsync();
+                    keepGoing = await runner.InstallDotnetToolsAsync();
                 }
 #if INSTALLPLAYWRIGHT
                 if (keepGoing)
