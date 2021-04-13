@@ -4,7 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
     <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
-    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
