@@ -5,7 +5,7 @@
     <TargetName>Microsoft.AspNetCore.Components.WebAssembly.Build.Tasks</TargetName>
     <AssemblyName>Microsoft.AspNetCore.Components.WebAssembly.Build</AssemblyName>
     <Description>Build mechanism for ASP.NET Core Blazor WebAssembly applications.</Description>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsShippingPackage>false</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <GenerateDependencyFile>false</GenerateDependencyFile>
   </PropertyGroup>
