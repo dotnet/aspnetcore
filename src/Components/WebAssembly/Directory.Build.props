@@ -4,6 +4,9 @@
     <!-- Override version labels -->
     <VersionPrefix>$(ComponentsWebAssemblyVersionPrefix)</VersionPrefix>
 
+    <!-- Override shipping to be extra safe -->
+    <IsShippingPackage>false</IsShippingPackage>
+    
     <!-- Avoid source build issues with WebAssembly -->
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
