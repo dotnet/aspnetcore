@@ -93,6 +93,13 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
+
+    <!-- Crossgen2 compiler -->
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm64" />
   </ItemGroup>
 
   <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildFromSource)' != 'true'">
@@ -206,7 +213,7 @@ and are generated based on the last package release.
     -->
     <LatestPackageReference Update="@(LatestPackageReference->WithMetadataValue('Version', ''))">
       <Version
-          Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Runtime.')) ">$(MicrosoftNETCoreAppRuntimeVersion)</Version>
+          Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Runtime.')) or $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Crossgen2.'))">$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </LatestPackageReference>
   </ItemGroup>
 </Project>
