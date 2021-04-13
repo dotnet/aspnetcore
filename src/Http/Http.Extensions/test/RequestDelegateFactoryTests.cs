@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Net.Sockets;
@@ -761,15 +762,27 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     httpContext.Items.Add("service", myService);
                 }
 
+                void TestExplicitFromIEnumerableService(HttpContext httpContext, [FromService] IEnumerable<MyService> myServices)
+                {
+                    httpContext.Items.Add("service", myServices.Single());
+                }
+
                 void TestImpliedFromService(HttpContext httpContext, IMyService myService)
                 {
                     httpContext.Items.Add("service", myService);
                 }
 
-                return new[]
+                void TestImpliedIEnumerableFromService(HttpContext httpContext, IEnumerable<MyService> myServices)
+                {
+                    httpContext.Items.Add("service", myServices.Single());
+                }
+
+                return new object[][]
                 {
                     new[] { (Action<HttpContext, MyService>)TestExplicitFromService },
-                    new[] { (Action<HttpContext, MyService>)TestImpliedFromService },
+                    new[] { (Action<HttpContext, IEnumerable<MyService>>)TestExplicitFromIEnumerableService },
+                    new[] { (Action<HttpContext, IMyService>)TestImpliedFromService },
+                    new[] { (Action<HttpContext, IEnumerable<MyService>>)TestImpliedIEnumerableFromService },
                 };
             }
         }
@@ -787,7 +800,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, MyService>)action);
+            var requestDelegate = RequestDelegateFactory.Create(action);
 
             await requestDelegate(httpContext);
 
