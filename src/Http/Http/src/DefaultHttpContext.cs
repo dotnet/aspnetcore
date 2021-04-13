@@ -6,12 +6,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 
+[assembly:TypeForwardedTo(typeof(IFeatureCollection))]
+[assembly:TypeForwardedTo(typeof(FeatureCollection))]
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>

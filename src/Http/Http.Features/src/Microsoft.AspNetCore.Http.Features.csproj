@@ -10,9 +10,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-
+  
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Primitives" />
+    <Reference Include="Microsoft.Extensions.Features" />
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 

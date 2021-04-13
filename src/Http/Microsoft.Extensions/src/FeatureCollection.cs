@@ -5,12 +5,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
     /// <summary>
     /// Default implementation for <see cref="IFeatureCollection"/>.
     /// </summary>
+    [TypeForwardedFrom("Microsoft.AspNetCore.Http")]
     public class FeatureCollection : IFeatureCollection
     {
         private static readonly KeyComparer FeatureKeyComparer = new KeyComparer();

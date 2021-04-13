@@ -15,6 +15,7 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Features" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Metadata" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Features" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Core" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Stores" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />

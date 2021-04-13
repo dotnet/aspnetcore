@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
     /// <summary>
     /// Represents a collection of HTTP features.
     /// </summary>
+    [TypeForwardedFrom("Microsoft.AspNetCore.Http")]
     public interface IFeatureCollection : IEnumerable<KeyValuePair<Type, object>>
     {
         /// <summary>

@@ -1,1 +1,19 @@
 #nullable enable
+Microsoft.AspNetCore.Http.Features.IFeatureCollection
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.Get<TFeature>() -> TFeature?
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.IsReadOnly.get -> bool
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.Revision.get -> int
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.Set<TFeature>(TFeature? instance) -> void
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.this[System.Type! key].get -> object?
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.this[System.Type! key].set -> void
+Microsoft.AspNetCore.Http.Features.FeatureCollection
+Microsoft.AspNetCore.Http.Features.FeatureCollection.FeatureCollection() -> void
+Microsoft.AspNetCore.Http.Features.FeatureCollection.FeatureCollection(Microsoft.AspNetCore.Http.Features.IFeatureCollection! defaults) -> void
+Microsoft.AspNetCore.Http.Features.FeatureCollection.FeatureCollection(int initialCapacity) -> void
+Microsoft.AspNetCore.Http.Features.FeatureCollection.Get<TFeature>() -> TFeature?
+Microsoft.AspNetCore.Http.Features.FeatureCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type!, object!>>!
+Microsoft.AspNetCore.Http.Features.FeatureCollection.IsReadOnly.get -> bool
+Microsoft.AspNetCore.Http.Features.FeatureCollection.Set<TFeature>(TFeature? instance) -> void
+Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].get -> object?
+Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].set -> void
+virtual Microsoft.AspNetCore.Http.Features.FeatureCollection.Revision.get -> int
