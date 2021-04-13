@@ -35,8 +35,8 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TestDependsOnTemplates)' == 'true' ">
-    <!-- Grab all shipping template packages. -->
-    <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*Templates*$(SharedFxVersion).nupkg" />
+    <!-- Grab all shipping packages. -->
+    <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*$(SharedFxVersion).nupkg" />
   </ItemGroup>
   
   <ItemGroup>
