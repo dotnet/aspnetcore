@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void InitialDictionaryIsEmpty()
         {
-            using (var memoryPool = SlabMemoryPoolFactory.Create())
+            using (var memoryPool = PinnedBlockMemoryPoolFactory.Create())
             {
                 var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
                 var pair = DuplexPipe.CreateConnectionPair(options, options);

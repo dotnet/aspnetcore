@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             lock (_pools)
             {
-                var pool = new DiagnosticMemoryPool(new SlabMemoryPool(), _allowLateReturn, _rentTracking);
+                var pool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), _allowLateReturn, _rentTracking);
                 _pools.Add(pool);
                 return pool;
             }

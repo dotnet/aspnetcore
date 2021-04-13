@@ -3,20 +3,20 @@
 
 namespace System.Buffers
 {
-    internal static class SlabMemoryPoolFactory
+    internal static class PinnedBlockMemoryPoolFactory
     {
         public static MemoryPool<byte> Create()
         {
 #if DEBUG
-            return new DiagnosticMemoryPool(CreateSlabMemoryPool());
+            return new DiagnosticMemoryPool(CreatePinnedBlockMemoryPool());
 #else
-            return CreateSlabMemoryPool();
+            return CreatePinnedBlockMemoryPool();
 #endif
         }
 
-        public static MemoryPool<byte> CreateSlabMemoryPool()
+        public static MemoryPool<byte> CreatePinnedBlockMemoryPool()
         {
-            return new SlabMemoryPool();
+            return new PinnedBlockMemoryPool();
         }
     }
 }

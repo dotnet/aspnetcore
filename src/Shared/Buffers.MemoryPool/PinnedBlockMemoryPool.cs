@@ -10,7 +10,7 @@ namespace System.Buffers
     /// <summary>
     /// Used to allocate and distribute re-usable blocks of memory.
     /// </summary>
-    internal sealed class SlabMemoryPool : MemoryPool<byte>
+    internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
     {
         /// <summary>
         /// The size of a block. 4096 is chosen because most operating systems use 4k pages.

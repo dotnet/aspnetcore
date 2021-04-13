@@ -6,9 +6,9 @@ using Xunit;
 
 namespace Microsoft.Extensions.Internal.Test
 {
-    public  class SlabMemoryPoolTests: MemoryPoolTests
+    public  class PinnedBlockMemoryPoolTests: MemoryPoolTests
     {
-        protected override MemoryPool<byte> CreatePool() => new SlabMemoryPool();
+        protected override MemoryPool<byte> CreatePool() => new PinnedBlockMemoryPool();
 
         [Fact]
         public void DoubleDisposeWorks()

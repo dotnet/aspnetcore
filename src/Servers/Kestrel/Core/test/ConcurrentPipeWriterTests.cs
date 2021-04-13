@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task PassthroughIfAllFlushesAreAwaited()
         {
-            using (var slabPool = new SlabMemoryPool())
+            using (var slabPool = new PinnedBlockMemoryPool())
             using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
             {
                 var pipeWriterFlushTcsArray = new[] {
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task QueuesIfFlushIsNotAwaited()
         {
-            using (var slabPool = new SlabMemoryPool())
+            using (var slabPool = new PinnedBlockMemoryPool())
             using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
             {
                 var pipeWriterFlushTcsArray = new[] {
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task KeepsQueueIfInnerFlushFinishesBetweenGetMemoryAndAdvance()
         {
-            using (var slabPool = new SlabMemoryPool())
+            using (var slabPool = new PinnedBlockMemoryPool())
             using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
             {
                 var pipeWriterFlushTcsArray = new[] {
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
 
                 // Now that we flushed the ConcurrentPipeWriter again, the GetMemory() and Advance() calls are replayed.
-                // Make sure that MockPipeWriter.SlabMemoryPoolBlockSize matches SlabMemoryPool._blockSize or else
+                // Make sure that MockPipeWriter.PinnedBlockMemoryPoolBlockSize matches PinnedBlockMemoryPool._blockSize or else
                 // it might take more or less calls to the inner PipeWriter's GetMemory method to copy all the data.
                 Assert.Equal(3, mockPipeWriter.GetMemoryCallCount);
                 Assert.Equal(3, mockPipeWriter.AdvanceCallCount);
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task CompleteFlushesQueuedBytes()
         {
-            using (var slabPool = new SlabMemoryPool())
+            using (var slabPool = new PinnedBlockMemoryPool())
             using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
             {
                 var pipeWriterFlushTcsArray = new[] {
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await completeTask.DefaultTimeout();
 
                 // Now that we completed the ConcurrentPipeWriter, the GetMemory() and Advance() calls are replayed.
-                // Make sure that MockPipeWriter.SlabMemoryPoolBlockSize matches SlabMemoryPool._blockSize or else
+                // Make sure that MockPipeWriter.PinnedBlockMemoryPoolBlockSize matches PinnedBlockMemoryPool._blockSize or else
                 // it might take more or less calls to the inner PipeWriter's GetMemory method to copy all the data.
                 Assert.Equal(3, mockPipeWriter.GetMemoryCallCount);
                 Assert.Equal(3, mockPipeWriter.AdvanceCallCount);
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task CancelPendingFlushInterruptsFlushLoop()
         {
-            using (var slabPool = new SlabMemoryPool())
+            using (var slabPool = new PinnedBlockMemoryPool())
             using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
             {
                 var pipeWriterFlushTcsArray = new[] {
@@ -411,8 +411,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class MockPipeWriter : PipeWriter
         {
-            // It's important that this matches SlabMemoryPool._blockSize for all the tests to pass.
-            private const int SlabMemoryPoolBlockSize = 4096;
+            // It's important that this matches PinnedBlockMemoryPool._blockSize for all the tests to pass.
+            private const int PinnedBlockMemoryPoolBlockSize = 4096;
 
             private readonly TaskCompletionSource<FlushResult>[] _flushResults;
 
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public override Memory<byte> GetMemory(int sizeHint = 0)
             {
                 GetMemoryCallCount++;
-                return new Memory<byte>(new byte[sizeHint == 0 ? SlabMemoryPoolBlockSize : sizeHint]);
+                return new Memory<byte>(new byte[sizeHint == 0 ? PinnedBlockMemoryPoolBlockSize : sizeHint]);
             }
 
             public override Span<byte> GetSpan(int sizeHint = 0)

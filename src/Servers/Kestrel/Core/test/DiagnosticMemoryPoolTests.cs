@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Internal.Test
 {
     public class DiagnosticMemoryPoolTests: MemoryPoolTests
     {
-        protected override MemoryPool<byte> CreatePool() => new DiagnosticMemoryPool(new SlabMemoryPool());
+        protected override MemoryPool<byte> CreatePool() => new DiagnosticMemoryPool(new PinnedBlockMemoryPool());
 
         [Fact]
         public void DoubleDisposeThrows()
@@ -176,7 +176,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public async Task DoesNotThrowWithLateReturns()
         {
-            var memoryPool = new DiagnosticMemoryPool(new SlabMemoryPool(), allowLateReturn: true);
+            var memoryPool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), allowLateReturn: true);
             var block = memoryPool.Rent();
             memoryPool.Dispose();
             block.Dispose();
@@ -186,7 +186,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public async Task ThrowsOnAccessToLateBlocks()
         {
-            var memoryPool = new DiagnosticMemoryPool(new SlabMemoryPool(), allowLateReturn: true);
+            var memoryPool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), allowLateReturn: true);
             var block = memoryPool.Rent();
             memoryPool.Dispose();
 
@@ -202,7 +202,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public void ExceptionsContainStackTraceWhenEnabled()
         {
-            var memoryPool = new DiagnosticMemoryPool(new SlabMemoryPool(), rentTracking: true);
+            var memoryPool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), rentTracking: true);
             var block = memoryPool.Rent();
 
             ExpectDisposeException(memoryPool);
