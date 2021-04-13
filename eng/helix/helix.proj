@@ -92,8 +92,8 @@
       <_refFiles Include="$(RepoRoot).dotnet/packs/Microsoft.AspNetCore.App.Ref/$(SharedFxVersion)/**/*" />
       <_appFiles Include="$(RepoRoot).dotnet/shared/Microsoft.AspNetCore.App/$(SharedFxVersion)/*.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(_refFiles)" DestinationFiles="@(_refFiles->'$(OutputPath)/AspNetCoreAppRuntimeHelix/packs/Microsoft.AspNetCore.App.Ref/$(SharedFxVersion)%(RecursiveDir)%(FileName)%(Extension)')" />
-    <Copy SourceFiles="@(_appFiles)" DestinationFolder="$(OutputPath)/AspNetCoreAppRuntimeHelix/shared/Microsoft.AspNetCore.App/$(SharedFxVersion)/" />
+    <Copy SourceFiles="@(_refFiles)" DestinationFiles="@(_refFiles->'$(OutputPath)/AspNetCoreAppRuntimeHelix/packs/Microsoft.AspNetCore.App.Ref/$(SharedFxVersion)/%(RecursiveDir)%(FileName)%(Extension)')" />
+    <Copy SourceFiles="@(_appFiles)" DestinationFolder="$(OutputPath)/AspNetCoreAppRuntimeHelix/shared/Microsoft.AspNetCore.App/$(SharedFxVersion)" />
     <ZipDirectory SourceDirectory="$(OutputPath)\AspNetCoreAppRuntimeHelix" DestinationFile="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Overwrite="true" />
     
     <ItemGroup>
