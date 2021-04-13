@@ -9,7 +9,8 @@
      @ontestevent="@HandleTestEvent"
      @onkeydown.testvariant="@HandleCustomKeyDown"
      @onkeydown.yetanother="@HandleYetAnotherKeyboardEvent"
-     @oncustommouseover="@(e => { LogMessage("Received custom mouseover event"); })">
+     @oncustommouseover="@(e => { LogMessage("Received custom mouseover event"); })"
+     @onsendjsobject="HandleEventWithIJSObjectReference">
     Event target
     <div id="test-event-target-child" style="background: #afa; padding: 1em;">
         Child
@@ -55,6 +56,17 @@
     Register custom mouseover event (which has no corresponding native listener)
 </button>
 
+<button id="register-sendjsobject"
+        onclick="Blazor.registerCustomEventType('sendjsobject', { createEventArgs: event => event.detail })">
+    Register custom event that sends IJSObjectReference
+</button>
+
+<button id="trigger-sendjsobject-event-directly"
+        onclick="document.getElementById('test-event-target-child').dispatchEvent(new CustomEvent('sendjsobject', { bubbles: true, detail: { jsObject: DotNet.createJSObjectReference({ getMyValue: () => 'Hello!' }) } }))">
+    Trigger sendjsobject event directly
+</button>
+
+
 <p>
     <label>
         <input type="checkbox" id="custom-keydown-prevent-default" @bind="customKeyDownPreventDefault" />
@@ -98,5 +110,11 @@
     void HandleYetAnotherKeyboardEvent(YetAnotherCustomKeyboardEventArgs eventArgs)
     {
         LogMessage($"Yet another aliased event received: {eventArgs.YouPressed}");
+    }
+
+    async Task HandleEventWithIJSObjectReference(EventWithIJSObjectReferenceEventArgs eventArgs)
+    {
+        var innerValue = await eventArgs.JsObject.InvokeAsync<string>("getMyValue", null);
+        LogMessage($"Event with IJSObjectReference received: {innerValue}");
     }
 }

@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text.Json;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
 
@@ -22,6 +23,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             ElementReferenceContext = new WebElementReferenceContext(this);
             JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
         }
+
+        public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
         // The following methods are invoke via Mono's JS interop mechanism (invoke_method)
         public static string? InvokeDotNet(string assemblyName, string methodIdentifier, string dotNetObjectId, string argsJson)

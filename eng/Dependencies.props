@@ -115,7 +115,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.SqlServer" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
-    <LatestPackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" />
     <LatestPackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />

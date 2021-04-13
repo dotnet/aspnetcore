@@ -64,6 +64,9 @@ namespace RunTests
                     File.Copy("default.runner.json", "xunit.runner.json");
                 }
 
+                DisplayContents(Path.Combine(Options.DotnetRoot, "host", "fxr"));
+                DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.NETCore.App"));
+                
                 return true;
             }
             catch (Exception e)

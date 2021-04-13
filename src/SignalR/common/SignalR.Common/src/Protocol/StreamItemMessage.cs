@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <summary>
         /// The single item from a stream.
         /// </summary>
-        public object? Item { get; }
+        public object? Item { get; set; }
 
         /// <summary>
         /// Constructs a <see cref="StreamItemMessage"/>.
