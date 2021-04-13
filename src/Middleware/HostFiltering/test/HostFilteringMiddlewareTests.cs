@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.HostFiltering
                         app.Use((ctx, next) =>
                         {
                             ctx.Request.Headers.Remove(HeaderNames.Host);
-                            return next();
+                            return next(ctx);
                         });
                         app.UseHostFiltering();
                         app.Run(c =>
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.HostFiltering
                         app.Use((ctx, next) =>
                         {
                             ctx.Request.Headers[HeaderNames.Host] = "";
-                            return next();
+                            return next(ctx);
                         });
                         app.UseHostFiltering();
                         app.Run(c =>
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.HostFiltering
                             // TestHost's ClientHandler doesn't let you set the host header, only the host in the URI
                             // and that would over-normalize some of our test conditions like casing.
                             ctx.Request.Headers[HeaderNames.Host] = hosturl;
-                            return next();
+                            return next(ctx);
                         });
                         app.UseHostFiltering();
                         app.Run(c => Task.CompletedTask);
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.HostFiltering
                             // TestHost's ClientHandler doesn't let you set the host header, only the host in the URI
                             // and that would reject some of our test conditions.
                             ctx.Request.Headers[HeaderNames.Host] = hosturl;
-                            return next();
+                            return next(ctx);
                         });
                         app.UseHostFiltering();
                         app.Run(c => throw new NotImplementedException("App"));
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.HostFiltering
                         app.Use((ctx, next) =>
                         {
                             ctx.Request.Headers[HeaderNames.Host] = currentHost;
-                            return next();
+                            return next(ctx);
                         });
                         app.UseHostFiltering();
                         app.Run(c => Task.CompletedTask);

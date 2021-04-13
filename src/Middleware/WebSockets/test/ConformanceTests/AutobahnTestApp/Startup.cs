@@ -17,7 +17,7 @@ namespace AutobahnTestApp
             app.UseWebSockets();
 
             var logger = loggerFactory.CreateLogger<Startup>();
-            app.Use(async (context, next) =>
+            app.Run(async (context) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {

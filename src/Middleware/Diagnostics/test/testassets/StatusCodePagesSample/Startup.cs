@@ -55,7 +55,7 @@ namespace StatusCodePagesSample
                 }
                 else
                 {
-                    await next();
+                    await next(context);
                 }
             });
 

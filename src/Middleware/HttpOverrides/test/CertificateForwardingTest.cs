@@ -57,13 +57,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next();
+                            await next(context);
                         });
                         app.UseCertificateForwarding();
                         app.Use(async (context, next) =>
                         {
                             Assert.Equal(context.Connection.ClientCertificate, Certificates.SelfSignedValidWithNoEku);
-                            await next();
+                            await next(context);
                         });
                     });
                 }).Build();
@@ -96,13 +96,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         {
                             Assert.Null(context.Connection.ClientCertificate);
                             context.Connection.ClientCertificate = Certificates.SelfSignedNotYetValid;
-                            await next();
+                            await next(context);
                         });
                         app.UseCertificateForwarding();
                         app.Use(async (context, next) =>
                         {
                             Assert.Equal(context.Connection.ClientCertificate, Certificates.SelfSignedValidWithNoEku);
-                            await next();
+                            await next(context);
                         });
                     });
                 }).Build();
@@ -134,13 +134,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next();
+                            await next(context);
                         });
                         app.UseCertificateForwarding();
                         app.Use(async (context, next) =>
                         {
                             Assert.Equal(context.Connection.ClientCertificate, Certificates.SelfSignedValidWithNoEku);
-                            await next();
+                            await next(context);
                         });
                     });
                 }).Build();
@@ -172,13 +172,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next();
+                            await next(context);
                         });
                         app.UseCertificateForwarding();
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next();
+                            await next(context);
                         });
                     });
                 }).Build();
@@ -210,13 +210,13 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next();
+                            await next(context);
                         });
                         app.UseCertificateForwarding();
                         app.Use(async (context, next) =>
                         {
                             Assert.Null(context.Connection.ClientCertificate);
-                            await next();
+                            await next(context);
                         });
                     });
                 }).Build();

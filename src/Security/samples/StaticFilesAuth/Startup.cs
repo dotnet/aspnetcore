@@ -95,13 +95,13 @@ namespace StaticFilesAuth
 
             app.Map("/MapAuthenticatedFiles", branch =>
             {
-                branch.Use((context, next) => { SetFileEndpoint(context, files, null); return next(); });
+                branch.Use((context, next) => { SetFileEndpoint(context, files, null); return next(context); });
                 branch.UseAuthorization();
                 SetupFileServer(branch, files);
             });
             app.Map("/MapImperativeFiles", branch =>
             {
-                branch.Use((context, next) => { SetFileEndpoint(context, files, "files"); return next(); });
+                branch.Use((context, next) => { SetFileEndpoint(context, files, "files"); return next(context); });
                 branch.UseAuthorization();
                 SetupFileServer(branch, files);
             });

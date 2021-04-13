@@ -35,7 +35,7 @@ namespace SampleApp
 
                 try
                 {
-                    await next.Invoke();
+                    await next.Invoke(context);
                 }
                 catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413RequestEntityTooLarge) { }
             });

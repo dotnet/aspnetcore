@@ -35,7 +35,7 @@ namespace BasicWebSite
                     httpContext.Request.Body,
                     testHttpMaxRequestBodySizeFeature);
 
-                return next();
+                return next(httpContext);
             });
 
             app.UseRouting();

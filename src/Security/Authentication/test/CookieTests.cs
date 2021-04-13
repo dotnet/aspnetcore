@@ -1403,7 +1403,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                         .Configure(app =>
                         {
                             app.UseAuthentication();
-                            app.Use((context, next) =>
+                            app.Run((context) =>
                                 context.SignInAsync("Cookies",
                                                 new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
                                                 new AuthenticationProperties()));
@@ -1426,7 +1426,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                     .Configure(app =>
                     {
                         app.UseAuthentication();
-                        app.Use(async (context, next) =>
+                        app.Run(async (context) =>
                         {
                             var result = await context.AuthenticateAsync("Cookies");
                             await DescribeAsync(context.Response, result);
@@ -1635,7 +1635,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                                 }
                                 else
                                 {
-                                    await next();
+                                    await next(context);
                                 }
                             });
                         })

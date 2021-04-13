@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                                 }
                                 else
                                 {
-                                    await next();
+                                    await next(context);
                                 }
                             });
                         })

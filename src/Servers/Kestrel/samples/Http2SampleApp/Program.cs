@@ -47,7 +47,7 @@ namespace Http2SampleApp
                                         throw new NotSupportedException("Prohibited cipher: " + tlsFeature.CipherAlgorithm);
                                     }
 
-                                    return next();
+                                    return next(context);
                                 });
                             });
 
