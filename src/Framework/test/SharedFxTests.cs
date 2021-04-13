@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore
                 ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
                 : Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
             _frameworkListPath = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_REF_PATH"))
-                ? null;
+                ? null
                 : Path.Combine(Environment.GetEnvironmentVariable("ASPNET_REF_PATH"), "data", "FrameworkList.xml");
             _expectedVersionFileName = ".version";
         }
