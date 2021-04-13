@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Provides extension methods for <see cref="IEndpointRouteBuilder"/> to define HTTP API endpoints.
     /// </summary>
-    public static class MapActionEndpointRouteBuilderExtensions
+    public static class MinmalActionEndpointRouteBuilderExtensions
     {
         // Avoid creating a new array every call
         private static readonly string[] GetVerb = new[] { "GET" };
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="action">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MapActionEndpointConventionBuilder MapGet(
+        public static MinimalActionEndpointConventionBuilder MapGet(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate action)
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="action">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MapActionEndpointConventionBuilder MapPost(
+        public static MinimalActionEndpointConventionBuilder MapPost(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate action)
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="action">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that canaction be used to further customize the endpoint.</returns>
-        public static MapActionEndpointConventionBuilder MapPut(
+        public static MinimalActionEndpointConventionBuilder MapPut(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate action)
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="action">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MapActionEndpointConventionBuilder MapDelete(
+        public static MinimalActionEndpointConventionBuilder MapDelete(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate action)
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="action">The delegate executed when the endpoint is matched.</param>
         /// <param name="httpMethods">HTTP methods that the endpoint will match.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MapActionEndpointConventionBuilder MapMethods(
+        public static MinimalActionEndpointConventionBuilder MapMethods(
            this IEndpointRouteBuilder endpoints,
            string pattern,
            IEnumerable<string> httpMethods,
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="action">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MapActionEndpointConventionBuilder Map(
+        public static MinimalActionEndpointConventionBuilder Map(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate action)
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="action">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-        public static MapActionEndpointConventionBuilder Map(
+        public static MinimalActionEndpointConventionBuilder Map(
             this IEndpointRouteBuilder endpoints,
             RoutePattern pattern,
             Delegate action)
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Builder
                 endpoints.DataSources.Add(dataSource);
             }
 
-            return new MapActionEndpointConventionBuilder(dataSource.AddEndpointBuilder(builder));
+            return new MinimalActionEndpointConventionBuilder(dataSource.AddEndpointBuilder(builder));
         }
     }
 }
