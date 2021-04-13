@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void RuntimeListListsContainsCorrectEntries()
         {
-            var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
+            var runtimeListPath = Path.Combine(_sharedFxRoot, "data", "RuntimeList.xml");
             var expectedAssemblies = TestData.GetSharedFxDependencies()
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .ToHashSet();
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore
                 return;
             }
 
-            var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
+            var runtimeListPath = Path.Combine(_sharedFxRoot, "data", "RuntimeList.xml");
 
             AssertEx.FileExists(runtimeListPath);
 
