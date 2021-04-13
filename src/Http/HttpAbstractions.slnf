@@ -17,6 +17,7 @@
       "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
       "src\\Http\\Http.Extensions\\test\\Microsoft.AspNetCore.Http.Extensions.Tests.csproj",
       "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
+      "src\\Http\\Microsoft.Extensions\\src\\Microsoft.Extensions.Features.csproj",
       "src\\Http\\Http.Features\\test\\Microsoft.AspNetCore.Http.Features.Tests.csproj",
       "src\\Http\\Http\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Http.Microbenchmarks.csproj",
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
