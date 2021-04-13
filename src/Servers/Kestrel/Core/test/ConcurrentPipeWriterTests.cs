@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task PassthroughIfAllFlushesAreAwaited()
         {
-            using (var slabPool = new PinnedBlockMemoryPool())
-            using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
+            using (var memoryPool = new PinnedBlockMemoryPool())
+            using (var diagnosticPool = new DiagnosticMemoryPool(memoryPool))
             {
                 var pipeWriterFlushTcsArray = new[] {
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
@@ -79,8 +79,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task QueuesIfFlushIsNotAwaited()
         {
-            using (var slabPool = new PinnedBlockMemoryPool())
-            using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
+            using (var memoryPool = new PinnedBlockMemoryPool())
+            using (var diagnosticPool = new DiagnosticMemoryPool(memoryPool))
             {
                 var pipeWriterFlushTcsArray = new[] {
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
@@ -177,8 +177,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task KeepsQueueIfInnerFlushFinishesBetweenGetMemoryAndAdvance()
         {
-            using (var slabPool = new PinnedBlockMemoryPool())
-            using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
+            using (var memoryPool = new PinnedBlockMemoryPool())
+            using (var diagnosticPool = new DiagnosticMemoryPool(memoryPool))
             {
                 var pipeWriterFlushTcsArray = new[] {
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
@@ -261,8 +261,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task CompleteFlushesQueuedBytes()
         {
-            using (var slabPool = new PinnedBlockMemoryPool())
-            using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
+            using (var memoryPool = new PinnedBlockMemoryPool())
+            using (var diagnosticPool = new DiagnosticMemoryPool(memoryPool))
             {
                 var pipeWriterFlushTcsArray = new[] {
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
@@ -329,8 +329,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task CancelPendingFlushInterruptsFlushLoop()
         {
-            using (var slabPool = new PinnedBlockMemoryPool())
-            using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
+            using (var memoryPool = new PinnedBlockMemoryPool())
+            using (var diagnosticPool = new DiagnosticMemoryPool(memoryPool))
             {
                 var pipeWriterFlushTcsArray = new[] {
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
