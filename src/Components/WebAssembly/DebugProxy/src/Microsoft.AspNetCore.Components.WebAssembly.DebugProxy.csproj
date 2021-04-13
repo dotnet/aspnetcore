@@ -4,7 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <PackageId>Microsoft.AspNetCore.Components.WebAssembly.DebugProxy</PackageId>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsShippingPackage>false</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <Description>Debug proxy for use when building Blazor applications.</Description>
     <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
