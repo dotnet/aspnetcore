@@ -32,9 +32,7 @@ namespace Microsoft.AspNetCore
             _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
                 ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
                 : Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
-            _expectedVersionFileName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
-                ? ".version"
-                : "Microsoft.AspNetCore.App.versions.txt";
+            _expectedVersionFileName = ".version";
         }
 
         [Fact]
