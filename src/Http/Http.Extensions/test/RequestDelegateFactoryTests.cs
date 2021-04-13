@@ -814,7 +814,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = new ServiceCollection().BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, MyService>)action);
+            var requestDelegate = RequestDelegateFactory.Create(action);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
         }
