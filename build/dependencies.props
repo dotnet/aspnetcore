@@ -229,7 +229,7 @@
     <XunitExtensibilityCorePackageVersion>2.4.1</XunitExtensibilityCorePackageVersion>
     <XunitExtensibilityExecutionPackageVersion>2.4.1</XunitExtensibilityExecutionPackageVersion>
     <XunitPackageVersion>2.4.1</XunitPackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.4.3</XunitRunnerVisualStudioPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.4.1</XunitRunnerVisualStudioPackageVersion>
 
     <!-- Dependencies listed only to include otherwise-transitive references in Microsoft.AspNetCore.App.nuspec. -->
     <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.1.0</MicrosoftDotNetPlatformAbstractionsPackageVersion>
