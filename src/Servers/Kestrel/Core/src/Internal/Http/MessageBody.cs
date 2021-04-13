@@ -66,9 +66,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public virtual Task ConsumeAsync()
         {
-            TryStart();
+            Task startTask = TryStartAsync();
+            if (!startTask.IsCompletedSuccessfully)
+            {
+                return ConsumeAwaited(startTask);
+            }    
 
             return OnConsumeAsync();
+        }
+
+        private async Task ConsumeAwaited(Task startTask)
+        {
+            await startTask;
+            await OnConsumeAsync();
         }
 
         public virtual ValueTask StopAsync()
@@ -93,20 +103,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _examinedUnconsumedBytes = 0;
         }
 
-        protected void TryProduceContinue()
+        protected ValueTask<FlushResult> TryProduceContinueAsync()
         {
             if (_send100Continue)
             {
-                _context.HttpResponseControl.ProduceContinue();
                 _send100Continue = false;
+                return _context.HttpResponseControl.ProduceContinueAsync();
             }
+
+            return default;
         }
 
-        protected void TryStart()
+        protected Task TryStartAsync()
         {
             if (_context.HasStartedConsumingRequestBody)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             OnReadStarting();
@@ -128,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            OnReadStarted();
+            return OnReadStartedAsync();
         }
 
         protected void TryStop()
@@ -165,8 +177,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
         }
 
-        protected virtual void OnReadStarted()
+        protected virtual Task OnReadStartedAsync()
         {
+            return Task.CompletedTask;
         }
 
         protected void AddAndCheckObservedBytes(long observedBytes)
@@ -183,7 +196,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (!readAwaitable.IsCompleted)
             {
-                TryProduceContinue();
+                ValueTask<FlushResult> continueTask = TryProduceContinueAsync();
+                if (!continueTask.IsCompletedSuccessfully)
+                {
+                    return StartTimingReadAwaited(continueTask, readAwaitable, cancellationToken);
+                }
+                else
+                {
+                    continueTask.GetAwaiter().GetResult();
+                }
 
                 if (_timingEnabled)
                 {
@@ -193,6 +214,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return readAwaitable;
+        }
+
+        protected async ValueTask<ReadResult> StartTimingReadAwaited(ValueTask<FlushResult> continueTask, ValueTask<ReadResult> readAwaitable, CancellationToken cancellationToken)
+        {
+            await continueTask;
+
+            if (_timingEnabled)
+            {
+                _backpressure = true;
+                _context.TimeoutControl.StartTimingRead();
+            }
+
+            return await readAwaitable;
         }
 
         protected void CountBytesRead(long bytesInReadResult)
