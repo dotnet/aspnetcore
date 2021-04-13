@@ -42,6 +42,9 @@ namespace RunTests
                 var dotnetEFFullPath = Path.Combine(nugetRestore, helixDir, "dotnet-ef.exe");
                 Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
                 EnvironmentVariables.Add("DotNetEfFullPath", dotnetEFFullPath);
+                var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
+                Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
+                EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
 
 #if INSTALLPLAYWRIGHT
                 // Playwright will download and look for browsers to this directory
@@ -118,75 +121,45 @@ namespace RunTests
         }
 #endif
 
-        public async Task<bool> InstallAspNetAppIfNeededAsync()
+        public async Task<bool> InstallDotnetToolsAsync()
         {
             try
             {
-                if (File.Exists(Options.AspNetRuntime))
-                {
-                    var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
-                    Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
-                    EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
+                Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
 
-                    DisplayContents(appRuntimePath);
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"nuget add source {Options.HELIX_WORKITEM_ROOT} --configfile NuGet.config",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
-                    Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
+                // Write nuget sources to console, useful for debugging purposes
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    "nuget list source",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
-                    await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        $"nuget add source {Options.HELIX_WORKITEM_ROOT} --configfile NuGet.config",
-                        environmentVariables: EnvironmentVariables,
-                        outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false,
-                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install dotnet-ef --version {Options.EfVersion} --tool-path {Options.HELIX_WORKITEM_ROOT}",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
-                    // Write nuget sources to console, useful for debugging purposes
-                    await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        "nuget list source",
-                        environmentVariables: EnvironmentVariables,
-                        outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false,
-                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                    await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        $"tool install dotnet-ef --version {Options.EfVersion} --tool-path {Options.HELIX_WORKITEM_ROOT}",
-                        environmentVariables: EnvironmentVariables,
-                        outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false,
-                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                    await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        $"tool install dotnet-serve --tool-path {Options.HELIX_WORKITEM_ROOT}",
-                        environmentVariables: EnvironmentVariables,
-                        outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false,
-                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                    // ';' is the path separator on Windows, and ':' on Unix
-                    Options.Path += OperatingSystem.IsWindows() ? ";" : ":";
-                    Options.Path += $"{Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}/.dotnet/tools";
-                    EnvironmentVariables["PATH"] = Options.Path;
-                }
-                else
-                {
-                    Console.WriteLine($"No AspNetRuntime found: {Options.AspNetRuntime}, skipping...");
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Exception in InstallAspNetAppIfNeeded: {e.ToString()}");
-                return false;
-            }
-        }
-
-        public async Task<bool> InstallDotnetDump()
-        {
-            try
-            {
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install dotnet-serve --tool-path {Options.HELIX_WORKITEM_ROOT}",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+                
                 await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                             $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --version 5.0.0-*",
                             environmentVariables: EnvironmentVariables,
@@ -198,7 +171,7 @@ namespace RunTests
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Exception in InstallDotnetDump: {e}");
+                Console.WriteLine($"Exception in InstallDotnetTools: {e}");
                 return false;
             }
         }
