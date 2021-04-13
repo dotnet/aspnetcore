@@ -8,6 +8,7 @@
     <ProductNameFolder>Microsoft ASP.NET Core Targeting Pack</ProductNameFolder>
     <ProductNameShort>AspNetCore.TargetingPack</ProductNameShort>
     <OutputType>Package</OutputType>
+    <Cabinet>targeting_pack_$(Platform).cab</Cabinet>
     <IsShipping>true</IsShipping>
     <SkipCopyToArtifactsDirectory Condition="'$(IsTargetingPackBuilding)' == 'false'">true</SkipCopyToArtifactsDirectory>
     <ProjectGuid>0AC34F1B-8056-4FFB-A398-E6BB7D67B48D</ProjectGuid>
