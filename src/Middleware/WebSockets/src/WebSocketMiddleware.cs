@@ -158,66 +158,50 @@ namespace Microsoft.AspNetCore.WebSockets
 
             public static bool CheckSupportedWebSocketRequest(string method, IHeaderDictionary requestHeaders)
             {
-                bool validUpgrade = false, validConnection = false, validKey = false, validVersion = false;
-
                 if (!string.Equals("GET", method, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
-                var interestingHeaders = new List<KeyValuePair<string, string>>();
-                foreach (var headerName in HandshakeHelpers.NeededHeaders)
-                {
-                    foreach (var value in requestHeaders.GetCommaSeparatedValues(headerName))
-                    {
-                        interestingHeaders.Add(new KeyValuePair<string, string>(headerName, value));
-                    }
-                }
-
                 foreach (var pair in requestHeaders)
                 {
-                    if (string.Equals(HeaderNames.Connection, pair.Key, StringComparison.OrdinalIgnoreCase))
+                    if(!requestHeaders[HeaderNames.Connection].Contains(HeaderNames.Upgrade))
                     {
-                        if (string.Equals(HeaderNames.Upgrade, pair.Value, StringComparison.OrdinalIgnoreCase))
-                        {
-                            validConnection = true;
-                        }
+                        return false;
                     }
-                    else if (string.Equals(HeaderNames.Upgrade, pair.Key, StringComparison.OrdinalIgnoreCase))
+
+                    if(!requestHeaders[HeaderNames.Upgrade].Contains(Constants.Headers.UpgradeWebSocket))
                     {
-                        if (string.Equals(Constants.Headers.UpgradeWebSocket, pair.Value, StringComparison.OrdinalIgnoreCase))
-                        {
-                            validUpgrade = true;
-                        }
+                        return false;
                     }
-                    else if (string.Equals(HeaderNames.SecWebSocketVersion, pair.Key, StringComparison.OrdinalIgnoreCase))
+
+                    if(!requestHeaders[HeaderNames.SecWebSocketVersion].Contains(Constants.Headers.SupportedVersion))
                     {
-                        if (string.Equals(Constants.Headers.SupportedVersion, pair.Value, StringComparison.OrdinalIgnoreCase))
-                        {
-                            validVersion = true;
-                        }
+                        return false;
                     }
-                    else if (string.Equals(HeaderNames.SecWebSocketKey, pair.Key, StringComparison.OrdinalIgnoreCase))
+
+                    if(requestHeaders.ContainsKey(HeaderNames.SecWebSocketKey))
                     {
-                        validKey = HandshakeHelpers.IsRequestKeyValid(pair.Value);
+                        if(!HandshakeHelpers.IsRequestKeyValid(pair.Value))
+                            return false;
                     }
                 }
 
                 // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
-                if (validConnection && requestHeaders[HeaderNames.Connection].Count == 1)
+                if (requestHeaders[HeaderNames.Connection].Count == 1)
                 {
                     requestHeaders[HeaderNames.Connection] = HeaderNames.Upgrade;
                 }
-                if (validUpgrade && requestHeaders[HeaderNames.Upgrade].Count == 1)
+                if (requestHeaders[HeaderNames.Upgrade].Count == 1)
                 {
                     requestHeaders[HeaderNames.Upgrade] = Constants.Headers.UpgradeWebSocket;
                 }
-                if (validVersion && requestHeaders[HeaderNames.SecWebSocketVersion].Count == 1)
+                if (requestHeaders[HeaderNames.SecWebSocketVersion].Count == 1)
                 {
                     requestHeaders[HeaderNames.SecWebSocketVersion] = Constants.Headers.SupportedVersion;
                 }
 
-                return validConnection && validUpgrade && validVersion && validKey;
+                return true;
             }
         }
     }
