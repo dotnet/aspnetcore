@@ -7,7 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq.Expressions;
+using System.Net;
+using System.Net.Sockets;
+using System.Numerics;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -15,15 +20,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
-    public class RequestDelegateFactoryTests
+    public class RequestDelegateFactoryTests : LoggedTest
     {
         public static IEnumerable<object[]> NoResult
         {
@@ -124,7 +129,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 _invokedValue = invokedValue;
             }
 
-            private void NonStaticTestAction(HttpContext httpContext)
+            public void NonStaticTestAction(HttpContext httpContext)
             {
                 httpContext.Items.Add("invoked", _invokedValue);
             }
@@ -132,10 +137,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Fact]
         public async Task NonStaticMethodInfoOverloadWorksWithBasicReflection()
+
         {
             var methodInfo = typeof(TestNonStaticActionClass).GetMethod(
-                "NonStaticTestAction",
-                BindingFlags.NonPublic | BindingFlags.Instance,
+                nameof(TestNonStaticActionClass.NonStaticTestAction),
+                BindingFlags.Public | BindingFlags.Instance,
                 new[] { typeof(HttpContext) });
 
             var invoked = false;
@@ -185,103 +191,46 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal("targetFactory", exNullTargetFactory.ParamName);
         }
 
-        public static IEnumerable<object[]> FromRouteResult
-        {
-            get
-            {
-                void TestAction(HttpContext httpContext, [FromRoute] int value)
-                {
-                    StoreInput(httpContext, value);
-                };
-
-                Task TaskTestAction(HttpContext httpContext, [FromRoute] int value)
-                {
-                    StoreInput(httpContext, value);
-                    return Task.CompletedTask;
-                }
-
-                ValueTask ValueTaskTestAction(HttpContext httpContext, [FromRoute] int value)
-                {
-                    StoreInput(httpContext, value);
-                    return ValueTask.CompletedTask;
-                }
-
-                return new List<object[]>
-                {
-                    new object[] { (Action<HttpContext, int>)TestAction },
-                    new object[] { (Func<HttpContext, int, Task>)TaskTestAction },
-                    new object[] { (Func<HttpContext, int, ValueTask>)ValueTaskTestAction },
-                };
-            }
-        }
-        private static void StoreInput(HttpContext httpContext, object value)
-        {
-            httpContext.Items.Add("input", value);
-        }
-
-        [Theory]
-        [MemberData(nameof(FromRouteResult))]
-        public async Task RequestDelegatePopulatesFromRouteParameterBasedOnParameterName(Delegate @delegate)
+        [Fact]
+        public async Task RequestDelegatePopulatesFromRouteParameterBasedOnParameterName()
         {
             const string paramName = "value";
             const int originalRouteParam = 42;
 
+            void TestAction(HttpContext httpContext, [FromRoute] int value)
+            {
+                httpContext.Items.Add("input", value);
+            }
+
             var httpContext = new DefaultHttpContext();
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestAction);
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(originalRouteParam, httpContext.Items["input"] as int?);
-        }
-
-        public static IEnumerable<object[]> FromRouteOptionalResult
-        {
-            get
-            {
-                return new List<object[]>
-                {
-                    new object[] { (Action<HttpContext, int>)TestAction },
-                    new object[] { (Func<HttpContext, int, Task>)TaskTestAction },
-                    new object[] { (Func<HttpContext, int, ValueTask>)ValueTaskTestAction }
-                };
-            }
+            Assert.Equal(originalRouteParam, httpContext.Items["input"]);
         }
 
         private static void TestAction(HttpContext httpContext, [FromRoute] int value = 42)
         {
-            StoreInput(httpContext, value);
+            httpContext.Items.Add("input", value);
         }
 
-        private static Task TaskTestAction(HttpContext httpContext, [FromRoute] int value = 42)
-        {
-            StoreInput(httpContext, value);
-            return Task.CompletedTask;
-        }
-
-        private static ValueTask ValueTaskTestAction(HttpContext httpContext, [FromRoute] int value = 42)
-        {
-            StoreInput(httpContext, value);
-            return ValueTask.CompletedTask;
-        }
-
-        [Theory]
-        [MemberData(nameof(FromRouteOptionalResult))]
-        public async Task RequestDelegatePopulatesFromRouteOptionalParameter(Delegate @delegate)
+        [Fact]
+        public async Task RequestDelegatePopulatesFromRouteOptionalParameter()
         {
             var httpContext = new DefaultHttpContext();
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestAction);
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(42, httpContext.Items["input"] as int?);
+            Assert.Equal(42, httpContext.Items["input"]);
         }
 
-        [Theory]
-        [MemberData(nameof(FromRouteOptionalResult))]
-        public async Task RequestDelegatePopulatesFromRouteOptionalParameterBasedOnParameterName(Delegate @delegate)
+        [Fact]
+        public async Task RequestDelegatePopulatesFromRouteOptionalParameterBasedOnParameterName()
         {
             const string paramName = "value";
             const int originalRouteParam = 47;
@@ -290,11 +239,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
 
-            var requestDelegate = RequestDelegateFactory.Create(@delegate);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)TestAction);
 
             await requestDelegate(httpContext);
 
-            Assert.Equal(47, httpContext.Items["input"] as int?);
+            Assert.Equal(47, httpContext.Items["input"]);
         }
 
         [Fact]
@@ -341,6 +290,198 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.Equal(0, deserializedRouteParam);
+        }
+
+        public static object?[][] TryParsableParameters
+        {
+            get
+            {
+                static void Store<T>(HttpContext httpContext, T tryParsable)
+                {
+                    httpContext.Items["tryParsable"] = tryParsable;
+                }
+
+                var now = DateTime.Now;
+
+                return new[]
+                {
+                    // string is not technically "TryParsable", but it's the special case.
+                    new object[] { (Action<HttpContext, string>)Store, "plain string", "plain string" },
+                    new object[] { (Action<HttpContext, int>)Store, "-42", -42 },
+                    new object[] { (Action<HttpContext, uint>)Store, "42", 42U },
+                    new object[] { (Action<HttpContext, bool>)Store, "true", true },
+                    new object[] { (Action<HttpContext, short>)Store, "-42", (short)-42 },
+                    new object[] { (Action<HttpContext, ushort>)Store, "42", (ushort)42 },
+                    new object[] { (Action<HttpContext, long>)Store, "-42", -42L },
+                    new object[] { (Action<HttpContext, ulong>)Store, "42", 42UL },
+                    new object[] { (Action<HttpContext, IntPtr>)Store, "-42", new IntPtr(-42) },
+                    new object[] { (Action<HttpContext, char>)Store, "A", 'A' },
+                    new object[] { (Action<HttpContext, double>)Store, "0.5", 0.5 },
+                    new object[] { (Action<HttpContext, float>)Store, "0.5", 0.5f },
+                    new object[] { (Action<HttpContext, Half>)Store, "0.5", (Half)0.5f },
+                    new object[] { (Action<HttpContext, decimal>)Store, "0.5", 0.5m },
+                    new object[] { (Action<HttpContext, DateTime>)Store, now.ToString("o"), now },
+                    new object[] { (Action<HttpContext, DateTimeOffset>)Store, "1970-01-01T00:00:00.0000000+00:00", DateTimeOffset.UnixEpoch },
+                    new object[] { (Action<HttpContext, TimeSpan>)Store, "00:00:42", TimeSpan.FromSeconds(42) },
+                    new object[] { (Action<HttpContext, Guid>)Store, "00000000-0000-0000-0000-000000000000", Guid.Empty },
+                    new object[] { (Action<HttpContext, Version>)Store, "6.0.0.42", new Version("6.0.0.42") },
+                    new object[] { (Action<HttpContext, BigInteger>)Store, "-42", new BigInteger(-42) },
+                    new object[] { (Action<HttpContext, IPAddress>)Store, "127.0.0.1", IPAddress.Loopback },
+                    new object[] { (Action<HttpContext, IPEndPoint>)Store, "127.0.0.1:80", new IPEndPoint(IPAddress.Loopback, 80) },
+                    new object[] { (Action<HttpContext, AddressFamily>)Store, "Unix", AddressFamily.Unix },
+                    new object[] { (Action<HttpContext, ILOpCode>)Store, "Nop", ILOpCode.Nop },
+                    new object[] { (Action<HttpContext, AssemblyFlags>)Store, "PublicKey,Retargetable", AssemblyFlags.PublicKey | AssemblyFlags.Retargetable },
+                    new object[] { (Action<HttpContext, int?>)Store, "42", 42 },
+                    new object[] { (Action<HttpContext, MyEnum>)Store, "ValueB", MyEnum.ValueB },
+                    new object[] { (Action<HttpContext, MyTryParsableRecord>)Store, "https://example.org", new MyTryParsableRecord(new Uri("https://example.org")) },
+                    new object?[] { (Action<HttpContext, int>)Store, null, 0 },
+                    new object?[] { (Action<HttpContext, int?>)Store, null, null },
+                };
+            }
+        }
+
+        private enum MyEnum { ValueA, ValueB, }
+
+        private record MyTryParsableRecord(Uri Uri)
+        {
+            public static bool TryParse(string? value, out MyTryParsableRecord? result)
+            {
+                if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
+                {
+                    result = null;
+                    return false;
+                }
+
+                result = new MyTryParsableRecord(uri);
+                return true;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TryParsableParameters))]
+        public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValue(Delegate action, string? routeValue, object? expectedParameterValue)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.RouteValues["tryParsable"] = routeValue;
+
+            var requestDelegate = RequestDelegateFactory.Create(action);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(TryParsableParameters))]
+        public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromQueryString(Delegate action, string? routeValue, object? expectedParameterValue)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["tryParsable"] = routeValue
+            });
+
+            var requestDelegate = RequestDelegateFactory.Create(action);
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+        }
+
+        [Fact]
+        public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromRouteValueBeforeQueryString()
+        {
+            var httpContext = new DefaultHttpContext();
+
+            httpContext.Request.RouteValues["tryParsable"] = "42";
+
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["tryParsable"] = "invalid!"
+            });
+
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, int>)((httpContext, tryParsable) =>
+            {
+                    httpContext.Items["tryParsable"] = tryParsable;
+            }));
+
+            await requestDelegate(httpContext);
+
+            Assert.Equal(42, httpContext.Items["tryParsable"]);
+        }
+
+        public static object[][] DelegatesWithAttributesOnNotTryParsableParameters
+        {
+            get
+            {
+                void InvalidFromRoute([FromRoute] object notTryParsable) { }
+                void InvalidFromQuery([FromQuery] object notTryParsable) { }
+                void InvalidFromHeader([FromHeader] object notTryParsable) { }
+
+                return new[]
+                {
+                    new object[] { (Action<object>)InvalidFromRoute },
+                    new object[] { (Action<object>)InvalidFromQuery },
+                    new object[] { (Action<object>)InvalidFromHeader },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DelegatesWithAttributesOnNotTryParsableParameters))]
+        public void CreateThrowsInvalidOperationExceptionWhenAttributeRequiresTryParseMethodThatDoesNotExist(Delegate action)
+        {
+            var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(action));
+            Assert.Equal("No public static bool Object.TryParse(string, out Object) method found for notTryParsable.", ex.Message);
+        }
+
+        [Fact]
+        public void CreateThrowsInvalidOperationExceptionGivenUnnamedArgument()
+        {
+            var unnamedParameter = Expression.Parameter(typeof(int));
+            var lambda = Expression.Lambda(Expression.Block(), unnamedParameter);
+            var ex = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int>)lambda.Compile()));
+            Assert.Equal("A parameter does not have a name! Was it genererated? All parameters must be named.", ex.Message);
+        }
+
+        [Fact]
+        public async Task RequestDelegateLogsTryParsableFailuresAsDebugAndSets400Response()
+        {
+            var invoked = false;
+
+            void TestAction([FromRoute] int tryParsable, [FromRoute] int tryParsable2)
+            {
+                invoked = true;
+            }
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(LoggerFactory);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.RouteValues["tryParsable"] = "invalid!";
+            httpContext.Request.RouteValues["tryParsable2"] = "invalid again!";
+            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            var requestDelegate = RequestDelegateFactory.Create((Action<int, int>)TestAction);
+
+            await requestDelegate(httpContext);
+
+            Assert.False(invoked);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+            Assert.Equal(400, httpContext.Response.StatusCode);
+
+            var logs = TestSink.Writes.ToArray();
+
+            Assert.Equal(2, logs.Length);
+
+            Assert.Equal(new EventId(3, "ParamaterBindingFailed"), logs[0].EventId);
+            Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+            Assert.Equal(@"Failed to bind parameter ""Int32 tryParsable"" from ""invalid!"".", logs[0].Message);
+
+            Assert.Equal(new EventId(3, "ParamaterBindingFailed"), logs[0].EventId);
+            Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+            Assert.Equal(@"Failed to bind parameter ""Int32 tryParsable2"" from ""invalid again!"".", logs[1].Message);
         }
 
         [Fact]
@@ -394,20 +535,36 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(originalHeaderParam, deserializedRouteParam);
         }
 
-        [Fact]
-        public async Task RequestDelegatePopulatesFromBodyParameter()
+        public static object[][] FromBodyActions
+        {
+            get
+            {
+                void TestExplicitFromBody(HttpContext httpContext, [FromBody] Todo todo)
+                {
+                    httpContext.Items.Add("body", todo);
+                }
+
+                void TestImpliedFromBody(HttpContext httpContext, Todo myService)
+                {
+                    httpContext.Items.Add("body", myService);
+                }
+
+                return new[]
+                {
+                    new[] { (Action<HttpContext, Todo>)TestExplicitFromBody },
+                    new[] { (Action<HttpContext, Todo>)TestImpliedFromBody },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(FromBodyActions))]
+        public async Task RequestDelegatePopulatesFromBodyParameter(Delegate action)
         {
             Todo originalTodo = new()
             {
                 Name = "Write more tests!"
             };
-
-            Todo? deserializedRequestBody = null;
-
-            void TestAction([FromBody] Todo todo)
-            {
-                deserializedRequestBody = todo;
-            }
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
@@ -415,26 +572,24 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
             httpContext.Request.Body = new MemoryStream(requestBodyBytes);
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<Todo>)TestAction);
+            var requestDelegate = RequestDelegateFactory.Create(action);
 
             await requestDelegate(httpContext);
 
+            var deserializedRequestBody = httpContext.Items["body"];
             Assert.NotNull(deserializedRequestBody);
-            Assert.Equal(originalTodo.Name, deserializedRequestBody!.Name);
+            Assert.Equal(originalTodo.Name, ((Todo)deserializedRequestBody!).Name);
         }
 
-        [Fact]
-        public async Task RequestDelegateRejectsEmptyBodyGivenDefaultFromBodyParameter()
+        [Theory]
+        [MemberData(nameof(FromBodyActions))]
+        public async Task RequestDelegateRejectsEmptyBodyGivenFromBodyParameter(Delegate action)
         {
-            void TestAction([FromBody] Todo todo)
-            {
-            }
-
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
             httpContext.Request.Headers["Content-Length"] = "0";
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<Todo>)TestAction);
+            var requestDelegate = RequestDelegateFactory.Create(action);
 
             await Assert.ThrowsAsync<JsonException>(() => requestDelegate(httpContext));
         }
@@ -485,12 +640,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
         }
 
         [Fact]
-        public async Task RequestDelegateLogsFromBodyIOExceptionsAsDebugAndAborts()
+        public async Task RequestDelegateLogsFromBodyIOExceptionsAsDebugAndDoesNotAbort()
         {
             var invoked = false;
-
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Routing.MapAction");
-            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             void TestAction([FromBody] Todo todo)
             {
@@ -499,7 +651,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var ioException = new IOException();
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
+            serviceCollection.AddSingleton(LoggerFactory);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
@@ -512,9 +664,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.False(invoked);
-            Assert.True(httpContext.RequestAborted.IsCancellationRequested);
+            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
 
-            var logMessage = Assert.Single(sink.Writes);
+            var logMessage = Assert.Single(TestSink.Writes);
             Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
             Assert.Same(ioException, logMessage.Exception);
@@ -525,9 +677,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
         {
             var invoked = false;
 
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Routing.MapAction");
-            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
-
             void TestAction([FromBody] Todo todo)
             {
                 invoked = true;
@@ -535,7 +684,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             var invalidDataException = new InvalidDataException();
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
+            serviceCollection.AddSingleton(LoggerFactory);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["Content-Type"] = "application/json";
@@ -551,153 +700,76 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.False(httpContext.RequestAborted.IsCancellationRequested);
             Assert.Equal(400, httpContext.Response.StatusCode);
 
-            var logMessage = Assert.Single(sink.Writes);
+            var logMessage = Assert.Single(TestSink.Writes);
             Assert.Equal(new EventId(2, "RequestBodyInvalidDataException"), logMessage.EventId);
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
             Assert.Same(invalidDataException, logMessage.Exception);
-        }
-
-        [Fact]
-        public async Task RequestDelegatePopulatesFromFormParameterBasedOnParameterName()
-        {
-            const string paramName = "value";
-            const int originalQueryParam = 42;
-
-            int? deserializedRouteParam = null;
-
-            void TestAction([FromForm] int value)
-            {
-                deserializedRouteParam = value;
-            }
-
-            var form = new FormCollection(new Dictionary<string, StringValues>()
-            {
-                [paramName] = originalQueryParam.ToString(NumberFormatInfo.InvariantInfo)
-            });
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.Form = form;
-
-            var requestDelegate = RequestDelegateFactory.Create((Action<int>)TestAction);
-
-            await requestDelegate(httpContext);
-
-            Assert.Equal(originalQueryParam, deserializedRouteParam);
-        }
-
-        [Fact]
-        public async Task RequestDelegateLogsFromFormIOExceptionsAsDebugAndAborts()
-        {
-            var invoked = false;
-
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Routing.MapAction");
-            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
-
-            void TestAction([FromForm] int value)
-            {
-                invoked = true;
-            }
-
-            var ioException = new IOException();
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
-            httpContext.Request.Body = new IOExceptionThrowingRequestBodyStream(ioException);
-            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
-            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
-
-            var requestDelegate = RequestDelegateFactory.Create((Action<int>)TestAction);
-
-            await requestDelegate(httpContext);
-
-            Assert.False(invoked);
-            Assert.True(httpContext.RequestAborted.IsCancellationRequested);
-
-            var logMessage = Assert.Single(sink.Writes);
-            Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
-            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
-            Assert.Same(ioException, logMessage.Exception);
-        }
-
-        [Fact]
-        public async Task RequestDelegateLogsFromFormInvalidDataExceptionsAsDebugAndSets400Response()
-        {
-            var invoked = false;
-
-            var sink = new TestSink(context => context.LoggerName == "Microsoft.AspNetCore.Routing.MapAction");
-            var testLoggerFactory = new TestLoggerFactory(sink, enabled: true);
-
-            void TestAction([FromForm] int value)
-            {
-                invoked = true;
-            }
-
-            var invalidDataException = new InvalidDataException();
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ILoggerFactory>(testLoggerFactory);
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
-            httpContext.Request.Body = new IOExceptionThrowingRequestBodyStream(invalidDataException);
-            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new TestHttpRequestLifetimeFeature());
-            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
-
-            var requestDelegate = RequestDelegateFactory.Create((Action<int>)TestAction);
-
-            await requestDelegate(httpContext);
-
-            Assert.False(invoked);
-            Assert.False(httpContext.RequestAborted.IsCancellationRequested);
-            Assert.Equal(400, httpContext.Response.StatusCode);
-
-            var logMessage = Assert.Single(sink.Writes);
-            Assert.Equal(new EventId(2, "RequestBodyInvalidDataException"), logMessage.EventId);
-            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
-            Assert.Same(invalidDataException, logMessage.Exception);
-        }
-
-        [Fact]
-        public void BuildRequestDelegateThrowsInvalidOperationExceptionGivenBothFromBodyAndFromFormOnDifferentParameters()
-        {
-            void TestAction([FromBody] int value1, [FromForm] int value2) { }
-            void TestActionWithFlippedParams([FromForm] int value1, [FromBody] int value2) { }
-
-            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int, int>)TestAction));
-            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int, int>)TestActionWithFlippedParams));
         }
 
         [Fact]
         public void BuildRequestDelegateThrowsInvalidOperationExceptionGivenFromBodyOnMultipleParameters()
         {
-            void TestAction([FromBody] int value1, [FromBody] int value2) { }
+            void TestAttributedInvalidAction([FromBody] int value1, [FromBody] int value2) { }
+            void TestInferredInvalidAction(Todo value1, Todo value2) { }
+            void TestBothInvalidAction(Todo value1, [FromBody] int value2) { }
 
-            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int, int>)TestAction));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<int, int>)TestAttributedInvalidAction));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<Todo, Todo>)TestInferredInvalidAction));
+            Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create((Action<Todo, int>)TestBothInvalidAction));
         }
 
-        [Fact]
-        public async Task RequestDelegatePopulatesFromServiceParameterBasedOnParameterType()
+        public static object[][] FromServiceActions
+        {
+            get
+            {
+                void TestExplicitFromService(HttpContext httpContext, [FromService] MyService myService)
+                {
+                    httpContext.Items.Add("service", myService);
+                }
+
+                void TestImpliedFromService(HttpContext httpContext, IMyService myService)
+                {
+                    httpContext.Items.Add("service", myService);
+                }
+
+                return new[]
+                {
+                    new[] { (Action<HttpContext, MyService>)TestExplicitFromService },
+                    new[] { (Action<HttpContext, MyService>)TestImpliedFromService },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(FromServiceActions))]
+        public async Task RequestDelegatePopulatesParametersFromServiceWithAndWithoutAttribute(Delegate action)
         {
             var myOriginalService = new MyService();
-            MyService? injectedService = null;
-
-            void TestAction([FromService] MyService myService)
-            {
-                injectedService = myService;
-            }
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(myOriginalService);
+            serviceCollection.AddSingleton<IMyService>(myOriginalService);
 
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
-            var requestDelegate = RequestDelegateFactory.Create((Action<MyService>)TestAction);
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, MyService>)action);
 
             await requestDelegate(httpContext);
 
-            Assert.Same(myOriginalService, injectedService);
+            Assert.Same(myOriginalService, httpContext.Items["service"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(FromServiceActions))]
+        public async Task RequestDelegateRequiresServiceForAllFromServiceParameters(Delegate action)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = new ServiceCollection().BuildServiceProvider();
+
+            var requestDelegate = RequestDelegateFactory.Create((Action<HttpContext, MyService>)action);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => requestDelegate(httpContext));
         }
 
         [Fact]
@@ -717,26 +789,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
             await requestDelegate(httpContext);
 
             Assert.Same(httpContext, httpContextArgument);
-        }
-
-        [Fact]
-        public async Task RequestDelegatePopulatesIFormCollectionParameterWithoutAttribute()
-        {
-            IFormCollection? formCollectionArgument = null;
-
-            void TestAction(IFormCollection httpContext)
-            {
-                formCollectionArgument = httpContext;
-            }
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
-
-            var requestDelegate = RequestDelegateFactory.Create((Action<IFormCollection>)TestAction);
-
-            await requestDelegate(httpContext);
-
-            Assert.Same(httpContext.Request.Form, formCollectionArgument);
         }
 
         [Fact]
@@ -1014,16 +1066,15 @@ namespace Microsoft.AspNetCore.Routing.Internal
             public bool AllowEmpty { get; set; }
         }
 
-        private class FromFormAttribute : Attribute, IFromFormMetadata
-        {
-            public string? Name { get; set; }
-        }
-
         private class FromServiceAttribute : Attribute, IFromServiceMetadata
         {
         }
 
-        private class MyService
+        private interface IMyService
+        {
+        }
+
+        private class MyService : IMyService
         {
         }
 

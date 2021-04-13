@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("Hello", localizedDisplay.Text); // No localized resources for this culture.
         }
 
-        [Fact(Skip = "Figure out why this is broken")]
+        [Fact]
         public void LoadingApp_KannadaLanguage_Works()
         {
             // Arrange

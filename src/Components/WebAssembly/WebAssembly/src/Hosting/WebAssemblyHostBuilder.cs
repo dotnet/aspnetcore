@@ -247,6 +247,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
             Services.AddSingleton<ComponentApplicationLifetime>();
             Services.AddSingleton<ComponentApplicationState>(sp => sp.GetRequiredService<ComponentApplicationLifetime>().State);
+            Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
             Services.AddLogging(builder =>
             {
                 builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
