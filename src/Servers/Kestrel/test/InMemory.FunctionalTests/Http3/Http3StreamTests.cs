@@ -627,7 +627,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(LogMessages, m => m.Message.Equals("One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'."));
         }
 
-        [Fact(Skip = "Http3OutputProducer.Complete is called before input recognizes there is an error. Why is this different than HTTP/2?")]
+        [Fact]
         public async Task ContentLength_Received_NoDataFrames_Reset()
         {
             var headers = new[]
