@@ -60,7 +60,7 @@ export const monoPlatform: Platform = {
     // outer promise reflects the startup process, and the inner one reflects the possibly-async
     // .NET entrypoint method.
     const emptyArray = [ [ ] ];
-    return BINDING.call_assembly_entry_point(assemblyName, emptyArray, undefined);
+    return BINDING.call_assembly_entry_point(assemblyName, emptyArray, "m");
   },
 
   toUint8Array: function toUint8Array(array: System_Array<any>): Uint8Array {
