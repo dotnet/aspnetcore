@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
     {
         private static readonly ConcurrentDictionary<Guid, List<(byte[] metadataDelta, byte[] ilDelta)>> _deltas = new();
         private static readonly ConcurrentDictionary<Assembly, Assembly> _appliedAssemblies = new();
+        private static (List<Action<Type[]?>> BeforeUpdates, List<Action<Type[]?>> AfterUpdates)? _handlerActions;
 
         static WebAssemblyHotReload()
         {
@@ -50,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
                     // A delta for this specific Module exists and we haven't called ApplyUpdate on this instance of Assembly as yet.
                     foreach (var (metadataDelta, ilDelta) in CollectionsMarshal.AsSpan(result))
                     {
-                        System.Reflection.Metadata.AssemblyExtensions.ApplyUpdate(loadedAssembly, metadataDelta, ilDelta, ReadOnlySpan<byte>.Empty);
+                        ApplyUpdate(loadedAssembly, metadataDelta, ilDelta);
                     }
                 }
             };
@@ -80,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
 
             if (assembly is not null)
             {
-                System.Reflection.Metadata.AssemblyExtensions.ApplyUpdate(assembly, metadataDelta, ilDeta, ReadOnlySpan<byte>.Empty);
+                ApplyUpdate(assembly, metadataDelta, ilDeta);
                 _appliedAssemblies.TryAdd(assembly, assembly);
             }
 
@@ -95,9 +97,87 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
                     (metadataDelta, ilDeta)
                 };
             }
+        }
 
-            // Remove this once there's a runtime API to subscribe to.
-            typeof(ComponentBase).Assembly.GetType("Microsoft.AspNetCore.Components.HotReload.HotReloadManager")!.GetMethod("DeltaApplied", BindingFlags.Public | BindingFlags.Static)!.Invoke(null, null);
+        private static void ApplyUpdate(Assembly assembly, byte[] metadataDelta, byte[] ilDeta)
+        {
+            _handlerActions ??= GetMetadataUpdateHandlerActions();
+            var (beforeUpdates, afterUpdates) = _handlerActions.Value;
+
+            beforeUpdates.ForEach(a => a(null));
+            System.Reflection.Metadata.AssemblyExtensions.ApplyUpdate(assembly, metadataDelta, ilDeta, ReadOnlySpan<byte>.Empty);
+            afterUpdates.ForEach(a => a(null));
+        }
+
+        private static (List<Action<Type[]?>> BeforeUpdates, List<Action<Type[]?>> AfterUpdates) GetMetadataUpdateHandlerActions()
+        {
+            var beforeUpdates = new List<Action<Type[]?>>();
+            var afterUpdates = new List<Action<Type[]?>>();
+
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (var attribute in assembly.GetCustomAttributes<MetadataUpdateHandlerAttribute>())
+                {
+                    var handlerType = attribute.HandlerType;
+
+                    var methodFound = false;
+                    if (GetUpdateMethod(handlerType, "BeforeUpdate") is MethodInfo beforeUpdate)
+                    {
+                        beforeUpdates.Add(CreateAction(beforeUpdate));
+                        methodFound = true;
+                    }
+
+                    if (GetUpdateMethod(handlerType, "AfterUpdate") is MethodInfo afterUpdate)
+                    {
+                        afterUpdates.Add(CreateAction(afterUpdate));
+                        methodFound = true;
+                    }
+
+                    if (!methodFound)
+                    {
+                        Debug.WriteLine($"No BeforeUpdate or AfterUpdate method found on '{handlerType}'.");
+                    }
+
+                    static Action<Type[]?> CreateAction(MethodInfo update)
+                    {
+                        var action = update.CreateDelegate<Action<Type[]?>>();
+                        return types =>
+                        {
+                            try
+                            {
+                                action(types);
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"Exception from '{action}': {ex}");
+                            }
+                        };
+                    }
+                }
+            }
+
+            static MethodInfo? GetUpdateMethod(Type handlerType, string name)
+            {
+                var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+                var updateMethod = handlerType.GetMethod(name, bindingFlags, new[] { typeof(Type[]) });
+                if (updateMethod is not null)
+                {
+                    return updateMethod;
+                }
+
+                var methods = handlerType.GetMethods(bindingFlags)
+                    .Where(m => m.Name == name)
+                    .ToArray();
+
+                if (methods.Length > 0)
+                {
+                    Debug.WriteLine($"MetadataUpdateHandler type '{handlerType}' has a method named '{name}' that does not match the required signature.");
+                }
+
+                return null;
+            }
+
+            return (beforeUpdates, afterUpdates);
         }
     }
 }
