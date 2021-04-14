@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,7 +22,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static readonly RazorLanguageVersion Version_5_0 = new RazorLanguageVersion(5, 0);
 
-        public static readonly RazorLanguageVersion Latest = Version_5_0;
+        public static readonly RazorLanguageVersion Version_6_0 = new RazorLanguageVersion(6, 0);
+
+        public static readonly RazorLanguageVersion Latest = Version_6_0;
 
         public static readonly RazorLanguageVersion Experimental = new RazorLanguageVersion(1337, 1337);
 

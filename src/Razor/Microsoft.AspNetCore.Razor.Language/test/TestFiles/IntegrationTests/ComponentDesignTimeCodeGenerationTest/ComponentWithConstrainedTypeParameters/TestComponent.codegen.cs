@@ -31,9 +31,41 @@ global::System.Object TItem1 = null!;
         }
         ))();
         ((System.Action)(() => {
+#pragma warning disable CS0693
+#pragma warning disable CS8321
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+void Constraints_TItem1<TItem1>() where TItem1 : class
+{
+}
+#pragma warning restore CS0693
+#pragma warning restore CS8321
+
+#line default
+#line hidden
+#nullable disable
+        }
+        ))();
+        ((System.Action)(() => {
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
 global::System.Object TItem2 = null!;
+
+#line default
+#line hidden
+#nullable disable
+        }
+        ))();
+        ((System.Action)(() => {
+#pragma warning disable CS0693
+#pragma warning disable CS8321
+#nullable restore
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+void Constraints_TItem2<TItem2>() where TItem2 : struct
+{
+}
+#pragma warning restore CS0693
+#pragma warning restore CS8321
 
 #line default
 #line hidden

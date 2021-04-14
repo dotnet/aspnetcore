@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             {
                 if (node.Children[i] is DirectiveTokenIntermediateNode n)
                 {
-                    WriteDesignTimeDirectiveToken(context, n);
+                    WriteDesignTimeDirectiveToken(context, node, n, i);
                 }
             }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .WriteLine("#pragma warning restore 219");
         }
 
-        private void WriteDesignTimeDirectiveToken(CodeRenderingContext context, DirectiveTokenIntermediateNode node)
+        private void WriteDesignTimeDirectiveToken(CodeRenderingContext context, DesignTimeDirectiveIntermediateNode parent, DirectiveTokenIntermediateNode node, int currentIndex)
         {
             var tokenKind = node.DirectiveToken.Kind;
             if (!node.Source.HasValue ||
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 return;
             }
 
-            if (tokenKind == DirectiveTokenKind.Attribute || tokenKind == DirectiveTokenKind.GenericTypeConstraint)
+            if (tokenKind == DirectiveTokenKind.Attribute)
             {
                 // We don't need to do anything special here.
                 // We let the Roslyn take care of providing syntax errors for C# attributes and generic type constraints.
@@ -190,6 +190,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                             context.AddSourceMappingFor(node);
                             context.CodeWriter.Write(node.Content);
                             context.CodeWriter.WriteLine(";");
+                        }
+                        break;
+                    case DirectiveTokenKind.GenericTypeConstraint:
+                        context.CodeWriter.WriteLine("#pragma warning disable CS0693");
+                        context.CodeWriter.WriteLine("#pragma warning disable CS8321");
+                        // static void Constraints_TParamName<TParamName>() where TParamName ...;
+                        using (context.CodeWriter.BuildLinePragma(node.Source, context))
+                        {
+                            var genericTypeParamName = ((DirectiveTokenIntermediateNode)parent.Children[currentIndex - 1]);
+                            context.CodeWriter
+                            .Write("void Constraints_")
+                            .Write(genericTypeParamName.Content)
+                            .Write("<")
+                            .Write(genericTypeParamName.Content)
+                            .Write(">() ");
+
+                            context.AddSourceMappingFor(node);
+                            context.CodeWriter.Write(node.Content);
+                            context.CodeWriter.WriteLine();
+                            context.CodeWriter.WriteLine("{");
+                            context.CodeWriter.WriteLine("}");
+                            context.CodeWriter.WriteLine("#pragma warning restore CS0693");
+                            context.CodeWriter.WriteLine("#pragma warning restore CS8321");
                         }
                         break;
                 }

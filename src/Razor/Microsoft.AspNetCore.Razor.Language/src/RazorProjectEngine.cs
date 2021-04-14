@@ -221,7 +221,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             ComponentInjectDirective.Register(builder);
             ComponentLayoutDirective.Register(builder);
             ComponentPageDirective.Register(builder);
-            ComponentTypeParamDirective.Register(builder);
+
+            ComponentTypeParamDirective.Register(
+                builder,
+                supportConstraints: razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0);
 
             if (razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_5_0) >= 0)
             {
