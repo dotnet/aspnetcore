@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.Authorization
             {
                 builder.AddContent(0, Authorizing);
             }
-            else if (isAuthorized)
+            else if (isAuthorized == true)
             {
                 var authorized = Authorized ?? ChildContent;
                 builder.AddContent(0, authorized?.Invoke(currentAuthenticationState));
