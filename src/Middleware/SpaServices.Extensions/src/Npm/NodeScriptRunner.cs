@@ -43,7 +43,28 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
             }
 
             var exeToRun = pkgManagerCommand;
+            var isYarn = false;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                //On Windows, file names are case insensitive, so values like "Yarn",
+                //"YARN", "yaRn", [...] are going to execute yarn
+                isYarn = pkgManagerCommand.ToLower().Equals("yarn");
+            }
+            else
+            {
+                isYarn = pkgManagerCommand.Equals("yarn");
+            }
+
+            //Default: npm run <command> [--if-present] [--silent] [-- <args>]
             var completeArguments = $"run {scriptName} -- {arguments ?? string.Empty}";
+
+            if (isYarn)
+            {
+                //yarn run [script] [<args>]
+                completeArguments = $"run {scriptName} {arguments ?? string.Empty}";
+            }
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // On Windows, the node executable is a .cmd file, so it can't be executed
@@ -76,7 +97,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
             StdErr = new EventedStreamReader(_npmProcess.StandardError);
 
             applicationStoppingToken.Register(((IDisposable)this).Dispose);
-            
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.NodeServices.Npm.NpmStarted"))
             {
                 diagnosticSource.Write(
