@@ -293,6 +293,68 @@ namespace Microsoft.AspNetCore.Components.Authorization
         }
 
         [Fact]
+        public void RendersAuthorizingWhenAuthenticationIsCompletedBeforehandAndAuthorizationIsAsync()
+        {
+            // Covers https://github.com/dotnet/aspnetcore/pull/31794
+            // Arrange
+            var @event = new ManualResetEventSlim();
+            var authorizationService = new TestAsyncAuthorizationService();
+            authorizationService.NextResult = AuthorizationResult.Success();
+            var renderer = CreateTestRenderer(authorizationService);
+            renderer.OnUpdateDisplayComplete = () => { @event.Set(); };
+            var rootComponent = WrapInAuthorizeView(
+                authorizing: builder => builder.AddContent(0, "Auth pending..."),
+                authorized: context => builder => builder.AddContent(0, $"Hello, {context.User.Identity.Name}!"));
+
+            var authTcs = new TaskCompletionSource<AuthenticationState>();
+            // Complete the authentication beforehand
+            authTcs.SetResult(CreateAuthenticationState("Monsieur").Result);
+
+            rootComponent.AuthenticationState = authTcs.Task;
+
+            // Act/Assert 1: Auth pending
+            renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+            var batch1 = renderer.Batches.Single();
+            var authorizeViewComponentId = batch1.GetComponentFrames<AuthorizeView>().Single().ComponentId;
+            var diff1 = batch1.DiffsByComponentId[authorizeViewComponentId].Single();
+            Assert.Collection(diff1.Edits, edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    batch1.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "Auth pending...");
+            });
+
+            // Act/Assert 2: Auth process completes asynchronously
+            @event.Reset();
+
+            // Wait for authorization to complete asynchronously
+            @event.Wait(Timeout);
+
+            Assert.Equal(2, renderer.Batches.Count);
+            var batch2 = renderer.Batches[1];
+            var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
+            Assert.Collection(diff2.Edits, edit =>
+            {
+                Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
+                Assert.Equal(0, edit.SiblingIndex);
+                AssertFrame.Text(
+                    batch2.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "Hello, Monsieur!");
+            });
+
+            // Assert: The IAuthorizationService was given expected criteria
+            Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            {
+                Assert.Equal("Monsieur", call.user.Identity.Name);
+                Assert.Null(call.resource);
+                Assert.Collection(call.requirements,
+                    req => Assert.IsType<DenyAnonymousAuthorizationRequirement>(req));
+            });
+        }
+
+        [Fact]
         public void RendersAuthorizingUntilAuthorizationCompleted()
         {
             // Arrange
