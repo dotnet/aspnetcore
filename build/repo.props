@@ -104,7 +104,6 @@
                           $(RepositoryRoot)src\Razor\**\*.*proj;
                           $(RepositoryRoot)src\Mvc\**\*.*proj;
                           $(RepositoryRoot)src\Azure\**\*.*proj;
-                          $(RepositoryRoot)src\MusicStore\**\*.*proj;
                           $(RepositoryRoot)src\SignalR\**\*.csproj;
                           "
                         Exclude="
