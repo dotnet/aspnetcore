@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -27,6 +28,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
 
         static WebAssemblyHotReload()
         {
+            if (!HotReloadEnvironment.Instance.IsHotReloadEnabled)
+            {
+                return;
+            }
+
             // An ApplyDelta can be called on an assembly that has not yet been loaded. This is particularly likely
             // when we're applying deltas on app start and child components are defined in a referenced project.
             // To account for this, wire up AssemblyLoad
@@ -69,6 +75,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
         {
             var moduleId = Guid.Parse(moduleIdString);
             var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.Modules.FirstOrDefault() is Module m && m.ModuleVersionId == moduleId);
+
+            Debug.Assert(HotReloadEnvironment.Instance.IsHotReloadEnabled);
 
             if (assembly is not null)
             {

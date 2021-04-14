@@ -51,9 +51,9 @@ namespace Microsoft.AspNetCore.Builder
                     // by the launching process (dotnet-watch / Visual Studio).
                     // In Development, we'll transmit the environment variable to WebAssembly as a HTTP header. The bootstrapping code will read the header
                     // and configure it as env variable for the wasm app.
-                    if (webHostEnvironment.IsDevelopment() && Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") is { } modifiableAssemblies)
+                    if (webHostEnvironment.IsDevelopment() &&  Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") is not null)
                     {
-                        context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", modifiableAssemblies);
+                        context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES"));
                     }
 
                     await next();
