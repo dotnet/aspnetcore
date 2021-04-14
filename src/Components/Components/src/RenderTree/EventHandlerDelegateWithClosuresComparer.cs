@@ -5,11 +5,16 @@ using System;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Collections.Concurrent;
+using System.Reflection;
+using System.Linq.Expressions;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
     internal static class EventHandlerDelegateWithClosuresComparer
     {
+        private static readonly ConcurrentDictionary<Type, Func<object, object, bool>> ClosureComparerCache = new();
+
         internal static bool EventCallBackEquals(ref EventCallback left, ref EventCallback right)
         {
             if (Equals(left, right))
@@ -28,8 +33,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             return DelegateEquals(left.Delegate, right.Delegate);
         }
 
-        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075",
-            Justification = "We expect application code is configured to ensure that methods invokable from Javascript are retained.")]
         internal static bool DelegateEquals(MulticastDelegate? left, MulticastDelegate? right)
         {
             if (Equals(left, right))
@@ -47,48 +50,81 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var oldTargetType = left.Target!.GetType();
             var newTargetType = right.Target!.GetType();
 
-            // if the types are not the same, or the targets are not compiler generated,
-            // this is not a closure and we can assume that the delegates are different.
-            if (oldTargetType != newTargetType ||
-                left.Method != right.Method ||
-                !oldTargetType.CustomAttributes.Any(x => x.AttributeType == typeof(CompilerGeneratedAttribute))
-                )
+            // if the types are not the same, or the methods are not the same, these possible closures are
+            // not the same anyway.
+            if (oldTargetType != newTargetType || left.Method != right.Method)
             {
                 return false;
             }
 
-            // We have two instances of the same compiler generated class. Let's compare all public fields.
-            foreach (var field in oldTargetType.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
-            {
-                var leftValue = field.GetValue(left.Target);
-                var rightValue = field.GetValue(right.Target);
+            // for speed we cache the comparison functions per closure type.
+            var comparison = ClosureComparerCache.GetOrAdd(newTargetType, GetClosureComparerForType);
+            return comparison(left.Target, right.Target);
+        }
 
-                // We might have recursive callbacks or delegates.
-                // For example EventCallbackFactoryBinderExtensions.CreateBinderCore<T> wraps a delegate in a delegate
-                // so this is not hypothetical.
-                if (leftValue is EventCallback leftEventCallback && rightValue is EventCallback rightEventCallBack)
-                {
-                    if (!EventCallBackEquals(ref leftEventCallback, ref rightEventCallBack))
-                    {
-                        return false;
-                    }
-                }
-                else if (leftValue is MulticastDelegate leftDelegate && rightValue is MulticastDelegate rightDelegate)
-                {
-                    if (!DelegateEquals(leftDelegate, rightDelegate))
-                    {
-                        return false;
-                    }
-                }
-                else if (!Equals(leftValue, rightValue))
-                {
-                    return false;
-                }
+        private static Func<object, object, bool> GetClosureComparerForType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] Type type)
+        {
+            // if this type is not compiler generated, it is not a closure, and the previous tests where
+            // enough to conclude that these are not equal. We just cache a delegate to a function that returns false.
+            if (!type.CustomAttributes.Any(x => x.AttributeType == typeof(CompilerGeneratedAttribute)))
+            {
+                return (objA, objB) => false;
             }
 
-            // All public fields are equal and the compiler generated types are the same. For our purpose
-            // these delegates are the same, even though the instances are different.
-            return true;
+            // build an array of lambdas that will get each public field value on the closure.
+            var fieldGetters = type.GetFields(
+                BindingFlags.Public |
+                BindingFlags.Instance |
+                BindingFlags.DeclaredOnly).Select(fieldInfo =>
+            {
+                var sourceParam = Expression.Parameter(typeof(object));
+                Expression returnExpression = Expression.Field(Expression.Convert(sourceParam, fieldInfo.DeclaringType!), fieldInfo);
+                if (fieldInfo.FieldType.IsValueType)
+                {
+                    // box if neccessary.
+                    returnExpression = Expression.Convert(returnExpression, typeof(object));
+                }
+                var lambda = Expression.Lambda(returnExpression, sourceParam);
+                return (Func<object?, object?>)lambda.Compile();
+            }).ToArray();
+
+            // the actual comparison function. It re-uses the array of public field 'getters' that we have built up
+            // before.
+            return (objA, objB) =>
+            {
+                // We have two instances of the same compiler generated class. Let's compare all public fields.
+                foreach (var fieldGetter in fieldGetters)
+                {
+                    var leftValue = fieldGetter(objA);
+                    var rightValue = fieldGetter(objB);
+
+                    // We might have recursive callbacks or delegates.
+                    // For example EventCallbackFactoryBinderExtensions.CreateBinderCore<T> wraps a delegate in a delegate
+                    // so this is not hypothetical.
+                    if (leftValue is EventCallback leftEventCallback && rightValue is EventCallback rightEventCallBack)
+                    {
+                        if (!EventCallBackEquals(ref leftEventCallback, ref rightEventCallBack))
+                        {
+                            return false;
+                        }
+                    }
+                    else if (leftValue is MulticastDelegate leftDelegate && rightValue is MulticastDelegate rightDelegate)
+                    {
+                        if (!DelegateEquals(leftDelegate, rightDelegate))
+                        {
+                            return false;
+                        }
+                    }
+                    else if (!Equals(leftValue, rightValue))
+                    {
+                        return false;
+                    }
+                }
+
+                // All public fields are equal and the compiler generated types are the same. For our purpose
+                // these delegates are the same, even though the instances are different.
+                return true;
+            };
         }
     }
 }
