@@ -88,12 +88,8 @@
       <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
     </PropertyGroup>    
     
-    <ItemGroup>
-      <_refFiles Include="$(RepoRoot).dotnet/packs/Microsoft.AspNetCore.App.Ref/$(SharedFxVersion)/**/*" />
-      <_appFiles Include="$(RepoRoot).dotnet/shared/Microsoft.AspNetCore.App/$(SharedFxVersion)/**/*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_refFiles)" DestinationFiles="@(_refFiles->'$(OutputPath)/AspNetCoreAppRuntimeHelix/packs/Microsoft.AspNetCore.App.Ref/$(SharedFxVersion)/%(RecursiveDir)%(FileName)%(Extension)')" />
-    <Copy SourceFiles="@(_appFiles)" DestinationFiles="@(_appFiles->'$(OutputPath)/AspNetCoreAppRuntimeHelix/shared/Microsoft.AspNetCore.App/$(SharedFxVersion)/%(RecursiveDir)%(FileName)%(Extension)')" />
+    <Unzip SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetOsName)-$(TargetArchitecture).$(SharedFxVersion).nupkg" DestinationFolder="$(OutputPath)/AspNetCoreAppRuntimeHelix/shared/Microsoft.AspNetCore.App/$(SharedFxVersion)" />
+    <Unzip SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.Ref.$(SharedFxVersion).nupkg" DestinationFolder="$(OutputPath)/AspNetCoreAppRuntimeHelix/packs/Microsoft.AspNetCore.App.Ref/$(SharedFxVersion)" />
     <ZipDirectory SourceDirectory="$(OutputPath)\AspNetCoreAppRuntimeHelix" DestinationFile="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Overwrite="true" />
     
     <ItemGroup>
