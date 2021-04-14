@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public TestInput(IKestrelTrace log = null, ITimeoutControl timeoutControl = null)
         {
-            _memoryPool = SlabMemoryPoolFactory.Create();
+            _memoryPool = PinnedBlockMemoryPoolFactory.Create();
             var options = new PipeOptions(pool: _memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             Transport = pair.Transport;

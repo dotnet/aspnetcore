@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Testing
                 connectionContext ?? new TestMultiplexedConnectionContext(),
                 serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures ?? new FeatureCollection(),
-                memoryPool ?? SlabMemoryPoolFactory.Create(),
+                memoryPool ?? PinnedBlockMemoryPoolFactory.Create(),
                 localEndPoint,
                 remoteEndPoint);
             http3ConnectionContext.TimeoutControl = timeoutControl;

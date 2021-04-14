@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public MockSystemClock MockSystemClock { get; set; }
 
-        public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
+        public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
 
         public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
     }

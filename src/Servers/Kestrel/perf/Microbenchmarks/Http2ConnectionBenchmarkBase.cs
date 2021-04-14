@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 
         public virtual void GlobalSetup()
         {
-            _memoryPool = SlabMemoryPoolFactory.Create();
+            _memoryPool = PinnedBlockMemoryPoolFactory.Create();
             _httpFrame = new Http2Frame();
 
             var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
