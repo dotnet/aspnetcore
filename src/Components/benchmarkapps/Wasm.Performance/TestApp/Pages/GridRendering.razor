@@ -9,6 +9,7 @@
         <option>@RenderMode.FastGrid</option>
         <option>@RenderMode.PlainTable</option>
         <option>@RenderMode.ComplexTable</option>
+        <option>@RenderMode.EditableTable</option>
     </select>
 
     <button id="show" @onclick="Show">Show</button>
@@ -17,9 +18,10 @@
     {
         <button id="change-page" @onclick="ChangePage">Switch pages</button>
     }
+    <button id="add-row" @onclick="AddRow">Add row</button>
 </fieldset>
 
-@if (forecasts == null)
+@if (forecasts == null && SelectedRenderMode != RenderMode.EditableTable)
 {
     <p><em>(No data assigned)</em></p>
 }
@@ -62,9 +64,18 @@ else if (SelectedRenderMode == RenderMode.ComplexTable)
 
     <Wasm.Performance.TestApp.Shared.ComplexTable.TableComponent Data="@forecasts" Columns="@Columns" />
 }
+else if (SelectedRenderMode == RenderMode.EditableTable)
+{
+    <table>
+    @foreach (var item in staticSampleDataPage3)
+    {
+        <tr><td><input type="text" @bind-value="item.Summary" /><input type="text" @bind-value="item.Summary" /><input type="text" @bind-value="item.Summary" /><input type="text" @bind-value="item.Summary" /><input type="text" @bind-value="item.Summary" /></td></tr>
+    }
+    </table>
+}
 
 @code {
-    public enum RenderMode { PlainTable, ComplexTable, FastGrid }
+    public enum RenderMode { PlainTable, ComplexTable, FastGrid, EditableTable }
 
     public RenderMode SelectedRenderMode { get; set; } = RenderMode.FastGrid;
 
@@ -81,6 +92,8 @@ else if (SelectedRenderMode == RenderMode.ComplexTable)
     private static string[] sampleSummaries = new[] { "Balmy", "Chilly", "Freezing", "Bracing" };
     private static WeatherForecast[] staticSampleDataPage1 = Enumerable.Range(0, 200).Select(CreateSampleDataItem).ToArray();
     private static WeatherForecast[] staticSampleDataPage2 = Enumerable.Range(200, 200).Select(CreateSampleDataItem).ToArray();
+    private static List<WeatherForecast> staticSampleDataPage3 = Enumerable.Range(0, 1000).Select(CreateSampleDataItem).ToList();
+
 
     private static WeatherForecast CreateSampleDataItem(int index) => new WeatherForecast
     {
@@ -118,5 +131,10 @@ else if (SelectedRenderMode == RenderMode.ComplexTable)
         public string Summary { get; set; }
 
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+
+    public void AddRow()
+    {
+        staticSampleDataPage3.Add(CreateSampleDataItem(staticSampleDataPage3.Count));
     }
 }

@@ -63,6 +63,14 @@ group('Grid', () => {
       description: 'Time to render fast grid change of page (ms)'
     }
   });
+
+    benchmark('Add row to editable grid', () => measureRenderGridAddRow(app), {
+    setup: () => prepare(app, 'EditableGrid', true),
+    descriptor: {
+        name: 'blazorwasm/render-editablegrid-add-row',
+        description: 'Time to render editable grid after adding a row (ms)'
+    }
+});
 });
 
 async function prepare(app, renderMode, populateTable) {
@@ -101,5 +109,13 @@ async function measureRenderGridSwitchPages(app) {
 
     let nextRenderCompletion = receiveEvent('Finished rendering table');
     appDocument.querySelector('#change-page').click();
+    await nextRenderCompletion;
+}
+
+async function measureRenderGridAddRow(app) {
+    const appDocument = app.window.document;
+
+    let nextRenderCompletion = receiveEvent('Finished rendering table');
+    appDocument.querySelector('#add-row').click();
     await nextRenderCompletion;
 }
