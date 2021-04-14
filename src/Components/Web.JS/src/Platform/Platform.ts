@@ -3,7 +3,7 @@ import { WebAssemblyResourceLoader } from './WebAssemblyResourceLoader';
 export interface Platform {
   start(resourceLoader: WebAssemblyResourceLoader): Promise<void>;
 
-  callEntryPoint(assemblyName: string): void;
+  callEntryPoint(assemblyName: string): Promise<any>;
 
   toUint8Array(array: System_Array<any>): Uint8Array;
 
