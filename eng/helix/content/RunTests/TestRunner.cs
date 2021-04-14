@@ -45,10 +45,6 @@ namespace RunTests
                 var appRuntimePath = $"{Options.DotnetRoot}/shared/Microsoft.AspNetCore.App/{Options.RuntimeVersion}";
                 Console.WriteLine($"Set ASPNET_RUNTIME_PATH: {appRuntimePath}");
                 EnvironmentVariables.Add("ASPNET_RUNTIME_PATH", appRuntimePath);
-                
-                var appRefPath = $"{Options.DotnetRoot}/packs/Microsoft.AspNetCore.App.Ref/{Options.RuntimeVersion}";
-                Console.WriteLine($"Set ASPNET_REF_PATH: {appRefPath}");
-                EnvironmentVariables.Add("ASPNET_REF_PATH", appRefPath);
 
 #if INSTALLPLAYWRIGHT
                 // Playwright will download and look for browsers to this directory
