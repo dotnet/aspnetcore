@@ -5,8 +5,7 @@
     <Description>Abstractions and features for interop between .NET WebAssembly and JavaScript code.</Description>
     <PackageTags>wasm;javascript;interop</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IsPackable>true</IsPackable>
-    <IsShipping>false</IsShipping>
+    <IsPackable>false</IsPackable>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
