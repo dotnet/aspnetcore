@@ -164,7 +164,6 @@
                           $(RepoRoot)src\Razor\**\*.*proj;
                           $(RepoRoot)src\Mvc\**\*.*proj;
                           $(RepoRoot)src\Azure\**\*.*proj;
-                          $(RepoRoot)src\MusicStore\**\*.*proj;
                           $(RepoRoot)src\SignalR\**\*.csproj;
                           $(RepoRoot)src\Components\**\*.csproj;
                           $(RepoRoot)src\Analyzers\**\*.csproj;
