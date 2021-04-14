@@ -4,9 +4,11 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipelines;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -14,7 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal class ResponseBufferingStream : Stream, IHttpResponseBodyFeature
+    internal class ResponseBufferingStream : Stream, IHttpResponseBodyFeature, IBufferWriter<byte>
     {
         private readonly IHttpResponseBodyFeature _innerBodyFeature;
         private readonly Stream _innerStream;
@@ -65,11 +67,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
-        public ReadOnlyMemory<byte> GetBuffer()
-        {
-            return _buffer.ToArray();
-        }
-
         public override int Read(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();
@@ -97,12 +94,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            var remaining = _limit - (int)_buffer.Length;
-            if (remaining > 0)
-            {
-                _buffer.Write(buffer, offset, Math.Min(count, remaining));
-            }
-            _innerStream.Write(buffer, offset, count);
+            Write(new ReadOnlySpan<byte>(buffer, offset, count));
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
@@ -152,12 +144,42 @@ namespace Microsoft.AspNetCore.HttpLogging
             task.GetAwaiter().GetResult();
         }
 
+#if NETCOREAPP
+        public override void Write(ReadOnlySpan<byte> span)
+        {
+            var remaining = _limit - _bytesWritten;
+            var innerCount = Math.Min(remaining, span.Length);
+
+            if (_currentSegment != null && span.Slice(0, innerCount).TryCopyTo(_currentSegment.AsSpan(_position)))
+            {
+                _position += innerCount;
+                _bytesWritten += innerCount;
+            }
+            else
+            {
+                BuffersExtensions.Write(this, span.Slice(0, innerCount));
+            }
+
+            _innerStream.Write(span);
+        }
+#endif
+
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var remaining = _limit - (int)_buffer.Length;
-            if (remaining > 0)
+            var remaining = _limit - _bytesWritten;
+            var innerCount = Math.Min(remaining, count);
+
+            var position = _position;
+            if (_currentSegment != null && position < _currentSegment.Length - innerCount)
             {
-                await _buffer.WriteAsync(buffer, offset, Math.Min(count, remaining));
+                Buffer.BlockCopy(buffer, offset, _currentSegment, position, innerCount);
+
+                _position = position + innerCount;
+                _bytesWritten += innerCount;
+            }
+            else
+            {
+                BuffersExtensions.Write(this, buffer.AsSpan(offset, innerCount));
             }
 
             await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
@@ -183,6 +205,29 @@ namespace Microsoft.AspNetCore.HttpLogging
             await _innerBodyFeature.CompleteAsync();
         }
 
+        // IBufferWriter<byte>
+        public void Reset()
+        {
+            if (_completedSegments != null)
+            {
+                for (var i = 0; i < _completedSegments.Count; i++)
+                {
+                    _completedSegments[i].Return();
+                }
+
+                _completedSegments.Clear();
+            }
+
+            if (_currentSegment != null)
+            {
+                ArrayPool<byte>.Shared.Return(_currentSegment);
+                _currentSegment = null;
+            }
+
+            _bytesWritten = 0;
+            _position = 0;
+        }
+
         public void Advance(int count)
         {
             _bytesWritten += count;
@@ -202,50 +247,31 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             return _currentSegment.AsSpan(_position, _currentSegment.Length - _position);
         }
-        public override void WriteByte(byte value)
+
+        public void CopyTo(IBufferWriter<byte> destination)
         {
-            if (_currentSegment != null && (uint)_position < (uint)_currentSegment.Length)
+            if (_completedSegments != null)
             {
-                _currentSegment[_position] = value;
-            }
-            else
-            {
-                AddSegment();
-                _currentSegment[0] = value;
+                // Copy completed segments
+                var count = _completedSegments.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    destination.Write(_completedSegments[i].Span);
+                }
             }
 
-            _position++;
-            _bytesWritten++;
+            destination.Write(_currentSegment.AsSpan(0, _position));
         }
 
-        public override void Write(byte[] buffer, int offset, int count)
+        public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
-            var position = _position;
-            if (_currentSegment != null && position < _currentSegment.Length - count)
+            if (_completedSegments == null && _currentSegment is not null)
             {
-                Buffer.BlockCopy(buffer, offset, _currentSegment, position, count);
+                // There is only one segment so write without awaiting.
+                return destination.WriteAsync(_currentSegment, 0, _position);
+            }
 
-                _position = position + count;
-                _bytesWritten += count;
-            }
-            else
-            {
-                BuffersExtensions.Write(this, buffer.AsSpan(offset, count));
-            }
-        }
-
-#if NETCOREAPP
-        public override void Write(ReadOnlySpan<byte> span)
-        {
-            if (_currentSegment != null && span.TryCopyTo(_currentSegment.AsSpan(_position)))
-            {
-                _position += span.Length;
-                _bytesWritten += span.Length;
-            }
-            else
-            {
-                BuffersExtensions.Write(this, span);
-            }
+            return CopyToSlowAsync(destination);
         }
 
         [MemberNotNull(nameof(_currentSegment))]
@@ -288,6 +314,111 @@ namespace Microsoft.AspNetCore.HttpLogging
             // Get a new buffer using the minimum segment size, unless the size hint is larger than a single segment.
             _currentSegment = ArrayPool<byte>.Shared.Rent(Math.Max(_minimumSegmentSize, sizeHint));
             _position = 0;
+        }
+
+        private async Task CopyToSlowAsync(Stream destination)
+        {
+            if (_completedSegments != null)
+            {
+                // Copy full segments
+                var count = _completedSegments.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    var segment = _completedSegments[i];
+                    await destination.WriteAsync(segment.Buffer, 0, segment.Length);
+                }
+            }
+
+            if (_currentSegment is not null)
+            {
+                await destination.WriteAsync(_currentSegment, 0, _position);
+            }
+        }
+
+        public override void WriteByte(byte value)
+        {
+            if (_currentSegment != null && (uint)_position < (uint)_currentSegment.Length)
+            {
+                _currentSegment[_position] = value;
+            }
+            else
+            {
+                AddSegment();
+                _currentSegment[0] = value;
+            }
+
+            _position++;
+            _bytesWritten++;
+        }
+
+        // TODO inefficient, don't want to allocate array size of string,
+        // but issues with decoder APIs returning character count larger than
+        // required.
+        public string GetString(Encoding? encoding)
+        {
+            if (_currentSegment == null || encoding == null)
+            {
+                return "";
+            }
+
+            var result = new byte[_bytesWritten];
+
+            var totalWritten = 0;
+
+            if (_completedSegments != null)
+            {
+                // Copy full segments
+                var count = _completedSegments.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    var segment = _completedSegments[i];
+                    segment.Span.CopyTo(result.AsSpan(totalWritten));
+                    totalWritten += segment.Span.Length;
+                }
+            }
+
+            // Copy current incomplete segment
+            _currentSegment.AsSpan(0, _position).CopyTo(result.AsSpan(totalWritten));
+
+            // If encoding is nullable
+            return encoding.GetString(result);
+        }
+
+        public void CopyTo(Span<byte> span)
+        {
+            Debug.Assert(span.Length >= _bytesWritten);
+
+            if (_currentSegment == null)
+            {
+                return;
+            }
+
+            var totalWritten = 0;
+
+            if (_completedSegments != null)
+            {
+                // Copy full segments
+                var count = _completedSegments.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    var segment = _completedSegments[i];
+                    segment.Span.CopyTo(span.Slice(totalWritten));
+                    totalWritten += segment.Span.Length;
+                }
+            }
+
+            // Copy current incomplete segment
+            _currentSegment.AsSpan(0, _position).CopyTo(span.Slice(totalWritten));
+
+            Debug.Assert(_bytesWritten == totalWritten + _position);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Reset();
+            }
         }
 
         /// <summary>

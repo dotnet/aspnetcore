@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.AspNetCore.HttpLogging" />
     <Reference Include="Microsoft.Extensions.Hosting" />

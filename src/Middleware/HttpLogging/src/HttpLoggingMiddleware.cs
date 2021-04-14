@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -9,9 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
@@ -21,8 +22,6 @@ namespace Microsoft.AspNetCore.HttpLogging
     public class HttpLoggingMiddleware
     {
         private readonly RequestDelegate _next;
-
-        private readonly IConfiguration _config;
         private readonly ILogger _logger;
         private HttpLoggingOptions _options;
         private const int PipeThreshold = 32 * 1024;
@@ -32,17 +31,20 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
-        /// <param name="config"></param>
         /// <param name="loggerFactory"></param>
-        public HttpLoggingMiddleware(RequestDelegate next, IOptions<HttpLoggingOptions> options, IConfiguration config, ILoggerFactory loggerFactory)
+        public HttpLoggingMiddleware(RequestDelegate next, IOptions<HttpLoggingOptions> options, ILoggerFactory loggerFactory)
 
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
-            _config = config ?? throw new ArgumentNullException(nameof(config));
 
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             _options = options.Value;
@@ -56,36 +58,53 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <returns></returns>
         public async Task Invoke(HttpContext context)
         {
-            if (!_options.DisableRequestLogging)
+            if ((HttpLoggingFields.Request & _options.LoggingFields) != HttpLoggingFields.None)
             {
                 var list = new List<KeyValuePair<string, object?>>();
 
                 var request = context.Request;
-                list.Add(new KeyValuePair<string, object?>(nameof(request.Protocol), request.Protocol));
-                list.Add(new KeyValuePair<string, object?>(nameof(request.Method), request.Method));
-                list.Add(new KeyValuePair<string, object?>(nameof(request.ContentType), request.ContentType));
-                list.Add(new KeyValuePair<string, object?>(nameof(request.ContentLength), request.ContentLength));
-                list.Add(new KeyValuePair<string, object?>(nameof(request.Scheme), request.Scheme));
-                list.Add(new KeyValuePair<string, object?>(nameof(request.Host), request.Host.Value));
-                list.Add(new KeyValuePair<string, object?>(nameof(request.PathBase), request.PathBase.Value));
-                list.Add(new KeyValuePair<string, object?>(nameof(request.Path), request.Path.Value));
-                list.Add(new KeyValuePair<string, object?>(nameof(request.QueryString), request.QueryString.Value));
 
-                // Would hope for this to be nested somehow? Scope?
-                foreach (var header in FilterHeaders(request.Headers))
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.Protocol))
                 {
-                    list.Add(header);
+                    list.Add(new KeyValuePair<string, object?>(nameof(request.Protocol), request.Protocol));
                 }
 
-                // reading the request body always seems expensive.
-                // TODO do we want string here? Other middleware writes to utf8jsonwriter directly.
-                var body = await ReadRequestBody(request, context.RequestAborted);
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.Method))
+                {
+                    list.Add(new KeyValuePair<string, object?>(nameof(request.Method), request.Method));
+                }
 
-                list.Add(new KeyValuePair<string, object?>(nameof(request.Body), body));
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.Scheme))
+                {
+                    list.Add(new KeyValuePair<string, object?>(nameof(request.Scheme), request.Scheme));
+                }
+
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.Path))
+                {
+                    list.Add(new KeyValuePair<string, object?>(nameof(request.PathBase), request.PathBase.Value));
+                    list.Add(new KeyValuePair<string, object?>(nameof(request.Path), request.Path.Value));
+                }
+
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.Query))
+                {
+                    list.Add(new KeyValuePair<string, object?>(nameof(request.QueryString), request.QueryString.Value));
+                }
+
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+                {
+                    FilterHeaders(list, request.Headers, _options.AllowedRequestHeaders);
+                }
+
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody) && IsSupportedMediaType(request.ContentType))
+                {
+                    var body = await ReadRequestBody(request, context.RequestAborted);
+
+                    list.Add(new KeyValuePair<string, object?>(nameof(request.Body), body));
+                }    
 
                 // TODO add and remove things from log.
-
                 var httpRequestLog = new HttpRequestLog(list);
+
                 _logger.Log(LogLevel.Information,
                      eventId: LoggerEventIds.RequestLog,
                      state: httpRequestLog,
@@ -93,7 +112,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                      formatter: HttpRequestLog.Callback);
             }
 
-            if (_options.DisableResponseLogging)
+            if ((HttpLoggingFields.Response & _options.LoggingFields) == HttpLoggingFields.None)
             {
                 // Short circuit and don't replace response body.
                 await _next(context).ConfigureAwait(false);
@@ -101,73 +120,113 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
 
             var response = context.Response;
-            var originalBody = response.Body;
 
-            // TODO pool memory streams.
-
-            var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
-            var bufferingStream = new ResponseBufferingStream(originalBodyFeature, memoryStream, _options.ResponseBodyLogLimit);
-            response.Body = bufferingStream;
+            ResponseBufferingStream? bufferingStream = null;
+            IHttpResponseBodyFeature? originalBodyFeature = null;
+            if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
+            {
+                originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
+                // TODO pool these.
+                bufferingStream = new ResponseBufferingStream(originalBodyFeature, _options.ResponseBodyLogLimit);
+                response.Body = bufferingStream;
+            }
 
             try
             {
                 await _next(context).ConfigureAwait(false);
                 var list = new List<KeyValuePair<string, object?>>();
 
-                // TODO elapsed milliseconds?
-                list.Add(new KeyValuePair<string, object?>(nameof(response.StatusCode), response.StatusCode));
-                list.Add(new KeyValuePair<string, object?>(nameof(response.ContentType), response.ContentType));
-                list.Add(new KeyValuePair<string, object?>(nameof(response.ContentLength), response.ContentLength));
-
-                var httpRequestLog = new HttpResponseLog(list);
-                foreach (var header in FilterHeaders(response.Headers))
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.StatusCode))
                 {
-                    list.Add(header);
+                    list.Add(new KeyValuePair<string, object?>(nameof(response.StatusCode), response.StatusCode));
                 }
+
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
+                {
+                    FilterHeaders(list, response.Headers, _options.AllowedResponseHeaders);
+                }
+
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody) && IsSupportedMediaType(response.ContentType))
+                {
+                    var body = bufferingStream!.GetString(_options.BodyEncoding);
+                    list.Add(new KeyValuePair<string, object?>(nameof(response.Body), body));
+                }
+
+                var httpResponseLog = new HttpResponseLog(list);
+
+                _logger.Log(LogLevel.Information,
+                    eventId: LoggerEventIds.ResponseLog,
+                    state: httpResponseLog,
+                    exception: null,
+                    formatter: HttpResponseLog.Callback);
             }
             finally
             {
-                context.Features.Set(originalBodyFeature);
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
+                {
+                    if (bufferingStream != null)
+                    {
+                        bufferingStream.Dispose();
+                    }
+
+                    context.Features.Set(originalBodyFeature);
+                }
             }
         }
 
-        private IEnumerable<KeyValuePair<string, object?>> FilterHeaders(IHeaderDictionary headers)
+        private bool IsSupportedMediaType(string contentType)
+        {
+            var mediaTypeList = _options.SupportedMediaTypes;
+            if (mediaTypeList == null || mediaTypeList.Count == 0 || string.IsNullOrEmpty(contentType))
+            {
+                return false;
+            }
+
+            var mediaType = new MediaTypeHeaderValue(contentType);
+            foreach (var type in mediaTypeList)
+            {
+                if (mediaType.IsSubsetOf(type))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void FilterHeaders(List<KeyValuePair<string, object?>> keyValues, IHeaderDictionary headers, ISet<string> allowedHeaders)
         {
             foreach (var (key, value) in headers)
             {
-                //if (_options.Filtering == HttpHeaderFiltering.OnlyListed && !_options.FilteringSet.Contains(key))
-                //{
-                //    // Key is not among the "only listed" headers.
-                //    continue;
-                //}
-
-                //if (_options.Filtering == HttpHeaderFiltering.AllButListed && _options.FilteringSet.Contains(key))
-                //{
-                //    // Key is among "all but listed" headers.
-                //    continue;
-                //}
-
-                //if (_options.Redact && _options.Redactors.TryGetValue(key, out var redactor))
-                //{
-                //    yield return (key, redactor(value.ToString()));
-                //    continue;
-                //}
-
-                yield return new KeyValuePair<string, object?>(key, value.ToString());
+                if (!allowedHeaders.Contains(key))
+                {
+                    // Key is not among the "only listed" headers.
+                    keyValues.Add(new KeyValuePair<string, object?>(key, "X"));
+                    continue;
+                }
+                keyValues.Add(new KeyValuePair<string, object?>(key, value.ToString()));
             }
         }
 
         private async Task<string> ReadRequestBody(HttpRequest request, CancellationToken token)
         {
-            using var joinedTokenSource = CancellationTokenSource.CreateLinkedTokenSource();
-            joinedTokenSource.CancelAfter(_options.ReadTimeout);
+            if (_options.BodyEncoding == null)
+            {
+                return "X";
+            }
+
+            using var joinedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+            joinedTokenSource.CancelAfter(_options.RequestBodyTimeout);
             var limit = _options.RequestBodyLogLimit;
+
+            // Use a pipe for smaller payload sizes
             if (limit <= PipeThreshold)
             {
                 try
                 {
                     while (true)
                     {
+                        // TODO if someone uses the body after this, it will not have the rest of the data.
                         var result = await request.BodyReader.ReadAsync(joinedTokenSource.Token);
                         if (!result.IsCompleted && result.Buffer.Length <= limit)
                         {
@@ -176,7 +235,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                             continue;
                         }
 
-                        var res = Encoding.UTF8.GetString(result.Buffer.Slice(0, result.Buffer.Length > limit ? limit : result.Buffer.Length));
+                        var res = _options.BodyEncoding.GetString(result.Buffer.Slice(0, result.Buffer.Length > limit ? limit : result.Buffer.Length));
+
                         request.BodyReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
                         return res;
                     }
@@ -186,8 +246,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     // Token source hides triggering token (https://github.com/dotnet/runtime/issues/22172)
                     if (!token.IsCancellationRequested && joinedTokenSource.Token.IsCancellationRequested)
                     {
-                        // TODO should this be empty instead?
-                        return "[Cancelled]";
+                        return "X";
                     }
 
                     throw;
@@ -195,18 +254,36 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
             else
             {
-                // TODO determine buffering limits here.
                 request.EnableBuffering();
 
                 // Read here.
+                var buffer = ArrayPool<byte>.Shared.Rent(limit);
 
-                if (request.Body.CanSeek)
+                try
                 {
-                    _ = request.Body.Seek(0, SeekOrigin.Begin);
+                    var count = 0;
+                    while (true)
+                    {
+                        var read = await request.Body.ReadAsync(buffer, count, limit - count);
+                        count += read;
+                        if (read == 0 || count == limit)
+                        {
+                            break;
+                        }
+                    }
+
+                    return _options.BodyEncoding.GetString(new Span<byte>(buffer).Slice(0, count));
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                    // reseek back to start.
+                    if (request.Body.CanSeek)
+                    {
+                        _ = request.Body.Seek(0, SeekOrigin.Begin);
+                    }
                 }
             }
-
-            return "";
         }
     }
 }

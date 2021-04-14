@@ -69,6 +69,7 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.HostFiltering" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpLogging" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpOverrides" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpsPolicy" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization.Routing" />
