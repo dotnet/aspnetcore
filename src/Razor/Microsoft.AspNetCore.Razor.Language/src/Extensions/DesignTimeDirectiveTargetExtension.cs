@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,10 +44,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 return;
             }
 
-            if (tokenKind == DirectiveTokenKind.Attribute)
+            if (tokenKind == DirectiveTokenKind.Attribute || tokenKind == DirectiveTokenKind.GenericTypeConstraint)
             {
                 // We don't need to do anything special here.
-                // We let the Roslyn take care of providing syntax errors for C# attributes.
+                // We let the Roslyn take care of providing syntax errors for C# attributes and generic type constraints.
                 return;
             }
 

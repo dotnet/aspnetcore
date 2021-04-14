@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             builder =>
             {
                 builder.AddMemberToken(ComponentResources.TypeParamDirective_Token_Name, ComponentResources.TypeParamDirective_Token_Description);
+                builder.AddOptionalGenericTypeConstraintToken("TypeConstraints", "Constraints for the parameter");
                 builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
                 builder.Description = ComponentResources.TypeParamDirective_Description;
             });

@@ -908,6 +908,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void DirectiveDescriptor_UnderstandsGenericConstraintsToken()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => {
+                    b.AddTypeToken();
+                    b.AddOptionalGenericTypeConstraintToken("name", "description");
+                });
+
+            // Act & Assert
+            ParseDocumentTest(@"
+@custom TSomething where TSomething : class
+",
+                new[] { descriptor });
+        }
+
+        [Fact]
         public void DirectiveDescriptor_UnderstandsAttributeTokens()
         {
             // Arrange

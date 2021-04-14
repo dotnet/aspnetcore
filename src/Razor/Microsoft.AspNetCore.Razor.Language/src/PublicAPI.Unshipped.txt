@@ -1,6 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.IndentWithTabs.get -> bool
 Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.TabSize.get -> int
+Microsoft.AspNetCore.Razor.Language.DirectiveTokenKind.GenericTypeConstraint = 6 -> Microsoft.AspNetCore.Razor.Language.DirectiveTokenKind
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter
 Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.CascadingGenericTypeParameter() -> void
 ~Microsoft.AspNetCore.Razor.Language.CodeGeneration.CodeWriter.CodeWriter(string newLine, Microsoft.AspNetCore.Razor.Language.RazorCodeGenerationOptions options) -> void
@@ -13,4 +14,7 @@ Microsoft.AspNetCore.Razor.Language.Intermediate.CascadingGenericTypeParameter.C
 ~Microsoft.AspNetCore.Razor.Language.Intermediate.ComponentTypeInferenceMethodIntermediateNode.ReceivesCascadingGenericTypes.set -> void
 abstract Microsoft.AspNetCore.Razor.Language.RazorConfiguration.UseConsolidatedMvcViews.get -> bool
 *REMOVED*~static Microsoft.AspNetCore.Razor.Language.RazorConfiguration.Create(Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion languageVersion, string configurationName, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Language.RazorExtension> extensions) -> Microsoft.AspNetCore.Razor.Language.RazorConfiguration
+~Microsoft.AspNetCore.Razor.Language.Intermediate.TypeParameter.Constraints.get -> string
+~Microsoft.AspNetCore.Razor.Language.Intermediate.TypeParameter.Constraints.set -> void
+~static Microsoft.AspNetCore.Razor.Language.DirectiveDescriptorBuilderExtensions.AddOptionalGenericTypeConstraintToken(this Microsoft.AspNetCore.Razor.Language.IDirectiveDescriptorBuilder builder, string name, string description) -> Microsoft.AspNetCore.Razor.Language.IDirectiveDescriptorBuilder
 ~static Microsoft.AspNetCore.Razor.Language.RazorConfiguration.Create(Microsoft.AspNetCore.Razor.Language.RazorLanguageVersion languageVersion, string configurationName, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Language.RazorExtension> extensions, bool useConsolidatedMvcViews = false) -> Microsoft.AspNetCore.Razor.Language.RazorConfiguration

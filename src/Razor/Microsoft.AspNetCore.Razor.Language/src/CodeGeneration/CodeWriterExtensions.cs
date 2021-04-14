@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             string name,
             string baseType,
             IList<string> interfaces,
-            IList<string> typeParameters)
+            IList<(string name, string constraint)> typeParameters)
         {
             for (var i = 0; i < modifiers.Count; i++)
             {
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             if (typeParameters != null && typeParameters.Count > 0)
             {
                 writer.Write("<");
-                writer.Write(string.Join(", ", typeParameters));
+                writer.Write(string.Join(", ", typeParameters.Select(tp => tp.name)));
                 writer.Write(">");
             }
 
@@ -419,6 +419,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
 
             writer.WriteLine();
+            for (var i = 0; i < typeParameters.Count; i++)
+            {
+                var constraint = typeParameters[i].constraint;
+                if (constraint != null)
+                {
+                    writer.Write(constraint);
+                    writer.WriteLine();
+                }
+            }
 
             return new CSharpCodeWritingScope(writer);
         }

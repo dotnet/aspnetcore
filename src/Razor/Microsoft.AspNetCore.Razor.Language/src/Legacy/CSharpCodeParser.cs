@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             "using",
             "namespace",
             "class",
+            "where"
         };
 
         private readonly ISet<string> CurrentKeywords = new HashSet<string>(DefaultKeywords);
@@ -1327,14 +1328,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             AcceptWhile(IsSpacingTokenIncludingComments);
 
+                            SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                            SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
+
                             if (tokenDescriptor.Kind == DirectiveTokenKind.Member ||
                                 tokenDescriptor.Kind == DirectiveTokenKind.Namespace ||
                                 tokenDescriptor.Kind == DirectiveTokenKind.Type ||
                                 tokenDescriptor.Kind == DirectiveTokenKind.Attribute ||
+                                tokenDescriptor.Kind == DirectiveTokenKind.GenericTypeConstraint ||
                                 tokenDescriptor.Kind == DirectiveTokenKind.Boolean)
                             {
-                                SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
-                                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
                                 directiveBuilder.Add(OutputTokensAsStatementLiteral());
 
                                 if (EndOfFile || At(SyntaxKind.NewLine))
@@ -1350,8 +1353,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             }
                             else
                             {
-                                SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
-                                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
                                 directiveBuilder.Add(OutputAsMarkupEphemeralLiteral());
                             }
                         }
@@ -1452,6 +1453,39 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 }
                                 else
                                 {
+                                    Context.ErrorSink.OnError(
+                                        RazorDiagnosticFactory.CreateParsing_DirectiveExpectsCSharpAttribute(
+                                            new SourceSpan(CurrentStart, CurrentToken.Content.Length), descriptor.Directive));
+                                    builder.Add(BuildDirective());
+                                    return;
+                                }
+
+                                break;
+                            case DirectiveTokenKind.GenericTypeConstraint:
+                                if (At(SyntaxKind.Keyword) && CurrentToken.Content == "where")
+                                {
+                                    // Consume the 'where' keyword plus any aditional whitespace
+                                    AcceptAndMoveNext();
+                                    AcceptWhile(SyntaxKind.Whitespace);
+                                    // Check that the type name matches the type name before the where clause.
+                                    // Find a better way to do this
+                                    if (directiveBuilder[directiveBuilder.Count - 2].ToFullString() != CurrentToken.Content)
+                                    {
+                                        // we are at the type after the where (@typeparam TKey where TKey)
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        AcceptAndMoveNext();
+                                    }
+                                    while (!At(SyntaxKind.NewLine))
+                                    {
+                                        AcceptAndMoveNext();
+                                    }
+                                }
+                                else
+                                {
+                                    // TODO: Produce an actual error here
                                     Context.ErrorSink.OnError(
                                         RazorDiagnosticFactory.CreateParsing_DirectiveExpectsCSharpAttribute(
                                             new SourceSpan(CurrentStart, CurrentToken.Content.Length), descriptor.Directive));
