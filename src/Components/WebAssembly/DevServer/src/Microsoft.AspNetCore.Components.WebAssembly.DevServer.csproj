@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <AssemblyName>blazor-devserver</AssemblyName>
     <PackageId>Microsoft.AspNetCore.Components.WebAssembly.DevServer</PackageId>
-    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <StartupObject>Microsoft.AspNetCore.Components.WebAssembly.DevServer.Program</StartupObject>
     <Description>Development server for use when building Blazor applications.</Description>
