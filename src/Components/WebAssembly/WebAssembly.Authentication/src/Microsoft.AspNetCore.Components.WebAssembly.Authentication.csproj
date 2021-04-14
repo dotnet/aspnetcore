@@ -5,7 +5,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Description>Build client-side authentication for single-page applications (SPAs).</Description>
-    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <RazorLangVersion>3.0</RazorLangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
