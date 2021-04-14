@@ -68,11 +68,7 @@ namespace Microsoft.AspNetCore.Testing
         private HttpListener StartHost(out string address, int statusCode = 200, Func<HttpListenerContext, Task> handler = null)
         {
             var listener = new HttpListener();
-#if NET6_0_OR_GREATER
-            var random = Random.Shared;
-#else
             var random = new Random();
-#endif
             address = null;
 
             for (var i = 0; i < 10; i++)

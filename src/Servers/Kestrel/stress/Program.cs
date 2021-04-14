@@ -64,7 +64,7 @@ public class Program
             logPath             : cmdline.HasOption("-trace") ? cmdline.ValueForOption<string>("-trace") : null,
             aspnetLog           : cmdline.ValueForOption<bool>("-aspnetlog"),
             listOps             : cmdline.ValueForOption<bool>("-listOps"),
-            seed                : cmdline.ValueForOption<int?>("-seed") ?? Random.Shared.Next());
+            seed                : cmdline.ValueForOption<int?>("-seed") ?? new Random().Next());
     }
 
     private static void Run(int concurrentRequests, int maxContentLength, Version[] httpVersions, int? connectionLifetime, int[] opIndices, string logPath, bool aspnetLog, bool listOps, int seed)
