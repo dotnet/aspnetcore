@@ -428,9 +428,10 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     } catch { }
     MONO.mono_wasm_setenv("TZ", timeZone || 'UTC');
-    if (resourceLoader.bootConfig.debugBuild) {
+
+    if (resourceLoader.bootConfig.modifiableAssemblies) {
       // Configure the app to enable hot reload in Development.
-      MONO.mono_wasm_setenv('DOTNET_MODIFIABLE_ASSEMBLIES', 'debug');
+      MONO.mono_wasm_setenv('DOTNET_MODIFIABLE_ASSEMBLIES', resourceLoader.bootConfig.modifiableAssemblies);
     }
 
     const load_runtime = cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
