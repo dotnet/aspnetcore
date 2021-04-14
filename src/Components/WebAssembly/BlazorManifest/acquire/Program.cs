@@ -113,7 +113,11 @@ namespace acquire
                         throw new NotSupportedException("Unsupported OS platform.");
                     }
                 }
-                packs.Add((packageName, item.Value.Version));
+
+                if (!string.IsNullOrEmpty(packageName))
+                {
+                    packs.Add((packageName, item.Value.Version));
+                }
             }
 
             return packs;
