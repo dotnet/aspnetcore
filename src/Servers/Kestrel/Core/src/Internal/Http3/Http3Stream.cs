@@ -514,8 +514,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             InputRemaining = HttpRequestHeaders.ContentLength;
 
-            // This must wait until we've received all of the headers so we can verify the content-length.
-            // We also must set the proper EndStream state before rejecting the request for any reason.
+            // If the stream is complete after receiving the headers then run OnEndStreamReceived.
+            // If there is a bad content length then this will throw before the request delegate is called.
             if (isCompleted)
             {
                 await OnEndStreamReceived();
