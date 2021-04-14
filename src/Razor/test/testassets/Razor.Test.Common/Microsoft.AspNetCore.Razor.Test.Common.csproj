@@ -16,8 +16,6 @@
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
     <Reference Include="Microsoft.Extensions.DependencyModel" />
-    <Reference Include="xunit.assert" />
-    <Reference Include="xunit.extensibility.core" />
   </ItemGroup>
 
 </Project>
