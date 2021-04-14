@@ -20,7 +20,7 @@ RazorDocument - [0..35)::35 - [<person age="@DateTime.Now.Year" />]
                                         Transition;[@];
                                     CSharpImplicitExpressionBody - [14..31)::17
                                         CSharpCodeBlock - [14..31)::17
-                                            CSharpExpressionLiteral - [14..31)::17 - [DateTime.Now.Year] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                                            CSharpExpressionLiteral - [14..31)::17 - [DateTime.Now.Year] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                                                 Identifier;[DateTime];
                                                 Dot;[.];
                                                 Identifier;[Now];

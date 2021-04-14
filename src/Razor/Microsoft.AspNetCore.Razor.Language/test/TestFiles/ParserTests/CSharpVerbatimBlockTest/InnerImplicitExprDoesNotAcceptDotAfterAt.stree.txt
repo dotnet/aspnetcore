@@ -18,7 +18,7 @@ RazorDocument - [0..5)::5 - [@{@.}]
                                     Transition;[@];
                                 CSharpImplicitExpressionBody - [3..3)::0
                                     CSharpCodeBlock - [3..3)::0
-                                        CSharpExpressionLiteral - [3..3)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14
+                                        CSharpExpressionLiteral - [3..3)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K15
                                             Marker;[];
                         CSharpStatementLiteral - [3..4)::1 - [.] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Dot;[.];
