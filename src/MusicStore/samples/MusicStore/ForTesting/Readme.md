@@ -1,1 +1,0 @@
-The contents of this folder are used for end to end testing.
