@@ -243,8 +243,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void RuntimeListListsContainsCorrectEntries()
         {
-            var runtimePath = Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
-            if (string.IsNullOrEmpty(runtimePath))
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH")))
             {
                 return;
             }
@@ -306,7 +305,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void RuntimeListListsContainsCorrectPaths()
         {
-            if (string.IsNullOrEmpty(_frameworkListPath))
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH")))
             {
                 return;
             }
