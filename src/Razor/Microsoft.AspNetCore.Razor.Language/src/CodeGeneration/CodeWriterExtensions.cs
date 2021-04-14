@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public static CodeWriter WriteMethodInvocation(this CodeWriter writer, string methodName, bool endLine, params string[] parameters)
         {
-            return 
+            return
                 WriteStartMethodInvocation(writer, methodName)
                 .Write(string.Join(", ", parameters))
                 .WriteEndMethodInvocation(endLine);
@@ -419,13 +419,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
 
             writer.WriteLine();
-            for (var i = 0; i < typeParameters.Count; i++)
+            if (typeParameters != null)
             {
-                var constraint = typeParameters[i].constraint;
-                if (constraint != null)
+                for (var i = 0; i < typeParameters.Count; i++)
                 {
-                    writer.Write(constraint);
-                    writer.WriteLine();
+                    var constraint = typeParameters[i].constraint;
+                    if (constraint != null)
+                    {
+                        writer.Write(constraint);
+                        writer.WriteLine();
+                    }
                 }
             }
 
@@ -614,7 +617,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             private readonly string _sourceFilePath;
 
             public LinePragmaWriter(
-                CodeWriter writer, 
+                CodeWriter writer,
                 SourceSpan span,
                 CodeRenderingContext context)
             {
