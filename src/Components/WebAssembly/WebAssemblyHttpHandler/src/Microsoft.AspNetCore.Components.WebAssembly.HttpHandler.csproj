@@ -8,7 +8,7 @@
     <ProduceOnlyReferenceAssembly>true</ProduceOnlyReferenceAssembly>
     <StrongNameKeyId>Open</StrongNameKeyId>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
-    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
