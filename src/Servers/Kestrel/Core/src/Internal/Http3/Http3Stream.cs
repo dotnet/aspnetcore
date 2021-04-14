@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                                 Log.Http3FrameReceived(ConnectionId, _streamIdFeature.StreamId, _incomingFrame);
 
                                 consumed = examined = framePayload.End;
-                                await ProcessHttp3Stream(application, framePayload, result.IsCompleted);
+                                await ProcessHttp3Stream(application, framePayload, result.IsCompleted && readableBuffer.IsEmpty);
                             }
                         }
 

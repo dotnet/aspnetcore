@@ -678,7 +678,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 for (var i = 0; i < data.Length; i++)
                 {
                     await Task.Delay(50);
-                    await context.Response.BodyWriter.WriteAsync(new byte[] { data[0] });
+                    await context.Response.BodyWriter.WriteAsync(new byte[] { data[i] });
                 }
             });
 
