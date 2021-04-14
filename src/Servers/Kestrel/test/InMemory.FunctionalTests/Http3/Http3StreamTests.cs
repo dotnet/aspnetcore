@@ -639,11 +639,64 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
 
-            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+            var requestDelegateCalled = false;
+            var requestStream = await InitializeConnectionAndStreamsAsync(c =>
+            {
+                // Bad content-length + end stream means the request delegate
+                // is never called by the server.
+                requestDelegateCalled = true;
+                return Task.CompletedTask;
+            });
 
             await requestStream.SendHeadersAsync(headers, endStream: true);
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.Http3StreamErrorLessDataThanLength);
+
+            Assert.False(requestDelegateCalled);
+        }
+
+        [Fact]
+        public async Task EndRequestStream_ContinueReadingFromResponse()
+        {
+            var headersTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+
+            var data = new byte[] { 1, 2, 3, 4, 5, 6 };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                await context.Response.BodyWriter.FlushAsync();
+
+                await headersTcs.Task;
+
+                for (var i = 0; i < data.Length; i++)
+                {
+                    await Task.Delay(50);
+                    await context.Response.BodyWriter.WriteAsync(new byte[] { data[0] });
+                }
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.ExpectHeadersAsync();
+
+            headersTcs.SetResult();
+
+            var receivedData = new List<byte>();
+            while (receivedData.Count < data.Length)
+            {
+                var frameData = await requestStream.ExpectDataAsync();
+                receivedData.AddRange(frameData.ToArray());
+            }
+
+            Assert.Equal(data, receivedData);
+
+            await requestStream.ExpectReceiveEndOfStream();
         }
 
         [Fact]

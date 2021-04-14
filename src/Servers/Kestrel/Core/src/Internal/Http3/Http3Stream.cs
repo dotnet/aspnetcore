@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                                 Log.Http3FrameReceived(ConnectionId, _streamIdFeature.StreamId, _incomingFrame);
 
                                 consumed = examined = framePayload.End;
-                                await ProcessHttp3Stream(application, framePayload);
+                                await ProcessHttp3Stream(application, framePayload, result.IsCompleted);
                             }
                         }
 
@@ -448,14 +448,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return RequestBodyPipe.Writer.CompleteAsync();
         }
 
-        private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload) where TContext : notnull
+        private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
         {
             switch (_incomingFrame.Type)
             {
                 case Http3FrameType.Data:
                     return ProcessDataFrameAsync(payload);
                 case Http3FrameType.Headers:
-                    return ProcessHeadersFrameAsync(application, payload);
+                    return ProcessHeadersFrameAsync(application, payload, isCompleted);
                 case Http3FrameType.Settings:
                 case Http3FrameType.CancelPush:
                 case Http3FrameType.GoAway:
@@ -478,7 +478,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return Task.CompletedTask;
         }
 
-        private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload) where TContext : notnull
+        private async Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
         {
             // HEADERS frame after trailing headers is invalid.
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
@@ -506,7 +506,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 case RequestHeaderParsingState.Trailers:
                     // trailers
                     // TODO figure out if there is anything else to do here.
-                    return Task.CompletedTask;
+                    return;
                 default:
                     Debug.Fail("Unexpected header parsing state.");
                     break;
@@ -514,11 +514,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             InputRemaining = HttpRequestHeaders.ContentLength;
 
+            // This must wait until we've received all of the headers so we can verify the content-length.
+            // We also must set the proper EndStream state before rejecting the request for any reason.
+            if (isCompleted)
+            {
+                await OnEndStreamReceived();
+            }
+
             _appCompleted = new TaskCompletionSource();
 
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
-
-            return Task.CompletedTask;
         }
 
         private Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)
