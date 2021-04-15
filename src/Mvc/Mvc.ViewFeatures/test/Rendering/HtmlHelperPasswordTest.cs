@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public void PasswordFor_UsesModelStateErrors_ButDoesNotUseModelOrViewDataOrModelStateForValueAttribute()
         {
             // Arrange
-            var expected = @"<input baz=""HtmlEncode[[BazValue]]"" class=""HtmlEncode[[input-validation-error some-class]]"" id=""HtmlEncode[[Property1]]"" " +
+            var expected = @"<input baz=""HtmlEncode[[BazValue]]"" class=""HtmlEncode[[some-class input-validation-error]]"" id=""HtmlEncode[[Property1]]"" " +
                            @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[password]]"" />";
             var vdd = GetViewDataWithErrors();
             vdd.Model.Property1 = "prop1-value";
