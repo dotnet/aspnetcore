@@ -21,9 +21,10 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public class WebApplicationBuilder
     {
-        private readonly HostBuilder _hostBuilder = new HostBuilder();
+        private readonly HostBuilder _hostBuilder = new();
         private readonly DeferredHostBuilder _deferredHostBuilder;
         private readonly DeferredWebHostBuilder _deferredWebHostBuilder;
+        private readonly WebHostEnvironment _environment;
 
         /// <summary>
         /// Creates a <see cref="WebApplicationBuilder"/>.
@@ -39,8 +40,7 @@ namespace Microsoft.AspNetCore.Builder
 
             // HACK: MVC and Identity do this horrible thing to get the hosting environment as an instance
             // from the service collection before it is built. That needs to be fixed...
-            var environment = new WebHostEnvironment(callingAssembly);
-            Environment = environment;
+            Environment = _environment = new WebHostEnvironment(callingAssembly);
             Services.AddSingleton(Environment);
 
             Configuration = new Configuration();
@@ -48,10 +48,10 @@ namespace Microsoft.AspNetCore.Builder
             // Run this inline to populate the configuration
             configureHost(new ConfigurationHostBuilder(Configuration, Environment));
 
-            Configuration.SetBasePath(environment.ContentRootPath);
+            Configuration.SetBasePath(_environment.ContentRootPath);
             Logging = new LoggingBuilder(Services);
-            Server = _deferredWebHostBuilder = new DeferredWebHostBuilder(Configuration, environment, Services);
-            Host = _deferredHostBuilder = new DeferredHostBuilder(Configuration, configureHost, environment, Services);
+            Server = _deferredWebHostBuilder = new DeferredWebHostBuilder(Configuration, _environment, Services);
+            Host = _deferredHostBuilder = new DeferredHostBuilder(Configuration, configureHost, _environment, Services);
         }
 
         /// <summary>
@@ -92,24 +92,6 @@ namespace Microsoft.AspNetCore.Builder
         {
             // This will always be set before Build completes or the ConfigureWebHostDefaults callback runs.
             WebApplication sourcePipeline = null!;
-
-            _hostBuilder.ConfigureServices(services =>
-            {
-                foreach (var s in Services)
-                {
-                    services.Add(s);
-                }
-            });
-
-            _hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
-            {
-                foreach (var s in Configuration.Sources)
-                {
-                    builder.Sources.Add(s);
-                }
-            });
-
-            _deferredHostBuilder.ExecuteActions(_hostBuilder);
 
             _hostBuilder.ConfigureWebHostDefaults(web =>
             {
@@ -175,11 +157,29 @@ namespace Microsoft.AspNetCore.Builder
                     }
                 });
 
+                _hostBuilder.ConfigureServices(services =>
+                {
+                    foreach (var s in Services)
+                    {
+                        services.Add(s);
+                    }
+                });
+
+                _hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
+                {
+                    foreach (var s in Configuration.Sources)
+                    {
+                        builder.Sources.Add(s);
+                    }
+                });
+
+                _deferredHostBuilder.ExecuteActions(_hostBuilder);
+
                 // Make the default web host settings match and allow overrides
-                web.UseEnvironment(Environment.EnvironmentName);
-                web.UseContentRoot(Environment.ContentRootPath);
-                web.UseSetting(WebHostDefaults.ApplicationKey, Environment.ApplicationName);
-                web.UseSetting(WebHostDefaults.WebRootKey, Environment.WebRootPath);
+                web.UseEnvironment(_environment.EnvironmentName);
+                web.UseContentRoot(_environment.ContentRootPath);
+                web.UseSetting(WebHostDefaults.ApplicationKey, _environment.ApplicationName);
+                web.UseSetting(WebHostDefaults.WebRootKey, _environment.WebRootPath);
 
                 _deferredWebHostBuilder.ExecuteActions(web);
             });
@@ -379,14 +379,15 @@ namespace Microsoft.AspNetCore.Builder
         {
             private static readonly NullFileProvider NullFileProvider = new();
 
-            private string? _webRootPath;
-
             public WebHostEnvironment(Assembly? callingAssembly)
             {
                 ContentRootPath = Directory.GetCurrentDirectory();
 
                 ApplicationName = (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? "NotFound";
                 EnvironmentName = Environments.Production;
+
+                // This feels wrong, but HostingEnvironment does the same thing.
+                WebRootPath = default!;
 
                 // Default to /wwwroot if it exists.
                 var wwwroot = Path.Combine(ContentRootPath, "wwwroot");
@@ -427,22 +428,7 @@ namespace Microsoft.AspNetCore.Builder
 
             public IFileProvider WebRootFileProvider { get; set; }
 
-            public string WebRootPath
-            {
-                get
-                {
-                    if (_webRootPath is null)
-                    {
-                        throw new InvalidOperationException($"WebRootPath has not been set because \"{ContentRootPath}/wwwroot\" does not exist.");
-                    }
-
-                    return _webRootPath;
-                }
-                set
-                {
-                    _webRootPath = value;
-                }
-            }
+            public string WebRootPath { get; set; }
         }
     }
 }
