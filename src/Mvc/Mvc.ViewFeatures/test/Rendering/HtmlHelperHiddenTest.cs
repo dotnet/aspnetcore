@@ -464,7 +464,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public void HiddenWithViewDataErrors_GeneratesExpectedValue()
         {
             // Arrange
-            var expected = @"<input baz=""HtmlEncode[[BazValue]]"" class=""HtmlEncode[[input-validation-error some-class]]"" id=""HtmlEncode[[Property1]]""" +
+            var expected = @"<input baz=""HtmlEncode[[BazValue]]"" class=""HtmlEncode[[some-class input-validation-error]]"" id=""HtmlEncode[[Property1]]""" +
                            @" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[ModelStateValue]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithErrors());
             var attributes = new Dictionary<string, object>
