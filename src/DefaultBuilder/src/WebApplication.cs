@@ -77,7 +77,11 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public IFeatureCollection ServerFeatures => _host.Services.GetRequiredService<IServer>().Features;
 
-        IServiceProvider IApplicationBuilder.ApplicationServices { get => ApplicationBuilder.ApplicationServices; set => ApplicationBuilder.ApplicationServices = value; }
+        IServiceProvider IApplicationBuilder.ApplicationServices
+        {
+            get => ApplicationBuilder.ApplicationServices;
+            set => ApplicationBuilder.ApplicationServices = value;
+        }
 
         internal IDictionary<string, object?> Properties => ApplicationBuilder.Properties;
         IDictionary<string, object?> IApplicationBuilder.Properties => Properties;

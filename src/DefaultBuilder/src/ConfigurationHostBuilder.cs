@@ -38,10 +38,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public IHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate)
-        {
-            throw new NotImplementedException();
-        }
+        public IHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate) => throw new NotImplementedException();
 
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
@@ -51,19 +48,20 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
         {
-            throw new NotImplementedException();
+            // HostingHostBuilderExtensions.ConfigureDefaults calls this via ConfigureLogging.
+            // Apparently, this just doesn't work yet. :(
+            //throw new NotImplementedException();
+            return this;
         }
 
-        public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
-
-        {
-            throw new NotImplementedException();
-        }
+        public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull => throw new NotImplementedException();
 
         public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory) where TContainerBuilder : notnull
-
         {
-            throw new NotImplementedException();
+            // HostingHostBuilderExtensions.ConfigureDefaults calls this via UseDefaultServiceProvider.
+            // Apparently, this just doesn't work yet. :(
+            //throw new NotImplementedException();
+            return this;
         }
     }
 }
