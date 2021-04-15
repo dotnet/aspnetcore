@@ -48,7 +48,6 @@
       "alias-to": {
         "win-x86": "Microsoft.NET.Runtime.Emscripten.2.0.12.Python.win-x86",
         "win-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Python.win-x64",
-        "linux-x64": null,
         "osx-x64": "Microsoft.NET.Runtime.Emscripten.2.0.12.Python.osx-x64"
       }
     },
