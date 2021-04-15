@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Authorization
     public abstract class AuthorizeViewCore : ComponentBase
     {
         private AuthenticationState currentAuthenticationState;
-        private bool isAuthorized;
+        private bool? isAuthorized;
 
         /// <summary>
         /// The content that will be displayed if the user is authorized.
@@ -54,11 +54,11 @@ namespace Microsoft.AspNetCore.Components.Authorization
         {
             // We're using the same sequence number for each of the content items here
             // so that we can update existing instances if they are the same shape
-            if (currentAuthenticationState == null)
+            if (isAuthorized == null)
             {
                 builder.AddContent(0, Authorizing);
             }
-            else if (isAuthorized)
+            else if (isAuthorized == true)
             {
                 var authorized = Authorized ?? ChildContent;
                 builder.AddContent(0, authorized?.Invoke(currentAuthenticationState));
@@ -85,13 +85,10 @@ namespace Microsoft.AspNetCore.Components.Authorization
                 throw new InvalidOperationException($"Authorization requires a cascading parameter of type Task<{nameof(AuthenticationState)}>. Consider using {typeof(CascadingAuthenticationState).Name} to supply this.");
             }
 
-            // First render in pending state
-            // If the task has already completed, this render will be skipped
-            currentAuthenticationState = null;
+            // Clear the previous result of authorization
+            // This will cause the Authorizing state to be displayed until the authorization has been completed
+            isAuthorized = null;
 
-            // Then render in completed state
-            // Importantly, we *don't* call StateHasChanged between the following async steps,
-            // otherwise we'd display an incorrect UI state while waiting for IsAuthorizedAsync
             currentAuthenticationState = await AuthenticationState;
             isAuthorized = await IsAuthorizedAsync(currentAuthenticationState.User);
         }
