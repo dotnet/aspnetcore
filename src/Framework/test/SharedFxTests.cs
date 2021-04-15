@@ -34,7 +34,8 @@ namespace Microsoft.AspNetCore
                 : Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
             _expectedVersionFileName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
                 ? ".version"
-                : "Microsoft.AspNetCore.App.versions.txt";        }
+                : "Microsoft.AspNetCore.App.versions.txt";
+        }
 
         [Fact]
         public void SharedFrameworkContainsListedAssemblies()
