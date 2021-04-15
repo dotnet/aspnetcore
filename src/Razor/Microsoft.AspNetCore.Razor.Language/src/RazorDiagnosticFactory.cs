@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateParsing_GenericTypeParameterIdentifierMismatch(SourceSpan location, string directiveName, string constraintIdentifier, string originalMember)
         {
-            return RazorDiagnostic.Create(Parsing_GenericTypeParameterIdentifierMismatch, location, directiveName);
+            return RazorDiagnostic.Create(Parsing_GenericTypeParameterIdentifierMismatch, location, directiveName, constraintIdentifier, originalMember);
         }
 
         internal static readonly RazorDiagnosticDescriptor Parsing_UnexpectedIdentifier =

@@ -1,0 +1,1 @@
+(2,26): Error RZ1039: The type parameter in the generic type constraint 'TElse' does not match the type parameter 'TSomething' defined in the directive 'custom'.

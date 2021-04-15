@@ -915,7 +915,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => {
-                    b.AddTypeToken();
+                    b.AddMemberToken();
                     b.AddOptionalGenericTypeConstraintToken("name", "description");
                 });
 
@@ -924,6 +924,60 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 @custom TSomething where TSomething : class
 ",
                 new[] { descriptor });
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_GenericConstraintTokenWorksWhenAtEndOfFile()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => {
+                    b.AddMemberToken();
+                    b.AddOptionalGenericTypeConstraintToken("name", "description");
+                });
+
+            // Act & Assert
+            ParseDocumentTest(@"
+@custom TSomething where TSomething : class",
+                directives: new[] { descriptor });
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_GenericConstraintTokenProducesErrorWhenFirstTokenIsNotWhereKeyword()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => {
+                    b.AddMemberToken();
+                    b.AddOptionalGenericTypeConstraintToken("name", "description");
+                });
+
+            // Act & Assert
+            ParseDocumentTest(@"
+@custom TSomething maybe TSomething : class",
+                directives: new[] { descriptor });
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_GenericConstraintTokenProducesErrorWhenConstraintIdentifierIsDifferentFromPrecedingMember()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => {
+                    b.AddMemberToken();
+                    b.AddOptionalGenericTypeConstraintToken("name", "description");
+                });
+
+            // Act & Assert
+            ParseDocumentTest(@"
+@custom TSomething where TElse : class",
+                directives: new[] { descriptor });
         }
 
         [Fact]

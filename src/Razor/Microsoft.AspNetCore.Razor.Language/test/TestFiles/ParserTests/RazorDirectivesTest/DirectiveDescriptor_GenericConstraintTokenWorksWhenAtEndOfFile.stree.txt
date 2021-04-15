@@ -1,15 +1,15 @@
-RazorDocument - [0..47)::47 - [LF@custom TSomething where TSomething : classLF]
-    MarkupBlock - [0..47)::47
+RazorDocument - [0..45)::45 - [LF@custom TSomething where TSomething : class]
+    MarkupBlock - [0..45)::45
         MarkupTextLiteral - [0..2)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
-        CSharpCodeBlock - [2..47)::45
-            RazorDirective - [2..47)::45 - Directive:{custom;SingleLine;Unrestricted}
+        CSharpCodeBlock - [2..45)::43
+            RazorDirective - [2..45)::43 - Directive:{custom;SingleLine;Unrestricted}
                 CSharpTransition - [2..3)::1 - Gen<None> - SpanEditHandler;Accepts:None
                     Transition;[@];
-                RazorDirectiveBody - [3..47)::44
+                RazorDirectiveBody - [3..45)::42
                     RazorMetaCode - [3..9)::6 - Gen<None> - SpanEditHandler;Accepts:None
                         Identifier;[custom];
-                    CSharpCodeBlock - [9..47)::38
+                    CSharpCodeBlock - [9..45)::36
                         CSharpStatementLiteral - [9..10)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
                             Whitespace;[ ];
                         CSharpStatementLiteral - [10..20)::10 - [TSomething] - Gen<DirectiveToken {;Member;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
@@ -24,7 +24,5 @@ RazorDocument - [0..47)::47 - [LF@custom TSomething where TSomething : classLF]
                             Colon;[:];
                             Whitespace;[ ];
                             Keyword;[class];
-                        MarkupEphemeralTextLiteral - [45..47)::2 - [LF] - Gen<None> - SpanEditHandler;Accepts:Whitespace
-                            NewLine;[LF];
-        MarkupTextLiteral - [47..47)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        MarkupTextLiteral - [45..45)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Marker;[];

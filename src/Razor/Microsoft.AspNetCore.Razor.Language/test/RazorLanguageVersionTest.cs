@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.True(result);
-            Assert.Same(RazorLanguageVersion.Version_5_0, version);
+            Assert.Same(RazorLanguageVersion.Version_6_0, version);
         }
 
         [Fact]

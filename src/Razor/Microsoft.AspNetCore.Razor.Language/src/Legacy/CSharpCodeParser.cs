@@ -1506,12 +1506,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 }
                                 else
                                 {
-                                    // TODO: Produce an actual error here
                                     Context.ErrorSink.OnError(
                                         RazorDiagnosticFactory.CreateParsing_UnexpectedIdentifier(
                                             new SourceSpan(CurrentStart, CurrentToken.Content.Length),
                                             CurrentToken.Content,
                                             CSharpLanguageCharacteristics.GetKeyword(CSharpKeyword.Where)));
+
                                     builder.Add(BuildDirective());
                                     return;
                                 }
