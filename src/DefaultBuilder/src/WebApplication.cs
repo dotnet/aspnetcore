@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Disposes the application.
         /// </summary>
-        public void Dispose()
+        void IDisposable.Dispose()
         {
             _host.Dispose();
         }

@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Tests
                 {
                     configBuilder.Add(new ReloadableMemorySource());
                 });
-            var app = builder.Build();
+            await using var app = builder.Build();
 
             var config = app.Services.GetRequiredService<IConfiguration>();
             var monitor = app.Services.GetRequiredService<IOptionsMonitor<HostFilteringOptions>>();
