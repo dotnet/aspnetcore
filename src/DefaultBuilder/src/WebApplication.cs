@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// The web application used to configure the http pipeline, and routes.
     /// </summary>
-    public class WebApplication : IHost, IDisposable, IApplicationBuilder, IEndpointRouteBuilder, IAsyncDisposable
+    public sealed class WebApplication : IHost, IDisposable, IApplicationBuilder, IEndpointRouteBuilder, IAsyncDisposable
     {
         internal const string EndpointRouteBuilder = "__EndpointRouteBuilder";
 

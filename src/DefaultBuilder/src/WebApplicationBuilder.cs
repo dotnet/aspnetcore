@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// A builder for web applications and services.
     /// </summary>
-    public class WebApplicationBuilder
+    public sealed class WebApplicationBuilder
     {
         private readonly HostBuilder _hostBuilder = new();
         private readonly DeferredHostBuilder _deferredHostBuilder;
