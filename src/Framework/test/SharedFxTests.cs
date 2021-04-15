@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore
                 return;
             }
 
-            var runtimeListPath = Path.Combine(_sharedFxRoot, RuntimeList.xml");
+            var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
             AssertEx.FileExists(runtimeListPath);
 
             var runtimeListDoc = XDocument.Load(runtimeListPath);
