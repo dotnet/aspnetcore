@@ -162,6 +162,37 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        [ConditionalFact]
+        public async Task RequestBody_ChangeContentLength_Success()
+        {
+            string address;
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
+            {
+                var newContentLength = httpContext.Request.ContentLength + 1000;
+                httpContext.Request.ContentLength = newContentLength;
+                Assert.Equal(newContentLength, httpContext.Request.ContentLength);
+
+                var contentLengthHeadersCount = 0;
+                foreach (var header in httpContext.Request.Headers)
+                {
+                    if (string.Equals(header.Key, "Content-Length", StringComparison.OrdinalIgnoreCase))
+                    {
+                        contentLengthHeadersCount++;
+                    }
+                }
+                Assert.Equal(1, contentLengthHeadersCount);
+
+                byte[] input = new byte[100];
+                int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
+                httpContext.Response.ContentLength = read;
+                await httpContext.Response.Body.WriteAsync(input, 0, read);
+            }))
+            {
+                string response = await SendRequestAsync(address, "Hello World");
+                Assert.Equal("Hello World", response);
+            }
+        }
+
         private Task<string> SendRequestAsync(string uri, string upload)
         {
             return SendRequestAsync(uri, new StringContent(upload));
