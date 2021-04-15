@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +16,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.EventLog;
 
 // REVIEW: Or just "Microsoft.AspNetCore" like WebHost?
 namespace Microsoft.AspNetCore.Builder
@@ -129,7 +127,7 @@ namespace Microsoft.AspNetCore.Builder
             // this might give a better approximation of the default application name
             return new WebApplicationBuilder(
                 Assembly.GetCallingAssembly(),
-                builder => ConfigureBuilder(builder, args: null));
+                builder => builder.ConfigureDefaults(args: null));
         }
 
         /// <summary>
@@ -141,7 +139,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             return new WebApplicationBuilder(
                 Assembly.GetCallingAssembly(),
-                builder => ConfigureBuilder(builder, args));
+                builder => builder.ConfigureDefaults(args));
         }
 
         /// <summary>
@@ -153,7 +151,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             return new WebApplicationBuilder(
                 Assembly.GetCallingAssembly(),
-                builder => ConfigureBuilder(builder, args)).Build();
+                builder => builder.ConfigureDefaults(args)).Build();
         }
 
         /// <summary>
@@ -164,7 +162,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             return new WebApplicationBuilder(
                 Assembly.GetCallingAssembly(),
-                builder => ConfigureBuilder(builder, args: null)).Build();
+                builder => builder.ConfigureDefaults(args: null)).Build();
         }
 
         /// <summary>
@@ -228,74 +226,6 @@ namespace Microsoft.AspNetCore.Builder
         public void Run()
         {
             HostingAbstractionsHostExtensions.Run(this);
-        }
-
-        private static void ConfigureBuilder(IHostBuilder builder, string[]? args)
-        {
-            // Keep in sync with this Host.CreateDefaultBuilder https://github.com/dotnet/extensions/blob/cb60ad143f61f0d96b0860895065351e86f79a10/src/Hosting/Hosting/src/Host.cs#L56
-
-            builder.UseContentRoot(Directory.GetCurrentDirectory());
-            builder.ConfigureHostConfiguration(config =>
-            {
-                config.AddEnvironmentVariables(prefix: "DOTNET_");
-                if (args != null)
-                {
-                    config.AddCommandLine(args);
-                }
-            });
-
-            builder.ConfigureAppConfiguration((hostingContext, config) =>
-            {
-                var env = hostingContext.HostingEnvironment;
-
-                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                      .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-
-                if (env.IsDevelopment() && !string.IsNullOrEmpty(env.ApplicationName))
-                {
-                    var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
-                    if (appAssembly != null)
-                    {
-                        config.AddUserSecrets(appAssembly, optional: true);
-                    }
-                }
-
-                config.AddEnvironmentVariables();
-
-                if (args != null)
-                {
-                    config.AddCommandLine(args);
-                }
-            })
-            .ConfigureLogging((hostingContext, logging) =>
-            {
-                var isWindows = OperatingSystem.IsWindows();
-
-                // IMPORTANT: This needs to be added *before* configuration is loaded, this lets
-                // the defaults be overridden by the configuration.
-                if (isWindows)
-                {
-                    // Default the EventLogLoggerProvider to warning or above
-                    logging.AddFilter<EventLogLoggerProvider>(level => level >= LogLevel.Warning);
-                }
-
-                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                logging.AddConsole();
-                logging.AddDebug();
-                logging.AddEventSourceLogger();
-
-                if (isWindows)
-                {
-                    // Add the EventLogLoggerProvider on windows machines
-                    logging.AddEventLog();
-                }
-            })
-            .UseDefaultServiceProvider((context, options) =>
-            {
-                var isDevelopment = context.HostingEnvironment.IsDevelopment();
-                options.ValidateScopes = isDevelopment;
-                options.ValidateOnBuild = isDevelopment;
-            });
         }
     }
 }
