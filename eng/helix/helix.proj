@@ -88,9 +88,9 @@
       <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
     </PropertyGroup>    
     
-    <Unzip Condition="Exists('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetOsName)-$(TargetArchitecture).$(SharedFxVersion).nupkg')
-           SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetOsName)-$(TargetArchitecture).$(SharedFxVersion).nupkg" 
-           DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw" />
+    <Unzip Condition="Exists('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetOsName)-$(TargetArchitecture).$(SharedFxVersion).nupkg')"
+       SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetOsName)-$(TargetArchitecture).$(SharedFxVersion).nupkg" 
+       DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw" />
     <ItemGroup>
       <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.txt" />
       <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.json" />
@@ -99,10 +99,11 @@
     </ItemGroup>
     <Copy SourceFiles="@(_appRuntimeFiles)" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
     <Unzip Condition="Exists('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg')" 
-           SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg" 
-           DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix\packs\Microsoft.AspNetCore.App.Ref\$(SharedFxVersion)" />
+      SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg" 
+      DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix\packs\Microsoft.AspNetCore.App.Ref\$(SharedFxVersion)" />
     <ZipDirectory Condition="Exists('$(OutputPath)\AspNetCoreAppRuntimeHelix')"
-           SourceDirectory="$(OutputPath)\AspNetCoreAppRuntimeHelix" DestinationFile="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Overwrite="true" />
+      SourceDirectory="$(OutputPath)\AspNetCoreAppRuntimeHelix" 
+      DestinationFile="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Overwrite="true" />
     
     <ItemGroup>
       <HelixCorrelationPayload Include="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Destination="$(DotNetCliDestination)" />
