@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     /// <summary>
     /// Options for the <see cref="HttpLoggingMiddleware"/>
     /// </summary>
-    public class HttpLoggingOptions
+    public sealed class HttpLoggingOptions
     {
         /// <summary>
         /// Fields to log for the Request and Response. Defaults to logging request and response properties and headers.
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// If a request header is not present in the <see cref="AllowedRequestHeaders"/>,
         /// the header name will be logged with a redacted value.
         /// </remarks>
-        public ISet<string> AllowedRequestHeaders { get; } = new HashSet<string>()
+        public HashSet<string> AllowedRequestHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.Accept,
             HeaderNames.AcceptEncoding,
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// If a response header is not present in the <see cref="AllowedResponseHeaders"/>,
         /// the header name will be logged with a redacted value.
         /// </remarks>
-        public ISet<string> AllowedResponseHeaders { get; } = new HashSet<string>()
+        public HashSet<string> AllowedResponseHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.ContentType,
             HeaderNames.Date,

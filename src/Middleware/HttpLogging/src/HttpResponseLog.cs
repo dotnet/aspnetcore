@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal class HttpResponseLog : IReadOnlyList<KeyValuePair<string, object?>>
+    internal sealed class HttpResponseLog : IReadOnlyList<KeyValuePair<string, object?>>
     {
         private readonly List<KeyValuePair<string, object?>> _keyValues;
         private string? _cachedToString;
@@ -33,8 +33,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         public override string ToString()
-        {
-            if (_cachedToString == null)
+        {if (_cachedToString == null)
             {
                 var builder = new StringBuilder();
                 var count = _keyValues.Count;

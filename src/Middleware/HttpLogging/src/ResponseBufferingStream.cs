@@ -25,9 +25,12 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private readonly int _minimumSegmentSize;
         private int _bytesWritten;
+
         private List<CompletedBuffer>? _completedSegments;
         private byte[]? _currentSegment;
         private int _position;
+
+        private static readonly StreamPipeWriterOptions _pipeWriterOptions = new StreamPipeWriterOptions(leaveOpen: true);
 
         internal ResponseBufferingStream(IHttpResponseBodyFeature innerBodyFeature, int limit)
         {
@@ -60,7 +63,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 if (_pipeAdapter == null)
                 {
-                    _pipeAdapter = PipeWriter.Create(Stream, new StreamPipeWriterOptions(leaveOpen: true));
+                    _pipeAdapter = PipeWriter.Create(Stream, _pipeWriterOptions);
                 }
 
                 return _pipeAdapter;
@@ -94,57 +97,19 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            Write(new ReadOnlySpan<byte>(buffer, offset, count));
+            Write(buffer.AsSpan(offset, count));
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
-            var tcs = new TaskCompletionSource(state: state, TaskCreationOptions.RunContinuationsAsynchronously);
-            InternalWriteAsync(buffer, offset, count, callback, tcs);
-            return tcs.Task;
-        }
-
-        private async void InternalWriteAsync(byte[] buffer, int offset, int count, AsyncCallback? callback, TaskCompletionSource tcs)
-        {
-            try
-            {
-                await WriteAsync(buffer, offset, count);
-                tcs.TrySetResult();
-            }
-            catch (Exception ex)
-            {
-                tcs.TrySetException(ex);
-            }
-
-            if (callback != null)
-            {
-                // Offload callbacks to avoid stack dives on sync completions.
-                var ignored = Task.Run(() =>
-                {
-                    try
-                    {
-                        callback(tcs.Task);
-                    }
-                    catch (Exception)
-                    {
-                        // Suppress exceptions on background threads.
-                    }
-                });
-            }
+            return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
         }
 
         public override void EndWrite(IAsyncResult asyncResult)
         {
-            if (asyncResult == null)
-            {
-                throw new ArgumentNullException(nameof(asyncResult));
-            }
-
-            var task = (Task)asyncResult;
-            task.GetAwaiter().GetResult();
+            TaskToApm.End(asyncResult);
         }
 
-#if NETCOREAPP
         public override void Write(ReadOnlySpan<byte> span)
         {
             var remaining = _limit - _bytesWritten;
@@ -162,7 +127,6 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             _innerStream.Write(span);
         }
-#endif
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
@@ -300,10 +264,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             if (_currentSegment != null)
             {
                 // We're adding a segment to the list
-                if (_completedSegments == null)
-                {
-                    _completedSegments = new List<CompletedBuffer>();
-                }
+                // Initial size is limit / minimumSegmentSsize as that's the maximum size of this list.
+                // Round down because the last segment is in a field.
+                _completedSegments ??= new List<CompletedBuffer>(_limit / _minimumSegmentSize);
 
                 // Position might be less than the segment length if there wasn't enough space to satisfy the sizeHint when
                 // GetMemory was called. In that case we'll take the current segment and call it "completed", but need to
@@ -361,7 +324,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 return "";
             }
 
-            var result = new byte[_bytesWritten];
+            var ros = new ReadOnlySequence<byte>();
 
             var totalWritten = 0;
 
@@ -381,7 +344,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             _currentSegment.AsSpan(0, _position).CopyTo(result.AsSpan(totalWritten));
 
             // If encoding is nullable
-            return encoding.GetString(result);
+            return encoding.GetString(ros);
         }
 
         public void CopyTo(Span<byte> span)

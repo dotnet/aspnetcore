@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -19,12 +20,14 @@ namespace Microsoft.AspNetCore.HttpLogging
     /// <summary>
     /// Middleware that logs HTTP requests and HTTP responses.
     /// </summary>
-    public class HttpLoggingMiddleware
+    internal sealed class HttpLoggingMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
         private HttpLoggingOptions _options;
         private const int PipeThreshold = 32 * 1024;
+        private const int DefaultRequestFieldsMinusHeaders = 7;
+        private const int DefaultResponseFieldsMinusHeaders = 2;
 
         /// <summary>
         /// Initializes <see cref="HttpLoggingMiddleware" />.
@@ -60,34 +63,33 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             if ((HttpLoggingFields.Request & _options.LoggingFields) != HttpLoggingFields.None)
             {
-                var list = new List<KeyValuePair<string, object?>>();
-
                 var request = context.Request;
+                var list = new List<KeyValuePair<string, object?>>(request.Headers.Count + DefaultRequestFieldsMinusHeaders);
 
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.Protocol))
                 {
-                    list.Add(new KeyValuePair<string, object?>(nameof(request.Protocol), request.Protocol));
+                    AddToList(list, nameof(request.Protocol), request.Protocol);
                 }
 
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.Method))
                 {
-                    list.Add(new KeyValuePair<string, object?>(nameof(request.Method), request.Method));
+                    AddToList(list, nameof(request.Method), request.Method);
                 }
 
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.Scheme))
                 {
-                    list.Add(new KeyValuePair<string, object?>(nameof(request.Scheme), request.Scheme));
+                    AddToList(list, nameof(request.Scheme), request.Scheme);
                 }
 
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.Path))
                 {
-                    list.Add(new KeyValuePair<string, object?>(nameof(request.PathBase), request.PathBase.Value));
-                    list.Add(new KeyValuePair<string, object?>(nameof(request.Path), request.Path.Value));
+                    AddToList(list, nameof(request.PathBase), request.PathBase);
+                    AddToList(list, nameof(request.Path), request.Path);
                 }
 
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.Query))
                 {
-                    list.Add(new KeyValuePair<string, object?>(nameof(request.QueryString), request.QueryString.Value));
+                    AddToList(list, nameof(request.QueryString), request.QueryString.Value);
                 }
 
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
@@ -134,7 +136,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             try
             {
                 await _next(context).ConfigureAwait(false);
-                var list = new List<KeyValuePair<string, object?>>();
+                var list = new List<KeyValuePair<string, object?>>(response.Headers.Count + DefaultResponseFieldsMinusHeaders);
 
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.StatusCode))
                 {
@@ -164,14 +166,16 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
                 {
-                    if (bufferingStream != null)
-                    {
-                        bufferingStream.Dispose();
-                    }
+                    bufferingStream?.Dispose();
 
                     context.Features.Set(originalBodyFeature);
                 }
             }
+        }
+
+        private static void AddToList(List<KeyValuePair<string, object?>> list, string key, string? value)
+        {
+            list.Add(new KeyValuePair<string, object?>(key, value));
         }
 
         private bool IsSupportedMediaType(string contentType)
@@ -266,6 +270,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         var read = await request.Body.ReadAsync(buffer, count, limit - count);
                         count += read;
+
+                        Debug.Assert(count <= limit);
                         if (read == 0 || count == limit)
                         {
                             break;

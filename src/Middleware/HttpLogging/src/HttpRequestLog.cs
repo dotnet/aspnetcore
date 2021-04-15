@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal class HttpRequestLog : IReadOnlyList<KeyValuePair<string, object?>>
+    internal sealed class HttpRequestLog : IReadOnlyList<KeyValuePair<string, object?>>
     {
         private readonly List<KeyValuePair<string, object?>> _keyValues;
         private string? _cachedToString;

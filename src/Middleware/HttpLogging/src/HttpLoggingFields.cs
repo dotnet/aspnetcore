@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     /// Logging enum to enable different request and response logging fields.
     /// </summary>
     [Flags]
-    public enum HttpLoggingFields
+    public enum HttpLoggingFields : long
     {
         /// <summary>
         /// None

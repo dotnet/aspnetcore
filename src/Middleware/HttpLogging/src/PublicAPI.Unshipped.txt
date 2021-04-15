@@ -1,6 +1,5 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.HttpLoggingBuilderExtensions
-Microsoft.AspNetCore.Builder.HttpLoggingServicesExtensions
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Request | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Response -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Method = 8 -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
@@ -19,11 +18,9 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseHeaders = 128 -> Micr
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponsePropertiesAndHeaders = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.StatusCode | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseHeaders -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Scheme = 16 -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.StatusCode = 32 -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
-Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware
-Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.AllowedRequestHeaders.get -> System.Collections.Generic.ISet<string!>!
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.AllowedResponseHeaders.get -> System.Collections.Generic.ISet<string!>!
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.AllowedRequestHeaders.get -> System.Collections.Generic.HashSet<string!>!
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.AllowedResponseHeaders.get -> System.Collections.Generic.HashSet<string!>!
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.BodyEncoding.get -> System.Text.Encoding?
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.BodyEncoding.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.HttpLoggingOptions() -> void
@@ -38,8 +35,4 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseBodyLogLimit.set -> 
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.SupportedMediaTypes.get -> System.Collections.Generic.List<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!>?
 Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions
 static Microsoft.AspNetCore.Builder.HttpLoggingBuilderExtensions.UseHttpLogging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.HttpLoggingServicesExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.AspNetCore.Builder.HttpLoggingServicesExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-~Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware.HttpLoggingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
