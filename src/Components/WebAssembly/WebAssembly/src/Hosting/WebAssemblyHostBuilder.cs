@@ -36,7 +36,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         /// <param name="args">The argument passed to the application's main method.</param>
         /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
-        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(EntrypointInvoker))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(JSInteropMethods))]
         [DynamicDependency(JsonSerialized, typeof(WebEventDescriptor))]
         public static WebAssemblyHostBuilder CreateDefault(string[]? args = default)
@@ -45,6 +44,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // here so that it shows up this way in the project templates.
             args ??= Array.Empty<string>();
             var builder = new WebAssemblyHostBuilder(DefaultWebAssemblyJSRuntime.Instance);
+
+            WebAssemblyCultureProvider.Initialize();
 
             // Right now we don't have conventions or behaviors that are specific to this method
             // however, making this the default for the template allows us to add things like that

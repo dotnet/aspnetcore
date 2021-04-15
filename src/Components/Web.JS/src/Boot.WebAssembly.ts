@@ -119,7 +119,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
 
   // Start up the application
-  platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly);
+  await platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly);
 }
 
 function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any): any {
