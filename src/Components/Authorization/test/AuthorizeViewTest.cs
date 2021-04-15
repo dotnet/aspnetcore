@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Components.Authorization
         }
 
         [Fact]
-        public void RendersAuthorizingWhenAuthenticationIsCompletedBeforehandAndAuthorizationIsAsync()
+        public void RendersAuthorizingUntilAuthorizationCompletedAsync()
         {
             // Covers https://github.com/dotnet/aspnetcore/pull/31794
             // Arrange
