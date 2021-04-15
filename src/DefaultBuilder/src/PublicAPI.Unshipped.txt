@@ -10,6 +10,7 @@ Microsoft.AspNetCore.Builder.WebApplication.Addresses.get -> System.Collections.
 Microsoft.AspNetCore.Builder.WebApplication.ApplicationLifetime.get -> Microsoft.Extensions.Hosting.IHostApplicationLifetime!
 Microsoft.AspNetCore.Builder.WebApplication.Configuration.get -> Microsoft.Extensions.Configuration.IConfiguration!
 Microsoft.AspNetCore.Builder.WebApplication.Dispose() -> void
+Microsoft.AspNetCore.Builder.WebApplication.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Builder.WebApplication.Environment.get -> Microsoft.AspNetCore.Hosting.IWebHostEnvironment!
 Microsoft.AspNetCore.Builder.WebApplication.Listen(params string![]! urls) -> void
 Microsoft.AspNetCore.Builder.WebApplication.Logger.get -> Microsoft.Extensions.Logging.ILogger!

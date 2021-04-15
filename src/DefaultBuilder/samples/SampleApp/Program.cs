@@ -17,7 +17,7 @@ namespace SampleApp
     {
         public static async Task Main(string[] args)
         {
-            using var webApp = WebApplication.Create(args);
+            await using var webApp = WebApplication.Create(args);
 
             webApp.MapGet("/", (Func<string>)(() => "Hello, World!"));
 
