@@ -17,10 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal static class StringUtilities
     {
-        private static readonly SpanAction<char, IntPtr> s_getAsciiOrUtf8StringNonNullCharacters = GetAsciiStringNonNullCharacters;
-
-        private static string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span, Encoding defaultEncoding)
-            => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span, defaultEncoding);
+        private static readonly SpanAction<char, IntPtr> s_getAsciiOrUTF8StringNonNullCharacters = GetAsciiStringNonNullCharactersWithMarker;
 
         public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span, Encoding defaultEncoding)
         {
@@ -31,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             fixed (byte* source = &MemoryMarshal.GetReference(span))
             {
-                var resultString = string.Create(span.Length, new IntPtr(source), s_getAsciiOrUtf8StringNonNullCharacters);
+                var resultString = string.Create(span.Length, (IntPtr)source, s_getAsciiOrUTF8StringNonNullCharacters);
 
                 // If resultString is marked, perform UTF-8 encoding
                 if (resultString[0] == '\0')
@@ -56,11 +53,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
+        private static unsafe void GetAsciiStringNonNullCharactersWithMarker(Span<char> buffer, IntPtr state)
         {
             fixed (char* output = &MemoryMarshal.GetReference(buffer))
             {
-                // This version if AsciiUtilities returns false if there are any null ('\0') or non-Ascii
+                // This version of AsciiUtilities returns false if there are any null ('\0') or non-Ascii
                 // character (> 127) in the string.
                 if (!TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
                 {
@@ -70,6 +67,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
+        private static readonly SpanAction<char, IntPtr> s_getAsciiStringNonNullCharacters = GetAsciiStringNonNullCharacters;
+
+        public static unsafe string GetAsciiStringNonNullCharacters(this ReadOnlySpan<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            fixed (byte* source = &MemoryMarshal.GetReference(span))
+            {
+                return string.Create(span.Length, (IntPtr)source, s_getAsciiStringNonNullCharacters);
+            }
+        }
+
+        private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
+        {
+            fixed (char* output = &MemoryMarshal.GetReference(buffer))
+            {
+                // This version of AsciiUtilities returns false if there are any null ('\0') or non-Ascii
+                // character (> 127) in the string.
+                if (!TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+        }
+
+        private static readonly SpanAction<char, IntPtr> s_getLatin1StringNonNullCharacters = GetLatin1StringNonNullCharacters;
+
         public static unsafe string GetLatin1StringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
@@ -77,20 +104,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return string.Empty;
             }
 
-            var resultString = new string('\0', span.Length);
-
-            fixed (char* output = resultString)
-            fixed (byte* buffer = span)
+            fixed (byte* source = &MemoryMarshal.GetReference(span))
             {
-                // This returns false if there are any null (0 byte) characters in the string.
-                if (!TryGetLatin1String(buffer, output, span.Length))
+                return string.Create(span.Length, (IntPtr)source, s_getLatin1StringNonNullCharacters);
+            }
+        }
+
+        private static unsafe void GetLatin1StringNonNullCharacters(Span<char> buffer, IntPtr state)
+        {
+            fixed (char* output = &MemoryMarshal.GetReference(buffer))
+            {
+                if (!TryGetLatin1String((byte*)state.ToPointer(), output, buffer.Length))
                 {
                     // null characters are considered invalid
                     throw new InvalidOperationException();
                 }
             }
-
-            return resultString;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -299,7 +328,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // If Vector not-accelerated or remaining less than vector size
                 if (!Vector.IsHardwareAccelerated || input > end - Vector<sbyte>.Count)
                 {
-                    if (IntPtr.Size == 8) // Use Intrinsic switch for branch elimination
+                    if (Environment.Is64BitProcess) // Use Intrinsic switch for branch elimination
                     {
                         // 64-bit: Loop longs by default
                         while (input <= end - sizeof(long))
@@ -403,10 +432,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 goto NotEqual;
             }
 
-            // Use IntPtr values rather than int, to avoid unnecessary 32 -> 64 movs on 64-bit.
-            // Unfortunately this means we also need to cast to byte* for comparisons as IntPtr doesn't
-            // support operator comparisons (e.g. <=, >, etc).
-            //
             // Note: Pointer comparison is unsigned, so we use the compare pattern (offset + length <= count)
             // rather than (offset <= count - length) which we'd do with signed comparison to avoid overflow.
             // This isn't problematic as we know the maximum length is max string length (from test above)
@@ -666,6 +691,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return false;
             }
         }
+
         private static readonly SpanAction<char, (string? str, char separator, uint number)> s_populateSpanWithHexSuffix = PopulateSpanWithHexSuffix;
 
         /// <summary>
