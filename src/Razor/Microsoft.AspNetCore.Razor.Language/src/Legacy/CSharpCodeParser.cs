@@ -1307,6 +1307,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // Even if an error was logged do not bail out early. If a directive was used incorrectly it doesn't mean it can't be parsed.
                     ValidateDirectiveUsage(descriptor, directiveStart);
 
+                    // Capture the last member for validating generic type constraints.
+                    // Generic type parameters are described by a member token followed by a generic constraint token.
+                    // The generic constraint token includes the 'where' keyword, the identifier it applies and the constraint list and is represented as a token list.
+                    // For the directive to be valid we need to check that the identifier for the member token matches the identifier in the generic constraint token.
+                    // Once we are parsing the constraint token we have lost "easy" access to the identifier for the member. To avoid having complex logic in the generic
+                    // constraint token parsing code, we instead keep track of the last identifier we've seen on a member token and use that information to check the
+                    // identifier for the constraint an emit a diagnostic in case they are not the same.
+                    string lastSeenMemberIdentifier = null;
+
                     for (var i = 0; i < descriptor.Tokens.Count; i++)
                     {
                         if (!At(SyntaxKind.Whitespace) &&
@@ -1401,6 +1410,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             case DirectiveTokenKind.Member:
                                 if (At(SyntaxKind.Identifier))
                                 {
+                                    lastSeenMemberIdentifier = CurrentToken.Content;
                                     AcceptAndMoveNext();
                                 }
                                 else
@@ -1470,9 +1480,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     AcceptWhile(SyntaxKind.Whitespace);
                                     // Check that the type name matches the type name before the where clause.
                                     // Find a better way to do this
-                                    if (directiveBuilder[directiveBuilder.Count - 2].ToFullString() != CurrentToken.Content)
+                                    if (!string.Equals(CurrentToken.Content, lastSeenMemberIdentifier, StringComparison.Ordinal))
                                     {
-                                        // we are at the type after the where (@typeparam TKey where TKey)
+                                        // @typeparam TKey where TValue : ...
+                                        // The type parameter in the generic type constraint 'TValue' does not match the type parameter 'TKey' defined in the directive '@typeparam'.
+                                        Context.ErrorSink.OnError(
+                                            RazorDiagnosticFactory.CreateParsing_GenericTypeParameterIdentifierMismatch(
+                                                new SourceSpan(CurrentStart, CurrentToken.Content.Length), descriptor.Directive, CurrentToken.Content, lastSeenMemberIdentifier));
+                                        builder.Add(BuildDirective());
                                         return;
                                     }
                                     else
@@ -1482,14 +1497,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     while (!At(SyntaxKind.NewLine))
                                     {
                                         AcceptAndMoveNext();
+                                        if (EndOfFile)
+                                        {
+                                            // We've reached the end of the file, which is unusual but can happen, for example if we start typing in a new file.
+                                            break;
+                                        }
                                     }
                                 }
                                 else
                                 {
                                     // TODO: Produce an actual error here
                                     Context.ErrorSink.OnError(
-                                        RazorDiagnosticFactory.CreateParsing_DirectiveExpectsCSharpAttribute(
-                                            new SourceSpan(CurrentStart, CurrentToken.Content.Length), descriptor.Directive));
+                                        RazorDiagnosticFactory.CreateParsing_UnexpectedIdentifier(
+                                            new SourceSpan(CurrentStart, CurrentToken.Content.Length),
+                                            CurrentToken.Content,
+                                            CSharpLanguageCharacteristics.GetKeyword(CSharpKeyword.Where)));
                                     builder.Add(BuildDirective());
                                     return;
                                 }

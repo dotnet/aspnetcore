@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                             // It's OK to do this since a GenericTypeParameterConstraint token is always preceded by a member token.
                             var genericTypeParamName = (DirectiveTokenIntermediateNode)parent.Children[currentIndex - 1];
                             context.CodeWriter
-                            .Write("void TypeConstraints_")
+                            .Write("void __TypeConstraints_")
                             .Write(genericTypeParamName.Content)
                             .Write("<")
                             .Write(genericTypeParamName.Content)

@@ -436,6 +436,26 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             return RazorDiagnostic.Create(Parsing_DirectiveExpectsBooleanLiteral, location, directiveName);
         }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_GenericTypeParameterIdentifierMismatch =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1039",
+                () => Resources.DirectiveGenericTypeParameterIdentifierMismatch,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_GenericTypeParameterIdentifierMismatch(SourceSpan location, string directiveName, string constraintIdentifier, string originalMember)
+        {
+            return RazorDiagnostic.Create(Parsing_GenericTypeParameterIdentifierMismatch, location, directiveName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_UnexpectedIdentifier =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1040",
+                () => Resources.ParseError_Unexpected_Identifier_At_Position,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_UnexpectedIdentifier(SourceSpan location, string content, params string [] options)
+        {
+            return RazorDiagnostic.Create(Parsing_UnexpectedIdentifier, location, content, string.Join(", ", options));
+        }
         #endregion
 
         #region Semantic Errors
