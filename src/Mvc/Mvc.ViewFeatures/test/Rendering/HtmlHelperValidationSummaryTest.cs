@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
                 var divWithAttributes = "<div attribute-name=\"HtmlEncode[[attribute-value]]\" " +
-                    "class=\"HtmlEncode[[validation-summary-valid wood smoke]]\" data-valmsg-summary=\"HtmlEncode[[true]]\"><ul>" +
+                    "class=\"HtmlEncode[[wood smoke validation-summary-valid]]\" data-valmsg-summary=\"HtmlEncode[[true]]\"><ul>" +
                     "<li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
                 var divWithMessage = "<div class=\"HtmlEncode[[validation-summary-valid]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
@@ -41,12 +41,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
                 var divWithMessageAndAttributes = "<div attribute-name=\"HtmlEncode[[attribute-value]]\" " +
-                    "class=\"HtmlEncode[[validation-summary-valid wood smoke]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                    "class=\"HtmlEncode[[wood smoke validation-summary-valid]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
                     "<span>HtmlEncode[[This is my message]]</span>" + Environment.NewLine +
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
                 var divWithH3MessageAndAttributes = "<div attribute-name=\"HtmlEncode[[attribute-value]]\" " +
-                    "class=\"HtmlEncode[[validation-summary-valid wood smoke]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                    "class=\"HtmlEncode[[wood smoke validation-summary-valid]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
                     "<h3>HtmlEncode[[This is my message]]</h3>" + Environment.NewLine +
                     "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
                     "</ul></div>";
