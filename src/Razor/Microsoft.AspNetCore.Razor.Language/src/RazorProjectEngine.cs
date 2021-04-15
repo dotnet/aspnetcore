@@ -222,9 +222,12 @@ namespace Microsoft.AspNetCore.Razor.Language
             ComponentLayoutDirective.Register(builder);
             ComponentPageDirective.Register(builder);
 
+            // Unconditionally enable the feature for the time being until we flow the SDK with the flow version
+            // into the repository.
             ComponentTypeParamDirective.Register(
                 builder,
-                supportConstraints: razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0);
+                supportConstraints: true);
+                //supportConstraints: razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0);
 
             if (razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_5_0) >= 0)
             {
