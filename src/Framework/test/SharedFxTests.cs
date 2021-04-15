@@ -32,8 +32,9 @@ namespace Microsoft.AspNetCore
             _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
                 ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
                 : Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
-            _expectedVersionFileName = ".version";
-        }
+            _expectedVersionFileName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
+                ? ".version"
+                : "Microsoft.AspNetCore.App.versions.txt";        }
 
         [Fact]
         public void SharedFrameworkContainsListedAssemblies()
@@ -243,16 +244,11 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void RuntimeListListsContainsCorrectEntries()
         {
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH")))
-            {
-                return;
-            }
-            
             var expectedAssemblies = TestData.GetSharedFxDependencies()
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .ToHashSet();
 
-            var runtimeListPath = Path.Combine(_sharedFxRoot, "data", "RuntimeList.xml");
+            var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
             AssertEx.FileExists(runtimeListPath);
 
             var runtimeListDoc = XDocument.Load(runtimeListPath);
@@ -310,7 +306,7 @@ namespace Microsoft.AspNetCore
                 return;
             }
 
-            var runtimeListPath = Path.Combine(_sharedFxRoot, "data", "RuntimeList.xml");
+            var runtimeListPath = Path.Combine(_sharedFxRoot, RuntimeList.xml");
             AssertEx.FileExists(runtimeListPath);
 
             var runtimeListDoc = XDocument.Load(runtimeListPath);
