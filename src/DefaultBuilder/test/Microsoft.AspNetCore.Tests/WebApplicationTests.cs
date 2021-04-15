@@ -118,12 +118,32 @@ namespace Microsoft.AspNetCore.Tests
             var app = WebApplication.Create();
 
             var logger = app.Services.GetRequiredService<ILogger<WebApplicationTests>>();
-            logger.LogInformation("Request starting");
+            var guid = Guid.NewGuid().ToString();
+            logger.LogInformation(guid);
 
             var events = listener.EventData.ToArray();
             Assert.Contains(events, args =>
                 args.EventSource.Name == "Microsoft-Extensions-Logging" &&
-                args.Payload.OfType<string>().Any(p => p.Contains("Request starting")));
+                args.Payload.OfType<string>().Any(p => p.Contains(guid)));
+        }
+
+        [Fact]
+        public void WebApplicationBuilder_CanClearDefaultLoggers()
+        {
+            var listener = new TestEventListener();
+            var builder = WebApplication.CreateBuilder();
+            builder.Logging.ClearProviders();
+
+            var app = builder.Build();
+
+            var logger = app.Services.GetRequiredService<ILogger<WebApplicationTests>>();
+            var guid = Guid.NewGuid().ToString();
+            logger.LogInformation(guid);
+
+            var events = listener.EventData.ToArray();
+            Assert.DoesNotContain(events, args =>
+                args.EventSource.Name == "Microsoft-Extensions-Logging" &&
+                args.Payload.OfType<string>().Any(p => p.Contains(guid)));
         }
 
         private class TestEventListener : EventListener

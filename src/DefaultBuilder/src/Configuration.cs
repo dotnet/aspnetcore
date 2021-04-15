@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Builder
     /// Configuration is mutable configuration object. It is both a configuration builder and an IConfigurationRoot. 
     /// As sources are added, it updates its current view of configuration. Once Build is called, configuration is frozen.
     /// </summary>
-    public class Configuration : IConfigurationRoot, IConfigurationBuilder
+    public sealed class Configuration : IConfigurationRoot, IConfigurationBuilder
     {
         private readonly ConfigurationBuilder _builder = new();
         private IConfigurationRoot _configuration;
