@@ -1462,7 +1462,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                                 break;
                             case DirectiveTokenKind.GenericTypeConstraint:
-                                if (At(SyntaxKind.Keyword) && CurrentToken.Content == "where")
+                                if (At(SyntaxKind.Keyword) &&
+                                    string.Equals(CurrentToken.Content, CSharpLanguageCharacteristics.GetKeyword(CSharpKeyword.Where), StringComparison.Ordinal))
                                 {
                                     // Consume the 'where' keyword plus any aditional whitespace
                                     AcceptAndMoveNext();

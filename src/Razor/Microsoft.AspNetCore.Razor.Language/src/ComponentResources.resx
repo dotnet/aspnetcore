@@ -216,6 +216,12 @@
   <data name="SplatTagHelper_Documentation" xml:space="preserve">
     <value>Merges a collection of attributes into the current element or component.</value>
   </data>
+  <data name="TypeParamDirective_Constraint_Description" xml:space="preserve">
+    <value>The constraints applied to the type parameter.</value>
+  </data>
+  <data name="TypeParamDirective_Constraint_Name" xml:space="preserve">
+    <value>type parameter constraint</value>
+  </data>
   <data name="TypeParamDirective_Description" xml:space="preserve">
     <value>Declares a generic type parameter for the generated component class.</value>
   </data>

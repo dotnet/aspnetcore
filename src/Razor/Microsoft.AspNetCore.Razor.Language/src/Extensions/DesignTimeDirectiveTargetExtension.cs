@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             if (tokenKind == DirectiveTokenKind.Attribute)
             {
                 // We don't need to do anything special here.
-                // We let the Roslyn take care of providing syntax errors for C# attributes and generic type constraints.
+                // We let the Roslyn take care of providing syntax errors for C# attributes.
                 return;
             }
 
@@ -193,14 +193,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         }
                         break;
                     case DirectiveTokenKind.GenericTypeConstraint:
+                        // We generate a generic local function with a generic parameter using the
+                        // same name and apply the constraints, like below.
+                        // The two warnings that we disable are:
+                        // * Hiding the class type parameter with the parameter on the method
+                        // * The function is defined but not used.
+                        // static void TypeConstraints_TParamName<TParamName>() where TParamName ...;
                         context.CodeWriter.WriteLine("#pragma warning disable CS0693");
                         context.CodeWriter.WriteLine("#pragma warning disable CS8321");
-                        // static void Constraints_TParamName<TParamName>() where TParamName ...;
                         using (context.CodeWriter.BuildLinePragma(node.Source, context))
                         {
-                            var genericTypeParamName = ((DirectiveTokenIntermediateNode)parent.Children[currentIndex - 1]);
+                            // It's OK to do this since a GenericTypeParameterConstraint token is always preceded by a member token.
+                            var genericTypeParamName = (DirectiveTokenIntermediateNode)parent.Children[currentIndex - 1];
                             context.CodeWriter
-                            .Write("void Constraints_")
+                            .Write("void TypeConstraints_")
                             .Write(genericTypeParamName.Content)
                             .Write("<")
                             .Write(genericTypeParamName.Content)
