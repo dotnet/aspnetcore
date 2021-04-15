@@ -55,10 +55,6 @@ export const monoPlatform: Platform = {
   },
 
   callEntryPoint: async function callEntryPoint(assemblyName: string) : Promise<any> {
-    // Currently we disregard the return value from the entrypoint, whether it's sync or async.
-    // In the future, we might want Blazor.start to return a Promise<Promise<value>>, where the
-    // outer promise reflects the startup process, and the inner one reflects the possibly-async
-    // .NET entrypoint method.
     const emptyArray = [ [ ] ];
 
     try {
