@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IHost Build()
         {
-            throw new NotSupportedException($"Call {nameof(WebApplicationBuilder)}.{nameof(WebApplicationBuilder.Build)}() instead.");
+            // HostingHostBuilderExtensions.ConfigureDefaults should never call this.
+            throw new InvalidOperationException();
         }
 
         public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
@@ -38,7 +39,12 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public IHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate) => throw new NotImplementedException();
+        public IHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate)
+        {
+            // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that could change in the future.
+            // If this does get called in the future, it should be called again at a later stage on the DeferredHostBuillder.
+            return this;
+        }
 
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
@@ -48,19 +54,22 @@ namespace Microsoft.AspNetCore.Hosting
 
         public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
         {
-            // HostingHostBuilderExtensions.ConfigureDefaults calls this via ConfigureLogging.
-            // Apparently, this just doesn't work yet. :(
-            //throw new NotImplementedException();
+            // HostingHostBuilderExtensions.ConfigureDefaults calls this via ConfigureLogging
+            // during the initial config stage. It should be called again later on the DeferredHostBuilder.
             return this;
         }
 
-        public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull => throw new NotImplementedException();
+        public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
+        {
+            // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that chould change in the future.
+            // If this does get called in the future, it should be called again at a later stage on the DeferredHostBuillder.
+            return this;
+        }
 
         public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory) where TContainerBuilder : notnull
         {
-            // HostingHostBuilderExtensions.ConfigureDefaults calls this via UseDefaultServiceProvider.
-            // Apparently, this just doesn't work yet. :(
-            //throw new NotImplementedException();
+            // HostingHostBuilderExtensions.ConfigureDefaults calls this via UseDefaultServiceProvider
+            // during the initial config stage. It should be called again later on the DeferredHostBuilder.
             return this;
         }
     }
