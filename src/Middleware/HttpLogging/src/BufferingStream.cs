@@ -73,9 +73,22 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 var ros = new ReadOnlySequence<byte>(_head, 0, _tail, _tailBytesBuffered);
 
-                var body = encoding.GetString(ros);
+                var bufferWriter = new ArrayBufferWriter<char>();
 
-                return body;
+                var decoder = encoding.GetDecoder();
+                EncodingExtensions.Convert(decoder, ros, bufferWriter, flush: false, out var charUsed, out var completed);
+
+                while (true)
+                {
+                    if (completed)
+                    {
+                        return new string(bufferWriter.WrittenSpan);
+                    }
+                    else
+                    {
+                        EncodingExtensions.Convert(decoder, ReadOnlySequence<byte>.Empty, bufferWriter, flush: true, out charUsed, out completed);
+                    }
+                }
             }
             catch (DecoderFallbackException ex)
             {
@@ -207,6 +220,11 @@ namespace Microsoft.AspNetCore.HttpLogging
             _innerStream.Flush();
         }
 
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return _innerStream.FlushAsync(cancellationToken);
+        }
+
         public override int Read(byte[] buffer, int offset, int count)
         {
             return _innerStream.Read(buffer, offset, count);
@@ -235,6 +253,51 @@ namespace Microsoft.AspNetCore.HttpLogging
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+        }
+
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+        {
+            return _innerStream.BeginRead(buffer, offset, count, callback, state);
+        }
+
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+        {
+            return _innerStream.BeginWrite(buffer, offset, count, callback, state);
+        }
+
+        public override int EndRead(IAsyncResult asyncResult)
+        {
+            return _innerStream.EndRead(asyncResult);
+        }
+
+        public override void EndWrite(IAsyncResult asyncResult)
+        {
+            _innerStream.EndWrite(asyncResult);
+        }
+
+        public override void CopyTo(Stream destination, int bufferSize)
+        {
+            _innerStream.CopyTo(destination, bufferSize);
+        }
+
+        public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+        {
+            return _innerStream.CopyToAsync(destination, bufferSize, cancellationToken);
+        }
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            return _innerStream.ReadAsync(buffer, cancellationToken);
+        }
+
+        public override ValueTask DisposeAsync()
+        {
+            return _innerStream.DisposeAsync();
+        }
+
+        public override int Read(Span<byte> buffer)
+        {
+            return _innerStream.Read(buffer);
         }
     }
 }
