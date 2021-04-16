@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace HttpLogging.Sample
@@ -18,6 +19,18 @@ namespace HttpLogging.Sample
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(logging =>
+                {
+                    // Json Logging
+                    logging.ClearProviders();
+                    logging.AddJsonConsole(options =>
+                    {
+                        options.JsonWriterOptions = new JsonWriterOptions()
+                        {
+                            Indented = true
+                        };
+                    });
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

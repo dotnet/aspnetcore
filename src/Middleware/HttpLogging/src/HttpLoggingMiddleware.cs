@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     {
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
-        private HttpLoggingOptions _options;
+        private IOptionsMonitor<HttpLoggingOptions> _options;
         private const int DefaultRequestFieldsMinusHeaders = 7;
         private const int DefaultResponseFieldsMinusHeaders = 2;
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <param name="next"></param>
         /// <param name="options"></param>
         /// <param name="loggerFactory"></param>
-        public HttpLoggingMiddleware(RequestDelegate next, IOptions<HttpLoggingOptions> options, ILoggerFactory loggerFactory)
+        public HttpLoggingMiddleware(RequestDelegate next, IOptionsMonitor<HttpLoggingOptions> options, ILoggerFactory loggerFactory)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _options = options.Value;
+            _options = options;
             _logger = loggerFactory.CreateLogger<HttpLoggingMiddleware>();
         }
 
@@ -56,57 +56,58 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// Invokes the <see cref="HttpLoggingMiddleware" />.
         /// </summary>
         /// <param name="context"></param>
-        /// <returns></returns>
+        /// <returns></returns>HttpResponseLog.cs
         public async Task Invoke(HttpContext context)
         {
+            var options = _options.CurrentValue;
             RequestBufferingStream? requestBufferingStream = null;
             Stream? originalBody = null;
-            if ((HttpLoggingFields.Request & _options.LoggingFields) != HttpLoggingFields.None)
+            if ((HttpLoggingFields.Request & options.LoggingFields) != HttpLoggingFields.None)
             {
                 var request = context.Request;
                 var list = new List<KeyValuePair<string, object?>>(
                     request.Headers.Count + DefaultRequestFieldsMinusHeaders);
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.Protocol))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.Protocol))
                 {
                     AddToList(list, nameof(request.Protocol), request.Protocol);
                 }
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.Method))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.Method))
                 {
                     AddToList(list, nameof(request.Method), request.Method);
                 }
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.Scheme))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.Scheme))
                 {
                     AddToList(list, nameof(request.Scheme), request.Scheme);
                 }
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.Path))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.Path))
                 {
                     AddToList(list, nameof(request.PathBase), request.PathBase);
                     AddToList(list, nameof(request.Path), request.Path);
                 }
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.Query))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.Query))
                 {
                     AddToList(list, nameof(request.QueryString), request.QueryString.Value);
                 }
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
                 {
-                    FilterHeaders(list, request.Headers, _options.AllowedRequestHeaders);
+                    FilterHeaders(list, request.Headers, options.AllowedRequestHeaders);
                 }
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody)
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody)
                     && MediaTypeHelpers.TryGetEncodingForMediaType(request.ContentType,
-                        _options.SupportedMediaTypes,
+                        options.SupportedMediaTypes,
                         out var encoding))
                 {
                     originalBody = request.Body;
                     requestBufferingStream = new RequestBufferingStream(
                         request.Body,
-                        _options.RequestBodyLogLimit,
+                        options.RequestBodyLogLimit,
                         _logger,
                         encoding);
                     request.Body = requestBufferingStream;
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             try
             {
-                if ((HttpLoggingFields.Response & _options.LoggingFields) == HttpLoggingFields.None)
+                if ((HttpLoggingFields.Response & options.LoggingFields) == HttpLoggingFields.None)
                 {
                     // Short circuit and don't replace response body.
                     await _next(context).ConfigureAwait(false);
@@ -136,15 +137,15 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 var response = context.Response;
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
                 {
                     originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
                     // TODO pool these.
                     responseBufferingStream = new ResponseBufferingStream(originalBodyFeature,
-                        _options.ResponseBodyLogLimit,
+                        options.ResponseBodyLogLimit,
                         _logger,
                         context,
-                        _options.SupportedMediaTypes);
+                        options.SupportedMediaTypes);
                     response.Body = responseBufferingStream;
                 }
 
@@ -152,14 +153,14 @@ namespace Microsoft.AspNetCore.HttpLogging
                 var list = new List<KeyValuePair<string, object?>>(
                     response.Headers.Count + DefaultResponseFieldsMinusHeaders);
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.StatusCode))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.StatusCode))
                 {
                     list.Add(new KeyValuePair<string, object?>(nameof(response.StatusCode), response.StatusCode));
                 }
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
                 {
-                    FilterHeaders(list, response.Headers, _options.AllowedResponseHeaders);
+                    FilterHeaders(list, response.Headers, options.AllowedResponseHeaders);
                 }
 
                 var httpResponseLog = new HttpResponseLog(list);
