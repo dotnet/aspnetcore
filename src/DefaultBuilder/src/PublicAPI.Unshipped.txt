@@ -28,7 +28,6 @@ Microsoft.AspNetCore.Builder.WebApplication.DisposeAsync() -> System.Threading.T
 Microsoft.AspNetCore.Builder.WebApplication.Environment.get -> Microsoft.AspNetCore.Hosting.IWebHostEnvironment!
 Microsoft.AspNetCore.Builder.WebApplication.Lifetime.get -> Microsoft.Extensions.Hosting.IHostApplicationLifetime!
 Microsoft.AspNetCore.Builder.WebApplication.Logger.get -> Microsoft.Extensions.Logging.ILogger!
-Microsoft.AspNetCore.Builder.WebApplication.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory!
 Microsoft.AspNetCore.Builder.WebApplication.Run() -> void
 Microsoft.AspNetCore.Builder.WebApplication.RunAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Builder.WebApplication.RunAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
