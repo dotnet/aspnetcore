@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             ContentRootPath = Directory.GetCurrentDirectory();
 
-            ApplicationName = (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? "NotFound";
+            ApplicationName = (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty;
             EnvironmentName = Environments.Production;
 
             // This feels wrong, but HostingEnvironment does the same thing.
