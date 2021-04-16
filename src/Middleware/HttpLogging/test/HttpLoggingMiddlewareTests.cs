@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task NoopWhenLoggingDisabled()
         {
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.None;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.None;
 
             var middleware = new HttpLoggingMiddleware(
                 c =>
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task RequestLogsAllRequestInfo()
         {
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.Request;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.Request;
             var middleware = new HttpLoggingMiddleware(
                 async c =>
                 {
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task RequestPropertiesLogs()
         {
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.RequestProperties;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.RequestProperties;
             var middleware = new HttpLoggingMiddleware(
                 c =>
                 {
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task RequestHeadersLogs()
         {
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.RequestHeaders;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.RequestHeaders;
             var middleware = new HttpLoggingMiddleware(
                 c =>
                 {
@@ -260,8 +260,8 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task CanConfigureRequestAllowList()
         {
             var options = CreateOptionsAccessor();
-            options.Value.AllowedRequestHeaders.Clear();
-            options.Value.AllowedRequestHeaders.Add("foo");
+            options.CurrentValue.AllowedRequestHeaders.Clear();
+            options.CurrentValue.AllowedRequestHeaders.Add("foo");
             var middleware = new HttpLoggingMiddleware(
                  c =>
                  {
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task RequestBodyReadingWorks(string expected)
         {
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.RequestBody;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         {
             var input = string.Concat(new string('a', 30000), new string('b', 3000));
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.RequestBody;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
 
             await middleware.Invoke(httpContext);
-            var expected = input.Substring(0, options.Value.ResponseBodyLogLimit);
+            var expected = input.Substring(0, options.CurrentValue.ResponseBodyLogLimit);
 
             Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
         }
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         {
             var input = string.Concat(new string('a', 60000), new string('b', 3000));
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.RequestBody;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
 
             await middleware.Invoke(httpContext);
-            var expected = input.Substring(0, options.Value.ResponseBodyLogLimit);
+            var expected = input.Substring(0, options.CurrentValue.ResponseBodyLogLimit);
 
             Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
         }
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             // media headers that should work.
             var expected = new string('a', 1000);
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.RequestBody;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             // media headers that should work.
             var expected = new string('a', 1000);
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.RequestBody;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -469,9 +469,9 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var encoding = Encoding.Unicode;
             var expected = new string('a', 1000);
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.RequestBody;
-            options.Value.SupportedMediaTypes.Clear();
-            options.Value.SupportedMediaTypes.Add(
+            options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+            options.CurrentValue.SupportedMediaTypes.Clear();
+            options.CurrentValue.SupportedMediaTypes.Add(
                 new KeyValuePair<MediaTypeHeaderValue, Encoding>(
                     new MediaTypeHeaderValue("text/plain"),
                     encoding));
@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task ResponseInfoLogsAll()
         {
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.Response;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -557,7 +557,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task StatusCodeLogs()
         {
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.StatusCode;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.StatusCode;
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -582,7 +582,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task ResponseHeadersLogs()
         {
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.ResponseHeaders;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseHeaders;
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -607,7 +607,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task ResponseHeadersRedacted()
         {
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.ResponseHeaders;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseHeaders;
 
             var middleware = new HttpLoggingMiddleware(
                 c =>
@@ -628,9 +628,9 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task AllowedResponseHeadersModify()
         {
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.ResponseHeaders;
-            options.Value.AllowedResponseHeaders.Clear();
-            options.Value.AllowedResponseHeaders.Add("Test");
+            options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseHeaders;
+            options.CurrentValue.AllowedResponseHeaders.Clear();
+            options.CurrentValue.AllowedResponseHeaders.Add("Test");
 
             var middleware = new HttpLoggingMiddleware(
                 c =>
@@ -654,7 +654,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task ResponseBodyWritingWorks(string expected)
         {
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.ResponseBody;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
             var middleware = new HttpLoggingMiddleware(
                 c =>
                 {
@@ -676,7 +676,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         {
             var input = string.Concat(new string('a', 30000), new string('b', 3000));
             var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.ResponseBody;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
             var middleware = new HttpLoggingMiddleware(
                 c =>
                 {
@@ -690,14 +690,14 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             await middleware.Invoke(httpContext);
 
-            var expected = input.Substring(0, options.Value.ResponseBodyLogLimit);
+            var expected = input.Substring(0, options.CurrentValue.ResponseBodyLogLimit);
             Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
         }
 
-        private IOptions<HttpLoggingOptions> CreateOptionsAccessor()
+        private IOptionsMonitor<HttpLoggingOptions> CreateOptionsAccessor()
         {
             var options = new HttpLoggingOptions();
-            var optionsAccessor = Mock.Of<IOptions<HttpLoggingOptions>>(o => o.Value == options);
+            var optionsAccessor = Mock.Of<IOptionsMonitor<HttpLoggingOptions>>(o => o.CurrentValue == options);
             return optionsAccessor;
         }
 

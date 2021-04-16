@@ -38,6 +38,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 var builder = new StringBuilder();
                 var count = _keyValues.Count;
+                builder.Append("Response:");
+                builder.Append(Environment.NewLine);
 
                 for (var i = 0; i < count - 1; i++)
                 {
