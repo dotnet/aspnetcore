@@ -33,7 +33,8 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         public override string ToString()
-        {if (_cachedToString == null)
+        {
+            if (_cachedToString == null)
             {
                 var builder = new StringBuilder();
                 var count = _keyValues.Count;

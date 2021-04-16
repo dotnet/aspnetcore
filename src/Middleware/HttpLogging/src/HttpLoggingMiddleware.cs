@@ -35,7 +35,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <param name="options"></param>
         /// <param name="loggerFactory"></param>
         public HttpLoggingMiddleware(RequestDelegate next, IOptions<HttpLoggingOptions> options, ILoggerFactory loggerFactory)
-
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
 
