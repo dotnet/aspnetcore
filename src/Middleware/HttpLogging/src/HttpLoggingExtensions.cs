@@ -8,8 +8,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 {
     internal static class HttpLoggingExtensions
     {
-        static HttpLoggingExtensions()
-        {
-        }
+        private static readonly Action<ILogger, string, Exception?> _requestBody =
+            LoggerMessage.Define<string>(LogLevel.Information, LoggerEventIds.RequestBody, "RequestBody: {Body}");
+
+        private static readonly Action<ILogger, string, Exception?> _responseBody =
+            LoggerMessage.Define<string>(LogLevel.Information, LoggerEventIds.ResponseBody, "ResponseBody: {Body}");
+
+        public static void RequestBody(this ILogger logger, string body) => _requestBody(logger, body, null);
+        public static void ResponseBody(this ILogger logger, string body) => _responseBody(logger, body, null);
     }
 }

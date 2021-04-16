@@ -1,15 +1,18 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Net.Http.Headers;
+using static Microsoft.AspNetCore.HttpLogging.MediaTypeOptions;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
     internal static class MediaTypeHelpers
     {
-        private static List<Encoding> SupportedEncodings = new List<Encoding>()
+        private static readonly List<Encoding> SupportedEncodings = new List<Encoding>()
         {
             Encoding.UTF8,
             Encoding.Unicode,
@@ -17,7 +20,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             Encoding.Latin1 // TODO allowed by default? Make this configurable?
         };
 
-        public static bool TryGetEncodingForMediaType(string contentType, List<KeyValuePair<MediaTypeHeaderValue, Encoding>> mediaTypeList, out Encoding? encoding)
+        public static bool TryGetEncodingForMediaType(string contentType, List<MediaTypeState> mediaTypeList, [NotNullWhen(true)] out Encoding? encoding)
         {
             encoding = null;
             if (mediaTypeList == null || mediaTypeList.Count == 0 || string.IsNullOrEmpty(contentType))
@@ -48,12 +51,13 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
             else
             {
-                foreach (var kvp in mediaTypeList)
+                // TODO Binary format https://github.com/dotnet/aspnetcore/issues/31884
+                foreach (var state in mediaTypeList)
                 {
-                    var type = kvp.Key;
-                    if (mediaType.IsSubsetOf(type))
+                    var type = state.MediaTypeHeaderValue;
+                    if (type.MatchesMediaType(mediaType.MediaType))
                     {
-                        encoding = kvp.Value;
+                        encoding = state.Encoding!;
                         return true;
                     }
                 }

@@ -15,23 +15,21 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using static Microsoft.AspNetCore.HttpLogging.MediaTypeOptions;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
     /// <summary>
     /// Stream that buffers reads 
     /// </summary>
-    internal class ResponseBufferingStream : BufferingStream, IHttpResponseBodyFeature
+    internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBodyFeature
     {
-        private const int MinimumBufferSize = 4096; // 4K
-
         private readonly IHttpResponseBodyFeature _innerBodyFeature;
-        private readonly Stream _innerStream;
         private readonly int _limit;
         private PipeWriter? _pipeAdapter;
 
         private readonly HttpContext _context;
-        private readonly List<KeyValuePair<MediaTypeHeaderValue, Encoding>> _encodings;
+        private readonly List<MediaTypeState> _encodings;
 
         private Encoding? _encoding;
         private bool _hasCheckedEncoding;
@@ -39,32 +37,16 @@ namespace Microsoft.AspNetCore.HttpLogging
         private static readonly StreamPipeWriterOptions _pipeWriterOptions = new StreamPipeWriterOptions(leaveOpen: true);
 
         internal ResponseBufferingStream(IHttpResponseBodyFeature innerBodyFeature,
-            int limit, ILogger logger,
+            int limit,
             HttpContext context,
-            List<KeyValuePair<MediaTypeHeaderValue, Encoding>> encodings)
-            : base (logger)
+            List<MediaTypeState> encodings)
+            : base(innerBodyFeature.Stream)
         {
-            // TODO need first write event
             _innerBodyFeature = innerBodyFeature;
             _innerStream = innerBodyFeature.Stream;
             _limit = limit;
             _context = context;
             _encodings = encodings;
-        }
-
-        public override bool CanRead => false;
-        public override bool CanSeek => false;
-        public override bool CanWrite => _innerStream.CanWrite;
-
-        public override long Length
-        {
-            get { throw new NotSupportedException(); }
-        }
-
-        public override long Position
-        {
-            get { throw new NotSupportedException(); }
-            set { throw new NotSupportedException(); }
         }
 
         public Stream Stream => this;
@@ -83,31 +65,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         }
 
         public Encoding? Encoding { get => _encoding; }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            throw new NotSupportedException();
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotSupportedException();
-        }
-
-        public override void SetLength(long value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public override void Flush()
-        {
-            _innerStream.Flush();
-        }
-
-        public override Task FlushAsync(CancellationToken cancellationToken)
-        {
-            return _innerStream.FlushAsync(cancellationToken);
-        }
 
         public override void Write(byte[] buffer, int offset, int count)
         {

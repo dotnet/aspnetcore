@@ -3,62 +3,81 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
     internal class BufferingStream : Stream, IBufferWriter<byte>
     {
         private const int MinimumBufferSize = 4096; // 4K
-        private readonly ILogger _logger;
         protected int _bytesWritten;
         private BufferSegment? _head;
         private BufferSegment? _tail;
         protected Memory<byte> _tailMemory; // remainder of tail memory
         protected int _tailBytesBuffered;
 
-        public BufferingStream(ILogger logger)
+        protected Stream _innerStream;
+
+        public BufferingStream(Stream innerStream)
         {
-            _logger = logger;
+            _innerStream = innerStream;
         }
 
-        public override bool CanRead => throw new NotImplementedException();
+        public override bool CanSeek => _innerStream.CanSeek;
 
-        public override bool CanSeek => throw new NotImplementedException();
+        public override bool CanRead => _innerStream.CanRead;
 
-        public override bool CanWrite => throw new NotImplementedException();
+        public override bool CanWrite => _innerStream.CanWrite;
 
-        public override long Length => throw new NotImplementedException();
+        public override long Length => _innerStream.Length;
 
-        public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        public void LogString(Encoding? encoding, EventId eventId, string template)
+        public override long Position
         {
-            if (_head == null || _tail == null || encoding == null)
+            get => _innerStream.Position;
+            set => _innerStream.Position = value;
+        }
+
+        public override int WriteTimeout
+        {
+            get => _innerStream.WriteTimeout;
+            set => _innerStream.WriteTimeout = value;
+        }
+
+        public string GetString(Encoding? encoding)
+        {
+            try
             {
-                return;
+                if (_head == null || _tail == null || encoding == null)
+                {
+                    return "";
+                }
+
+                // Only place where we are actually using the buffered data.
+                // update tail here.
+                _tail.End = _tailBytesBuffered;
+
+                var ros = new ReadOnlySequence<byte>(_head, 0, _tail, _tailBytesBuffered);
+
+                // TODO make sure this doesn't truncate.
+                var body = encoding.GetString(ros);
+
+                return body;
             }
-
-            // Only place where we are actually using the buffered data.
-            // update tail here.
-            _tail.End = _tailBytesBuffered;
-
-            var ros = new ReadOnlySequence<byte>(_head, 0, _tail, _tailBytesBuffered);
-
-            // If encoding is nullable
-            // TODO make sure this doesn't truncate.
-            var body = encoding.GetString(ros);
-            _logger.LogInformation(eventId, template, body);
-
-            Reset();
+            catch (DecoderFallbackException)
+            {
+                // TODO log
+                return "";
+            }
+            finally
+            {
+                Reset();
+            }
         }
 
         public void Advance(int bytes)
@@ -75,21 +94,21 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
-            AllocateMemoryUnsynchronized(sizeHint);
+            AllocateMemory(sizeHint);
             return _tailMemory;
         }
 
         public Span<byte> GetSpan(int sizeHint = 0)
         {
-            AllocateMemoryUnsynchronized(sizeHint);
+            AllocateMemory(sizeHint);
             return _tailMemory.Span;
         }
-        private void AllocateMemoryUnsynchronized(int sizeHint)
+        private void AllocateMemory(int sizeHint)
         {
             if (_head == null)
             {
                 // We need to allocate memory to write since nobody has written before
-                BufferSegment newSegment = AllocateSegmentUnsynchronized(sizeHint);
+                BufferSegment newSegment = AllocateSegment(sizeHint);
 
                 // Set all the pointers
                 _head = _tail = newSegment;
@@ -110,7 +129,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                         _tailBytesBuffered = 0;
                     }
 
-                    BufferSegment newSegment = AllocateSegmentUnsynchronized(sizeHint);
+                    BufferSegment newSegment = AllocateSegment(sizeHint);
 
                     _tail.SetNext(newSegment);
                     _tail = newSegment;
@@ -118,9 +137,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
-        private BufferSegment AllocateSegmentUnsynchronized(int sizeHint)
+        private BufferSegment AllocateSegment(int sizeHint)
         {
-            BufferSegment newSegment = CreateSegmentUnsynchronized();
+            BufferSegment newSegment = CreateSegment();
 
             // We can't use the recommended pool so use the ArrayPool
             newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(GetSegmentSize(sizeHint)));
@@ -130,7 +149,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             return newSegment;
         }
 
-        private BufferSegment CreateSegmentUnsynchronized()
+        private BufferSegment CreateSegment()
         {
             return new BufferSegment();
         }
@@ -177,27 +196,37 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public override void Flush()
         {
-            throw new NotImplementedException();
+            _innerStream.Flush();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            return _innerStream.Read(buffer, offset, count);
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotImplementedException();
+            return _innerStream.Seek(offset, origin);
         }
 
         public override void SetLength(long value)
         {
-            throw new NotImplementedException();
+            _innerStream.SetLength(value);
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotImplementedException();
+            _innerStream.Write(buffer, offset, count);
+        }
+
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
     }
 }

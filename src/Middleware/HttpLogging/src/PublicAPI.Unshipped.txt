@@ -24,20 +24,20 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.HttpLoggingOptions() -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.MediaTypeOptions.get -> Microsoft.AspNetCore.HttpLogging.MediaTypeOptions!
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestHeaders.get -> System.Collections.Generic.ISet<string!>!
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseHeaders.get -> System.Collections.Generic.ISet<string!>!
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.SupportedMediaTypes.get -> System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!, System.Text.Encoding!>>!
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddBinary(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! mediaType) -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddBinary(string! contentType) -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddText(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! mediaType) -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddText(string! contentType) -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddText(string! contentType, System.Text.Encoding! encoding) -> void
+Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.Clear() -> void
 Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions
 static Microsoft.AspNetCore.Builder.HttpLoggingBuilderExtensions.UseHttpLogging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.Default -> Microsoft.AspNetCore.HttpLogging.MediaTypeOptions!
 static Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

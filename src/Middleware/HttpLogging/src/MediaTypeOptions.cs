@@ -10,14 +10,8 @@ namespace Microsoft.AspNetCore.HttpLogging
     /// <summary>
     /// Options for HttpLogging to configure which encoding to use for each media type.
     /// </summary>
-    public class MediaTypeOptions
+    public sealed class MediaTypeOptions
     {
-        /// <summary>
-        /// Default MediaTypes. Defaults to UTF8 for application/json, application/*+json,
-        /// application/xml, application/*+xml, and text/*.
-        /// </summary>
-        public static MediaTypeOptions Default = BuildDefaultMediaTypeOptions();
-
         private List<MediaTypeState> _mediaTypeStates = new List<MediaTypeState>();
 
         internal MediaTypeOptions()
@@ -97,12 +91,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <param name="mediaType">The MediaType to add.</param>
         public void AddBinary(MediaTypeHeaderValue mediaType)
         {
-            if (mediaType == null)
-            {
-                throw new ArgumentNullException(nameof(mediaType));
-            }
-
-            _mediaTypeStates.Add(new MediaTypeState(mediaType) { IsBinary = true });
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -111,12 +100,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <param name="contentType">The content type to add.</param>
         public void AddBinary(string contentType)
         {
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
-            }
-
-            AddBinary(new MediaTypeHeaderValue(contentType));
+            throw new NotSupportedException();
         }
 
         /// <summary>

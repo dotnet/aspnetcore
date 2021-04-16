@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <remarks>
         /// If the request or response do not match the supported media type, the response body will not be logged.
         /// </remarks>
-        public MediaTypeOptions MediaTypeOptions { get; } = MediaTypeOptions.Default;
+        public MediaTypeOptions MediaTypeOptions { get; } = MediaTypeOptions.BuildDefaultMediaTypeOptions();
 
         /// <summary>
         /// Maximum request body size to log (in bytes). Defaults to 32 KB.

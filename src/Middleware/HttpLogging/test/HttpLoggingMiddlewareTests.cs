@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -35,14 +36,17 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         [Fact]
         public void Ctor_ThrowsExceptionsWhenNullArgs()
         {
-            Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(null, CreateOptionsAccessor(), LoggerFactory));
+            Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(
+                null,
+                CreateOptionsAccessor(),
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>()));
 
             Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
             {
                 return Task.CompletedTask;
             },
             null,
-            LoggerFactory));
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>()));
 
             Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
             {
@@ -65,7 +69,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     return Task.CompletedTask;
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -95,12 +99,20 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task DefaultRequestInfoOnlyHeadersAndRequestInfo()
         {
             var middleware = new HttpLoggingMiddleware(
-                c =>
+                async c =>
                 {
-                    return Task.CompletedTask;
+                    var arr = new byte[4096];
+                    while (true)
+                    {
+                        var res = await c.Request.Body.ReadAsync(arr);
+                        if (res == 0)
+                        {
+                            break;
+                        }
+                    }
                 },
                 CreateOptionsAccessor(),
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -143,7 +155,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     }
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -173,12 +185,20 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var options = CreateOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestProperties;
             var middleware = new HttpLoggingMiddleware(
-                c =>
+                async c =>
                 {
-                    return Task.CompletedTask;
+                    var arr = new byte[4096];
+                    while (true)
+                    {
+                        var res = await c.Request.Body.ReadAsync(arr);
+                        if (res == 0)
+                        {
+                            break;
+                        }
+                    }
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -208,12 +228,20 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var options = CreateOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestHeaders;
             var middleware = new HttpLoggingMiddleware(
-                c =>
+                async c =>
                 {
-                    return Task.CompletedTask;
+                    var arr = new byte[4096];
+                    while (true)
+                    {
+                        var res = await c.Request.Body.ReadAsync(arr);
+                        if (res == 0)
+                        {
+                            break;
+                        }
+                    }
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Protocol = "HTTP/1.0";
@@ -241,12 +269,20 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task UnknownRequestHeadersRedacted()
         {
             var middleware = new HttpLoggingMiddleware(
-                c =>
+                async c =>
                 {
-                    return Task.CompletedTask;
+                    var arr = new byte[4096];
+                    while (true)
+                    {
+                        var res = await c.Request.Body.ReadAsync(arr);
+                        if (res == 0)
+                        {
+                            break;
+                        }
+                    }
                 },
                 CreateOptionsAccessor(),
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
 
@@ -254,6 +290,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             await middleware.Invoke(httpContext);
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("foo: X"));
+            Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("foo: bar"));
         }
 
         [Fact]
@@ -268,7 +305,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                      return Task.CompletedTask;
                  },
                  options,
-                 LoggerFactory);
+                 LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
 
@@ -279,7 +316,9 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             await middleware.Invoke(httpContext);
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("foo: bar"));
+            Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("foo: X"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: X"));
+            Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
         }
 
         [Theory]
@@ -303,7 +342,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     }
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -316,39 +355,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
         [Fact]
         public async Task RequestBodyReadingLimitWorks()
-        {
-            var input = string.Concat(new string('a', 30000), new string('b', 3000));
-            var options = CreateOptionsAccessor();
-            options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
-
-            var middleware = new HttpLoggingMiddleware(
-                async c =>
-                {
-                    var arr = new byte[4096];
-                    while (true)
-                    {
-                        var res = await c.Request.Body.ReadAsync(arr);
-                        if (res == 0)
-                        {
-                            break;
-                        }
-                    }
-                },
-                options,
-                LoggerFactory);
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.ContentType = "text/plain";
-            httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
-
-            await middleware.Invoke(httpContext);
-            var expected = input.Substring(0, options.CurrentValue.ResponseBodyLogLimit);
-
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
-        }
-
-        [Fact]
-        public async Task RequestBodyReadingLimitGreaterThanPipeWorks()
         {
             var input = string.Concat(new string('a', 60000), new string('b', 3000));
             var options = CreateOptionsAccessor();
@@ -372,7 +378,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     Assert.Equal(63000, count);
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -381,7 +387,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             await middleware.Invoke(httpContext);
             var expected = input.Substring(0, options.CurrentValue.ResponseBodyLogLimit);
 
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
+            Assert.Contains(TestSink.Writes, w => w.Message.Equals("RequestBody: " + expected));
         }
 
         [Theory]
@@ -412,7 +418,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     }
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = contentType;
@@ -452,7 +458,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     Assert.Equal(1000, count);
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = contentType;
@@ -491,7 +497,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     Assert.Equal(2000, count);
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "text/plain";
@@ -514,7 +520,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     await c.Response.WriteAsync("test");
                 },
                 CreateOptionsAccessor(),
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
 
@@ -539,7 +545,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     await c.Response.WriteAsync("test");
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
 
@@ -565,7 +571,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     await c.Response.WriteAsync("test");
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
 
@@ -590,7 +596,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     await c.Response.WriteAsync("test");
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
 
@@ -613,7 +619,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     return Task.CompletedTask;
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
 
@@ -637,7 +643,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     return Task.CompletedTask;
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
 
@@ -659,7 +665,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     return c.Response.WriteAsync(expected);
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
 
@@ -681,7 +687,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     return c.Response.WriteAsync(input);
                 },
                 options,
-                LoggerFactory);
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
 
             var httpContext = new DefaultHttpContext();
 
@@ -696,59 +702,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var options = new HttpLoggingOptions();
             var optionsAccessor = Mock.Of<IOptionsMonitor<HttpLoggingOptions>>(o => o.CurrentValue == options);
             return optionsAccessor;
-        }
-
-        private class SlowStream : Stream
-        {
-            private readonly Stream _inner;
-            private readonly TimeSpan _artificialDelay;
-
-            public SlowStream(Stream inner, TimeSpan artificialDelay)
-            {
-                _inner = inner;
-                _artificialDelay = artificialDelay;
-            }
-
-            public override void Flush()
-            {
-                _inner.Flush();
-            }
-
-            public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken token)
-            {
-                await Task.Delay(_artificialDelay);
-                return await _inner.ReadAsync(buffer, offset, count, token);
-            }
-
-            public override void SetLength(long value)
-            {
-                _inner.SetLength(value);
-            }
-
-            public override void Write(byte[] buffer, int offset, int count)
-            {
-                _inner.Write(buffer, offset, count);
-            }
-
-            public override int Read(byte[] buffer, int offset, int count)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override long Seek(long offset, SeekOrigin origin)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override bool CanRead => _inner.CanRead;
-            public override bool CanSeek => _inner.CanSeek;
-            public override bool CanWrite => _inner.CanWrite;
-            public override long Length => _inner.Length;
-            public override long Position
-            {
-                get => _inner.Position;
-                set => _inner.Position = value;
-            }
         }
     }
 }
