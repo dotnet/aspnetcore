@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private ILogger _logger;
 
         public RequestBufferingStream(Stream innerStream, int limit, ILogger logger, Encoding? encoding)
-            : base(innerStream)
+            : base(innerStream, logger)
         {
             _logger = logger;
             _limit = limit;

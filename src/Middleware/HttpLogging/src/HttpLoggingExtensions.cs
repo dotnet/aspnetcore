@@ -14,7 +14,11 @@ namespace Microsoft.AspNetCore.HttpLogging
         private static readonly Action<ILogger, string, Exception?> _responseBody =
             LoggerMessage.Define<string>(LogLevel.Information, LoggerEventIds.ResponseBody, "ResponseBody: {Body}");
 
+        private static readonly Action<ILogger, Exception?> _decodeFailure =
+            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.DecodeFailure, "Decode failure while converting body.");
+
         public static void RequestBody(this ILogger logger, string body) => _requestBody(logger, body, null);
         public static void ResponseBody(this ILogger logger, string body) => _responseBody(logger, body, null);
+        public static void DecodeFailure(this ILogger logger, Exception ex) => _decodeFailure(logger, ex);
     }
 }

@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
@@ -21,11 +22,12 @@ namespace Microsoft.AspNetCore.HttpLogging
         private BufferSegment? _tail;
         protected Memory<byte> _tailMemory; // remainder of tail memory
         protected int _tailBytesBuffered;
-
+        private ILogger _logger;
         protected Stream _innerStream;
 
-        public BufferingStream(Stream innerStream)
+        public BufferingStream(Stream innerStream, ILogger logger)
         {
+            _logger = logger;
             _innerStream = innerStream;
         }
 
@@ -64,15 +66,14 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 var ros = new ReadOnlySequence<byte>(_head, 0, _tail, _tailBytesBuffered);
 
-                // TODO make sure this doesn't truncate.
                 var body = encoding.GetString(ros);
 
                 return body;
             }
-            catch (DecoderFallbackException)
+            catch (DecoderFallbackException ex)
             {
-                // TODO log
-                return "";
+                _logger.DecodeFailure(ex);
+                return "<Decoder failure>";
             }
             finally
             {

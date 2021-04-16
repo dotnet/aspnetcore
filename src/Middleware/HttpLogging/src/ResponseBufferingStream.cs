@@ -38,9 +38,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         internal ResponseBufferingStream(IHttpResponseBodyFeature innerBodyFeature,
             int limit,
+            ILogger logger,
             HttpContext context,
             List<MediaTypeState> encodings)
-            : base(innerBodyFeature.Stream)
+            : base(innerBodyFeature.Stream, logger)
         {
             _innerBodyFeature = innerBodyFeature;
             _innerStream = innerBodyFeature.Stream;

@@ -144,6 +144,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     // TODO pool these.
                     responseBufferingStream = new ResponseBufferingStream(originalBodyFeature,
                         options.ResponseBodyLogLimit,
+                        _logger,
                         context,
                         options.MediaTypeOptions.MediaTypeStates);
                     response.Body = responseBufferingStream;
