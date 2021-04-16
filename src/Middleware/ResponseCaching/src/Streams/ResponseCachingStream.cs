@@ -182,17 +182,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-        {
-            return StreamUtilities.ToIAsyncResult(WriteAsync(buffer, offset, count), callback, state);
-        }
+            => TaskToApm.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
 
         public override void EndWrite(IAsyncResult asyncResult)
-        {
-            if (asyncResult == null)
-            {
-                throw new ArgumentNullException(nameof(asyncResult));
-            }
-            ((Task)asyncResult).GetAwaiter().GetResult();
-        }
+            => TaskToApm.End(asyncResult);
     }
 }
