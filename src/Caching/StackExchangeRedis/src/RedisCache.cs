@@ -190,13 +190,20 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             {
                 if (_cache == null)
                 {
-                    if (_options.ConfigurationOptions != null)
+                    if(_options.ConnectionMultiplexerFactory == null)
                     {
-                        _connection = ConnectionMultiplexer.Connect(_options.ConfigurationOptions);
+                        if (_options.ConfigurationOptions != null)
+                        {
+                            _connection = ConnectionMultiplexer.Connect(_options.ConfigurationOptions);
+                        }
+                        else
+                        {
+                            _connection = ConnectionMultiplexer.Connect(_options.Configuration);
+                        }
                     }
                     else
                     {
-                        _connection = ConnectionMultiplexer.Connect(_options.Configuration);
+                        _connection = _options.ConnectionMultiplexerFactory() as ConnectionMultiplexer;
                     }
 
                     TryRegisterProfiler();
@@ -224,13 +231,20 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             {
                 if (_cache == null)
                 {
-                    if (_options.ConfigurationOptions != null)
+                    if(_options.ConnectionMultiplexerFactory == null)
                     {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions).ConfigureAwait(false);
+                        if (_options.ConfigurationOptions != null)
+                        {
+                            _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);
+                        }
                     }
                     else
                     {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);
+                        _connection = _options.ConnectionMultiplexerFactory() as ConnectionMultiplexer;
                     }
 
                     TryRegisterProfiler();
@@ -449,7 +463,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     options.AbsoluteExpiration.Value,
                     "The absolute expiration value must be in the future.");
             }
-            
+
             if (options.AbsoluteExpirationRelativeToNow.HasValue)
             {
                 return creationTime + options.AbsoluteExpirationRelativeToNow;

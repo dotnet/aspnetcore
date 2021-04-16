@@ -19,4 +19,6 @@ Microsoft.Extensions.DependencyInjection.StackExchangeRedisCacheServiceCollectio
 ~Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ConfigurationOptions.set -> void
 ~Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.InstanceName.get -> string
 ~Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.InstanceName.set -> void
+~Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ConnectionMultiplexerFactory.get -> System.Func<StackExchange.Redis.IConnectionMultiplexer>
+~Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ConnectionMultiplexerFactory.set -> void
 ~static Microsoft.Extensions.DependencyInjection.StackExchangeRedisCacheServiceCollectionExtensions.AddStackExchangeRedisCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions> setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection

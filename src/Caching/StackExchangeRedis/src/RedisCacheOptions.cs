@@ -17,12 +17,17 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         /// The configuration used to connect to Redis.
         /// </summary>
         public string Configuration { get; set; }
-        
+
         /// <summary>
         /// The configuration used to connect to Redis.
         /// This is preferred over Configuration.
         /// </summary>
         public ConfigurationOptions ConfigurationOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a delegate to create the ConnectionMultiplexer instance.
+        /// </summary>
+        public Func<IConnectionMultiplexer> ConnectionMultiplexerFactory { get; set; }
 
         /// <summary>
         /// The Redis instance name.
