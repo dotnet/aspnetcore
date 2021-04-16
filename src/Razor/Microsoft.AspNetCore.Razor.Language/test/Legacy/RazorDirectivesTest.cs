@@ -963,7 +963,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void DirectiveDescriptor_GenericConstraintTokenProducesErrorWhenConstraintIdentifierIsDifferentFromPrecedingMember()
+        public void DirectiveDescriptor_GenericConstraintErrorsWhenConstraintIdentifierIsDifferent()
         {
             // Arrange
             var descriptor = DirectiveDescriptor.CreateDirective(

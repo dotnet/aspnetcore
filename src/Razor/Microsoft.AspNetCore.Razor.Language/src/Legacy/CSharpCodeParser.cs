@@ -1492,15 +1492,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     }
                                     else
                                     {
-                                        AcceptAndMoveNext();
-                                    }
-                                    while (!At(SyntaxKind.NewLine))
-                                    {
-                                        AcceptAndMoveNext();
-                                        if (EndOfFile)
+                                        while (!At(SyntaxKind.NewLine))
                                         {
-                                            // We've reached the end of the file, which is unusual but can happen, for example if we start typing in a new file.
-                                            break;
+                                            AcceptAndMoveNext();
+                                            if (EndOfFile)
+                                            {
+                                                // We've reached the end of the file, which is unusual but can happen, for example if we start typing in a new file.
+                                                break;
+                                            }
                                         }
                                     }
                                 }

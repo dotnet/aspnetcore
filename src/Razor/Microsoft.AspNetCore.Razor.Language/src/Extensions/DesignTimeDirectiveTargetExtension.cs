@@ -12,17 +12,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         private const string DirectiveTokenHelperMethodName = "__RazorDirectiveTokenHelpers__";
         private const string TypeHelper = "__typeHelper";
 
-        public void WriteDesignTimeDirective(CodeRenderingContext context, DesignTimeDirectiveIntermediateNode node)
+        public void WriteDesignTimeDirective(CodeRenderingContext context, DesignTimeDirectiveIntermediateNode directiveNode)
         {
             context.CodeWriter
                 .WriteLine("#pragma warning disable 219")
                 .WriteLine($"private void {DirectiveTokenHelperMethodName}() {{");
 
-            for (var i = 0; i < node.Children.Count; i++)
+            for (var i = 0; i < directiveNode.Children.Count; i++)
             {
-                if (node.Children[i] is DirectiveTokenIntermediateNode n)
+                if (directiveNode.Children[i] is DirectiveTokenIntermediateNode directiveTokenNode)
                 {
-                    WriteDesignTimeDirectiveToken(context, node, n, i);
+                    WriteDesignTimeDirectiveToken(context, directiveNode, directiveTokenNode, currentIndex: i);
                 }
             }
 
@@ -206,11 +206,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                             // It's OK to do this since a GenericTypeParameterConstraint token is always preceded by a member token.
                             var genericTypeParamName = (DirectiveTokenIntermediateNode)parent.Children[currentIndex - 1];
                             context.CodeWriter
-                            .Write("void __TypeConstraints_")
-                            .Write(genericTypeParamName.Content)
-                            .Write("<")
-                            .Write(genericTypeParamName.Content)
-                            .Write(">() ");
+                                .Write("void __TypeConstraints_")
+                                .Write(genericTypeParamName.Content)
+                                .Write("<")
+                                .Write(genericTypeParamName.Content)
+                                .Write(">() ");
 
                             context.AddSourceMappingFor(node);
                             context.CodeWriter.Write(node.Content);
