@@ -3,9 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Extensions;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Specification.Tests

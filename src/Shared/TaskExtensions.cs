@@ -8,9 +8,19 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+#if AspNetCoreTesting
 namespace Microsoft.AspNetCore.Testing
+#else
+namespace System.Threading.Tasks.Extensions
+#endif
 {
-    public static class TaskExtensions
+
+#if AspNetCoreTesting
+    public 
+#else
+    internal
+#endif
+    static class TaskExtensions
     {
         private const int DefaultTimeoutDuration = 30 * 1000;
 
@@ -68,12 +78,12 @@ namespace Microsoft.AspNetCore.Testing
             {
                 return await task;
             }
-#if NET6_0
+#if NET6_0_OR_GREATER
             try
             {
                 return await task.WaitAsync(timeout);
             }
-            catch (TimeoutException ex) when (ex.Source == nameof(Microsoft.AspNetCore.Testing))
+            catch (TimeoutException ex) when (ex.Source == typeof(TaskExtensions).Namespace)
             {
                 throw new TimeoutException(CreateMessage(timeout, filePath, lineNumber));
             }
@@ -103,12 +113,12 @@ namespace Microsoft.AspNetCore.Testing
                 await task;
                 return;
             }
-#if NET6_0
+#if NET6_0_OR_GREATER
             try
             {
                 await task.WaitAsync(timeout);
             }
-            catch (TimeoutException ex) when (ex.Source == nameof(Microsoft.AspNetCore.Testing))
+            catch (TimeoutException ex) when (ex.Source == typeof(TaskExtensions).Namespace)
             {
                 throw new TimeoutException(CreateMessage(timeout, filePath, lineNumber));
             }

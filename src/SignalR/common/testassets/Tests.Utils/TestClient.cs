@@ -12,7 +12,11 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+#if TESTUTILS
 using Microsoft.AspNetCore.Testing;
+#else
+using System.Threading.Tasks.Extensions;
+#endif
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
