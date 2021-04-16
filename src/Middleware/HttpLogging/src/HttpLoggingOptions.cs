@@ -62,7 +62,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         public List<KeyValuePair<MediaTypeHeaderValue, Encoding>> SupportedMediaTypes { get; } = new List<KeyValuePair<MediaTypeHeaderValue, Encoding>>()
         {
             new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("application/json"), Encoding.UTF8),
+            new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("application/*+json"), Encoding.UTF8),
             new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("application/xml"), Encoding.UTF8),
+            new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("application/*+xml"), Encoding.UTF8),
             new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("text/*"), Encoding.UTF8),
         };
 

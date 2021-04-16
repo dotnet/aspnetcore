@@ -470,6 +470,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var expected = new string('a', 1000);
             var options = CreateOptionsAccessor();
             options.Value.LoggingFields = HttpLoggingFields.RequestBody;
+            options.Value.SupportedMediaTypes.Clear();
             options.Value.SupportedMediaTypes.Add(
                 new KeyValuePair<MediaTypeHeaderValue, Encoding>(
                     new MediaTypeHeaderValue("text/plain"),

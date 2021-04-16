@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     /// <summary>
     /// Stream that buffers reads 
     /// </summary>
-    internal class ResponseBufferingStream : Stream, IHttpResponseBodyFeature, IBufferWriter<byte>
+    internal class ResponseBufferingStream : BufferingStream, IHttpResponseBodyFeature
     {
         private const int MinimumBufferSize = 4096; // 4K
 
@@ -32,13 +32,8 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private int _bytesWritten;
 
-        private readonly ILogger _logger;
         private readonly HttpContext _context;
         private readonly List<KeyValuePair<MediaTypeHeaderValue, Encoding>> _encodings;
-        private BufferSegment? _head;
-        private BufferSegment? _tail;
-        private Memory<byte> _tailMemory; // remainder of tail memory
-        private int _tailBytesBuffered;
 
         private Encoding? _encoding;
         private bool _hasCheckedEncoding;
@@ -49,12 +44,12 @@ namespace Microsoft.AspNetCore.HttpLogging
             int limit, ILogger logger,
             HttpContext context,
             List<KeyValuePair<MediaTypeHeaderValue, Encoding>> encodings)
+            : base (logger)
         {
             // TODO need first write event
             _innerBodyFeature = innerBodyFeature;
             _innerStream = innerBodyFeature.Stream;
             _limit = limit;
-            _logger = logger;
             _context = context;
             _encodings = encodings;
         }
@@ -88,6 +83,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                 return _pipeAdapter;
             }
         }
+
+        public Encoding? Encoding { get => _encoding; }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -134,6 +131,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             var remaining = _limit - _bytesWritten;
             var innerCount = Math.Min(remaining, span.Length);
 
+            OnFirstWrite();
+
             if (span.Slice(0, innerCount).TryCopyTo(_tailMemory.Span))
             {
                 _tailBytesBuffered += innerCount;
@@ -153,9 +152,10 @@ namespace Microsoft.AspNetCore.HttpLogging
             var remaining = _limit - _bytesWritten;
             var innerCount = Math.Min(remaining, count);
 
+            OnFirstWrite();
+
             if (_tailMemory.Length - innerCount > 0)
             {
-                //Buffer.BlockCopy(buffer, offset, , position, innerCount);
                 buffer.AsSpan(offset, count).CopyTo(_tailMemory.Span);
                 _tailBytesBuffered += innerCount;
                 _bytesWritten += innerCount;
@@ -167,6 +167,15 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
 
             await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+        }
+
+        private void OnFirstWrite()
+        {
+            if (!_hasCheckedEncoding)
+            {
+                MediaTypeHelpers.TryGetEncodingForMediaType(_context.Response.ContentType, _encodings, out _encoding);
+                _hasCheckedEncoding = true;
+            }
         }
 
         public void DisableBuffering()
@@ -188,146 +197,5 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             await _innerBodyFeature.CompleteAsync();
         }
-
-        public void Reset()
-        {
-            var segment = _head;
-            while (segment != null)
-            {
-                var returnSegment = segment;
-                segment = segment.NextSegment;
-
-                // We haven't reached the tail of the linked list yet, so we can always return the returnSegment.
-                returnSegment.ResetMemory();
-            }
-
-            _bytesWritten = 0;
-            _tailBytesBuffered = 0;
-        }
-
-        public void Advance(int bytes)
-        {
-            if ((uint)bytes > (uint)_tailMemory.Length)
-            {
-                ThrowArgumentOutOfRangeException(nameof(bytes));
-            }
-
-            _tailBytesBuffered += bytes;
-            _bytesWritten += bytes;
-            _tailMemory = _tailMemory.Slice(bytes);
-        }
-
-        public Memory<byte> GetMemory(int sizeHint = 0)
-        {
-            AllocateMemoryUnsynchronized(sizeHint);
-            return _tailMemory;
-        }
-
-        public Span<byte> GetSpan(int sizeHint = 0)
-        {
-            AllocateMemoryUnsynchronized(sizeHint);
-            return _tailMemory.Span;
-        }
-
-        private void AllocateMemoryUnsynchronized(int sizeHint)
-        {
-            if (_head == null)
-            {
-                // We need to allocate memory to write since nobody has written before
-                BufferSegment newSegment = AllocateSegmentUnsynchronized(sizeHint);
-
-                // Set all the pointers
-                _head = _tail = newSegment;
-                _tailBytesBuffered = 0;
-            }
-            else
-            {
-                int bytesLeftInBuffer = _tailMemory.Length;
-
-                if (bytesLeftInBuffer == 0 || bytesLeftInBuffer < sizeHint)
-                {
-                    Debug.Assert(_tail != null);
-
-                    if (_tailBytesBuffered > 0)
-                    {
-                        // Flush buffered data to the segment
-                        _tail.End += _tailBytesBuffered;
-                        _tailBytesBuffered = 0;
-                    }
-
-                    BufferSegment newSegment = AllocateSegmentUnsynchronized(sizeHint);
-
-                    _tail.SetNext(newSegment);
-                    _tail = newSegment;
-                }
-            }
-        }
-
-        private BufferSegment AllocateSegmentUnsynchronized(int sizeHint)
-        {
-            if (!_hasCheckedEncoding)
-            {
-                MediaTypeHelpers.TryGetEncodingForMediaType(_context.Response.ContentType, _encodings, out _encoding);
-                _hasCheckedEncoding = true;
-                // TODO can short circuit this and not allocate anything if encoding is null after this.
-            }
-
-            BufferSegment newSegment = CreateSegmentUnsynchronized();
-
-            // We can't use the recommended pool so use the ArrayPool
-            newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(GetSegmentSize(sizeHint)));
-
-            _tailMemory = newSegment.AvailableMemory;
-
-            return newSegment;
-        }
-
-        private BufferSegment CreateSegmentUnsynchronized()
-        {
-            return new BufferSegment();
-        }
-
-        private static int GetSegmentSize(int sizeHint, int maxBufferSize = int.MaxValue)
-        {
-            // First we need to handle case where hint is smaller than minimum segment size
-            sizeHint = Math.Max(MinimumBufferSize, sizeHint);
-            // After that adjust it to fit into pools max buffer size
-            var adjustedToMaximumSize = Math.Min(maxBufferSize, sizeHint);
-            return adjustedToMaximumSize;
-        }
-
-        public void LogString()
-        {
-            if (_head == null || _tail == null || _encoding == null)
-            {
-                return;
-            }
-
-            // Only place where we are actually using the buffered data.
-            // update tail here.
-            _tail.End = _tailBytesBuffered;
-
-            var ros = new ReadOnlySequence<byte>(_head, 0, _tail, _tailBytesBuffered);
-
-            var body = _encoding.GetString(ros);
-
-            _logger.LogInformation(LoggerEventIds.ResponseBody, CoreStrings.ResponseBody, body);
-
-            // Don't hold onto buffers anymore
-            Reset();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                Reset();
-            }
-        }
-
-        // Copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.Memory/src/System/ThrowHelper.cs
-        private static void ThrowArgumentOutOfRangeException(string argumentName) { throw CreateArgumentOutOfRangeException(argumentName); }
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException(string argumentName) { return new ArgumentOutOfRangeException(argumentName); }
     }
 }

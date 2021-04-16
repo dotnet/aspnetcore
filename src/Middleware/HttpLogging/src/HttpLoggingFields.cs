@@ -14,27 +14,27 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// None
         /// </summary>
-        None = 0,
+        None = 0x0,
 
         /// <summary>
         /// Request Path
         /// </summary>
-        Path = 1,
+        Path = 0x1,
 
         /// <summary>
         /// Request Query String
         /// </summary>
-        Query = 2,
+        Query = 0x2,
 
         /// <summary>
         /// Request Protocol
         /// </summary>
-        Protocol = 4,
+        Protocol = 0x4,
 
         /// <summary>
         /// Request Method
         /// </summary>
-        Method = 8,
+        Method = 0x8,
 
         /// <summary>
         /// Request Scheme

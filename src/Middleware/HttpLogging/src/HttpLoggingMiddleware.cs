@@ -170,9 +170,10 @@ namespace Microsoft.AspNetCore.HttpLogging
                     state: httpResponseLog,
                     exception: null,
                     formatter: HttpResponseLog.Callback);
+
                 if (responseBufferingStream != null)
                 {
-                    responseBufferingStream.LogString();
+                    responseBufferingStream.LogString(responseBufferingStream.Encoding);
                 }
             }
             finally

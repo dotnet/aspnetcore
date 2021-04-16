@@ -14,24 +14,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal sealed class RequestBufferingStream : Stream, IBufferWriter<byte>
+    internal class RequestBufferingStream : BufferingStream
     {
-        private const int MinimumBufferSize = 4096; // 4K
         private Stream _innerStream;
         private Encoding? _encoding;
         private readonly int _limit;
-        private readonly ILogger _logger;
         private int _bytesWritten;
 
-        private BufferSegment? _head;
-        private BufferSegment? _tail;
-        private Memory<byte> _tailMemory; // remainder of tail memory
-        private int _tailBytesBuffered;
-
         public RequestBufferingStream(Stream innerStream, int limit, ILogger logger, Encoding? encoding)
+            : base(logger)
         {
             _limit = limit;
-            _logger = logger;
             _innerStream = innerStream;
             _encoding = encoding;
         }
@@ -96,7 +89,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             if (res == 0)
             {
                 // Done reading, log the string.
-                LogString();
+                LogString(_encoding);
             }
 
             var innerCount = Math.Min(remaining, span.Length);
@@ -114,7 +107,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             if (_limit - _bytesWritten == 0)
             {
-                LogString();
+                LogString(_encoding);
             }
         }
 
@@ -178,137 +171,5 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             await _innerStream.CopyToAsync(destination, bufferSize, cancellationToken);
         }
-
-        public void LogString()
-        {
-            if (_head == null || _tail == null || _encoding == null)
-            {
-                return;
-            }
-
-            // Only place where we are actually using the buffered data.
-            // update tail here.
-            _tail.End = _tailBytesBuffered;
-
-            var ros = new ReadOnlySequence<byte>(_head, 0, _tail, _tailBytesBuffered);
-
-            // If encoding is nullable
-            var body = _encoding.GetString(ros);
-            _logger.LogInformation(LoggerEventIds.RequestBody, CoreStrings.RequestBody, body);
-
-            Reset();
-        }
-
-        public void Advance(int bytes)
-        {
-            if ((uint)bytes > (uint)_tailMemory.Length)
-            {
-                ThrowArgumentOutOfRangeException(nameof(bytes));
-            }
-
-            _tailBytesBuffered += bytes;
-            _bytesWritten += bytes;
-            _tailMemory = _tailMemory.Slice(bytes);
-        }
-
-        public Memory<byte> GetMemory(int sizeHint = 0)
-        {
-            AllocateMemoryUnsynchronized(sizeHint);
-            return _tailMemory;
-        }
-
-        public Span<byte> GetSpan(int sizeHint = 0)
-        {
-            AllocateMemoryUnsynchronized(sizeHint);
-            return _tailMemory.Span;
-        }
-        private void AllocateMemoryUnsynchronized(int sizeHint)
-        {
-            if (_head == null)
-            {
-                // We need to allocate memory to write since nobody has written before
-                BufferSegment newSegment = AllocateSegmentUnsynchronized(sizeHint);
-
-                // Set all the pointers
-                _head = _tail = newSegment;
-                _tailBytesBuffered = 0;
-            }
-            else
-            {
-                int bytesLeftInBuffer = _tailMemory.Length;
-
-                if (bytesLeftInBuffer == 0 || bytesLeftInBuffer < sizeHint)
-                {
-                    Debug.Assert(_tail != null);
-
-                    if (_tailBytesBuffered > 0)
-                    {
-                        // Flush buffered data to the segment
-                        _tail.End += _tailBytesBuffered;
-                        _tailBytesBuffered = 0;
-                    }
-
-                    BufferSegment newSegment = AllocateSegmentUnsynchronized(sizeHint);
-
-                    _tail.SetNext(newSegment);
-                    _tail = newSegment;
-                }
-            }
-        }
-
-        private BufferSegment AllocateSegmentUnsynchronized(int sizeHint)
-        {
-            BufferSegment newSegment = CreateSegmentUnsynchronized();
-
-            // We can't use the recommended pool so use the ArrayPool
-            newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(GetSegmentSize(sizeHint)));
-
-            _tailMemory = newSegment.AvailableMemory;
-
-            return newSegment;
-        }
-
-        private BufferSegment CreateSegmentUnsynchronized()
-        {
-            return new BufferSegment();
-        }
-
-        private static int GetSegmentSize(int sizeHint, int maxBufferSize = int.MaxValue)
-        {
-            // First we need to handle case where hint is smaller than minimum segment size
-            sizeHint = Math.Max(MinimumBufferSize, sizeHint);
-            // After that adjust it to fit into pools max buffer size
-            var adjustedToMaximumSize = Math.Min(maxBufferSize, sizeHint);
-            return adjustedToMaximumSize;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                Reset();
-            }
-        }
-
-        public void Reset()
-        {
-            var segment = _head;
-            while (segment != null)
-            {
-                var returnSegment = segment;
-                segment = segment.NextSegment;
-
-                // We haven't reached the tail of the linked list yet, so we can always return the returnSegment.
-                returnSegment.ResetMemory();
-            }
-
-            _bytesWritten = 0;
-            _tailBytesBuffered = 0;
-        }
-
-        // Copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.Memory/src/System/ThrowHelper.cs
-        private static void ThrowArgumentOutOfRangeException(string argumentName) { throw CreateArgumentOutOfRangeException(argumentName); }
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException(string argumentName) { return new ArgumentOutOfRangeException(argumentName); }
     }
 }
