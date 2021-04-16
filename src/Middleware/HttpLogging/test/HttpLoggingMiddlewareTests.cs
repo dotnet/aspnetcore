@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -128,9 +130,17 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var options = CreateOptionsAccessor();
             options.Value.LoggingFields = HttpLoggingFields.Request;
             var middleware = new HttpLoggingMiddleware(
-                c =>
+                async c =>
                 {
-                    return Task.CompletedTask;
+                    var arr = new byte[4096];
+                    while (true)
+                    {
+                        var res = await c.Request.Body.ReadAsync(arr);
+                        if (res == 0)
+                        {
+                            break;
+                        }
+                    }
                 },
                 options,
                 LoggerFactory);
@@ -460,7 +470,10 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var expected = new string('a', 1000);
             var options = CreateOptionsAccessor();
             options.Value.LoggingFields = HttpLoggingFields.RequestBody;
-            options.Value.BodyEncoding = encoding;
+            options.Value.SupportedMediaTypes.Add(
+                new KeyValuePair<MediaTypeHeaderValue, Encoding>(
+                    new MediaTypeHeaderValue("text/plain"),
+                    encoding));
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -498,7 +511,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 async c =>
                 {
                     c.Response.StatusCode = 200;
-                    c.Response.Headers["Server"] = "Kestrel";
+                    c.Response.Headers[HeaderNames.TransferEncoding] = "test";
                     c.Response.ContentType = "text/plain";
                     await c.Response.WriteAsync("test");
                 },
@@ -509,7 +522,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             await middleware.Invoke(httpContext);
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Server: Kestrel"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
             Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
         }
 
@@ -523,7 +536,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 async c =>
                 {
                     c.Response.StatusCode = 200;
-                    c.Response.Headers["Server"] = "Kestrel";
+                    c.Response.Headers[HeaderNames.TransferEncoding] = "test";
                     c.Response.ContentType = "text/plain";
                     await c.Response.WriteAsync("test");
                 },
@@ -534,7 +547,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             await middleware.Invoke(httpContext);
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Server: Kestrel"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
         }
 
@@ -574,7 +587,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 async c =>
                 {
                     c.Response.StatusCode = 200;
-                    c.Response.Headers["Server"] = "Kestrel";
+                    c.Response.Headers[HeaderNames.TransferEncoding] = "test";
                     c.Response.ContentType = "text/plain";
                     await c.Response.WriteAsync("test");
                 },
@@ -585,7 +598,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             await middleware.Invoke(httpContext);
             Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Server: Kestrel"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
             Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
         }
 

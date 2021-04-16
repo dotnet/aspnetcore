@@ -54,22 +54,16 @@ namespace Microsoft.AspNetCore.HttpLogging
         };
 
         /// <summary>
-        /// The encoding to log the request body and response body, if the content-type of the body
-        /// is one of the <see cref="SupportedMediaTypes"/>.
-        /// </summary>
-        public Encoding? BodyEncoding { get; set; } = Encoding.UTF8;
-
-        /// <summary>
-        /// A list of supported media type values for request and response body logging.
+        /// A list of supported media type values for request and response body logging with corresponding encodings.
         /// </summary>
         /// <remarks>
         /// If the request or response do not match the supported media type, the response body will not be logged.
         /// </remarks>
-        public List<MediaTypeHeaderValue>? SupportedMediaTypes { get; } = new List<MediaTypeHeaderValue>()
+        public List<KeyValuePair<MediaTypeHeaderValue, Encoding>> SupportedMediaTypes { get; } = new List<KeyValuePair<MediaTypeHeaderValue, Encoding>>()
         {
-            new MediaTypeHeaderValue("application/json"),
-            new MediaTypeHeaderValue("application/xml"),
-            new MediaTypeHeaderValue("text/*")
+            new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("application/json"), Encoding.UTF8),
+            new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("application/xml"), Encoding.UTF8),
+            new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("text/*"), Encoding.UTF8),
         };
 
         /// <summary>
@@ -80,6 +74,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Maximum response body size to log (in bytes). Defaults to 32 KB.
         /// </summary>
-        public int ResponseBodyLogLimit { get; set; } = 32 * 1024; // 32KB
+        public int ResponseBodyLogLimit { get; set; } = 32 * 1024;
     }
 }

@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
         private HttpLoggingOptions _options;
-        private const int PipeThreshold = 32 * 1024;
         private const int DefaultRequestFieldsMinusHeaders = 7;
         private const int DefaultResponseFieldsMinusHeaders = 2;
 
@@ -66,7 +65,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             if ((HttpLoggingFields.Request & _options.LoggingFields) != HttpLoggingFields.None)
             {
                 var request = context.Request;
-                var list = new List<KeyValuePair<string, object?>>(request.Headers.Count + DefaultRequestFieldsMinusHeaders);
+                var list = new List<KeyValuePair<string, object?>>(
+                    request.Headers.Count + DefaultRequestFieldsMinusHeaders);
 
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.Protocol))
                 {
@@ -99,10 +99,17 @@ namespace Microsoft.AspNetCore.HttpLogging
                     FilterHeaders(list, request.Headers, _options.AllowedRequestHeaders);
                 }
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody)
+                    && MediaTypeHelpers.TryGetEncodingForMediaType(request.ContentType,
+                        _options.SupportedMediaTypes,
+                        out var encoding))
                 {
                     originalBody = request.Body;
-                    requestBufferingStream = new RequestBufferingStream(request.Body, _options.RequestBodyLogLimit, _logger, _options.BodyEncoding);
+                    requestBufferingStream = new RequestBufferingStream(
+                        request.Body,
+                        _options.RequestBodyLogLimit,
+                        _logger,
+                        encoding);
                     request.Body = requestBufferingStream;
                 }
 
@@ -134,12 +141,17 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
                     // TODO pool these.
-                    responseBufferingStream = new ResponseBufferingStream(originalBodyFeature, _options.ResponseBodyLogLimit, _logger);
+                    responseBufferingStream = new ResponseBufferingStream(originalBodyFeature,
+                        _options.ResponseBodyLogLimit,
+                        _logger,
+                        context,
+                        _options.SupportedMediaTypes);
                     response.Body = responseBufferingStream;
                 }
 
                 await _next(context).ConfigureAwait(false);
-                var list = new List<KeyValuePair<string, object?>>(response.Headers.Count + DefaultResponseFieldsMinusHeaders);
+                var list = new List<KeyValuePair<string, object?>>(
+                    response.Headers.Count + DefaultResponseFieldsMinusHeaders);
 
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.StatusCode))
                 {
@@ -151,12 +163,6 @@ namespace Microsoft.AspNetCore.HttpLogging
                     FilterHeaders(list, response.Headers, _options.AllowedResponseHeaders);
                 }
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody) && IsSupportedMediaType(response.ContentType))
-                {
-                    var body = responseBufferingStream!.GetString(_options.BodyEncoding);
-                    list.Add(new KeyValuePair<string, object?>(nameof(response.Body), body));
-                }
-
                 var httpResponseLog = new HttpResponseLog(list);
 
                 _logger.Log(LogLevel.Information,
@@ -164,20 +170,25 @@ namespace Microsoft.AspNetCore.HttpLogging
                     state: httpResponseLog,
                     exception: null,
                     formatter: HttpResponseLog.Callback);
+                if (responseBufferingStream != null)
+                {
+                    responseBufferingStream.LogString();
+                }
             }
             finally
             {
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
-                {
-                    responseBufferingStream!.Dispose();
+                responseBufferingStream?.Dispose();
 
+                if (originalBodyFeature != null)
+                {
                     context.Features.Set(originalBodyFeature);
                 }
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
+                requestBufferingStream?.Dispose();
+
+                if (originalBody != null)
                 {
-                    requestBufferingStream!.Dispose();
-                    context.Request.Body = originalBody!;
+                    context.Request.Body = originalBody;
                 }
             }
         }
@@ -187,30 +198,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             list.Add(new KeyValuePair<string, object?>(key, value));
         }
 
-        private bool IsSupportedMediaType(string contentType)
-        {
-            var mediaTypeList = _options.SupportedMediaTypes;
-            if (mediaTypeList == null || mediaTypeList.Count == 0 || string.IsNullOrEmpty(contentType))
-            {
-                return false;
-            }
-
-            var mediaType = new MediaTypeHeaderValue(contentType);
-
-            // mediaType.Charset for MVC
-
-            foreach (var type in mediaTypeList)
-            {
-                if (mediaType.IsSubsetOf(type))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private void FilterHeaders(List<KeyValuePair<string, object?>> keyValues, IHeaderDictionary headers, ISet<string> allowedHeaders)
+        private void FilterHeaders(List<KeyValuePair<string, object?>> keyValues,
+            IHeaderDictionary headers,
+            ISet<string> allowedHeaders)
         {
             foreach (var (key, value) in headers)
             {

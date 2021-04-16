@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.HttpLogging
 {
     internal sealed class RequestBufferingStream : Stream, IBufferWriter<byte>
     {
-        private const int MaxSegmentPoolSize = 256; // 1MB
         private const int MinimumBufferSize = 4096; // 4K
         private Stream _innerStream;
         private Encoding? _encoding;
@@ -24,7 +23,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         private readonly ILogger _logger;
         private int _bytesWritten;
 
-        private readonly BufferSegmentStack _bufferSegmentPool;
         private BufferSegment? _head;
         private BufferSegment? _tail;
         private Memory<byte> _tailMemory; // remainder of tail memory
@@ -36,7 +34,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             _logger = logger;
             _innerStream = innerStream;
             _encoding = encoding;
-            _bufferSegmentPool = new BufferSegmentStack(limit / MinimumBufferSize);
         }
 
         public override bool CanSeek => false;
@@ -98,6 +95,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             if (res == 0)
             {
+                // Done reading, log the string.
                 LogString();
             }
 
@@ -197,6 +195,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             // If encoding is nullable
             var body = _encoding.GetString(ros);
             _logger.LogInformation(LoggerEventIds.RequestBody, CoreStrings.RequestBody, body);
+
+            Reset();
         }
 
         public void Advance(int bytes)
@@ -270,20 +270,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private BufferSegment CreateSegmentUnsynchronized()
         {
-            if (_bufferSegmentPool.TryPop(out var segment))
-            {
-                return segment;
-            }
-
             return new BufferSegment();
-        }
-
-        private void ReturnSegmentUnsynchronized(BufferSegment segment)
-        {
-            if (_bufferSegmentPool.Count < MaxSegmentPoolSize)
-            {
-                _bufferSegmentPool.Push(segment);
-            }
         }
 
         private static int GetSegmentSize(int sizeHint, int maxBufferSize = int.MaxValue)
@@ -293,6 +280,30 @@ namespace Microsoft.AspNetCore.HttpLogging
             // After that adjust it to fit into pools max buffer size
             var adjustedToMaximumSize = Math.Min(maxBufferSize, sizeHint);
             return adjustedToMaximumSize;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Reset();
+            }
+        }
+
+        public void Reset()
+        {
+            var segment = _head;
+            while (segment != null)
+            {
+                var returnSegment = segment;
+                segment = segment.NextSegment;
+
+                // We haven't reached the tail of the linked list yet, so we can always return the returnSegment.
+                returnSegment.ResetMemory();
+            }
+
+            _bytesWritten = 0;
+            _tailBytesBuffered = 0;
         }
 
         // Copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.Memory/src/System/ThrowHelper.cs

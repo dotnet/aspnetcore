@@ -21,8 +21,6 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.StatusCode = 32 -> Microsoft.
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.AllowedRequestHeaders.get -> System.Collections.Generic.HashSet<string!>!
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.AllowedResponseHeaders.get -> System.Collections.Generic.HashSet<string!>!
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.BodyEncoding.get -> System.Text.Encoding?
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.BodyEncoding.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.HttpLoggingOptions() -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.set -> void
@@ -30,7 +28,7 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.get -> i
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseBodyLogLimit.set -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.SupportedMediaTypes.get -> System.Collections.Generic.List<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!>?
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.SupportedMediaTypes.get -> System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!, System.Text.Encoding!>>!
 Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions
 static Microsoft.AspNetCore.Builder.HttpLoggingBuilderExtensions.UseHttpLogging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

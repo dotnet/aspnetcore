@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
@@ -15,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.HttpLogging
     /// </summary>
     internal class ResponseBufferingStream : Stream, IHttpResponseBodyFeature, IBufferWriter<byte>
     {
-        private const int MaxSegmentPoolSize = 256; // 1MB
         private const int MinimumBufferSize = 4096; // 4K
 
         private readonly IHttpResponseBodyFeature _innerBodyFeature;
@@ -33,22 +32,31 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private int _bytesWritten;
 
-        private readonly BufferSegmentStack _bufferSegmentPool;
         private readonly ILogger _logger;
+        private readonly HttpContext _context;
+        private readonly List<KeyValuePair<MediaTypeHeaderValue, Encoding>> _encodings;
         private BufferSegment? _head;
         private BufferSegment? _tail;
         private Memory<byte> _tailMemory; // remainder of tail memory
         private int _tailBytesBuffered;
 
+        private Encoding? _encoding;
+        private bool _hasCheckedEncoding;
+
         private static readonly StreamPipeWriterOptions _pipeWriterOptions = new StreamPipeWriterOptions(leaveOpen: true);
 
-        internal ResponseBufferingStream(IHttpResponseBodyFeature innerBodyFeature, int limit, ILogger logger)
+        internal ResponseBufferingStream(IHttpResponseBodyFeature innerBodyFeature,
+            int limit, ILogger logger,
+            HttpContext context,
+            List<KeyValuePair<MediaTypeHeaderValue, Encoding>> encodings)
         {
+            // TODO need first write event
             _innerBodyFeature = innerBodyFeature;
             _innerStream = innerBodyFeature.Stream;
             _limit = limit;
-            _bufferSegmentPool = new BufferSegmentStack(limit / MinimumBufferSize);
             _logger = logger;
+            _context = context;
+            _encodings = encodings;
         }
 
         public override bool CanRead => false;
@@ -181,9 +189,17 @@ namespace Microsoft.AspNetCore.HttpLogging
             await _innerBodyFeature.CompleteAsync();
         }
 
-        // IBufferWriter<byte>
         public void Reset()
         {
+            var segment = _head;
+            while (segment != null)
+            {
+                var returnSegment = segment;
+                segment = segment.NextSegment;
+
+                // We haven't reached the tail of the linked list yet, so we can always return the returnSegment.
+                returnSegment.ResetMemory();
+            }
 
             _bytesWritten = 0;
             _tailBytesBuffered = 0;
@@ -249,6 +265,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private BufferSegment AllocateSegmentUnsynchronized(int sizeHint)
         {
+            if (!_hasCheckedEncoding)
+            {
+                MediaTypeHelpers.TryGetEncodingForMediaType(_context.Response.ContentType, _encodings, out _encoding);
+                _hasCheckedEncoding = true;
+                // TODO can short circuit this and not allocate anything if encoding is null after this.
+            }
+
             BufferSegment newSegment = CreateSegmentUnsynchronized();
 
             // We can't use the recommended pool so use the ArrayPool
@@ -261,20 +284,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private BufferSegment CreateSegmentUnsynchronized()
         {
-            if (_bufferSegmentPool.TryPop(out var segment))
-            {
-                return segment;
-            }
-
             return new BufferSegment();
-        }
-
-        private void ReturnSegmentUnsynchronized(BufferSegment segment)
-        {
-            if (_bufferSegmentPool.Count < MaxSegmentPoolSize)
-            {
-                _bufferSegmentPool.Push(segment);
-            }
         }
 
         private static int GetSegmentSize(int sizeHint, int maxBufferSize = int.MaxValue)
@@ -286,11 +296,11 @@ namespace Microsoft.AspNetCore.HttpLogging
             return adjustedToMaximumSize;
         }
 
-        public string GetString(Encoding? encoding)
+        public void LogString()
         {
-            if (_head == null || _tail == null || encoding == null)
+            if (_head == null || _tail == null || _encoding == null)
             {
-                return "";
+                return;
             }
 
             // Only place where we are actually using the buffered data.
@@ -299,10 +309,12 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             var ros = new ReadOnlySequence<byte>(_head, 0, _tail, _tailBytesBuffered);
 
-            // If encoding is nullable
+            var body = _encoding.GetString(ros);
 
-            // TODO return buffers.
-            return encoding.GetString(ros);
+            _logger.LogInformation(LoggerEventIds.ResponseBody, CoreStrings.ResponseBody, body);
+
+            // Don't hold onto buffers anymore
+            Reset();
         }
 
         protected override void Dispose(bool disposing)
