@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     {
         private const int MinimumBufferSize = 4096; // 4K
         private readonly ILogger _logger;
-        private int _bytesWritten;
+        protected int _bytesWritten;
         private BufferSegment? _head;
         private BufferSegment? _tail;
         protected Memory<byte> _tailMemory; // remainder of tail memory

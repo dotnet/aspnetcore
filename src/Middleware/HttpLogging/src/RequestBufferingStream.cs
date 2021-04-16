@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         private Stream _innerStream;
         private Encoding? _encoding;
         private readonly int _limit;
-        private int _bytesWritten;
 
         public RequestBufferingStream(Stream innerStream, int limit, ILogger logger, Encoding? encoding)
             : base(logger)

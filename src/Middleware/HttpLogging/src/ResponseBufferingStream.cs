@@ -30,8 +30,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         private readonly int _limit;
         private PipeWriter? _pipeAdapter;
 
-        private int _bytesWritten;
-
         private readonly HttpContext _context;
         private readonly List<KeyValuePair<MediaTypeHeaderValue, Encoding>> _encodings;
 
