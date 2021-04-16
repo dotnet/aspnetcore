@@ -96,17 +96,19 @@ namespace acquire
                 var packageName = item.Key;
                 if (item.Value.AliasTo is Dictionary<string, string> alias)
                 {
+                    packageName = ""; // if this is an alias pack and platform isn't in the alias it isn't required
+
                     if (OperatingSystem.IsWindows())
                     {
-                        packageName = Environment.Is64BitProcess ? alias["win-x64"] : alias["win-x86"];
+                        alias.TryGetValue(Environment.Is64BitProcess ? "win-x64" : "win-x86", out packageName);
                     }
                     else if (OperatingSystem.IsMacOS())
                     {
-                        packageName = alias["osx-x64"];
+                        alias.TryGetValue("osx-x64", out packageName);
                     }
                     else if (OperatingSystem.IsLinux())
                     {
-                        packageName = alias["linux-x64"];
+                        alias.TryGetValue("linux-x64", out packageName);
                     }
                     else
                     {

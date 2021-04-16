@@ -109,7 +109,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         continue;
                     }
 
-                    @class.TypeParameters.Add(new TypeParameter() { ParameterName = typeParamNode.Tokens.First().Content, });
+                    @class.TypeParameters.Add(new TypeParameter()
+                    {
+                        ParameterName = typeParamNode.Tokens.First().Content,
+                        Constraints = typeParamNode.Tokens.Skip(1).FirstOrDefault()?.Content
+                    });
                 }
 
                 method.ReturnType = "void";

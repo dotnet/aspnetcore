@@ -908,6 +908,79 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void DirectiveDescriptor_UnderstandsGenericConstraintsToken()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => {
+                    b.AddMemberToken();
+                    b.AddOptionalGenericTypeConstraintToken("name", "description");
+                });
+
+            // Act & Assert
+            ParseDocumentTest(@"
+@custom TSomething where TSomething : class
+",
+                new[] { descriptor });
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_GenericConstraintTokenWorksWhenAtEndOfFile()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => {
+                    b.AddMemberToken();
+                    b.AddOptionalGenericTypeConstraintToken("name", "description");
+                });
+
+            // Act & Assert
+            ParseDocumentTest(@"
+@custom TSomething where TSomething : class",
+                directives: new[] { descriptor });
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_GenericConstraintTokenProducesErrorWhenFirstTokenIsNotWhereKeyword()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => {
+                    b.AddMemberToken();
+                    b.AddOptionalGenericTypeConstraintToken("name", "description");
+                });
+
+            // Act & Assert
+            ParseDocumentTest(@"
+@custom TSomething maybe TSomething : class",
+                directives: new[] { descriptor });
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_GenericConstraintErrorsWhenConstraintIdentifierIsDifferent()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => {
+                    b.AddMemberToken();
+                    b.AddOptionalGenericTypeConstraintToken("name", "description");
+                });
+
+            // Act & Assert
+            ParseDocumentTest(@"
+@custom TSomething where TElse : class",
+                directives: new[] { descriptor });
+        }
+
+        [Fact]
         public void DirectiveDescriptor_UnderstandsAttributeTokens()
         {
             // Arrange

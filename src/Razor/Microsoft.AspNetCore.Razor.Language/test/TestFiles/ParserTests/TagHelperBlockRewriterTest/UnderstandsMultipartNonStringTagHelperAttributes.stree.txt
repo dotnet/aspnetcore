@@ -13,7 +13,7 @@ RazorDocument - [0..30)::30 - [<person age="(() => 123)()" />]
                     MarkupTextLiteral - [12..13)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [13..26)::13
-                        CSharpExpressionLiteral - [13..26)::13 - [(() => 123)()] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                        CSharpExpressionLiteral - [13..26)::13 - [(() => 123)()] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                             Text;[(()];
                             Whitespace;[ ];
                             Equals;[=];

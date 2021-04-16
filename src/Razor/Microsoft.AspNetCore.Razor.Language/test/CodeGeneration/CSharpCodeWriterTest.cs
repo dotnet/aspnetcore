@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new CodeWriter(Environment.NewLine, options);
 
             // Act
-            writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<string>());
+            writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<(string,string)>());
             writer.WriteField(Array.Empty<string>(), Array.Empty<string>(), "int", "f");
 
             // Assert
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new CodeWriter(Environment.NewLine, options);
 
             // Act
-            writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<string>());
+            writer.BuildClassDeclaration(Array.Empty<string>(), "C", "", Array.Empty<string>(), Array.Empty<(string, string)>());
             writer.WriteField(Array.Empty<string>(), Array.Empty<string>(), "int", "f");
 
             // Assert
