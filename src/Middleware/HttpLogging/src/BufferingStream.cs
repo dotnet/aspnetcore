@@ -55,9 +55,16 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             try
             {
-                if (_head == null || _tail == null || encoding == null)
+                if (_head == null || _tail == null)
                 {
+                    // nothing written
                     return "";
+                }
+
+                if (encoding == null)
+                {
+                    _logger.UnrecognizedMediaType();
+                    return "<Unrecognized media type>";
                 }
 
                 // Only place where we are actually using the buffered data.

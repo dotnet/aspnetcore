@@ -17,8 +17,12 @@ namespace Microsoft.AspNetCore.HttpLogging
         private static readonly Action<ILogger, Exception?> _decodeFailure =
             LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.DecodeFailure, "Decode failure while converting body.");
 
+        private static readonly Action<ILogger, Exception?> _unrecognizedMediaType =
+            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.UnrecognizedMediaType, "Unrecognized Content-Type for body.");
+
         public static void RequestBody(this ILogger logger, string body) => _requestBody(logger, body, null);
         public static void ResponseBody(this ILogger logger, string body) => _responseBody(logger, body, null);
         public static void DecodeFailure(this ILogger logger, Exception ex) => _decodeFailure(logger, ex);
+        public static void UnrecognizedMediaType(this ILogger logger) => _unrecognizedMediaType(logger, null);
     }
 }

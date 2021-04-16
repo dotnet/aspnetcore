@@ -12,5 +12,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         public static readonly EventId RequestBody = new EventId(3, "RequestBody");
         public static readonly EventId ResponseBody = new EventId(4, "ResponseBody");
         public static readonly EventId DecodeFailure = new EventId(5, "DecodeFaulure");
+        public static readonly EventId UnrecognizedMediaType = new EventId(6, "UnrecognizedMediaType");
     }
 }
