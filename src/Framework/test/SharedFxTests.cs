@@ -302,11 +302,6 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void RuntimeListListsContainsCorrectPaths()
         {
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH")))
-            {
-                return;
-            }
-
             var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
             AssertEx.FileExists(runtimeListPath);
 
