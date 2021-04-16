@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             HeaderNames.AcceptLanguage,
             HeaderNames.Allow,
             HeaderNames.Connection,
+            HeaderNames.ContentLength,
             HeaderNames.ContentType,
             HeaderNames.Host,
             HeaderNames.UserAgent
@@ -47,10 +48,8 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// </remarks>
         public HashSet<string> AllowedResponseHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
+            HeaderNames.ContentLength,
             HeaderNames.ContentType,
-            HeaderNames.Date,
-            HeaderNames.ETag,
-            HeaderNames.Server,
             HeaderNames.TransferEncoding
         };
 
@@ -77,11 +76,6 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// Maximum request body size to log (in bytes). Defaults to 32 KB.
         /// </summary>
         public int RequestBodyLogLimit { get; set; } = 32 * 1024;
-
-        /// <summary>
-        /// Timeout for reading requset body to log.
-        /// </summary>
-        public TimeSpan RequestBodyTimeout { get; set; } = Debugger.IsAttached ? TimeSpan.FromDays(1) : TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// Maximum response body size to log (in bytes). Defaults to 32 KB.

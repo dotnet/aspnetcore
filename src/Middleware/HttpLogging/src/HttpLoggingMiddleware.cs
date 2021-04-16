@@ -61,6 +61,8 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <returns></returns>
         public async Task Invoke(HttpContext context)
         {
+            RequestBufferingStream? requestBufferingStream = null;
+            Stream? originalBody = null;
             if ((HttpLoggingFields.Request & _options.LoggingFields) != HttpLoggingFields.None)
             {
                 var request = context.Request;
@@ -97,12 +99,12 @@ namespace Microsoft.AspNetCore.HttpLogging
                     FilterHeaders(list, request.Headers, _options.AllowedRequestHeaders);
                 }
 
-                if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody) && IsSupportedMediaType(request.ContentType))
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
                 {
-                    var body = await ReadRequestBody(request, context.RequestAborted);
-
-                    list.Add(new KeyValuePair<string, object?>(nameof(request.Body), body));
-                }    
+                    originalBody = request.Body;
+                    requestBufferingStream = new RequestBufferingStream(request.Body, _options.RequestBodyLogLimit, _logger, _options.BodyEncoding);
+                    request.Body = requestBufferingStream;
+                }
 
                 // TODO add and remove things from log.
                 var httpRequestLog = new HttpRequestLog(list);
@@ -114,27 +116,28 @@ namespace Microsoft.AspNetCore.HttpLogging
                      formatter: HttpRequestLog.Callback);
             }
 
-            if ((HttpLoggingFields.Response & _options.LoggingFields) == HttpLoggingFields.None)
-            {
-                // Short circuit and don't replace response body.
-                await _next(context).ConfigureAwait(false);
-                return;
-            }
-
-            var response = context.Response;
-
-            ResponseBufferingStream? bufferingStream = null;
+            ResponseBufferingStream? responseBufferingStream = null;
             IHttpResponseBodyFeature? originalBodyFeature = null;
-            if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
-            {
-                originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
-                // TODO pool these.
-                bufferingStream = new ResponseBufferingStream(originalBodyFeature, _options.ResponseBodyLogLimit);
-                response.Body = bufferingStream;
-            }
 
             try
             {
+                if ((HttpLoggingFields.Response & _options.LoggingFields) == HttpLoggingFields.None)
+                {
+                    // Short circuit and don't replace response body.
+                    await _next(context).ConfigureAwait(false);
+                    return;
+                }
+
+                var response = context.Response;
+
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
+                {
+                    originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
+                    // TODO pool these.
+                    responseBufferingStream = new ResponseBufferingStream(originalBodyFeature, _options.ResponseBodyLogLimit, _logger);
+                    response.Body = responseBufferingStream;
+                }
+
                 await _next(context).ConfigureAwait(false);
                 var list = new List<KeyValuePair<string, object?>>(response.Headers.Count + DefaultResponseFieldsMinusHeaders);
 
@@ -150,7 +153,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody) && IsSupportedMediaType(response.ContentType))
                 {
-                    var body = bufferingStream!.GetString(_options.BodyEncoding);
+                    var body = responseBufferingStream!.GetString(_options.BodyEncoding);
                     list.Add(new KeyValuePair<string, object?>(nameof(response.Body), body));
                 }
 
@@ -166,9 +169,15 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 if (_options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
                 {
-                    bufferingStream?.Dispose();
+                    responseBufferingStream!.Dispose();
 
                     context.Features.Set(originalBodyFeature);
+                }
+
+                if (_options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
+                {
+                    requestBufferingStream!.Dispose();
+                    context.Request.Body = originalBody!;
                 }
             }
         }
@@ -187,6 +196,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
 
             var mediaType = new MediaTypeHeaderValue(contentType);
+
+            // mediaType.Charset for MVC
+
             foreach (var type in mediaTypeList)
             {
                 if (mediaType.IsSubsetOf(type))
@@ -209,86 +221,6 @@ namespace Microsoft.AspNetCore.HttpLogging
                     continue;
                 }
                 keyValues.Add(new KeyValuePair<string, object?>(key, value.ToString()));
-            }
-        }
-
-        private async Task<string> ReadRequestBody(HttpRequest request, CancellationToken token)
-        {
-            if (_options.BodyEncoding == null)
-            {
-                return "X";
-            }
-
-            using var joinedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-            joinedTokenSource.CancelAfter(_options.RequestBodyTimeout);
-            var limit = _options.RequestBodyLogLimit;
-
-            // Use a pipe for smaller payload sizes
-            if (limit <= PipeThreshold)
-            {
-                try
-                {
-                    while (true)
-                    {
-                        // TODO if someone uses the body after this, it will not have the rest of the data.
-                        var result = await request.BodyReader.ReadAsync(joinedTokenSource.Token);
-                        if (!result.IsCompleted && result.Buffer.Length <= limit)
-                        {
-                            // Need more data.
-                            request.BodyReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
-                            continue;
-                        }
-
-                        var res = _options.BodyEncoding.GetString(result.Buffer.Slice(0, result.Buffer.Length > limit ? limit : result.Buffer.Length));
-
-                        request.BodyReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
-                        return res;
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    // Token source hides triggering token (https://github.com/dotnet/runtime/issues/22172)
-                    if (!token.IsCancellationRequested && joinedTokenSource.Token.IsCancellationRequested)
-                    {
-                        return "X";
-                    }
-
-                    throw;
-                }
-            }
-            else
-            {
-                request.EnableBuffering();
-
-                // Read here.
-                var buffer = ArrayPool<byte>.Shared.Rent(limit);
-
-                try
-                {
-                    var count = 0;
-                    while (true)
-                    {
-                        var read = await request.Body.ReadAsync(buffer, count, limit - count);
-                        count += read;
-
-                        Debug.Assert(count <= limit);
-                        if (read == 0 || count == limit)
-                        {
-                            break;
-                        }
-                    }
-
-                    return _options.BodyEncoding.GetString(new Span<byte>(buffer).Slice(0, count));
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(buffer);
-                    // reseek back to start.
-                    if (request.Body.CanSeek)
-                    {
-                        _ = request.Body.Seek(0, SeekOrigin.Begin);
-                    }
-                }
             }
         }
     }

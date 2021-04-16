@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                         count += res;
                     }
 
-                    Assert.Equal(1000, count);
+                    Assert.Equal(2000, count);
                 },
                 options,
                 LoggerFactory);
@@ -489,80 +489,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             await middleware.Invoke(httpContext);
 
             Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
-        }
-
-        [Fact]
-        public async Task DefaultBodyTimeoutTruncates()
-        {
-            // media headers that should work.
-            var expected = new string('a', 1000);
-            var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.RequestBody;
-
-            var middleware = new HttpLoggingMiddleware(
-                async c =>
-                {
-                    var arr = new byte[4096];
-                    var count = 0;
-
-                    while (true)
-                    {
-                        var res = await c.Request.Body.ReadAsync(arr);
-                        if (res == 0)
-                        {
-                            break;
-                        }
-                        count += res;
-                    }
-
-                    Assert.Equal(1000, count);
-                },
-                options,
-                LoggerFactory);
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.ContentType = "text/plain";
-            httpContext.Request.Body = new SlowStream(new MemoryStream(Encoding.ASCII.GetBytes("test")), TimeSpan.FromSeconds(2));
-
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await middleware.Invoke(httpContext));
-        }
-
-        [Fact]
-        public async Task CanSetTimeoutToDifferentValue()
-        {
-            // media headers that should work.
-            var expected = new string('a', 1000);
-            var options = CreateOptionsAccessor();
-            options.Value.LoggingFields = HttpLoggingFields.RequestBody;
-            options.Value.RequestBodyTimeout = TimeSpan.FromSeconds(30);
-
-            var middleware = new HttpLoggingMiddleware(
-                async c =>
-                {
-                    var arr = new byte[4096];
-                    var count = 0;
-
-                    while (true)
-                    {
-                        var res = await c.Request.Body.ReadAsync(arr);
-                        if (res == 0)
-                        {
-                            break;
-                        }
-                        count += res;
-                    }
-
-                    Assert.Equal(1000, count);
-                },
-                options,
-                LoggerFactory);
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.ContentType = "text/plain";
-            // Does not timeout.
-            httpContext.Request.Body = new SlowStream(new MemoryStream(Encoding.ASCII.GetBytes("test")), TimeSpan.FromSeconds(2));
-
-            await middleware.Invoke(httpContext);
         }
 
         [Fact]

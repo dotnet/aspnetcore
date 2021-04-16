@@ -9,5 +9,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     {
         public static readonly EventId RequestLog = new EventId(1, "RequestLog");
         public static readonly EventId ResponseLog = new EventId(2, "ResponseLog");
+        public static readonly EventId RequestBody = new EventId(3, "RequestBody");
+        public static readonly EventId ResponseBody = new EventId(4, "ResponseBody");
     }
 }

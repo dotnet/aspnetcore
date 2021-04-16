@@ -21,4 +21,5 @@
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
     <Compile Include="$(SharedSourceRoot)Buffers\**\*.cs" LinkBase="Internal\" />
   </ItemGroup>
+
 </Project>

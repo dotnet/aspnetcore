@@ -3,127 +3,104 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    /// <summary>
-    /// Stream that buffers reads 
-    /// </summary>
-    internal class ResponseBufferingStream : Stream, IHttpResponseBodyFeature, IBufferWriter<byte>
+    internal sealed class RequestBufferingStream : Stream, IBufferWriter<byte>
     {
         private const int MaxSegmentPoolSize = 256; // 1MB
         private const int MinimumBufferSize = 4096; // 4K
-
-        private readonly IHttpResponseBodyFeature _innerBodyFeature;
-        private readonly Stream _innerStream;
+        private Stream _innerStream;
+        private Encoding? _encoding;
         private readonly int _limit;
-        private PipeWriter? _pipeAdapter;
-
+        private readonly ILogger _logger;
         private int _bytesWritten;
 
         private readonly BufferSegmentStack _bufferSegmentPool;
-        private readonly ILogger _logger;
         private BufferSegment? _head;
         private BufferSegment? _tail;
         private Memory<byte> _tailMemory; // remainder of tail memory
         private int _tailBytesBuffered;
 
-        private static readonly StreamPipeWriterOptions _pipeWriterOptions = new StreamPipeWriterOptions(leaveOpen: true);
-
-        internal ResponseBufferingStream(IHttpResponseBodyFeature innerBodyFeature, int limit, ILogger logger)
+        public RequestBufferingStream(Stream innerStream, int limit, ILogger logger, Encoding? encoding)
         {
-            _innerBodyFeature = innerBodyFeature;
-            _innerStream = innerBodyFeature.Stream;
             _limit = limit;
-            _bufferSegmentPool = new BufferSegmentStack(limit / MinimumBufferSize);
             _logger = logger;
+            _innerStream = innerStream;
+            _encoding = encoding;
+            _bufferSegmentPool = new BufferSegmentStack(limit / MinimumBufferSize);
         }
 
-        public override bool CanRead => false;
         public override bool CanSeek => false;
-        public override bool CanWrite => _innerStream.CanWrite;
 
-        public override long Length
-        {
-            get { throw new NotSupportedException(); }
-        }
+        public override bool CanRead => true;
+
+        public override bool CanWrite => false;
+
+        public override long Length => throw new NotSupportedException();
 
         public override long Position
         {
-            get { throw new NotSupportedException(); }
-            set { throw new NotSupportedException(); }
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
 
-        public Stream Stream => this;
-
-        public PipeWriter Writer
+        public override int WriteTimeout
         {
-            get
-            {
-                if (_pipeAdapter == null)
-                {
-                    _pipeAdapter = PipeWriter.Create(Stream, _pipeWriterOptions);
-                }
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
 
-                return _pipeAdapter;
-            }
+        public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
+        {
+            var res = await _innerStream.ReadAsync(destination, cancellationToken);
+
+            WriteToBuffer(destination.Slice(0, res).Span, res);
+
+            return res;
+        }
+
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            var res = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+
+            WriteToBuffer(buffer.AsSpan(offset, res), res);
+
+            return res;
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            throw new NotSupportedException();
+            var res = _innerStream.Read(buffer, offset, count);
+
+            WriteToBuffer(buffer.AsSpan(offset, res), res);
+
+            return res;
         }
 
-        public override long Seek(long offset, SeekOrigin origin)
+        private void WriteToBuffer(ReadOnlySpan<byte> span, int res)
         {
-            throw new NotSupportedException();
-        }
-
-        public override void SetLength(long value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public override void Flush()
-        {
-            _innerStream.Flush();
-        }
-
-        public override Task FlushAsync(CancellationToken cancellationToken)
-        {
-            return _innerStream.FlushAsync(cancellationToken);
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            Write(buffer.AsSpan(offset, count));
-        }
-
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-        {
-            return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
-        }
-
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-            TaskToApm.End(asyncResult);
-        }
-
-        public override void Write(ReadOnlySpan<byte> span)
-        {
+            // get what was read into the buffer
             var remaining = _limit - _bytesWritten;
+
+            if (remaining == 0)
+            {
+                return;
+            }
+
+            if (res == 0)
+            {
+                LogString();
+            }
+
             var innerCount = Math.Min(remaining, span.Length);
 
             if (span.Slice(0, innerCount).TryCopyTo(_tailMemory.Span))
@@ -137,56 +114,89 @@ namespace Microsoft.AspNetCore.HttpLogging
                 BuffersExtensions.Write(this, span.Slice(0, innerCount));
             }
 
-            _innerStream.Write(span);
+            if (_limit - _bytesWritten == 0)
+            {
+                LogString();
+            }
         }
 
-        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override void Write(byte[] buffer, int offset, int count)
+            => throw new NotSupportedException();
+
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => throw new NotSupportedException();
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+        {
+            return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
+        }
+
+        /// <inheritdoc />
+        public override int EndRead(IAsyncResult asyncResult)
+        {
+            return TaskToApm.End<int>(asyncResult);
+        }
+
+        /// <inheritdoc />
+        public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
             var remaining = _limit - _bytesWritten;
-            var innerCount = Math.Min(remaining, count);
 
-            if (_tailMemory.Length - innerCount > 0)
+            while (remaining > 0)
             {
-                //Buffer.BlockCopy(buffer, offset, , position, innerCount);
-                buffer.AsSpan(offset, count).CopyTo(_tailMemory.Span);
-                _tailBytesBuffered += innerCount;
-                _bytesWritten += innerCount;
-                _tailMemory = _tailMemory.Slice(innerCount);
+                // reusing inner buffer here between streams
+                var memory = GetMemory();
+                var innerCount = Math.Min(remaining, memory.Length);
+
+                var res = await _innerStream.ReadAsync(memory.Slice(0, innerCount), cancellationToken);
+
+                _tailBytesBuffered += res;
+                _bytesWritten += res;
+                _tailMemory = _tailMemory.Slice(res);
+
+                await destination.WriteAsync(memory.Slice(0, res));
+
+                remaining -= res;
             }
-            else
+
+            await _innerStream.CopyToAsync(destination, bufferSize, cancellationToken);
+        }
+
+        public void LogString()
+        {
+            if (_head == null || _tail == null || _encoding == null)
             {
-                BuffersExtensions.Write(this, buffer.AsSpan(offset, innerCount));
+                return;
             }
 
-            await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
-        }
+            // Only place where we are actually using the buffered data.
+            // update tail here.
+            _tail.End = _tailBytesBuffered;
 
-        public void DisableBuffering()
-        {
-            _innerBodyFeature.DisableBuffering();
-        }
+            var ros = new ReadOnlySequence<byte>(_head, 0, _tail, _tailBytesBuffered);
 
-        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
-        {
-            return _innerBodyFeature.SendFileAsync(path, offset, count, cancellation);
-        }
-
-        public Task StartAsync(CancellationToken token = default)
-        {
-            return _innerBodyFeature.StartAsync(token);
-        }
-
-        public async Task CompleteAsync()
-        {
-            await _innerBodyFeature.CompleteAsync();
-        }
-
-        // IBufferWriter<byte>
-        public void Reset()
-        {
-
-            _bytesWritten = 0;
-            _tailBytesBuffered = 0;
+            // If encoding is nullable
+            var body = _encoding.GetString(ros);
+            _logger.LogInformation(LoggerEventIds.RequestBody, CoreStrings.RequestBody, body);
         }
 
         public void Advance(int bytes)
@@ -212,7 +222,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             AllocateMemoryUnsynchronized(sizeHint);
             return _tailMemory.Span;
         }
-
         private void AllocateMemoryUnsynchronized(int sizeHint)
         {
             if (_head == null)
@@ -284,33 +293,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             // After that adjust it to fit into pools max buffer size
             var adjustedToMaximumSize = Math.Min(maxBufferSize, sizeHint);
             return adjustedToMaximumSize;
-        }
-
-        public string GetString(Encoding? encoding)
-        {
-            if (_head == null || _tail == null || encoding == null)
-            {
-                return "";
-            }
-
-            // Only place where we are actually using the buffered data.
-            // update tail here.
-            _tail.End = _tailBytesBuffered;
-
-            var ros = new ReadOnlySequence<byte>(_head, 0, _tail, _tailBytesBuffered);
-
-            // If encoding is nullable
-
-            // TODO return buffers.
-            return encoding.GetString(ros);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                Reset();
-            }
         }
 
         // Copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.Memory/src/System/ThrowHelper.cs

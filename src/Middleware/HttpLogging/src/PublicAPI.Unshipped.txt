@@ -28,8 +28,6 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.get -> Microso
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.set -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyTimeout.get -> System.TimeSpan
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyTimeout.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.SupportedMediaTypes.get -> System.Collections.Generic.List<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!>?
