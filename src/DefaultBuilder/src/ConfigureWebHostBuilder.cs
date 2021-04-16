@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private readonly WebHostEnvironment _environment;
         private readonly Configuration _configuration;
-        private readonly Dictionary<string, string?> _settings = new Dictionary<string, string?>();
+        private readonly Dictionary<string, string?> _settings = new(StringComparer.OrdinalIgnoreCase);
         private readonly IServiceCollection _services;
 
         internal ConfigureWebHostBuilder(Configuration configuration, WebHostEnvironment environment, IServiceCollection services)
@@ -78,22 +78,22 @@ namespace Microsoft.AspNetCore.Builder
                 return this;
             }
 
-            if (key == WebHostDefaults.ApplicationKey)
+            if (string.Equals(key, WebHostDefaults.ApplicationKey, StringComparison.OrdinalIgnoreCase))
             {
                 _environment.ApplicationName = value;
             }
-            else if (key == WebHostDefaults.ContentRootKey)
+            else if (string.Equals(key, WebHostDefaults.ContentRootKey, StringComparison.OrdinalIgnoreCase))
             {
                 _environment.ContentRootPath = value;
                 _environment.ResolveFileProviders(_configuration);
 
                 _configuration.ChangeBasePath(value);
             }
-            else if (key == WebHostDefaults.EnvironmentKey)
+            else if (string.Equals(key, WebHostDefaults.EnvironmentKey, StringComparison.OrdinalIgnoreCase))
             {
                 _environment.EnvironmentName = value;
             }
-            else if (key == WebHostDefaults.WebRootKey)
+            else if (string.Equals(key, WebHostDefaults.WebRootKey, StringComparison.OrdinalIgnoreCase))
             {
                 _environment.WebRootPath = value;
                 _environment.ResolveFileProviders(_configuration);

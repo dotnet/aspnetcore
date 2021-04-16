@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,6 +64,44 @@ namespace Microsoft.AspNetCore.Tests
         public void WebApplicationBuilderWebHost_ThrowsWhenBuiltDirectly()
         {
             Assert.Throws<NotSupportedException>(() => ((IWebHostBuilder)WebApplication.CreateBuilder().WebHost).Build());
+        }
+
+        [Fact]
+        public void WebApplicationBuilderWebHostUseSettings_IsCaseInsensitive()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            var contentRoot = Path.GetTempPath().ToString();
+            var webRoot = Path.GetTempPath().ToString();
+            var envName = $"{nameof(WebApplicationTests)}_ENV";
+
+            builder.WebHost.UseSetting("applicationname", nameof(WebApplicationTests));
+            builder.WebHost.UseSetting("ENVIRONMENT", envName);
+            builder.WebHost.UseSetting("CONTENTROOT", contentRoot);
+            builder.WebHost.UseSetting("WEBROOT", webRoot);
+
+            Assert.Equal(nameof(WebApplicationTests), builder.WebHost.GetSetting("APPLICATIONNAME"));
+            Assert.Equal(envName, builder.WebHost.GetSetting("environment"));
+            Assert.Equal(contentRoot, builder.WebHost.GetSetting("contentroot"));
+            Assert.Equal(webRoot, builder.WebHost.GetSetting("webroot"));
+
+            var app = builder.Build();
+
+            Assert.Equal(nameof(WebApplicationTests), app.Environment.ApplicationName);
+            Assert.Equal(envName, app.Environment.EnvironmentName);
+            Assert.Equal(contentRoot, app.Environment.ContentRootPath);
+            Assert.Equal(webRoot, app.Environment.WebRootPath);
+        }
+
+        [Fact]
+        public void WebApplicationBuilderHostProperties_IsCaseSensitive()
+        {
+            var builder = WebApplication.CreateBuilder();
+
+            builder.Host.Properties["lowercase"] = nameof(WebApplicationTests);
+
+            Assert.Equal(nameof(WebApplicationTests), builder.Host.Properties["lowercase"]);
+            Assert.False(builder.Host.Properties.ContainsKey("Lowercase"));
         }
 
         [Fact]
