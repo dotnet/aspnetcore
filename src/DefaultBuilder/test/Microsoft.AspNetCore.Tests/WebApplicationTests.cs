@@ -54,9 +54,15 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void WebApplicationBuilderServer_ThrowsWhenBuilt()
+        public void WebApplicationBuilderHost_ThrowsWhenBuiltDirectly()
         {
-            Assert.Throws<NotSupportedException>(() => WebApplication.CreateBuilder().WebHost.Build());
+            Assert.Throws<NotSupportedException>(() => ((IHostBuilder)WebApplication.CreateBuilder().Host).Build());
+        }
+
+        [Fact]
+        public void WebApplicationBuilderWebHost_ThrowsWhenBuiltDirectly()
+        {
+            Assert.Throws<NotSupportedException>(() => ((IWebHostBuilder)WebApplication.CreateBuilder().WebHost).Build());
         }
 
         [Fact]

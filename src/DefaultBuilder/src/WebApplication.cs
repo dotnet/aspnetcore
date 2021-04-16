@@ -17,7 +17,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-// REVIEW: Or just "Microsoft.AspNetCore" like WebHost?
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>

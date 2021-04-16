@@ -1,16 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -22,8 +17,8 @@ namespace Microsoft.AspNetCore.Builder
     public sealed class WebApplicationBuilder
     {
         private readonly HostBuilder _hostBuilder = new();
-        private readonly DeferredHostBuilder _deferredHostBuilder;
-        private readonly DeferredWebHostBuilder _deferredWebHostBuilder;
+        private readonly ConfigureHostBuilder _deferredHostBuilder;
+        private readonly ConfigureWebHostBuilder _deferredWebHostBuilder;
         private readonly WebHostEnvironment _environment;
 
         internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null)
@@ -42,8 +37,8 @@ namespace Microsoft.AspNetCore.Builder
 
             Configuration.SetBasePath(_environment.ContentRootPath);
             Logging = new LoggingBuilder(Services);
-            WebHost = _deferredWebHostBuilder = new DeferredWebHostBuilder(Configuration, _environment, Services);
-            Host = _deferredHostBuilder = new DeferredHostBuilder(Configuration, _environment, Services, args);
+            WebHost = _deferredWebHostBuilder = new ConfigureWebHostBuilder(Configuration, _environment, Services);
+            Host = _deferredHostBuilder = new ConfigureHostBuilder(Configuration, _environment, Services, args);
         }
 
         /// <summary>
@@ -67,14 +62,16 @@ namespace Microsoft.AspNetCore.Builder
         public ILoggingBuilder Logging { get; }
 
         /// <summary>
-        /// A builder for configuring server specific properties. 
+        /// An <see cref="IHostBuilder"/> for configuring server specific properties, but not building.
+        /// To build after configuruation, call <see cref="Build"/>.
         /// </summary>
-        public IWebHostBuilder WebHost { get; }
+        public ConfigureWebHostBuilder WebHost { get; }
 
         /// <summary>
-        /// A builder for configure host specific properties.
+        /// An <see cref="IWebHostBuilder"/> for configuring host specific properties, but not building.
+        /// To build after configuration, call <see cref="Build"/>.
         /// </summary>
-        public IHostBuilder Host { get; }
+        public ConfigureHostBuilder Host { get; }
 
         /// <summary>
         /// Builds the <see cref="WebApplication"/>.
@@ -181,182 +178,6 @@ namespace Microsoft.AspNetCore.Builder
             return sourcePipeline = new WebApplication(host);
         }
 
-        private class DeferredHostBuilder : IHostBuilder
-        {
-            private Action<IHostBuilder>? _operations;
-
-            public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
-
-            private readonly IConfigurationBuilder _hostConfiguration = new ConfigurationBuilder();
-
-            private readonly WebHostEnvironment _environment;
-            private readonly Configuration _configuration;
-            private readonly IServiceCollection _services;
-
-            public DeferredHostBuilder(Configuration configuration, WebHostEnvironment environment, IServiceCollection services, string[]? args)
-            {
-                _configuration = configuration;
-                _environment = environment;
-                _services = services;
-
-                this.ConfigureDefaults(args);
-            }
-
-            public IHost Build()
-            {
-                throw new NotSupportedException($"Call {nameof(WebApplicationBuilder)}.{nameof(WebApplicationBuilder.Build)}() instead.");
-            }
-
-            public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
-            {
-                _operations += b => b.ConfigureAppConfiguration(configureDelegate);
-                return this;
-            }
-
-            public IHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate)
-            {
-                _operations += b => b.ConfigureContainer(configureDelegate);
-                return this;
-            }
-
-            public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
-            {
-                // HACK: We need to evaluate the host configuration as they are changes so that we have an accurate view of the world
-                configureDelegate(_hostConfiguration);
-
-                var config = _hostConfiguration.Build();
-
-                _environment.ApplicationName = config[HostDefaults.ApplicationKey] ?? _environment.ApplicationName;
-                _environment.ContentRootPath = config[HostDefaults.ContentRootKey] ?? _environment.ContentRootPath;
-                _environment.EnvironmentName = config[HostDefaults.EnvironmentKey] ?? _environment.EnvironmentName;
-                _environment.ResolveFileProviders(config);
-                _configuration.ChangeBasePath(_environment.ContentRootPath);
-
-                _operations += b => b.ConfigureHostConfiguration(configureDelegate);
-                return this;
-            }
-
-            public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
-            {
-                // Run these immediately so that they are observable by the imperative code
-                configureDelegate(new HostBuilderContext(Properties)
-                {
-                    Configuration = _configuration,
-                    HostingEnvironment = _environment
-                },
-                _services);
-
-                return this;
-            }
-
-            public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
-            {
-                _operations += b => b.UseServiceProviderFactory(factory);
-                return this;
-            }
-
-            public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory) where TContainerBuilder : notnull
-            {
-                _operations += b => b.UseServiceProviderFactory(factory);
-                return this;
-            }
-
-            public void ExecuteActions(IHostBuilder hostBuilder)
-            {
-                _operations?.Invoke(hostBuilder);
-            }
-        }
-
-        private class DeferredWebHostBuilder : IWebHostBuilder
-        {
-            private Action<IWebHostBuilder>? _operations;
-
-            private readonly WebHostEnvironment _environment;
-            private readonly Configuration _configuration;
-            private readonly Dictionary<string, string?> _settings = new Dictionary<string, string?>();
-            private readonly IServiceCollection _services;
-
-            public DeferredWebHostBuilder(Configuration configuration, WebHostEnvironment environment, IServiceCollection services)
-            {
-                _configuration = configuration;
-                _environment = environment;
-                _services = services;
-            }
-
-            IWebHost IWebHostBuilder.Build()
-            {
-                throw new NotSupportedException($"Call {nameof(WebApplicationBuilder)}.{nameof(WebApplicationBuilder.Build)}() instead.");
-            }
-
-            public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
-            {
-                _operations += b => b.ConfigureAppConfiguration(configureDelegate);
-                return this;
-            }
-
-            public IWebHostBuilder ConfigureServices(Action<WebHostBuilderContext, IServiceCollection> configureServices)
-            {
-                configureServices(new WebHostBuilderContext
-                {
-                    Configuration = _configuration,
-                    HostingEnvironment = _environment
-                },
-                _services);
-                return this;
-            }
-
-            public IWebHostBuilder ConfigureServices(Action<IServiceCollection> configureServices)
-            {
-                return ConfigureServices((WebHostBuilderContext context, IServiceCollection services) => configureServices(services));
-            }
-
-            public string? GetSetting(string key)
-            {
-                _settings.TryGetValue(key, out var value);
-                return value;
-            }
-
-            public IWebHostBuilder UseSetting(string key, string? value)
-            {
-                _settings[key] = value;
-                _operations += b => b.UseSetting(key, value);
-
-                // All preoperties on IWebHostEnvironment are non-nullable.
-                if (value is null)
-                {
-                    return this;
-                }
-
-                if (key == WebHostDefaults.ApplicationKey)
-                {
-                    _environment.ApplicationName = value;
-                }
-                else if (key == WebHostDefaults.ContentRootKey)
-                {
-                    _environment.ContentRootPath = value;
-                    _environment.ResolveFileProviders(_configuration);
-
-                    _configuration.ChangeBasePath(value);
-                }
-                else if (key == WebHostDefaults.EnvironmentKey)
-                {
-                    _environment.EnvironmentName = value;
-                }
-                else if (key == WebHostDefaults.WebRootKey)
-                {
-                    _environment.WebRootPath = value;
-                    _environment.ResolveFileProviders(_configuration);
-                }
-
-                return this;
-            }
-
-            public void ExecuteActions(IWebHostBuilder webHostBuilder)
-            {
-                _operations?.Invoke(webHostBuilder);
-            }
-        }
-
         private class LoggingBuilder : ILoggingBuilder
         {
             public LoggingBuilder(IServiceCollection services)
@@ -365,62 +186,6 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             public IServiceCollection Services { get; }
-        }
-
-        private class WebHostEnvironment : IWebHostEnvironment
-        {
-            private static readonly NullFileProvider NullFileProvider = new();
-
-            public WebHostEnvironment(Assembly? callingAssembly)
-            {
-                ContentRootPath = Directory.GetCurrentDirectory();
-
-                ApplicationName = (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? "NotFound";
-                EnvironmentName = Environments.Production;
-
-                // This feels wrong, but HostingEnvironment does the same thing.
-                WebRootPath = default!;
-
-                // Default to /wwwroot if it exists.
-                var wwwroot = Path.Combine(ContentRootPath, "wwwroot");
-                if (Directory.Exists(wwwroot))
-                {
-                    WebRootPath = wwwroot;
-                }
-
-                ContentRootFileProvider = NullFileProvider;
-                WebRootFileProvider = NullFileProvider;
-
-                ResolveFileProviders(new Configuration());
-            }
-
-            public void ResolveFileProviders(IConfiguration configuration)
-            {
-                if (Directory.Exists(ContentRootPath))
-                {
-                    ContentRootFileProvider = new PhysicalFileProvider(ContentRootPath);
-                }
-
-                if (Directory.Exists(WebRootPath))
-                {
-                    WebRootFileProvider = new PhysicalFileProvider(Path.Combine(ContentRootPath, WebRootPath));
-                }
-
-                if (this.IsDevelopment())
-                {
-                    StaticWebAssetsLoader.UseStaticWebAssets(this, configuration);
-                }
-            }
-
-            public string ApplicationName { get; set; }
-            public string EnvironmentName { get; set; }
-
-            public IFileProvider ContentRootFileProvider { get; set; }
-            public string ContentRootPath { get; set; }
-
-            public IFileProvider WebRootFileProvider { get; set; }
-
-            public string WebRootPath { get; set; }
         }
     }
 }

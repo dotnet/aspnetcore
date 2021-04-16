@@ -5,6 +5,22 @@ Microsoft.AspNetCore.Builder.Configuration.GetChildren() -> System.Collections.G
 Microsoft.AspNetCore.Builder.Configuration.GetSection(string! key) -> Microsoft.Extensions.Configuration.IConfigurationSection!
 Microsoft.AspNetCore.Builder.Configuration.this[string! key].get -> string!
 Microsoft.AspNetCore.Builder.Configuration.this[string! key].set -> void
+Microsoft.AspNetCore.Builder.ConfigureHostBuilder
+Microsoft.AspNetCore.Builder.ConfigureHostBuilder.ConfigureAppConfiguration(System.Action<Microsoft.Extensions.Hosting.HostBuilderContext!, Microsoft.Extensions.Configuration.IConfigurationBuilder!>! configureDelegate) -> Microsoft.Extensions.Hosting.IHostBuilder!
+Microsoft.AspNetCore.Builder.ConfigureHostBuilder.ConfigureContainer<TContainerBuilder>(System.Action<Microsoft.Extensions.Hosting.HostBuilderContext!, TContainerBuilder>! configureDelegate) -> Microsoft.Extensions.Hosting.IHostBuilder!
+Microsoft.AspNetCore.Builder.ConfigureHostBuilder.ConfigureHostConfiguration(System.Action<Microsoft.Extensions.Configuration.IConfigurationBuilder!>! configureDelegate) -> Microsoft.Extensions.Hosting.IHostBuilder!
+Microsoft.AspNetCore.Builder.ConfigureHostBuilder.ConfigureServices(System.Action<Microsoft.Extensions.Hosting.HostBuilderContext!, Microsoft.Extensions.DependencyInjection.IServiceCollection!>! configureDelegate) -> Microsoft.Extensions.Hosting.IHostBuilder!
+Microsoft.AspNetCore.Builder.ConfigureHostBuilder.ExecuteActions(Microsoft.Extensions.Hosting.IHostBuilder! hostBuilder) -> void
+Microsoft.AspNetCore.Builder.ConfigureHostBuilder.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
+Microsoft.AspNetCore.Builder.ConfigureHostBuilder.UseServiceProviderFactory<TContainerBuilder>(Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<TContainerBuilder>! factory) -> Microsoft.Extensions.Hosting.IHostBuilder!
+Microsoft.AspNetCore.Builder.ConfigureHostBuilder.UseServiceProviderFactory<TContainerBuilder>(System.Func<Microsoft.Extensions.Hosting.HostBuilderContext!, Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<TContainerBuilder>!>! factory) -> Microsoft.Extensions.Hosting.IHostBuilder!
+Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder
+Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.ConfigureAppConfiguration(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.Extensions.Configuration.IConfigurationBuilder!>! configureDelegate) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.ConfigureServices(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext!, Microsoft.Extensions.DependencyInjection.IServiceCollection!>! configureServices) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>! configureServices) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.ExecuteActions(Microsoft.AspNetCore.Hosting.IWebHostBuilder! webHostBuilder) -> void
+Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.GetSetting(string! key) -> string?
+Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.UseSetting(string! key, string? value) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 Microsoft.AspNetCore.Builder.WebApplication
 Microsoft.AspNetCore.Builder.WebApplication.Addresses.get -> System.Collections.Generic.IEnumerable<string!>?
 Microsoft.AspNetCore.Builder.WebApplication.Configuration.get -> Microsoft.Extensions.Configuration.IConfiguration!
@@ -24,10 +40,10 @@ Microsoft.AspNetCore.Builder.WebApplicationBuilder
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build() -> Microsoft.AspNetCore.Builder.WebApplication!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Configuration.get -> Microsoft.AspNetCore.Builder.Configuration!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Environment.get -> Microsoft.AspNetCore.Hosting.IWebHostEnvironment!
-Microsoft.AspNetCore.Builder.WebApplicationBuilder.Host.get -> Microsoft.Extensions.Hosting.IHostBuilder!
+Microsoft.AspNetCore.Builder.WebApplicationBuilder.Host.get -> Microsoft.AspNetCore.Builder.ConfigureHostBuilder!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Logging.get -> Microsoft.Extensions.Logging.ILoggingBuilder!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-Microsoft.AspNetCore.Builder.WebApplicationBuilder.WebHost.get -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+Microsoft.AspNetCore.Builder.WebApplicationBuilder.WebHost.get -> Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder!
 static Microsoft.AspNetCore.Builder.WebApplication.Create() -> Microsoft.AspNetCore.Builder.WebApplication!
 static Microsoft.AspNetCore.Builder.WebApplication.Create(string![]! args) -> Microsoft.AspNetCore.Builder.WebApplication!
 static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder() -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
