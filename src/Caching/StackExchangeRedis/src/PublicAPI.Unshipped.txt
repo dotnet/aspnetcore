@@ -1,3 +1,5 @@
 #nullable enable
 ~Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ProfilingSession.get -> System.Func<StackExchange.Redis.Profiling.ProfilingSession>
 ~Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ProfilingSession.set -> void
+~Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ConnectionMultiplexerFactory.get -> System.Func<StackExchange.Redis.IConnectionMultiplexer>
+~Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.ConnectionMultiplexerFactory.set -> void
