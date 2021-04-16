@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     internal class BufferingStream : Stream, IBufferWriter<byte>
     {
         private const int MinimumBufferSize = 4096; // 4K
-        protected int _bytesWritten;
+        protected int _bytesBuffered;
         private BufferSegment? _head;
         private BufferSegment? _tail;
         protected Memory<byte> _tailMemory; // remainder of tail memory
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
 
             _tailBytesBuffered += bytes;
-            _bytesWritten += bytes;
+            _bytesBuffered += bytes;
             _tailMemory = _tailMemory.Slice(bytes);
         }
 
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             _head = _tail = null;
 
-            _bytesWritten = 0;
+            _bytesBuffered = 0;
             _tailBytesBuffered = 0;
         }
 

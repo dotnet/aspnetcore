@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private void WriteToBuffer(ReadOnlySpan<byte> span, int res)
         {
             // get what was read into the buffer
-            var remaining = _limit - _bytesWritten;
+            var remaining = _limit - _bytesBuffered;
 
             if (remaining == 0)
             {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             if (span.Slice(0, innerCount).TryCopyTo(_tailMemory.Span))
             {
                 _tailBytesBuffered += innerCount;
-                _bytesWritten += innerCount;
+                _bytesBuffered += innerCount;
                 _tailMemory = _tailMemory.Slice(innerCount);
             }
             else
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 BuffersExtensions.Write(this, span.Slice(0, innerCount));
             }
 
-            if (_limit - _bytesWritten == 0 && !_hasLogged)
+            if (_limit - _bytesBuffered == 0 && !_hasLogged)
             {
                 var requestBody = GetString(_encoding);
                 if (requestBody != null)

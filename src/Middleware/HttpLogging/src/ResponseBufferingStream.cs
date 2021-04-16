@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public override void Write(ReadOnlySpan<byte> span)
         {
-            var remaining = _limit - _bytesWritten;
+            var remaining = _limit - _bytesBuffered;
             var innerCount = Math.Min(remaining, span.Length);
 
             OnFirstWrite();
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             if (span.Slice(0, innerCount).TryCopyTo(_tailMemory.Span))
             {
                 _tailBytesBuffered += innerCount;
-                _bytesWritten += innerCount;
+                _bytesBuffered += innerCount;
                 _tailMemory = _tailMemory.Slice(innerCount);
             }
             else
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var remaining = _limit - _bytesWritten;
+            var remaining = _limit - _bytesBuffered;
             var innerCount = Math.Min(remaining, count);
 
             OnFirstWrite();
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             {
                 buffer.AsSpan(offset, count).CopyTo(_tailMemory.Span);
                 _tailBytesBuffered += innerCount;
-                _bytesWritten += innerCount;
+                _bytesBuffered += innerCount;
                 _tailMemory = _tailMemory.Slice(innerCount);
             }
             else
