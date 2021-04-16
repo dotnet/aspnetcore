@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Negotiate error code: {error}.");
             _protocolNotSupported = LoggerMessage.Define<string>(
                 eventId: new EventId(12, "ProtocolNotSupported"),
-                logLevel: LogLevel.Information,
+                logLevel: LogLevel.Debug,
                 formatString: "Negotiate is not supported with {protocol}.");
         }
 
