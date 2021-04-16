@@ -69,12 +69,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Log.JsonResultExecuting(_logger, result.Value);
 
             var value = result.Value;
-            if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
-            {
-                Log.BufferingAsyncEnumerable(_logger, value);
-                value = await reader(value);
-            }
-
             var objectType = value?.GetType() ?? typeof(object);
 
             // Keep this code in sync with SystemTextJsonOutputFormatter
@@ -147,11 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 "Executing JsonResult, writing value of type '{Type}'.",
                 skipEnabledCheck: true);
 
-            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
-               LogLevel.Debug,
-               new EventId(2, "BufferingAsyncEnumerable"),
-               "Buffering IAsyncEnumerable instance of type '{Type}'.",
-                skipEnabledCheck: true);
+            // EventId 2 BufferingAsyncEnumerable
 
             public static void JsonResultExecuting(ILogger logger, object? value)
             {
@@ -159,14 +149,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 {
                     var type = value == null ? "null" : value.GetType().FullName;
                     _jsonResultExecuting(logger, type, null);
-                }
-            }
-
-            public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-            {
-                if (logger.IsEnabled(LogLevel.Debug))
-                {
-                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
                 }
             }
         }
