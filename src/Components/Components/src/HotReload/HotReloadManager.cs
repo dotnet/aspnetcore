@@ -3,8 +3,11 @@
 
 using System;
 using System.Reflection;
+using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Components.HotReload;
 
 [assembly: AssemblyMetadata("ReceiveHotReloadDeltaNotification", "Microsoft.AspNetCore.Components.HotReload.HotReloadManager")]
+[assembly: MetadataUpdateHandler(typeof(HotReloadManager))]
 
 namespace Microsoft.AspNetCore.Components.HotReload
 {
@@ -16,5 +19,7 @@ namespace Microsoft.AspNetCore.Components.HotReload
         {
             OnDeltaApplied?.Invoke();
         }
+
+        public static void OnAfterUpdate(Type[]? _) => OnDeltaApplied?.Invoke();
     }
 }
