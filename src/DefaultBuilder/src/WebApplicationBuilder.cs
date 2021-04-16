@@ -26,15 +26,7 @@ namespace Microsoft.AspNetCore.Builder
         private readonly DeferredWebHostBuilder _deferredWebHostBuilder;
         private readonly WebHostEnvironment _environment;
 
-        /// <summary>
-        /// Creates a <see cref="WebApplicationBuilder"/>.
-        /// </summary>
-        public WebApplicationBuilder() : this(callingAssembly: null, b => { })
-        {
-
-        }
-
-        internal WebApplicationBuilder(Assembly? callingAssembly, Action<IHostBuilder> configureHost)
+        internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null)
         {
             Services = new ServiceCollection();
 
@@ -46,12 +38,12 @@ namespace Microsoft.AspNetCore.Builder
             Configuration = new Configuration();
 
             // Run this inline to populate the configuration
-            configureHost(new ConfigurationHostBuilder(Configuration, Environment));
+            new BootstrapHostBuilder(Configuration, Environment).ConfigureDefaults(args);
 
             Configuration.SetBasePath(_environment.ContentRootPath);
             Logging = new LoggingBuilder(Services);
-            Server = _deferredWebHostBuilder = new DeferredWebHostBuilder(Configuration, _environment, Services);
-            Host = _deferredHostBuilder = new DeferredHostBuilder(Configuration, configureHost, _environment, Services);
+            WebHost = _deferredWebHostBuilder = new DeferredWebHostBuilder(Configuration, _environment, Services);
+            Host = _deferredHostBuilder = new DeferredHostBuilder(Configuration, _environment, Services, args);
         }
 
         /// <summary>
@@ -77,7 +69,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// A builder for configuring server specific properties. 
         /// </summary>
-        public IWebHostBuilder Server { get; }
+        public IWebHostBuilder WebHost { get; }
 
         /// <summary>
         /// A builder for configure host specific properties.
@@ -201,13 +193,13 @@ namespace Microsoft.AspNetCore.Builder
             private readonly Configuration _configuration;
             private readonly IServiceCollection _services;
 
-            public DeferredHostBuilder(Configuration configuration, Action<IHostBuilder> configureHost, WebHostEnvironment environment, IServiceCollection services)
+            public DeferredHostBuilder(Configuration configuration, WebHostEnvironment environment, IServiceCollection services, string[]? args)
             {
                 _configuration = configuration;
                 _environment = environment;
                 _services = services;
 
-                configureHost(this);
+                this.ConfigureDefaults(args);
             }
 
             public IHost Build()

@@ -11,13 +11,13 @@ using Microsoft.Extensions.Hosting;
 namespace Microsoft.AspNetCore.Hosting
 {
     // This exists solely to bootstrap the configuration
-    internal class ConfigurationHostBuilder : IHostBuilder
+    internal class BootstrapHostBuilder : IHostBuilder
     {
         public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
         private readonly HostBuilderContext _context;
         private readonly Configuration _configuration;
 
-        public ConfigurationHostBuilder(Configuration configuration, IWebHostEnvironment webHostEnvironment)
+        public BootstrapHostBuilder(Configuration configuration, IWebHostEnvironment webHostEnvironment)
         {
             _configuration = configuration;
             _context = new HostBuilderContext(Properties)

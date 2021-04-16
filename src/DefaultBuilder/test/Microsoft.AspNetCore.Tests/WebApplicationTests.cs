@@ -6,11 +6,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
@@ -33,27 +36,34 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void WebApplicationListen_UpdatesIServerAddressesFeature()
+        public async Task WebApplicationRunUrls_UpdatesIServerAddressesFeature()
         {
-            var app = WebApplication.Create();
-            app.Listen("http://localhost:5001");
+            var builder = WebApplication.CreateBuilder();
+            var addresses = new List<string>();
+            var server = new MockAddressesServer(addresses);
+            builder.Services.AddSingleton<IServer>(server);
+            await using var app = builder.Build();
 
-            var addresses = app.ServerFeatures.Get<IServerAddressesFeature>().Addresses;
+            var runTask = app.RunAsync("http://localhost:5001");
+
             var address = Assert.Single(addresses);
             Assert.Equal("http://localhost:5001", address);
+
+            await app.StopAsync();
+            await runTask;
         }
 
         [Fact]
         public void WebApplicationBuilderServer_ThrowsWhenBuilt()
         {
-            Assert.Throws<NotSupportedException>(() => WebApplication.CreateBuilder().Server.Build());
+            Assert.Throws<NotSupportedException>(() => WebApplication.CreateBuilder().WebHost.Build());
         }
 
         [Fact]
         public async Task WebApplicationConfiguration_HostFilterOptionsAreReloadable()
         {
             var builder = WebApplication.CreateBuilder();
-            var host = builder.Server
+            var host = builder.WebHost
                 .ConfigureAppConfiguration(configBuilder =>
                 {
                     configBuilder.Add(new ReloadableMemorySource());
@@ -83,7 +93,7 @@ namespace Microsoft.AspNetCore.Tests
         public async Task WebApplicationConfiguration_EnablesForwardedHeadersFromConfig()
         {
             var builder = WebApplication.CreateBuilder();
-            builder.Server.UseTestServer();
+            builder.WebHost.UseTestServer();
             builder.Configuration.AddInMemoryCollection(new[]
             {
                 new KeyValuePair<string, string>("FORWARDEDHEADERS_ENABLED", "true" ),
@@ -191,6 +201,41 @@ namespace Microsoft.AspNetCore.Tests
             {
                 base.Set(key, value);
                 OnReload();
+            }
+        }
+
+        private class MockAddressesServer : IServer
+        {
+            public IFeatureCollection Features { get; } = new FeatureCollection();
+
+            public MockAddressesServer(ICollection<string> addresses)
+            {
+                var mockAddressesFeature = new MockServerAddressesFeature
+                {
+                    Addresses = addresses
+                };
+
+                Features.Set<IServerAddressesFeature>(mockAddressesFeature);
+            }
+
+            public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            private class MockServerAddressesFeature : IServerAddressesFeature
+            {
+                public ICollection<string> Addresses { get; set; }
+                public bool PreferHostingUrls { get; set; }
             }
         }
     }
