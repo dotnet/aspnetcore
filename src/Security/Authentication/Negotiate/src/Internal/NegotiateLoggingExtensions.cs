@@ -18,6 +18,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception?> _reauthenticating;
         private static Action<ILogger, Exception?> _deferring;
         private static Action<ILogger, string, Exception?> _negotiateError;
+        private static Action<ILogger, string, Exception?> _protocolNotSupported;
 
         static NegotiateLoggingExtensions()
         {
@@ -65,6 +66,10 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(11, "NegotiateError"),
                 logLevel: LogLevel.Debug,
                 formatString: "Negotiate error code: {error}.");
+            _protocolNotSupported = LoggerMessage.Define<string>(
+                eventId: new EventId(12, "ProtocolNotSupported"),
+                logLevel: LogLevel.Information,
+                formatString: "Negotiate is not supported with {protocol}.");
         }
 
         public static void IncompleteNegotiateChallenge(this ILogger logger)
@@ -99,5 +104,8 @@ namespace Microsoft.Extensions.Logging
 
         public static void NegotiateError(this ILogger logger, string error)
             => _negotiateError(logger, error, null);
+
+        public static void ProtocolNotSupported(this ILogger logger, string protocol)
+            => _protocolNotSupported(logger, protocol, null);
     }
 }

@@ -82,6 +82,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 {
                     // HTTP/1.0 and HTTP/1.1 are supported. Do not throw because this may be running on a server that supports
                     // additional protocols.
+                    Logger.ProtocolNotSupported(Request.Protocol);
                     return false;
                 }
 
