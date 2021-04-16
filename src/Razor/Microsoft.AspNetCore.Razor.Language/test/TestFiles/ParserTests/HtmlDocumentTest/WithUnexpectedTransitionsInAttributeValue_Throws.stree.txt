@@ -21,7 +21,7 @@ RazorDocument - [0..18)::18 - [<span foo='@ @' />]
                                             Transition;[@];
                                         CSharpImplicitExpressionBody - [12..12)::0
                                             CSharpCodeBlock - [12..12)::0
-                                                CSharpExpressionLiteral - [12..12)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                CSharpExpressionLiteral - [12..12)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K15
                                                     Marker;[];
                         MarkupDynamicAttributeValue - [12..14)::2 - [ @]
                             MarkupTextLiteral - [12..13)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -33,7 +33,7 @@ RazorDocument - [0..18)::18 - [<span foo='@ @' />]
                                             Transition;[@];
                                         CSharpImplicitExpressionBody - [14..14)::0
                                             CSharpCodeBlock - [14..14)::0
-                                                CSharpExpressionLiteral - [14..14)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                CSharpExpressionLiteral - [14..14)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K15
                                                     Marker;[];
                     MarkupTextLiteral - [14..15)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];

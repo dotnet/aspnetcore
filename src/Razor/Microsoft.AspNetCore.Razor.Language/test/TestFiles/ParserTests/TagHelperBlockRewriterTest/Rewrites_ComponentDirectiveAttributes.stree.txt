@@ -15,7 +15,7 @@ RazorDocument - [0..60)::60 - [<input @bind-value="Message" @bind-value:event="o
                     MarkupTextLiteral - [19..20)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [20..27)::7
-                        CSharpExpressionLiteral - [20..27)::7 - [Message] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                        CSharpExpressionLiteral - [20..27)::7 - [Message] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                             Text;[Message];
                     MarkupTextLiteral - [27..28)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];

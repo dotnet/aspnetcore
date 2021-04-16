@@ -565,4 +565,10 @@
   <data name="CssRewriter_ImportNotAllowed" xml:space="preserve">
     <value>@import rules are not supported within scoped CSS files because the loading order would be undefined. @import may only be placed in non-scoped CSS files.</value>
   </data>
+  <data name="DirectiveGenericTypeParameterIdentifierMismatch" xml:space="preserve">
+    <value>The type parameter in the generic type constraint '{1}' does not match the type parameter '{2}' defined in the directive '{0}'.</value>
+  </data>
+  <data name="ParseError_Unexpected_Identifier_At_Position" xml:space="preserve">
+    <value>'{0}' is not valid in this position. Valid options are '{1}'</value>
+  </data>
 </root>

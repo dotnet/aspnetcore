@@ -1,4 +1,4 @@
-﻿// Copyright(c) .NET Foundation.All rights reserved.
+// Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -242,6 +242,23 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Tokens.Add(
                 DirectiveTokenDescriptor.CreateToken(
                     DirectiveTokenKind.Attribute,
+                    optional: true,
+                    name: name,
+                    description: description));
+
+            return builder;
+        }
+
+        public static IDirectiveDescriptorBuilder AddOptionalGenericTypeConstraintToken(this IDirectiveDescriptorBuilder builder, string name, string description)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Tokens.Add(
+                DirectiveTokenDescriptor.CreateToken(
+                    DirectiveTokenKind.GenericTypeConstraint,
                     optional: true,
                     name: name,
                     description: description));
