@@ -8,7 +8,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>CS1591;CS0436;$(NoWarn)</NoWarn><!-- Conflicts between internal and public Quic APIs -->
     <Nullable>enable</Nullable>
-    <SupportedOSPlatforms>windows;linux;macos</SupportedOSPlatforms>
   </PropertyGroup>
 
   <ItemGroup>
