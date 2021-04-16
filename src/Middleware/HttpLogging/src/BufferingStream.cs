@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public void LogString(Encoding? encoding)
+        public void LogString(Encoding? encoding, EventId eventId, string template)
         {
             if (_head == null || _tail == null || encoding == null)
             {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             // If encoding is nullable
             var body = encoding.GetString(ros);
-            _logger.LogInformation(LoggerEventIds.RequestBody, CoreStrings.RequestBody, body);
+            _logger.LogInformation(eventId, template, body);
 
             Reset();
         }

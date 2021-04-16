@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private Stream _innerStream;
         private Encoding? _encoding;
         private readonly int _limit;
+        private bool _hasLogged;
 
         public RequestBufferingStream(Stream innerStream, int limit, ILogger logger, Encoding? encoding)
             : base(logger)
@@ -85,10 +86,12 @@ namespace Microsoft.AspNetCore.HttpLogging
                 return;
             }
 
-            if (res == 0)
+            if (res == 0 && !_hasLogged)
             {
                 // Done reading, log the string.
-                LogString(_encoding);
+                LogString(_encoding, LoggerEventIds.RequestBody, CoreStrings.RequestBody);
+                _hasLogged = true;
+                return;
             }
 
             var innerCount = Math.Min(remaining, span.Length);
@@ -104,9 +107,10 @@ namespace Microsoft.AspNetCore.HttpLogging
                 BuffersExtensions.Write(this, span.Slice(0, innerCount));
             }
 
-            if (_limit - _bytesWritten == 0)
+            if (_limit - _bytesWritten == 0 && !_hasLogged)
             {
-                LogString(_encoding);
+                LogString(_encoding, LoggerEventIds.RequestBody, CoreStrings.RequestBody);
+                _hasLogged = true;
             }
         }
 

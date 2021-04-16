@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 if (responseBufferingStream != null)
                 {
-                    responseBufferingStream.LogString(responseBufferingStream.Encoding);
+                    responseBufferingStream.LogString(responseBufferingStream.Encoding, LoggerEventIds.ResponseBody, CoreStrings.ResponseBody);
                 }
             }
             finally
