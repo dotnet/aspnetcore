@@ -22,10 +22,10 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// Request header values that are allowed to be logged.
         /// </summary>
         /// <remarks>
-        /// If a request header is not present in the <see cref="AllowedRequestHeaders"/>,
+        /// If a request header is not present in the <see cref="RequestHeaders"/>,
         /// the header name will be logged with a redacted value.
         /// </remarks>
-        public HashSet<string> AllowedRequestHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        public ISet<string> RequestHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.Accept,
             HeaderNames.AcceptEncoding,
@@ -42,10 +42,10 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// Response header values that are allowed to be logged.
         /// </summary>
         /// <remarks>
-        /// If a response header is not present in the <see cref="AllowedResponseHeaders"/>,
+        /// If a response header is not present in the <see cref="ResponseHeaders"/>,
         /// the header name will be logged with a redacted value.
         /// </remarks>
-        public HashSet<string> AllowedResponseHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        public ISet<string> ResponseHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.ContentLength,
             HeaderNames.ContentType,
@@ -53,19 +53,12 @@ namespace Microsoft.AspNetCore.HttpLogging
         };
 
         /// <summary>
-        /// A list of supported media type values for request and response body logging with corresponding encodings.
+        /// Options for configuring encodings for a specific media type.
         /// </summary>
         /// <remarks>
         /// If the request or response do not match the supported media type, the response body will not be logged.
         /// </remarks>
-        public List<KeyValuePair<MediaTypeHeaderValue, Encoding>> SupportedMediaTypes { get; } = new List<KeyValuePair<MediaTypeHeaderValue, Encoding>>()
-        {
-            new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("application/json"), Encoding.UTF8),
-            new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("application/*+json"), Encoding.UTF8),
-            new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("application/xml"), Encoding.UTF8),
-            new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("application/*+xml"), Encoding.UTF8),
-            new KeyValuePair<MediaTypeHeaderValue, Encoding>(new MediaTypeHeaderValue("text/*"), Encoding.UTF8),
-        };
+        public MediaTypeOptions MediaTypeOptions { get; } = MediaTypeOptions.Default;
 
         /// <summary>
         /// Maximum request body size to log (in bytes). Defaults to 32 KB.

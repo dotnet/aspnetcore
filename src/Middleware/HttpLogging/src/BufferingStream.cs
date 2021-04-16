@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             var ros = new ReadOnlySequence<byte>(_head, 0, _tail, _tailBytesBuffered);
 
             // If encoding is nullable
+            // TODO make sure this doesn't truncate.
             var body = encoding.GetString(ros);
             _logger.LogInformation(eventId, template, body);
 

@@ -260,8 +260,8 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task CanConfigureRequestAllowList()
         {
             var options = CreateOptionsAccessor();
-            options.CurrentValue.AllowedRequestHeaders.Clear();
-            options.CurrentValue.AllowedRequestHeaders.Add("foo");
+            options.CurrentValue.RequestHeaders.Clear();
+            options.CurrentValue.RequestHeaders.Add("foo");
             var middleware = new HttpLoggingMiddleware(
                  c =>
                  {
@@ -470,11 +470,8 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var expected = new string('a', 1000);
             var options = CreateOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
-            options.CurrentValue.SupportedMediaTypes.Clear();
-            options.CurrentValue.SupportedMediaTypes.Add(
-                new KeyValuePair<MediaTypeHeaderValue, Encoding>(
-                    new MediaTypeHeaderValue("text/plain"),
-                    encoding));
+            options.CurrentValue.MediaTypeOptions.Clear();
+            options.CurrentValue.MediaTypeOptions.AddText("text/plain", encoding);
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -557,7 +554,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task StatusCodeLogs()
         {
             var options = CreateOptionsAccessor();
-            options.CurrentValue.LoggingFields = HttpLoggingFields.StatusCode;
+            options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseStatusCode;
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -629,8 +626,8 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         {
             var options = CreateOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseHeaders;
-            options.CurrentValue.AllowedResponseHeaders.Clear();
-            options.CurrentValue.AllowedResponseHeaders.Add("Test");
+            options.CurrentValue.ResponseHeaders.Clear();
+            options.CurrentValue.ResponseHeaders.Add("Test");
 
             var middleware = new HttpLoggingMiddleware(
                 c =>

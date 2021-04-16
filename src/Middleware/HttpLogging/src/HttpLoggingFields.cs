@@ -19,32 +19,32 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Request Path
         /// </summary>
-        Path = 0x1,
+        RequestPath = 0x1,
 
         /// <summary>
         /// Request Query String
         /// </summary>
-        Query = 0x2,
+        RequestQuery = 0x2,
 
         /// <summary>
         /// Request Protocol
         /// </summary>
-        Protocol = 0x4,
+        RequestProtocol = 0x4,
 
         /// <summary>
         /// Request Method
         /// </summary>
-        Method = 0x8,
+        RequestMethod = 0x8,
 
         /// <summary>
         /// Request Scheme
         /// </summary>
-        Scheme = 0x10,
+        RequestScheme = 0x10,
 
         /// <summary>
         /// Response Status Code
         /// </summary>
-        StatusCode = 0x20,
+        ResponseStatusCode = 0x20,
 
         /// <summary>
         /// Request Headers
@@ -57,19 +57,29 @@ namespace Microsoft.AspNetCore.HttpLogging
         ResponseHeaders = 0x80,
 
         /// <summary>
+        /// Request Trailers
+        /// </summary>
+        RequestTrailers = 0x100,
+
+        /// <summary>
+        /// Response Trailers
+        /// </summary>
+        ResponseTrailers = 0x200,
+
+        /// <summary>
         /// Request Body
         /// </summary>
-        RequestBody = 0x100,
+        RequestBody = 0x400,
 
         /// <summary>
         /// Response Body
         /// </summary>
-        ResponseBody = 0x200,
+        ResponseBody = 0x800,
 
         /// <summary>
         /// Combination of request properties, including Path, Query, Protocol, Method, and Scheme
         /// </summary>
-        RequestProperties = Path | Query | Protocol | Method | Scheme,
+        RequestProperties = RequestPath | RequestQuery | RequestProtocol | RequestMethod | RequestScheme,
 
         /// <summary>
         /// Combination of Request Properties and Request Headers
@@ -79,7 +89,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Combination of Response Properties and Response Headers
         /// </summary>
-        ResponsePropertiesAndHeaders = StatusCode | ResponseHeaders,
+        ResponsePropertiesAndHeaders = ResponseStatusCode | ResponseHeaders,
 
         /// <summary>
         /// Entire Request
@@ -89,7 +99,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Entire Response
         /// </summary>
-        Response = StatusCode | ResponseHeaders | ResponseBody,
+        Response = ResponseStatusCode | ResponseHeaders | ResponseBody,
 
         /// <summary>
         /// Entire Request and Response

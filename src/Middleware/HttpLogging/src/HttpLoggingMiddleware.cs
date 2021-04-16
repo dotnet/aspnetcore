@@ -68,35 +68,35 @@ namespace Microsoft.AspNetCore.HttpLogging
                 var list = new List<KeyValuePair<string, object?>>(
                     request.Headers.Count + DefaultRequestFieldsMinusHeaders);
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.Protocol))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
                 {
                     AddToList(list, nameof(request.Protocol), request.Protocol);
                 }
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.Method))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestMethod))
                 {
                     AddToList(list, nameof(request.Method), request.Method);
                 }
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.Scheme))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestScheme))
                 {
                     AddToList(list, nameof(request.Scheme), request.Scheme);
                 }
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.Path))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
                 {
                     AddToList(list, nameof(request.PathBase), request.PathBase);
                     AddToList(list, nameof(request.Path), request.Path);
                 }
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.Query))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestQuery))
                 {
                     AddToList(list, nameof(request.QueryString), request.QueryString.Value);
                 }
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
                 {
-                    FilterHeaders(list, request.Headers, options.AllowedRequestHeaders);
+                    FilterHeaders(list, request.Headers, options.RequestHeaders);
                 }
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody)
@@ -153,14 +153,14 @@ namespace Microsoft.AspNetCore.HttpLogging
                 var list = new List<KeyValuePair<string, object?>>(
                     response.Headers.Count + DefaultResponseFieldsMinusHeaders);
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.StatusCode))
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
                 {
                     list.Add(new KeyValuePair<string, object?>(nameof(response.StatusCode), response.StatusCode));
                 }
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
                 {
-                    FilterHeaders(list, response.Headers, options.AllowedResponseHeaders);
+                    FilterHeaders(list, response.Headers, options.ResponseHeaders);
                 }
 
                 var httpResponseLog = new HttpResponseLog(list);
