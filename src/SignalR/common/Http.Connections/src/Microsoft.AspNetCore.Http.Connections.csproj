@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Components for providing real-time bi-directional communication across the Web.</Description>
@@ -17,6 +17,7 @@
     <Compile Include="$(SignalRSharedSourceRoot)StreamExtensions.cs" Link="StreamExtensions.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)DuplexPipe.cs" Link="DuplexPipe.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TaskCache.cs" Link="Internal\TaskCache.cs" />
+    <Compile Include="$(SharedSourceRoot)TaskBuilderExtensions.cs" Link="Internal\TaskBuilderExtensions" />
   </ItemGroup>
 
   <ItemGroup>

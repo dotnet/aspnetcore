@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly ConnectionContext _connectionContext;
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _connectionAbortedTokenSource = new CancellationTokenSource();
-        private readonly TaskCompletionSource _abortCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        private AsyncTaskMethodBuilder _abortCompletedAtmb;     // mutable struct, don't make readonly
         private readonly long _keepAliveInterval;
         private readonly long _clientTimeoutInterval;
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
@@ -82,6 +83,9 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 ActiveInvocationLimit = new SemaphoreSlim(maxInvokeLimit, maxInvokeLimit);
             }
+
+            _abortCompletedAtmb = AsyncTaskMethodBuilder.Create();
+            _ = _abortCompletedAtmb.Task;      // force initialization of Task
         }
 
         internal StreamTracker StreamTracker
@@ -600,14 +604,14 @@ namespace Microsoft.AspNetCore.SignalR
                 return AbortAsyncSlow();
             }
             _writeLock.Release();
-            return _abortCompletedTcs.Task;
+            return _abortCompletedAtmb.Task;
         }
 
         private async Task AbortAsyncSlow()
         {
             await _writeLock.WaitAsync();
             _writeLock.Release();
-            await _abortCompletedTcs.Task;
+            await _abortCompletedAtmb.Task;
         }
 
         private void KeepAliveTick()
@@ -691,7 +695,7 @@ namespace Microsoft.AspNetCore.SignalR
                 {
                     // Communicate the fact that we're finished triggering abort callbacks
                     // HubOnDisconnectedAsync is waiting on this to complete the Pipe
-                    connection._abortCompletedTcs.TrySetResult();
+                    connection._abortCompletedAtmb.SetResult(runContinuationsAsynchronously: true);
                 }
                 finally
                 {

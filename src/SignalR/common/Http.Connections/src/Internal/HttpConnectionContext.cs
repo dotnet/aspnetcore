@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
@@ -51,9 +52,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly object _sendingLock = new object();
         internal CancellationToken SendingToken { get; private set; }
 
-        // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
+        // This Task exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
-        private readonly TaskCompletionSource _disposeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        private AsyncTaskMethodBuilder _disposeAtmb;   // mutable struct, don't make readonly
 
         /// <summary>
         /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
@@ -90,6 +91,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             _connectionClosedTokenSource = new CancellationTokenSource();
             ConnectionClosed = _connectionClosedTokenSource.Token;
+
+            _disposeAtmb = AsyncTaskMethodBuilder.Create();
+            _ = _disposeAtmb.Task;      // force initialization of Task
         }
 
         public CancellationTokenSource? Cancellation { get; set; }
@@ -221,7 +225,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     if (Status == HttpConnectionStatus.Disposed)
                     {
-                        disposeTask = _disposeTcs.Task;
+                        disposeTask = _disposeAtmb.Task;
                     }
                     else
                     {
@@ -351,17 +355,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
 
                 // Notify all waiters that we're done disposing
-                _disposeTcs.TrySetResult();
+                _disposeAtmb.SetResult(runContinuationsAsynchronously: true);
             }
             catch (OperationCanceledException)
             {
-                _disposeTcs.TrySetCanceled();
+                _disposeAtmb.SetCanceled(runContinuationsAsynchronously: true);
 
                 throw;
             }
             catch (Exception ex)
             {
-                _disposeTcs.TrySetException(ex);
+                _disposeAtmb.SetException(ex, runContinuationsAsynchronously: true);
 
                 throw;
             }

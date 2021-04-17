@@ -13,6 +13,7 @@
     <Compile Include="$(SignalRSharedSourceRoot)ReflectionHelper.cs" Link="ReflectionHelper.cs" />
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" />
+    <Compile Include="$(SharedSourceRoot)TaskBuilderExtensions.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)AsyncEnumerableAdapters.cs" Link="Internal\AsyncEnumerableAdapters.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TaskCache.cs" Link="Internal\TaskCache.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)ISystemClock.cs" Link="Internal\ISystemClock.cs" />
