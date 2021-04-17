@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NET6_0
 using System;
 using System.Collections.Generic;
+#endif
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -26,12 +28,20 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="options"><see cref="CookieOptions"/> included in the new cookie setting.</param>
         void Append(string key, string value, CookieOptions options);
 
+#if NET6_0
         /// <summary>
         /// Add elements of specified dictionary as cookies.
         /// </summary>
         /// <param name="keyValuePairs">Key value pair collections whose elements will be added as cookies.</param>
         /// <param name="options"><see cref="CookieOptions"/> included in new cookie settings.</param>
-        void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options);
+        void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
+        {
+            foreach (var keyValuePair in keyValuePairs)
+            {
+                Append(keyValuePair.Key, keyValuePair.Value, options);
+            }
+        }
+#endif
 
         /// <summary>
         /// Sets an expired cookie.
