@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -177,7 +178,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
                 }
             }
 
-            Cookies.Append(nonSuppressedValues.ToArray(), options);
+            Cookies.Append(CollectionsMarshal.AsSpan(nonSuppressedValues), options);
         }
 
         private bool ApplyAppendPolicy(ref string key, ref string value, CookieOptions options)
