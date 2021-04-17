@@ -15,6 +15,7 @@
     <Compile Include="$(SignalRSharedSourceRoot)TimerAwaitable.cs" Link="Internal\TimerAwaitable.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)AsyncEnumerableAdapters.cs" Link="Internal\AsyncEnumerableAdapters.cs" />
     <Compile Include="$(SharedSourceRoot)OperatingSystem.cs" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <Compile Include="$(SharedSourceRoot)TaskBuilderExtensions.cs" Link="Internal\TaskBuilderExtensions" />
   </ItemGroup>
 
   <ItemGroup>

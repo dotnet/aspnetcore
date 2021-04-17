@@ -1670,7 +1670,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             private readonly object _lock = new object();
             private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>(StringComparer.Ordinal);
-            private TaskCompletionSource<object?>? _stopTcs;
+            private AsyncTaskMethodBuilder? _atmb;
 
             private volatile bool _stopping;
 
@@ -1773,13 +1773,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // to wait for the same "stop" to complete.
                 lock (_lock)
                 {
-                    if (_stopTcs != null)
+                    if (_atmb.HasValue)
                     {
-                        return _stopTcs.Task;
+                        return _atmb.GetValueOrDefault().Task;
                     }
                     else
                     {
-                        _stopTcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+                        var atmb = AsyncTaskMethodBuilder.Create();
+                        _ = atmb.Task;      // force initialization of Task
+                        _atmb = atmb;
                         return StopAsyncCore();
                     }
                 }
@@ -1800,7 +1802,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 Log.Stopped(_logger);
 
                 _hubConnection._logScope.ConnectionId = null;
-                _stopTcs!.TrySetResult(null);
+
+                Debug.Assert(_atmb.HasValue);
+                _atmb.GetValueOrDefault().SetResult(runContinuationsAsynchronously: true);
             }
 
             public async Task TimerLoop(TimerAwaitable timer)

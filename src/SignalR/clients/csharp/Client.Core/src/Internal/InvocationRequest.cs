@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -127,14 +128,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
 
         private class NonStreaming : InvocationRequest
         {
-            private readonly TaskCompletionSource<object?> _completionSource = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private AsyncTaskMethodBuilder<object?> _atmb = AsyncTaskMethodBuilder<object?>.Create();   // mutable struct, don't make readonly
 
             public NonStreaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection)
                 : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger<NonStreaming>(), hubConnection)
             {
+                _ = _atmb.Task;     // force initialization of Task
             }
 
-            public Task<object?> Result => _completionSource.Task;
+            public Task<object?> Result => _atmb.Task;
 
             public override void Complete(CompletionMessage completionMessage)
             {
@@ -145,28 +147,27 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
                 }
 
                 Log.InvocationCompleted(Logger, InvocationId);
-                _completionSource.TrySetResult(completionMessage.Result);
+                _atmb.SetResult(completionMessage.Result, runContinuationsAsynchronously: true);
             }
 
             public override void Fail(Exception exception)
             {
                 Log.InvocationFailed(Logger, InvocationId);
-                _completionSource.TrySetException(exception);
+                _atmb.SetException(exception, runContinuationsAsynchronously: true);
             }
 
             public override ValueTask<bool> StreamItem(object? item)
             {
                 Log.StreamItemOnNonStreamInvocation(Logger, InvocationId);
-                _completionSource.TrySetException(new InvalidOperationException($"Streaming hub methods must be invoked with the '{nameof(HubConnection)}.{nameof(HubConnectionExtensions.StreamAsChannelAsync)}' method."));
+                _atmb.SetException(
+                    new InvalidOperationException($"Streaming hub methods must be invoked with the '{nameof(HubConnection)}.{nameof(HubConnectionExtensions.StreamAsChannelAsync)}' method."),
+                    runContinuationsAsynchronously: true);
 
                 // We "delivered" the stream item successfully as far as the caller cares
                 return new ValueTask<bool>(true);
             }
 
-            protected override void Cancel()
-            {
-                _completionSource.TrySetCanceled();
-            }
+            protected override void Cancel() => _atmb.SetCanceled(runContinuationsAsynchronously: true);
         }
 
         private static class Log
