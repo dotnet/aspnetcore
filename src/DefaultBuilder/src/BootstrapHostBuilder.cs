@@ -38,12 +38,8 @@ namespace Microsoft.AspNetCore.Hosting
         public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
         {
             configureDelegate(_context, _configuration);
-
-            _environment.ApplicationName = _configuration[HostDefaults.ApplicationKey] ?? _environment.ApplicationName;
-            _environment.ContentRootPath = _configuration[HostDefaults.ContentRootKey] ?? _environment.ContentRootPath;
-            _environment.EnvironmentName = _configuration[HostDefaults.EnvironmentKey] ?? _environment.EnvironmentName;
-            _environment.WebRootPath = _configuration[WebHostDefaults.ContentRootKey] ?? _environment.WebRootPath;
-
+            _environment.ApplyConfigurationSettings(_configuration);
+            _configuration.ChangeBasePath(_environment.ContentRootPath);
             return this;
         }
 
@@ -57,6 +53,8 @@ namespace Microsoft.AspNetCore.Hosting
         public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
         {
             configureDelegate(_configuration);
+            _environment.ApplyConfigurationSettings(_configuration);
+            _configuration.ChangeBasePath(_environment.ContentRootPath);
             return this;
         }
 

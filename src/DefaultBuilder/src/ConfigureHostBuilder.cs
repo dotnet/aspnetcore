@@ -61,14 +61,7 @@ namespace Microsoft.AspNetCore.Builder
             // HACK: We need to evaluate the host configuration as they are changes so that we have an accurate view of the world
             configureDelegate(_hostConfiguration);
 
-            var config = _hostConfiguration.Build();
-
-            _environment.ApplicationName = config[WebHostDefaults.ApplicationKey] ?? _environment.ApplicationName;
-            _environment.EnvironmentName = config[WebHostDefaults.EnvironmentKey] ?? _environment.EnvironmentName;
-            _environment.ContentRootPath = config[WebHostDefaults.ContentRootKey] ?? _environment.ContentRootPath;
-            _environment.WebRootPath = config[WebHostDefaults.ContentRootKey] ?? _environment.ContentRootPath;
-
-            _environment.ResolveFileProviders(config);
+            _environment.ApplyConfigurationSettings(_hostConfiguration.Build());
             Configuration.ChangeBasePath(_environment.ContentRootPath);
 
             _operations += b => b.ConfigureHostConfiguration(configureDelegate);

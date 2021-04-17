@@ -38,6 +38,24 @@ namespace Microsoft.AspNetCore.Builder
             ResolveFileProviders(new Configuration());
         }
 
+        public void ApplyConfigurationSettings(IConfiguration configuration)
+        {
+            ApplicationName = configuration[WebHostDefaults.ApplicationKey] ?? ApplicationName;
+            ContentRootPath = configuration[WebHostDefaults.ContentRootKey] ?? ContentRootPath;
+            EnvironmentName = configuration[WebHostDefaults.EnvironmentKey] ?? EnvironmentName;
+            WebRootPath = configuration[WebHostDefaults.ContentRootKey] ?? WebRootPath;
+
+            ResolveFileProviders(configuration);
+        }
+
+        public void ApplyEnvironmentSettings(IWebHostBuilder genericWebHostBuilder)
+        {
+            genericWebHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, ApplicationName);
+            genericWebHostBuilder.UseSetting(WebHostDefaults.EnvironmentKey, EnvironmentName);
+            genericWebHostBuilder.UseSetting(WebHostDefaults.ContentRootKey, ContentRootPath);
+            genericWebHostBuilder.UseSetting(WebHostDefaults.WebRootKey, WebRootPath);
+        }
+
         public void ResolveFileProviders(IConfiguration configuration)
         {
             if (Directory.Exists(ContentRootPath))
@@ -54,14 +72,6 @@ namespace Microsoft.AspNetCore.Builder
             {
                 StaticWebAssetsLoader.UseStaticWebAssets(this, configuration);
             }
-        }
-
-        public void ApplyEnvironmentSettings(IWebHostBuilder genericWebHostBuilder)
-        {
-            genericWebHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, ApplicationName);
-            genericWebHostBuilder.UseSetting(WebHostDefaults.EnvironmentKey, EnvironmentName);
-            genericWebHostBuilder.UseSetting(WebHostDefaults.ContentRootKey, ContentRootPath);
-            genericWebHostBuilder.UseSetting(WebHostDefaults.WebRootKey, WebRootPath);
         }
 
         public string ApplicationName { get; set; }
