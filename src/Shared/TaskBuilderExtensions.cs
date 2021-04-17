@@ -53,21 +53,6 @@ namespace System.Threading.Tasks
 #endif
         }
 
-        public static void SetResult<TResult>(this AsyncValueTaskMethodBuilder<TResult> avtmb, TResult result, bool runContinuationsAsynchronously)
-        {
-            if (!runContinuationsAsynchronously)
-            {
-                avtmb.SetResult(result);
-                return;
-            }
-
-            ThreadPool.UnsafeQueueUserWorkItem(static state =>
-            {
-                var (avtmb, result) = state;
-                avtmb.SetResult(result);
-            }, (avtmb, result), preferLocal: true);
-        }
-
         public static void SetException(this AsyncTaskMethodBuilder atmb, Exception exception, bool runContinuationsAsynchronously)
         {
             if (!runContinuationsAsynchronously)
@@ -114,6 +99,34 @@ namespace System.Threading.Tasks
 #endif
         }
 
+        public static void SetCanceled(this AsyncTaskMethodBuilder atmb, bool runContinuationsAsynchronously = false, OperationCanceledException? operationCanceledException = null)
+        {
+            // This will mark the Task as canceled internally.
+            SetException(atmb, operationCanceledException ?? s_operationCanceledException, runContinuationsAsynchronously);
+        }
+
+        public static void SetCanceled<TResult>(this AsyncTaskMethodBuilder<TResult> atmb, bool runContinuationsAsynchronously = false, OperationCanceledException? operationCanceledException = null)
+        {
+            // This will mark the Task as canceled internally.
+            SetException(atmb, operationCanceledException ?? s_operationCanceledException, runContinuationsAsynchronously);
+        }
+
+#if NET6_0_OR_GREATER
+        public static void SetResult<TResult>(this AsyncValueTaskMethodBuilder<TResult> avtmb, TResult result, bool runContinuationsAsynchronously)
+        {
+            if (!runContinuationsAsynchronously)
+            {
+                avtmb.SetResult(result);
+                return;
+            }
+
+            ThreadPool.UnsafeQueueUserWorkItem(static state =>
+            {
+                var (avtmb, result) = state;
+                avtmb.SetResult(result);
+            }, (avtmb, result), preferLocal: true);
+        }
+
         public static void SetException<TResult>(this AsyncValueTaskMethodBuilder<TResult> avtmb, Exception exception, bool runContinuationsAsynchronously)
         {
             if (!runContinuationsAsynchronously)
@@ -128,17 +141,6 @@ namespace System.Threading.Tasks
                 atmb.SetException(exception);
             }, (avtmb, exception), preferLocal: true);
         }
-
-        public static void SetCanceled(this AsyncTaskMethodBuilder atmb, bool runContinuationsAsynchronously = false, OperationCanceledException? operationCanceledException = null)
-        {
-            // This will mark the Task as canceled internally.
-            SetException(atmb, operationCanceledException ?? s_operationCanceledException, runContinuationsAsynchronously);
-        }
-
-        public static void SetCanceled<TResult>(this AsyncTaskMethodBuilder<TResult> atmb, bool runContinuationsAsynchronously = false, OperationCanceledException? operationCanceledException = null)
-        {
-            // This will mark the Task as canceled internally.
-            SetException(atmb, operationCanceledException ?? s_operationCanceledException, runContinuationsAsynchronously);
-        }
+#endif
     }
 }
