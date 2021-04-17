@@ -158,33 +158,29 @@ namespace Microsoft.AspNetCore.WebSockets
 
             public static bool CheckSupportedWebSocketRequest(string method, IHeaderDictionary requestHeaders)
             {
-                if (!string.Equals("GET", method, StringComparison.OrdinalIgnoreCase))
+                if (!HttpMethods.IsGet(method))
                 {
                     return false;
                 }
 
-                foreach (var pair in requestHeaders)
+                if (!requestHeaders[HeaderNames.Connection].Contains(HeaderNames.Upgrade))
                 {
-                    if(!requestHeaders[HeaderNames.Connection].Contains(HeaderNames.Upgrade))
-                    {
-                        return false;
-                    }
+                    return false;
+                }
 
-                    if(!requestHeaders[HeaderNames.Upgrade].Contains(Constants.Headers.UpgradeWebSocket))
-                    {
-                        return false;
-                    }
+                if (!requestHeaders[HeaderNames.Upgrade].Contains(Constants.Headers.UpgradeWebSocket))
+                {
+                    return false;
+                }
 
-                    if(!requestHeaders[HeaderNames.SecWebSocketVersion].Contains(Constants.Headers.SupportedVersion))
-                    {
-                        return false;
-                    }
+                if (!requestHeaders[HeaderNames.SecWebSocketVersion].Contains(Constants.Headers.SupportedVersion))
+                {
+                    return false;
+                }
 
-                    if(requestHeaders.ContainsKey(HeaderNames.SecWebSocketKey))
-                    {
-                        if(!HandshakeHelpers.IsRequestKeyValid(pair.Value))
-                            return false;
-                    }
+                if (!HandshakeHelpers.IsRequestKeyValid(requestHeaders[HeaderNames.SecWebSocketKey].ToString()))
+                {
+                    return false;
                 }
 
                 // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
