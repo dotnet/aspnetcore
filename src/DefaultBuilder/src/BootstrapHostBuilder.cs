@@ -16,10 +16,12 @@ namespace Microsoft.AspNetCore.Hosting
         public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
         private readonly HostBuilderContext _context;
         private readonly Configuration _configuration;
+        private readonly WebHostEnvironment _environment;
 
-        public BootstrapHostBuilder(Configuration configuration, IWebHostEnvironment webHostEnvironment)
+        public BootstrapHostBuilder(Configuration configuration, WebHostEnvironment webHostEnvironment)
         {
             _configuration = configuration;
+            _environment = webHostEnvironment;
             _context = new HostBuilderContext(Properties)
             {
                 Configuration = configuration,
@@ -36,6 +38,12 @@ namespace Microsoft.AspNetCore.Hosting
         public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
         {
             configureDelegate(_context, _configuration);
+
+            _environment.ApplicationName = _configuration[HostDefaults.ApplicationKey] ?? _environment.ApplicationName;
+            _environment.ContentRootPath = _configuration[HostDefaults.ContentRootKey] ?? _environment.ContentRootPath;
+            _environment.EnvironmentName = _configuration[HostDefaults.EnvironmentKey] ?? _environment.EnvironmentName;
+            _environment.WebRootPath = _configuration[WebHostDefaults.ContentRootKey] ?? _environment.WebRootPath;
+
             return this;
         }
 

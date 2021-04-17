@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Builder
         private readonly ConfigureHostBuilder _deferredHostBuilder;
         private readonly ConfigureWebHostBuilder _deferredWebHostBuilder;
         private readonly WebHostEnvironment _environment;
+        private WebApplication? _builtApplication;
 
         internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null)
         {
@@ -32,13 +34,19 @@ namespace Microsoft.AspNetCore.Builder
 
             Configuration = new Configuration();
 
-            // Run this inline to populate the configuration
-            new BootstrapHostBuilder(Configuration, Environment).ConfigureDefaults(args);
+            // Run methods to configure both generic and web host defaults early to populate config from appsettings.json
+            // environment variables (both DOTNET_ and ASPNETCORE_ prefixed) and other possible default sources to prepopulate
+            // the correct defaults.
+            var bootstrapBuilder = new BootstrapHostBuilder(Configuration, _environment);
+            bootstrapBuilder.ConfigureDefaults(args);
+            bootstrapBuilder.ConfigureWebHostDefaults(configure: _ => { });
 
             Configuration.SetBasePath(_environment.ContentRootPath);
             Logging = new LoggingBuilder(Services);
             WebHost = _deferredWebHostBuilder = new ConfigureWebHostBuilder(Configuration, _environment, Services);
-            Host = _deferredHostBuilder = new ConfigureHostBuilder(Configuration, _environment, Services, args);
+            Host = _deferredHostBuilder = new ConfigureHostBuilder(Configuration, _environment, Services);
+
+            _deferredHostBuilder.ConfigureDefaults(args);
         }
 
         /// <summary>
@@ -79,103 +87,100 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A configured <see cref="WebApplication"/>.</returns>
         public WebApplication Build()
         {
-            // This will always be set before Build completes or the ConfigureWebHostDefaults callback runs.
-            WebApplication sourcePipeline = null!;
+            _hostBuilder.ConfigureWebHostDefaults(ConfigureWebHost);
+            _builtApplication = new WebApplication(_hostBuilder.Build());
+            return _builtApplication;
+        }
 
-            _hostBuilder.ConfigureWebHostDefaults(web =>
+        private void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder app)
+        {
+            Debug.Assert(_builtApplication is not null);
+
+            // The endpoints were already added on the outside
+            if (_builtApplication.DataSources.Count > 0)
             {
-                web.Configure(destinationPipeline =>
+                // The user did not register the routing middleware so wrap the entire
+                // destination pipeline in UseRouting() and UseEndpoints(), essentially:
+                // destination.UseRouting()
+                // destination.Run(source)
+                // destination.UseEndpoints()
+                if (_builtApplication.RouteBuilder == null)
                 {
-                    // The endpoints were already added on the outside
-                    if (sourcePipeline.DataSources.Count > 0)
+                    app.UseRouting();
+
+                    // Copy the route data sources over to the destination pipeline, this should be available since we just called
+                    // UseRouting()
+                    var routes = (IEndpointRouteBuilder)app.Properties[WebApplication.EndpointRouteBuilder]!;
+
+                    foreach (var ds in _builtApplication.DataSources)
                     {
-                        // The user did not register the routing middleware so wrap the entire
-                        // destination pipeline in UseRouting() and UseEndpoints(), essentially:
-                        // destination.UseRouting()
-                        // destination.Run(source)
-                        // destination.UseEndpoints()
-                        if (sourcePipeline.RouteBuilder == null)
-                        {
-                            destinationPipeline.UseRouting();
-
-                            // Copy the route data sources over to the destination pipeline, this should be available since we just called
-                            // UseRouting()
-                            var routes = (IEndpointRouteBuilder)destinationPipeline.Properties[WebApplication.EndpointRouteBuilder]!;
-
-                            foreach (var ds in sourcePipeline.DataSources)
-                            {
-                                routes.DataSources.Add(ds);
-                            }
-
-                            // Chain the execution of the source pipeline into the destination pipeline
-                            destinationPipeline.Use(next =>
-                            {
-                                sourcePipeline.Run(next);
-                                return sourcePipeline.Build();
-                            });
-
-                            // Add a UseEndpoints at the end
-                            destinationPipeline.UseEndpoints(e => { });
-                        }
-                        else
-                        {
-                            // Since we register routes into the source pipeline's route builder directly,
-                            // if the user called UseRouting, we need to copy the data sources
-                            foreach (var ds in sourcePipeline.DataSources)
-                            {
-                                sourcePipeline.RouteBuilder.DataSources.Add(ds);
-                            }
-
-                            // We then implicitly call UseEndpoints at the end of the pipeline
-                            sourcePipeline.UseEndpoints(_ => { });
-
-                            // Wire the source pipeline to run in the destination pipeline
-                            destinationPipeline.Run(sourcePipeline.Build());
-                        }
-                    }
-                    else
-                    {
-                        // Wire the source pipeline to run in the destination pipeline
-                        destinationPipeline.Run(sourcePipeline.Build());
+                        routes.DataSources.Add(ds);
                     }
 
-                    // Copy the properties to the destination app builder
-                    foreach (var item in sourcePipeline.Properties)
+                    // Chain the execution of the source pipeline into the destination pipeline
+                    app.Use(next =>
                     {
-                        destinationPipeline.Properties[item.Key] = item.Value;
-                    }
-                });
+                        _builtApplication.Run(next);
+                        return _builtApplication.BuildRequstDelegate();
+                    });
 
-                _hostBuilder.ConfigureServices(services =>
+                    // Add a UseEndpoints at the end
+                    app.UseEndpoints(e => { });
+                }
+                else
                 {
-                    foreach (var s in Services)
+                    // Since we register routes into the source pipeline's route builder directly,
+                    // if the user called UseRouting, we need to copy the data sources
+                    foreach (var ds in _builtApplication.DataSources)
                     {
-                        services.Add(s);
+                        _builtApplication.RouteBuilder.DataSources.Add(ds);
                     }
-                });
 
-                _hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
+                    // We then implicitly call UseEndpoints at the end of the pipeline
+                    _builtApplication.UseEndpoints(_ => { });
+
+                    // Wire the source pipeline to run in the destination pipeline
+                    app.Run(_builtApplication.BuildRequstDelegate());
+                }
+            }
+            else
+            {
+                // Wire the source pipeline to run in the destination pipeline
+                app.Run(_builtApplication.BuildRequstDelegate());
+            }
+
+            // Copy the properties to the destination app builder
+            foreach (var item in _builtApplication.Properties)
+            {
+                app.Properties[item.Key] = item.Value;
+            }
+
+        }
+
+        private void ConfigureWebHost(IWebHostBuilder genericWebHostBuilder)
+        {
+            genericWebHostBuilder.Configure(ConfigureApplication);
+
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+                foreach (var s in Services)
                 {
-                    foreach (var s in Configuration.Sources)
-                    {
-                        builder.Sources.Add(s);
-                    }
-                });
-
-                _deferredHostBuilder.ExecuteActions(_hostBuilder);
-
-                // Make the default web host settings match and allow overrides
-                web.UseEnvironment(_environment.EnvironmentName);
-                web.UseContentRoot(_environment.ContentRootPath);
-                web.UseSetting(WebHostDefaults.ApplicationKey, _environment.ApplicationName);
-                web.UseSetting(WebHostDefaults.WebRootKey, _environment.WebRootPath);
-
-                _deferredWebHostBuilder.ExecuteActions(web);
+                    services.Add(s);
+                }
             });
 
-            var host = _hostBuilder.Build();
+            _hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
+            {
+                foreach (var s in Configuration.Sources)
+                {
+                    builder.Sources.Add(s);
+                }
+            });
 
-            return sourcePipeline = new WebApplication(host);
+            _deferredHostBuilder.ExecuteActions(_hostBuilder);
+            _deferredWebHostBuilder.ExecuteActions(genericWebHostBuilder);
+
+            _environment.ApplyEnvironmentSettings(genericWebHostBuilder);
         }
 
         private class LoggingBuilder : ILoggingBuilder

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Builder
             ApplicationName = (callingAssembly ?? Assembly.GetEntryAssembly())?.GetName()?.Name ?? string.Empty;
             EnvironmentName = Environments.Production;
 
-            // This feels wrong, but HostingEnvironment does the same thing.
+            // This feels wrong, but HostingEnvironment also sets WebRoot to "default!".
             WebRootPath = default!;
 
             // Default to /wwwroot if it exists.
@@ -56,6 +56,14 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
+        public void ApplyEnvironmentSettings(IWebHostBuilder genericWebHostBuilder)
+        {
+            genericWebHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, ApplicationName);
+            genericWebHostBuilder.UseSetting(WebHostDefaults.EnvironmentKey, EnvironmentName);
+            genericWebHostBuilder.UseSetting(WebHostDefaults.ContentRootKey, ContentRootPath);
+            genericWebHostBuilder.UseSetting(WebHostDefaults.WebRootKey, WebRootPath);
+        }
+
         public string ApplicationName { get; set; }
         public string EnvironmentName { get; set; }
 
@@ -63,7 +71,6 @@ namespace Microsoft.AspNetCore.Builder
         public string ContentRootPath { get; set; }
 
         public IFileProvider WebRootFileProvider { get; set; }
-
         public string WebRootPath { get; set; }
     }
 }

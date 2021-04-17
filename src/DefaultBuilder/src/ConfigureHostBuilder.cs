@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,13 +29,11 @@ namespace Microsoft.AspNetCore.Builder
         private readonly Configuration _configuration;
         private readonly IServiceCollection _services;
 
-        internal ConfigureHostBuilder(Configuration configuration, WebHostEnvironment environment, IServiceCollection services, string[]? args)
+        internal ConfigureHostBuilder(Configuration configuration, WebHostEnvironment environment, IServiceCollection services)
         {
             _configuration = configuration;
             _environment = environment;
             _services = services;
-
-            this.ConfigureDefaults(args);
         }
 
         IHost IHostBuilder.Build()
@@ -64,9 +63,11 @@ namespace Microsoft.AspNetCore.Builder
 
             var config = _hostConfiguration.Build();
 
-            _environment.ApplicationName = config[HostDefaults.ApplicationKey] ?? _environment.ApplicationName;
-            _environment.ContentRootPath = config[HostDefaults.ContentRootKey] ?? _environment.ContentRootPath;
-            _environment.EnvironmentName = config[HostDefaults.EnvironmentKey] ?? _environment.EnvironmentName;
+            _environment.ApplicationName = config[WebHostDefaults.ApplicationKey] ?? _environment.ApplicationName;
+            _environment.EnvironmentName = config[WebHostDefaults.EnvironmentKey] ?? _environment.EnvironmentName;
+            _environment.ContentRootPath = config[WebHostDefaults.ContentRootKey] ?? _environment.ContentRootPath;
+            _environment.WebRootPath = config[WebHostDefaults.ContentRootKey] ?? _environment.ContentRootPath;
+
             _environment.ResolveFileProviders(config);
             Configuration.ChangeBasePath(_environment.ContentRootPath);
 
