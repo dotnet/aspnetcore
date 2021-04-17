@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Builder
             _settings[key] = value;
             _operations += b => b.UseSetting(key, value);
 
-            // All preoperties on IWebHostEnvironment are non-nullable.
+            // All properties on IWebHostEnvironment are non-nullable.
             if (value is null)
             {
                 return this;

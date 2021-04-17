@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Hosting
         public IHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate)
         {
             // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that could change in the future.
-            // If this does get called in the future, it should be called again at a later stage on the DeferredHostBuillder.
+            // If this does get called in the future, it should be called again at a later stage on the ConfigureHostBuilder.
             return this;
         }
 
@@ -55,21 +55,21 @@ namespace Microsoft.AspNetCore.Hosting
         public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
         {
             // HostingHostBuilderExtensions.ConfigureDefaults calls this via ConfigureLogging
-            // during the initial config stage. It should be called again later on the DeferredHostBuilder.
+            // during the initial config stage. It should be called again later on the ConfigureHostBuilder.
             return this;
         }
 
         public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
         {
             // This is not called by HostingHostBuilderExtensions.ConfigureDefaults currently, but that chould change in the future.
-            // If this does get called in the future, it should be called again at a later stage on the DeferredHostBuillder.
+            // If this does get called in the future, it should be called again at a later stage on the ConfigureHostBuilder.
             return this;
         }
 
         public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory) where TContainerBuilder : notnull
         {
             // HostingHostBuilderExtensions.ConfigureDefaults calls this via UseDefaultServiceProvider
-            // during the initial config stage. It should be called again later on the DeferredHostBuilder.
+            // during the initial config stage. It should be called again later on the ConfigureHostBuilder.
             return this;
         }
     }

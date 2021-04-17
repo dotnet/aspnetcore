@@ -102,8 +102,7 @@ namespace Microsoft.AspNetCore.Builder
             return this;
         }
 
-        /// <inheritdoc />
-        public void ExecuteActions(IHostBuilder hostBuilder)
+        internal void ExecuteActions(IHostBuilder hostBuilder)
         {
             _operations?.Invoke(hostBuilder);
         }
