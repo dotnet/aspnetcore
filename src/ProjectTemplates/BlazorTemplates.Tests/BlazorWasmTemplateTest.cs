@@ -432,7 +432,7 @@ namespace Templates.Test
             var project = await ProjectFactory.GetOrCreateProject("blazoraot", Output);
 
             // We're going to have to install additional workload to publish AOT apps. We want to avoid polluting the
-            // dotnet installed as part of this repo's build. Instead we'll copy it to a different directory, 
+            // dotnet installed as part of this repo's build. Instead we'll copy it to a different directory,
             var copiedDotNetPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "aot-sdk", Path.GetRandomFileName()));
             CopyDirectoryRecursive(new FileInfo(muxerPath).Directory, copiedDotNetPath);
             UpdateWorkloadFiles(copiedDotNetPath.FullName);
@@ -459,9 +459,9 @@ namespace Templates.Test
             using (serveProcess)
             {
                 Output.WriteLine($"Opening browser at {listeningUri}...");
-                if (Fixture.BrowserManager.IsAvailable(browserKind))
+                if (BrowserManager.IsAvailable(browserKind))
                 {
-                    await using var browser = await Fixture.BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+                    await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
                     var page = await NavigateToPage(browser, listeningUri);
                     await TestBasicNavigation(project.ProjectName, page);
                 }
