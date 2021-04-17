@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
-using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -119,7 +118,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // Reading here puts us below the threshold
                 await connection.Transport.Input.ConsumeAsync(5);
 
-                await writeTask.AsTask().OrTimeout();
+                await writeTask.AsTask().DefaultTimeout();
             }
         }
 
@@ -222,7 +221,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     var executeTask = dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
                     Assert.False(executeTask.IsCompleted);
                     await connection.Transport.Input.ConsumeAsync(10);
-                    await executeTask.OrTimeout();
+                    await executeTask.DefaultTimeout();
 
                     Assert.True(connection.Transport.Input.TryRead(out var result));
                     Assert.Equal("Hi", Encoding.UTF8.GetString(result.Buffer.ToArray()));
@@ -475,9 +474,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                         cts.Cancel();
                     }
 
-                    await task.OrTimeout();
+                    await task.DefaultTimeout();
 
-                    await connection.ApplicationTask.OrTimeout();
+                    await connection.ApplicationTask.DefaultTimeout();
                 }
             }
         }
@@ -530,7 +529,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     // Pretend the transport closed because the client disconnected
                     cts.Cancel();
 
-                    await task.OrTimeout();
+                    await task.DefaultTimeout();
 
                     // We've been gone longer than the expiration time
                     connection.LastSeenUtc = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10));
@@ -540,7 +539,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     manager.Scan();
 
                     // The application task should complete gracefully
-                    await connection.ApplicationTask.OrTimeout();
+                    await connection.ApplicationTask.DefaultTimeout();
                 }
             }
         }
@@ -1046,7 +1045,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
                 options.LongPolling.PollTimeout = TimeSpan.FromSeconds(2);
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             }
@@ -1138,16 +1137,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
                 // First poll completes immediately
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
                 var sync = new SyncPoint();
                 context.Response.Body = new BlockingStream(sync);
                 var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
-                await sync.WaitForSyncPoint().OrTimeout();
+                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await sync.WaitForSyncPoint().DefaultTimeout();
                 // Cancel write to response body
                 connection.TryCancelSend(long.MaxValue);
                 sync.Continue();
-                await dispatcherTask.OrTimeout();
+                await dispatcherTask.DefaultTimeout();
                 // Connection should be removed on canceled write
                 Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
             }
@@ -1174,12 +1173,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.Response.Body = new BlockingStream(sync, isSSE: true);
                 var options = new HttpConnectionDispatcherOptions();
                 var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
-                await sync.WaitForSyncPoint().OrTimeout();
+                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await sync.WaitForSyncPoint().DefaultTimeout();
                 // Cancel write to response body
                 connection.TryCancelSend(long.MaxValue);
                 sync.Continue();
-                await dispatcherTask.OrTimeout();
+                await dispatcherTask.DefaultTimeout();
                 // Connection should be removed on canceled write
                 Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
             }
@@ -1211,12 +1210,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var options = new HttpConnectionDispatcherOptions();
                 options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(0);
                 var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
-                await sync.WaitForSyncPoint().OrTimeout();
+                await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await sync.WaitForSyncPoint().DefaultTimeout();
                 // Cancel write to response body
                 connection.TryCancelSend(long.MaxValue);
                 sync.Continue();
-                await dispatcherTask.OrTimeout();
+                await dispatcherTask.DefaultTimeout();
                 // Connection should be removed on canceled write
                 Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
             }
@@ -1247,7 +1246,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var task = dispatcher.ExecuteAsync(context, options, app);
 
-                await task.OrTimeout();
+                await task.DefaultTimeout();
             }
         }
 
@@ -1292,7 +1291,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 manager.CloseConnections();
 
-                await request1.OrTimeout();
+                await request1.DefaultTimeout();
             }
         }
 
@@ -1335,7 +1334,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var request2 = dispatcher.ExecuteAsync(context2, options, app);
 
                 // Wait for poll to be canceled
-                await request1.OrTimeout();
+                await request1.DefaultTimeout();
 
                 Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
 
@@ -1398,7 +1397,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 lastPollTcs.SetResult();
 
-                var completedTask = await Task.WhenAny(request1, request2).OrTimeout();
+                var completedTask = await Task.WhenAny(request1, request2).DefaultTimeout();
 
                 if (completedTask == request1)
                 {
@@ -1415,8 +1414,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 manager.CloseConnections();
 
-                await request1.OrTimeout();
-                await request2.OrTimeout();
+                await request1.DefaultTimeout();
+                await request2.DefaultTimeout();
             }
         }
 
@@ -1588,12 +1587,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var task2 = dispatcher.ExecuteAsync(context2, options, app);
 
                 // Task 1 should finish when request 2 arrives
-                await task1.OrTimeout();
+                await task1.DefaultTimeout();
 
                 // Send a message from the app to complete Task 2
                 await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World"));
 
-                await task2.OrTimeout();
+                await task2.DefaultTimeout();
 
                 // Verify the results
                 Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
@@ -1672,14 +1671,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.User.AddIdentity(new ClaimsIdentity());
 
                 // would get stuck if EndPoint was running
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
                 var currentUser = connection.User;
 
                 var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().OrTimeout();
-                await connectionHandlerTask.OrTimeout();
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+                await connectionHandlerTask.DefaultTimeout();
 
                 // This is the important check
                 Assert.Same(currentUser, connection.User);
@@ -1724,14 +1723,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.User.AddIdentity(new ClaimsIdentity());
 
                 // would get stuck if EndPoint was running
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
                 var currentUser = connection.User;
 
                 var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().OrTimeout();
-                await connectionHandlerTask.OrTimeout();
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+                await connectionHandlerTask.DefaultTimeout();
 
                 // This is the important check
                 Assert.Same(currentUser, connection.User);
@@ -1763,7 +1762,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var options = new HttpConnectionDispatcherOptions();
                 options.LongPolling.PollTimeout = TimeSpan.FromMilliseconds(1); // We don't care about the poll itself
 
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 Assert.True(connection.HasInherentKeepAlive);
 
@@ -1796,7 +1795,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
 
-                _ = dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                _ = dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 // Issue the delete request
                 var deleteContext = new DefaultHttpContext();
@@ -1806,7 +1805,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var ms = new MemoryStream();
                 deleteContext.Response.Body = ms;
 
-                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(deleteContext, options, app).DefaultTimeout();
 
                 // Verify the response from the DELETE request
                 Assert.Equal(StatusCodes.Status400BadRequest, deleteContext.Response.StatusCode);
@@ -1849,19 +1848,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 Assert.False(pollTask.IsCompleted);
 
-                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(deleteContext, options, app).DefaultTimeout();
 
-                await pollTask.OrTimeout();
+                await pollTask.DefaultTimeout();
 
                 // Verify that everything shuts down
-                await connection.ApplicationTask.OrTimeout();
-                await connection.TransportTask.OrTimeout();
+                await connection.ApplicationTask.DefaultTimeout();
+                await connection.TransportTask.DefaultTimeout();
 
                 // Verify the response from the DELETE request
                 Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
                 Assert.Equal("text/plain", deleteContext.Response.ContentType);
 
-                await connection.DisposeAndRemoveTask.OrTimeout();
+                await connection.DisposeAndRemoveTask.DefaultTimeout();
 
                 // Verify the connection was removed from the manager
                 Assert.False(manager.TryGetConnection(connection.ConnectionToken, out _));
@@ -1889,7 +1888,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var options = new HttpConnectionDispatcherOptions();
                 options.LongPolling.PollTimeout = TimeSpan.FromMilliseconds(1);
 
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 // Issue the delete request and make sure the poll completes
                 var deleteContext = new DefaultHttpContext();
@@ -1897,19 +1896,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionToken}");
                 deleteContext.Request.Method = "DELETE";
 
-                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(deleteContext, options, app).DefaultTimeout();
 
                 // Verify the response from the DELETE request
                 Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
                 Assert.Equal("text/plain", deleteContext.Response.ContentType);
 
                 // Verify that everything shuts down
-                await connection.ApplicationTask.OrTimeout();
-                await connection.TransportTask.OrTimeout();
+                await connection.ApplicationTask.DefaultTimeout();
+                await connection.TransportTask.DefaultTimeout();
 
                 Assert.NotNull(connection.DisposeAndRemoveTask);
 
-                await connection.DisposeAndRemoveTask.OrTimeout();
+                await connection.DisposeAndRemoveTask.DefaultTimeout();
 
                 // Verify the connection was removed from the manager
                 Assert.False(manager.TryGetConnection(connection.ConnectionToken, out _));
@@ -1951,12 +1950,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 Assert.False(pollTask.IsCompleted);
 
-                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(deleteContext, options, app).DefaultTimeout();
 
-                await pollTask.OrTimeout();
+                await pollTask.DefaultTimeout();
 
                 // Verify that transport shuts down
-                await connection.TransportTask.OrTimeout();
+                await connection.TransportTask.DefaultTimeout();
 
                 // Verify the response from the DELETE request
                 Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
@@ -1985,36 +1984,36 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var messageTcs2 = new TaskCompletionSource();
                 ConnectionDelegate connectionDelegate = async c =>
                 {
-                    await waitForMessageTcs1.Task.OrTimeout();
-                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message1")).OrTimeout();
+                    await waitForMessageTcs1.Task.DefaultTimeout();
+                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message1")).DefaultTimeout();
                     messageTcs1.TrySetResult();
-                    await waitForMessageTcs2.Task.OrTimeout();
-                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message2")).OrTimeout();
+                    await waitForMessageTcs2.Task.DefaultTimeout();
+                    await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message2")).DefaultTimeout();
                     messageTcs2.TrySetResult();
                 };
                 {
                     var options = new HttpConnectionDispatcherOptions();
                     var context = MakeRequest("/foo", connection, new ServiceCollection());
-                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).DefaultTimeout();
 
                     // second poll should have data
                     waitForMessageTcs1.SetResult();
-                    await messageTcs1.Task.OrTimeout();
+                    await messageTcs1.Task.DefaultTimeout();
 
                     var ms = new MemoryStream();
                     context.Response.Body = ms;
                     // Now send the second poll
-                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).DefaultTimeout();
                     Assert.Equal("Message1", Encoding.UTF8.GetString(ms.ToArray()));
 
                     waitForMessageTcs2.SetResult();
-                    await messageTcs2.Task.OrTimeout();
+                    await messageTcs2.Task.DefaultTimeout();
 
                     context = MakeRequest("/foo", connection, new ServiceCollection());
                     ms.Seek(0, SeekOrigin.Begin);
                     context.Response.Body = ms;
                     // This is the third poll which gets the final message after the app is complete
-                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
+                    await dispatcher.ExecuteAsync(context, options, connectionDelegate).DefaultTimeout();
                     Assert.Equal("Message2", Encoding.UTF8.GetString(ms.ToArray()));
                 }
             }
@@ -2108,13 +2107,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     await streamCopySyncPoint.WaitForSyncPoint();
 
                     // Start disposing. This will close the output and cause the write to error
-                    var disposeTask = connection.DisposeAsync().OrTimeout();
+                    var disposeTask = connection.DisposeAsync().DefaultTimeout();
 
                     // Continue writing on a completed writer
                     streamCopySyncPoint.Continue();
 
-                    await sendTask.OrTimeout();
-                    await disposeTask.OrTimeout();
+                    await sendTask.DefaultTimeout();
+                    await disposeTask.DefaultTimeout();
 
                     // Ensure response status is correctly set
                     Assert.Equal(404, context.Response.StatusCode);
@@ -2159,17 +2158,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     requestBody.Seek(0, SeekOrigin.Begin);
 
                     // Write some data to the pipe to fill it up and make the next write wait
-                    await connection.ApplicationStream.WriteAsync(buffer, 0, buffer.Length).OrTimeout();
+                    await connection.ApplicationStream.WriteAsync(buffer, 0, buffer.Length).DefaultTimeout();
 
                     // Write. This will take the WriteLock and block because of back pressure
                     var sendTask = dispatcher.ExecuteAsync(context, options, app);
 
                     // Start disposing. This will take the StateLock and attempt to take the WriteLock
                     // Dispose will cancel pending flush and should unblock WriteLock
-                    await connection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
 
                     // Sends were unblocked
-                    await sendTask.OrTimeout();
+                    await sendTask.DefaultTimeout();
 
                     Assert.Equal(404, context.Response.StatusCode);
                 }
@@ -2213,18 +2212,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     requestBody.Seek(0, SeekOrigin.Begin);
 
                     // Write some data to the pipe to fill it up and make the next write wait
-                    await connection.ApplicationStream.WriteAsync(buffer, 0, buffer.Length).OrTimeout();
+                    await connection.ApplicationStream.WriteAsync(buffer, 0, buffer.Length).DefaultTimeout();
 
                     // This will block until the pipe is unblocked
-                    var sendTask = dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                    var sendTask = dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
                     Assert.False(sendTask.IsCompleted);
 
                     var pollContext = MakeRequest("/foo", connection, services);
                     // This should unblock the send that is waiting because of backpressure
                     // Testing deadlock regression where pipe backpressure would hold the same lock that poll would use
-                    await dispatcher.ExecuteAsync(pollContext, options, app).OrTimeout();
+                    await dispatcher.ExecuteAsync(pollContext, options, app).DefaultTimeout();
 
-                    await sendTask.OrTimeout();
+                    await sendTask.DefaultTimeout();
                 }
             }
         }
@@ -2258,13 +2257,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var context = MakeRequest("/foo", connection, services);
 
                 // Initial poll will complete immediately
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 var pollContext = MakeRequest("/foo", connection, services);
                 var pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
                 // fail LongPollingTransport ReadAsync
                 connection.Transport.Output.Complete(new InvalidOperationException());
-                await pollTask.OrTimeout();
+                await pollTask.DefaultTimeout();
 
                 Assert.Equal(StatusCodes.Status500InternalServerError, pollContext.Response.StatusCode);
                 Assert.False(manager.TryGetConnection(connection.ConnectionToken, out var _));
@@ -2306,19 +2305,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 Assert.False(pollTask.IsCompleted);
 
-                await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(deleteContext, options, app).DefaultTimeout();
 
-                await pollTask.OrTimeout();
+                await pollTask.DefaultTimeout();
 
                 // Verify that transport shuts down
-                await connection.TransportTask.OrTimeout();
+                await connection.TransportTask.DefaultTimeout();
 
                 // Verify the response from the DELETE request
                 Assert.Equal(StatusCodes.Status202Accepted, deleteContext.Response.StatusCode);
                 Assert.Equal("text/plain", deleteContext.Response.ContentType);
                 Assert.Equal(HttpConnectionStatus.Disposed, connection.Status);
 
-                await connection.ConnectionClosed.WaitForCancellationAsync().OrTimeout();
+                await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
 
                 // Verify the connection not removed because application is hanging
                 Assert.True(manager.TryGetConnection(connection.ConnectionId, out _));
@@ -2348,7 +2347,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // Close the SSE connection
                 connection.Transport.Output.Complete();
 
-                await connection.ConnectionClosed.WaitForCancellationAsync().OrTimeout();
+                await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
             }
         }
 
@@ -2376,10 +2375,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 _ = dispatcher.ExecuteAsync(context, options, app);
 
                 var websocket = (TestWebSocketConnectionFeature)context.Features.Get<IHttpWebSocketFeature>();
-                await websocket.Accepted.OrTimeout();
-                await websocket.Client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", cancellationToken: default).OrTimeout();
+                await websocket.Accepted.DefaultTimeout();
+                await websocket.Client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", cancellationToken: default).DefaultTimeout();
 
-                await connection.ConnectionClosed.WaitForCancellationAsync().OrTimeout();
+                await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
             }
         }
 
@@ -2426,11 +2425,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection.ConnectionClosed.Register(() => tcs.SetResult(null));
-                await tcs.Task.OrTimeout();
+                await tcs.Task.DefaultTimeout();
 
                 tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 lifetimeFeature.RequestAborted.Register(() => tcs.SetResult(null));
-                await tcs.Task.OrTimeout();
+                await tcs.Task.DefaultTimeout();
             }
         }
 
@@ -2456,17 +2455,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var context = MakeRequest("/foo", connection, services);
 
                 // Initial poll will complete immediately
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 var pollContext = MakeRequest("/foo", connection, services);
                 var pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
 
-                await connection.Application.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
-                await pollTask.OrTimeout();
+                await connection.Application.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await pollTask.DefaultTimeout();
 
                 var memory = new Memory<byte>(new byte[10]);
                 pollContext.Response.Body.Position = 0;
-                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).OrTimeout());
+                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).DefaultTimeout());
                 Assert.Equal(new byte[] { 1, 2, 3 }, memory.Slice(0, 3).ToArray());
 
                 // Connection will use the original service provider so this will have no effect
@@ -2474,14 +2473,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 pollContext = MakeRequest("/foo", connection, services);
                 pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
 
-                await connection.Application.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
-                await pollTask.OrTimeout();
+                await connection.Application.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await pollTask.DefaultTimeout();
 
                 pollContext.Response.Body.Position = 0;
-                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).OrTimeout());
+                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).DefaultTimeout());
                 Assert.Equal(new byte[] { 1, 2, 3 }, memory.Slice(0, 3).ToArray());
 
-                await connection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
             }
         }
 
@@ -2513,30 +2512,30 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var context = MakeRequest("/foo", connection, services);
 
                 // Initial poll will complete immediately
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 var pollContext = MakeRequest("/foo", connection, services);
                 var pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
 
-                await connection.Application.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
-                await pollTask.OrTimeout();
+                await connection.Application.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await pollTask.DefaultTimeout();
 
                 var memory = new Memory<byte>(new byte[10]);
                 pollContext.Response.Body.Position = 0;
-                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).OrTimeout());
+                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).DefaultTimeout());
                 Assert.Equal(new byte[] { 2, 3, 4 }, memory.Slice(0, 3).ToArray());
 
                 pollContext = MakeRequest("/foo", connection, services);
                 pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
 
-                await connection.Application.Output.WriteAsync(new byte[] { 1 }).OrTimeout();
-                await pollTask.OrTimeout();
+                await connection.Application.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
+                await pollTask.DefaultTimeout();
 
                 pollContext.Response.Body.Position = 0;
-                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).OrTimeout());
+                Assert.Equal(3, await pollContext.Response.Body.ReadAsync(memory).DefaultTimeout());
                 Assert.Equal(new byte[] { 2, 3, 4 }, memory.Slice(0, 3).ToArray());
 
-                await connection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
             }
         }
 
@@ -2568,10 +2567,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var context = MakeRequest("/foo", connection, services);
 
                 // Initial poll will complete immediately
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
                 // ServiceScope will be disposed here
-                await connection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
 
                 Assert.Throws<ObjectDisposedException>(() => connection.ServiceScope.ServiceProvider.GetService<MessageWrapper>());
             }

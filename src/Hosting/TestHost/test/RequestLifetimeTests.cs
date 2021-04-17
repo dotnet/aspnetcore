@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -24,13 +24,13 @@ namespace Microsoft.AspNetCore.TestHost
                 httpContext.RequestAborted.Register(() => requestAborted.SetResult(0));
                 httpContext.Abort();
 
-                await requestAborted.Task.WithTimeout();
+                await requestAborted.Task.DefaultTimeout();
             });
 
             var client = host.GetTestServer().CreateClient();
             var ex = await Assert.ThrowsAsync<Exception>(() => client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead));
             Assert.Equal("The application aborted the request.", ex.Message);
-            await requestAborted.Task.WithTimeout();
+            await requestAborted.Task.DefaultTimeout();
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.TestHost
             using var host = await CreateHost(async httpContext =>
             {
                 httpContext.Abort();
-                await abortReceived.Task.WithTimeout();
+                await abortReceived.Task.DefaultTimeout();
             });
 
             var client = host.GetTestServer().CreateClient();
@@ -57,9 +57,9 @@ namespace Microsoft.AspNetCore.TestHost
             using var host = await CreateHost(async httpContext =>
             {
                 await httpContext.Response.Body.FlushAsync();
-                await responseReceived.Task.WithTimeout();
+                await responseReceived.Task.DefaultTimeout();
                 httpContext.Abort();
-                await abortReceived.Task.WithTimeout();
+                await abortReceived.Task.DefaultTimeout();
             });
 
             var client = host.GetTestServer().CreateClient();
@@ -80,9 +80,9 @@ namespace Microsoft.AspNetCore.TestHost
             using var host = await CreateHost(async httpContext =>
             {
                 await httpContext.Response.WriteAsync("Hello World");
-                await responseReceived.Task.WithTimeout();
+                await responseReceived.Task.DefaultTimeout();
                 httpContext.Abort();
-                await abortReceived.Task.WithTimeout();
+                await abortReceived.Task.DefaultTimeout();
             });
 
             var client = host.GetTestServer().CreateClient();

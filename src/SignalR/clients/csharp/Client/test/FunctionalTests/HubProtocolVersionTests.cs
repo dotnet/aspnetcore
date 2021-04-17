@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                 try
                 {
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
 
-                    var result = await connection.InvokeAsync<string>(nameof(VersionHub.Echo), "Hello World!").OrTimeout();
+                    var result = await connection.InvokeAsync<string>(nameof(VersionHub.Echo), "Hello World!").DefaultTimeout();
 
                     Assert.Equal("Hello World!", result);
                 }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 }
                 finally
                 {
-                    await connection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
                 }
             }
         }
@@ -78,9 +78,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                 try
                 {
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
 
-                    var result = await connection.InvokeAsync<string>(nameof(VersionHub.Echo), "Hello World!").OrTimeout();
+                    var result = await connection.InvokeAsync<string>(nameof(VersionHub.Echo), "Hello World!").DefaultTimeout();
 
                     Assert.Equal("Hello World!", result);
                 }
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 }
                 finally
                 {
-                    await connection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
                 }
             }
         }
@@ -127,10 +127,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                 try
                 {
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
 
                     // Task should already have been awaited in StartAsync
-                    var connectionContext = await proxyConnectionFactory.ConnectTask.OrTimeout();
+                    var connectionContext = await proxyConnectionFactory.ConnectTask.DefaultTimeout();
 
                     // Simulate a new call from the client
                     var messageToken = new JObject
@@ -140,9 +140,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     connectionContext.Transport.Output.Write(Encoding.UTF8.GetBytes(messageToken.ToString()));
                     connectionContext.Transport.Output.Write(new[] { (byte)0x1e });
-                    await connectionContext.Transport.Output.FlushAsync().OrTimeout();
+                    await connectionContext.Transport.Output.FlushAsync().DefaultTimeout();
 
-                    await tcs.Task.OrTimeout();
+                    await tcs.Task.DefaultTimeout();
                 }
                 catch (Exception ex)
                 {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 }
                 finally
                 {
-                    await connection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
                 }
             }
         }
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await ExceptionAssert.ThrowsAsync<HubException>(
                         () => connection.StartAsync(),
-                        "Unable to complete handshake with the server due to an error: The server does not support version 2147483647 of the 'json' protocol.").OrTimeout();
+                        "Unable to complete handshake with the server due to an error: The server does not support version 2147483647 of the 'json' protocol.").DefaultTimeout();
                 }
                 catch (Exception ex)
                 {
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 }
                 finally
                 {
-                    await connection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
                 }
             }
         }

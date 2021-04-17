@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
-using Xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
 {
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 await connection.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes("Hello"));
                 connection.Transport.Output.Complete();
-                await task.OrTimeout();
+                await task.DefaultTimeout();
                 Assert.Equal(":\r\ndata: Hello\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
             }
         }
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 await connection.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes(hText + wText));
                 connection.Transport.Output.Complete();
-                await task.OrTimeout();
+                await task.DefaultTimeout();
                 Assert.Equal(":\r\ndata: " + hText + wText + "\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
             }
         }

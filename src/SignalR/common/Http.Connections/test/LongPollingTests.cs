@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 connection.Transport.Output.Complete();
 
-                await poll.ProcessRequestAsync(context, context.RequestAborted).OrTimeout();
+                await poll.ProcessRequestAsync(context, context.RequestAborted).DefaultTimeout();
 
                 Assert.Equal(204, context.Response.StatusCode);
             }
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 using (var cts = CancellationTokenSource.CreateLinkedTokenSource(timeoutToken, context.RequestAborted))
                 {
-                    await poll.ProcessRequestAsync(context, cts.Token).OrTimeout();
+                    await poll.ProcessRequestAsync(context, cts.Token).DefaultTimeout();
 
                     Assert.Equal(0, context.Response.ContentLength);
                     Assert.Equal(200, context.Response.StatusCode);
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
                 connection.Transport.Output.Complete();
 
-                await poll.ProcessRequestAsync(context, context.RequestAborted).OrTimeout();
+                await poll.ProcessRequestAsync(context, context.RequestAborted).DefaultTimeout();
 
                 Assert.Equal(200, context.Response.StatusCode);
                 Assert.Equal("Hello World", Encoding.UTF8.GetString(ms.ToArray()));
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 connection.Transport.Output.Complete();
 
-                await poll.ProcessRequestAsync(context, context.RequestAborted).OrTimeout();
+                await poll.ProcessRequestAsync(context, context.RequestAborted).DefaultTimeout();
 
                 Assert.Equal(200, context.Response.StatusCode);
 

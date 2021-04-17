@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <Description>Various helpers for writing tests that use ASP.NET Core.</Description>
-    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
+    <DefineConstants>$(DefineConstants);AspNetCoreTesting</DefineConstants>
     <!-- This package is internal, ignore API doc requirements -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -55,6 +56,7 @@
       <Pack>True</Pack>
       <PackagePath>contentFiles\cs\netstandard2.0\</PackagePath>
     </Content>
+    <Compile Include="$(SharedSourceRoot)TaskExtensions.cs" LinkBase="Shared\TaskExtensions.cs" />
   </ItemGroup>
 
 </Project>

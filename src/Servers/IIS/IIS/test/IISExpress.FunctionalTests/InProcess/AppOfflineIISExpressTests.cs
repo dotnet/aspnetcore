@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
                     try
                     {
-                        await runningTask.DefaultTimeout();
+                        await runningTask.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
                         // if AssertAppOffline succeeded ANCM have picked up app_offline before starting the app
                         // try again

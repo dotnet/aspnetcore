@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Moq.Protected;
@@ -53,11 +54,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
                     await sseTransport.StartAsync(
-                        new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
+                        new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
 
-                    await eventStreamTcs.Task.OrTimeout();
-                    await sseTransport.StopAsync().OrTimeout();
-                    await sseTransport.Running.OrTimeout();
+                    await eventStreamTcs.Task.DefaultTimeout();
+                    await sseTransport.StopAsync().DefaultTimeout();
+                    await sseTransport.Running.DefaultTimeout();
                 }
             }
             finally
@@ -102,19 +103,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 try
                 {
                     await sseTransport.StartAsync(
-                        new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
+                        new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
 
                     transportActiveTask = sseTransport.Running;
                     Assert.False(transportActiveTask.IsCompleted);
-                    var message = await sseTransport.Input.ReadSingleAsync().OrTimeout();
+                    var message = await sseTransport.Input.ReadSingleAsync().DefaultTimeout();
                     Assert.StartsWith("3:abc", Encoding.ASCII.GetString(message));
                 }
                 finally
                 {
-                    await sseTransport.StopAsync().OrTimeout();
+                    await sseTransport.StopAsync().DefaultTimeout();
                 }
 
-                await transportActiveTask.OrTimeout();
+                await transportActiveTask.DefaultTimeout();
             }
         }
 
@@ -152,11 +153,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
 
                 var exception = await Assert.ThrowsAsync<FormatException>(() => sseTransport.Input.ReadAllAsync());
 
-                await sseTransport.Running.OrTimeout();
+                await sseTransport.Running.DefaultTimeout();
 
                 Assert.Equal("Incomplete message.", exception.Message);
             }
@@ -210,16 +211,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
                 await eventStreamTcs.Task;
 
                 await sseTransport.Output.WriteAsync(new byte[] { 0x42 });
 
-                var exception = await Assert.ThrowsAsync<HttpRequestException>(() => sseTransport.Input.ReadAllAsync().OrTimeout());
+                var exception = await Assert.ThrowsAsync<HttpRequestException>(() => sseTransport.Input.ReadAllAsync().DefaultTimeout());
                 Assert.Contains("500", exception.Message);
 
                 // Errors are only communicated through the pipe
-                await sseTransport.Running.OrTimeout();
+                await sseTransport.Running.DefaultTimeout();
             }
         }
 
@@ -260,12 +261,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
-                await eventStreamTcs.Task.OrTimeout();
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
+                await eventStreamTcs.Task.DefaultTimeout();
 
                 sseTransport.Output.Complete();
 
-                await sseTransport.Running.OrTimeout();
+                await sseTransport.Running.DefaultTimeout();
             }
         }
 
@@ -287,12 +288,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
 
-                var message = await sseTransport.Input.ReadSingleAsync().OrTimeout();
+                var message = await sseTransport.Input.ReadSingleAsync().DefaultTimeout();
                 Assert.Equal("3:abc", Encoding.ASCII.GetString(message));
 
-                await sseTransport.Running.OrTimeout();
+                await sseTransport.Running.DefaultTimeout();
             }
         }
 
@@ -341,7 +342,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
                 await eventStreamTcs.Task;
 
                 await sseTransport.Output.WriteAsync(new byte[] { 0x42 });
@@ -375,7 +376,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
-                var ex = await Assert.ThrowsAsync<ArgumentException>(() => sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary).OrTimeout());
+                var ex = await Assert.ThrowsAsync<ArgumentException>(() => sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary).DefaultTimeout());
 
                 Assert.Equal("transferFormat", ex.ParamName);
                 Assert.Equal($"The 'Binary' transfer format is not supported by this transport.", ex.GetLocalizationSafeMessage());

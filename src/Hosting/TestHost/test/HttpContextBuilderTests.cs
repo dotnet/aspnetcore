@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -212,7 +213,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.DefaultTimeout());
             block.SetResult(0);
         }
 
@@ -236,7 +237,7 @@ namespace Microsoft.AspNetCore.TestHost
             await block.Task;
             cts.Cancel();
 
-            await Assert.ThrowsAsync<OperationCanceledException>(() => contextTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => contextTask.DefaultTimeout());
         }
 
         [Fact]
@@ -262,7 +263,7 @@ namespace Microsoft.AspNetCore.TestHost
             var readTask = responseStream.ReadAsync(new byte[100], 0, 100, cts.Token);
             Assert.False(readTask.IsCompleted);
             cts.Cancel();
-            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.DefaultTimeout());
             block.SetResult(0);
         }
 
@@ -345,7 +346,7 @@ namespace Microsoft.AspNetCore.TestHost
 
             var ex = await Assert.ThrowsAsync<Exception>(() => server.SendAsync(c => { }));
             Assert.Equal("The application aborted the request.", ex.Message);
-            await requestAborted.Task.WithTimeout();
+            await requestAborted.Task.DefaultTimeout();
         }
 
         private class VerifierLogger : ILogger<IWebHost>

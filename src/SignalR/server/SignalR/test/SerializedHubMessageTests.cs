@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -75,8 +76,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             syncPoints[1].Continue();
 
             // Everything should finish and only one serialization should be written
-            await firstSerialization.OrTimeout();
-            await secondSerialization.OrTimeout();
+            await firstSerialization.DefaultTimeout();
+            await secondSerialization.DefaultTimeout();
 
             Assert.Collection(message.GetAllSerializations().Skip(numberOfSerializationsToPreCache).ToArray(),
                 serializedMessage =>

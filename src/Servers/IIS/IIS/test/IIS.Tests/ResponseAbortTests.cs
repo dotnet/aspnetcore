@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 async ctx => {
                     await ctx.Response.WriteAsync("Abort");
                     await ctx.Response.Body.FlushAsync();
-                    await bodyReceived.Task.DefaultTimeout();
+                    await bodyReceived.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                     ctx.Abort();
                 }, LoggerFactory))
             {

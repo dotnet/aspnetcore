@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 await httpContext.Response.StartAsync();
                 Assert.True(httpContext.Response.HasStarted);
                 Assert.True(httpContext.Response.Headers.IsReadOnly);
-                await startingTcs.Task.WithTimeout();
+                await startingTcs.Task.DefaultTimeout();
                 await httpContext.Response.WriteAsync("Hello World");
             }))
             {
@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 await httpContext.Response.CompleteAsync();
                 Assert.True(httpContext.Response.HasStarted);
                 Assert.True(httpContext.Response.Headers.IsReadOnly);
-                await startingTcs.Task.WithTimeout();
-                await responseReceived.Task.WithTimeout();
+                await startingTcs.Task.DefaultTimeout();
+                await responseReceived.Task.DefaultTimeout();
             }))
             {
                 var response = await SendRequestAsync(address);
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 var memory = writer.GetMemory();
                 writer.Advance(memory.Length);
                 await httpContext.Response.CompleteAsync();
-                await responseReceived.Task.WithTimeout();
+                await responseReceived.Task.DefaultTimeout();
             }))
             {
                 var response = await SendRequestAsync(address);
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Null(response.Headers.TransferEncodingChunked);
                 Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
 
-                Assert.True(await requestThrew.Task.TimeoutAfter(TimeSpan.FromSeconds(10)));
+                Assert.True(await requestThrew.Task.WaitAsync(TimeSpan.FromSeconds(10)));
             }
         }
 
