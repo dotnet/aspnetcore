@@ -37,7 +37,7 @@ namespace RunTests
                 Console.WriteLine($"Setting HELIX_DIR: {helixDir}");
                 EnvironmentVariables.Add("HELIX_DIR", helixDir);
                 EnvironmentVariables.Add("NUGET_FALLBACK_PACKAGES", helixDir);
-                var nugetRestore = Path.Combine(helixDir, "nugetRestore");
+                var nugetRestore = Path.Combine(helixDir, "nugetRestore") + Path.DirectorySeparatorChar;
                 EnvironmentVariables.Add("NUGET_RESTORE", nugetRestore);
                 var dotnetEFFullPath = Path.Combine(nugetRestore, helixDir, "dotnet-ef.exe");
                 Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
@@ -66,7 +66,7 @@ namespace RunTests
 
                 DisplayContents(Path.Combine(Options.DotnetRoot, "host", "fxr"));
                 DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.NETCore.App"));
-                
+
                 return true;
             }
             catch (Exception e)
