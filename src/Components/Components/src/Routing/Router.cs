@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -224,8 +225,8 @@ namespace Microsoft.AspNetCore.Components.Routing
             // invocation.
             await _previousOnNavigateTask;
 
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            _previousOnNavigateTask = tcs.Task;
+            var atmb = AsyncTaskMethodBuilder.Create();
+            _previousOnNavigateTask = atmb.Task;
 
             if (!OnNavigateAsync.HasDelegate)
             {
@@ -244,7 +245,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 // Task.WhenAny returns a Task<Task> so we need to await twice to unwrap the exception
                 var task = await Task.WhenAny(OnNavigateAsync.InvokeAsync(navigateContext), cancellationTcs.Task);
                 await task;
-                tcs.SetResult();
+                atmb.SetResult(runContinuationsAsynchronously: true);
                 Refresh(isNavigationIntercepted);
             }
             catch (Exception e)
