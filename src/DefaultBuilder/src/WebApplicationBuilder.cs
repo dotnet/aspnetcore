@@ -92,6 +92,32 @@ namespace Microsoft.AspNetCore.Builder
             return _builtApplication;
         }
 
+        private void ConfigureWebHost(IWebHostBuilder genericWebHostBuilder)
+        {
+            genericWebHostBuilder.Configure(ConfigureApplication);
+
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+                foreach (var s in Services)
+                {
+                    services.Add(s);
+                }
+            });
+
+            _hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
+            {
+                foreach (var s in Configuration.Sources)
+                {
+                    builder.Sources.Add(s);
+                }
+            });
+
+            _deferredHostBuilder.ExecuteActions(_hostBuilder);
+            _deferredWebHostBuilder.ExecuteActions(genericWebHostBuilder);
+
+            _environment.ApplyEnvironmentSettings(genericWebHostBuilder);
+        }
+
         private void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder app)
         {
             Debug.Assert(_builtApplication is not null);
@@ -154,33 +180,6 @@ namespace Microsoft.AspNetCore.Builder
             {
                 app.Properties[item.Key] = item.Value;
             }
-
-        }
-
-        private void ConfigureWebHost(IWebHostBuilder genericWebHostBuilder)
-        {
-            genericWebHostBuilder.Configure(ConfigureApplication);
-
-            _hostBuilder.ConfigureServices((context, services) =>
-            {
-                foreach (var s in Services)
-                {
-                    services.Add(s);
-                }
-            });
-
-            _hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
-            {
-                foreach (var s in Configuration.Sources)
-                {
-                    builder.Sources.Add(s);
-                }
-            });
-
-            _deferredHostBuilder.ExecuteActions(_hostBuilder);
-            _deferredWebHostBuilder.ExecuteActions(genericWebHostBuilder);
-
-            _environment.ApplyEnvironmentSettings(genericWebHostBuilder);
         }
 
         private class LoggingBuilder : ILoggingBuilder
