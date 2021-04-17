@@ -19,6 +19,7 @@
     <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" LinkBase="ServerInfrastructure\StringUtilities.cs" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)TaskBuilderExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

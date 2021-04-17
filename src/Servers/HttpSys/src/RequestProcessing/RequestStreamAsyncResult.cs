@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +19,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private SafeNativeOverlapped? _overlapped;
         private IntPtr _pinnedBuffer;
         private uint _dataAlreadyRead;
-        private TaskCompletionSource<int> _tcs;
+        private AsyncTaskMethodBuilder<int> _atmb;   // mutable struct, don't make readonly
+        private object? _taskAsyncState;
         private RequestStream _requestStream;
         private AsyncCallback? _callback;
         private CancellationTokenRegistration _cancellationRegistration;
@@ -26,7 +28,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback)
         {
             _requestStream = requestStream;
-            _tcs = new TaskCompletionSource<int>(userState);
+            _atmb = AsyncTaskMethodBuilder<int>.Create();
+            _ = _atmb.Task;      // force initialization of Task
+            _taskAsyncState = userState;
             _callback = callback;
         }
 
@@ -52,35 +56,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _cancellationRegistration = cancellationRegistration;
         }
 
-        internal RequestStream RequestStream
-        {
-            get { return _requestStream; }
-        }
+        internal RequestStream RequestStream => _requestStream;
 
-        internal SafeNativeOverlapped? NativeOverlapped
-        {
-            get { return _overlapped; }
-        }
+        internal SafeNativeOverlapped? NativeOverlapped => _overlapped;
 
-        internal IntPtr PinnedBuffer
-        {
-            get { return _pinnedBuffer; }
-        }
+        internal IntPtr PinnedBuffer => _pinnedBuffer;
 
-        internal uint DataAlreadyRead
-        {
-            get { return _dataAlreadyRead; }
-        }
+        internal uint DataAlreadyRead => _dataAlreadyRead;
 
-        internal Task<int> Task
-        {
-            get { return _tcs.Task; }
-        }
+        internal Task<int> Task => _atmb.Task;
 
-        internal void IOCompleted(uint errorCode, uint numBytes)
-        {
-            IOCompleted(this, errorCode, numBytes);
-        }
+        internal void IOCompleted(uint errorCode, uint numBytes) => IOCompleted(this, errorCode, numBytes);
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Redirecting to callback")]
         private static void IOCompleted(RequestStreamAsyncResult asyncResult, uint errorCode, uint numBytes)
@@ -113,10 +99,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (_requestStream.TryCheckSizeLimit(read + (int)DataAlreadyRead, out var exception))
             {
-                _tcs.TrySetException(exception);
+                _atmb.SetException(exception);
             }
-            else if (_tcs.TrySetResult(read + (int)DataAlreadyRead))
+            else
             {
+                _atmb.SetResult(read + (int)DataAlreadyRead);
+
                 RequestStream.UpdateAfterRead((uint)errorCode, (uint)(read + DataAlreadyRead));
                 if (_callback != null)
                 {
@@ -135,7 +123,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void Fail(Exception ex)
         {
-            if (_tcs.TrySetException(ex) && _callback != null)
+            _atmb.SetException(ex);
+
+            if (_callback != null)
             {
                 try
                 {
@@ -161,32 +151,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (disposing)
             {
-                if (_overlapped != null)
-                {
-                    _overlapped.Dispose();
-                }
+                _overlapped?.Dispose();
                 _cancellationRegistration.Dispose();
             }
         }
 
-        public object? AsyncState
-        {
-            get { return _tcs.Task.AsyncState; }
-        }
+        public object? AsyncState => _taskAsyncState;
 
-        public WaitHandle AsyncWaitHandle
-        {
-            get { return ((IAsyncResult)_tcs.Task).AsyncWaitHandle; }
-        }
+        public WaitHandle AsyncWaitHandle => ((IAsyncResult)_atmb.Task).AsyncWaitHandle;
 
-        public bool CompletedSynchronously
-        {
-            get { return ((IAsyncResult)_tcs.Task).CompletedSynchronously; }
-        }
+        public bool CompletedSynchronously => ((IAsyncResult)_atmb.Task).CompletedSynchronously;
 
-        public bool IsCompleted
-        {
-            get { return _tcs.Task.IsCompleted; }
-        }
+        public bool IsCompleted => _atmb.Task.IsCompleted;
     }
 }

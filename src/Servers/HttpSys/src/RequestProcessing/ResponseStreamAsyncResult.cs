@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private HttpApiTypes.HTTP_DATA_CHUNK[]? _dataChunks;
         private FileStream? _fileStream;
         private ResponseBody _responseStream;
-        private TaskCompletionSource<object?> _tcs;
+        private AsyncTaskMethodBuilder<object?> _atmb;   // mutable struct, don't make readonly
         private uint _bytesSent;
         private CancellationToken _cancellationToken;
         private CancellationTokenRegistration _cancellationRegistration;
@@ -27,7 +28,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal ResponseStreamAsyncResult(ResponseBody responseStream, CancellationToken cancellationToken)
         {
             _responseStream = responseStream;
-            _tcs = new TaskCompletionSource<object?>();
+            _atmb = AsyncTaskMethodBuilder<object?>.Create();
+            _ = _atmb.Task;      // force initialization of Task
 
             var cancellationRegistration = default(CancellationTokenRegistration);
             if (cancellationToken.CanBeCanceled)
@@ -169,15 +171,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             get { return _overlapped; }
         }
 
-        internal Task Task
-        {
-            get { return _tcs.Task; }
-        }
+        internal Task Task => _atmb.Task;
 
         internal uint BytesSent
         {
-            get { return _bytesSent; }
-            set { _bytesSent = value; }
+            get => _bytesSent;
+            set => _bytesSent = value;
         }
 
         internal ushort DataChunkCount
@@ -280,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal void Complete()
         {
             Dispose();
-            _tcs.TrySetResult(null);
+            _atmb.SetResult(null);
         }
 
         internal void FailSilently()
@@ -288,53 +287,35 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Dispose();
             // Abort the request but do not close the stream, let future writes complete silently
             _responseStream.Abort(dispose: false);
-            _tcs.TrySetResult(null);
+            _atmb.SetResult(null);
         }
 
         internal void Cancel(bool dispose)
         {
             Dispose();
             _responseStream.Abort(dispose);
-            _tcs.TrySetCanceled();
+            _atmb.SetCanceled();
         }
 
         internal void Fail(Exception ex)
         {
             Dispose();
             _responseStream.Abort();
-            _tcs.TrySetException(ex);
+            _atmb.SetException(ex);
         }
 
-        public object? AsyncState
-        {
-            get { return _tcs.Task.AsyncState; }
-        }
+        public object? AsyncState => _atmb.Task.AsyncState;
 
-        public WaitHandle AsyncWaitHandle
-        {
-            get { return ((IAsyncResult)_tcs.Task).AsyncWaitHandle; }
-        }
+        public WaitHandle AsyncWaitHandle => ((IAsyncResult)_atmb.Task).AsyncWaitHandle;
 
-        public bool CompletedSynchronously
-        {
-            get { return ((IAsyncResult)_tcs.Task).CompletedSynchronously; }
-        }
+        public bool CompletedSynchronously => ((IAsyncResult)_atmb.Task).CompletedSynchronously;
 
-        public bool IsCompleted
-        {
-            get { return _tcs.Task.IsCompleted; }
-        }
+        public bool IsCompleted => _atmb.Task.IsCompleted;
 
         public void Dispose()
         {
-            if (_overlapped != null)
-            {
-                _overlapped.Dispose();
-            }
-            if (_fileStream != null)
-            {
-                _fileStream.Dispose();
-            }
+            _overlapped?.Dispose();
+            _fileStream?.Dispose();
             _cancellationRegistration.Dispose();
         }
     }

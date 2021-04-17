@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Authentication.ExtendedProtection;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private byte[]? _backingBuffer;
         private HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* _memoryBlob;
         private uint _size;
-        private TaskCompletionSource<object?> _tcs;
+        private AsyncTaskMethodBuilder _atmb;   // mutable struct, don't make readonly
         private RequestContext _requestContext;
 
         private int _clientCertError;
@@ -41,7 +42,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal ClientCertLoader(RequestContext requestContext, CancellationToken cancellationToken)
         {
             _requestContext = requestContext;
-            _tcs = new TaskCompletionSource<object?>();
+            _atmb = AsyncTaskMethodBuilder.Create();
+            _ = _atmb.Task;      // force initialization of Task
             // we will use this overlapped structure to issue async IO to ul
             // the event handle will be put in by the BeginHttpApi2.ERROR_SUCCESS() method
             Reset(CertBoblSize);
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             get
             {
-                return _tcs.Task;
+                return _atmb.Task;
             }
         }
 
@@ -212,7 +214,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _clientCert = cert;
             _clientCertError = certErrors;
             Dispose();
-            _tcs.TrySetResult(null);
+            _atmb.SetResult();
         }
 
         private void Fail(Exception ex)
@@ -220,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // TODO: Log
             _clientCertException = ex;
             Dispose();
-            _tcs.TrySetResult(null);
+            _atmb.SetResult();
         }
 
         private unsafe void IOCompleted(uint errorCode, uint numBytes)
@@ -331,27 +333,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public object? AsyncState
-        {
-            get { return _tcs.Task.AsyncState; }
-        }
+        public object? AsyncState => _atmb.Task.AsyncState;
 
-        public WaitHandle AsyncWaitHandle
-        {
-            get { return ((IAsyncResult)_tcs.Task).AsyncWaitHandle; }
-        }
+        public WaitHandle AsyncWaitHandle => ((IAsyncResult)_atmb.Task).AsyncWaitHandle;
 
-        public bool CompletedSynchronously
-        {
-            get { return ((IAsyncResult)_tcs.Task).CompletedSynchronously; }
-        }
+        public bool CompletedSynchronously => ((IAsyncResult)_atmb.Task).CompletedSynchronously;
 
-        public bool IsCompleted
-        {
-            get { return _tcs.Task.IsCompleted; }
-        }
+        public bool IsCompleted => _atmb.Task.IsCompleted;
 
-        internal static unsafe ChannelBinding? GetChannelBindingFromTls(RequestQueue requestQueue, ulong connectionId, ILogger logger)
+        internal static ChannelBinding? GetChannelBindingFromTls(RequestQueue requestQueue, ulong connectionId, ILogger logger)
         {
             // +128 since a CBT is usually <128 thus we need to call HRCC just once. If the CBT
             // is >128 we will get ERROR_MORE_DATA and call again
