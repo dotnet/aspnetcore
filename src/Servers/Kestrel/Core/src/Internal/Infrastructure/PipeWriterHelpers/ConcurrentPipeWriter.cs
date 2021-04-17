@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private int _tailBytesBuffered;
         private long _bytesBuffered;
 
-        // When _currentFlushTcs is null and _head/_tail is also null, the ConcurrentPipeWriter is in passthrough mode.
+        // When _currentFlushAvtmb is null and _head/_tail is also null, the ConcurrentPipeWriter is in passthrough mode.
         // When the ConcurrentPipeWriter is not in passthrough mode, that could be for one of two reasons:
         //
         // 1. A flush of the _innerPipeWriter is in progress.
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         // In either case, we need to manually append buffer segments until the loop in the current or next call to FlushAsync()
         // flushes all the buffers putting the ConcurrentPipeWriter back into passthrough mode.
         // The manual buffer appending logic is borrowed from corefx's StreamPipeWriter.
-        private TaskCompletionSource<FlushResult>? _currentFlushTcs;
+        private AsyncValueTaskMethodBuilder<FlushResult>? _currentFlushAvtmb;
         private bool _bufferedWritePending;
 
         // We're trusting the Http2FrameWriter and Http1OutputProducer to not call into the PipeWriter after calling Abort() or Complete().
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public void Reset()
         {
-            Debug.Assert(_currentFlushTcs == null, "There should not be a pending flush.");
+            Debug.Assert(_currentFlushAvtmb is null, "There should not be a pending flush.");
 
             _aborted = false;
             _completeException = null;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public override Memory<byte> GetMemory(int sizeHint = 0)
         {
-            if (_currentFlushTcs == null && _head == null)
+            if (_currentFlushAvtmb == null && _head == null)
             {
                 return _innerPipeWriter.GetMemory(sizeHint);
             }
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public override Span<byte> GetSpan(int sizeHint = 0)
         {
-            if (_currentFlushTcs == null && _head == null)
+            if (_currentFlushAvtmb == null && _head == null)
             {
                 return _innerPipeWriter.GetSpan(sizeHint);
             }
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public override void Advance(int bytes)
         {
-            if (_currentFlushTcs == null && _head == null)
+            if (_currentFlushAvtmb == null && _head == null)
             {
                 _innerPipeWriter.Advance(bytes);
                 return;
@@ -111,9 +111,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
         {
-            if (_currentFlushTcs != null)
+            if (_currentFlushAvtmb != null)
             {
-                return new ValueTask<FlushResult>(_currentFlushTcs.Task);
+                return _currentFlushAvtmb.GetValueOrDefault().Task;
             }
 
             if (_bytesBuffered > 0)
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
             if (flushTask.IsCompletedSuccessfully)
             {
-                if (_currentFlushTcs != null)
+                if (_currentFlushAvtmb != null)
                 {
                     CompleteFlushUnsynchronized(flushTask.GetAwaiter().GetResult(), null);
                 }
@@ -133,9 +133,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 return flushTask;
             }
 
-            // Use a TCS instead of something custom so it can be awaited by multiple awaiters.
-            _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var result = new ValueTask<FlushResult>(_currentFlushTcs.Task);
+            // Use a TCS (or the non-allocating twin) instead of something custom so it can be awaited by multiple awaiters.
+            var currentFlushAvtmb = AsyncValueTaskMethodBuilder<FlushResult>.Create();
+            _currentFlushAvtmb = currentFlushAvtmb;
+            var result = currentFlushAvtmb.Task;
 
             // FlushAsyncAwaited clears the TCS prior to completing. Make sure to construct the ValueTask
             // from the TCS before calling FlushAsyncAwaited in case FlushAsyncAwaited completes inline.
@@ -163,12 +164,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
                         if (flushResult.IsCanceled)
                         {
-                            Debug.Assert(_currentFlushTcs != null);
+                            Debug.Assert(_currentFlushAvtmb != null);
 
                             // Complete anyone currently awaiting a flush with the canceled FlushResult since CancelPendingFlush() was called.
-                            _currentFlushTcs.SetResult(flushResult);
-                            // Reset _currentFlushTcs, so we don't enter passthrough mode while we're still flushing.
-                            _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+                            _currentFlushAvtmb.GetValueOrDefault().SetResult(flushResult, runContinuationsAsynchronously: true);
+                            // Reset _currentFlushAvtmb, so we don't enter passthrough mode while we're still flushing.
+                            var currentFlushAvtmb = AsyncValueTaskMethodBuilder<FlushResult>.Create();
+                            _ = currentFlushAvtmb.Task;     // force initialization of task
+                            _currentFlushAvtmb = currentFlushAvtmb;
                         }
 
                         CopyAndReturnSegmentsUnsynchronized();
@@ -199,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             // inner Complete() method with the correct exception or lack thereof once the flush loop ends.
             _completeException = exception ?? _successfullyCompletedSentinel;
 
-            if (_currentFlushTcs == null)
+            if (_currentFlushAvtmb == null)
             {
                 if (_bytesBuffered > 0)
                 {
@@ -217,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             _aborted = true;
 
             // If we're flushing, the cleanup will happen after the flush.
-            if (_currentFlushTcs == null)
+            if (_currentFlushAvtmb == null)
             {
                 CleanupSegmentsUnsynchronized();
             }
@@ -296,17 +299,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 _innerPipeWriter.Complete(_completeException);
             }
 
-            Debug.Assert(_currentFlushTcs != null);
+            Debug.Assert(_currentFlushAvtmb != null);
             if (flushEx != null)
             {
-                _currentFlushTcs.SetException(flushEx);
+                _currentFlushAvtmb.GetValueOrDefault().SetException(flushEx, runContinuationsAsynchronously: true);
             }
             else
             {
-                _currentFlushTcs.SetResult(flushResult);
+                _currentFlushAvtmb.GetValueOrDefault().SetResult(flushResult, runContinuationsAsynchronously: true);
             }
 
-            _currentFlushTcs = null;
+            _currentFlushAvtmb = null;
         }
 
         // The methods below were copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.IO.Pipelines/src/System/IO/Pipelines/StreamPipeWriter.cs

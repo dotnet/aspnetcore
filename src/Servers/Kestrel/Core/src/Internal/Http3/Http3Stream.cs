@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.QPack;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool _isMethodConnect;
 
         private readonly Http3Connection _http3Connection;
-        private TaskCompletionSource? _appCompleted;
+        private AsyncTaskMethodBuilder? _appCompleted;
 
         public Pipe RequestBodyPipe { get; }
 
@@ -328,7 +329,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         protected override void OnRequestProcessingEnded()
         {
             Debug.Assert(_appCompleted != null);
-            _appCompleted.SetResult();
+            _appCompleted.GetValueOrDefault().SetResult();
         }
 
         private bool TryClose()
@@ -412,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 // Make sure application func is completed before completing writer.
                 if (_appCompleted != null)
                 {
-                    await _appCompleted.Task;
+                    await _appCompleted.GetValueOrDefault().Task;
                 }
 
                 try
@@ -521,7 +522,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 await OnEndStreamReceived();
             }
 
-            _appCompleted = new TaskCompletionSource();
+            var appCompleted = AsyncTaskMethodBuilder.Create();
+            _ = appCompleted.Task;  // force initialization of Task
+            _appCompleted = appCompleted;
 
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
         }

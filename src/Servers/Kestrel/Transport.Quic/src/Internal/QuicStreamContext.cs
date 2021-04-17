@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net.Quic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         private volatile Exception? _shutdownReason;
         private bool _streamClosed;
         private bool _aborted;
-        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        private AsyncTaskMethodBuilder _waitForConnectionClosedAtmb;    // mutable struct, don't make readonly
         private readonly object _shutdownLock = new object();
 
         public QuicStreamContext(QuicStream stream, QuicConnectionContext connection, QuicTransportContext context)
@@ -61,6 +62,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
             Transport = _originalTransport = pair.Transport;
             Application = pair.Application;
+
+            _waitForConnectionClosedAtmb = AsyncTaskMethodBuilder.Create();
+            _ = _waitForConnectionClosedAtmb.Task;      // force initialization of Task
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
@@ -140,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
                 FireStreamClosed();
 
-                await _waitForConnectionClosedTcs.Task;
+                await _waitForConnectionClosedAtmb.Task;
             }
         }
 
@@ -194,11 +198,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
             _streamClosed = true;
 
-            ThreadPool.UnsafeQueueUserWorkItem(state =>
+            ThreadPool.UnsafeQueueUserWorkItem(static state =>
             {
                 state.CancelConnectionClosedToken();
-
-                state._waitForConnectionClosedTcs.TrySetResult();
+                state._waitForConnectionClosedAtmb.SetResult();
             },
             this,
             preferLocal: false);

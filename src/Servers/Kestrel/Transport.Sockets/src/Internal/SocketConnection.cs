@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private volatile Exception? _shutdownReason;
         private Task? _sendingTask;
         private Task? _receivingTask;
-        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource();
+        private AsyncTaskMethodBuilder _waitForConnectionClosedAtmb;     // mutable struct, don't make readonly
         private bool _connectionClosed;
         private readonly bool _waitForData;
 
@@ -70,6 +71,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             // Set the transport and connection id
             Transport = _originalTransport = pair.Transport;
             Application = pair.Application;
+
+            _waitForConnectionClosedAtmb = AsyncTaskMethodBuilder.Create();
+            _ = _waitForConnectionClosedAtmb.Task;      // force initialization of Task
 
             InitiaizeFeatures();
         }
@@ -225,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                 FireConnectionClosed();
 
-                await _waitForConnectionClosedTcs.Task;
+                await _waitForConnectionClosedAtmb.Task;
             }
         }
 
@@ -304,11 +308,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             _connectionClosed = true;
 
-            ThreadPool.UnsafeQueueUserWorkItem(state =>
+            ThreadPool.UnsafeQueueUserWorkItem(static state =>
             {
                 state.CancelConnectionClosedToken();
-
-                state._waitForConnectionClosedTcs.TrySetResult();
+                state._waitForConnectionClosedAtmb.SetResult();
             },
             this,
             preferLocal: false);
