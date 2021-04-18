@@ -1,4 +1,5 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions
 *REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions
 *REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.IdleTimeout.get -> System.TimeSpan
 *REMOVED*Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions.IdleTimeout.set -> void
@@ -22,8 +23,8 @@
 *REMOVED*~static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions> configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
 *REMOVED*static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
 *REMOVED*static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.QuicTransportOptions> configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportFactory
-Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportFactory.BindAsync(System.Net.EndPoint! endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IMultiplexedConnectionListener!>
+*REMOVED*~static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder
+Microsoft.AspNetCore.Hosting.WebHostBuilderQuicExtensions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.Alpn.get -> string?
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.Alpn.set -> void
@@ -38,6 +39,5 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxUnidi
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxWriteBufferSize.get -> long?
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxWriteBufferSize.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.QuicTransportOptions() -> void
-static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions!>! configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-static Microsoft.AspNetCore.Hosting.WebHostBuilderMsQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-~Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportFactory.QuicTransportFactory(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions!>! options) -> void
+static Microsoft.AspNetCore.Hosting.WebHostBuilderQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions!>! configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderQuicExtensions.UseQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

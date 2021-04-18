@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Hosting
     /// <summary>
     /// Quic <see cref="IWebHostBuilder"/> extensions.
     /// </summary>
-    public static class WebHostBuilderMsQuicExtensions
+    public static class WebHostBuilderQuicExtensions
     {
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
         {

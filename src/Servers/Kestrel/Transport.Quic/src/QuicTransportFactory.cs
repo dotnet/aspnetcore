@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
     /// <summary>
     /// A factory for QUIC based connections.
     /// </summary>
-    public class QuicTransportFactory : IMultiplexedConnectionListenerFactory
+    internal class QuicTransportFactory : IMultiplexedConnectionListenerFactory
     {
         private QuicTrace _log;
         private QuicTransportOptions _options;
