@@ -491,11 +491,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 throw new NotImplementedException();
             }
 
-            public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
-            {
-                throw new NotImplementedException();
-            }
-
             public void Delete(string key, CookieOptions options)
             {
                 throw new NotImplementedException();

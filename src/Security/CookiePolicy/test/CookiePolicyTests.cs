@@ -486,11 +486,6 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                     throw new NotImplementedException();
                 }
 
-                public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
-                {
-                    throw new NotImplementedException();
-                }
-
                 public void Delete(string key)
                 {
                     throw new NotImplementedException();

@@ -416,19 +416,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 return GetEnumerator();
             }
-
-            public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
-            {
-                foreach (var keyValuePair in keyValuePairs)
-                {
-                    _cookies[keyValuePair.Key] = new CookieInfo()
-                    {
-                        Key = keyValuePair.Key,
-                        Value = keyValuePair.Value,
-                        Options = options
-                    };
-                }
-            }
         }
 
         private CookieTempDataProvider GetProvider(IDataProtector dataProtector = null, CookieTempDataProviderOptions options = null)
