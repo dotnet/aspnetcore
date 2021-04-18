@@ -11,6 +11,7 @@
       "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
+      "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
       "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Servers\\Kestrel\\Core\\test\\Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj",
@@ -19,6 +20,7 @@
       "src\\Servers\\Kestrel\\Transport.Libuv\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj",
       "src\\Servers\\Kestrel\\Transport.Libuv\\test\\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.csproj",
       "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
+      "src\\Servers\\Kestrel\\Transport.Quic\\test\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "src\\Servers\\Kestrel\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks.csproj",
       "src\\Servers\\Kestrel\\samples\\Http2SampleApp\\Http2SampleApp.csproj",
@@ -35,7 +37,6 @@
       "src\\Servers\\Kestrel\\test\\Sockets.BindTests\\Sockets.BindTests.csproj",
       "src\\Servers\\Kestrel\\test\\Sockets.FunctionalTests\\Sockets.FunctionalTests.csproj",
       "src\\Servers\\Kestrel\\tools\\CodeGenerator\\CodeGenerator.csproj",
-      "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
     ]
   }
