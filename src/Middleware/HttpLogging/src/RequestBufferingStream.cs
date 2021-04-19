@@ -113,7 +113,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
         }
 
-        /// <inheritdoc />
         public override int EndRead(IAsyncResult asyncResult)
         {
             return TaskToApm.End<int>(asyncResult);
