@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// The list of addresses that the HTTP server is bound to.
         /// </summary>
-        public IEnumerable<string>? Addresses => ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
+        public ICollection<string>? Addresses => ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
 
         IServiceProvider IApplicationBuilder.ApplicationServices
         {

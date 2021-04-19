@@ -15,6 +15,9 @@ app.MapGet("/json", (Func<object>)Json);
 string SayHello(string name) => $"Hello {name}";
 app.MapGet("/hello/{name}", (Func<string, string>)SayHello);
 
+app.Addresses.Add("http://localhost:5002");
+app.Addresses.Add("http://localhost:5003");
+
 await app.RunAsync();
 
 record Todo(int Id, string Name, bool IsComplete);

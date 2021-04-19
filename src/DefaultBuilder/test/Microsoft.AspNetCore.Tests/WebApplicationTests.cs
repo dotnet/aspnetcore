@@ -55,6 +55,28 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task WebApplicationAddresses_UpdatesIServerAddressesFeature()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var addresses = new List<string>();
+            var server = new MockAddressesServer(addresses);
+            builder.Services.AddSingleton<IServer>(server);
+            await using var app = builder.Build();
+
+            app.Addresses.Add("http://localhost:5002");
+            app.Addresses.Add("https://localhost:5003");
+
+            var runTask = app.RunAsync();
+
+            Assert.Equal(2, addresses.Count);
+            Assert.Equal("http://localhost:5002", addresses[0]);
+            Assert.Equal("https://localhost:5003", addresses[1]);
+
+            await app.StopAsync();
+            await runTask;
+        }
+
+        [Fact]
         public void WebApplicationBuilderHost_ThrowsWhenBuiltDirectly()
         {
             Assert.Throws<NotSupportedException>(() => ((IHostBuilder)WebApplication.CreateBuilder().Host).Build());

@@ -20,7 +20,7 @@ Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.ConfigureServices(System.Ac
 Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.GetSetting(string! key) -> string?
 Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.UseSetting(string! key, string? value) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 Microsoft.AspNetCore.Builder.WebApplication
-Microsoft.AspNetCore.Builder.WebApplication.Addresses.get -> System.Collections.Generic.IEnumerable<string!>?
+Microsoft.AspNetCore.Builder.WebApplication.Addresses.get -> System.Collections.Generic.ICollection<string!>?
 Microsoft.AspNetCore.Builder.WebApplication.Configuration.get -> Microsoft.Extensions.Configuration.IConfiguration!
 Microsoft.AspNetCore.Builder.WebApplication.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Builder.WebApplication.Environment.get -> Microsoft.AspNetCore.Hosting.IWebHostEnvironment!
