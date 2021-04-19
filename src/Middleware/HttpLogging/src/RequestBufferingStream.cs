@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.HttpLogging
 {
     internal sealed class RequestBufferingStream : BufferingStream
     {
-        private Encoding? _encoding;
+        private Encoding _encoding;
         private readonly int _limit;
 
         public bool HasLogged { get; private set; }
 
-        public RequestBufferingStream(Stream innerStream, int limit, ILogger logger, Encoding? encoding)
+        public RequestBufferingStream(Stream innerStream, int limit, ILogger logger, Encoding encoding)
             : base(innerStream, logger)
         {
             _logger = logger;

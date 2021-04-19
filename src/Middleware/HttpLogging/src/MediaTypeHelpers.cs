@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                     if (type.MatchesMediaType(mediaType.MediaType))
                     {
                         // We always set encoding
-                        encoding = state.MediaTypeHeaderValue.Encoding!;
+                        encoding = state.Encoding!;
                         return true;
                     }
                 }

@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             mediaType.Encoding ??= Encoding.UTF8;
 
-            _mediaTypeStates.Add(new MediaTypeState(mediaType));
+            _mediaTypeStates.Add(new MediaTypeState(mediaType) { Encoding = mediaType.Encoding });
         }
 
         /// <summary>
@@ -121,6 +121,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
 
             public MediaTypeHeaderValue MediaTypeHeaderValue { get; }
+            public Encoding? Encoding { get; set; }
             public bool IsBinary { get; set; }
         }
     }
