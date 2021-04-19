@@ -531,6 +531,7 @@ namespace Microsoft.AspNetCore.HttpLogging.Tests
             await middleware.Invoke(httpContext);
 
             Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains(expected));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("RequestBody: <Unrecognized media type>"));
         }
 
         [Fact]
