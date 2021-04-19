@@ -97,6 +97,7 @@ and are generated based on the last package release.
     <!-- Crossgen2 compiler -->
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-x64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-x64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-x64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-x64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm64" />
