@@ -187,6 +187,7 @@ namespace Microsoft.AspNetCore
                 { "Microsoft.AspNetCore.Http.Connections.Common", "6.0.0.0" },
                 { "Microsoft.AspNetCore.Http.Extensions", "6.0.0.0" },
                 { "Microsoft.AspNetCore.Http.Features", "6.0.0.0" },
+                { "Microsoft.AspNetCore.HttpLogging", "6.0.0.0" },
                 { "Microsoft.AspNetCore.HttpOverrides", "6.0.0.0" },
                 { "Microsoft.AspNetCore.HttpsPolicy", "6.0.0.0" },
                 { "Microsoft.AspNetCore.Identity", "6.0.0.0" },
