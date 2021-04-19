@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -1836,6 +1838,268 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.WaitForStreamErrorAsync(
                 Http3ErrorCode.UnexpectedFrame,
                 expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(frame.FormattedType));
+        }
+
+        [Fact]
+        public Task HEADERS_Received_HeaderBlockContainsUnknownPseudoHeaderField_ConnectionError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(":unknown", "0"),
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, expectedErrorMessage: CoreStrings.HttpErrorUnknownPseudoHeaderField);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_HeaderBlockContainsResponsePseudoHeaderField_ConnectionError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Status, "200"),
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, expectedErrorMessage: CoreStrings.HttpErrorResponsePseudoHeaderField);
+        }
+
+        public static TheoryData<IEnumerable<KeyValuePair<string, string>>> DuplicatePseudoHeaderFieldData
+        {
+            get
+            {
+                var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
+                var requestHeaders = new[]
+                {
+                    new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                    new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                    new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
+                    new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                };
+
+                foreach (var headerField in requestHeaders)
+                {
+                    var headers = requestHeaders.Concat(new[] { new KeyValuePair<string, string>(headerField.Key, headerField.Value) });
+                    data.Add(headers);
+                }
+
+                return data;
+            }
+        }
+
+        public static TheoryData<IEnumerable<KeyValuePair<string, string>>> ConnectMissingPseudoHeaderFieldData
+        {
+            get
+            {
+                var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
+                var methodHeader = new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT");
+                var headers = new[] { methodHeader };
+                data.Add(headers);
+
+                return data;
+            }
+        }
+
+        public static TheoryData<IEnumerable<KeyValuePair<string, string>>> PseudoHeaderFieldAfterRegularHeadersData
+        {
+            get
+            {
+                var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
+                var requestHeaders = new[]
+                {
+                    new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                    new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                    new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
+                    new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                    new KeyValuePair<string, string>("content-length", "0")
+                };
+
+                foreach (var headerField in requestHeaders.Where(h => h.Key.StartsWith(':')))
+                {
+                    var headers = requestHeaders.Except(new[] { headerField }).Concat(new[] { headerField });
+                    data.Add(headers);
+                }
+
+                return data;
+            }
+        }
+
+        public static TheoryData<IEnumerable<KeyValuePair<string, string>>> MissingPseudoHeaderFieldData
+        {
+            get
+            {
+                var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
+                var requestHeaders = new[]
+                {
+                    new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                    new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                    new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                };
+
+                foreach (var headerField in requestHeaders)
+                {
+                    var headers = requestHeaders.Except(new[] { headerField });
+                    data.Add(headers);
+                }
+
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DuplicatePseudoHeaderFieldData))]
+        public Task HEADERS_Received_HeaderBlockContainsDuplicatePseudoHeaderField_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, expectedErrorMessage: CoreStrings.HttpErrorDuplicatePseudoHeaderField);
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectMissingPseudoHeaderFieldData))]
+        public async Task HEADERS_Received_HeaderBlockDoesNotContainMandatoryPseudoHeaderField_MethodIsCONNECT_NoError(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Theory]
+        [MemberData(nameof(PseudoHeaderFieldAfterRegularHeadersData))]
+        public Task HEADERS_Received_HeaderBlockContainsPseudoHeaderFieldAfterRegularHeaders_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, expectedErrorMessage: CoreStrings.HttpErrorPseudoHeaderFieldAfterRegularHeaders);
+        }
+
+        private async Task HEADERS_Received_InvalidHeaderFields_StreamError(IEnumerable<KeyValuePair<string, string>> headers, string expectedErrorMessage, Http3ErrorCode? errorCode = null)
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            await requestStream.WaitForStreamErrorAsync(
+                errorCode ?? Http3ErrorCode.MessageError,
+                expectedErrorMessage);
+        }
+
+        [Theory]
+        [MemberData(nameof(MissingPseudoHeaderFieldData))]
+        public async Task HEADERS_Received_HeaderBlockDoesNotContainMandatoryPseudoHeaderField_StreamError(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.WaitForStreamErrorAsync(
+                 Http3ErrorCode.MessageError,
+                 expectedErrorMessage: CoreStrings.HttpErrorMissingMandatoryPseudoHeaderFields);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_HeaderBlockOverLimit_ConnectionError()
+        {
+            // > 32kb
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("a", _4kHeaderValue),
+                new KeyValuePair<string, string>("b", _4kHeaderValue),
+                new KeyValuePair<string, string>("c", _4kHeaderValue),
+                new KeyValuePair<string, string>("d", _4kHeaderValue),
+                new KeyValuePair<string, string>("e", _4kHeaderValue),
+                new KeyValuePair<string, string>("f", _4kHeaderValue),
+                new KeyValuePair<string, string>("g", _4kHeaderValue),
+                new KeyValuePair<string, string>("h", _4kHeaderValue),
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http3ErrorCode.RequestRejected);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_TooManyHeaders_ConnectionError()
+        {
+            // > MaxRequestHeaderCount (100)
+            var headers = new List<KeyValuePair<string, string>>();
+            headers.AddRange(new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            });
+            for (var i = 0; i < 100; i++)
+            {
+                headers.Add(new KeyValuePair<string, string>(i.ToString(CultureInfo.InvariantCulture), i.ToString(CultureInfo.InvariantCulture)));
+            }
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_TooManyHeaders);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_InvalidCharacters_ConnectionError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("Custom", "val\0ue"),
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_HeaderBlockContainsConnectionHeader_ConnectionError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("connection", "keep-alive")
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
+        }
+        
+        [Fact]
+        public Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsNotTrailers_ConnectionError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("te", "trailers, deflate")
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsTrailers_NoError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("te", "trailers")
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
         }
     }
 }

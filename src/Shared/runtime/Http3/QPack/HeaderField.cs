@@ -5,6 +5,10 @@ namespace System.Net.Http.QPack
 {
     internal readonly struct HeaderField
     {
+        // http://httpwg.org/specs/rfc7541.html#rfc.section.4.1
+        // public for internal use in aspnetcore
+        public const int RfcOverhead = 32;
+
         public HeaderField(byte[] name, byte[] value)
         {
             Name = name;
