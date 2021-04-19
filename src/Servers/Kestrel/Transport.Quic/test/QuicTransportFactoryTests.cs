@@ -7,13 +7,12 @@ using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
 {
     public class QuicTransportFactoryTests
     {
