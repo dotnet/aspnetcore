@@ -112,14 +112,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RuntimePackageRootVariableName>PkgMicrosoft_NETCore_App_Runtime_$(RuntimeIdentifier)</RuntimePackageRootVariableName>
 
     <BuildOsName>$(TargetOsName)</BuildOsName>
-    <BuildOsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(BuildArchitecture)'!='x64'">linux</BuildOsName>
+    <!-- linux-musl-arm and linux-musl-arm64 are built on an Ubuntu container with cross compilation tools. linux-musl-x64 is built in an alpine container -->
+    <BuildOsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(TargetArchitecture)'!='x64'">linux</BuildOsName>
     <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(BuildOsName)-$(BuildArchitecture)</Crossgen2PackageRootVariableName>
 
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
 
     <NativePlatform>$(TargetArchitecture)</NativePlatform>
     <NativePlatform Condition=" '$(NativePlatform)' == 'x86' ">Win32</NativePlatform>
-
   </PropertyGroup>
 
   <ItemGroup>
@@ -474,7 +474,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Command="&quot;$(CrossgenToolPath)&quot; $(Crossgen2Args) -o:&quot;$(TargetDir)%(FileName)%(Extension)&quot; &quot;%(IntermediateCrossgenAssembly.Identity)&quot;"
           IgnoreStandardErrorWarningFormat="true"
           StandardOutputImportance="High" />
-
   </Target>
 
   <!--
