@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
-            for (var i = 0; i < Count; i++)
+            var count = _keyValues.Count;
+            for (var i = 0; i < count; i++)
             {
                 yield return _keyValues[i];
             }
