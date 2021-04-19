@@ -25,14 +25,10 @@ namespace Microsoft.AspNetCore.Builder
 
         internal WebApplicationBuilder(Assembly? callingAssembly, string[]? args = null)
         {
-            Services = new ServiceCollection();
-
             // HACK: MVC and Identity do this horrible thing to get the hosting environment as an instance
             // from the service collection before it is built. That needs to be fixed...
             Environment = _environment = new WebHostEnvironment(callingAssembly);
             Services.AddSingleton(Environment);
-
-            Configuration = new Configuration();
 
             // Run methods to configure both generic and web host defaults early to populate config from appsettings.json
             // environment variables (both DOTNET_ and ASPNETCORE_ prefixed) and other possible default sources to prepopulate
@@ -57,12 +53,12 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// A collection of services for the application to compose. This is useful for adding user provided or framework provided services.
         /// </summary>
-        public IServiceCollection Services { get; }
+        public IServiceCollection Services { get; } = new ServiceCollection();
 
         /// <summary>
         /// A collection of configuration providers for the application to compose. This is useful for adding new configuration sources and providers.
         /// </summary>
-        public Configuration Configuration { get; }
+        public Configuration Configuration { get; } = new();
 
         /// <summary>
         /// A collection of logging providers for the applicaiton to compose. This is useful for adding new logging providers.
@@ -90,32 +86,6 @@ namespace Microsoft.AspNetCore.Builder
             _hostBuilder.ConfigureWebHostDefaults(ConfigureWebHost);
             _builtApplication = new WebApplication(_hostBuilder.Build());
             return _builtApplication;
-        }
-
-        private void ConfigureWebHost(IWebHostBuilder genericWebHostBuilder)
-        {
-            genericWebHostBuilder.Configure(ConfigureApplication);
-
-            _hostBuilder.ConfigureServices((context, services) =>
-            {
-                foreach (var s in Services)
-                {
-                    services.Add(s);
-                }
-            });
-
-            _hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
-            {
-                foreach (var s in Configuration.Sources)
-                {
-                    builder.Sources.Add(s);
-                }
-            });
-
-            _deferredHostBuilder.ExecuteActions(_hostBuilder);
-            _deferredWebHostBuilder.ExecuteActions(genericWebHostBuilder);
-
-            _environment.ApplyEnvironmentSettings(genericWebHostBuilder);
         }
 
         private void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder app)
@@ -180,6 +150,33 @@ namespace Microsoft.AspNetCore.Builder
             {
                 app.Properties[item.Key] = item.Value;
             }
+
+        }
+
+        private void ConfigureWebHost(IWebHostBuilder genericWebHostBuilder)
+        {
+            genericWebHostBuilder.Configure(ConfigureApplication);
+
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+                foreach (var s in Services)
+                {
+                    services.Add(s);
+                }
+            });
+
+            _hostBuilder.ConfigureAppConfiguration((hostContext, builder) =>
+            {
+                foreach (var s in Configuration.Sources)
+                {
+                    builder.Sources.Add(s);
+                }
+            });
+
+            _deferredHostBuilder.ExecuteActions(_hostBuilder);
+            _deferredWebHostBuilder.ExecuteActions(genericWebHostBuilder);
+
+            _environment.ApplyEnvironmentSettings(genericWebHostBuilder);
         }
 
         private class LoggingBuilder : ILoggingBuilder

@@ -26,10 +26,8 @@ Microsoft.AspNetCore.Builder.WebApplication.DisposeAsync() -> System.Threading.T
 Microsoft.AspNetCore.Builder.WebApplication.Environment.get -> Microsoft.AspNetCore.Hosting.IWebHostEnvironment!
 Microsoft.AspNetCore.Builder.WebApplication.Lifetime.get -> Microsoft.Extensions.Hosting.IHostApplicationLifetime!
 Microsoft.AspNetCore.Builder.WebApplication.Logger.get -> Microsoft.Extensions.Logging.ILogger!
-Microsoft.AspNetCore.Builder.WebApplication.Run() -> void
-Microsoft.AspNetCore.Builder.WebApplication.RunAsync() -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Builder.WebApplication.RunAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Builder.WebApplication.RunAsync(params string![]! urls) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Builder.WebApplication.Run(string? url = null) -> void
+Microsoft.AspNetCore.Builder.WebApplication.RunAsync(string? url = null) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Builder.WebApplication.Services.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Builder.WebApplication.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Builder.WebApplication.StopAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
@@ -41,7 +39,5 @@ Microsoft.AspNetCore.Builder.WebApplicationBuilder.Host.get -> Microsoft.AspNetC
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Logging.get -> Microsoft.Extensions.Logging.ILoggingBuilder!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.WebHost.get -> Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder!
-static Microsoft.AspNetCore.Builder.WebApplication.Create() -> Microsoft.AspNetCore.Builder.WebApplication!
-static Microsoft.AspNetCore.Builder.WebApplication.Create(string![]! args) -> Microsoft.AspNetCore.Builder.WebApplication!
-static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder() -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
-static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(string![]! args) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
+static Microsoft.AspNetCore.Builder.WebApplication.Create(string![]? args = null) -> Microsoft.AspNetCore.Builder.WebApplication!
+static Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(string![]? args = null) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!

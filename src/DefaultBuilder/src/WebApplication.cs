@@ -95,42 +95,29 @@ namespace Microsoft.AspNetCore.Builder
         IServiceProvider IEndpointRouteBuilder.ServiceProvider => Services;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with pre-configured defaults.
-        /// </summary>
-        /// <returns>The <see cref="WebApplicationBuilder"/></returns>
-        public static WebApplicationBuilder CreateBuilder() =>
-            // The assumption here is that this API is called by the application directly
-            // this might give a better approximation of the default application name
-            new WebApplicationBuilder(Assembly.GetCallingAssembly());
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with pre-configured defaults.
+        /// Initializes a new instance of the <see cref="WebApplication"/> class with preconfigured defaults.
         /// </summary>
         /// <param name="args">Command line arguments</param>
-        /// <returns>The <see cref="WebApplicationBuilder"/></returns>
-        public static WebApplicationBuilder CreateBuilder(string[] args) =>
-            new WebApplicationBuilder(Assembly.GetCallingAssembly(), args);
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WebApplication"/> class with pre-configured defaults.
-        /// </summary>
-        /// <param name="args">Command line arguments</param>
-        /// <returns>The <see cref="WebApplication"/></returns>
-        public static WebApplication Create(string[] args) =>
+        /// <returns>The <see cref="WebApplication"/>.</returns>
+        public static WebApplication Create(string[]? args = null) =>
             new WebApplicationBuilder(Assembly.GetCallingAssembly(), args).Build();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WebApplication"/> class with pre-configured defaults.
+        /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
         /// </summary>
-        /// <returns>The <see cref="WebApplication"/></returns>
-        public static WebApplication Create()
-            => new WebApplicationBuilder(Assembly.GetCallingAssembly()).Build();
+        /// <param name="args">Command line arguments</param>
+        /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
+        public static WebApplicationBuilder CreateBuilder(string[]? args = null) =>
+            new WebApplicationBuilder(Assembly.GetCallingAssembly(), args);
 
         /// <summary>
         /// Start the application.
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// A <see cref="Task"/> that represents the startup of the <see cref="WebApplication"/>.
+        /// Successful completion indicates the server is ready to accept new requests.
+        /// </returns>
         public Task StartAsync(CancellationToken cancellationToken = default) =>
             _host.StartAsync(cancellationToken);
 
@@ -138,9 +125,35 @@ namespace Microsoft.AspNetCore.Builder
         /// Shuts down the application.
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// A <see cref="Task"/> that represents the shutdown of the <see cref="WebApplication"/>.
+        /// Successful completion indicates that all the server connections have been closed.
+        /// </returns>
         public Task StopAsync(CancellationToken cancellationToken = default) =>
             _host.StopAsync(cancellationToken);
+
+        /// <summary>
+        /// Runs an application and returns a Task that only completes when the token is triggered or shutdown is triggered.
+        /// </summary>
+        /// <param name="url">The URL to listen to if the server hasn't been configured directly.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that represents the entire runtime of the <see cref="WebApplication"/> from startup to shutdown.
+        /// </returns>
+        public Task RunAsync(string? url = null)
+        {
+            Listen(url);
+            return HostingAbstractionsHostExtensions.RunAsync(this);
+        }
+
+        /// <summary>
+        /// Runs an application and block the calling thread until host shutdown.
+        /// </summary>
+        /// <param name="url">The URL to listen to if the server hasn't been configured directly.</param>
+        public void Run(string? url = null)
+        {
+            Listen(url);
+            HostingAbstractionsHostExtensions.Run(this);
+        }
 
         /// <summary>
         /// Disposes the application.
@@ -166,55 +179,25 @@ namespace Microsoft.AspNetCore.Builder
 
         IApplicationBuilder IEndpointRouteBuilder.CreateApplicationBuilder() => ApplicationBuilder.New();
 
-        /// <summary>
-        /// Runs an application and returns a Task that only completes when the token is triggered or shutdown is triggered.
-        /// </summary>
-        /// <returns>A <see cref="Task"/>that represents the asynchronous operation.</returns>
-        // REVIEW: We cannot use a default param for the CT because of the params urls overload. Are we okay with this?
-        public Task RunAsync() => RunAsync(CancellationToken.None);
-
-        /// <summary>
-        /// Runs an application and returns a Task that only completes when the token is triggered or shutdown is triggered.
-        /// </summary>
-        /// <param name="cancellationToken">The token to trigger shutdown.</param>
-        /// <returns>A <see cref="Task"/>that represents the asynchronous operation.</returns>
-        public Task RunAsync(CancellationToken cancellationToken) =>
-            HostingAbstractionsHostExtensions.RunAsync(this, cancellationToken);
-
-        /// <summary>
-        /// Runs an application and returns a Task that only completes when the token is triggered or shutdown is triggered.
-        /// </summary>
-        /// <param name="urls">A set of urls to listen to if the server hasn't been configured directly.</param>
-        /// <returns>A <see cref="Task"/>that represents the asynchronous operation.</returns>
-        public Task RunAsync(params string[] urls)
+        private void Listen(string? url)
         {
-            Listen(urls);
-            return HostingAbstractionsHostExtensions.RunAsync(this);
-        }
-
-        /// <summary>
-        /// Runs an application and block the calling thread until host shutdown.
-        /// </summary>
-        public void Run() =>
-            HostingAbstractionsHostExtensions.Run(this);
-
-        /// <summary>
-        /// Sets the URLs the web server will listen on.
-        /// </summary>
-        /// <param name="urls">A set of urls to listen to if the server hasn't been configured directly.</param>
-        private void Listen(params string[] urls)
-        {
-            var addresses = ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
-            if (addresses is null || addresses.IsReadOnly)
+            if (url is null)
             {
-                throw new NotSupportedException("Changing the URL isn't supported.");
+                return;
+            }
+
+            var addresses = ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
+            if (addresses is null)
+            {
+                throw new NotSupportedException($"Changing the URL is not supported because no valid {nameof(IServerAddressesFeature)} was found.");
+            }
+            if (addresses.IsReadOnly)
+            {
+                throw new NotSupportedException($"Changing the URL is not supported because {nameof(IServerAddressesFeature.Addresses)} {nameof(ICollection<string>.IsReadOnly)}.");
             }
 
             addresses.Clear();
-            foreach (var u in urls)
-            {
-                addresses.Add(u);
-            }
+            addresses.Add(url);
         }
     }
 }
