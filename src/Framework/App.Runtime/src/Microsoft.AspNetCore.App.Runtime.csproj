@@ -110,12 +110,16 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- E.g. "PkgMicrosoft_NETCore_App_Runtime_win-x64" (set in obj/Microsoft.AspNetCore.App.Runtime.csproj.nuget.g.props). -->
     <RuntimePackageRootVariableName>PkgMicrosoft_NETCore_App_Runtime_$(RuntimeIdentifier)</RuntimePackageRootVariableName>
-    <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(TargetOsName)-$(BuildArchitecture)</Crossgen2PackageRootVariableName>
+
+    <BuildOsName>$(TargetOsName)</BuildOsName>
+    <BuildOsName Condition="'$(TargetOsName)' == 'linux-musl'">linux</BuildOsName>
+    <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(BuildOsName)-$(BuildArchitecture)</Crossgen2PackageRootVariableName>
 
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
 
     <NativePlatform>$(TargetArchitecture)</NativePlatform>
     <NativePlatform Condition=" '$(NativePlatform)' == 'x86' ">Win32</NativePlatform>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -129,7 +133,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
         PrivateAssets="All"
         GeneratePathProperty="true" />
 
-    <Reference Include="Microsoft.NETCore.App.Crossgen2.$(TargetOsName)-$(BuildArchitecture)"
+    <Reference Include="Microsoft.NETCore.App.Crossgen2.$(BuildOsName)-$(BuildArchitecture)"
         ExcludeAssets="All"
         PrivateAssets="All"
         GeneratePathProperty="true" />
