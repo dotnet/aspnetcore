@@ -64,7 +64,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// The list of URLs that the HTTP server is bound to.
         /// </summary>
-        public ICollection<string>? Urls => ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
+        public ICollection<string> Urls => ServerFeatures.Get<IServerAddressesFeature>()?.Addresses ??
+            throw new InvalidOperationException($"{nameof(IServerAddressesFeature)} could not be found.");
 
         IServiceProvider IApplicationBuilder.ApplicationServices
         {

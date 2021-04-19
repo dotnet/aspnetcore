@@ -106,7 +106,6 @@ namespace Microsoft.AspNetCore.Tests
             Assert.Equal("https://localhost:5003", urls[1]);
         }
 
-
         [Fact]
         public async Task WebApplicationRunUrls_OverridesIServerAddressesFeature()
         {
@@ -126,6 +125,16 @@ namespace Microsoft.AspNetCore.Tests
 
             await app.StopAsync();
             await runTask;
+        }
+
+        [Fact]
+        public async Task WebApplicationUrls_ThrowsInvalidOperationExceptionIfThereIsNoIServerAddressesFeature()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.Services.AddSingleton<IServer>(new MockAddressesServer());
+            await using var app = builder.Build();
+
+            Assert.Throws<InvalidOperationException>(() => app.Urls);
         }
 
         [Fact]
@@ -150,6 +159,7 @@ namespace Microsoft.AspNetCore.Tests
             var envName = $"{nameof(WebApplicationTests)}_ENV";
 
             builder.WebHost.UseSetting("applicationname", nameof(WebApplicationTests));
+
             builder.WebHost.UseSetting("ENVIRONMENT", envName);
             builder.WebHost.UseSetting("CONTENTROOT", contentRoot);
             builder.WebHost.UseSetting("WEBROOT", webRoot);
@@ -326,6 +336,11 @@ namespace Microsoft.AspNetCore.Tests
         private class MockAddressesServer : IServer
         {
             private readonly ICollection<string> _urls;
+
+            public MockAddressesServer()
+            {
+                // For testing a server that doesn't set an IServerAddressesFeature.
+            }
 
             public MockAddressesServer(ICollection<string> urls)
             {
