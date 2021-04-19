@@ -14,11 +14,11 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class StandaloneAppTest
-        : ServerTestBase<DevHostServerFixture<StandaloneApp.Program>>, IDisposable
+        : ServerTestBase<BlazorWasmTestAppFixture<StandaloneApp.Program>>, IDisposable
     {
         public StandaloneAppTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<StandaloneApp.Program> serverFixture,
+            BlazorWasmTestAppFixture<StandaloneApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {

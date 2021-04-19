@@ -9,7 +9,7 @@ using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     public class SaveStateTest : ServerTestBase<AspNetSiteServerFixture>
     {
