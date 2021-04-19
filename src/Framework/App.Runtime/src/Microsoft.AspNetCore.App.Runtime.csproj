@@ -112,7 +112,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RuntimePackageRootVariableName>PkgMicrosoft_NETCore_App_Runtime_$(RuntimeIdentifier)</RuntimePackageRootVariableName>
 
     <BuildOsName>$(TargetOsName)</BuildOsName>
-    <BuildOsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(BuidlArchitecture)'!='x64'">linux</BuildOsName>
+    <BuildOsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(BuildArchitecture)'!='x64'">linux</BuildOsName>
     <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(BuildOsName)-$(BuildArchitecture)</Crossgen2PackageRootVariableName>
 
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
