@@ -5,7 +5,7 @@ namespace System.Net.Http.QPack
 {
     internal readonly struct HeaderField
     {
-        // http://httpwg.org/specs/rfc7541.html#rfc.section.4.1
+        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.1.3-1
         // public for internal use in aspnetcore
         public const int RfcOverhead = 32;
 
