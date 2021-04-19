@@ -30,25 +30,58 @@ namespace Microsoft.AspNetCore.Tests
     public class WebApplicationTests
     {
         [Fact]
-        public void WebApplicationBuilderConfiguration_IncludesCommandLineArguments()
+        public async Task WebApplicationBuilderConfiguration_IncludesCommandLineArguments()
         {
             var builder = WebApplication.CreateBuilder(new string[] { "--urls", "http://localhost:5001" });
             Assert.Equal("http://localhost:5001", builder.Configuration["urls"]);
+
+            var urls = new List<string>();
+            var server = new MockAddressesServer(urls);
+            builder.Services.AddSingleton<IServer>(server);
+            await using var app = builder.Build();
+
+            await app.StartAsync();
+
+            var address = Assert.Single(urls);
+            Assert.Equal("http://localhost:5001", address);
+
+            Assert.Same(app.Urls, urls);
+
+            var url = Assert.Single(urls);
+            Assert.Equal("http://localhost:5001", url);
+        }
+
+        [Fact]
+        public async Task WebApplicationRunAsync_UsesDefaultUrls()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var urls = new List<string>();
+            var server = new MockAddressesServer(urls);
+            builder.Services.AddSingleton<IServer>(server);
+            await using var app = builder.Build();
+
+            await app.StartAsync();
+
+            Assert.Same(app.Urls, urls);
+
+            Assert.Equal(2, urls.Count);
+            Assert.Equal("http://localhost:5000", urls[0]);
+            Assert.Equal("https://localhost:5001", urls[1]);
         }
 
         [Fact]
         public async Task WebApplicationRunUrls_UpdatesIServerAddressesFeature()
         {
             var builder = WebApplication.CreateBuilder();
-            var addresses = new List<string>();
-            var server = new MockAddressesServer(addresses);
+            var urls = new List<string>();
+            var server = new MockAddressesServer(urls);
             builder.Services.AddSingleton<IServer>(server);
             await using var app = builder.Build();
 
             var runTask = app.RunAsync("http://localhost:5001");
 
-            var address = Assert.Single(addresses);
-            Assert.Equal("http://localhost:5001", address);
+            var url = Assert.Single(urls);
+            Assert.Equal("http://localhost:5001", url);
 
             await app.StopAsync();
             await runTask;
@@ -58,19 +91,38 @@ namespace Microsoft.AspNetCore.Tests
         public async Task WebApplicationAddresses_UpdatesIServerAddressesFeature()
         {
             var builder = WebApplication.CreateBuilder();
-            var addresses = new List<string>();
-            var server = new MockAddressesServer(addresses);
+            var urls = new List<string>();
+            var server = new MockAddressesServer(urls);
             builder.Services.AddSingleton<IServer>(server);
             await using var app = builder.Build();
 
-            app.Addresses.Add("http://localhost:5002");
-            app.Addresses.Add("https://localhost:5003");
+            app.Urls.Add("http://localhost:5002");
+            app.Urls.Add("https://localhost:5003");
 
-            var runTask = app.RunAsync();
+            await app.StartAsync();
 
-            Assert.Equal(2, addresses.Count);
-            Assert.Equal("http://localhost:5002", addresses[0]);
-            Assert.Equal("https://localhost:5003", addresses[1]);
+            Assert.Equal(2, urls.Count);
+            Assert.Equal("http://localhost:5002", urls[0]);
+            Assert.Equal("https://localhost:5003", urls[1]);
+        }
+
+
+        [Fact]
+        public async Task WebApplicationRunUrls_OverridesIServerAddressesFeature()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var urls = new List<string>();
+            var server = new MockAddressesServer(urls);
+            builder.Services.AddSingleton<IServer>(server);
+            await using var app = builder.Build();
+
+            app.Urls.Add("http://localhost:5002");
+            app.Urls.Add("https://localhost:5003");
+
+            var runTask = app.RunAsync("http://localhost:5001");
+
+            var url = Assert.Single(urls);
+            Assert.Equal("http://localhost:5001", url);
 
             await app.StopAsync();
             await runTask;
@@ -273,20 +325,31 @@ namespace Microsoft.AspNetCore.Tests
 
         private class MockAddressesServer : IServer
         {
-            public IFeatureCollection Features { get; } = new FeatureCollection();
+            private readonly ICollection<string> _urls;
 
-            public MockAddressesServer(ICollection<string> addresses)
+            public MockAddressesServer(ICollection<string> urls)
             {
+                _urls = urls;
+
                 var mockAddressesFeature = new MockServerAddressesFeature
                 {
-                    Addresses = addresses
+                    Addresses = urls
                 };
 
                 Features.Set<IServerAddressesFeature>(mockAddressesFeature);
             }
 
+            public IFeatureCollection Features { get; } = new FeatureCollection();
+
             public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
             {
+                if (_urls.Count == 0)
+                {
+                    // This is basically Kestrel's DefaultAddressStrategy.
+                    _urls.Add("http://localhost:5000");
+                    _urls.Add("https://localhost:5001");
+                }
+
                 return Task.CompletedTask;
             }
 

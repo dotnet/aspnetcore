@@ -62,9 +62,9 @@ namespace Microsoft.AspNetCore.Builder
         public ILogger Logger { get; }
 
         /// <summary>
-        /// The list of addresses that the HTTP server is bound to.
+        /// The list of URLs that the HTTP server is bound to.
         /// </summary>
-        public ICollection<string>? Addresses => ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
+        public ICollection<string>? Urls => ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
 
         IServiceProvider IApplicationBuilder.ApplicationServices
         {
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="cancellationToken"></param>
         /// <returns>
         /// A <see cref="Task"/> that represents the startup of the <see cref="WebApplication"/>.
-        /// Successful completion indicates the server is ready to accept new requests.
+        /// Successful completion indicates the HTTP server is ready to accept new requests.
         /// </returns>
         public Task StartAsync(CancellationToken cancellationToken = default) =>
             _host.StartAsync(cancellationToken);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="cancellationToken"></param>
         /// <returns>
         /// A <see cref="Task"/> that represents the shutdown of the <see cref="WebApplication"/>.
-        /// Successful completion indicates that all the server connections have been closed.
+        /// Successful completion indicates that all the HTTP server has stopped.
         /// </returns>
         public Task StopAsync(CancellationToken cancellationToken = default) =>
             _host.StopAsync(cancellationToken);

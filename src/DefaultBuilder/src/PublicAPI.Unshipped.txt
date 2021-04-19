@@ -20,7 +20,6 @@ Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.ConfigureServices(System.Ac
 Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.GetSetting(string! key) -> string?
 Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder.UseSetting(string! key, string? value) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 Microsoft.AspNetCore.Builder.WebApplication
-Microsoft.AspNetCore.Builder.WebApplication.Addresses.get -> System.Collections.Generic.ICollection<string!>?
 Microsoft.AspNetCore.Builder.WebApplication.Configuration.get -> Microsoft.Extensions.Configuration.IConfiguration!
 Microsoft.AspNetCore.Builder.WebApplication.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Builder.WebApplication.Environment.get -> Microsoft.AspNetCore.Hosting.IWebHostEnvironment!
@@ -31,6 +30,7 @@ Microsoft.AspNetCore.Builder.WebApplication.RunAsync(string? url = null) -> Syst
 Microsoft.AspNetCore.Builder.WebApplication.Services.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Builder.WebApplication.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Builder.WebApplication.StopAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Builder.WebApplication.Urls.get -> System.Collections.Generic.ICollection<string!>?
 Microsoft.AspNetCore.Builder.WebApplicationBuilder
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build() -> Microsoft.AspNetCore.Builder.WebApplication!
 Microsoft.AspNetCore.Builder.WebApplicationBuilder.Configuration.get -> Microsoft.AspNetCore.Builder.Configuration!
