@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // Do nothing since we don't have anything to check here.
         }
 
-        protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate)
+        protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation)
         {
             // On non OSX systems we need to export the certificate and import it so that the transient
             // key that we generated gets persisted.
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             Array.Clear(export, 0, export.Length);
             certificate.FriendlyName = AspNetHttpsOidFriendlyName;
 
-            using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+            using (var store = new X509Store(storeName, storeLocation))
             {
                 store.Open(OpenFlags.ReadWrite);
                 store.Add(certificate);
