@@ -76,8 +76,17 @@ namespace Microsoft.AspNetCore.HttpLogging
                 var bufferWriter = new ArrayBufferWriter<char>();
 
                 var decoder = encoding.GetDecoder();
+                // First calls convert on the entire ReadOnlySequence, with flush: false.
+                // flush: false is required as we don't want to write invalid characters that
+                // are spliced due to truncation. If we set flush: true, if effectively means
+                // we expect EOF in this array, meaning it will try to write any bytes at the end of it.
                 EncodingExtensions.Convert(decoder, ros, bufferWriter, flush: false, out var charUsed, out var completed);
 
+                // Afterwards, we need to call convert in a loop until complete is true.
+                // The first call to convert many return true, but if it doesn't, we call
+                // Convert with a empty ReadOnlySequence and flush: true until we get completed: true.
+
+                // This should never infinite due to the contract for decoders.
                 while (true)
                 {
                     if (completed)
@@ -124,6 +133,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             AllocateMemory(sizeHint);
             return _tailMemory.Span;
         }
+
         private void AllocateMemory(int sizeHint)
         {
             if (_head == null)

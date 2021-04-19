@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore
                 "Microsoft.AspNetCore.Http.Connections.Common",
                 "Microsoft.AspNetCore.Http.Extensions",
                 "Microsoft.AspNetCore.Http.Features",
+                "Microsoft.AspNetCore.HttpLogging",
                 "Microsoft.AspNetCore.HttpOverrides",
                 "Microsoft.AspNetCore.HttpsPolicy",
                 "Microsoft.AspNetCore.Identity",

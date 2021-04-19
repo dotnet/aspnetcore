@@ -356,9 +356,10 @@ namespace Microsoft.AspNetCore.HttpLogging.Tests
         [Fact]
         public async Task RequestBodyReadingLimitLongCharactersWorks()
         {
-            var input = string.Concat(new string('あ', 60000));
+            var input = string.Concat(new string('あ', 5));
             var options = CreateOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+            options.CurrentValue.RequestBodyLogLimit = 4;
 
             var middleware = new HttpLoggingMiddleware(
                 async c =>
@@ -375,7 +376,7 @@ namespace Microsoft.AspNetCore.HttpLogging.Tests
                         count += res;
                     }
 
-                    Assert.Equal(180000, count);
+                    Assert.Equal(15, count);
                 },
                 options,
                 LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
@@ -385,7 +386,7 @@ namespace Microsoft.AspNetCore.HttpLogging.Tests
             httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
 
             await middleware.Invoke(httpContext);
-            var expected = input.Substring(0, options.CurrentValue.ResponseBodyLogLimit / 3);
+            var expected = input.Substring(0, options.CurrentValue.RequestBodyLogLimit / 3);
 
             Assert.Contains(TestSink.Writes, w => w.Message.Equals("RequestBody: " + expected));
         }
