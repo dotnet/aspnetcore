@@ -120,6 +120,23 @@ namespace Templates.Test.Helpers
 
              * We don't want to construct this path so we'll rely on dotnet new --uninstall --help to construct the uninstall command.
              */
+            // Workaround for https://github.com/dotnet/sdk/issues/16906
+            // await UninstallExistingTemplatesAsync(output);
+
+            foreach (var packagePath in builtPackages)
+            {
+                output.WriteLine($"Installing templates package {packagePath}...");
+                var result = await RunDotNetNew(output, $"--install \"{packagePath}\"");
+                Assert.True(result.ExitCode == 0, result.GetFormattedOutput());
+            }
+
+            await VerifyCanFindTemplate(output, "webapp");
+            await VerifyCanFindTemplate(output, "web");
+            await VerifyCanFindTemplate(output, "react");
+        }
+
+        private static async Task UninstallExistingTemplatesAsync(ITestOutputHelper output)
+        {
             var proc = await RunDotNetNew(output, "--uninstall --help");
             var lines = proc.Output.Split(Environment.NewLine);
 
@@ -145,17 +162,6 @@ namespace Templates.Test.Helpers
             await VerifyCannotFindTemplateAsync(output, "react");
             await VerifyCannotFindTemplateAsync(output, "reactredux");
             await VerifyCannotFindTemplateAsync(output, "angular");
-
-            foreach (var packagePath in builtPackages)
-            {
-                output.WriteLine($"Installing templates package {packagePath}...");
-                var result = await RunDotNetNew(output, $"--install \"{packagePath}\"");
-                Assert.True(result.ExitCode == 0, result.GetFormattedOutput());
-            }
-
-            await VerifyCanFindTemplate(output, "webapp");
-            await VerifyCanFindTemplate(output, "web");
-            await VerifyCanFindTemplate(output, "react");
         }
 
         private static async Task VerifyCanFindTemplate(ITestOutputHelper output, string templateName)
