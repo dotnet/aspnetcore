@@ -427,6 +427,32 @@ namespace Microsoft.AspNetCore.HttpLogging.Tests
             Assert.Contains(TestSink.Writes, w => w.Message.Equals("RequestBody: " + expected));
         }
 
+        [Fact]
+        public async Task PartialReadBodyStillLogs()
+        {
+            var input = string.Concat(new string('a', 60000), new string('b', 3000));
+            var options = CreateOptionsAccessor();
+            options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+
+            var middleware = new HttpLoggingMiddleware(
+                async c =>
+                {
+                    var arr = new byte[4096];
+                    var res = await c.Request.Body.ReadAsync(arr);
+                },
+                options,
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.ContentType = "text/plain";
+            httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+
+            await middleware.Invoke(httpContext);
+            var expected = input.Substring(0, 4096);
+
+            Assert.Contains(TestSink.Writes, w => w.Message.Equals("RequestBody: " + expected));
+        }
+
         [Theory]
         [InlineData("text/plain")]
         [InlineData("text/html")]

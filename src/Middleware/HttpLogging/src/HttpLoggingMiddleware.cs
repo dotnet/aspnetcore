@@ -129,13 +129,6 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             try
             {
-                if ((HttpLoggingFields.Response & options.LoggingFields) == HttpLoggingFields.None)
-                {
-                    // Short circuit and don't replace response body.
-                    await _next(context);
-                    return;
-                }
-
                 var response = context.Response;
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
@@ -153,6 +146,13 @@ namespace Microsoft.AspNetCore.HttpLogging
                 }
 
                 await _next(context);
+
+                if (requestBufferingStream?.HasLogged == false)
+                {
+                    // If the middleware pipeline didn't read until 0 was returned from readasync,
+                    // make sure we log the request body.
+                    requestBufferingStream.LogRequestBody();
+                }
 
                 if (responseBufferingStream == null || responseBufferingStream.FirstWrite == false)
                 {
