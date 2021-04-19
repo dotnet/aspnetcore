@@ -101,18 +101,24 @@ namespace Microsoft.AspNetCore.HttpLogging
                     FilterHeaders(list, request.Headers, options.RequestHeaders);
                 }
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody)
-                    && MediaTypeHelpers.TryGetEncodingForMediaType(request.ContentType,
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
+                {
+                    if (MediaTypeHelpers.TryGetEncodingForMediaType(request.ContentType,
                         options.MediaTypeOptions.MediaTypeStates,
                         out var encoding))
-                {
-                    originalBody = request.Body;
-                    requestBufferingStream = new RequestBufferingStream(
-                        request.Body,
-                        options.RequestBodyLogLimit,
-                        _logger,
-                        encoding);
-                    request.Body = requestBufferingStream;
+                    {
+                        originalBody = request.Body;
+                        requestBufferingStream = new RequestBufferingStream(
+                            request.Body,
+                            options.RequestBodyLogLimit,
+                            _logger,
+                            encoding);
+                        request.Body = requestBufferingStream;
+                    }
+                    else
+                    {
+                        _logger.UnrecognizedMediaType();
+                    }
                 }
 
                 var httpRequestLog = new HttpRequestLog(list);
@@ -163,7 +169,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 if (responseBufferingStream != null)
                 {
                     var responseBody = responseBufferingStream.GetString(responseBufferingStream.Encoding);
-                    if (responseBody != null)
+                    if (!string.IsNullOrEmpty(responseBody))
                     {
                         _logger.ResponseBody(responseBody);
                     }

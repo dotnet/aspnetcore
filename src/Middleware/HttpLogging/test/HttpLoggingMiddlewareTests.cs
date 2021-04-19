@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.HttpLogging.Tests
             await middleware.Invoke(httpContext);
 
             Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains(expected));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("RequestBody: <Unrecognized media type>"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for body."));
         }
 
         [Fact]
@@ -857,7 +857,7 @@ namespace Microsoft.AspNetCore.HttpLogging.Tests
 
             await middleware.Invoke(httpContext);
 
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("<Unrecognized media type>"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for body."));
         }
 
         private IOptionsMonitor<HttpLoggingOptions> CreateOptionsAccessor()
