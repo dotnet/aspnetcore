@@ -43,7 +43,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                 throw new ArgumentNullException(nameof(mediaType));
             }
 
-            _mediaTypeStates.Add(new MediaTypeState(mediaType) { Encoding = mediaType.Encoding ?? Encoding.UTF8 });
+            mediaType.Encoding ??= Encoding.UTF8;
+
+            _mediaTypeStates.Add(new MediaTypeState(mediaType));
         }
 
         /// <summary>
@@ -60,7 +62,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 throw new ArgumentNullException(nameof(contentType));
             }
 
-            AddText(new MediaTypeHeaderValue(contentType));
+            AddText(MediaTypeHeaderValue.Parse(contentType));
         }
 
         /// <summary>
@@ -80,7 +82,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            var mediaType = new MediaTypeHeaderValue(contentType);
+            var mediaType = MediaTypeHeaderValue.Parse(contentType);
             mediaType.Encoding = encoding;
             AddText(mediaType);
         }
@@ -119,7 +121,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
 
             public MediaTypeHeaderValue MediaTypeHeaderValue { get; }
-            public Encoding? Encoding { get; set; }
             public bool IsBinary { get; set; }
         }
     }

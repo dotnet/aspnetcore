@@ -30,9 +30,8 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private readonly HttpContext _context;
         private readonly List<MediaTypeState> _encodings;
-
+        private readonly HttpLoggingOptions _options;
         private Encoding? _encoding;
-        private bool _hasCheckedEncoding;
 
         private static readonly StreamPipeWriterOptions _pipeWriterOptions = new StreamPipeWriterOptions(leaveOpen: true);
 
@@ -40,7 +39,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             int limit,
             ILogger logger,
             HttpContext context,
-            List<MediaTypeState> encodings)
+            List<MediaTypeState> encodings,
+            HttpLoggingOptions options)
             : base(innerBodyFeature.Stream, logger)
         {
             _innerBodyFeature = innerBodyFeature;
@@ -48,7 +48,10 @@ namespace Microsoft.AspNetCore.HttpLogging
             _limit = limit;
             _context = context;
             _encodings = encodings;
+            _options = options;
         }
+
+        public bool FirstWrite { get; private set; }
 
         public Stream Stream => this;
 
@@ -127,10 +130,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private void OnFirstWrite()
         {
-            if (!_hasCheckedEncoding)
+            if (!FirstWrite)
             {
+                // Log headers as first write occurs (headers locked now)
+                HttpLoggingMiddleware.LogResponseHeaders(_context.Response, _options, _logger);
+
                 MediaTypeHelpers.TryGetEncodingForMediaType(_context.Response.ContentType, _encodings, out _encoding);
-                _hasCheckedEncoding = true;
+                FirstWrite = true;
             }
         }
 
@@ -141,17 +147,31 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
         {
+            OnFirstWrite();
             return _innerBodyFeature.SendFileAsync(path, offset, count, cancellation);
         }
 
         public Task StartAsync(CancellationToken token = default)
         {
+            OnFirstWrite();
             return _innerBodyFeature.StartAsync(token);
         }
 
         public async Task CompleteAsync()
         {
             await _innerBodyFeature.CompleteAsync();
+        }
+
+        public override void Flush()
+        {
+            OnFirstWrite();
+            base.Flush();
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            OnFirstWrite();
+            return base.FlushAsync(cancellationToken);
         }
     }
 }

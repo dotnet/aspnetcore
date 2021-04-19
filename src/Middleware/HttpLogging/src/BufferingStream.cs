@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private BufferSegment? _tail;
         protected Memory<byte> _tailMemory; // remainder of tail memory
         protected int _tailBytesBuffered;
-        private ILogger _logger;
+        protected ILogger _logger;
         protected Stream _innerStream;
 
         public BufferingStream(Stream innerStream, ILogger logger)

@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.HttpsPolicy.Tests
+namespace Microsoft.AspNetCore.HttpLogging.Tests
 {
     public class HttpLoggingMiddlewareTests : LoggedTest
     {
@@ -732,6 +732,82 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             var expected = input.Substring(0, options.CurrentValue.ResponseBodyLogLimit);
             Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
+        }
+
+        [Fact]
+        public async Task FirstWriteResponseHeadersLogged()
+        {
+            var options = CreateOptionsAccessor();
+            options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
+
+            var writtenHeaders = new TaskCompletionSource<object>();
+            var letBodyFinish = new TaskCompletionSource<object>();
+
+            var middleware = new HttpLoggingMiddleware(
+                async c =>
+                {
+                    c.Response.StatusCode = 200;
+                    c.Response.Headers[HeaderNames.TransferEncoding] = "test";
+                    c.Response.ContentType = "text/plain";
+                    await c.Response.WriteAsync("test");
+                    writtenHeaders.SetResult(null);
+                    await letBodyFinish.Task;
+                },
+                options,
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+            var httpContext = new DefaultHttpContext();
+
+            var middlewareTask = middleware.Invoke(httpContext);
+
+            await writtenHeaders.Task;
+
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
+            Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
+
+            letBodyFinish.SetResult(null);
+
+            await middlewareTask;
+
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
+        }
+
+        [Fact]
+        public async Task StartAsyncResponseHeadersLogged()
+        {
+            var options = CreateOptionsAccessor();
+            options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
+
+            var writtenHeaders = new TaskCompletionSource<object>();
+            var letBodyFinish = new TaskCompletionSource<object>();
+
+            var middleware = new HttpLoggingMiddleware(
+                async c =>
+                {
+                    c.Response.StatusCode = 200;
+                    c.Response.Headers[HeaderNames.TransferEncoding] = "test";
+                    c.Response.ContentType = "text/plain";
+                    await c.Response.StartAsync();
+                    writtenHeaders.SetResult(null);
+                    await letBodyFinish.Task;
+                },
+                options,
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+            var httpContext = new DefaultHttpContext();
+
+            var middlewareTask = middleware.Invoke(httpContext);
+
+            await writtenHeaders.Task;
+
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
+            Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
+
+            letBodyFinish.SetResult(null);
+
+            await middlewareTask;
         }
 
         private IOptionsMonitor<HttpLoggingOptions> CreateOptionsAccessor()

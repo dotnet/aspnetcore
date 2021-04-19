@@ -146,31 +146,19 @@ namespace Microsoft.AspNetCore.HttpLogging
                         options.ResponseBodyLogLimit,
                         _logger,
                         context,
-                        options.MediaTypeOptions.MediaTypeStates);
+                        options.MediaTypeOptions.MediaTypeStates,
+                        options);
                     response.Body = responseBufferingStream;
+                    context.Features.Set<IHttpResponseBodyFeature>(responseBufferingStream);
                 }
 
                 await _next(context);
-                var list = new List<KeyValuePair<string, object?>>(
-                    response.Headers.Count + DefaultResponseFieldsMinusHeaders);
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
+                if (responseBufferingStream == null || responseBufferingStream.FirstWrite == false)
                 {
-                    list.Add(new KeyValuePair<string, object?>(nameof(response.StatusCode), response.StatusCode));
+                    // No body, write headers here.
+                    LogResponseHeaders(response, options, _logger);
                 }
-
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
-                {
-                    FilterHeaders(list, response.Headers, options.ResponseHeaders);
-                }
-
-                var httpResponseLog = new HttpResponseLog(list);
-
-                _logger.Log(LogLevel.Information,
-                    eventId: LoggerEventIds.ResponseLog,
-                    state: httpResponseLog,
-                    exception: null,
-                    formatter: HttpResponseLog.Callback);
 
                 if (responseBufferingStream != null)
                 {
@@ -204,7 +192,31 @@ namespace Microsoft.AspNetCore.HttpLogging
             list.Add(new KeyValuePair<string, object?>(key, value));
         }
 
-        private void FilterHeaders(List<KeyValuePair<string, object?>> keyValues,
+        public static void LogResponseHeaders(HttpResponse response, HttpLoggingOptions options, ILogger logger)
+        {
+            var list = new List<KeyValuePair<string, object?>>(
+                response.Headers.Count + DefaultResponseFieldsMinusHeaders);
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
+            {
+                list.Add(new KeyValuePair<string, object?>(nameof(response.StatusCode), response.StatusCode));
+            }
+
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
+            {
+                FilterHeaders(list, response.Headers, options.ResponseHeaders);
+            }
+
+            var httpResponseLog = new HttpResponseLog(list);
+
+            logger.Log(LogLevel.Information,
+                eventId: LoggerEventIds.ResponseLog,
+                state: httpResponseLog,
+                exception: null,
+                formatter: HttpResponseLog.Callback);
+        }
+
+        internal static void FilterHeaders(List<KeyValuePair<string, object?>> keyValues,
             IHeaderDictionary headers,
             ISet<string> allowedHeaders)
         {
