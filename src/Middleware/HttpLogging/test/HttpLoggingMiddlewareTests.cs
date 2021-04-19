@@ -810,6 +810,28 @@ namespace Microsoft.AspNetCore.HttpLogging.Tests
             await middlewareTask;
         }
 
+        [Fact]
+        public async Task UnrecognizedMediaType()
+        {
+            var expected = "Hello world";
+            var options = CreateOptionsAccessor();
+            options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
+            var middleware = new HttpLoggingMiddleware(
+                c =>
+                {
+                    c.Response.ContentType = "foo/*";
+                    return c.Response.WriteAsync(expected);
+                },
+                options,
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+            var httpContext = new DefaultHttpContext();
+
+            await middleware.Invoke(httpContext);
+
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("<Unrecognized media type>"));
+        }
+
         private IOptionsMonitor<HttpLoggingOptions> CreateOptionsAccessor()
         {
             var options = new HttpLoggingOptions();
