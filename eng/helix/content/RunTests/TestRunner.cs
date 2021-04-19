@@ -211,11 +211,11 @@ namespace RunTests
                 var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\"";
                 if (Options.Quarantined)
                 {
-                    Console.WriteLine("Running quarantined tests.");
+                    Console.WriteLine("Running all tests including quarantined tests.");
 
                     // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                     var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        commonTestArgs + " --TestCaseFilter:\"Quarantined=true\"",
+                        commonTestArg,
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
@@ -224,7 +224,7 @@ namespace RunTests
 
                     if (result.ExitCode != 0)
                     {
-                        Console.WriteLine($"Failure in quarantined tests. Exit code: {result.ExitCode}.");
+                        Console.WriteLine($"Failure in tests. Exit code: {result.ExitCode}.");
                     }
                 }
                 else
