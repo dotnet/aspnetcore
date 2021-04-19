@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable
     {
+        protected static readonly int MaxRequestHeaderFieldSize = 16 * 1024;
+        protected static readonly string _4kHeaderValue = new string('a', 4096);
+
         internal TestServiceContext _serviceContext;
         internal readonly TimeoutControl _timeoutControl;
         internal readonly Mock<IKestrelTrace> _mockKestrelTrace = new Mock<IKestrelTrace>();
@@ -369,7 +372,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public bool Disposed => _testStreamContext.Disposed;
             public long Error { get; set; }
 
-            private readonly byte[] _headerEncodingBuffer = new byte[16 * 1024];
+            private readonly byte[] _headerEncodingBuffer = new byte[64 * 1024];
             private QPackEncoder _qpackEncoder = new QPackEncoder();
             private QPackDecoder _qpackDecoder = new QPackDecoder(8192);
             protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
