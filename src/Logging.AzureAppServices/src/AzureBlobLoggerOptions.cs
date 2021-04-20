@@ -11,6 +11,8 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
     /// </summary>
     public class AzureBlobLoggerOptions: BatchingLoggerOptions
     {
+	    public Func<AzureBlobLoggerContext, string> FileNameFormat { get; set; }
+
         private string _blobName = "applicationLog.txt";
         /// <summary>
         /// Gets or sets the last section of log blob name.
