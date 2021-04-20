@@ -108,6 +108,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
+        public void TryParse60()
+        {
+            // Arrange
+            var value = "6.0";
+
+            // Act
+            var result = RazorLanguageVersion.TryParse(value, out var version);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(RazorLanguageVersion.Version_6_0, version);
+        }
+
+        [Fact]
         public void TryParseLatest()
         {
             // Arrange

@@ -45,6 +45,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 version = Experimental;
                 return true;
             }
+            else if (languageVersion == "6.0")
+            {
+                version = Version_6_0;
+                return true;
+            }
             else if (languageVersion == "5.0")
             {
                 version = Version_5_0;
