@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public Stream Stream => this;
 
-        public PipeWriter Writer => _pipeAdapter ??= PipeWriter.Create(Stream, _pipeWriterOptions)
+        public PipeWriter Writer => _pipeAdapter ??= PipeWriter.Create(Stream, _pipeWriterOptions);
 
         public Encoding? Encoding { get => _encoding; }
 
@@ -97,24 +97,29 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            await WriteAsync(new Memory<byte>(buffer, offset, count), cancellationToken);
+        }
+
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
             var remaining = _limit - _bytesBuffered;
-            var innerCount = Math.Min(remaining, count);
+            var innerCount = Math.Min(remaining, buffer.Length);
 
             OnFirstWrite();
 
             if (_tailMemory.Length - innerCount > 0)
             {
-                buffer.AsSpan(offset, count).CopyTo(_tailMemory.Span);
+                buffer.Slice(0, innerCount).CopyTo(_tailMemory);
                 _tailBytesBuffered += innerCount;
                 _bytesBuffered += innerCount;
                 _tailMemory = _tailMemory.Slice(innerCount);
             }
             else
             {
-                BuffersExtensions.Write(this, buffer.AsSpan(offset, innerCount));
+                BuffersExtensions.Write(this, buffer.Span);
             }
 
-            await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+            await _innerStream.WriteAsync(buffer, cancellationToken);
         }
 
         private void OnFirstWrite()

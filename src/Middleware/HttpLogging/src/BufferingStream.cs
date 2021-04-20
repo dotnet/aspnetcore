@@ -269,6 +269,16 @@ namespace Microsoft.AspNetCore.HttpLogging
             return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            return _innerStream.WriteAsync(buffer, cancellationToken);
+        }
+
+        public override void Write(ReadOnlySpan<byte> buffer)
+        {
+            _innerStream.Write(buffer);
+        }
+
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return _innerStream.BeginRead(buffer, offset, count, callback, state);
