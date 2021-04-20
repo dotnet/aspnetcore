@@ -353,8 +353,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 if (endStream)
                 {
-                    await _pair.Application.Output.CompleteAsync();
+                    await EndStreamAsync();
                 }
+            }
+
+            internal Task EndStreamAsync()
+            {
+                return _pair.Application.Output.CompleteAsync().AsTask();
             }
         }
 

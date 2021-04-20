@@ -449,6 +449,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private ValueTask OnEndStreamReceived()
         {
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
+            {
+                // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1-14
+                // Request stream ended without headers received. Unable to provide response.
+                throw new Http3StreamErrorException(CoreStrings.Http3StreamErrorRequestEndedNoHeaders, Http3ErrorCode.RequestIncomplete);
+            }
+
             if (InputRemaining.HasValue)
             {
                 // https://tools.ietf.org/html/rfc7540#section-8.1.2.6

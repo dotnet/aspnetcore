@@ -680,4 +680,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http3ControlStreamErrorMultipleInboundStreams" xml:space="preserve">
     <value>The client created multiple inbound {streamType} streams for the connection.</value>
   </data>
+  <data name="Http3StreamErrorRequestEndedNoHeaders" xml:space="preserve">
+    <value>Request stream ended without headers.</value>
+  </data>
 </root>

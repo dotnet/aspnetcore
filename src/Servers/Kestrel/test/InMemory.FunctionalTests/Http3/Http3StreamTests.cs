@@ -1841,6 +1841,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task RequestIncomplete()
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
+
+            await requestStream.EndStreamAsync();
+
+            await requestStream.WaitForStreamErrorAsync(
+                Http3ErrorCode.RequestIncomplete,
+                expectedErrorMessage: CoreStrings.Http3StreamErrorRequestEndedNoHeaders);
+        }
+
+        [Fact]
         public Task HEADERS_Received_HeaderBlockContainsUnknownPseudoHeaderField_ConnectionError()
         {
             var headers = new[]
