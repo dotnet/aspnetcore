@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public async Task WebApplicationAddresses_UpdatesIServerAddressesFeature()
+        public async Task WebApplicationUrls_UpdatesIServerAddressesFeature()
         {
             var builder = WebApplication.CreateBuilder();
             var urls = new List<string>();
@@ -135,6 +135,26 @@ namespace Microsoft.AspNetCore.Tests
             await using var app = builder.Build();
 
             Assert.Throws<InvalidOperationException>(() => app.Urls);
+        }
+
+        [Fact]
+        public async Task WebApplicationRunUrls_ThrowsInvalidOperationExceptionIfThereIsNoIServerAddressesFeature()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.Services.AddSingleton<IServer>(new MockAddressesServer());
+            await using var app = builder.Build();
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => app.RunAsync("http://localhost:5001"));
+        }
+
+        [Fact]
+        public async Task WebApplicationRunUrls_ThrowsInvalidOperationExceptionIfServerAddressesFeatureIsReadOnly()
+        {
+            var builder = WebApplication.CreateBuilder();
+            builder.Services.AddSingleton<IServer>(new MockAddressesServer(new List<string>().AsReadOnly()));
+            await using var app = builder.Build();
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => app.RunAsync("http://localhost:5001"));
         }
 
         [Fact]

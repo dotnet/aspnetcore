@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// The web application used to configure the http pipeline, and routes.
+    /// The web application used to configure the HTTP pipeline, and routes.
     /// </summary>
     public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteBuilder, IAsyncDisposable
     {
@@ -190,11 +190,11 @@ namespace Microsoft.AspNetCore.Builder
             var addresses = ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
             if (addresses is null)
             {
-                throw new NotSupportedException($"Changing the URL is not supported because no valid {nameof(IServerAddressesFeature)} was found.");
+                throw new InvalidOperationException($"Changing the URL is not supported because no valid {nameof(IServerAddressesFeature)} was found.");
             }
             if (addresses.IsReadOnly)
             {
-                throw new NotSupportedException($"Changing the URL is not supported because {nameof(IServerAddressesFeature.Addresses)} {nameof(ICollection<string>.IsReadOnly)}.");
+                throw new InvalidOperationException($"Changing the URL is not supported because {nameof(IServerAddressesFeature.Addresses)} {nameof(ICollection<string>.IsReadOnly)}.");
             }
 
             addresses.Clear();
