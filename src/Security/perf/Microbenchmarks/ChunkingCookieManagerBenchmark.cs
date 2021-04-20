@@ -32,14 +32,14 @@ namespace Microsoft.AspNetCore.Security
 
             _httpContext.Request.Headers["Cookie"] = new[]
             {
-                "TestCookie=chunks-7; domain=foo.com; path=/; secure",
-                "TestCookieC1=abcdefghi; domain=foo.com; path=/; secure",
-                "TestCookieC2=jklmnopqr; domain=foo.com; path=/; secure",
-                "TestCookieC3=stuvwxyz0; domain=foo.com; path=/; secure",
-                "TestCookieC4=123456789; domain=foo.com; path=/; secure",
-                "TestCookieC5=ABCDEFGHI; domain=foo.com; path=/; secure",
-                "TestCookieC6=JKLMNOPQR; domain=foo.com; path=/; secure",
-                "TestCookieC7=STUVWXYZ; domain=foo.com; path=/; secure"
+                "TestCookie=chunks-7",
+                "TestCookieC1=abcdefghi",
+                "TestCookieC2=jklmnopqr",
+                "TestCookieC3=stuvwxyz0",
+                "TestCookieC4=123456789",
+                "TestCookieC5=ABCDEFGHI",
+                "TestCookieC6=JKLMNOPQR",
+                "TestCookieC7=STUVWXYZ"
             };
 
             _stringToAdd = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";

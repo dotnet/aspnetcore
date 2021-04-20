@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 if (_logger == null)
                 {
-                    var services = _features.Get<Features.IServiceProvidersFeature>()?.RequestServices;
+                    var services = _features.Get<IServiceProvidersFeature>()?.RequestServices;
                     _logger = services?.GetService<ILogger<ResponseCookies>>();
                 }
 
@@ -131,7 +131,8 @@ namespace Microsoft.AspNetCore.Http
 
             foreach (var keyValuePair in keyValuePairs)
             {
-                cookies[position] = string.Concat(_enableCookieNameEncoding ? Uri.EscapeDataString(keyValuePair.Key) : keyValuePair.Key, "=", Uri.EscapeDataString(keyValuePair.Value), cookierHeaderValue);
+                var key = _enableCookieNameEncoding ? Uri.EscapeDataString(keyValuePair.Key) : keyValuePair.Key;
+                cookies[position] = string.Concat(key, "=", Uri.EscapeDataString(keyValuePair.Value), cookierHeaderValue);
                 position++;
             }
 

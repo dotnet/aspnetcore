@@ -157,14 +157,14 @@ namespace Microsoft.AspNetCore.Internal
             
             httpContext.Request.Headers["Cookie"] = new[]
             {
-                "TestCookie=chunks-7; domain=foo.com; path=/; secure",
-                "TestCookieC1=abcdefghi; domain=foo.com; path=/; secure",
-                "TestCookieC2=jklmnopqr; domain=foo.com; path=/; secure",
-                "TestCookieC3=stuvwxyz0; domain=foo.com; path=/; secure",
-                "TestCookieC4=123456789; domain=foo.com; path=/; secure",
-                "TestCookieC5=ABCDEFGHI; domain=foo.com; path=/; secure",
-                "TestCookieC6=JKLMNOPQR; domain=foo.com; path=/; secure",
-                "TestCookieC7=STUVWXYZ; domain=foo.com; path=/; secure"
+                "TestCookie=chunks-7",
+                "TestCookieC1=abcdefghi",
+                "TestCookieC2=jklmnopqr",
+                "TestCookieC3=stuvwxyz0",
+                "TestCookieC4=123456789",
+                "TestCookieC5=ABCDEFGHI",
+                "TestCookieC6=JKLMNOPQR",
+                "TestCookieC7=STUVWXYZ"
             };
 
             var cookieOptions = new CookieOptions()
@@ -177,8 +177,8 @@ namespace Microsoft.AspNetCore.Internal
             httpContext.Response.Headers[HeaderNames.SetCookie] = new[]
             {
                 "TestCookie=chunks-7; domain=foo.com; path=/; secure",
-                "TestCookieC1=abcdefghi; domain=foo.com; path=/; secure",
-                "TestCookieC2=jklmnopqr; domain=foo.com; path=/; secure",
+                "TestCookieC1=STUVWXYZ; domain=foo.com; path=/; secure",
+                "TestCookieC2=123456789; domain=foo.com; path=/; secure",
                 "TestCookieC3=stuvwxyz0; domain=foo.com; path=/; secure",
                 "TestCookieC4=123456789; domain=foo.com; path=/; secure",
                 "TestCookieC5=ABCDEFGHI; domain=foo.com; path=/; secure",
@@ -188,6 +188,17 @@ namespace Microsoft.AspNetCore.Internal
 
             chunkingCookieManager.DeleteCookie(httpContext, "TestCookie", cookieOptions);
             Assert.Equal(8, httpContext.Response.Headers[HeaderNames.SetCookie].Count);
+            Assert.Equal(new[]
+            {
+                "TestCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC1=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC2=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC3=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC4=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC5=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC6=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC7=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure"
+            }, httpContext.Response.Headers[HeaderNames.SetCookie]);
         }
     }
 }

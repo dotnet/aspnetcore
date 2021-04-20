@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var nonSuppressedValues = new List<KeyValuePair<string, string>>();
+            var nonSuppressedValues = new List<KeyValuePair<string, string>>(keyValuePairs.Length);
 
             foreach (var keyValuePair in keyValuePairs)
             {
