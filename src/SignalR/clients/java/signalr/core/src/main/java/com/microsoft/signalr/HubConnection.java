@@ -349,10 +349,7 @@ public class HubConnection implements AutoCloseable {
                     this.state.unlock();
                 }
 
-                // this should be thread-safe as there shouldn't be any active calls to the accessTokenProvider
-                if (!(localStart.hasComplete() || localStart.hasThrowable())) {
-                    localStart.onError(error);
-                }
+                localStart.onError(error);
             });
         } finally {
             this.state.lock.unlock();
