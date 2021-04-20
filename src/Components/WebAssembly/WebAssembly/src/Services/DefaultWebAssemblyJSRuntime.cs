@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
 
@@ -35,7 +36,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 
         // Invoked via Mono's JS interop mechanism (invoke_method)
         public static void EndInvokeJS(string argsJson)
-            => DotNetDispatcher.EndInvokeJS(Instance, argsJson);
+        {
+            WebAssemblyCallQueue.Schedule(argsJson, static argsJson =>
+            {
+                // This is not expected to throw, as it takes care of converting any unhandled user code
+                // exceptions into a failure on the Task that was returned when calling InvokeAsync.
+                DotNetDispatcher.EndInvokeJS(Instance, argsJson);
+            });
+        }
 
         // Invoked via Mono's JS interop mechanism (invoke_method)
         public static void BeginInvokeDotNet(string callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
@@ -57,7 +65,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             }
 
             var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
-            DotNetDispatcher.BeginInvokeDotNet(Instance, callInfo, argsJson);
+            WebAssemblyCallQueue.Schedule((callInfo, argsJson), static state =>
+            {
+                // This is not expected to throw, as it takes care of converting any unhandled user code
+                // exceptions into a failure on the JS Promise object.
+                DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
+            });
         }
     }
 }
