@@ -389,16 +389,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 StreamContext = _testStreamContext;
             }
 
-            public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers, bool endStream = false)
+            public async Task SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers, bool endStream = false)
             {
                 var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
                 var done = _qpackEncoder.BeginEncode(headers, buffer.Span, out var length);
+                Assert.True(done);
 
                 await SendFrameAsync(frame, buffer.Slice(0, length), endStream);
-
-                return done;
             }
 
             internal async Task SendDataAsync(Memory<byte> data, bool endStream = false)
