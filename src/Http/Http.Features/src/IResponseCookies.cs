@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Http
 
 #if NET6_0_OR_GREATER
         /// <summary>
-        /// Add elements of specified dictionary as cookies.
+        /// Add elements of specified collection as cookies.
         /// </summary>
         /// <param name="keyValuePairs">Key value pair collections whose elements will be added as cookies.</param>
         /// <param name="options"><see cref="CookieOptions"/> included in new cookie settings.</param>
