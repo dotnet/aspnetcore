@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections.Internal;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -96,7 +94,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 try
                 {
-                    await connection.DisposeAsync(closeGracefully).OrTimeout();
+                    await connection.DisposeAsync(closeGracefully).DefaultTimeout();
                 }
                 catch (Exception ex) when (!(ex is TimeoutException))
                 {
@@ -276,7 +274,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 tcs.TrySetResult();
 
-                await Task.WhenAll(firstTask, secondTask).OrTimeout();
+                await Task.WhenAll(firstTask, secondTask).DefaultTimeout();
             }
         }
 
@@ -299,10 +297,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 tcs.TrySetException(new InvalidOperationException("Error"));
 
-                var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await firstTask.OrTimeout());
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await firstTask.DefaultTimeout());
                 Assert.Equal("Error", exception.Message);
 
-                exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await secondTask.OrTimeout());
+                exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await secondTask.DefaultTimeout());
                 Assert.Equal("Error", exception.Message);
             }
         }
@@ -326,8 +324,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 tcs.TrySetCanceled();
 
-                await Assert.ThrowsAsync<TaskCanceledException>(async () => await firstTask.OrTimeout());
-                await Assert.ThrowsAsync<TaskCanceledException>(async () => await secondTask.OrTimeout());
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await firstTask.DefaultTimeout());
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await secondTask.DefaultTimeout());
             }
         }
 

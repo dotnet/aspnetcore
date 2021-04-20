@@ -8,6 +8,6 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
   </ItemGroup>
 </Project>

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -392,7 +393,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.DefaultTimeout());
             block.SetResult(0);
         }
 
@@ -415,7 +416,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100, cts.Token);
             Assert.False(readTask.IsCompleted, "Not Completed");
             cts.Cancel();
-            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.DefaultTimeout());
             block.SetResult(0);
         }
 

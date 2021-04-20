@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
         [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)] // Remove after .NET 6.
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
-        internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
+        internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
 
         private static int ProcessorThreadCount
         {

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
         private IISContextFactory? _iisContextFactory;
-        private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
+        private readonly MemoryPool<byte> _memoryPool = new PinnedBlockMemoryPool();
         private GCHandle _httpServerHandle;
         private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly ILogger<IISHttpServer> _logger;

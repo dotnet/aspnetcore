@@ -19,7 +19,7 @@
   "profiles": {
     "BlazorServerWeb-CSharp": {
       "commandName": "Project",
-      "dotnetRunMessages": "true",
+      "dotnetRunMessages": true,
       "launchBrowser": true,
       "hotReloadProfile": "aspnetcore",
       //#if(RequiresHttps)

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             GC.WaitForPendingFinalizers();
 
             // Make sure the finalizer runs
-            await tcs.Task.OrTimeout();
+            await tcs.Task.DefaultTimeout();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

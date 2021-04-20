@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         private const int _minPort = 1025;
         private const int _maxPort = 48000;
 
+        private static readonly Random _random = new Random();
+
         public AspNetCorePortTests(PublishedSitesFixture fixture) : base(fixture)
         {
         }
@@ -142,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             for (var i = 0; i < retries; i++)
             {
-                var port = Random.Shared.Next(_minPort, _maxPort);
+                var port = _random.Next(_minPort, _maxPort);
 
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {

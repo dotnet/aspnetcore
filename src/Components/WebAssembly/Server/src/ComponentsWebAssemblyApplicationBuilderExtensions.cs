@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
@@ -12,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -46,6 +46,15 @@ namespace Microsoft.AspNetCore.Builder
                 subBuilder.Use(async (context, next) =>
                 {
                     context.Response.Headers.Append("Blazor-Environment", webHostEnvironment.EnvironmentName);
+
+                    // DOTNET_MODIFIABLE_ASSEMBLIES is used by the runtime to initialize hot-reload specific environment variables and is configured
+                    // by the launching process (dotnet-watch / Visual Studio).
+                    // In Development, we'll transmit the environment variable to WebAssembly as a HTTP header. The bootstrapping code will read the header
+                    // and configure it as env variable for the wasm app.
+                    if (webHostEnvironment.IsDevelopment() &&  Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") is not null)
+                    {
+                        context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES"));
+                    }
 
                     await next();
                 });

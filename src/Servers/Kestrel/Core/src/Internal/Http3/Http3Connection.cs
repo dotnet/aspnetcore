@@ -11,7 +11,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
@@ -178,12 +177,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (!previousState)
             {
+                _errorCodeFeature.Error = (long)errorCode;
+
                 if (TryClose())
                 {
                     SendGoAway(_highestOpenedStreamId).Preserve();
                 }
 
-                _errorCodeFeature.Error = (long)errorCode;
                 _multiplexedContext.Abort(ex);
             }
         }

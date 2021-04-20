@@ -20,7 +20,7 @@ RazorDocument - [0..32)::32 - [<ul bound [(item)]='items'></ul>]
                     MarkupTextLiteral - [19..20)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [20..25)::5
-                        CSharpExpressionLiteral - [20..25)::5 - [items] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                        CSharpExpressionLiteral - [20..25)::5 - [items] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K15
                             Text;[items];
                     MarkupTextLiteral - [25..26)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];

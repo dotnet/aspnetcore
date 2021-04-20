@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -13,6 +12,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
 {
     public class JsonPatchDocumentConverter : JsonConverter
     {
+        internal static DefaultContractResolver DefaultContractResolver { get; } = new();
+
         public override bool CanConvert(Type objectType)
         {
             return true;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
         {
             if (objectType != typeof(JsonPatchDocument))
             {
-                throw new ArgumentException(Resources.FormatParameterMustMatchType("objectType", "JsonPatchDocument"), "objectType");
+                throw new ArgumentException(Resources.FormatParameterMustMatchType(nameof(objectType), "JsonPatchDocument"), nameof(objectType));
             }
 
             try
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
                 serializer.Populate(jObjectReader, targetOperations);
 
                 // container target: the JsonPatchDocument. 
-                var container = new JsonPatchDocument(targetOperations, new DefaultContractResolver());
+                var container = new JsonPatchDocument(targetOperations, DefaultContractResolver);
 
                 return container;
             }
@@ -63,9 +64,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            if (value is IJsonPatchDocument)
+            if (value is IJsonPatchDocument jsonPatchDoc)
             {
-                var jsonPatchDoc = (IJsonPatchDocument)value;
                 var lst = jsonPatchDoc.GetOperations();
 
                 // write out the operations, no envelope

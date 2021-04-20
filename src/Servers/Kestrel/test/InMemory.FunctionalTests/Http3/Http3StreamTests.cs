@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -34,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
+            await requestStream.SendHeadersAsync(headers);
             await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
@@ -54,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
+            await requestStream.SendHeadersAsync(headers);
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3ErrorMethodInvalid(""));
         }
 
@@ -70,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
+            await requestStream.SendHeadersAsync(headers);
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3ErrorMethodInvalid("Hello,World"));
         }
 
@@ -86,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoMethod);
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -111,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers);
+            await requestStream.SendHeadersAsync(headers);
             await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"));
 
             // TODO figure out how to test errors for request streams that would be set on the Quic Stream.
@@ -126,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // :path and :scheme are not allowed, :authority is optional
             var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT") };
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -145,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.Path, "*")};
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -166,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.Path, "/")};
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -194,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.Path, "/a/path?a&que%35ry")};
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -230,7 +233,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.Path, input)};
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -251,7 +254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var headers = new[] { new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT"),
                 new KeyValuePair<string, string>(headerName, value) };
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.Http3ErrorConnectMustNotSendSchemeOrPath);
         }
@@ -266,7 +269,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "https") }; // Not the expected "http"
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.FormatHttp3StreamErrorSchemeMismatch("https", "http"));
         }
@@ -283,7 +286,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -305,7 +308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -327,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoHost);
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -351,7 +354,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoHost);
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -375,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoHost);
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -399,7 +402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_echoHost);
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -422,7 +425,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError,
                 CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("local=host:80"));
@@ -441,7 +444,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError,
                 CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("d=ef"));
@@ -460,7 +463,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError,
                 CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("host1,host2"));
@@ -480,7 +483,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Authority, "localhost" + new string('a', 1024 * 3) + ":80"),
             };
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError,
                 CoreStrings.BadRequest_RequestLineTooLong);
@@ -506,7 +509,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(0, read);
             });
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: false);
+            await requestStream.SendHeadersAsync(headers, endStream: false);
             await requestStream.SendDataAsync(new byte[12], endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
@@ -541,7 +544,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(12, total);
             });
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: false);
+            await requestStream.SendHeadersAsync(headers, endStream: false);
 
             await requestStream.SendDataAsync(new byte[1], endStream: false);
             await requestStream.SendDataAsync(new byte[3], endStream: false);
@@ -578,7 +581,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 context.Request.BodyReader.AdvanceTo(readResult.Buffer.End);
             });
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: false);
+            await requestStream.SendHeadersAsync(headers, endStream: false);
 
             await requestStream.SendDataAsync(new byte[1], endStream: false);
             await requestStream.SendDataAsync(new byte[3], endStream: false);
@@ -616,7 +619,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await response.WriteAsync("Hello world");
             });
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
             Assert.Equal(2, responseHeaders.Count);
@@ -627,7 +630,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(LogMessages, m => m.Message.Equals("One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'."));
         }
 
-        [Fact(Skip = "Http3OutputProducer.Complete is called before input recognizes there is an error. Why is this different than HTTP/2?")]
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31777")]
         public async Task ContentLength_Received_NoDataFrames_Reset()
         {
             var headers = new[]
@@ -638,11 +642,64 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
             };
 
-            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+            var requestDelegateCalled = false;
+            var requestStream = await InitializeConnectionAndStreamsAsync(c =>
+            {
+                // Bad content-length + end stream means the request delegate
+                // is never called by the server.
+                requestDelegateCalled = true;
+                return Task.CompletedTask;
+            });
 
             await requestStream.SendHeadersAsync(headers, endStream: true);
 
             await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError, CoreStrings.Http3StreamErrorLessDataThanLength);
+
+            Assert.False(requestDelegateCalled);
+        }
+
+        [Fact]
+        public async Task EndRequestStream_ContinueReadingFromResponse()
+        {
+            var headersTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+
+            var data = new byte[] { 1, 2, 3, 4, 5, 6 };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                await context.Response.BodyWriter.FlushAsync();
+
+                await headersTcs.Task;
+
+                for (var i = 0; i < data.Length; i++)
+                {
+                    await Task.Delay(50);
+                    await context.Response.BodyWriter.WriteAsync(new byte[] { data[i] });
+                }
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.ExpectHeadersAsync();
+
+            headersTcs.SetResult();
+
+            var receivedData = new List<byte>();
+            while (receivedData.Count < data.Length)
+            {
+                var frameData = await requestStream.ExpectDataAsync();
+                receivedData.AddRange(frameData.ToArray());
+            }
+
+            Assert.Equal(data, receivedData);
+
+            await requestStream.ExpectReceiveEndOfStream();
         }
 
         [Fact]
@@ -666,7 +723,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 return Task.CompletedTask;
             });
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -698,7 +755,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await context.Response.WriteAsync("Hello world");
             });
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
             var responseData = await requestStream.ExpectDataAsync();
@@ -732,7 +789,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 throw new NotImplementedException("Test Exception");
             });
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
 
@@ -759,7 +816,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 return Task.CompletedTask;
             });
 
-            var doneWithHeaders = await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
 
             await requestStream.WaitForStreamErrorAsync(
                 Http3ErrorCode.RequestCancelled,
@@ -1782,6 +1839,524 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.WaitForStreamErrorAsync(
                 Http3ErrorCode.UnexpectedFrame,
                 expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(frame.FormattedType));
+        }
+
+        [Fact]
+        public Task HEADERS_Received_HeaderBlockContainsUnknownPseudoHeaderField_ConnectionError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(":unknown", "0"),
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, expectedErrorMessage: CoreStrings.HttpErrorUnknownPseudoHeaderField);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_HeaderBlockContainsResponsePseudoHeaderField_ConnectionError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Status, "200"),
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, expectedErrorMessage: CoreStrings.HttpErrorResponsePseudoHeaderField);
+        }
+
+        public static TheoryData<IEnumerable<KeyValuePair<string, string>>> DuplicatePseudoHeaderFieldData
+        {
+            get
+            {
+                var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
+                var requestHeaders = new[]
+                {
+                    new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                    new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                    new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
+                    new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                };
+
+                foreach (var headerField in requestHeaders)
+                {
+                    var headers = requestHeaders.Concat(new[] { new KeyValuePair<string, string>(headerField.Key, headerField.Value) });
+                    data.Add(headers);
+                }
+
+                return data;
+            }
+        }
+
+        public static TheoryData<IEnumerable<KeyValuePair<string, string>>> ConnectMissingPseudoHeaderFieldData
+        {
+            get
+            {
+                var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
+                var methodHeader = new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT");
+                var headers = new[] { methodHeader };
+                data.Add(headers);
+
+                return data;
+            }
+        }
+
+        public static TheoryData<IEnumerable<KeyValuePair<string, string>>> PseudoHeaderFieldAfterRegularHeadersData
+        {
+            get
+            {
+                var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
+                var requestHeaders = new[]
+                {
+                    new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                    new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                    new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
+                    new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                    new KeyValuePair<string, string>("content-length", "0")
+                };
+
+                foreach (var headerField in requestHeaders.Where(h => h.Key.StartsWith(':')))
+                {
+                    var headers = requestHeaders.Except(new[] { headerField }).Concat(new[] { headerField });
+                    data.Add(headers);
+                }
+
+                return data;
+            }
+        }
+
+        public static TheoryData<IEnumerable<KeyValuePair<string, string>>> MissingPseudoHeaderFieldData
+        {
+            get
+            {
+                var data = new TheoryData<IEnumerable<KeyValuePair<string, string>>>();
+                var requestHeaders = new[]
+                {
+                    new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                    new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                    new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                };
+
+                foreach (var headerField in requestHeaders)
+                {
+                    var headers = requestHeaders.Except(new[] { headerField });
+                    data.Add(headers);
+                }
+
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DuplicatePseudoHeaderFieldData))]
+        public Task HEADERS_Received_HeaderBlockContainsDuplicatePseudoHeaderField_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, expectedErrorMessage: CoreStrings.HttpErrorDuplicatePseudoHeaderField);
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectMissingPseudoHeaderFieldData))]
+        public async Task HEADERS_Received_HeaderBlockDoesNotContainMandatoryPseudoHeaderField_MethodIsCONNECT_NoError(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Theory]
+        [MemberData(nameof(PseudoHeaderFieldAfterRegularHeadersData))]
+        public Task HEADERS_Received_HeaderBlockContainsPseudoHeaderFieldAfterRegularHeaders_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, expectedErrorMessage: CoreStrings.HttpErrorPseudoHeaderFieldAfterRegularHeaders);
+        }
+
+        private async Task HEADERS_Received_InvalidHeaderFields_StreamError(IEnumerable<KeyValuePair<string, string>> headers, string expectedErrorMessage, Http3ErrorCode? errorCode = null)
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            await requestStream.WaitForStreamErrorAsync(
+                errorCode ?? Http3ErrorCode.MessageError,
+                expectedErrorMessage);
+        }
+
+        [Theory]
+        [MemberData(nameof(MissingPseudoHeaderFieldData))]
+        public async Task HEADERS_Received_HeaderBlockDoesNotContainMandatoryPseudoHeaderField_StreamError(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+            await requestStream.WaitForStreamErrorAsync(
+                 Http3ErrorCode.MessageError,
+                 expectedErrorMessage: CoreStrings.HttpErrorMissingMandatoryPseudoHeaderFields);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_HeaderBlockOverLimit_ConnectionError()
+        {
+            // > 32kb
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("a", _4kHeaderValue),
+                new KeyValuePair<string, string>("b", _4kHeaderValue),
+                new KeyValuePair<string, string>("c", _4kHeaderValue),
+                new KeyValuePair<string, string>("d", _4kHeaderValue),
+                new KeyValuePair<string, string>("e", _4kHeaderValue),
+                new KeyValuePair<string, string>("f", _4kHeaderValue),
+                new KeyValuePair<string, string>("g", _4kHeaderValue),
+                new KeyValuePair<string, string>("h", _4kHeaderValue),
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http3ErrorCode.RequestRejected);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_TooManyHeaders_ConnectionError()
+        {
+            // > MaxRequestHeaderCount (100)
+            var headers = new List<KeyValuePair<string, string>>();
+            headers.AddRange(new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            });
+            for (var i = 0; i < 100; i++)
+            {
+                headers.Add(new KeyValuePair<string, string>(i.ToString(CultureInfo.InvariantCulture), i.ToString(CultureInfo.InvariantCulture)));
+            }
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_TooManyHeaders);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_InvalidCharacters_ConnectionError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("Custom", "val\0ue"),
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
+        }
+
+        [Fact]
+        public Task HEADERS_Received_HeaderBlockContainsConnectionHeader_ConnectionError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("connection", "keep-alive")
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
+        }
+        
+        [Fact]
+        public Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsNotTrailers_ConnectionError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("te", "trailers, deflate")
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsTrailers_NoError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("te", "trailers")
+            };
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
+
+            await requestStream.SendHeadersAsync(headers, endStream: true);
+
+            await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+        }
+
+        [Fact]
+        public async Task MaxRequestBodySize_ContentLengthUnder_200()
+        {
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 15;
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                var buffer = new byte[100];
+                var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(12, read);
+                read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(0, read);
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: false);
+            await requestStream.SendDataAsync(new byte[12], endStream: true);
+
+            var receivedHeaders = await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+
+            Assert.Equal(3, receivedHeaders.Count);
+            Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", receivedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", receivedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task MaxRequestBodySize_ContentLengthOver_413()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            BadHttpRequestException exception = null;
+#pragma warning restore CS0618 // Type or member is obsolete
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+#pragma warning restore CS0618 // Type or member is obsolete
+                {
+                    var buffer = new byte[100];
+                    while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
+                });
+                ExceptionDispatchInfo.Capture(exception).Throw();
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: false);
+
+            var receivedHeaders = await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+
+            // TODO(JamesNK): Check for logging and error after https://github.com/dotnet/aspnetcore/issues/31970
+            // Logged without an exception.
+            // Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
+
+            Assert.Equal(3, receivedHeaders.Count);
+            Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("413", receivedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", receivedHeaders[HeaderNames.ContentLength]);
+
+            Assert.NotNull(exception);
+        }
+
+        [Fact]
+        public async Task MaxRequestBodySize_NoContentLength_Under_200()
+        {
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 15;
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                var buffer = new byte[100];
+                var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(12, read);
+                read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(0, read);
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: false);
+            await requestStream.SendDataAsync(new byte[12], endStream: true);
+
+            var receivedHeaders = await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+
+            Assert.Equal(3, receivedHeaders.Count);
+            Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", receivedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", receivedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task MaxRequestBodySize_NoContentLength_Over_413()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            BadHttpRequestException exception = null;
+#pragma warning restore CS0618 // Type or member is obsolete
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+#pragma warning restore CS0618 // Type or member is obsolete
+                {
+                    var buffer = new byte[100];
+                    while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
+                });
+                ExceptionDispatchInfo.Capture(exception).Throw();
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: false);
+            await requestStream.SendDataAsync(new byte[6], endStream: false);
+            await requestStream.SendDataAsync(new byte[6], endStream: false);
+
+            var receivedHeaders = await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+
+            // TODO(JamesNK): Check for logging and error after https://github.com/dotnet/aspnetcore/issues/31970
+            // Logged without an exception.
+            // Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
+
+            Assert.Equal(3, receivedHeaders.Count);
+            Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("413", receivedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", receivedHeaders[HeaderNames.ContentLength]);
+
+            Assert.NotNull(exception);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task MaxRequestBodySize_AppCanLowerLimit(bool includeContentLength)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            BadHttpRequestException exception = null;
+#pragma warning restore CS0618 // Type or member is obsolete
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 20;
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            if (includeContentLength)
+            {
+                headers.Concat(new[]
+                    {
+                        new KeyValuePair<string, string>(HeaderNames.ContentLength, "18"),
+                    });
+            }
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                Assert.False(context.Features.Get<IHttpMaxRequestBodySizeFeature>().IsReadOnly);
+                context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 17;
+#pragma warning disable CS0618 // Type or member is obsolete
+                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+#pragma warning restore CS0618 // Type or member is obsolete
+                {
+                    var buffer = new byte[100];
+                    while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
+                });
+                Assert.True(context.Features.Get<IHttpMaxRequestBodySizeFeature>().IsReadOnly);
+                ExceptionDispatchInfo.Capture(exception).Throw();
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: false);
+            await requestStream.SendDataAsync(new byte[6], endStream: false);
+            await requestStream.SendDataAsync(new byte[6], endStream: false);
+            await requestStream.SendDataAsync(new byte[6], endStream: false);
+
+            var receivedHeaders = await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+
+            // TODO(JamesNK): Check for logging and error after https://github.com/dotnet/aspnetcore/issues/31970
+            // Logged without an exception.
+            // Assert.Contains(LogMessages, m => m.Message.Contains("the application completed without reading the entire request body."));
+
+            Assert.Equal(3, receivedHeaders.Count);
+            Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("413", receivedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", receivedHeaders[HeaderNames.ContentLength]);
+
+            Assert.NotNull(exception);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task MaxRequestBodySize_AppCanRaiseLimit(bool includeContentLength)
+        {
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 10;
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            if (includeContentLength)
+            {
+                headers.Concat(new[]
+                    {
+                        new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+                    });
+            }
+            var requestStream = await InitializeConnectionAndStreamsAsync(async context =>
+            {
+                Assert.False(context.Features.Get<IHttpMaxRequestBodySizeFeature>().IsReadOnly);
+                context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 12;
+                var buffer = new byte[100];
+                var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(12, read);
+                Assert.True(context.Features.Get<IHttpMaxRequestBodySizeFeature>().IsReadOnly);
+                read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(0, read);
+            });
+
+            await requestStream.SendHeadersAsync(headers, endStream: false);
+            await requestStream.SendDataAsync(new byte[12], endStream: true);
+
+            var receivedHeaders = await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectReceiveEndOfStream();
+
+            Assert.Equal(3, receivedHeaders.Count);
+            Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", receivedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", receivedHeaders[HeaderNames.ContentLength]);
         }
     }
 }

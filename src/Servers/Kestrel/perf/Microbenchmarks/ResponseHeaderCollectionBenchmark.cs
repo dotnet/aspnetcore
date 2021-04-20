@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         [IterationSetup]
         public void Setup()
         {
-            var memoryPool = SlabMemoryPoolFactory.Create();
+            var memoryPool = PinnedBlockMemoryPoolFactory.Create();
             var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 

@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             "using",
             "namespace",
             "class",
+            "where"
         };
 
         private readonly ISet<string> CurrentKeywords = new HashSet<string>(DefaultKeywords);
@@ -1306,6 +1307,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // Even if an error was logged do not bail out early. If a directive was used incorrectly it doesn't mean it can't be parsed.
                     ValidateDirectiveUsage(descriptor, directiveStart);
 
+                    // Capture the last member for validating generic type constraints.
+                    // Generic type parameters are described by a member token followed by a generic constraint token.
+                    // The generic constraint token includes the 'where' keyword, the identifier it applies and the constraint list and is represented as a token list.
+                    // For the directive to be valid we need to check that the identifier for the member token matches the identifier in the generic constraint token.
+                    // Once we are parsing the constraint token we have lost "easy" access to the identifier for the member. To avoid having complex logic in the generic
+                    // constraint token parsing code, we instead keep track of the last identifier we've seen on a member token and use that information to check the
+                    // identifier for the constraint an emit a diagnostic in case they are not the same.
+                    string lastSeenMemberIdentifier = null;
+
                     for (var i = 0; i < descriptor.Tokens.Count; i++)
                     {
                         if (!At(SyntaxKind.Whitespace) &&
@@ -1327,14 +1337,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             AcceptWhile(IsSpacingTokenIncludingComments);
 
+                            SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                            SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
+
                             if (tokenDescriptor.Kind == DirectiveTokenKind.Member ||
                                 tokenDescriptor.Kind == DirectiveTokenKind.Namespace ||
                                 tokenDescriptor.Kind == DirectiveTokenKind.Type ||
                                 tokenDescriptor.Kind == DirectiveTokenKind.Attribute ||
+                                tokenDescriptor.Kind == DirectiveTokenKind.GenericTypeConstraint ||
                                 tokenDescriptor.Kind == DirectiveTokenKind.Boolean)
                             {
-                                SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
-                                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
                                 directiveBuilder.Add(OutputTokensAsStatementLiteral());
 
                                 if (EndOfFile || At(SyntaxKind.NewLine))
@@ -1350,8 +1362,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             }
                             else
                             {
-                                SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
-                                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
                                 directiveBuilder.Add(OutputAsMarkupEphemeralLiteral());
                             }
                         }
@@ -1400,6 +1410,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             case DirectiveTokenKind.Member:
                                 if (At(SyntaxKind.Identifier))
                                 {
+                                    lastSeenMemberIdentifier = CurrentToken.Content;
                                     AcceptAndMoveNext();
                                 }
                                 else
@@ -1455,6 +1466,51 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     Context.ErrorSink.OnError(
                                         RazorDiagnosticFactory.CreateParsing_DirectiveExpectsCSharpAttribute(
                                             new SourceSpan(CurrentStart, CurrentToken.Content.Length), descriptor.Directive));
+                                    builder.Add(BuildDirective());
+                                    return;
+                                }
+
+                                break;
+                            case DirectiveTokenKind.GenericTypeConstraint:
+                                if (At(SyntaxKind.Keyword) &&
+                                    string.Equals(CurrentToken.Content, CSharpLanguageCharacteristics.GetKeyword(CSharpKeyword.Where), StringComparison.Ordinal))
+                                {
+                                    // Consume the 'where' keyword plus any aditional whitespace
+                                    AcceptAndMoveNext();
+                                    AcceptWhile(SyntaxKind.Whitespace);
+                                    // Check that the type name matches the type name before the where clause.
+                                    // Find a better way to do this
+                                    if (!string.Equals(CurrentToken.Content, lastSeenMemberIdentifier, StringComparison.Ordinal))
+                                    {
+                                        // @typeparam TKey where TValue : ...
+                                        // The type parameter in the generic type constraint 'TValue' does not match the type parameter 'TKey' defined in the directive '@typeparam'.
+                                        Context.ErrorSink.OnError(
+                                            RazorDiagnosticFactory.CreateParsing_GenericTypeParameterIdentifierMismatch(
+                                                new SourceSpan(CurrentStart, CurrentToken.Content.Length), descriptor.Directive, CurrentToken.Content, lastSeenMemberIdentifier));
+                                        builder.Add(BuildDirective());
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        while (!At(SyntaxKind.NewLine))
+                                        {
+                                            AcceptAndMoveNext();
+                                            if (EndOfFile)
+                                            {
+                                                // We've reached the end of the file, which is unusual but can happen, for example if we start typing in a new file.
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    Context.ErrorSink.OnError(
+                                        RazorDiagnosticFactory.CreateParsing_UnexpectedIdentifier(
+                                            new SourceSpan(CurrentStart, CurrentToken.Content.Length),
+                                            CurrentToken.Content,
+                                            CSharpLanguageCharacteristics.GetKeyword(CSharpKeyword.Where)));
+
                                     builder.Add(BuildDirective());
                                     return;
                                 }

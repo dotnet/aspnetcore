@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -33,13 +35,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        protected override void OnReadStarted()
+        protected override Task OnReadStartedAsync()
         {
             // Produce 100-continue if no request body data for the stream has arrived yet.
             if (!_context.RequestBodyStarted)
             {
-                TryProduceContinue();
+                ValueTask<FlushResult> continueTask = TryProduceContinueAsync();
+                if (!continueTask.IsCompletedSuccessfully)
+                {
+                    return continueTask.GetAsTask();
+                }
             }
+
+            return Task.CompletedTask;
         }
 
         public override void Reset()
@@ -62,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override bool TryRead(out ReadResult readResult)
         {
-            TryStart();
+            TryStartAsync();
 
             var hasResult = _context.RequestBodyPipe.Reader.TryRead(out readResult);
 
@@ -83,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            TryStart();
+            await TryStartAsync();
 
             try
             {

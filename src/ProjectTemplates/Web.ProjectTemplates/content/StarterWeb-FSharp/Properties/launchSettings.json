@@ -19,7 +19,7 @@
   "profiles": {
     "Company.WebApplication1": {
       "commandName": "Project",
-      "dotnetRunMessages": "true",
+      "dotnetRunMessages": true,
       "launchBrowser": true,
       //#if(NoHttps)
       "applicationUrl": "http://localhost:5000",

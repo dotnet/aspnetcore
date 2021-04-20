@@ -58,14 +58,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (!dictionary.ContainsKey(convertedKey))
+            if (!dictionary.TryGetValue(convertedKey, out var valueAsT))
             {
                 value = null;
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 return false;
             }
 
-            value = dictionary[convertedKey];
+            value = valueAsT;
             errorMessage = null;
             return true;
         }
@@ -86,13 +86,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
 
             // As per JsonPatch spec, the target location must exist for remove to be successful
-            if (!dictionary.ContainsKey(convertedKey))
+            if (!dictionary.Remove(convertedKey))
             {
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 return false;
             }
-
-            dictionary.Remove(convertedKey);
 
             errorMessage = null;
             return true;
@@ -198,9 +196,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (dictionary.ContainsKey(convertedKey))
+            if (dictionary.TryGetValue(convertedKey, out var valueAsT))
             {
-                nextTarget = dictionary[convertedKey];
+                nextTarget = valueAsT;
                 errorMessage = null;
                 return true;
             }

@@ -32,6 +32,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private static ReadOnlySpan<byte> TrailersBytes => new byte[8] { (byte)'t', (byte)'r', (byte)'a', (byte)'i', (byte)'l', (byte)'e', (byte)'r', (byte)'s' };
         private static ReadOnlySpan<byte> ConnectBytes => new byte[7] { (byte)'C', (byte)'O', (byte)'N', (byte)'N', (byte)'E', (byte)'C', (byte)'T' };
 
+        private static readonly PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
+            PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
+
         private readonly Http3FrameWriter _frameWriter;
         private readonly Http3OutputProducer _http3Output;
         private int _isClosed;
@@ -42,6 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         protected RequestHeaderParsingState _requestHeaderParsingState;
         private PseudoHeaderFields _parsedPseudoHeaderFields;
+        private int _totalParsedHeaderSize;
         private bool _isMethodConnect;
 
         private readonly Http3Connection _http3Connection;
@@ -148,7 +152,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public override void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            // TODO MaxRequestHeadersTotalSize?
+            // https://tools.ietf.org/html/rfc7540#section-6.5.2
+            // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
+            _totalParsedHeaderSize += HeaderField.RfcOverhead + name.Length + value.Length;
+            if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
+            {
+                throw new Http3StreamErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http3ErrorCode.RequestRejected);
+            }
+
             ValidateHeader(name, value);
             try
             {
@@ -165,11 +176,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
             {
-                throw new Http3StreamErrorException(bre.Message, Http3ErrorCode.ProtocolError);
+                throw new Http3StreamErrorException(bre.Message, Http3ErrorCode.MessageError);
             }
             catch (InvalidOperationException)
             {
-                throw new Http3StreamErrorException(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, Http3ErrorCode.ProtocolError);
+                throw new Http3StreamErrorException(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, Http3ErrorCode.MessageError);
             }
         }
 
@@ -177,11 +188,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.1
             /*
-               Intermediaries that process HTTP requests or responses (i.e., any
-               intermediary not acting as a tunnel) MUST NOT forward a malformed
-               request or response.  Malformed requests or responses that are
-               detected MUST be treated as a stream error (Section 5.4.2) of type
-               PROTOCOL_ERROR.
+               Intermediaries that process HTTP requests or responses
+               (i.e., any intermediary not acting as a tunnel) MUST NOT forward a
+               malformed request or response. Malformed requests or responses that
+               are detected MUST be treated as a stream error of type H3_MESSAGE_ERROR.
 
                For malformed requests, a server MAY send an HTTP response prior to
                closing or resetting the stream.  Clients MUST NOT accept a malformed
@@ -193,39 +203,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
                 {
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.1.1-4
                     // All pseudo-header fields MUST appear in the header block before regular header fields.
                     // Any request or response that contains a pseudo-header field that appears in a header
-                    // block after a regular header field MUST be treated as malformed (Section 8.1.2.6).
-                    throw new Http3StreamErrorException(CoreStrings.Http2ErrorPseudoHeaderFieldAfterRegularHeaders, Http3ErrorCode.ProtocolError);
+                    // block after a regular header field MUST be treated as malformed.
+                    throw new Http3StreamErrorException(CoreStrings.HttpErrorPseudoHeaderFieldAfterRegularHeaders, Http3ErrorCode.MessageError);
                 }
 
                 if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
                 {
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.1.1-3
                     // Pseudo-header fields MUST NOT appear in trailers.
-                    throw new Http3StreamErrorException(CoreStrings.Http2ErrorTrailersContainPseudoHeaderField, Http3ErrorCode.ProtocolError);
+                    throw new Http3StreamErrorException(CoreStrings.HttpErrorTrailersContainPseudoHeaderField, Http3ErrorCode.MessageError);
                 }
 
                 _requestHeaderParsingState = RequestHeaderParsingState.PseudoHeaderFields;
 
                 if (headerField == PseudoHeaderFields.Unknown)
                 {
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.1.1-3
                     // Endpoints MUST treat a request or response that contains undefined or invalid pseudo-header
-                    // fields as malformed (Section 8.1.2.6).
-                    throw new Http3StreamErrorException(CoreStrings.Http2ErrorUnknownPseudoHeaderField, Http3ErrorCode.ProtocolError);
+                    // fields as malformed.
+                    throw new Http3StreamErrorException(CoreStrings.HttpErrorUnknownPseudoHeaderField, Http3ErrorCode.MessageError);
                 }
 
                 if (headerField == PseudoHeaderFields.Status)
                 {
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.1.1-3
                     // Pseudo-header fields defined for requests MUST NOT appear in responses; pseudo-header fields
                     // defined for responses MUST NOT appear in requests.
-                    throw new Http3StreamErrorException(CoreStrings.Http2ErrorResponsePseudoHeaderField, Http3ErrorCode.ProtocolError);
+                    throw new Http3StreamErrorException(CoreStrings.HttpErrorResponsePseudoHeaderField, Http3ErrorCode.MessageError);
                 }
 
                 if ((_parsedPseudoHeaderFields & headerField) == headerField)
                 {
-                    // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.3
-                    // All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header fields
-                    throw new Http3StreamErrorException(CoreStrings.Http2ErrorDuplicatePseudoHeaderField, Http3ErrorCode.ProtocolError);
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.1.1-7
+                    // All HTTP/3 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header fields
+                    throw new Http3StreamErrorException(CoreStrings.HttpErrorDuplicatePseudoHeaderField, Http3ErrorCode.MessageError);
                 }
 
                 if (headerField == PseudoHeaderFields.Method)
@@ -242,22 +256,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (IsConnectionSpecificHeaderField(name, value))
             {
-                throw new Http3StreamErrorException(CoreStrings.Http2ErrorConnectionSpecificHeaderField, Http3ErrorCode.ProtocolError);
+                throw new Http3StreamErrorException(CoreStrings.HttpErrorConnectionSpecificHeaderField, Http3ErrorCode.MessageError);
             }
 
-            // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
-            // A request or response containing uppercase header field names MUST be treated as malformed (Section 8.1.2.6).
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.1-3
+            // A request or response containing uppercase header field names MUST be treated as malformed.
             for (var i = 0; i < name.Length; i++)
             {
                 if (name[i] >= 65 && name[i] <= 90)
                 {
                     if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
                     {
-                        throw new Http3StreamErrorException(CoreStrings.Http2ErrorTrailerNameUppercase, Http3ErrorCode.ProtocolError);
+                        throw new Http3StreamErrorException(CoreStrings.HttpErrorTrailerNameUppercase, Http3ErrorCode.MessageError);
                     }
                     else
                     {
-                        throw new Http3StreamErrorException(CoreStrings.Http2ErrorHeaderNameUppercase, Http3ErrorCode.ProtocolError);
+                        throw new Http3StreamErrorException(CoreStrings.HttpErrorHeaderNameUppercase, Http3ErrorCode.MessageError);
                     }
                 }
             }
@@ -364,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                                 Log.Http3FrameReceived(ConnectionId, _streamIdFeature.StreamId, _incomingFrame);
 
                                 consumed = examined = framePayload.End;
-                                await ProcessHttp3Stream(application, framePayload);
+                                await ProcessHttp3Stream(application, framePayload, result.IsCompleted && readableBuffer.IsEmpty);
                             }
                         }
 
@@ -448,14 +462,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return RequestBodyPipe.Writer.CompleteAsync();
         }
 
-        private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload) where TContext : notnull
+        private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
         {
             switch (_incomingFrame.Type)
             {
                 case Http3FrameType.Data:
                     return ProcessDataFrameAsync(payload);
                 case Http3FrameType.Headers:
-                    return ProcessHeadersFrameAsync(application, payload);
+                    return ProcessHeadersFrameAsync(application, payload, isCompleted);
                 case Http3FrameType.Settings:
                 case Http3FrameType.CancelPush:
                 case Http3FrameType.GoAway:
@@ -478,7 +492,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return Task.CompletedTask;
         }
 
-        private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload) where TContext : notnull
+        private async Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
         {
             // HEADERS frame after trailing headers is invalid.
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
@@ -506,7 +520,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 case RequestHeaderParsingState.Trailers:
                     // trailers
                     // TODO figure out if there is anything else to do here.
-                    return Task.CompletedTask;
+                    return;
                 default:
                     Debug.Fail("Unexpected header parsing state.");
                     break;
@@ -514,11 +528,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             InputRemaining = HttpRequestHeaders.ContentLength;
 
+            // If the stream is complete after receiving the headers then run OnEndStreamReceived.
+            // If there is a bad content length then this will throw before the request delegate is called.
+            if (isCompleted)
+            {
+                await OnEndStreamReceived();
+            }
+
+            if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
+            {
+                // All HTTP/3 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header
+                // fields, unless it is a CONNECT request. An HTTP request that omits mandatory pseudo-header
+                // fields is malformed.
+                // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.1.1
+                throw new Http3StreamErrorException(CoreStrings.HttpErrorMissingMandatoryPseudoHeaderFields, Http3ErrorCode.MessageError);
+            }
+
             _appCompleted = new TaskCompletionSource();
 
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
-
-            return Task.CompletedTask;
         }
 
         private Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)

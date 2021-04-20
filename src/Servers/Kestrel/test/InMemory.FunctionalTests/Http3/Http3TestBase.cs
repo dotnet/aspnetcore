@@ -15,7 +15,6 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -36,12 +35,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable
     {
+        protected static readonly int MaxRequestHeaderFieldSize = 16 * 1024;
+        protected static readonly string _4kHeaderValue = new string('a', 4096);
+
         internal TestServiceContext _serviceContext;
         internal readonly TimeoutControl _timeoutControl;
         internal readonly Mock<IKestrelTrace> _mockKestrelTrace = new Mock<IKestrelTrace>();
         internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
         internal readonly Mock<MockTimeoutControlBase> _mockTimeoutControl;
-        internal readonly MemoryPool<byte> _memoryPool = SlabMemoryPoolFactory.Create();
+        internal readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
         protected Task _connectionTask;
         protected readonly TaskCompletionSource _closedStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -370,7 +372,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public bool Disposed => _testStreamContext.Disposed;
             public long Error { get; set; }
 
-            private readonly byte[] _headerEncodingBuffer = new byte[16 * 1024];
+            private readonly byte[] _headerEncodingBuffer = new byte[64 * 1024];
             private QPackEncoder _qpackEncoder = new QPackEncoder();
             private QPackDecoder _qpackDecoder = new QPackDecoder(8192);
             protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -387,16 +389,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 StreamContext = _testStreamContext;
             }
 
-            public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers, bool endStream = false)
+            public async Task SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers, bool endStream = false)
             {
                 var frame = new Http3RawFrame();
                 frame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.AsMemory();
                 var done = _qpackEncoder.BeginEncode(headers, buffer.Span, out var length);
+                Assert.True(done);
 
                 await SendFrameAsync(frame, buffer.Slice(0, length), endStream);
-
-                return done;
             }
 
             internal async Task SendDataAsync(Memory<byte> data, bool endStream = false)

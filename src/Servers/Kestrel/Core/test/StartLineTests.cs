@@ -518,7 +518,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         public StartLineTests()
         {
-            MemoryPool = SlabMemoryPoolFactory.Create();
+            MemoryPool = PinnedBlockMemoryPoolFactory.Create();
             var options = new PipeOptions(MemoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             Transport = pair.Transport;

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Testing
             {
                 return false;
             }
-#elif NETSTANDARD2_0
+#elif NETSTANDARD2_0 || NET6_0_OR_GREATER
             if (excludedFrameworks.HasFlag(RuntimeFrameworks.CoreCLR))
             {
                 return false;

@@ -145,6 +145,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             { CSharpKeyword.Checked, "checked" },
             { CSharpKeyword.Namespace, "namespace" },
             { CSharpKeyword.When,  "when" },
+            { CSharpKeyword.Where,  "where" },
         };
 
         private static readonly CSharpLanguageCharacteristics _instance = new CSharpLanguageCharacteristics();

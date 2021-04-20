@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
     public class MessageParserBenchmark
     {
+        private static readonly Random Random = new Random();
         private byte[] _binaryInput;
         private byte[] _textInput;
 
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         public void Setup()
         {
             var buffer = new byte[MessageLength];
-            Random.Shared.NextBytes(buffer);
+            Random.NextBytes(buffer);
             var writer = MemoryBufferWriter.Get();
             try
             {
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             }
 
             buffer = new byte[MessageLength];
-            Random.Shared.NextBytes(buffer);
+            Random.NextBytes(buffer);
             writer = MemoryBufferWriter.Get();
             try
             {

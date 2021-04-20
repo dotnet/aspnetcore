@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     internal interface IQuicTrace : ILogger
     {

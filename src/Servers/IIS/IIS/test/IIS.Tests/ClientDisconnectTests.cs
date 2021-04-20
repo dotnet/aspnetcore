@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     requestStartedCompletionSource.SetResult(true);
                     ctx.RequestAborted.Register(() => requestAborted.SetResult(true));
 
-                    await requestAborted.Task.DefaultTimeout();
+                    await requestAborted.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                     for (var i = 0; i < 1000; i++)
                     {
                         await ctx.Response.Body.WriteAsync(data);
@@ -43,12 +43,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 using (var connection = testServer.CreateConnection())
                 {
                     await SendContentLength1Post(connection);
-                    await requestStartedCompletionSource.Task.DefaultTimeout();
+                    await requestStartedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
 
-                await requestAborted.Task.DefaultTimeout();
+                await requestAborted.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
-                await requestCompletedCompletionSource.Task.DefaultTimeout();
+                await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
             }
 
             AssertConnectionDisconnectLog();
@@ -86,10 +86,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 {
                     await SendContentLength1Post(connection);
 
-                    await requestStartedCompletionSource.Task.DefaultTimeout();
+                    await requestStartedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
 
-                await requestCompletedCompletionSource.Task.DefaultTimeout();
+                await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
                 Assert.IsType<OperationCanceledException>(exception);
             }
@@ -124,10 +124,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 using (var connection = testServer.CreateConnection())
                 {
                     await SendContentLength1Post(connection);
-                    await requestStartedCompletionSource.Task.DefaultTimeout();
+                    await requestStartedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
 
-                await requestCompletedCompletionSource.Task.DefaultTimeout();
+                await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
             }
 
             Assert.IsType<ConnectionResetException>(exception);
@@ -168,9 +168,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 {
                     await SendContentLength1Post(connection);
 
-                    await requestStartedCompletionSource.Task.DefaultTimeout();
+                    await requestStartedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                     cancellationTokenSource.Cancel();
-                    await requestCompletedCompletionSource.Task.DefaultTimeout();
+                    await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
 
                 Assert.IsType<OperationCanceledException>(exception);
@@ -207,9 +207,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 using (var connection = testServer.CreateConnection())
                 {
                     await SendContentLength1Post(connection);
-                    await readIsAsyncCompletionSource.Task.DefaultTimeout();
+                    await readIsAsyncCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                     cancellationTokenSource.Cancel();
-                    await requestCompletedCompletionSource.Task.DefaultTimeout();
+                    await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
 
                 try
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                         );
 
                 }
-                await requestCompletedCompletionSource.Task.DefaultTimeout();
+                await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
             }
 
             Assert.IsType<ConnectionResetException>(exception);
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                             );
 
                     }
-                    await requestCompletedCompletionSource.Task.DefaultTimeout();
+                    await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
             }
         }

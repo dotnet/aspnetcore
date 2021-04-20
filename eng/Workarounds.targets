@@ -1,10 +1,21 @@
 <!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
 <Project>
+  <PropertyGroup>
+    <DefaultNetCoreTargetFrameworkIdentifier>$([MSBuild]::GetTargetFrameworkIdentifier('$(DefaultNetCoreTargetFramework)'))</DefaultNetCoreTargetFrameworkIdentifier>
+    <DefaultNetCoreTargetFrameworkVersion>v$([MSBuild]::GetTargetFrameworkVersion('$(DefaultNetCoreTargetFramework)', 2))</DefaultNetCoreTargetFrameworkVersion>
+
+    <ProjectTargetFrameworkIdentifier>$([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)'))</ProjectTargetFrameworkIdentifier>
+    <ProjectTargetFrameworkVersion>v$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)', 2))</ProjectTargetFrameworkVersion>
+  </PropertyGroup>
+
   <ItemGroup>
-    <!-- Reference base shared framework at incoming dependency flow version, not bundled sdk version. -->
+    <!--
+      Reference base shared framework at incoming dependency flow version, not bundled sdk version.
+      Apply this to all projects that target the default tfm (e.g. net6.0) or a rid-based variant of it (e.g. net6.0-windows)
+    -->
     <FrameworkReference
       Update="Microsoft.NETCore.App"
-      Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND '$(TargetLatestDotNetRuntime)' != 'false' "
+      Condition=" (('$(ProjectTargetFrameworkIdentifier)' == '$(DefaultNetCoreTargetFrameworkIdentifier)') AND '$(DefaultNetCoreTargetFrameworkVersion)' == '$(ProjectTargetFrameworkVersion)') AND '$(TargetLatestDotNetRuntime)' != 'false' "
       RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
       TargetingPackVersion="$(MicrosoftNETCoreAppRefVersion)" />
   </ItemGroup>

@@ -7,10 +7,10 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 CreateConnection(httpOptions),
                 async (connection) =>
                 {
-                    await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().DefaultTimeout();
                 });
 
             Assert.NotNull(httpClientHandler);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(httpOptions, loggerFactory: mockLoggerFactory.Object),
                     async (connection) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync().DefaultTimeout();
                     });
             }
             catch

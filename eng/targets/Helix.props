@@ -22,7 +22,7 @@
     <HelixUseArchive>false</HelixUseArchive>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
     <NodeVersion>10.15.3</NodeVersion>
-    <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
+    <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

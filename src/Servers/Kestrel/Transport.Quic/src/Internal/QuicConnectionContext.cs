@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     internal class QuicConnectionContext : TransportMultiplexedConnection, IProtocolErrorCodeFeature
     {
