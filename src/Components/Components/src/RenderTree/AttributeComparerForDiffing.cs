@@ -11,38 +11,38 @@ using System.Linq.Expressions;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
-    internal static class EventHandlerDelegateWithClosuresComparer
+    internal static class AttributeComparerForDiffing
     {
         private static readonly ConcurrentDictionary<Type, Func<object, object, bool>> ClosureComparerCache = new();
+        private static readonly Func<object, object, bool> AlwaysFalseDelegate = (objA, objB) => false;
 
-        internal static bool EventCallBackEquals(ref EventCallback left, ref EventCallback right)
+        internal static bool IsEquivalentForDiffing(object? oldValue, object? newValue)
         {
-            if (Equals(left, right))
+            // If the values are delegate types, we'll inspect them to see if they point to closures.
+            if (oldValue is EventCallback leftEventCallback && newValue is EventCallback rightEventCallBack)
             {
-                return true;
+                return EventCallback.IsEquivalentForDiffing(ref leftEventCallback, ref rightEventCallBack);
             }
-
-            // Whenever the receivers are different and they are explicit we assume that
-            // the EventCallbacks are not equal.
-            if (left.Receiver != right.Receiver &&
-                (left.RequiresExplicitReceiver || right.RequiresExplicitReceiver))
+            else if (oldValue is MulticastDelegate leftDelegate && newValue is MulticastDelegate rightDelegate)
             {
-                return false;
+                return IsEquivalentForDiffing(leftDelegate, rightDelegate);
             }
-
-            return DelegateEquals(left.Delegate, right.Delegate);
+            else
+            {
+                return Equals(oldValue, newValue);
+            }
         }
 
-        internal static bool DelegateEquals(MulticastDelegate? left, MulticastDelegate? right)
+        internal static bool IsEquivalentForDiffing(MulticastDelegate left, MulticastDelegate right)
         {
-            if (Equals(left, right))
+            if (left.Equals(right))
             {
                 return true;
             }
 
             // If any of the delegates or their targets are null (static delegates) then normal
             // equality is sufficient. No additional testing required.
-            if (left == null || right == null || left.Target == null || right.Target == null)
+            if (left.Target == null || right.Target == null)
             {
                 return false;
             }
@@ -51,8 +51,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var newTargetType = right.Target!.GetType();
 
             // if the types are not the same, or the methods are not the same, these possible closures are
-            // not the same anyway.
-            if (oldTargetType != newTargetType || left.Method != right.Method)
+            // not the same anyway. Types are implicitly compared as they are part of the MethodInfo comparison. 
+            if (left.Method != right.Method)
             {
                 return false;
             }
@@ -64,11 +64,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private static Func<object, object, bool> GetClosureComparerForType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] Type type)
         {
-            // if this type is not compiler generated, it is not a closure, and the previous tests where
-            // enough to conclude that these are not equal. We just cache a delegate to a function that returns false.
+            // for compiler-generated types, we're willing to assume that it's a closure, and for closures where all the fields are equal,
+            // we consider the object reference identity to be inconsequential. Whereas for non-compiler-generated types, we can't make
+            // the assumption that the object reference identity doesn't matter, so the preceding tests about object reference identity
+            // are all we care about in that case.
             if (!type.CustomAttributes.Any(x => x.AttributeType == typeof(CompilerGeneratedAttribute)))
             {
-                return (objA, objB) => false;
+                return AlwaysFalseDelegate;
             }
 
             // build an array of lambdas that will get each public field value on the closure.
@@ -101,21 +103,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     // We might have recursive callbacks or delegates.
                     // For example EventCallbackFactoryBinderExtensions.CreateBinderCore<T> wraps a delegate in a delegate
                     // so this is not hypothetical.
-                    if (leftValue is EventCallback leftEventCallback && rightValue is EventCallback rightEventCallBack)
-                    {
-                        if (!EventCallBackEquals(ref leftEventCallback, ref rightEventCallBack))
-                        {
-                            return false;
-                        }
-                    }
-                    else if (leftValue is MulticastDelegate leftDelegate && rightValue is MulticastDelegate rightDelegate)
-                    {
-                        if (!DelegateEquals(leftDelegate, rightDelegate))
-                        {
-                            return false;
-                        }
-                    }
-                    else if (!Equals(leftValue, rightValue))
+                    if (!IsEquivalentForDiffing(leftValue, rightValue))
                     {
                         return false;
                     }

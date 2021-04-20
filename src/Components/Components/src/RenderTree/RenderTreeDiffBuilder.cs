@@ -718,40 +718,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             ref var oldFrame = ref oldTree[oldFrameIndex];
             ref var newFrame = ref newTree[newFrameIndex];
 
-            // Using Equals to account for string comparisons, nulls, etc.
-            var valueChanged = !Equals(oldFrame.AttributeValueField, newFrame.AttributeValueField);
-            if (valueChanged)
+            var isEquivalent = AttributeComparerForDiffing.IsEquivalentForDiffing(oldFrame.AttributeValueField, newFrame.AttributeValueField);
+
+            if (!isEquivalent)
             {
-                // Whenever the original EventCallback or MulticastDelegate is different from the
-                // new one we should check whether its target is a compiler generated class that is used to
-                // hold the captured variables. If this is the case and the captured variables remained the same
-                // we can optimize by only changing the event handler inside the renderer and keeping the event
-                // handler ID the same.
-                if (oldFrame.AttributeValueField is EventCallback oldCallBack &&
-                     newFrame.AttributeValueField is EventCallback newCallBack)
-                {
-                    var callBackEquals = EventHandlerDelegateWithClosuresComparer.EventCallBackEquals(ref oldCallBack, ref newCallBack);
-
-                    if (callBackEquals)
-                    {
-                        diffContext.Renderer.ReplaceEventCallBackForEventHandlerForId(oldFrame.AttributeEventHandlerIdField, ref newCallBack);
-                        newFrame.AttributeEventHandlerIdField = oldFrame.AttributeEventHandlerIdField;
-                        return;
-                    }
-                }
-                else if (oldFrame.AttributeValueField is MulticastDelegate oldDelegate &&
-                    newFrame.AttributeValueField is MulticastDelegate newDelegate)
-                {
-                    var delegateEquals = EventHandlerDelegateWithClosuresComparer.DelegateEquals(oldDelegate, newDelegate);
-
-                    if (delegateEquals)
-                    {
-                        diffContext.Renderer.ReplaceDelegateForEventHandlerForId(oldFrame.AttributeEventHandlerIdField, newDelegate);
-                        newFrame.AttributeEventHandlerIdField = oldFrame.AttributeEventHandlerIdField;
-                        return;
-                    }
-                }
-
                 InitializeNewAttributeFrame(ref diffContext, ref newFrame);
                 var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
                 diffContext.Edits.Append(RenderTreeEdit.SetAttribute(diffContext.SiblingIndex, referenceFrameIndex));
@@ -772,6 +742,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 newFrame = oldFrame;
             }
         }
+
 
         private static void InsertNewFrame(ref DiffContext diffContext, int newFrameIndex)
         {
