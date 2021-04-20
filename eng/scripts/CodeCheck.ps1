@@ -211,7 +211,7 @@ try {
                     $changedAPIBaselines.Add($file)
                 }
                 # Check for changes in Unshipped in servicing branches
-                if ($targetBranch -like 'release*' -and $file -like '*PublicAPI.Unshipped.txt') {
+                if ($targetBranch -like 'release*' -and -notlike '*preview*' -and $file -like '*PublicAPI.Unshipped.txt') {
                     $changedAPIBaselines.Add($file)
                 }
             }
