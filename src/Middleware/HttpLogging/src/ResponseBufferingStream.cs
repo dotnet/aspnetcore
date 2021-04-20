@@ -81,15 +81,18 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             OnFirstWrite();
 
-            if (span.Slice(0, innerCount).TryCopyTo(_tailMemory.Span))
-            {
-                _tailBytesBuffered += innerCount;
-                _bytesBuffered += innerCount;
-                _tailMemory = _tailMemory.Slice(innerCount);
-            }
-            else
-            {
-                BuffersExtensions.Write(this, span.Slice(0, innerCount));
+            if (innerCount > 0)
+            {    
+                if (span.Slice(0, innerCount).TryCopyTo(_tailMemory.Span))
+                {
+                    _tailBytesBuffered += innerCount;
+                    _bytesBuffered += innerCount;
+                    _tailMemory = _tailMemory.Slice(innerCount);
+                }
+                else
+                {
+                    BuffersExtensions.Write(this, span.Slice(0, innerCount));
+                }
             }
 
             _innerStream.Write(span);
@@ -107,16 +110,19 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             OnFirstWrite();
 
-            if (_tailMemory.Length - innerCount > 0)
+            if (innerCount > 0)
             {
-                buffer.Slice(0, innerCount).CopyTo(_tailMemory);
-                _tailBytesBuffered += innerCount;
-                _bytesBuffered += innerCount;
-                _tailMemory = _tailMemory.Slice(innerCount);
-            }
-            else
-            {
-                BuffersExtensions.Write(this, buffer.Span);
+                if (_tailMemory.Length - innerCount > 0)
+                {
+                    buffer.Slice(0, innerCount).CopyTo(_tailMemory);
+                    _tailBytesBuffered += innerCount;
+                    _bytesBuffered += innerCount;
+                    _tailMemory = _tailMemory.Slice(innerCount);
+                }
+                else
+                {
+                    BuffersExtensions.Write(this, buffer.Span);
+                }
             }
 
             await _innerStream.WriteAsync(buffer, cancellationToken);
