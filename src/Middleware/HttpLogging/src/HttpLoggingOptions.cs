@@ -25,7 +25,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// the header name will be logged with a redacted value.
         /// </p>
         /// </summary>
-        public ISet<string> RequestHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        public ISet<string> RequestHeaders => _internalRequestHeaders;
+
+        internal HashSet<string> _internalRequestHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.Accept,
             HeaderNames.AcceptEncoding,
@@ -45,7 +47,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// the header name will be logged with a redacted value.
         /// </p>
         /// </summary>
-        public ISet<string> ResponseHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        public ISet<string> ResponseHeaders => _internalResponseHeaders;
+
+        internal HashSet<string> _internalResponseHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.ContentLength,
             HeaderNames.ContentType,

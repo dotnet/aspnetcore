@@ -9,16 +9,16 @@ namespace Microsoft.AspNetCore.HttpLogging
     internal static class HttpLoggingExtensions
     {
         private static readonly Action<ILogger, string, Exception?> _requestBody =
-            LoggerMessage.Define<string>(LogLevel.Information, LoggerEventIds.RequestBody, "RequestBody: {Body}");
+            LoggerMessage.Define<string>(LogLevel.Information, new EventId(3, "RequestBody"), "RequestBody: {Body}");
 
         private static readonly Action<ILogger, string, Exception?> _responseBody =
-            LoggerMessage.Define<string>(LogLevel.Information, LoggerEventIds.ResponseBody, "ResponseBody: {Body}");
+            LoggerMessage.Define<string>(LogLevel.Information, new EventId(4, "ResponseBody"), "ResponseBody: {Body}");
 
         private static readonly Action<ILogger, Exception?> _decodeFailure =
-            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.DecodeFailure, "Decode failure while converting body.");
+            LoggerMessage.Define(LogLevel.Debug, new EventId(5, "DecodeFaulure"), "Decode failure while converting body.");
 
         private static readonly Action<ILogger, Exception?> _unrecognizedMediaType =
-            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.UnrecognizedMediaType, "Unrecognized Content-Type for body.");
+            LoggerMessage.Define(LogLevel.Debug, new EventId(6, "UnrecognizedMediaType"), "Unrecognized Content-Type for body.");
 
         public static void RequestBody(this ILogger logger, string body) => _requestBody(logger, body, null);
         public static void ResponseBody(this ILogger logger, string body) => _responseBody(logger, body, null);

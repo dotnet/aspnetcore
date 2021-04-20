@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
                 {
-                    FilterHeaders(list, request.Headers, options.RequestHeaders);
+                    FilterHeaders(list, request.Headers, options._internalRequestHeaders);
                 }
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 var httpRequestLog = new HttpRequestLog(list);
 
                 _logger.Log(LogLevel.Information,
-                     eventId: LoggerEventIds.RequestLog,
+                     eventId: new EventId(1, "RequestLog"),
                      state: httpRequestLog,
                      exception: null,
                      formatter: HttpRequestLog.Callback);
@@ -213,13 +213,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
             {
-                FilterHeaders(list, response.Headers, options.ResponseHeaders);
+                FilterHeaders(list, response.Headers, options._internalResponseHeaders);
             }
 
             var httpResponseLog = new HttpResponseLog(list);
 
             logger.Log(LogLevel.Information,
-                eventId: LoggerEventIds.ResponseLog,
+                eventId: new EventId(2, "ResponseLog"),
                 state: httpResponseLog,
                 exception: null,
                 formatter: HttpResponseLog.Callback);
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         internal static void FilterHeaders(List<KeyValuePair<string, string?>> keyValues,
             IHeaderDictionary headers,
-            ISet<string> allowedHeaders)
+            HashSet<string> allowedHeaders)
         {
             foreach (var (key, value) in headers)
             {

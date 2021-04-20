@@ -74,6 +74,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 var ros = new ReadOnlySequence<byte>(_head, 0, _tail, _tailBytesBuffered);
 
                 var bufferWriter = new ArrayBufferWriter<char>();
+                encoding.GetString(ros);
 
                 var decoder = encoding.GetDecoder();
                 // First calls convert on the entire ReadOnlySequence, with flush: false.

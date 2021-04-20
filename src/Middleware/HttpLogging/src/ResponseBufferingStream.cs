@@ -55,18 +55,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public Stream Stream => this;
 
-        public PipeWriter Writer
-        {
-            get
-            {
-                if (_pipeAdapter == null)
-                {
-                    _pipeAdapter = PipeWriter.Create(Stream, _pipeWriterOptions);
-                }
-
-                return _pipeAdapter;
-            }
-        }
+        public PipeWriter Writer => _pipeAdapter ??= PipeWriter.Create(Stream, _pipeWriterOptions)
 
         public Encoding? Encoding { get => _encoding; }
 
