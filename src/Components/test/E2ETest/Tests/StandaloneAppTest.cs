@@ -108,6 +108,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             }
         }
 
+        [Fact]
+        public void IsStarted()
+        {
+            // Read from property
+            var jsExecutor = (IJavaScriptExecutor)Browser;
+
+            var isStarted = jsExecutor.ExecuteScript("return window['__aspnetcore__testing__blazor_wasm__started__'];");
+            if (isStarted is null)
+            {
+                Assert.True(false, "Blazor wasm started value not set");
+            }
+
+            // Confirm server has started
+            Assert.True((bool)isStarted);
+        }
+
         private void WaitUntilLoaded()
         {
             var app = Browser.Exists(By.TagName("app"));
