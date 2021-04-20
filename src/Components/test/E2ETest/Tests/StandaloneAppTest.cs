@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var isStarted = jsExecutor.ExecuteScript("return window['__aspnetcore__testing__blazor_wasm__started__'];");
             if (isStarted is null)
             {
-                Assert.True(false, "Blazor wasm started value not set");
+                throw new InvalidOperationException("Blazor wasm started value not set");
             }
 
             // Confirm server has started
