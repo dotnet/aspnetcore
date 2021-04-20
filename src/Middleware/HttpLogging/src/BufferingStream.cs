@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
-    internal class BufferingStream : Stream, IBufferWriter<byte>
+    internal abstract class BufferingStream : Stream, IBufferWriter<byte>
     {
         private const int MinimumBufferSize = 4096; // 4K
         protected int _bytesBuffered;

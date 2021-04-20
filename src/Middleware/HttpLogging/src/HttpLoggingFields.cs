@@ -78,12 +78,12 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// Flag for logging the HTTP Request <see cref="HttpRequest.Headers"/>.
         /// Request Headers are logged as soon as the middleware is invoked.
-        /// Headers are redacted by default with the character 'X' unless specified in
+        /// Headers are redacted by default with the character '[Redacted]' unless specified in
         /// the <see cref="HttpLoggingOptions.RequestHeaders"/>.
         /// <p>
         /// For example:
         /// Connection: keep-alive
-        /// My-Custom-Request-Header: X
+        /// My-Custom-Request-Header: [Redacted]
         /// </p>
         /// </summary>
         RequestHeaders = 0x40,
@@ -93,12 +93,12 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// Response Headers are logged when the <see cref="HttpResponse.Body"/> is written to
         /// or when <see cref="IHttpResponseBodyFeature.StartAsync(System.Threading.CancellationToken)"/>
         /// is called.
-        /// Headers are redacted by default with the character 'X' unless specified in
+        /// Headers are redacted by default with the character '[Redacted]' unless specified in
         /// the <see cref="HttpLoggingOptions.ResponseHeaders"/>.
         /// <p>
         /// For example:
         /// Content-Length: 16
-        /// My-Custom-Response-Header: X
+        /// My-Custom-Response-Header: [Redacted]
         /// </p>
         /// </summary>
         ResponseHeaders = 0x80,

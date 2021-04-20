@@ -34,10 +34,9 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseHeaders.get -> Syste
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddBinary(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! mediaType) -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddBinary(string! contentType) -> void
-Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddText(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! mediaType) -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddText(string! contentType) -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddText(string! contentType, System.Text.Encoding! encoding) -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.Clear() -> void
 Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions
 static Microsoft.AspNetCore.Builder.HttpLoggingBuilderExtensions.UseHttpLogging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions.ConfigureHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

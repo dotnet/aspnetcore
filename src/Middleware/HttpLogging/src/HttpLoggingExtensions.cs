@@ -20,6 +20,19 @@ namespace Microsoft.AspNetCore.HttpLogging
         private static readonly Action<ILogger, Exception?> _unrecognizedMediaType =
             LoggerMessage.Define(LogLevel.Debug, new EventId(6, "UnrecognizedMediaType"), "Unrecognized Content-Type for body.");
 
+
+        public static void RequestLog(this ILogger logger, HttpRequestLog requestLog) => logger.Log(
+            LogLevel.Information,
+            new EventId(1, "RequestLogLog"),
+            requestLog,
+            exception: null,
+            formatter: HttpRequestLog.Callback);
+        public static void ResponseLog(this ILogger logger, HttpResponseLog responseLog) => logger.Log(
+            LogLevel.Information,
+            new EventId(2, "ResponseLog"),
+            responseLog,
+            exception: null,
+            formatter: HttpResponseLog.Callback);
         public static void RequestBody(this ILogger logger, string body) => _requestBody(logger, body, null);
         public static void ResponseBody(this ILogger logger, string body) => _responseBody(logger, body, null);
         public static void DecodeFailure(this ILogger logger, Exception ex) => _decodeFailure(logger, ex);

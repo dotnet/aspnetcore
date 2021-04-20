@@ -12,7 +12,7 @@ namespace HttpLogging.Sample
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.ConfigureHttpLogging(logging =>
+            services.AddHttpLogging(logging =>
             {
                 logging.LoggingFields = HttpLoggingFields.All;
             });

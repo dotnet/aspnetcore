@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             var res = await _innerStream.ReadAsync(destination, cancellationToken);
 
-            WriteToBuffer(destination.Slice(0, res).Span, res);
+            WriteToBuffer(destination.Slice(0, res).Span);
 
             return res;
         }
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             var res = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
 
-            WriteToBuffer(buffer.AsSpan(offset, res), res);
+            WriteToBuffer(buffer.AsSpan(offset, res));
 
             return res;
         }
@@ -52,12 +52,12 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             var res = _innerStream.Read(buffer, offset, count);
 
-            WriteToBuffer(buffer.AsSpan(offset, res), res);
+            WriteToBuffer(buffer.AsSpan(offset, res));
 
             return res;
         }
 
-        private void WriteToBuffer(ReadOnlySpan<byte> span, int res)
+        private void WriteToBuffer(ReadOnlySpan<byte> span)
         {
             // get what was read into the buffer
             var remaining = _limit - _bytesBuffered;
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 return;
             }
 
-            if (res == 0 && !HasLogged)
+            if (span.Length == 0 && !HasLogged)
             {
                 // Done reading, log the string.
                 LogRequestBody();

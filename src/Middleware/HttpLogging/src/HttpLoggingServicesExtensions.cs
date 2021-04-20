@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
         /// <param name="configureOptions">A delegate to configure the <see cref="HttpLoggingOptions"/>.</param>
         /// <returns></returns>
-        public static IServiceCollection ConfigureHttpLogging(this IServiceCollection services, Action<HttpLoggingOptions> configureOptions)
+        public static IServiceCollection AddHttpLogging(this IServiceCollection services, Action<HttpLoggingOptions> configureOptions)
         {
             if (services == null)
             {

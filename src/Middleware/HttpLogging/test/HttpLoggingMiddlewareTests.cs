@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             httpContext.Request.Headers["foo"] = "bar";
 
             await middleware.Invoke(httpContext);
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("foo: X"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("foo: [Redacted]"));
             Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("foo: bar"));
         }
 
@@ -313,8 +313,8 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             await middleware.Invoke(httpContext);
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("foo: bar"));
-            Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("foo: X"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: X"));
+            Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("foo: [Redacted]"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: [Redacted]"));
             Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
         }
 
@@ -686,7 +686,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             var httpContext = new DefaultHttpContext();
 
             await middleware.Invoke(httpContext);
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Test: X"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Test: [Redacted]"));
         }
 
         [Fact]
@@ -711,7 +711,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             await middleware.Invoke(httpContext);
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Test: Kestrel"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Server: X"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Server: [Redacted]"));
         }
 
         [Theory]

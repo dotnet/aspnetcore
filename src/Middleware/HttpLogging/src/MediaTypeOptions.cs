@@ -33,11 +33,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             return options;
         }
 
-        /// <summary>
-        /// Adds a <see cref="MediaTypeHeaderValue"/> to be used for logging as text.
-        /// </summary>
-        /// <param name="mediaType">The MediaType to add.</param>
-        public void AddText(MediaTypeHeaderValue mediaType)
+        internal void AddText(MediaTypeHeaderValue mediaType)
         {
             if (mediaType == null)
             {

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private readonly IOptionsMonitor<HttpLoggingOptions> _options;
         private const int DefaultRequestFieldsMinusHeaders = 7;
         private const int DefaultResponseFieldsMinusHeaders = 2;
-        private const string Redacted = "X";
+        private const string Redacted = "[Redacted]";
 
         /// <summary>
         /// Initializes <see cref="HttpLoggingMiddleware" />.
@@ -61,6 +61,12 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <returns></returns>HttpResponseLog.cs
         public async Task Invoke(HttpContext context)
         {
+            if (!_logger.IsEnabled(LogLevel.Information))
+            {
+                // Logger isn't enabled.
+                await _next(context);
+                return;
+            }
             var options = _options.CurrentValue;
             RequestBufferingStream? requestBufferingStream = null;
             Stream? originalBody = null;
@@ -124,11 +130,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 var httpRequestLog = new HttpRequestLog(list);
 
-                _logger.Log(LogLevel.Information,
-                     eventId: new EventId(1, "RequestLog"),
-                     state: httpRequestLog,
-                     exception: null,
-                     formatter: HttpRequestLog.Callback);
+                _logger.RequestLog(httpRequestLog);
             }
 
             ResponseBufferingStream? responseBufferingStream = null;
@@ -218,11 +220,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             var httpResponseLog = new HttpResponseLog(list);
 
-            logger.Log(LogLevel.Information,
-                eventId: new EventId(2, "ResponseLog"),
-                state: httpResponseLog,
-                exception: null,
-                formatter: HttpResponseLog.Callback);
+            logger.ResponseLog(httpResponseLog);
         }
 
         internal static void FilterHeaders(List<KeyValuePair<string, string?>> keyValues,
