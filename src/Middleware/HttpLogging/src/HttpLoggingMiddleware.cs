@@ -59,14 +59,19 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>HttpResponseLog.cs
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (!_logger.IsEnabled(LogLevel.Information))
             {
                 // Logger isn't enabled.
-                await _next(context);
-                return;
+                return _next(context);
             }
+
+            return InvokeInternal(context);
+        }
+
+        private async Task InvokeInternal(HttpContext context)
+        {
             var options = _options.CurrentValue;
             RequestBufferingStream? requestBufferingStream = null;
             Stream? originalBody = null;
