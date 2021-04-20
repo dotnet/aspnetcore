@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     {
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
-        private IOptionsMonitor<HttpLoggingOptions> _options;
+        private readonly IOptionsMonitor<HttpLoggingOptions> _options;
         private const int DefaultRequestFieldsMinusHeaders = 7;
         private const int DefaultResponseFieldsMinusHeaders = 2;
         private const string Redacted = "X";
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             if ((HttpLoggingFields.Request & options.LoggingFields) != HttpLoggingFields.None)
             {
                 var request = context.Request;
-                var list = new List<KeyValuePair<string, object?>>(
+                var list = new List<KeyValuePair<string, string?>>(
                     request.Headers.Count + DefaultRequestFieldsMinusHeaders);
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
@@ -140,6 +141,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody))
                 {
                     originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
+
                     // TODO pool these.
                     responseBufferingStream = new ResponseBufferingStream(originalBodyFeature,
                         options.ResponseBodyLogLimit,
@@ -193,19 +195,20 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
-        private static void AddToList(List<KeyValuePair<string, object?>> list, string key, string? value)
+        private static void AddToList(List<KeyValuePair<string, string?>> list, string key, string? value)
         {
-            list.Add(new KeyValuePair<string, object?>(key, value));
+            list.Add(new KeyValuePair<string, string?>(key, value));
         }
 
         public static void LogResponseHeaders(HttpResponse response, HttpLoggingOptions options, ILogger logger)
         {
-            var list = new List<KeyValuePair<string, object?>>(
+            var list = new List<KeyValuePair<string, string?>>(
                 response.Headers.Count + DefaultResponseFieldsMinusHeaders);
 
             if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
             {
-                list.Add(new KeyValuePair<string, object?>(nameof(response.StatusCode), response.StatusCode));
+                list.Add(new KeyValuePair<string, string?>(nameof(response.StatusCode),
+                    response.StatusCode.ToString(CultureInfo.InvariantCulture)));
             }
 
             if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
@@ -222,7 +225,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 formatter: HttpResponseLog.Callback);
         }
 
-        internal static void FilterHeaders(List<KeyValuePair<string, object?>> keyValues,
+        internal static void FilterHeaders(List<KeyValuePair<string, string?>> keyValues,
             IHeaderDictionary headers,
             ISet<string> allowedHeaders)
         {
@@ -231,10 +234,10 @@ namespace Microsoft.AspNetCore.HttpLogging
                 if (!allowedHeaders.Contains(key))
                 {
                     // Key is not among the "only listed" headers.
-                    keyValues.Add(new KeyValuePair<string, object?>(key, Redacted));
+                    keyValues.Add(new KeyValuePair<string, string?>(key, Redacted));
                     continue;
                 }
-                keyValues.Add(new KeyValuePair<string, object?>(key, value.ToString()));
+                keyValues.Add(new KeyValuePair<string, string?>(key, value.ToString()));
             }
         }
     }

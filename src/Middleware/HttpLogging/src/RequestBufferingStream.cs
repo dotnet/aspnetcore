@@ -89,12 +89,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             if (_limit - _bytesBuffered == 0 && !HasLogged)
             {
-                var requestBody = GetString(_encoding);
-                if (requestBody != null)
-                {
-                    _logger.RequestBody(requestBody);
-                }
-                HasLogged = true;
+                LogRequestBody();
             }
         }
 

@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Builder
     public static class HttpLoggingBuilderExtensions
     {
         /// <summary>
-        /// Adds middleware for HTTP Logging.
+        /// Adds a middleware that can log HTTP requests and responses.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
-        /// <returns>The <see cref="IApplicationBuilder"/> for HttpLogging.</returns>
+        /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         public static IApplicationBuilder UseHttpLogging(this IApplicationBuilder app)
         {
             if (app == null)

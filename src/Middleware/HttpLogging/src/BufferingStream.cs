@@ -87,7 +87,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                 // Convert with a empty ReadOnlySequence and flush: true until we get completed: true.
 
                 // This should never infinite due to the contract for decoders.
-                while (true)
+                // But for safety, call this only 10 times, throwing a decode failure if it fails.
+                for (var i = 0; i < 10; i++)
                 {
                     if (completed)
                     {
@@ -98,6 +99,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                         EncodingExtensions.Convert(decoder, ReadOnlySequence<byte>.Empty, bufferWriter, flush: true, out charUsed, out completed);
                     }
                 }
+
+                throw new DecoderFallbackException("Failed to decode after 10 calls to Decoder.Convert");
             }
             catch (DecoderFallbackException ex)
             {
@@ -136,10 +139,10 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private void AllocateMemory(int sizeHint)
         {
-            if (_head == null)
+            if (_head is null)
             {
                 // We need to allocate memory to write since nobody has written before
-                BufferSegment newSegment = AllocateSegment(sizeHint);
+                var newSegment = AllocateSegment(sizeHint);
 
                 // Set all the pointers
                 _head = _tail = newSegment;
@@ -147,7 +150,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
             else
             {
-                int bytesLeftInBuffer = _tailMemory.Length;
+                var bytesLeftInBuffer = _tailMemory.Length;
 
                 if (bytesLeftInBuffer == 0 || bytesLeftInBuffer < sizeHint)
                 {
@@ -160,7 +163,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                         _tailBytesBuffered = 0;
                     }
 
-                    BufferSegment newSegment = AllocateSegment(sizeHint);
+                    var newSegment = AllocateSegment(sizeHint);
 
                     _tail.SetNext(newSegment);
                     _tail = newSegment;
@@ -170,7 +173,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         private BufferSegment AllocateSegment(int sizeHint)
         {
-            BufferSegment newSegment = CreateSegment();
+            var newSegment = CreateSegment();
 
             // We can't use the recommended pool so use the ArrayPool
             newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(GetSegmentSize(sizeHint)));

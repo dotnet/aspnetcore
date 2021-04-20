@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.HttpLogging
 {
     /// <summary>
-    /// Options for the <see cref="HttpLoggingMiddleware"/>
+    /// Options for the <see cref="HttpLoggingMiddleware"/>.
     /// </summary>
     public sealed class HttpLoggingOptions
     {
@@ -20,11 +20,11 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Request header values that are allowed to be logged.
-        /// </summary>
-        /// <remarks>
+        /// <p>
         /// If a request header is not present in the <see cref="RequestHeaders"/>,
         /// the header name will be logged with a redacted value.
-        /// </remarks>
+        /// </p>
+        /// </summary>
         public ISet<string> RequestHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.Accept,
@@ -40,11 +40,11 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Response header values that are allowed to be logged.
-        /// </summary>
-        /// <remarks>
+        /// <p>
         /// If a response header is not present in the <see cref="ResponseHeaders"/>,
         /// the header name will be logged with a redacted value.
-        /// </remarks>
+        /// </p>
+        /// </summary>
         public ISet<string> ResponseHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.ContentLength,
@@ -54,10 +54,11 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Options for configuring encodings for a specific media type.
+        /// <p>
+        /// If the request or response do not match the supported media type,
+        /// the response body will not be logged.
+        /// </p>
         /// </summary>
-        /// <remarks>
-        /// If the request or response do not match the supported media type, the response body will not be logged.
-        /// </remarks>
         public MediaTypeOptions MediaTypeOptions { get; } = MediaTypeOptions.BuildDefaultMediaTypeOptions();
 
         /// <summary>

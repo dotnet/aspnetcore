@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -16,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.HttpLogging.Tests
+namespace Microsoft.AspNetCore.HttpLogging
 {
     public class HttpLoggingMiddlewareTests : LoggedTest
     {

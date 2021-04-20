@@ -1,8 +1,9 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpLogging
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.HttpLogging
     /// </summary>
     public sealed class MediaTypeOptions
     {
-        private List<MediaTypeState> _mediaTypeStates = new List<MediaTypeState>();
+        private readonly List<MediaTypeState> _mediaTypeStates = new();
 
         internal MediaTypeOptions()
         {
@@ -113,16 +114,18 @@ namespace Microsoft.AspNetCore.HttpLogging
             _mediaTypeStates.Clear();
         }
 
-        internal class MediaTypeState
+        internal readonly struct MediaTypeState
         {
             public MediaTypeState(MediaTypeHeaderValue mediaTypeHeaderValue)
             {
                 MediaTypeHeaderValue = mediaTypeHeaderValue;
+                Encoding = null;
+                IsBinary = false;
             }
 
             public MediaTypeHeaderValue MediaTypeHeaderValue { get; }
-            public Encoding? Encoding { get; set; }
-            public bool IsBinary { get; set; }
+            public Encoding? Encoding { get; init; }
+            public bool IsBinary { get; init; }
         }
     }
 }
