@@ -672,6 +672,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             var maxRequestSize = 1000;
             var blockSize = 40;
+            var random = new Random();
             async Task RunRequests()
             {
                 using (var connection = _fixture.CreateTestConnection())
@@ -684,7 +685,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                         "",
                         "");
 
-                    var disconnectAfter = Random.Shared.Next(maxRequestSize);
+                    var disconnectAfter = random.Next(maxRequestSize);
                     var data = new byte[blockSize];
                     for (int i = 0; i < disconnectAfter / blockSize; i++)
                     {

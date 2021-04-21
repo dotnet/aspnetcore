@@ -55,6 +55,7 @@ export class HubConnection {
     private _connectionStarted: boolean;
     private _startPromise?: Promise<void>;
     private _stopPromise?: Promise<void>;
+    private _nextKeepAlive: number = 0;
 
     // The type of these a) doesn't matter and b) varies when building in browser and node contexts
     // Since we're building the WebPack bundle directly from the TypeScript, this matters (previously
@@ -74,6 +75,8 @@ export class HubConnection {
      *
      * The default value is 15,000 milliseconds (15 seconds).
      * Allows the server to detect hard disconnects (like when a client unplugs their computer).
+     * The ping will happen at most as often as the server pings.
+     * If the server pings every 5 seconds, a value lower than 5 will ping every 5 seconds.
      */
     public keepAliveIntervalInMilliseconds: number;
 
@@ -604,24 +607,39 @@ export class HubConnection {
             return;
         }
 
+        // Set the time we want the next keep alive to be sent
+        // Timer will be setup on next message receive
+        this._nextKeepAlive = new Date().getTime() + this.keepAliveIntervalInMilliseconds;
+
         this._cleanupPingTimer();
-        this._pingServerHandle = setTimeout(async () => {
-            if (this._connectionState === HubConnectionState.Connected) {
-                try {
-                    await this._sendMessage(this._cachedPingMessage);
-                } catch {
-                    // We don't care about the error. It should be seen elsewhere in the client.
-                    // The connection is probably in a bad or closed state now, cleanup the timer so it stops triggering
-                    this._cleanupPingTimer();
-                }
-            }
-        }, this.keepAliveIntervalInMilliseconds);
     }
 
     private _resetTimeoutPeriod() {
         if (!this.connection.features || !this.connection.features.inherentKeepAlive) {
             // Set the timeout timer
             this._timeoutHandle = setTimeout(() => this.serverTimeout(), this.serverTimeoutInMilliseconds);
+
+            // Set keepAlive timer if there isn't one
+            if (this._pingServerHandle === undefined)
+            {
+                let nextPing = this._nextKeepAlive - new Date().getTime();
+                if (nextPing < 0) {
+                    nextPing = 0;
+                }
+
+                // The timer needs to be set from a networking callback to avoid Chrome timer throttling from causing timers to run once a minute
+                this._pingServerHandle = setTimeout(async () => {
+                    if (this._connectionState === HubConnectionState.Connected) {
+                        try {
+                            await this._sendMessage(this._cachedPingMessage);
+                        } catch {
+                            // We don't care about the error. It should be seen elsewhere in the client.
+                            // The connection is probably in a bad or closed state now, cleanup the timer so it stops triggering
+                            this._cleanupPingTimer();
+                        }
+                    }
+                }, nextPing);
+            }
         }
     }
 
@@ -813,6 +831,7 @@ export class HubConnection {
     private _cleanupPingTimer(): void {
         if (this._pingServerHandle) {
             clearTimeout(this._pingServerHandle);
+            this._pingServerHandle = undefined;
         }
     }
 

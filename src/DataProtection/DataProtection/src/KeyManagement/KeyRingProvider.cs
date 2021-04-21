@@ -259,12 +259,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // hit a single repository simultaneously. For instance, if the refresh period is 1 hour,
             // we'll return a value in the vicinity of 48 - 60 minutes. We use the Random class since
             // we don't need a secure PRNG for this.
-#if NET6_0_OR_GREATER
-            var random = Random.Shared;
-#else
-            var random = new Random();
-#endif
-            return TimeSpan.FromTicks((long)(refreshPeriod.Ticks * (1.0d - (random.NextDouble() / 5))));
+            return TimeSpan.FromTicks((long)(refreshPeriod.Ticks * (1.0d - (new Random().NextDouble() / 5))));
         }
 
         private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b)

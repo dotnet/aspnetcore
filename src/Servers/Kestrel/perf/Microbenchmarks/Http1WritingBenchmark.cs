@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _memoryPool = SlabMemoryPoolFactory.Create();
+            _memoryPool = PinnedBlockMemoryPoolFactory.Create();
             _http1Connection = MakeHttp1Connection();
             _consumeResponseBodyTask = ConsumeResponseBody();
         }

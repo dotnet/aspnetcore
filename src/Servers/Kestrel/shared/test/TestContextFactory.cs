@@ -9,7 +9,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -87,7 +86,7 @@ namespace Microsoft.AspNetCore.Testing
                 connectionContext ?? new TestMultiplexedConnectionContext(),
                 serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures ?? new FeatureCollection(),
-                memoryPool ?? SlabMemoryPoolFactory.Create(),
+                memoryPool ?? PinnedBlockMemoryPoolFactory.Create(),
                 localEndPoint,
                 remoteEndPoint);
             http3ConnectionContext.TimeoutControl = timeoutControl;

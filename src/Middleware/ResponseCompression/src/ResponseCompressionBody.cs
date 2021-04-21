@@ -174,51 +174,10 @@ namespace Microsoft.AspNetCore.ResponseCompression
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-        {
-            var tcs = new TaskCompletionSource(state: state, TaskCreationOptions.RunContinuationsAsynchronously);
-            InternalWriteAsync(buffer, offset, count, callback, tcs);
-            return tcs.Task;
-        }
-
-        private async void InternalWriteAsync(byte[] buffer, int offset, int count, AsyncCallback? callback, TaskCompletionSource tcs)
-        {
-            try
-            {
-                await WriteAsync(buffer, offset, count);
-                tcs.TrySetResult();
-            }
-            catch (Exception ex)
-            {
-                tcs.TrySetException(ex);
-            }
-
-            if (callback != null)
-            {
-                // Offload callbacks to avoid stack dives on sync completions.
-                var ignored = Task.Run(() =>
-                {
-                    try
-                    {
-                        callback(tcs.Task);
-                    }
-                    catch (Exception)
-                    {
-                        // Suppress exceptions on background threads.
-                    }
-                });
-            }
-        }
+            => TaskToApm.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
 
         public override void EndWrite(IAsyncResult asyncResult)
-        {
-            if (asyncResult == null)
-            {
-                throw new ArgumentNullException(nameof(asyncResult));
-            }
-
-            var task = (Task)asyncResult;
-            task.GetAwaiter().GetResult();
-        }
+            => TaskToApm.End(asyncResult);
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {

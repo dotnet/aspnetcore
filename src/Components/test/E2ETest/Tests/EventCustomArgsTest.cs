@@ -162,6 +162,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.True(() => GetLogLines().Contains("Received custom mouseover event"));
         }
 
+        [Fact]
+        public void CanRegisterCustomEventAndSupplyIJSObjectReference()
+        {
+            Browser.Exists(By.Id("register-sendjsobject")).Click();
+            Browser.FindElement(By.Id("trigger-sendjsobject-event-directly")).Click();
+            Browser.Equal("Event with IJSObjectReference received: Hello!", () => GetLogLines().Single());
+        }
+
         void SendKeysSequentially(IWebElement target, string text)
         {
             foreach (var c in text)

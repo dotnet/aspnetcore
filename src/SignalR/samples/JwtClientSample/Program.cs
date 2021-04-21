@@ -24,6 +24,7 @@ namespace JwtClientSample
         private const string ServerUrl = "http://localhost:54543";
 
         private readonly ConcurrentDictionary<string, Task<string>> _tokens = new ConcurrentDictionary<string, Task<string>>(StringComparer.Ordinal);
+        private readonly Random _random = new Random();
 
         private async Task RunConnection(HttpTransportType transportType)
         {
@@ -71,7 +72,7 @@ namespace JwtClientSample
                     if (ticks % nextMsgAt == 0)
                     {
                         await hubConnection.SendAsync("Broadcast", userId, $"Hello at {DateTime.Now}");
-                        nextMsgAt = Random.Shared.Next(2, 5);
+                        nextMsgAt = _random.Next(2, 5);
                     }
                 }
             }

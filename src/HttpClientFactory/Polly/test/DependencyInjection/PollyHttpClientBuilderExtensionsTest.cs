@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Logging;
 using Polly;
+using Polly.Registry;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -466,6 +467,60 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        }
+
+        [Fact]
+        public void AddPolicyHandlerFromRegistry_WithoutConfigureDelegate_AddsPolicyRegistries()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            // Act
+            serviceCollection.AddPolicyRegistry();
+
+            var services = serviceCollection.BuildServiceProvider();
+            var registry = services.GetService<IPolicyRegistry<string>>();
+
+            // Assert
+            Assert.NotNull(registry);
+            Assert.Same(registry, services.GetService<IConcurrentPolicyRegistry<string>>());
+            Assert.Same(registry, services.GetService<IReadOnlyPolicyRegistry<string>>());
+        }
+
+        [Fact]
+        public void AddPolicyHandlerFromRegistry_WithRegistry_AddsPolicyRegistries()
+        {
+            var serviceCollection = new ServiceCollection();
+            var registry = new PolicyRegistry();
+
+            // Act
+            serviceCollection.AddPolicyRegistry(registry);
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Assert
+            Assert.Same(registry, services.GetService<IConcurrentPolicyRegistry<string>>());
+            Assert.Same(registry, services.GetService<IPolicyRegistry<string>>());
+            Assert.Same(registry, services.GetService<IReadOnlyPolicyRegistry<string>>());
+        }
+
+        [Fact]
+        public void AddPolicyHandlerFromRegistry_WithConfigureDelegate_AddsPolicyRegistries()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            // Act
+            serviceCollection.AddPolicyRegistry((serviceProvider, registry) =>
+            {
+                // No-op
+            });
+
+            var services = serviceCollection.BuildServiceProvider();
+            var registry = services.GetService<IPolicyRegistry<string>>();
+
+            // Assert
+            Assert.NotNull(registry);
+            Assert.Same(registry, services.GetService<IConcurrentPolicyRegistry<string>>());
+            Assert.Same(registry, services.GetService<IReadOnlyPolicyRegistry<string>>());
         }
 
         // Throws an exception or fails on even numbered requests, otherwise succeeds.

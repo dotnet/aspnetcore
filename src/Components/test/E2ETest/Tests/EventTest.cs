@@ -51,6 +51,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void FocusEvents_CanReceiveBlurCausedByElementRemoval()
+        {
+            // Represents https://github.com/dotnet/aspnetcore/issues/26838
+
+            Browser.MountTestComponent<FocusEventComponent>();
+
+            Browser.FindElement(By.Id("button-that-disappears")).Click();
+            Browser.Equal("True", () => Browser.FindElement(By.Id("button-received-focus-out")).Text);
+        }
+
+        [Fact]
         public void MouseOverAndMouseOut_CanTrigger()
         {
             Browser.MountTestComponent<MouseEventComponent>();

@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public override bool TryRead(out ReadResult readResult)
         {
-            TryStart();
+            TryStartAsync();
 
             var hasResult = _context.RequestBodyPipe.Reader.TryRead(out readResult);
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            TryStart();
+            await TryStartAsync();
 
             try
             {

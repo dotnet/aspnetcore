@@ -21,6 +21,7 @@ declare interface BINDING {
   mono_array_to_js_array<TInput, TOutput>(array: System_Array<TInput>) : Array<TOutput>;
   conv_string(dotnetString: System_String | null): string | null;
   bind_static_method(fqn: string, signature?: string): Function;
+  call_assembly_entry_point(assemblyName: string, args: any[], signature: any): Promise<any>;
   unbox_mono_obj(object: System_Object): any;
 }
 

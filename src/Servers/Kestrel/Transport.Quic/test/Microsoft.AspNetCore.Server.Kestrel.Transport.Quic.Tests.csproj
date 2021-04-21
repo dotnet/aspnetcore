@@ -14,7 +14,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <Reference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 

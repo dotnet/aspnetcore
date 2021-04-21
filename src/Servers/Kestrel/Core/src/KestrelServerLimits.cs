@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Defaults to 8,192 bytes (8 KB).
         /// </summary>
         /// <remarks>
-        /// For HTTP/2 this measures the total size of the required pseudo headers
+        /// For HTTP/2 and HTTP/3 this measures the total size of the required pseudo headers
         /// :method, :scheme, :authority, and :path.
         /// </remarks>
         public int MaxRequestLineSize

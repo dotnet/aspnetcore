@@ -404,7 +404,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             WebEventData webEventData;
             try
             {
-                webEventData = WebEventData.Parse(Renderer, eventDescriptorJson, eventArgsJson);
+                var jsonSerializerOptions = JSRuntime.ReadJsonSerializerOptions();
+                webEventData = WebEventData.Parse(Renderer, jsonSerializerOptions, eventDescriptorJson, eventArgsJson);
             }
             catch (Exception ex)
             {

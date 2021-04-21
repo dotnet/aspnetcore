@@ -21,6 +21,16 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
+   
+  <!--  We include this here to ensure that the shared framework is built before we leverage it when running
+  the dev server. -->
+  <ItemGroup>
+    <ProjectReference
+      Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+      PrivateAssets="All"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
 
   <Target Name="_CreateRuntimeConfig" BeforeTargets="CoreBuild">
     <PropertyGroup>
@@ -28,7 +38,7 @@
         SharedFxVersion=$(SharedFxVersion);
       </_RuntimeConfigProperties>
 
-      <_RuntimeConfigPath>$(IntermediateOutputPath)blazor-devserver.runtimeconfig.json</_RuntimeConfigPath>
+      <_RuntimeConfigPath>$(OutputPath)blazor-devserver.runtimeconfig.json</_RuntimeConfigPath>
     </PropertyGroup>
 
     <GenerateFileFromTemplate
@@ -46,7 +56,7 @@
 
   <ItemGroup>
     <NuspecProperty Include="publishDir=$(PublishDir)" />
-    <NuspecProperty Include="objDir=$(IntermediateOutputPath)" />
+    <NuspecProperty Include="binDir=$(OutputPath)" />
     <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
   </ItemGroup>
 

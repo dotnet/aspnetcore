@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
@@ -110,12 +111,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 
             var task = AwaitAndBlock();
 
-            await Task.Run(() => tcs.Complete(true)).OrTimeout();
+            await Task.Run(() => tcs.Complete(true)).DefaultTimeout();
 
             Assert.False(task.IsCompleted);
 
             mre.Set();
-            await task.OrTimeout();
+            await task.DefaultTimeout();
         }
     }
 }

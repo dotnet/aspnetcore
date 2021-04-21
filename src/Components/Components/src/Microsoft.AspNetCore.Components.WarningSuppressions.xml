@@ -17,12 +17,6 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.LegacyRouteMatching.LegacyRouteTableFactory.&lt;&gt;c.&lt;Create&gt;b__2_1(System.Reflection.Assembly)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2026</argument>
-      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.RouteTableFactory.GetRouteableComponents(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
@@ -48,12 +42,6 @@
       <argument>IL2072</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.DynamicComponent.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2072</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.LegacyRouteMatching.LegacyRouteEntry.Match(Microsoft.AspNetCore.Components.Routing.RouteContext)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>

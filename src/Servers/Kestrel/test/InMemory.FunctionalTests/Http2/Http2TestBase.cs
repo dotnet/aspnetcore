@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected static readonly byte[] _noData = new byte[0];
         protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2PeerSettings.MinAllowedMaxFrameSize));
 
-        private readonly MemoryPool<byte> _memoryPool = SlabMemoryPoolFactory.Create();
+        private readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
 
         internal readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
         internal readonly HPackDecoder _hpackDecoder;

@@ -32,7 +32,7 @@ RazorDocument - [0..21)::21 - [@{<span foo='@ @' />}]
                                                                 Transition;[@];
                                                             CSharpImplicitExpressionBody - [14..14)::0
                                                                 CSharpCodeBlock - [14..14)::0
-                                                                    CSharpExpressionLiteral - [14..14)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                                    CSharpExpressionLiteral - [14..14)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K15
                                                                         Marker;[];
                                             MarkupDynamicAttributeValue - [14..16)::2 - [ @]
                                                 MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -44,7 +44,7 @@ RazorDocument - [0..21)::21 - [@{<span foo='@ @' />}]
                                                                 Transition;[@];
                                                             CSharpImplicitExpressionBody - [16..16)::0
                                                                 CSharpCodeBlock - [16..16)::0
-                                                                    CSharpExpressionLiteral - [16..16)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                                    CSharpExpressionLiteral - [16..16)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K15
                                                                         Marker;[];
                                         MarkupTextLiteral - [16..17)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];

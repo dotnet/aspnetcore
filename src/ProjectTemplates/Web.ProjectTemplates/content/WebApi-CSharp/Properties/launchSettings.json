@@ -1,5 +1,5 @@
 ﻿{
-  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "$schema": "https://json.schemastore.org/launchsettings.json",
   "iisSettings": {
     //#if (WindowsAuth)
     "windowsAuthentication": true,
@@ -20,7 +20,7 @@
   "profiles": {
     "Company.WebApplication1": {
       "commandName": "Project",
-      "dotnetRunMessages": "true",
+      "dotnetRunMessages": true,
       "launchBrowser": true,
       "hotReloadProfile": "aspnetcore",
       //#if(EnableOpenAPI)

@@ -305,8 +305,9 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = CreateManager();
             manager.Options.User.RequireUniqueEmail = true;
             manager.UserValidators.Add(new UserValidator<TUser>());
-            var email = "foo" + Random.Shared.Next() + "@example.com";
-            var newEmail = "bar" + Random.Shared.Next() + "@example.com";
+            var random = new Random();
+            var email = "foo" + random.Next() + "@example.com";
+            var newEmail = "bar" + random.Next() + "@example.com";
             var user = CreateTestUser(email: email);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, newEmail));

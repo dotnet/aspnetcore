@@ -1,0 +1,44 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (1:0,1 [38] x:\dir\subdir\Test\TestComponent.cshtml) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase -  - TItem1, TItem2
+            DesignTimeDirective - 
+                DirectiveToken - (52:1,11 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem1
+                DirectiveToken - (59:1,18 [20] x:\dir\subdir\Test\TestComponent.cshtml) - where TItem1 : class
+                DirectiveToken - (92:2,11 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem2
+                DirectiveToken - (99:2,18 [21] x:\dir\subdir\Test\TestComponent.cshtml) - where TItem2 : struct
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                HtmlContent - (39:0,39 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (39:0,39 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (122:3,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (122:3,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                MarkupElement - (124:4,0 [14] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                    HtmlContent - (128:4,4 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (128:4,4 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Item1
+                HtmlContent - (138:4,14 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (138:4,14 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                CSharpCode - (141:5,1 [38] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (141:5,1 [38] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - foreach (var item2 in Items2)\n{\n    
+                MarkupElement - (179:7,4 [40] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                    HtmlContent - (182:7,7 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (182:7,7 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
+                    CSharpExpression - (189:8,5 [19] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (189:8,5 [19] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ChildContent(item2)
+                    HtmlContent - (208:8,24 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (208:8,24 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - ;\n    
+                CSharpCode - (219:9,8 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (219:9,8 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n}
+                HtmlContent - (222:10,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (222:10,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (231:11,7 [185] x:\dir\subdir\Test\TestComponent.cshtml)
+                LazyIntermediateToken - (231:11,7 [185] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    [Parameter] public TItem1 Item1 { get; set; }\n    [Parameter] public List<TItem2> Items2 { get; set; }\n    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }\n

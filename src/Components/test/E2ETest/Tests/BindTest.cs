@@ -551,7 +551,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30312")]
+        [Fact]
         public void CanBindTextboxDecimal()
         {
             var target = Browser.Exists(By.Id("textbox-decimal"));
@@ -574,7 +574,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("0.010", mirrorValue.GetAttribute("value"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30312")]
+        [Fact]
         public void CanBindTextboxNullableDecimal()
         {
             var target = Browser.Exists(By.Id("textbox-nullable-decimal"));

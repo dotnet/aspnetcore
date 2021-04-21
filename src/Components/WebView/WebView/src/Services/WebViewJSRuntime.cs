@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Services
             _ipcSender = ipcSender;
         }
 
+        public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
+
         protected override void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
         {
             _ipcSender.BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);

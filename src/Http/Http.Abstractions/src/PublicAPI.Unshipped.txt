@@ -8,8 +8,6 @@ Microsoft.AspNetCore.Http.IResult
 Microsoft.AspNetCore.Http.IResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata.AllowEmpty.get -> bool
-Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
-Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromQueryMetadata
