@@ -238,7 +238,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public virtual void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now)
         {
-            _heartbeatSlow(_connectionsLogger, now, heartbeatDuration, interval, null);
+            // while the heartbeat does loop over connections, this log is usually an indicator of threadpool starvation
+            _heartbeatSlow(_generalLogger, now, heartbeatDuration, interval, null);
         }
 
         public virtual void ApplicationNeverCompleted(string connectionId)
