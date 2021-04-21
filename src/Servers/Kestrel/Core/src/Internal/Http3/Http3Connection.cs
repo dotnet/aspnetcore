@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private void UpdateHighestStreamId(long streamId)
         {
-            // Only one stream will update the highest stream ID value at a time.
+            // Only one thread will update the highest stream ID value at a time.
             // Additional thread safty not required.
 
             if (_highestOpenedStreamId >= streamId)
