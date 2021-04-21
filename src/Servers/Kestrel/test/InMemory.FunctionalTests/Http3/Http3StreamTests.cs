@@ -41,6 +41,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: true);
 
             var responseHeaders = await requestStream.ExpectHeadersAsync();
+            Assert.Equal("200", responseHeaders[HeaderNames.Status]);
+
             var responseData = await requestStream.ExpectDataAsync();
             Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
         }
