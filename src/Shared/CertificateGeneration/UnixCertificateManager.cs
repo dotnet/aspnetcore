@@ -17,14 +17,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public override bool IsTrusted(X509Certificate2 certificate) => false;
 
-        protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate)
+        protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation)
         {
             var export = certificate.Export(X509ContentType.Pkcs12, "");
             certificate.Dispose();
             certificate = new X509Certificate2(export, "", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
             Array.Clear(export, 0, export.Length);
 
-            using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+            using (var store = new X509Store(storeName, storeLocation))
             {
                 store.Open(OpenFlags.ReadWrite);
                 store.Add(certificate);

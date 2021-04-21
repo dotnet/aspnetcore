@@ -14,11 +14,11 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class StandaloneAppTest
-        : ServerTestBase<DevHostServerFixture<StandaloneApp.Program>>, IDisposable
+        : ServerTestBase<BlazorWasmTestAppFixture<StandaloneApp.Program>>, IDisposable
     {
         public StandaloneAppTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<StandaloneApp.Program> serverFixture,
+            BlazorWasmTestAppFixture<StandaloneApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
@@ -106,6 +106,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             {
                 Assert.True(!string.IsNullOrEmpty(cell.Text));
             }
+        }
+
+        [Fact]
+        public void IsStarted()
+        {
+            // Read from property
+            var jsExecutor = (IJavaScriptExecutor)Browser;
+
+            var isStarted = jsExecutor.ExecuteScript("return window['__aspnetcore__testing__blazor_wasm__started__'];");
+            if (isStarted is null)
+            {
+                throw new InvalidOperationException("Blazor wasm started value not set");
+            }
+
+            // Confirm server has started
+            Assert.True((bool)isStarted);
         }
 
         private void WaitUntilLoaded()

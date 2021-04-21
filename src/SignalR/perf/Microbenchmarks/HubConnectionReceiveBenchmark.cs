@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
@@ -14,8 +13,8 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -158,7 +157,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _tcs.SetResult(new ReadResult(new ReadOnlySequence<byte>(_invocationMessageBytes), false, false));
 
             // Wait for all messages to be read and invoked
-            await _waitTcs.Task.OrTimeout();
+            await _waitTcs.Task.DefaultTimeout();
         }
     }
 }
