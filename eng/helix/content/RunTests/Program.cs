@@ -40,6 +40,10 @@ namespace RunTests
                     }
 
                     var exitCode = await runner.RunTestsAsync();
+
+                    // Temporary look at what is in the templates
+                    runner.DisplayContents("Hives/.templateEngine/packages");
+                    
                     runner.UploadResults();
                     Console.WriteLine($"Completed Helix job with exit code '{exitCode}'");
                     Environment.Exit(exitCode);
