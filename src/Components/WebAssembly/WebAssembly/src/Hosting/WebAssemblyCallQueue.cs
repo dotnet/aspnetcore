@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private static bool _isCallInProgress;
         private static Queue<Action> _pendingWork = new();
 
+        public static bool IsInProgress => _isCallInProgress;
         public static bool HasUnstartedWork => _pendingWork.Count > 0;
 
         /// <summary>

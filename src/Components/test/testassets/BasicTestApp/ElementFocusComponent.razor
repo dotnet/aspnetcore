@@ -7,7 +7,9 @@
 <hr />
 <button id="focus-button-prevented" @onclick="@(() => FocusInput(true))">Click to focus with preventScroll!</button>
 <hr />
-<button id="focus-button-onafterrender" @onclick="@FocusDuringOnAfterRender">Focus during OnAfterRender</button>
+<button id="focus-button-onafterrender-invoke" @onclick="@FocusDuringOnAfterRenderViaInvoke">Focus during OnAfterRender via Invoke</button>
+<hr />
+<button id="focus-button-onafterrender-await" @onclick="@FocusDuringOnAfterRenderViaAwait">Focus during OnAfterRender via await</button>
 <hr />
 <p>Received focus in: <span id="focus-event-received">@didReceiveFocusIn</span></p>
 <hr />
@@ -24,7 +26,7 @@
         await inputReference.FocusAsync(preventScroll);
     }
 
-    private void FocusDuringOnAfterRender()
+    private void FocusDuringOnAfterRenderViaInvoke()
     {
         Task.Run(async () =>
         {
@@ -32,6 +34,12 @@
             performFocusDuringOnAfterRender = true;
             _ = InvokeAsync(StateHasChanged);
         });
+    }
+
+    private async Task FocusDuringOnAfterRenderViaAwait()
+    {
+        await Task.Yield();
+        performFocusDuringOnAfterRender = true;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

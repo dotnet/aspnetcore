@@ -93,6 +93,32 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         }
 
         /// <inheritdoc />
+        protected override void ProcessPendingRender()
+        {
+            // For historical reasons, Blazor WebAssembly doesn't enforce that you use InvokeAsync
+            // to dispatch calls that originated from outside the system. Changing that now would be
+            // too breaking, at least until we can make it a prerequisite for multithreading.
+            // So, we don't have a way to guarantee that calls to here are already on our work queue.
+            //
+            // We do need rendering to happen on the work queue so that incoming events can be deferred
+            // until we've finished this rendering process (and other similar cases where we want
+            // execution order to be consistent with Blazor Server, which queues all JS->.NET calls).
+            //
+            // So, if we find that we're here and are not yet on the work queue, get onto it. Either
+            // way, rendering must continue synchronously here and is not deferred until later.
+            if (WebAssemblyCallQueue.IsInProgress)
+            {
+                base.ProcessPendingRender();
+            }
+            else
+            {
+                WebAssemblyCallQueue.Schedule(this, static @this => @this.CallBaseProcessPendingRender());
+            }
+        }
+
+        void CallBaseProcessPendingRender() => base.ProcessPendingRender();
+
+        /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
             DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(

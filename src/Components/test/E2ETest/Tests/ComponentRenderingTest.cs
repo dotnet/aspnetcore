@@ -444,15 +444,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             long getPageYOffset() => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.pageYOffset");
         }
 
-        [Fact]
-        public void CanFocusDuringOnAfterRenderAsyncWithFocusInEvent()
+        [Theory]
+        [InlineData("focus-button-onafterrender-invoke")]
+        [InlineData("focus-button-onafterrender-await")]
+        public void CanFocusDuringOnAfterRenderAsyncWithFocusInEvent(string triggerButton)
         {
-            // Represents https://github.com/dotnet/aspnetcore/issues/30070
+            // Represents https://github.com/dotnet/aspnetcore/issues/30070, plus a more complicated
+            // variant where the initial rendering doesn't start from a JS interop call and hence
+            // isn't automatically part of the WebAssemblyCallQueue.
+
             var appElement = Browser.MountTestComponent<ElementFocusComponent>();
             var didReceiveFocusLabel = appElement.FindElement(By.Id("focus-event-received"));
             Browser.Equal("False", () => didReceiveFocusLabel.Text);
 
-            appElement.FindElement(By.Id("focus-button-onafterrender")).Click();
+            appElement.FindElement(By.Id(triggerButton)).Click();
             Browser.Equal("True", () => didReceiveFocusLabel.Text);
             Browser.Equal("focus-input-onafterrender", () => Browser.SwitchTo().ActiveElement().GetAttribute("id"));
 
