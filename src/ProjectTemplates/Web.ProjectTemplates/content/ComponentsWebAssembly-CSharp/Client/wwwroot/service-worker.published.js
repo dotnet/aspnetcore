@@ -18,7 +18,7 @@ async function onInstall(event) {
     const assetsRequests = self.assetsManifest.assets
         .filter(asset => offlineAssetsInclude.some(pattern => pattern.test(asset.url)))
         .filter(asset => !offlineAssetsExclude.some(pattern => pattern.test(asset.url)))
-        .map(asset => new Request(asset.url, { integrity: asset.hash, cache: "no-cache" }));
+        .map(asset => new Request(asset.url, { integrity: asset.hash, cache: 'no-cache' }));
 //#if(IndividualLocalAuth && Hosted)
 
     // Also cache authentication configuration
