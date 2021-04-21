@@ -1,35 +1,20 @@
 using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
-using var host = Host.CreateDefaultBuilder(args)
-    .ConfigureWebHostDefaults(webBuilder =>
-    {
-        webBuilder.Configure(app =>
-        {
-            app.UseRouting();
+await using var app = WebApplication.Create();
 
-            app.UseEndpoints(endpoints =>
-            {
-                Todo EchoTodo([FromBody] Todo todo) => todo;
-                endpoints.MapPost("/EchoTodo", (Func<Todo, Todo>)EchoTodo);
+Todo EchoTodo(Todo todo) => todo;
+app.MapPost("/EchoTodo", (Func<Todo, Todo>)EchoTodo);
 
-                string Plaintext() => "Hello, World!";
-                endpoints.MapGet("/plaintext", (Func<string>)Plaintext);
+string Plaintext() => "Hello, World!";
+app.MapGet("/plaintext", (Func<string>)Plaintext);
 
-                object Json() => new { message = "Hello, World!" };
-                endpoints.MapGet("/json", (Func<object>)Json);
+object Json() => new { message = "Hello, World!" };
+app.MapGet("/json", (Func<object>)Json);
 
-                string SayHello(string name) => $"Hello {name}";
-                endpoints.MapGet("/hello/{name}", (Func<string, string>)SayHello);
-            });
-        });
-    })
-    .Build();
+string SayHello(string name) => $"Hello {name}";
+app.MapGet("/hello/{name}", (Func<string, string>)SayHello);
 
-await host.RunAsync();
+await app.RunAsync();
 
 record Todo(int Id, string Name, bool IsComplete);

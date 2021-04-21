@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,17 +15,14 @@ namespace SampleApp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
-        }
+            await using var webApp = WebApplication.Create(args);
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+            webApp.MapGet("/", (Func<string>)(() => "Hello, World!"));
+
+            await webApp.RunAsync();
+        }
 
         private static void HelloWorld()
         {
@@ -80,8 +78,7 @@ namespace SampleApp
                 Console.ReadKey();
             }
         }
-
-        private static void StartupClass(string[] args)
+        private static void DirectWebHost(string[] args)
         {
             // Using defaults with a Startup class
             using (var host = WebHost.CreateDefaultBuilder(args)
@@ -107,5 +104,17 @@ namespace SampleApp
 
             host.Run();
         }
+
+        private static void DefaultGenericHost(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
     }
 }
