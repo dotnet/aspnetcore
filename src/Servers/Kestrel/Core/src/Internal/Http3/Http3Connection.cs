@@ -63,8 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (_highestOpenedStreamId >= streamId)
             {
-                // If the underlying QUIC implement returns stream IDs in order then
-                // this should never happen. Check just in case.
+                // Double check here incase the streams are received out of order.
                 return;
             }
 
