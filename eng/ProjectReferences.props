@@ -163,5 +163,6 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" ProjectPath="$(RepoRoot)src\HealthChecks\Abstractions\src\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src\HealthChecks\HealthChecks\src\Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Testing" ProjectPath="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.Testing.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Features" ProjectPath="$(RepoRoot)src\Http\Features\src\Microsoft.Extensions.Features.csproj" />
   </ItemGroup>
 </Project>

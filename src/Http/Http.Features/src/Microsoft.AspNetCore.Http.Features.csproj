@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core HTTP feature interface definitions.</Description>
-    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -11,13 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Features" />
     <Reference Include="Microsoft.Extensions.Primitives" />
     <Reference Include="System.IO.Pipelines" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Shipped.txt" />
-    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
 </Project>
