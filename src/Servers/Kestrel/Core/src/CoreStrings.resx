@@ -307,7 +307,7 @@
     <value>IHttpUpgradeFeature.UpgradeAsync was already called and can only be called once per connection.</value>
   </data>
   <data name="BadRequest_RequestBodyTooLarge" xml:space="preserve">
-    <value>Request body too large. Default value is {maxRequestBodySize} bytes.</value>
+    <value>Request body too large. The max request body size is {maxRequestBodySize} bytes.</value>
   </data>
   <data name="MaxRequestBodySizeCannotBeModifiedAfterRead" xml:space="preserve">
     <value>The maximum request body size cannot be modified after the app has already started reading from the request body.</value>
