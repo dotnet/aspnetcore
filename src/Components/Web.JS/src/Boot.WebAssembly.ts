@@ -80,11 +80,14 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     );
   });
 
-  // Get the custom environment setting if defined
-  const environment = options?.environment;
+  const candidateOptions = options ?? {};
+
+  // Get the custom environment setting and blazorBootJson loader if defined
+  const environment = candidateOptions.environment;
+  const loadBlazorBootJson = candidateOptions.loadBlazorBootJson ?? BootConfigResult.initAsync;
 
   // Fetch the resources and prepare the Mono runtime
-  const bootConfigPromise = BootConfigResult.initAsync(environment);
+  const bootConfigPromise = loadBlazorBootJson(environment);
 
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
@@ -110,7 +113,54 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   };
 
+  type BeforeBlazorStartedCallback = (options: Partial<WebAssemblyStartOptions> | undefined, bootConfigResul: BootConfigResult) => Promise<void>;
+  type AfterBlazorStartedCallback = () => Promise<void>;
+  type BlazorInitializer = { beforeBlazorStarts: BeforeBlazorStartedCallback, afterBlazorStarted: AfterBlazorStartedCallback };
+
   const bootConfigResult = await bootConfigPromise;
+  const bootConfig = bootConfigResult.bootConfig;
+  const libraryInitializersTimeout = options?.libraryInitializersTimeout ?? 30;
+  const afterBlazorStartedCallbacks: AfterBlazorStartedCallback[] = [];
+  if (bootConfigResult.bootConfig.libraryInitializers) {
+    const initializerFiles = bootConfigResult.bootConfig.libraryInitializers;
+    try {
+      await Promise.all(Object.entries(initializerFiles).map(f => importAndInvokeInitializer(...f)));
+    } catch (error) {
+      console.warn(`A library initializer produced an error: '${error}'`);
+    }
+  }
+
+  function adjustPath(path: string): string {
+    // This is the same we do in JS interop with the import callback
+    const base = document.baseURI;
+    path = base.endsWith('/') ? `${base}${path}` : `${base}/${path}`;
+    return path;
+  }
+
+  async function importAndInvokeInitializer(path: string, signature: string): Promise<void> {
+    const adjustedPath = adjustPath(path);
+    const initializer = await import(/* webpackIgnore: true */ adjustedPath) as Partial<BlazorInitializer>;
+    if (initializer === undefined) {
+      return;
+    }
+    const { beforeBlazorStarts, afterBlazorStarted } = initializer;
+    if (afterBlazorStarted) {
+      afterBlazorStartedCallbacks.push(afterBlazorStarted);
+    }
+    if (beforeBlazorStarts) {
+      const timeout = libraryInitializersTimeout * 1000;
+      await Promise.race([
+        beforeBlazorStarts(candidateOptions, bootConfigResult),
+        // By default we give each library 30 seconds to load and do whatever they have to do, before we continue loading.
+        new Promise<void>((resolve) =>
+          setTimeout(() => {
+            console.log(`Library '${path}' took longer than '${libraryInitializersTimeout}' to initialize.`);
+            resolve();
+          },
+            timeout))]);
+    }
+  }
+
   const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, options || {}),
     WebAssemblyConfigLoader.initAsync(bootConfigResult)]);
@@ -122,7 +172,12 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
 
   // Start up the application
-  platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly);
+  invokeBlazorStartedCallbacks(platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly));
+
+  async function invokeBlazorStartedCallbacks(applicationStarted: Promise<void>) {
+    await applicationStarted;
+    await Promise.all(afterBlazorStartedCallbacks.map(c => c()));
+  }
 }
 
 function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any): any {

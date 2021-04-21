@@ -29,6 +29,8 @@ export interface BootJsonData {
   readonly cacheBootResources: boolean;
   readonly config: string[];
   readonly icuDataMode: ICUDataMode;
+  readonly libraryInitializers?: ResourceList,
+  readonly extensions?: { [extensionName: string]: ResourceList }
 
   // These properties are tacked on, and not found in the boot.json file
   modifiableAssemblies: string | null;
@@ -39,7 +41,7 @@ export interface ResourceGroups {
   readonly lazyAssembly: ResourceList;
   readonly pdb?: ResourceList;
   readonly runtime: ResourceList;
-  readonly satelliteResources?: { [cultureName: string] : ResourceList };
+  readonly satelliteResources?: { [cultureName: string]: ResourceList };
 }
 
 export type ResourceList = { [name: string]: string };
