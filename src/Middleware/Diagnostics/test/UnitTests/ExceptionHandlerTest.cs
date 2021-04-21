@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                             Exception exception = null;
                             try
                             {
-                                await next();
+                                await next(httpContext);
                             }
                             catch (InvalidOperationException ex)
                             {
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                             try
                             {
-                                await next();
+                                await next(httpContext);
                             }
                             finally
                             {
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                             Exception exception = null;
                             try
                             {
-                                await next();
+                                await next(httpContext);
                             }
                             catch (InvalidOperationException ex)
                             {
@@ -483,7 +483,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                             Exception exception = null;
                             try
                             {
-                                await next();
+                                await next(httpContext);
                             }
                             catch (InvalidOperationException ex)
                             {

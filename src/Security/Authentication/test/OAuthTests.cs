@@ -406,9 +406,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                             app.UseAuthentication();
                             app.Use(async (context, next) =>
                             {
-                                if (handler == null || ! await handler(context))
+                                if (handler == null || !await handler(context))
                                 {
-                                    await next();
+                                    await next(context);
                                 }
                             });
                         })

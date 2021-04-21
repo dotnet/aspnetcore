@@ -524,7 +524,7 @@ namespace Microsoft.AspNetCore.Session
                     {
                         app.Use(async (httpContext, next) =>
                         {
-                            await next();
+                            await next(httpContext);
 
                             Assert.Null(httpContext.Features.Get<ISessionFeature>());
                         });
@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.Session
                             var exceptionThrown = false;
                             try
                             {
-                                await next();
+                                await next(httpContext);
                             }
                             catch
                             {

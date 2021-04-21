@@ -59,7 +59,7 @@ namespace JwtBearerSample
                 var authResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                 if (authResult.Succeeded && authResult.Principal.Identity.IsAuthenticated)
                 {
-                    await next();
+                    await next(context);
                 }
                 else if (authResult.Failure != null)
                 {

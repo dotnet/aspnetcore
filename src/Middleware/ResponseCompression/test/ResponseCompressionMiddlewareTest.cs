@@ -980,7 +980,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         {
                             fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
                             context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
-                            return next();
+                            return next(context);
                         });
                         app.UseResponseCompression();
                         app.Run(context =>
@@ -1030,7 +1030,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         {
                             fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
                             context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
-                            return next();
+                            return next(context);
                         });
                         app.UseResponseCompression();
                         app.Run(context =>
@@ -1080,7 +1080,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         {
                             fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
                             context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
-                            return next();
+                            return next(context);
                         });
                         app.UseResponseCompression();
                         app.Run(async context =>
@@ -1130,7 +1130,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         app.Use((context, next) =>
                         {
                             context.Response.Body = new NoSyncWrapperStream(context.Response.Body);
-                            return next();
+                            return next(context);
                         });
                         app.UseResponseCompression();
                         app.Run(async context =>

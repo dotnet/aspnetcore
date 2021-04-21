@@ -28,11 +28,11 @@ namespace Microsoft.AspNetCore.SpaServices
                 // If we have an Endpoint, then this is a deferred match - just noop.
                 if (context.GetEndpoint() != null)
                 {
-                    return next();
+                    return next(context);
                 }
 
                 context.Request.Path = options.DefaultPage;
-                return next();
+                return next(context);
             });
 
             // Serve it as a static file
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.SpaServices
                 // If we have an Endpoint, then this is a deferred match - just noop.
                 if (context.GetEndpoint() != null)
                 {
-                    return next();
+                    return next(context);
                 }
 
                 var message = "The SPA default page middleware could not return the default page " +

@@ -31,7 +31,7 @@ namespace BasicWebSite
             app.Use((context, next) =>
             {
                 context.Request.Body = new ThrowingStream();
-                return next();
+                return next(context);
             });
 
             app.UseRouting();

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 configureCallCount++;
                 ab.Use((httpContext, next) =>
                 {
-                    return next();
+                    return next(httpContext);
                 });
             };
 

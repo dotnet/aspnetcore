@@ -38,7 +38,7 @@ namespace LocalizationSample
             //}));
             );
 
-            app.Use(async (context, next) =>
+            app.Run(async (context) =>
             {
                 if (context.Request.Path.Value.EndsWith("favicon.ico", StringComparison.Ordinal))
                 {

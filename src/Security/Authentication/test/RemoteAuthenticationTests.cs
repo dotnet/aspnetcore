@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Authentication
                                 {
                                     await testpath(context);
                                 }
-                                await next();
+                                await next(context);
                             });
                         })
                         .ConfigureServices(configureServices))

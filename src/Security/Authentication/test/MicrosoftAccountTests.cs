@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                                 }
                                 else
                                 {
-                                    await next();
+                                    await next(context);
                                 }
                             });
                         })

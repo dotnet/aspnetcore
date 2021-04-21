@@ -41,7 +41,7 @@ namespace HostedInAspNet.Server
                 {
                     bootResourceRequestLog.AddRequest(context.Request);
                 }
-                return next();
+                return next(context);
             });
 
             if (env.IsDevelopment())
