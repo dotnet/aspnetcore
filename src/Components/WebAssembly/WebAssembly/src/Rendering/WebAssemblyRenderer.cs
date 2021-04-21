@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             }
         }
 
-        void CallBaseProcessPendingRender() => base.ProcessPendingRender();
+        private void CallBaseProcessPendingRender() => base.ProcessPendingRender();
 
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
