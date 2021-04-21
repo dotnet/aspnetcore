@@ -112,6 +112,8 @@ namespace Templates.Test
                     continue;
                 }
                 Assert.Contains(relativePath, expectedFiles);
+                
+                Assert.True(false);
             }
         }
 
