@@ -485,7 +485,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var requestStream = await InitializeConnectionAndStreamsAsync(_noopApplication);
             await requestStream.SendHeadersAsync(headers, endStream: true);
 
-            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.ProtocolError,
+            await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.RequestRejected,
                 CoreStrings.BadRequest_RequestLineTooLong);
         }
 
@@ -2369,6 +2369,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains("date", receivedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("200", receivedHeaders[HeaderNames.Status]);
             Assert.Equal("0", receivedHeaders[HeaderNames.ContentLength]);
+        }
+        
+        [Fact]
+        public Task HEADERS_Received_RequestLineLength_Error()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, new string('A', 8192 / 2)),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/" + new string('A', 8192 / 2)),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http")
+            };
+
+            return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_RequestLineTooLong, Http3ErrorCode.RequestRejected);
         }
     }
 }
