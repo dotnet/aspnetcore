@@ -10,8 +10,7 @@
 
     <OutputPath />
 
-    <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
-    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+    <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
