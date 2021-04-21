@@ -445,6 +445,23 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanFocusDuringOnAfterRenderAsyncWithFocusInEvent()
+        {
+            // Represents https://github.com/dotnet/aspnetcore/issues/30070
+            var appElement = Browser.MountTestComponent<ElementFocusComponent>();
+            var didReceiveFocusLabel = appElement.FindElement(By.Id("focus-event-received"));
+            Browser.Equal("False", () => didReceiveFocusLabel.Text);
+
+            appElement.FindElement(By.Id("focus-button-onafterrender")).Click();
+            Browser.Equal("True", () => didReceiveFocusLabel.Text);
+            Browser.Equal("focus-input-onafterrender", () => Browser.SwitchTo().ActiveElement().GetAttribute("id"));
+
+            // As well as actually focusing and triggering the onfocusin event, we should not be seeing any errors
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
+        }
+
+        [Fact]
         public void CanCaptureReferencesToDynamicallyAddedElements()
         {
             var appElement = Browser.MountTestComponent<ElementRefComponent>();
