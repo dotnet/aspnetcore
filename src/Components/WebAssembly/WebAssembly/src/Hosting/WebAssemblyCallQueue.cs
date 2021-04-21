@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     internal static class WebAssemblyCallQueue
     {
         private static bool _isCallInProgress;
-        private static Queue<Action> _pendingWork = new();
+        private static readonly Queue<Action> _pendingWork = new();
 
         public static bool IsInProgress => _isCallInProgress;
         public static bool HasUnstartedWork => _pendingWork.Count > 0;
