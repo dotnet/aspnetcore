@@ -9,10 +9,8 @@ let main args =
     if app.Environment.IsDevelopment() then
         app.UseDeveloperExceptionPage() |> ignore
 
-    app.MapGet("/", Func<string>(fun () -> "Hello World!")) |> ignore
-
     app.MapGet("/plaintext", Func<string>(fun () -> "Hello, World!")) |> ignore
-    app.MapGet("/json", Func<obj>(fun () -> {| message = "Hello, World!" |} :> obj)) |> ignore
+    app.MapGet("/json", Func<obj>(fun () -> upcast {| message = "Hello, World!" |})) |> ignore
     app.MapGet("/hello/{name}", Func<string, string>(fun name -> $"Hello {name}")) |> ignore
 
     app.Run()
