@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
     {
         internal readonly Dictionary<long, Http3Stream> _streams = new Dictionary<long, Http3Stream>();
 
-        private long _highestOpenedStreamId; // TODO lock to access
+        private long _highestOpenedStreamId;
         private readonly object _sync = new object(); 
         private readonly MultiplexedConnectionContext _multiplexedContext;
         private readonly Http3ConnectionContext _context;
@@ -56,20 +56,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _serverSettings.MaxRequestHeaderFieldSize = (uint)httpLimits.Http3.MaxRequestHeaderFieldSize;
         }
 
-        internal long HighestStreamId
+        private void UpdateHighestStreamId(long streamId)
         {
-            get
+            // Only one stream will update the highest stream ID value at a time.
+            // Additional thread safty not required.
+
+            if (_highestOpenedStreamId >= streamId)
             {
-                return _highestOpenedStreamId;
+                // If the underlying QUIC implement returns stream IDs in order then
+                // this should never happen. Check just in case.
+                return;
             }
-            set
-            {
-                if (_highestOpenedStreamId < value)
-                {
-                    _highestOpenedStreamId = value;
-                }
-            }
+
+            _highestOpenedStreamId = streamId;
         }
+
+        private long GetHighestStreamId() => Interlocked.Read(ref _highestOpenedStreamId);
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
         public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
@@ -158,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             if (Interlocked.Exchange(ref _isClosed, 1) == 0)
             {
-                Log.Http3ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
+                Log.Http3ConnectionClosed(_context.ConnectionId, GetHighestStreamId());
                 return true;
             }
 
@@ -181,7 +183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 if (TryClose())
                 {
-                    SendGoAway(_highestOpenedStreamId).Preserve();
+                    SendGoAway(GetHighestStreamId()).Preserve();
                 }
 
                 _multiplexedContext.Abort(ex);
@@ -213,10 +215,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             switch (reason)
             {
                 case TimeoutReason.KeepAlive:
-                    SendGoAway(_highestOpenedStreamId).Preserve();
+                    SendGoAway(GetHighestStreamId()).Preserve();
                     break;
                 case TimeoutReason.TimeoutFeature:
-                    SendGoAway(_highestOpenedStreamId).Preserve();
+                    SendGoAway(GetHighestStreamId()).Preserve();
                     break;
                 case TimeoutReason.RequestHeaders:
                 case TimeoutReason.ReadDataRate:
@@ -290,7 +292,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         {
                             var streamId = streamIdFeature.StreamId;
 
-                            HighestStreamId = streamId;
+                            UpdateHighestStreamId(streamId);
 
                             var http3Stream = new Http3Stream<TContext>(application, this, httpConnectionContext);
                             var stream = http3Stream;
@@ -350,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     {
                         // This throws when connection is shut down.
                         // TODO how to make it so we can distinguish between Abort from server vs client?
-                        await SendGoAway(_highestOpenedStreamId);
+                        await SendGoAway(GetHighestStreamId());
                     }
 
                     foreach (var stream in _streams.Values)
@@ -406,7 +408,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     if (TryClose())
                     {
-                        SendGoAway(_highestOpenedStreamId).Preserve();
+                        SendGoAway(GetHighestStreamId()).Preserve();
                     }
                 }
                 else
