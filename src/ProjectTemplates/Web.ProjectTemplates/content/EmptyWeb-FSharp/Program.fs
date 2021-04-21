@@ -4,7 +4,8 @@ open Microsoft.Extensions.Hosting
 
 [<EntryPoint>]
 let main args =
-    let app = WebApplication.Create(args);
+    let builder = WebApplication.CreateBuilder(args)
+    use app = builder.Build()
 
     if app.Environment.IsDevelopment() then
         app.UseDeveloperExceptionPage() |> ignore

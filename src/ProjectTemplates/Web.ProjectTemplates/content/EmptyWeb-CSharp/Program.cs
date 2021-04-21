@@ -2,7 +2,8 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 
-await using var app = WebApplication.Create(args);
+var builder = WebApplication.CreateBuilder(args);
+await using var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
