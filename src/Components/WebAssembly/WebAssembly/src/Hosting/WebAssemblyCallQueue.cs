@@ -10,12 +10,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     // have the same ordering behaviors as in Blazor Server. This eliminates serveral inconsistency
     // problems and bugs that otherwise require special-case solutions in other parts of the code.
     //
-    // We could use a true SynchronizationContext for this, but that would be much heaver. This
-    // simple work queue doesn't rely on actual asynchrony and is careful to minimize allocations
-    // and extra try/catch layers. It sufficies, at least until we have true multithreading.
-    //
-    // Framework code should dispatch incoming async JS->.NET calls via this work queue. Application
-    // developers don't need to, because we do it for them.
+    // The reason for not using an actual SynchronizationContext for this is that, historically,
+    // Blazor WebAssembly has not enforced any rule around having to dispatch to a sync context.
+    // Adding such a rule now would be too breaking, given how component libraries may be reliant
+    // on being able to render at any time without InvokeAsync. If we add true multithreading in the
+    // future, we should start enforcing dispatch if (and only if) multithreading is enabled.
+    // For now, this minimal work queue is an internal detail of how the framework dispatches
+    // incoming JS->.NET calls and makes sure they get deferred if a renderbatch is in process.
 
     internal static class WebAssemblyCallQueue
     {
