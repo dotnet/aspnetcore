@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
 {
     internal class MemberAssignment
     {
-        public static PropertyEnumerable GetPropertiesIncludingInherited(
+        public static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
             [DynamicallyAccessedMembers(Component)] Type type,
             BindingFlags bindingFlags)
         {
@@ -49,7 +48,20 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 currentType = currentType.BaseType;
             }
 
-            return new PropertyEnumerable(dictionary);
+            foreach (var item in dictionary)
+            {
+                if (item.Value is PropertyInfo property)
+                {
+                    yield return property;
+                }
+                var list = (List<PropertyInfo>)item.Value;
+
+                var count = list.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    yield return list[i];
+                }
+            }
         }
 
         private static bool IsInheritedProperty(PropertyInfo property, object others)
@@ -69,70 +81,6 @@ namespace Microsoft.AspNetCore.Components.Reflection
             }
 
             return false;
-        }
-
-        public ref struct PropertyEnumerable
-        {
-            private readonly PropertyEnumerator _enumerator;
-
-            public PropertyEnumerable(Dictionary<string, object> dictionary)
-            {
-                _enumerator = new PropertyEnumerator(dictionary);
-            }
-
-            public PropertyEnumerator GetEnumerator() => _enumerator;
-        }
-
-        public ref struct PropertyEnumerator
-        {
-            // Do NOT make this readonly, or MoveNext will not work
-            private Dictionary<string, object>.Enumerator _dictionaryEnumerator;
-            private Span<PropertyInfo>.Enumerator _spanEnumerator;
-
-            public PropertyEnumerator(Dictionary<string, object> dictionary)
-            {
-                _dictionaryEnumerator = dictionary.GetEnumerator();
-                _spanEnumerator = Span<PropertyInfo>.Empty.GetEnumerator();
-            }
-
-            public PropertyInfo Current
-            {
-                get
-                {
-                    if (_dictionaryEnumerator.Current.Value is PropertyInfo property)
-                    {
-                        return property;
-                    }
-
-                    return _spanEnumerator.Current;
-                }
-            }
-
-            public bool MoveNext()
-            {
-                if (_spanEnumerator.MoveNext())
-                {
-                    return true;
-                }
-
-                if (!_dictionaryEnumerator.MoveNext())
-                {
-                    return false;
-                }
-
-                var oneOrMoreProperties = _dictionaryEnumerator.Current.Value;
-                if (oneOrMoreProperties is PropertyInfo)
-                {
-                    _spanEnumerator = Span<PropertyInfo>.Empty.GetEnumerator();
-                    return true;
-                }
-
-                var many = (List<PropertyInfo>)oneOrMoreProperties;
-                _spanEnumerator = CollectionsMarshal.AsSpan(many).GetEnumerator();
-                var moveNext = _spanEnumerator.MoveNext();
-                Debug.Assert(moveNext, "We expect this to at least have one item.");
-                return moveNext;
-            }
         }
     }
 }
