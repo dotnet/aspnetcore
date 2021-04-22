@@ -8,7 +8,7 @@
 #include "SRWSharedLock.h"
 #include "HandlerResolver.h"
 
-#define API_BUFFER_TOO_SMALL 0x80008098
+constexpr auto API_BUFFER_TOO_SMALL = 0x80008098;
 
 extern BOOL     g_fRecycleProcessCalled;
 
@@ -71,13 +71,16 @@ private:
     HRESULT
     TryCreateHandler(
         IHttpContext& pHttpContext,
-        std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>& pHandler);
+        std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>& pHandler) const;
 
     HRESULT
     CreateApplication(IHttpContext& pHttpContext);
 
     HRESULT
     TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, ErrorContext& error);
+
+    std::filesystem::path
+    HandleShadowCopy(const ShimOptions& options, IHttpContext& pHttpContext);
 
     IHttpServer            &m_pServer;
     HandlerResolver        &m_handlerResolver;

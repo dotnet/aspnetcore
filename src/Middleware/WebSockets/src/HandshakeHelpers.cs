@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.WebSockets
         /// <summary>
         /// Gets request headers needed process the handshake on the server.
         /// </summary>
-        public static readonly IEnumerable<string> NeededHeaders = new[]
+        public static readonly string[] NeededHeaders = new[]
         {
             HeaderNames.Upgrade,
             HeaderNames.Connection,
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.WebSockets
         };
 
         // Verify Method, Upgrade, Connection, version,  key, etc..
-        public static bool CheckSupportedWebSocketRequest(string method, IEnumerable<KeyValuePair<string, string>> headers)
+        public static bool CheckSupportedWebSocketRequest(string method, List<KeyValuePair<string, string>> interestingHeaders, IHeaderDictionary requestHeaders)
         {
             bool validUpgrade = false, validConnection = false, validKey = false, validVersion = false;
 
@@ -43,11 +43,11 @@ namespace Microsoft.AspNetCore.WebSockets
                 return false;
             }
 
-            foreach (var pair in headers)
+            foreach (var pair in interestingHeaders)
             {
                 if (string.Equals(HeaderNames.Connection, pair.Key, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(Constants.Headers.ConnectionUpgrade, pair.Value, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(HeaderNames.Upgrade, pair.Value, StringComparison.OrdinalIgnoreCase))
                     {
                         validConnection = true;
                     }
@@ -72,12 +72,26 @@ namespace Microsoft.AspNetCore.WebSockets
                 }
             }
 
+            // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
+            if (validConnection && requestHeaders[HeaderNames.Connection].Count == 1)
+            {
+                requestHeaders[HeaderNames.Connection] = HeaderNames.Upgrade;
+            }
+            if (validUpgrade && requestHeaders[HeaderNames.Upgrade].Count == 1)
+            {
+                requestHeaders[HeaderNames.Upgrade] = Constants.Headers.UpgradeWebSocket;
+            }
+            if (validVersion && requestHeaders[HeaderNames.SecWebSocketVersion].Count == 1)
+            {
+                requestHeaders[HeaderNames.SecWebSocketVersion] = Constants.Headers.SupportedVersion;
+            }
+
             return validConnection && validUpgrade && validVersion && validKey;
         }
 
-        public static void GenerateResponseHeaders(string key, string subProtocol, IHeaderDictionary headers)
+        public static void GenerateResponseHeaders(string key, string? subProtocol, IHeaderDictionary headers)
         {
-            headers[HeaderNames.Connection] = Constants.Headers.ConnectionUpgrade;
+            headers[HeaderNames.Connection] = HeaderNames.Upgrade;
             headers[HeaderNames.Upgrade] = Constants.Headers.UpgradeWebSocket;
             headers[HeaderNames.SecWebSocketAccept] = CreateResponseKey(key);
             if (!string.IsNullOrWhiteSpace(subProtocol))

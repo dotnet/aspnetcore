@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
 
                     await writer.FlushAsync();
                     var tryGetBuffer = stream.TryGetBuffer(out var buffer);
-                    Debug.Assert(tryGetBuffer);
+                    System.Diagnostics.Debug.Assert(tryGetBuffer);
                     await blob.AppendAsync(buffer, cancellationToken);
                 }
             }

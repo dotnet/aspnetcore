@@ -1281,7 +1281,7 @@ namespace Test
                     Assert.Equal("System.Type", a.TypeName);
                     Assert.True(a.IsTypeParameterProperty());
                 });
-            
+
             var childContent = Assert.Single(components, c => c.IsChildContentTagHelper());
 
             Assert.Equal("TestAssembly", childContent.AssemblyName);
@@ -1583,6 +1583,96 @@ namespace Test
                     Assert.Equal("Header", a.Name);
                     Assert.Equal("System.String", a.TypeName);
                 });
+        }
+
+        [Fact]
+        public void Execute_WithTargetAssembly_Works()
+        {
+            // Arrange
+            var testComponent = "Test.MyComponent";
+            var routerComponent = "Microsoft.AspNetCore.Components.Routing.Router";
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle) { }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Parameter]
+        public string MyProperty { get; set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+            context.Items.SetTargetAssembly((IAssemblySymbol) compilation.GetAssemblyOrModuleSymbol(compilation.References.First(r => r.Display.Contains("Microsoft.CodeAnalysis.Razor.Test.dll"))));
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            Assert.NotNull(compilation.GetTypeByMetadataName(testComponent));
+            Assert.Empty(context.Results); // Target assembly contains no components
+            Assert.Empty(context.Results.Where(f => f.GetTypeName() == testComponent));
+            Assert.Empty(context.Results.Where(f => f.GetTypeName() == routerComponent));
+        }
+
+        [Fact]
+        public void Execute_WithDefaultDiscoversTagHelpersFromAssemblyAndReference()
+        {
+            // Arrange
+            var testComponent = "Test.MyComponent";
+            var routerComponent
+                = "Microsoft.AspNetCore.Components.Routing.Router";
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle) { }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Parameter]
+        public string MyProperty { get; set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            Assert.NotNull(compilation.GetTypeByMetadataName(testComponent));
+            Assert.NotEmpty(context.Results);
+            Assert.NotEmpty(context.Results.Where(f => f.GetTypeName() == testComponent));
+            Assert.NotEmpty(context.Results.Where(f => f.GetTypeName() == routerComponent));
         }
     }
 }

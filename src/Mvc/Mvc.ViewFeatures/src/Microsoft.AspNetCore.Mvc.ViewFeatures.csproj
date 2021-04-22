@@ -9,7 +9,6 @@
       Microsoft.AspNetCore.Mvc.ViewComponent
     </Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
@@ -37,6 +36,8 @@
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\PrerenderComponentApplicationStore.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\ProtectedPrerenderComponentApplicationStore.cs" />
   </ItemGroup>
 
 </Project>

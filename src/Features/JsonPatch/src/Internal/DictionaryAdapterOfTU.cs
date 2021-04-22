@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -58,14 +58,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (!dictionary.ContainsKey(convertedKey))
+            if (!dictionary.TryGetValue(convertedKey, out var valueAsT))
             {
                 value = null;
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 return false;
             }
 
-            value = dictionary[convertedKey];
+            value = valueAsT;
             errorMessage = null;
             return true;
         }
@@ -86,13 +86,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
 
             // As per JsonPatch spec, the target location must exist for remove to be successful
-            if (!dictionary.ContainsKey(convertedKey))
+            if (!dictionary.Remove(convertedKey))
             {
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 return false;
             }
-
-            dictionary.Remove(convertedKey);
 
             errorMessage = null;
             return true;
@@ -163,7 +161,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var currentValue = dictionary[convertedKey];
 
             // The target segment does not have an assigned value to compare the test value with
-            if (currentValue == null || string.IsNullOrEmpty(currentValue.ToString()))
+            if (currentValue == null)
             {
                 errorMessage = Resources.FormatValueForTargetSegmentCannotBeNullOrEmpty(segment);
                 return false;
@@ -198,9 +196,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (dictionary.ContainsKey(convertedKey))
+            if (dictionary.TryGetValue(convertedKey, out var valueAsT))
             {
-                nextTarget = dictionary[convertedKey];
+                nextTarget = valueAsT;
                 errorMessage = null;
                 return true;
             }

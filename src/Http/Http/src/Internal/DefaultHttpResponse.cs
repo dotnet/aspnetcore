@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Http
             get { return HttpResponseBodyFeature.Stream; }
             set
             {
-                var otherFeature = _features.Collection.Get<IHttpResponseBodyFeature>();
+                var otherFeature = _features.Collection.Get<IHttpResponseBodyFeature>()!;
 
                 if (otherFeature is StreamResponseBodyFeature streamFeature
                     && streamFeature.PriorFeature != null

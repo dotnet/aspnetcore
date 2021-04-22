@@ -10,6 +10,9 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    /// <summary>
+    /// Represents a <see cref="IControllerActivatorProvider"/> for a view data dictionary controller.
+    /// </summary>
     public class ViewDataDictionaryControllerPropertyActivator : IControllerPropertyActivator
     {
         private readonly Func<Type, PropertyActivator<ControllerContext>[]> _getPropertiesToActivate;
@@ -18,12 +21,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private bool _initialized;
         private object _initializeLock = new object();
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ViewDataDictionaryControllerPropertyActivator"/>.
+        /// </summary>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/> to use.</param>
         public ViewDataDictionaryControllerPropertyActivator(IModelMetadataProvider modelMetadataProvider)
         {
             _modelMetadataProvider = modelMetadataProvider;
             _getPropertiesToActivate = GetPropertiesToActivate;
         }
 
+        /// <inheritdoc/>
         public void Activate(ControllerContext actionContext, object controller)
         {
             LazyInitializer.EnsureInitialized(
@@ -43,6 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
         }
 
+        /// <inheritdoc/>
         public Action<ControllerContext, object> GetActivatorDelegate(ControllerActionDescriptor actionDescriptor)
         {
             var controllerType = actionDescriptor.ControllerTypeInfo?.AsType();

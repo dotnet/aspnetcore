@@ -67,7 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="displayName">A display name for the authentication handler.</param>
         /// <param name="configureOptions">A delegate to configure <see cref="OpenIdConnectOptions"/>.</param>
         /// <returns>A reference to <paramref name="builder"/> after the operation has completed.</returns>
-        public static AuthenticationBuilder AddOpenIdConnect(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<OpenIdConnectOptions> configureOptions)
+        public static AuthenticationBuilder AddOpenIdConnect(this AuthenticationBuilder builder, string authenticationScheme, string? displayName, Action<OpenIdConnectOptions> configureOptions)
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIdConnectOptions>, OpenIdConnectPostConfigureOptions>());
             return builder.AddRemoteScheme<OpenIdConnectOptions, OpenIdConnectHandler>(authenticationScheme, displayName, configureOptions);

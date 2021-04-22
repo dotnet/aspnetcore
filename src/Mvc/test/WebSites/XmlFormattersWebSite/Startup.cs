@@ -13,16 +13,13 @@ namespace XmlFormattersWebSite
 {
     public class Startup
     {
-        public virtual CompatibilityVersion CompatibilityVersion => CompatibilityVersion.Latest;
-
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
             // Add MVC services to the services container
             services.AddControllers()
                 .AddXmlDataContractSerializerFormatters()
-                .AddXmlSerializerFormatters()
-                .SetCompatibilityVersion(CompatibilityVersion);
+                .AddXmlSerializerFormatters();
 
             services.Configure<MvcOptions>(options =>
             {

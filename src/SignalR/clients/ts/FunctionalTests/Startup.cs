@@ -145,7 +145,21 @@ namespace FunctionalTests
                     return Task.CompletedTask;
                 }
 
-                return next.Invoke();
+                return next.Invoke(context);
+            });
+
+            app.Use((context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/echoredirect"))
+                {
+                    var url = context.Request.Path.ToString();
+                    url = url.Replace("echoredirect", "echo");
+                    url += context.Request.QueryString.ToString();
+                    context.Response.Redirect(url, false, true);
+                    return Task.CompletedTask;
+                }
+
+                return next.Invoke(context);
             });
 
             app.Use((context, next) =>
@@ -156,7 +170,7 @@ namespace FunctionalTests
                     return context.Response.WriteAsync($"{{ \"url\": \"{newUrl}\" }}");
                 }
 
-                return next();
+                return next(context);
             });
 
             app.Use(async (context, next) =>
@@ -180,7 +194,18 @@ namespace FunctionalTests
                     context.Response.Cookies.Append("expiredCookie", "doesntmatter", expiredCookieOptions);
                 }
 
-                await next.Invoke();
+                await next.Invoke(context);
+            });
+
+            app.Use((context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/bad-negotiate"))
+                {
+                    context.Response.StatusCode = 400;
+                    return context.Response.WriteAsync("Some response from server");
+                }
+
+                return next(context);
             });
 
             app.UseRouting();
@@ -189,7 +214,7 @@ namespace FunctionalTests
             // This is for testing purposes only (karma hosts the client on its own server), never do this in production
             app.UseCors(policy =>
             {
-                policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:") || host.StartsWith("http://127.0.0.1:"))
+                policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:", StringComparison.Ordinal) || host.StartsWith("http://127.0.0.1:", StringComparison.Ordinal))
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

@@ -5,6 +5,9 @@ import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResour
 import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock } from '../Platform';
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
+import { Blazor } from '../../GlobalExports';
+
+declare var Module: EmscriptenModule;
 
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
@@ -51,16 +54,15 @@ export const monoPlatform: Platform = {
     });
   },
 
-  callEntryPoint: function callEntryPoint(assemblyName: string) {
-    // Instead of using Module.mono_call_assembly_entry_point, we have our own logic for invoking
-    // the entrypoint which adds support for async main.
-    // Currently we disregard the return value from the entrypoint, whether it's sync or async.
-    // In the future, we might want Blazor.start to return a Promise<Promise<value>>, where the
-    // outer promise reflects the startup process, and the inner one reflects the possibly-async
-    // .NET entrypoint method.
-    const invokeEntrypoint = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Hosting.EntrypointInvoker', 'InvokeEntrypoint');
-    // Note we're passing in null because passing arrays is problematic until https://github.com/mono/mono/issues/18245 is resolved.
-    invokeEntrypoint(assemblyName, null);
+  callEntryPoint: async function callEntryPoint(assemblyName: string) : Promise<any> {
+    const emptyArray = [ [ ] ];
+
+    try {
+      await BINDING.call_assembly_entry_point(assemblyName, emptyArray, "m")
+    } catch (error) {
+      console.error(error);
+      showErrorNotification();
+    }
   },
 
   toUint8Array: function toUint8Array(array: System_Array<any>): Uint8Array {
@@ -205,7 +207,6 @@ function addGlobalModuleScriptTagsToDocument(callback: () => void) {
   // The callback is put in the global scope so that it can be run after the script is loaded.
   // onload cannot be used in this case for non-file scripts.
   window['__wasmmodulecallback__'] = callback;
-  scriptElem.type = 'text/javascript';
   scriptElem.text = 'var Module; window.__wasmmodulecallback__(); delete window.__wasmmodulecallback__;';
 
   document.body.appendChild(scriptElem);
@@ -298,13 +299,13 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     assembliesBeingLoaded.forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
     pdbsBeingLoaded.forEach(r => addResourceAsAssembly(r, r.name));
 
-    window['Blazor']._internal.dotNetCriticalError = (message: System_String) => {
+    Blazor._internal.dotNetCriticalError = (message: System_String) => {
       module.printErr(BINDING.conv_string(message) || '(null)');
     };
 
     // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application
     // startup sequence to load satellite assemblies for the application's culture.
-    window['Blazor']._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray: System_Array<System_String>): System_Object => {
+    Blazor._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray: System_Array<System_String>): System_Object => {
       const culturesToLoad = BINDING.mono_array_to_js_array<System_String, string>(culturesToLoadDotNetArray);
       const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
       const applicationCulture = resourceLoader.startOptions.applicationCulture || (navigator.languages && navigator.languages[0]);
@@ -319,7 +320,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         return BINDING.js_to_mono_obj(
           resourcePromises.then(resourcesToLoad => {
             if (resourcesToLoad.length) {
-              window['Blazor']._internal.readSatelliteAssemblies = () => {
+              Blazor._internal.readSatelliteAssemblies = () => {
                 const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
                 for (var i = 0; i < resourcesToLoad.length; i++) {
                   BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
@@ -338,7 +339,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       assemblies?: (ArrayBuffer | null)[],
       pdbs?: (ArrayBuffer | null)[]
     } = {};
-    window['Blazor']._internal.getLazyAssemblies = (assembliesToLoadDotNetArray: System_Array<System_String>): System_Object => {
+    Blazor._internal.getLazyAssemblies = (assembliesToLoadDotNetArray: System_Array<System_String>): System_Object => {
       const assembliesToLoad = BINDING.mono_array_to_js_array<System_String, string>(assembliesToLoadDotNetArray);
       const lazyAssemblies = resourceLoader.bootConfig.resources.lazyAssembly;
 
@@ -374,7 +375,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
           lazyResources["assemblies"] = values[0];
           lazyResources["pdbs"] = values[1];
           if (lazyResources["assemblies"].length) {
-            window['Blazor']._internal.readLazyAssemblies = () => {
+            Blazor._internal.readLazyAssemblies = () => {
               const { assemblies } = lazyResources;
               if (!assemblies) {
                 return BINDING.mono_obj_array_new(0);
@@ -387,7 +388,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
               return assemblyBytes;
             };
 
-            window['Blazor']._internal.readLazyPdbs = () => {
+            Blazor._internal.readLazyPdbs = () => {
               const { assemblies, pdbs } = lazyResources;
               if (!assemblies) {
                 return BINDING.mono_obj_array_new(0);
@@ -429,6 +430,11 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     // Turn off full-gc to prevent browser freezing.
     const mono_wasm_enable_on_demand_gc = cwrap('mono_wasm_enable_on_demand_gc', null, ['number']);
     mono_wasm_enable_on_demand_gc(0);
+    if (resourceLoader.bootConfig.modifiableAssemblies) {
+      // Configure the app to enable hot reload in Development.
+      MONO.mono_wasm_setenv('DOTNET_MODIFIABLE_ASSEMBLIES', resourceLoader.bootConfig.modifiableAssemblies);
+    }
+
     const load_runtime = cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
     // -1 enables debugging with logging disabled. 0 disables debugging entirely.
     load_runtime(appBinDirName, hasDebuggingEnabled() ? -1 : 0);

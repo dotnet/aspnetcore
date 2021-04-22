@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Logging
     internal static class LoggingExtensions
     {
         private static Action<ILogger, Exception> _tokenValidationFailed;
-        private static Action<ILogger, Exception> _tokenValidationSucceeded;
+        private static Action<ILogger, Exception?> _tokenValidationSucceeded;
         private static Action<ILogger, Exception> _errorProcessingMessage;
 
         static LoggingExtensions()

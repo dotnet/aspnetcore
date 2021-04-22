@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     internal class HasValidatorsValidationMetadataProvider : IValidationMetadataProvider
     {
         private readonly bool _hasOnlyMetadataBasedValidators;
-        private readonly IMetadataBasedModelValidatorProvider[] _validatorProviders;
+        private readonly IMetadataBasedModelValidatorProvider[]? _validatorProviders;
 
         public HasValidatorsValidationMetadataProvider(IList<IModelValidatorProvider> modelValidatorProviders)
         {
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return;
             }
 
-            for (var i = 0; i < _validatorProviders.Length; i++)
+            for (var i = 0; i < _validatorProviders!.Length; i++)
             {
                 var provider = _validatorProviders[i];
                 if (provider.HasValidators(context.Key.ModelType, context.ValidationMetadata.ValidatorMetadata))
@@ -47,9 +49,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                         // from property attributes. This is later used to produce a error for record types
                         // where a record type property that is bound as a parameter defines validation attributes.
 
-                        if (!(context.PropertyAttributes is IList<object> propertyAttributes))
+                        if (context.PropertyAttributes is not IList<object> propertyAttributes)
                         {
-                            propertyAttributes = context.PropertyAttributes.ToList();
+                            propertyAttributes = context.PropertyAttributes!.ToList();
                         }
 
                         if (provider.HasValidators(typeof(object), propertyAttributes))

@@ -54,7 +54,7 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
 1. Add the package to the .csproj file using `<Reference Include="System.Banana" />`
 2. Add an entry to [eng/Dependencies.props](/eng/Dependencies.props) e.g. `<LatestPackageReference Include="System.Banana" />`
 3. If this package comes from another dotnet team and should be updated automatically by our bot&hellip;
-    1. Add an entry to [eng/Versions.props](/eng/Versions.props) like this `<SystemBananaPackageVersion>0.0.1-beta-1</SystemBananaPackageVersion>`.
+    1. Add an entry to [eng/Versions.props](/eng/Versions.props) like this `<SystemBananaVersion>0.0.1-beta-1</SystemBananaVersion>`.
     2. Add an entry to [eng/Version.Details.xml](/eng/Version.Details.xml) like this:
 
         ```xml
@@ -111,7 +111,7 @@ Once `darc` is installed and set-up, it can be used to modify the subscriptions 
 Subscriptions are objects that define the ecosystem repos we are listening for updates to, the frequency we are looking for updates, and more.
 
 ```bash
-darc get-subscriptions --target-branch master --target-repo aspnetcore$ --regex
+darc get-subscriptions --target-branch main --target-repo aspnetcore$ --regex
 ```
 
 **Disable/enable a subscription**

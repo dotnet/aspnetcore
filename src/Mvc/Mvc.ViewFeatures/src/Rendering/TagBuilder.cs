@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,8 +22,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     [DebuggerDisplay("{DebuggerToString()}")]
     public class TagBuilder : IHtmlContent
     {
-        private AttributeDictionary _attributes;
-        private HtmlContentBuilder _innerHtml;
+        private AttributeDictionary? _attributes;
+        private HtmlContentBuilder? _innerHtml;
 
         /// <summary>
         /// Creates a new HTML tag that has the specified tag name.
@@ -122,9 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="value">The CSS class name to add.</param>
         public void AddCssClass(string value)
         {
-            string currentValue;
-
-            if (Attributes.TryGetValue("class", out currentValue))
+            if (Attributes.TryGetValue("class", out var currentValue))
             {
                 Attributes["class"] = value + " " + currentValue;
             }
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <remarks>
         /// Valid "id" attributes are defined in https://www.w3.org/TR/html401/types.html#type-id.
         /// </remarks>
-        public static string CreateSanitizedId(string name, string invalidCharReplacement)
+        public static string CreateSanitizedId(string? name, string invalidCharReplacement)
         {
             if (invalidCharReplacement == null)
             {
@@ -276,12 +276,23 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
         }
 
-        public void MergeAttribute(string key, string value)
+        /// <summary>
+        /// Merge an attribute.
+        /// </summary>
+        /// <param name="key">The attribute key.</param>
+        /// <param name="value">The attribute value.</param>
+        public void MergeAttribute(string key, string? value)
         {
             MergeAttribute(key, value, replaceExisting: false);
         }
 
-        public void MergeAttribute(string key, string value, bool replaceExisting)
+        /// <summary>
+        /// Merge an attribute.
+        /// </summary>
+        /// <param name="key">The attribute key.</param>
+        /// <param name="value">The attribute value.</param>
+        /// <param name="replaceExisting">Whether to replace an existing value.</param>
+        public void MergeAttribute(string key, string? value, bool replaceExisting)
         {
             if (string.IsNullOrEmpty(key))
             {
@@ -294,19 +305,32 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
         }
 
-        public void MergeAttributes<TKey, TValue>(IDictionary<TKey, TValue> attributes)
+        /// <summary>
+        /// Merge an attribute dictionary.
+        /// </summary>
+        /// <typeparam name="TKey">The key type.</typeparam>
+        /// <typeparam name="TValue">The value type.</typeparam>
+        /// <param name="attributes">The attributes.</param>
+        public void MergeAttributes<TKey, TValue>(IDictionary<TKey, TValue?> attributes)
         {
             MergeAttributes(attributes, replaceExisting: false);
         }
 
-        public void MergeAttributes<TKey, TValue>(IDictionary<TKey, TValue> attributes, bool replaceExisting)
+        /// <summary>
+        /// Merge an attribute dictionary.
+        /// </summary>
+        /// <typeparam name="TKey">The key type.</typeparam>
+        /// <typeparam name="TValue">The value type.</typeparam>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="replaceExisting">Whether to replace existing attributes.</param>
+        public void MergeAttributes<TKey, TValue>(IDictionary<TKey, TValue?> attributes, bool replaceExisting)
         {
             // Perf: Avoid allocating enumerator for `attributes` if possible
             if (attributes != null && attributes.Count > 0)
             {
                 foreach (var entry in attributes)
                 {
-                    var key = Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
+                    var key = Convert.ToString(entry.Key, CultureInfo.InvariantCulture)!;
                     var value = Convert.ToString(entry.Value, CultureInfo.InvariantCulture);
                     MergeAttribute(key, value, replaceExisting);
                 }
@@ -333,7 +357,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// Returns an <see cref="IHtmlContent"/> that renders the body.
         /// </summary>
         /// <returns>An <see cref="IHtmlContent"/> that renders the body.</returns>
-        public IHtmlContent RenderBody() => _innerHtml;
+        public IHtmlContent? RenderBody() => _innerHtml;
 
         /// <summary>
         /// Returns an <see cref="IHtmlContent"/> that renders the start tag.

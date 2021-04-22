@@ -5,10 +5,14 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
+    /// <summary>
+    /// Provides access to HTTP status code reason phrases as listed in 
+    /// http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml.
+    /// </summary>
     public static class ReasonPhrases
     {
         // Status Codes listed at http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
-        private static IDictionary<int, string> Phrases = new Dictionary<int, string>()
+        private static readonly Dictionary<int, string> Phrases = new()
         {
             { 100, "Continue" },
             { 101, "Switching Protocols" },
@@ -78,6 +82,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             { 511, "Network Authentication Required" },
         };
 
+        /// <summary>
+        /// Gets the reason phrase for the specified status code. 
+        /// </summary>
+        /// <param name="statusCode">The status code.</param>
+        /// <returns>The reason phrase, or <see cref="string.Empty"/> if the status code is unknown.</returns>
         public static string GetReasonPhrase(int statusCode)
         {
             return Phrases.TryGetValue(statusCode, out var phrase) ? phrase : string.Empty;

@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -234,6 +237,48 @@ namespace Microsoft.AspNetCore.Testing
         {
             _trace1.Http2MaxConcurrentStreamsReached(connectionId);
             _trace2.Http2MaxConcurrentStreamsReached(connectionId);
+        }
+
+        public void InvalidResponseHeaderRemoved()
+        {
+            _trace1.InvalidResponseHeaderRemoved();
+            _trace2.InvalidResponseHeaderRemoved();
+        }
+
+        public void Http3ConnectionError(string connectionId, Http3ConnectionErrorException ex)
+        {
+            _trace1.Http3ConnectionError(connectionId, ex);
+            _trace2.Http3ConnectionError(connectionId, ex);
+        }
+
+        public void Http3ConnectionClosing(string connectionId)
+        {
+            _trace1.Http3ConnectionClosing(connectionId);
+            _trace2.Http3ConnectionClosing(connectionId);
+        }
+
+        public void Http3ConnectionClosed(string connectionId, long highestOpenedStreamId)
+        {
+            _trace1.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
+            _trace2.Http3ConnectionClosed(connectionId, highestOpenedStreamId);
+        }
+
+        public void Http3StreamAbort(string traceIdentifier, Http3ErrorCode error, ConnectionAbortedException abortReason)
+        {
+            _trace1.Http3StreamAbort(traceIdentifier, error, abortReason);
+            _trace2.Http3StreamAbort(traceIdentifier, error, abortReason);
+        }
+
+        public void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame)
+        {
+            _trace1.Http3FrameReceived(connectionId, streamId, frame);
+            _trace1.Http3FrameReceived(connectionId, streamId, frame);
+        }
+
+        public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame)
+        {
+            _trace1.Http3FrameSending(connectionId, streamId, frame);
+            _trace2.Http3FrameSending(connectionId, streamId, frame);
         }
     }
 }

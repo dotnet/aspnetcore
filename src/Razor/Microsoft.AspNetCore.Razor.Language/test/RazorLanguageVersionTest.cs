@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Reflection;
 using Xunit;
@@ -107,6 +108,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
+        public void TryParse60()
+        {
+            // Arrange
+            var value = "6.0";
+
+            // Act
+            var result = RazorLanguageVersion.TryParse(value, out var version);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(RazorLanguageVersion.Version_6_0, version);
+        }
+
+        [Fact]
         public void TryParseLatest()
         {
             // Arrange
@@ -117,7 +132,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.True(result);
-            Assert.Same(RazorLanguageVersion.Version_5_0, version);
+            Assert.Same(RazorLanguageVersion.Version_6_0, version);
         }
 
         [Fact]
@@ -140,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var v = RazorLanguageVersion.Parse("latest");
             var versions = typeof(RazorLanguageVersion).GetFields(BindingFlags.Public | BindingFlags.Static)
-                .Where(f => f.Name.StartsWith("Version_"))
+                .Where(f => f.Name.StartsWith("Version_", StringComparison.Ordinal))
                 .Select(f => f.GetValue(obj: null))
                 .Cast<RazorLanguageVersion>();
 

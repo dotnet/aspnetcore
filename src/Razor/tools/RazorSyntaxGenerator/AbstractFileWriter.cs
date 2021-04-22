@@ -187,7 +187,7 @@ namespace RazorSyntaxGenerator
 
         protected static bool IsRoot(Node n)
         {
-            return n.Root != null && string.Compare(n.Root, "true", true) == 0;
+            return n.Root != null && string.Equals(n.Root, "true", StringComparison.OrdinalIgnoreCase);
         }
 
         protected bool IsNode(string typeName)
@@ -203,22 +203,22 @@ namespace RazorSyntaxGenerator
 
         protected static bool IsOptional(Field f)
         {
-            return f.Optional != null && string.Compare(f.Optional, "true", true) == 0;
+            return f.Optional != null && string.Equals(f.Optional, "true", StringComparison.OrdinalIgnoreCase);
         }
 
         protected static bool IsOverride(Field f)
         {
-            return f.Override != null && string.Compare(f.Override, "true", true) == 0;
+            return f.Override != null && string.Equals(f.Override, "true", StringComparison.OrdinalIgnoreCase);
         }
 
         protected static bool IsNew(Field f)
         {
-            return f.New != null && string.Compare(f.New, "true", true) == 0;
+            return f.New != null && string.Equals(f.New, "true", StringComparison.OrdinalIgnoreCase);
         }
 
         protected static bool HasErrors(Node n)
         {
-            return n.Errors == null || string.Compare(n.Errors, "true", true) == 0;
+            return n.Errors == null || string.Equals(n.Errors, "true", StringComparison.OrdinalIgnoreCase);
         }
 
         protected static string CamelCase(string name)

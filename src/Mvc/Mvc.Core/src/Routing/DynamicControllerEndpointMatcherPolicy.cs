@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             // The per-route selector, must be the same for all the endpoints we are dealing with.
-            DynamicControllerEndpointSelector selector = null;
+            DynamicControllerEndpointSelector? selector = null;
 
             // There's no real benefit here from trying to avoid the async state machine.
             // We only execute on nodes that contain a dynamic policy, and thus always have
@@ -94,16 +95,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }
 
                 var endpoint = candidates[i].Endpoint;
-                var originalValues = candidates[i].Values;
+                var originalValues = candidates[i].Values!;
 
-                RouteValueDictionary dynamicValues = null;
+                RouteValueDictionary? dynamicValues = null;
 
                 // We don't expect both of these to be provided, and they are internal so there's
                 // no realistic way this could happen.
                 var dynamicControllerMetadata = endpoint.Metadata.GetMetadata<DynamicControllerMetadata>();
                 var transformerMetadata = endpoint.Metadata.GetMetadata<DynamicControllerRouteValueTransformerMetadata>();
 
-                DynamicRouteValueTransformer transformer = null;
+                DynamicRouteValueTransformer? transformer = null;
                 if (dynamicControllerMetadata != null)
                 {
                     dynamicValues = dynamicControllerMetadata.Values;
@@ -179,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
         }
 
-        private DynamicControllerEndpointSelector ResolveSelector(DynamicControllerEndpointSelector currentSelector, Endpoint endpoint)
+        private DynamicControllerEndpointSelector ResolveSelector(DynamicControllerEndpointSelector? currentSelector, Endpoint endpoint)
         {
             var selector = _selectorCache.GetEndpointSelector(endpoint);
 

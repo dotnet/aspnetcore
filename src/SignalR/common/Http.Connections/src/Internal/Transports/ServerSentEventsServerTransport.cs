@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             context.Response.Headers[HeaderNames.Pragma] = "no-cache";
 
             // Make sure we disable all response buffering for SSE
-            var bufferingFeature = context.Features.Get<IHttpResponseBodyFeature>();
+            var bufferingFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
             bufferingFeature.DisableBuffering();
 
             context.Response.Headers[HeaderNames.ContentEncoding] = "identity";

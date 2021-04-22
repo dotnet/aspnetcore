@@ -1,5 +1,6 @@
 import { ReconnectDisplay } from './ReconnectDisplay';
 import { Logger, LogLevel } from '../Logging/Logger';
+import { Blazor } from '../../GlobalExports';
 
 export class DefaultReconnectDisplay implements ReconnectDisplay {
   modal: HTMLDivElement;
@@ -52,7 +53,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
         // - true to mean success
         // - false to mean we reached the server, but it rejected the connection (e.g., unknown circuit ID)
         // - exception to mean we didn't reach the server (this can be sync or async)
-        const successful = await window['Blazor'].reconnect();
+        const successful = await (Blazor?.reconnect as any)();
         if (!successful) {
           this.rejected();
         }

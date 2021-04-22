@@ -8,6 +8,8 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <!-- Temporarily target the previous runtime until https://github.com/dotnet/sdk/pull/14574 is merged. -->
+    <TargetLatestDotNetRuntime>false</TargetLatestDotNetRuntime>
     <!-- No need to track public APIs of these MSBuild tasks. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
@@ -15,22 +17,12 @@
   <ItemGroup>
     <PackageReference Include="NuGet.Packaging" Version="5.9.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
-
-    <!--
-      Gather project references for compilation against RTM packages. %(RTMVersion) is set for about a dozen packages
-      in all servicing builds. Cannot reference two versions of a package, mandating this separation from projects
-      using the relevant packages.
-    -->
-    <PackageReference Include="@(LatestPackageReference->HasMetadata('RTMVersion'))"
-        IncludeAssets="None"
-        PrivateAssets="All"
-        Version="%(RTMVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
-    <PackageReference Include="Microsoft.Build.Framework" Version="16.3.0" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.3.0" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.3.0" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.9.0" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.9.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.9.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">

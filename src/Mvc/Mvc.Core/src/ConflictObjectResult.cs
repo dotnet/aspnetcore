@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="ConflictObjectResult"/> instance.
         /// </summary>
         /// <param name="error">Contains the errors to be returned to the client.</param>
-        public ConflictObjectResult([ActionResultObjectValue] object error)
+        public ConflictObjectResult([ActionResultObjectValue] object? error)
             : base(error)
         {
             StatusCode = DefaultStatusCode;

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,11 +27,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // Protected for READS and WRITES.
         protected readonly List<Action<EndpointBuilder>> Conventions;
 
-        private List<Endpoint> _endpoints;
-        private CancellationTokenSource _cancellationTokenSource;
-        private IChangeToken _changeToken;
-        private IDisposable _disposable;
-
+        private List<Endpoint>? _endpoints;
+        private CancellationTokenSource? _cancellationTokenSource;
+        private IChangeToken? _changeToken;
+        private IDisposable? _disposable;
 
         public ActionEndpointDataSourceBase(IActionDescriptorCollectionProvider actions)
         {
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             lock (Lock)
             {
                 var endpoints = CreateEndpoints(_actions.ActionDescriptors.Items, Conventions);
-                
+
                 // See comments in DefaultActionDescriptorCollectionProvider. These steps are done
                 // in a specific order to ensure callers always see a consistent state.
 

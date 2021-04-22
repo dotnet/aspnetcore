@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,20 +22,20 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     /// <para>
     /// The route values returned from a <see cref="TransformAsync(HttpContext, RouteValueDictionary)"/> implementation
     /// will be used to select an action based on matching of the route values. All actions that match the route values
-    /// will be considered as candidates, and may be further disambiguated by 
-    /// <see cref="FilterAsync(HttpContext, RouteValueDictionary, IReadOnlyList{Endpoint})" /> as well as 
+    /// will be considered as candidates, and may be further disambiguated by
+    /// <see cref="FilterAsync(HttpContext, RouteValueDictionary, IReadOnlyList{Endpoint})" /> as well as
     /// <see cref="IEndpointSelectorPolicy" /> implementations such as <see cref="HttpMethodMatcherPolicy" />.
     /// </para>
     /// <para>
     /// Operations on a <see cref="DynamicRouteValueTransformer" /> instance will be called for each dynamic endpoint
     /// in the following sequence:
-    /// 
+    ///
     /// <list type="bullet">
     ///   <item><description><see cref="State" /> is set</description></item>
     ///   <item><description><see cref="TransformAsync(HttpContext, RouteValueDictionary)"/></description></item>
     ///   <item><description><see cref="FilterAsync(HttpContext, RouteValueDictionary, IReadOnlyList{Endpoint})" /></description></item>
     /// </list>
-    /// 
+    ///
     /// Implementations that are registered with the service collection as transient may safely use class
     /// members to persist state across these operations.
     /// </para>
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// Implementations that make use of <see cref="State" /> must be registered as transient with the service
         /// collection.
         /// </remarks>
-        public object State { get; set; }
+        public object? State { get; set; }
 
         /// <summary>
         /// Creates a set of transformed route values that will be used to select an action.
@@ -64,8 +65,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public abstract ValueTask<RouteValueDictionary> TransformAsync(HttpContext httpContext, RouteValueDictionary values);
 
         /// <summary>
-        /// Filters the set of endpoints that were chosen as a result of lookup based on the route values returned by 
-        /// <see cref="TransformAsync(HttpContext, RouteValueDictionary)" />. 
+        /// Filters the set of endpoints that were chosen as a result of lookup based on the route values returned by
+        /// <see cref="TransformAsync(HttpContext, RouteValueDictionary)" />.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext" /> associated with the current request.</param>
         /// <param name="values">The route values returned from <see cref="TransformAsync(HttpContext, RouteValueDictionary)" />.</param>
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <remarks>
         /// <para>
         /// Implementations of <see cref="FilterAsync(HttpContext, RouteValueDictionary, IReadOnlyList{Endpoint})" /> may further
-        /// refine the list of endpoints chosen based on route value matching by returning a new list of endpoints based on 
+        /// refine the list of endpoints chosen based on route value matching by returning a new list of endpoints based on
         /// <paramref name="endpoints" />.
         /// </para>
         /// <para>

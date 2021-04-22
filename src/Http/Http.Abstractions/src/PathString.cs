@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http.Abstractions;
@@ -18,9 +19,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Represents the empty path. This field is read-only.
         /// </summary>
-        public static readonly PathString Empty = new PathString(string.Empty);
-
-        private readonly string? _value;
+        public static readonly PathString Empty = new(string.Empty);
 
         /// <summary>
         /// Initialize the path string with a given value. This value must be in unescaped format. Use
@@ -33,23 +32,21 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentException(Resources.FormatException_PathMustStartWithSlash(nameof(value)), nameof(value));
             }
-            _value = value;
+            Value = value;
         }
 
         /// <summary>
         /// The unescaped path value
         /// </summary>
-        public string? Value
-        {
-            get { return _value; }
-        }
+        public string? Value { get; }
 
         /// <summary>
         /// True if the path is not empty
         /// </summary>
+        [MemberNotNullWhen(true, nameof(Value))]
         public bool HasValue
         {
-            get { return !string.IsNullOrEmpty(_value); }
+            get { return !string.IsNullOrEmpty(Value); }
         }
 
         /// <summary>
@@ -72,7 +69,7 @@ namespace Microsoft.AspNetCore.Http
                 return string.Empty;
             }
 
-            var value = _value!;
+            var value = Value;
             var i = 0;
             for (; i < value.Length; i++)
             {
@@ -106,11 +103,7 @@ namespace Microsoft.AspNetCore.Http
                     if (requiresEscaping)
                     {
                         // the current segment requires escape
-                        if (buffer == null)
-                        {
-                            buffer = new StringBuilder(value.Length * 3);
-                        }
-
+                        buffer ??= new StringBuilder(value.Length * 3);
                         buffer.Append(Uri.EscapeDataString(value.Substring(start, count)));
 
                         requiresEscaping = false;
@@ -134,11 +127,7 @@ namespace Microsoft.AspNetCore.Http
                     if (!requiresEscaping)
                     {
                         // the current segment doesn't require escape
-                        if (buffer == null)
-                        {
-                            buffer = new StringBuilder(value.Length * 3);
-                        }
-
+                        buffer ??= new StringBuilder(value.Length * 3);
                         buffer.Append(value, start, count);
 
                         requiresEscaping = true;
@@ -159,10 +148,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 if (count > 0)
                 {
-                    if (buffer == null)
-                    {
-                        buffer = new StringBuilder(value.Length * 3);
-                    }
+                    buffer ??= new StringBuilder(value.Length * 3);
 
                     if (requiresEscaping)
                     {
@@ -262,7 +248,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 if (value1.Length == value2.Length || value1[value2.Length] == '/')
                 {
-                    remaining = new PathString(value1.Substring(value2.Length));
+                    remaining = new PathString(value1[value2.Length..]);
                     return true;
                 }
             }
@@ -301,7 +287,7 @@ namespace Microsoft.AspNetCore.Http
                 if (value1.Length == value2.Length || value1[value2.Length] == '/')
                 {
                     matched = new PathString(value1.Substring(0, value2.Length));
-                    remaining = new PathString(value1.Substring(value2.Length));
+                    remaining = new PathString(value1[value2.Length..]);
                     return true;
                 }
             }
@@ -318,11 +304,12 @@ namespace Microsoft.AspNetCore.Http
         {
             if (HasValue &&
                 other.HasValue &&
-                Value![Value.Length - 1] == '/')
+                Value[^1] == '/')
             {
                 // If the path string has a trailing slash and the other string has a leading slash, we need
                 // to trim one of them.
-                return new PathString(Value + other.Value!.Substring(1));
+                var combined = string.Concat(Value.AsSpan(), other.Value.AsSpan(1));
+                return new PathString(combined);
             }
 
             return new PathString(Value + other.Value);
@@ -359,7 +346,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 return true;
             }
-            return string.Equals(_value, other._value, comparisonType);
+            return string.Equals(Value, other.Value, comparisonType);
         }
 
         /// <summary>
@@ -369,11 +356,11 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>True if both PathString values are equal</returns>
         public override bool Equals(object? obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return !HasValue;
             }
-            return obj is PathString && Equals((PathString)obj);
+            return obj is PathString pathString && Equals(pathString);
         }
 
         /// <summary>
@@ -382,7 +369,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The hash code</returns>
         public override int GetHashCode()
         {
-            return (HasValue ? StringComparer.OrdinalIgnoreCase.GetHashCode(_value!) : 0);
+            return (HasValue ? StringComparer.OrdinalIgnoreCase.GetHashCode(Value) : 0);
         }
 
         /// <summary>
@@ -474,18 +461,16 @@ namespace Microsoft.AspNetCore.Http
     internal sealed class PathStringConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-            => sourceType == typeof(string) 
-            ? true 
-            : base.CanConvertFrom(context, sourceType);
+            => sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-            => value is string 
-            ? PathString.ConvertFromString((string)value) 
+            => value is string @string
+            ? PathString.ConvertFromString(@string)
             : base.ConvertFrom(context, culture, value);
 
         public override object ConvertTo(ITypeDescriptorContext context,
            CultureInfo culture, object value, Type destinationType)
-            => destinationType == typeof(string) 
+            => destinationType == typeof(string)
             ? value.ToString() ?? string.Empty
             : base.ConvertTo(context, culture, value, destinationType);
     }

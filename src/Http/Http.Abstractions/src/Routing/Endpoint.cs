@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Http
         /// The informational display name of the endpoint. May be null.
         /// </param>
         public Endpoint(
-            RequestDelegate requestDelegate,
+            RequestDelegate? requestDelegate,
             EndpointMetadataCollection? metadata,
             string? displayName)
         {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets the delegate used to process requests for the endpoint.
         /// </summary>
-        public RequestDelegate RequestDelegate { get; }
+        public RequestDelegate? RequestDelegate { get; }
 
         /// <summary>
         /// Returns a string representation of the endpoint.

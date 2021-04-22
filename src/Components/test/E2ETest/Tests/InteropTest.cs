@@ -7,6 +7,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29553")]
         public void CanInvokeDotNetMethods()
         {
             // Arrange
@@ -111,6 +113,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["instanceMethodOutgoingByRef"] = "1234",
                 ["jsInProcessObjectReference.identity"] = "Invoked from JSInProcessObjectReference",
                 ["jsUnmarshalledObjectReference.unmarshalledFunction"] = "True",
+                ["jsCastedUnmarshalledObjectReference.unmarshalledFunction"] = "False",
                 ["stringValueUpperSync"] = "MY STRING",
                 ["testDtoNonSerializedValueSync"] = "99999",
                 ["testDtoSync"] = "Same",

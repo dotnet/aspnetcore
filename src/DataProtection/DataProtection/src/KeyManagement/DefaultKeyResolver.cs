@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
         }
 
-        private IKey FindDefaultKey(DateTimeOffset now, IEnumerable<IKey> allKeys, out IKey fallbackKey, out bool callerShouldGenerateNewKey)
+        private IKey? FindDefaultKey(DateTimeOffset now, IEnumerable<IKey> allKeys, out IKey? fallbackKey, out bool callerShouldGenerateNewKey)
         {
             // find the preferred default key (allowing for server-to-server clock skew)
             var preferredDefaultKey = (from key in allKeys

@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets or sets the <see cref="AuthenticationProperties"/>.
         /// </summary>
-        public virtual AuthenticationProperties Properties { get; set; }
+        public virtual AuthenticationProperties? Properties { get; set; }
 
         /// <summary>
         /// Calls success creating a ticket with the <see cref="Principal"/> and <see cref="Properties"/>.

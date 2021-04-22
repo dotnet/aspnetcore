@@ -8,15 +8,17 @@ using System.Text.Encodings.Web;
 namespace Microsoft.Extensions.WebEncoders.Testing
 {
     /// <summary>
-    /// Encoder used for unit testing.
+    /// <see cref="UrlEncoder"/> used for unit testing. This encoder does not perform any encoding and should not be used in application code.
     /// </summary>
     public class UrlTestEncoder : UrlEncoder
     {
+        /// <inheritdoc />
         public override int MaxOutputCharactersPerInputCharacter
         {
             get { return 1; }
         }
 
+        /// <inheritdoc />
         public override string Encode(string value)
         {
             if (value == null)
@@ -32,6 +34,7 @@ namespace Microsoft.Extensions.WebEncoders.Testing
             return $"UrlEncode[[{value}]]";
         }
 
+        /// <inheritdoc />
         public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
         {
             if (output == null)
@@ -54,6 +57,7 @@ namespace Microsoft.Extensions.WebEncoders.Testing
             output.Write("]]");
         }
 
+        /// <inheritdoc />
         public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
         {
             if (output == null)
@@ -76,16 +80,19 @@ namespace Microsoft.Extensions.WebEncoders.Testing
             output.Write("]]");
         }
 
+        /// <inheritdoc />
         public override bool WillEncode(int unicodeScalar)
         {
             return false;
         }
 
+        /// <inheritdoc />
         public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
         {
             return -1;
         }
 
+        /// <inheritdoc />
         public override unsafe bool TryEncodeUnicodeScalar(
             int unicodeScalar,
             char* buffer,

@@ -1,16 +1,16 @@
 {
   "sdk": {
-    "version": "5.0.202"
+    "version": "6.0.100-preview.4.21219.3"
   },
   "tools": {
-    "dotnet": "5.0.202",
+    "dotnet": "6.0.100-preview.4.21219.3",
     "runtimes": {
       "dotnet/x64": [
         "2.1.27",
-        "$(MicrosoftNETCoreAppInternalPackageVersion)"
+        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "dotnet/x86": [
-        "$(MicrosoftNETCoreAppInternalPackageVersion)"
+        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "aspnetcore/x64": [
         "3.1.14"
@@ -19,7 +19,7 @@
     "Git": "2.22.0",
     "jdk": "11.0.3",
     "vs": {
-      "version": "16.5",
+      "version": "16.8",
       "components": [
         "Microsoft.VisualStudio.Component.VC.ATL",
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
@@ -29,8 +29,8 @@
     "xcopy-msbuild": "16.5.0-alpha"
   },
   "msbuild-sdks": {
-    "Yarn.MSBuild": "1.15.2",
-    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.21160.3",
-    "Microsoft.DotNet.Helix.Sdk": "5.0.0-beta.21160.3"
+    "Yarn.MSBuild": "1.22.10",
+    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21216.2",
+    "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.21216.2"
   }
 }

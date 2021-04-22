@@ -93,7 +93,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             { "break", CSharpKeyword.Break },
             { "checked", CSharpKeyword.Checked },
             { "namespace", CSharpKeyword.Namespace },
-            { "when", CSharpKeyword.When }
+            { "when", CSharpKeyword.When },
+            { "where", CSharpKeyword.Where }
         };
 
         public CSharpTokenizer(ITextDocument source)

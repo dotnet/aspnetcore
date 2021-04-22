@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
             static async Task Awaited(ExceptionHandlerMiddleware middleware, HttpContext context, Task task)
             {
-                ExceptionDispatchInfo edi = null;
+                ExceptionDispatchInfo? edi = null;
                 try
                 {
                     await task;
@@ -123,14 +123,14 @@ namespace Microsoft.AspNetCore.Diagnostics
                 var exceptionHandlerFeature = new ExceptionHandlerFeature()
                 {
                     Error = edi.SourceException,
-                    Path = originalPath.Value,
+                    Path = originalPath.Value!,
                 };
                 context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
                 context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
-                await _options.ExceptionHandler(context);
+                await _options.ExceptionHandler!(context);
 
                 if (context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
                 {
@@ -142,7 +142,9 @@ namespace Microsoft.AspNetCore.Diagnostics
                     return;
                 }
 
-                _logger.ErrorHandlerNotFound();
+                edi = ExceptionDispatchInfo.Capture(new InvalidOperationException($"The exception handler configured on {nameof(ExceptionHandlerOptions)} produced a 404 status response. " +
+                    $"This {nameof(InvalidOperationException)} containing the original exception was thrown since this is often due to a misconfigured {nameof(ExceptionHandlerOptions.ExceptionHandlingPath)}. " +
+                    $"If the exception handler is expected to return 404 status responses then set {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} to true.", edi.SourceException));
             }
             catch (Exception ex2)
             {
@@ -154,7 +156,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 context.Request.Path = originalPath;
             }
 
-            edi.Throw(); // Re-throw the original if we couldn't handle it
+            edi.Throw(); // Re-throw wrapped exception or the original if we couldn't handle it
         }
 
         private static void ClearHttpContext(HttpContext context)

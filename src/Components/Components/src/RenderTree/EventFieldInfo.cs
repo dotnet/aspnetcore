@@ -11,7 +11,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     // Information supplied with an event notification that can be used to update an existing
     // render tree to match the latest UI state when a form field has mutated. To determine
     // which field has been mutated, the renderer matches it based on the event handler ID.
+#if IGNITOR
+    internal class EventFieldInfo
+#else
     public class EventFieldInfo
+#endif
     {
         /// <summary>
         /// Identifies the component whose render tree contains the affected form field.

@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     internal class MvcDataAnnotationsMvcOptionsSetup : IConfigureOptions<MvcOptions>
     {
-        private readonly IStringLocalizerFactory _stringLocalizerFactory;
+        private readonly IStringLocalizerFactory? _stringLocalizerFactory;
         private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;
         private readonly IOptions<MvcDataAnnotationsLocalizationOptions> _dataAnnotationLocalizationOptions;
 

@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,24 +8,24 @@ using System.Globalization;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    internal class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object>>
+    internal class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object?>>
     {
-        private string _cachedToString;
+        private string? _cachedToString;
 
-        public string ConnectionId { get; set; }
+        public string? ConnectionId { get; set; }
 
-        public ConnectionLogScope(string connectionId)
+        public ConnectionLogScope(string? connectionId)
         {
             ConnectionId = connectionId;
         }
 
-        public KeyValuePair<string, object> this[int index]
+        public KeyValuePair<string, object?> this[int index]
         {
             get
             {
                 if (Count == 1 && index == 0)
                 {
-                    return new KeyValuePair<string, object>("TransportConnectionId", ConnectionId);
+                    return new KeyValuePair<string, object?>("TransportConnectionId", ConnectionId);
                 }
 
                 throw new ArgumentOutOfRangeException(nameof(index));
@@ -36,7 +34,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public int Count => string.IsNullOrEmpty(ConnectionId) ? 0 : 1;
 
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
             for (var i = 0; i < Count; ++i)
             {
@@ -49,7 +47,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             return GetEnumerator();
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
             if (_cachedToString == null)
             {

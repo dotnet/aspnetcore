@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// Groups child <see cref="InputRadio{TValue}"/> components.
     /// </summary>
-    public class InputRadioGroup<TValue> : InputBase<TValue>
+    public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
     {
         private readonly string _defaultGroupName = Guid.NewGuid().ToString("N");
         private InputRadioContext? _context;

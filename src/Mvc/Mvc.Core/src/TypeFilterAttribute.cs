@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
     [DebuggerDisplay("TypeFilter: Type={ImplementationType} Order={Order}")]
     public class TypeFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
-        private ObjectFactory _factory;
+        private ObjectFactory? _factory;
 
         /// <summary>
         /// Instantiates a new <see cref="TypeFilterAttribute"/> instance.
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Service arguments are found in the dependency injection container i.e. this filter supports constructor
         /// injection in addition to passing the given <see cref="Arguments"/>.
         /// </remarks>
-        public object[] Arguments { get; set; }
+        public object[]? Arguments { get; set; }
 
         /// <summary>
         /// Gets the <see cref="Type"/> of filter to create.

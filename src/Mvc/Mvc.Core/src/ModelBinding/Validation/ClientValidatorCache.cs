@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -75,12 +77,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
         private IReadOnlyList<IClientModelValidator> GetValidatorsFromEntry(CacheEntry entry, ModelMetadata metadata, IClientModelValidatorProvider validationProvider)
         {
-            Debug.Assert(entry.Validators != null || entry.Items != null);
-
             if (entry.Validators != null)
             {
                 return entry.Validators;
             }
+
+            Debug.Assert(entry.Items != null);
 
             var items = new List<ClientValidatorItem>(entry.Items.Count);
             for (var i = 0; i < entry.Items.Count; i++)
@@ -152,9 +154,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 Validators = null;
             }
 
-            public IReadOnlyList<IClientModelValidator> Validators { get; }
+            public IReadOnlyList<IClientModelValidator>? Validators { get; }
 
-            public List<ClientValidatorItem> Items { get; }
+            public List<ClientValidatorItem>? Items { get; }
         }
     }
 }

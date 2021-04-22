@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.JSInterop
 {
+    /// <summary>
+    /// Extension methods for <see cref="IJSInProcessObjectReference"/>.
+    /// </summary>
     public static class JSInProcessObjectReferenceExtensions
     {
         /// <summary>

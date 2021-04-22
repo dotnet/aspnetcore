@@ -2,18 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
     internal class ConfigureContainerBuilder
     {
-        public ConfigureContainerBuilder(MethodInfo configureContainerMethod)
+        public ConfigureContainerBuilder(MethodInfo? configureContainerMethod)
         {
             MethodInfo = configureContainerMethod;
         }
 
-        public MethodInfo MethodInfo { get; }
+        public MethodInfo? MethodInfo { get; }
 
         public Func<Action<object>, Action<object>> ConfigureContainerFilters { get; set; } = f => f;
 
@@ -21,6 +22,8 @@ namespace Microsoft.AspNetCore.Hosting
 
         public Type GetContainerType()
         {
+            Debug.Assert(MethodInfo != null, "Shouldn't be called when there is no Configure method.");
+
             var parameters = MethodInfo.GetParameters();
             if (parameters.Length != 1)
             {

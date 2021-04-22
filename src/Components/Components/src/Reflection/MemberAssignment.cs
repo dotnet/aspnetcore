@@ -3,15 +3,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Reflection
 {
     internal class MemberAssignment
     {
         public static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
-            Type type, BindingFlags bindingFlags)
+            [DynamicallyAccessedMembers(Component)] Type type,
+            BindingFlags bindingFlags)
         {
             var dictionary = new Dictionary<string, List<PropertyInfo>>();
 
@@ -19,8 +22,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
 
             while (currentType != null)
             {
-                var properties = currentType.GetProperties(bindingFlags)
-                    .Where(prop => prop.DeclaringType == currentType);
+                var properties = currentType.GetProperties(bindingFlags  | BindingFlags.DeclaredOnly);
                 foreach (var property in properties)
                 {
                     if (!dictionary.TryGetValue(property.Name, out var others))

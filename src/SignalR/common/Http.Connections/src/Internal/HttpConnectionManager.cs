@@ -87,10 +87,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             Log.CreatedNewConnection(_logger, id);
             var connectionTimer = HttpConnectionsEventSource.Log.ConnectionStart(id);
-            var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger);
             var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
-            connection.Transport = pair.Application;
-            connection.Application = pair.Transport;
+            var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, pair.Application, pair.Transport);
 
             _connections.TryAdd(connectionToken, (connection, connectionTimer));
 

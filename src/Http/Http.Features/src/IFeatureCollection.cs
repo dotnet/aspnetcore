@@ -33,13 +33,13 @@ namespace Microsoft.AspNetCore.Http.Features
         /// </summary>
         /// <typeparam name="TFeature">The feature key.</typeparam>
         /// <returns>The requested feature, or null if it is not present.</returns>
-        TFeature Get<TFeature>();
+        TFeature? Get<TFeature>();
 
         /// <summary>
         /// Sets the given feature in the collection.
         /// </summary>
         /// <typeparam name="TFeature">The feature key.</typeparam>
         /// <param name="instance">The feature value.</param>
-        void Set<TFeature>(TFeature instance);
+        void Set<TFeature>(TFeature? instance);
     }
 }

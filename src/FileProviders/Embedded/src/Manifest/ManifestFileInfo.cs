@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,9 +36,9 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
 
         public long Length => EnsureLength();
 
-        public string PhysicalPath => null;
+        public string? PhysicalPath => null;
 
-        public string Name => ManifestFile.Name;
+        public string? Name => ManifestFile.Name;
 
         public DateTimeOffset LastModified { get; }
 
@@ -48,10 +48,8 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
         {
             if (_length == null)
             {
-                using (var stream = Assembly.GetManifestResourceStream(ManifestFile.ResourcePath))
-                {
-                    _length = stream.Length;
-                }
+                using var stream = GetManifestResourceStream();
+                _length = stream.Length;
             }
 
             return _length.Value;
@@ -59,10 +57,21 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest
 
         public Stream CreateReadStream()
         {
-            var stream = Assembly.GetManifestResourceStream(ManifestFile.ResourcePath);
+            var stream = GetManifestResourceStream();
             if (!_length.HasValue)
             {
                 _length = stream.Length;
+            }
+
+            return stream;
+        }
+
+        private Stream GetManifestResourceStream()
+        {
+            var stream = Assembly.GetManifestResourceStream(ManifestFile.ResourcePath);
+            if (stream == null)
+            {
+                throw new InvalidOperationException($"Couldn't get resource at '{ManifestFile.ResourcePath}'.");
             }
 
             return stream;

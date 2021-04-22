@@ -28,26 +28,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="$(SharedSourceRoot)E2ETesting\E2ETesting.props" Link="Selenium\E2ETesting.props" />
     <None Include="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" Link="Selenium\E2ETesting.targets" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="AngleSharp" />
     <Reference Include="Selenium.Support" />
     <Reference Include="Selenium.WebDriver" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
   </ItemGroup>
 
   <ItemGroup>

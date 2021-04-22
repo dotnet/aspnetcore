@@ -48,17 +48,17 @@ namespace Interop.FunctionalTests
         private static string GetToolLocation()
         {
             var root = Path.Combine(Environment.CurrentDirectory, "h2spec");
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 return Path.Combine(root, "windows", "h2spec.exe");
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else if (OperatingSystem.IsLinux())
             {
                 var toolPath = Path.Combine(root, "linux", "h2spec");
                 chmod755(toolPath);
                 return toolPath;
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            else if (OperatingSystem.IsMacOS())
             {
                 var toolPath = Path.Combine(root, "darwin", "h2spec");
                 chmod755(toolPath);
@@ -130,23 +130,23 @@ namespace Interop.FunctionalTests
 
         private static bool IsGroupLine(string line, out string groupName)
         {
-            if (line.StartsWith(" "))
+            if (line.StartsWith(" ", StringComparison.Ordinal))
             {
                 groupName = null;
                 return false;
             }
 
-            if (line.StartsWith("Hypertext"))
+            if (line.StartsWith("Hypertext", StringComparison.Ordinal))
             {
                 groupName = "http2";
                 return true;
             }
-            if (line.StartsWith("Generic"))
+            if (line.StartsWith("Generic", StringComparison.Ordinal))
             {
                 groupName = "generic";
                 return true;
             }
-            if (line.StartsWith("HPACK"))
+            if (line.StartsWith("HPACK", StringComparison.Ordinal))
             {
                 groupName = "hpack";
                 return true;
@@ -158,7 +158,7 @@ namespace Interop.FunctionalTests
         private static bool IsSectionLine(string line, out string section)
         {
             line = line.TrimStart();
-            var firstSpace = line.IndexOf(" ");
+            var firstSpace = line.IndexOf(" ", StringComparison.Ordinal);
             if (firstSpace < 2) // Minimum: "8. description"
             {
                 section = string.Empty;
@@ -180,7 +180,7 @@ namespace Interop.FunctionalTests
         private static bool IsTestLine(string line, out string testNumber, out string description)
         {
             line = line.TrimStart();
-            var firstSpace = line.IndexOf(" ");
+            var firstSpace = line.IndexOf(" ", StringComparison.Ordinal);
             if (firstSpace < 2) // Minimum: "8: description"
             {
                 testNumber = string.Empty;
@@ -267,7 +267,7 @@ namespace Interop.FunctionalTests
                     if (node.Attributes["errors"].Value != "0")
                     {
                         // This does not list the individual sub-tests in each section
-                        failures.Add("Test failed: " + node.Attributes["package"].Value + "; "  + node.Attributes["name"].Value);
+                        failures.Add("Test failed: " + node.Attributes["package"].Value + "; " + node.Attributes["name"].Value);
                     }
                     if (node.Attributes["tests"].Value != "0")
                     {

@@ -126,6 +126,22 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         [Fact]
+        public void ApplyTo_Model_Add_Null()
+        {
+            // Arrange
+            var model = new ObjectWithJObject();
+            var patch = new JsonPatchDocument<ObjectWithJObject>();
+
+            patch.Operations.Add(new Operation<ObjectWithJObject>("add", "/CustomData/Name", null, null));
+
+            // Act
+            patch.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(JTokenType.Null, model.CustomData["Name"].Type);
+        }
+
+        [Fact]
         public void ApplyTo_Model_Replace()
         {
             // Arrange
@@ -139,6 +155,22 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             // Assert
             Assert.Equal("foo@baz.com", model.CustomData["Email"].Value<string>());
+        }
+
+        [Fact]
+        public void ApplyTo_Model_Replace_Null()
+        {
+            // Arrange
+            var model = new ObjectWithJObject { CustomData = JObject.FromObject(new { Email = "foo@bar.com", Name = "Bar" }) };
+            var patch = new JsonPatchDocument<ObjectWithJObject>();
+
+            patch.Operations.Add(new Operation<ObjectWithJObject>("replace", "/CustomData/Email", null, null));
+
+            // Act
+            patch.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(JTokenType.Null, model.CustomData["Email"].Type);
         }
     }
 }

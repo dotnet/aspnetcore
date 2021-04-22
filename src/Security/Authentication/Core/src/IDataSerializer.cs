@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="data">The bytes being deserialized.</param>
         /// <returns>The model.</returns>
-        [return: MaybeNull]
-        TModel Deserialize(byte[] data);
+        TModel? Deserialize(byte[] data);
     }
 }

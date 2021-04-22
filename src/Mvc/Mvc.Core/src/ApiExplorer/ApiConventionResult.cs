@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         internal static bool TryGetApiConvention(
             MethodInfo method,
             ApiConventionTypeAttribute[] apiConventionAttributes,
-            out ApiConventionResult result)
+            [NotNullWhen(true)] out ApiConventionResult? result)
         {
             var apiConventionMethodAttribute = method.GetCustomAttribute<ApiConventionMethodAttribute>(inherit: true);
             var conventionMethod = apiConventionMethodAttribute?.Method;
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return false;
         }
 
-        private static MethodInfo GetConventionMethod(MethodInfo method, ApiConventionTypeAttribute[] apiConventionAttributes)
+        private static MethodInfo? GetConventionMethod(MethodInfo method, ApiConventionTypeAttribute[] apiConventionAttributes)
         {
             foreach (var attribute in apiConventionAttributes)
             {

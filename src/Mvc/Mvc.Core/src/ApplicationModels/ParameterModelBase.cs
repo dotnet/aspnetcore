@@ -66,11 +66,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// The name.
         /// </summary>
-        public string Name { get; protected set;  }
+        public string Name { get; protected set; } = default!;
 
         /// <summary>
         /// The <see cref="BindingInfo"/>.
         /// </summary>
-        public BindingInfo BindingInfo { get; set; }
+        public BindingInfo? BindingInfo { get; set; }
     }
 }

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
     ///     Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
     ///     migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
     /// </summary>
-    public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object>>
+    public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object?>>
     {
         private static readonly AsyncLocal<DiagnosticHolder> _localDiagnostic = new AsyncLocal<DiagnosticHolder>();
 
@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 ContextType = contextType;
             }
 
-            public Exception Exception { get; private set; }
-            public Type ContextType { get; private set; }
+            public Exception? Exception { get; private set; }
+            public Type? ContextType { get; private set; }
         }
 
         private readonly RequestDelegate _next;
@@ -110,8 +110,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 {
                     if (ShouldDisplayErrorPage(exception))
                     {
-                        var contextType = _localDiagnostic.Value.ContextType;
-                        var details = await httpContext.GetContextDetailsAsync(contextType, _logger);
+                        var contextType = _localDiagnostic.Value!.ContextType;
+                        var details = await httpContext.GetContextDetailsAsync(contextType!, _logger);
 
                         if (details != null && (details.PendingModelChanges || details.PendingMigrations.Count() > 0))
                         {
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         {
             _logger.AttemptingToMatchException(exception.GetType());
 
-            var lastRecordedException = _localDiagnostic.Value.Exception;
+            var lastRecordedException = _localDiagnostic.Value!.Exception;
 
             if (lastRecordedException == null)
             {
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             }
         }
 
-        void IObserver<KeyValuePair<string, object>>.OnNext(KeyValuePair<string, object> keyValuePair)
+        void IObserver<KeyValuePair<string, object?>>.OnNext(KeyValuePair<string, object?> keyValuePair)
         {
             switch (keyValuePair.Value)
             {
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
                 case DbContextErrorEventData contextErrorEventData:
                     {
-                        _localDiagnostic.Value?.Hold(contextErrorEventData.Exception, contextErrorEventData.Context.GetType());
+                        _localDiagnostic.Value?.Hold(contextErrorEventData.Exception, contextErrorEventData.Context!.GetType());
 
                         break;
                     }
@@ -204,11 +204,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         {
         }
 
-        void IObserver<KeyValuePair<string, object>>.OnCompleted()
+        void IObserver<KeyValuePair<string, object?>>.OnCompleted()
         {
         }
 
-        void IObserver<KeyValuePair<string, object>>.OnError(Exception error)
+        void IObserver<KeyValuePair<string, object?>>.OnError(Exception error)
         {
         }
     }

@@ -9,7 +9,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,6 +20,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private readonly SocketTransportOptions _options;
         private readonly MemoryPool<byte> _memoryPool;
         private readonly SocketsTrace _trace;
+        private readonly PipeOptions _inputOptions;
+        private readonly PipeOptions _outputOptions;
+        private readonly SocketSenderPool _socketSenderPool;
 
         public SocketConnectionFactory(IOptions<SocketTransportOptions> options, ILoggerFactory loggerFactory)
         {
@@ -38,6 +40,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _memoryPool = options.Value.MemoryPoolFactory();
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client");
             _trace = new SocketsTrace(logger);
+
+            var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;
+            var maxWriteBufferSize = _options.MaxWriteBufferSize ?? 0;
+
+            // These are the same, it's either the thread pool or inline
+            var applicationScheduler = _options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
+            var transportScheduler = applicationScheduler;
+            // https://github.com/aspnet/KestrelHttpServer/issues/2573
+            var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
+
+            _inputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
+            _outputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
+            _socketSenderPool = new SocketSenderPool(awaiterScheduler);
         }
 
         public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
@@ -59,12 +74,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             var socketConnection = new SocketConnection(
                 socket,
                 _memoryPool,
-                PipeScheduler.ThreadPool,
+                _inputOptions.ReaderScheduler, // This is either threadpool or inline
                 _trace,
-                _options.MaxReadBufferSize,
-                _options.MaxWriteBufferSize,
-                _options.WaitForDataBeforeAllocatingBuffer,
-                _options.UnsafePreferInlineScheduling);
+                _socketSenderPool,
+                _inputOptions,
+                _outputOptions,
+                _options.WaitForDataBeforeAllocatingBuffer);
 
             socketConnection.Start();
             return socketConnection;

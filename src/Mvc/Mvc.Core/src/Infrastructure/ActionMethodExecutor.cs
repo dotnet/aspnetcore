@@ -1,11 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             IActionResultTypeMapper mapper,
             ObjectMethodExecutor executor,
             object controller,
-            object[] arguments);
+            object?[]? arguments);
 
         protected abstract bool CanExecute(ObjectMethodExecutor executor);
 
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 IActionResultTypeMapper mapper,
                 ObjectMethodExecutor executor,
                 object controller,
-                object[] arguments)
+                object?[]? arguments)
             {
                 executor.Execute(controller, arguments);
                 return new ValueTask<IActionResult>(new EmptyResult());
@@ -74,9 +75,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 IActionResultTypeMapper mapper,
                 ObjectMethodExecutor executor,
                 object controller,
-                object[] arguments)
+                object?[]? arguments)
             {
-                var actionResult = (IActionResult)executor.Execute(controller, arguments);
+                var actionResult = (IActionResult)executor.Execute(controller, arguments)!;
                 EnsureActionResultNotNull(executor, actionResult);
 
                 return new ValueTask<IActionResult>(actionResult);
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 IActionResultTypeMapper mapper,
                 ObjectMethodExecutor executor,
                 object controller,
-                object[] arguments)
+                object?[]? arguments)
             {
                 // Sync method returning arbitrary object
                 var returnValue = executor.Execute(controller, arguments);
@@ -113,9 +114,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 IActionResultTypeMapper mapper,
                 ObjectMethodExecutor executor,
                 object controller,
-                object[] arguments)
+                object?[]? arguments)
             {
-                await (Task)executor.Execute(controller, arguments);
+                await (Task)executor.Execute(controller, arguments)!;
                 return new EmptyResult();
             }
 
@@ -130,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 IActionResultTypeMapper mapper,
                 ObjectMethodExecutor executor,
                 object controller,
-                object[] arguments)
+                object?[]? arguments)
             {
                 await executor.ExecuteAsync(controller, arguments);
                 return new EmptyResult();
@@ -150,12 +151,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 IActionResultTypeMapper mapper,
                 ObjectMethodExecutor executor,
                 object controller,
-                object[] arguments)
+                object?[]? arguments)
             {
                 // Async method returning Task<IActionResult>
                 // Avoid extra allocations by calling Execute rather than ExecuteAsync and casting to Task<IActionResult>.
                 var returnValue = executor.Execute(controller, arguments);
-                var actionResult = await (Task<IActionResult>)returnValue;
+                var actionResult = await (Task<IActionResult>)returnValue!;
                 EnsureActionResultNotNull(executor, actionResult);
 
                 return actionResult;
@@ -173,7 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 IActionResultTypeMapper mapper,
                 ObjectMethodExecutor executor,
                 object controller,
-                object[] arguments)
+                object?[]? arguments)
             {
                 // Async method returning awaitable-of-IActionResult (e.g., Task<ViewResult>)
                 // We have to use ExecuteAsync because we don't know the awaitable's type at compile time.
@@ -197,11 +198,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 IActionResultTypeMapper mapper,
                 ObjectMethodExecutor executor,
                 object controller,
-                object[] arguments)
+                object?[]? arguments)
             {
                 // Async method returning awaitable-of-nonvoid
                 var returnValue = await executor.ExecuteAsync(controller, arguments);
-                var actionResult = ConvertToActionResult(mapper, returnValue, executor.AsyncResultType);
+                var actionResult = ConvertToActionResult(mapper, returnValue, executor.AsyncResultType!);
                 return actionResult;
             }
 
@@ -217,7 +218,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private IActionResult ConvertToActionResult(IActionResultTypeMapper mapper, object returnValue, Type declaredType)
+        private IActionResult ConvertToActionResult(IActionResultTypeMapper mapper, object? returnValue, Type declaredType)
         {
             var result = (returnValue as IActionResult) ?? mapper.Convert(returnValue, declaredType);
             if (result == null)

@@ -47,6 +47,8 @@ namespace Microsoft.AspNetCore.DataProtection
             IKeyRingProvider keyringProvider;
             if (OSVersionUtil.IsWindows())
             {
+                // Assertion for platform compat analyzer
+                Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
                 // Fastest implementation: AES-256-GCM [CNG]
                 keyringProvider = new EphemeralKeyRing<CngGcmAuthenticatedEncryptorConfiguration>(loggerFactory);
             }
@@ -62,6 +64,7 @@ namespace Microsoft.AspNetCore.DataProtection
             _dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyringProvider, loggerFactory);
         }
 
+        /// <inheritdoc />
         public IDataProtector CreateProtector(string purpose)
         {
             if (purpose == null)
@@ -81,14 +84,11 @@ namespace Microsoft.AspNetCore.DataProtection
                 DefaultAuthenticatedEncryptor = GetDefaultEncryptor(loggerFactory);
             }
 
-            // Currently hardcoded to a 512-bit KDK.
-            private const int NUM_BYTES_IN_KDK = 512 / 8;
-
-            public IAuthenticatedEncryptor DefaultAuthenticatedEncryptor { get; }
+            public IAuthenticatedEncryptor? DefaultAuthenticatedEncryptor { get; }
 
             public Guid DefaultKeyId { get; } = default(Guid);
 
-            public IAuthenticatedEncryptor GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked)
+            public IAuthenticatedEncryptor? GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked)
             {
                 isRevoked = false;
                 return (keyId == default(Guid)) ? DefaultAuthenticatedEncryptor : null;
@@ -99,10 +99,10 @@ namespace Microsoft.AspNetCore.DataProtection
                 return this;
             }
 
-            private static IAuthenticatedEncryptor GetDefaultEncryptor(ILoggerFactory loggerFactory)
+            private static IAuthenticatedEncryptor? GetDefaultEncryptor(ILoggerFactory loggerFactory)
             {
                 var configuration = new T();
-                if (configuration is CngGcmAuthenticatedEncryptorConfiguration)
+                if (configuration is CngGcmAuthenticatedEncryptorConfiguration cngConfiguration)
                 {
                     Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
 
@@ -110,15 +110,15 @@ namespace Microsoft.AspNetCore.DataProtection
                     return new CngGcmAuthenticatedEncryptorFactory(loggerFactory)
                         .CreateAuthenticatedEncryptorInstance(
                             descriptor.MasterKey,
-                            configuration as CngGcmAuthenticatedEncryptorConfiguration);
+                            cngConfiguration);
                 }
-                else if (configuration is ManagedAuthenticatedEncryptorConfiguration)
+                else if (configuration is ManagedAuthenticatedEncryptorConfiguration managedConfiguration)
                 {
                     var descriptor = (ManagedAuthenticatedEncryptorDescriptor)new T().CreateNewDescriptor();
                     return new ManagedAuthenticatedEncryptorFactory(loggerFactory)
                         .CreateAuthenticatedEncryptorInstance(
                             descriptor.MasterKey,
-                            configuration as ManagedAuthenticatedEncryptorConfiguration);
+                            managedConfiguration);
                 }
 
                 return null;

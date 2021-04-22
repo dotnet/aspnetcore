@@ -28,6 +28,11 @@ parameters:
   #   container and pool.
   platform: {}
 
+  # The default VM host AzDO pool. This should be capable of running Docker containers: almost all
+  # source-build builds run in Docker, including the default managed platform.
+  defaultContainerHostPool:
+    vmImage: ubuntu-20.04
+
 jobs:
 - job: ${{ parameters.jobNamePrefix }}_${{ parameters.platform.name }}
   displayName: Source-Build (${{ parameters.platform.name }})
@@ -37,6 +42,9 @@ jobs:
 
   ${{ if ne(parameters.platform.container, '') }}:
     container: ${{ parameters.platform.container }}
+
+  ${{ if eq(parameters.platform.pool, '') }}:
+    pool: ${{ parameters.defaultContainerHostPool }}
   ${{ if ne(parameters.platform.pool, '') }}:
     pool: ${{ parameters.platform.pool }}
 

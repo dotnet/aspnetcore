@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.TestHost
                 container.Services.AddSingleton(new TestService { Message = "ConfigureContainer" });
 
             public void Configure(IApplicationBuilder app) =>
-                app.Use((ctx, next) => ctx.Response.WriteAsync(
+                app.Run(ctx => ctx.Response.WriteAsync(
                     $"{ctx.RequestServices.GetRequiredService<SimpleService>().Message}, {ctx.RequestServices.GetRequiredService<TestService>().Message}"));
         }
 
@@ -348,6 +348,35 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Equal(testService, testServer.Services.GetService<TestService>());
         }
 
+        [Fact]
+        public async Task TestServerConstructorSetOptions()
+        {
+            // Arrange
+            var baseAddress = new Uri("http://localhost/test");
+            using var host = await new HostBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder
+                        .UseTestServer(options =>
+                        { 
+                            options.AllowSynchronousIO = true;
+                            options.PreserveExecutionContext = true;
+                            options.BaseAddress = baseAddress;
+                        })
+                        .Configure(_ => { });
+                })
+                .StartAsync();
+
+            // Act
+            // By calling GetTestServer(), a new TestServer instance will be instantiated
+            var testServer = host.GetTestServer();
+
+            // Assert
+            Assert.True(testServer.AllowSynchronousIO);
+            Assert.True(testServer.PreserveExecutionContext);
+            Assert.Equal(baseAddress, testServer.BaseAddress);
+        }
+
         public class TestService { public string Message { get; set; } }
 
         public class TestRequestServiceMiddleware
@@ -443,7 +472,7 @@ namespace Microsoft.AspNetCore.TestHost
                     app.Use(async (context, nxt) =>
                     {
                         context.Features.Set<IServiceProvidersFeature>(this);
-                        await nxt();
+                        await nxt(context);
                     });
                     next(app);
                 };
@@ -485,7 +514,7 @@ namespace Microsoft.AspNetCore.TestHost
                     app.Use(async (context, nxt) =>
                     {
                         context.Features.Set<IServiceProvidersFeature>(this);
-                        await nxt();
+                        await nxt(context);
                     });
                     next(app);
                 };

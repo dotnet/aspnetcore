@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -149,14 +150,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             builder.Append(method);
             builder.Append("[");
             builder.Append(buffer.Length);
-            builder.AppendLine("]");
+            builder.Append("]");
+
+            if (buffer.Length > 0)
+            {
+                builder.AppendLine();
+            }
 
             var charBuilder = new StringBuilder();
 
             // Write the hex
             for (int i = 0; i < buffer.Length; i++)
             {
-                builder.Append(buffer[i].ToString("X2"));
+                builder.Append(buffer[i].ToString("X2", CultureInfo.InvariantCulture));
                 builder.Append(" ");
 
                 var bufferChar = (char)buffer[i];
@@ -173,7 +179,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     builder.Append("  ");
                     builder.Append(charBuilder.ToString());
-                    builder.AppendLine();
+                    if (i != buffer.Length - 1)
+                    {
+                        builder.AppendLine();
+                    }
                     charBuilder.Clear();
                 }
                 else if ((i + 1) % 8 == 0)
@@ -182,15 +191,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     charBuilder.Append(" ");
                 }
             }
-            if (charBuilder.Length > 0)
+
+            // Different than charBuffer.Length since charBuffer contains an extra " " after the 8th byte.
+            var numBytesInLastLine = buffer.Length % 16;
+
+            if (numBytesInLastLine > 0)
             {
                 // 2 (between hex and char blocks) + num bytes left (3 per byte)
-                builder.Append(string.Empty.PadRight(2 + (3 * (16 - charBuilder.Length))));
+                var padLength = 2 + (3 * (16 - numBytesInLastLine));
                 // extra for space after 8th byte
-                if (charBuilder.Length < 8)
+                if (numBytesInLastLine < 8)
                 {
-                    builder.Append(" ");
+                    padLength++;
                 }
+
+                builder.Append(new string(' ', padLength));
                 builder.Append(charBuilder.ToString());
             }
 
@@ -198,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         // The below APM methods call the underlying Read/WriteAsync methods which will still be logged.
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
         }
@@ -208,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return TaskToApm.End<int>(asyncResult);
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         {
             return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
         }

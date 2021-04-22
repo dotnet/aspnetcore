@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -14,8 +16,7 @@ namespace Microsoft.AspNetCore.Components
         private static readonly BindingFlags _injectablePropertyBindingFlags
             = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers
-            = new ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>>();
+        private readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers = new();
 
         private readonly IComponentActivator _componentActivator;
 
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Components
             _componentActivator = componentActivator ?? throw new ArgumentNullException(nameof(componentActivator));
         }
 
-        public IComponent InstantiateComponent(IServiceProvider serviceProvider, Type componentType)
+        public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
         {
             var component = _componentActivator.CreateInstance(componentType);
             if (component is null)
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Components
             initializer(serviceProvider, instance);
         }
 
-        private Action<IServiceProvider, IComponent> CreateInitializer(Type type)
+        private Action<IServiceProvider, IComponent> CreateInitializer([DynamicallyAccessedMembers(Component)] Type type)
         {
             // Do all the reflection up front
             var injectableProperties =

@@ -24,7 +24,7 @@ void DisconnectHandler::NotifyDisconnect()
     }
     catch (...)
     {
-        OBSERVE_CAUGHT_EXCEPTION();
+        OBSERVE_CAUGHT_EXCEPTION()
     }
 }
 

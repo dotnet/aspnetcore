@@ -7,8 +7,18 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Extension methods for <see cref="HttpResponse"/>.
+    /// </summary>
     public static class ResponseExtensions
     {
+        /// <summary>
+        /// Clears the HTTP response.
+        /// <para>
+        /// This invocation resets the response headers, response status code, and response body.
+        /// </para>
+        /// </summary>
+        /// <param name="response">The <see cref="HttpResponse"/> to clear.</param>
         public static void Clear(this HttpResponse response)
         {
             if (response.HasStarted)
@@ -16,7 +26,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new InvalidOperationException("The response cannot be cleared, it has already started sending.");
             }
             response.StatusCode = 200;
-            response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = null;
+            response.HttpContext.Features.Get<IHttpResponseFeature>()!.ReasonPhrase = null;
             response.Headers.Clear();
             if (response.Body.CanSeek)
             {

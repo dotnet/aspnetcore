@@ -4,15 +4,14 @@
     <Description>ASP.NET Core HTTP server that uses the Windows HTTP Server API.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;weblistener;httpsys</PackageTags>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
 
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

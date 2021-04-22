@@ -168,14 +168,7 @@ namespace ClientSample
 
                 _application.Output.Advance(bytesReceived);
 
-                var flushTask = _application.Output.FlushAsync();
-
-                if (!flushTask.IsCompleted)
-                {
-                    await flushTask;
-                }
-
-                var result = flushTask.GetAwaiter().GetResult();
+                var result = await _application.Output.FlushAsync();
                 if (result.IsCompleted)
                 {
                     // Pipe consumer is shut down, do we stop writing

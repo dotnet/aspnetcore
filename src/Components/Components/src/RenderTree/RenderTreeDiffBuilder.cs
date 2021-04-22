@@ -5,8 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -535,10 +533,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // comparisons it wants with the old values. Later we could choose to pass the
             // old parameter values if we wanted. By default, components always rerender
             // after any SetParameters call, which is safe but now always optimal for perf.
+
+            // When performing hot reload, we want to force all components to re-render.
+            // We do this using two mechanisms - we call SetParametersAsync even if the parameters
+            // are unchanged and we ignore ComponentBase.ShouldRender
+
             var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldComponentIndex);
             var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
             var newParameters = new ParameterView(newParametersLifetime, newTree, newComponentIndex);
-            if (!newParameters.DefinitelyEquals(oldParameters))
+            if (!newParameters.DefinitelyEquals(oldParameters) || diffContext.Renderer.IsHotReloading)
             {
                 componentState.SetDirectParameters(newParameters);
             }
@@ -696,8 +699,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         break;
                     }
 
-                    // We don't handle attributes here, they have their own diff logic.
-                    // See AppendDiffEntriesForAttributeFrame
+                // We don't handle attributes here, they have their own diff logic.
+                // See AppendDiffEntriesForAttributeFrame
                 default:
                     throw new NotImplementedException($"Encountered unsupported frame type during diffing: {newTree[newFrameIndex].FrameTypeField}");
             }

@@ -1,7 +1,7 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
-  <PropertyGroup Condition=" '$(IsTestProject)' == 'true' ">
-    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)MvcTests.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+  <ItemGroup>
+    <EditorConfigFiles Include="$(MSBuildThisFileDirectory)MvcTests.globalconfig" />
+  </ItemGroup>
 </Project>

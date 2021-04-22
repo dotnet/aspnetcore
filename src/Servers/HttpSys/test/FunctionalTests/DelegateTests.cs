@@ -186,9 +186,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
             var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
             destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
+            // Send a request to ensure the rule is fully active
+            var responseString = await SendRequestAsync(delegatorAddress);
             destination?.Dispose();
             destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
-            var responseString = await SendRequestAsync(delegatorAddress);
+            responseString = await SendRequestAsync(delegatorAddress);
             Assert.Equal(_expectedResponseString, responseString);
             destination?.Dispose();
         }

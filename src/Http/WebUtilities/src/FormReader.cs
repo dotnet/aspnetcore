@@ -18,8 +18,19 @@ namespace Microsoft.AspNetCore.WebUtilities
     /// </summary>
     public class FormReader : IDisposable
     {
+        /// <summary>
+        /// Gets the default value for <see cref="ValueCountLimit"/>.
+        /// </summary>
         public const int DefaultValueCountLimit = 1024;
+
+        /// <summary>
+        /// Gets the default value for <see cref="KeyLengthLimit"/>.
+        /// </summary>
         public const int DefaultKeyLengthLimit = 1024 * 2;
+
+        /// <summary>
+        /// Gets the default value for <see cref="ValueLengthLimit" />.
+        /// </summary>
         public const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 
         private const int _rentedCharPoolLength = 8192;
@@ -34,11 +45,20 @@ namespace Microsoft.AspNetCore.WebUtilities
         private bool _endOfStream;
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormReader"/>.
+        /// </summary>
+        /// <param name="data">The data to read.</param>
         public FormReader(string data)
             : this(data, ArrayPool<char>.Shared)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormReader"/>.
+        /// </summary>
+        /// <param name="data">The data to read.</param>
+        /// <param name="charPool">The <see cref="ArrayPool{T}"/> to use.</param>
         public FormReader(string data, ArrayPool<char> charPool)
         {
             if (data == null)
@@ -51,16 +71,31 @@ namespace Microsoft.AspNetCore.WebUtilities
             _reader = new StringReader(data);
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormReader"/>.
+        /// </summary>
+        /// <param name="stream">The <see cref="Stream"/> to read. Assumes a <c>utf-8</c> encoded stream.</param>
         public FormReader(Stream stream)
             : this(stream, Encoding.UTF8, ArrayPool<char>.Shared)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormReader"/>.
+        /// </summary>
+        /// <param name="stream">The <see cref="Stream"/> to read.</param>
+        /// <param name="encoding">The character encoding to use.</param>
         public FormReader(Stream stream, Encoding encoding)
             : this(stream, encoding, ArrayPool<char>.Shared)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormReader"/>.
+        /// </summary>
+        /// <param name="stream">The <see cref="Stream"/> to read.</param>
+        /// <param name="encoding">The character encoding to use.</param>
+        /// <param name="charPool">The <see cref="ArrayPool{T}"/> to use.</param>
         public FormReader(Stream stream, Encoding encoding, ArrayPool<char> charPool)
         {
             if (stream == null)
@@ -302,6 +337,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             if (!_disposed)

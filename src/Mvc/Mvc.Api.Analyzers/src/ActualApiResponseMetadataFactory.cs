@@ -202,16 +202,11 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return (statusCode, typeSymbol);
         }
 
-        private static ITypeSymbol GetExpressionObjectType(SemanticModel semanticModel, ExpressionSyntax expression, CancellationToken cancellationToken)
+        private static ITypeSymbol? GetExpressionObjectType(SemanticModel semanticModel, ExpressionSyntax expression, CancellationToken cancellationToken)
         {
             var typeInfo = semanticModel.GetTypeInfo(expression, cancellationToken);
-
-            if (typeInfo.Type == null)
-            {
-                throw new ArgumentNullException(nameof(typeInfo.Type));
-            }
-
-            return typeInfo.Type!;
+            
+            return typeInfo.Type;
         }
 
         private static bool TryGetExpressionStatusCode(

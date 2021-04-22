@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
             Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
 
             var result = buffer.Slice(0, length).ToArray();
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
             Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
 
             var result = buffer.Slice(5, length - 5).ToArray();
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var enumerator = new Http2HeadersEnumerator();
 
-            var hpackEncoder = new HPackEncoder(maxHeaderTableSize: 256);
+            var hpackEncoder = new DynamicHPackEncoder(maxHeaderTableSize: 256);
 
             // First response
             enumerator.Initialize(headers);
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var hpackEncoder = new HPackEncoder(maxHeaderTableSize: Http2PeerSettings.DefaultHeaderTableSize);
+            var hpackEncoder = new DynamicHPackEncoder(maxHeaderTableSize: Http2PeerSettings.DefaultHeaderTableSize);
             Assert.True(HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out _));
 
             if (neverIndex)
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
 
-            var hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
             Assert.True(HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out var length));
 
             Assert.Empty(GetHeaderEntries(hpackEncoder));
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(SinglePayloadData))]
         public void EncodesHeadersInSinglePayloadWhenSpaceAvailable(KeyValuePair<string, string>[] headers, byte[] expectedPayload, int? statusCode)
         {
-            HPackEncoder hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
 
             var payload = new byte[1024];
             var length = 0;
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 0x07, 0x4b, 0x65, 0x73, 0x74, 0x72, 0x65, 0x6c
             };
 
-            var hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
 
             Span<byte> payload = new byte[1024];
             var offset = 0;
@@ -415,7 +415,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Span<byte> buffer = new byte[1024 * 16];
 
-            var hpackEncoder = new HPackEncoder();
+            var hpackEncoder = new DynamicHPackEncoder();
             hpackEncoder.UpdateMaxHeaderTableSize(100);
 
             var enumerator = new Http2HeadersEnumerator();
@@ -452,7 +452,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return enumerator;
         }
 
-        private EncoderHeaderEntry GetHeaderEntry(HPackEncoder encoder, int index)
+        private EncoderHeaderEntry GetHeaderEntry(DynamicHPackEncoder encoder, int index)
         {
             var entry = encoder.Head;
             while (index-- >= 0)
@@ -462,7 +462,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return entry;
         }
 
-        private List<EncoderHeaderEntry> GetHeaderEntries(HPackEncoder encoder)
+        private List<EncoderHeaderEntry> GetHeaderEntries(DynamicHPackEncoder encoder)
         {
             var headers = new List<EncoderHeaderEntry>();
 

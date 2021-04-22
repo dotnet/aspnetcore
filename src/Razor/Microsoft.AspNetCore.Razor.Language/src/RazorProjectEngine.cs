@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             throw new NotImplementedException();
         }
-        
+
         public virtual RazorCodeDocument ProcessDesignTime(RazorProjectItem projectItem)
         {
             if (projectItem == null)
@@ -111,6 +111,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             // extensions.
             AddDefaultPhases(builder.Phases);
             AddDefaultFeatures(builder.Features);
+
+            if (configuration.LanguageVersion.CompareTo(RazorLanguageVersion.Version_5_0) >= 0)
+            {
+                builder.Features.Add(new ViewCssScopePass());
+            }
 
             if (configuration.LanguageVersion.CompareTo(RazorLanguageVersion.Version_3_0) >= 0)
             {
@@ -216,7 +221,12 @@ namespace Microsoft.AspNetCore.Razor.Language
             ComponentInjectDirective.Register(builder);
             ComponentLayoutDirective.Register(builder);
             ComponentPageDirective.Register(builder);
-            ComponentTypeParamDirective.Register(builder);
+
+            // Unconditionally enable the feature for the time being until we flow the SDK with the flow version
+            // into the repository.
+            ComponentTypeParamDirective.Register(
+                builder,
+                supportConstraints: razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0);
 
             if (razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_5_0) >= 0)
             {
@@ -228,7 +238,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Directive Classifier
             builder.Features.Add(new ComponentWhitespacePass());
-            
+
             // Optimization
             builder.Features.Add(new ComponentComplexAttributeContentPass());
             builder.Features.Add(new ComponentLoweringPass());

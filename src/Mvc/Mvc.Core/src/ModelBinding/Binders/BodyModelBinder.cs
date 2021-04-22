@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -22,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IList<IInputFormatter> _formatters;
         private readonly Func<Stream, Encoding, TextReader> _readerFactory;
         private readonly ILogger _logger;
-        private readonly MvcOptions _options;
+        private readonly MvcOptions? _options;
 
         /// <summary>
         /// Creates a new <see cref="BodyModelBinder"/>.
@@ -49,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public BodyModelBinder(
             IList<IInputFormatter> formatters,
             IHttpRequestStreamReaderFactory readerFactory,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory? loggerFactory)
             : this(formatters, readerFactory, loggerFactory, options: null)
         {
         }
@@ -67,8 +70,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public BodyModelBinder(
             IList<IInputFormatter> formatters,
             IHttpRequestStreamReaderFactory readerFactory,
-            ILoggerFactory loggerFactory,
-            MvcOptions options)
+            ILoggerFactory? loggerFactory,
+            MvcOptions? options)
         {
             if (formatters == null)
             {
@@ -83,10 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             _formatters = formatters;
             _readerFactory = readerFactory.CreateReader;
 
-            if (loggerFactory != null)
-            {
-                _logger = loggerFactory.CreateLogger<BodyModelBinder>();
-            }
+            _logger = loggerFactory?.CreateLogger<BodyModelBinder>() ?? NullLogger<BodyModelBinder>.Instance;
 
             _options = options;
         }
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
-            _logger?.AttemptingToBindModel(bindingContext);
+            _logger.AttemptingToBindModel(bindingContext);
 
             // Special logic for body, treat the model name as string.Empty for the top level
             // object, but allow an override via BinderModelName. The purpose of this is to try
@@ -126,29 +126,29 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 _readerFactory,
                 AllowEmptyBody);
 
-            var formatter = (IInputFormatter)null;
+            var formatter = (IInputFormatter?)null;
             for (var i = 0; i < _formatters.Count; i++)
             {
                 if (_formatters[i].CanRead(formatterContext))
                 {
                     formatter = _formatters[i];
-                    _logger?.InputFormatterSelected(formatter, formatterContext);
+                    _logger.InputFormatterSelected(formatter, formatterContext);
                     break;
                 }
                 else
                 {
-                    _logger?.InputFormatterRejected(_formatters[i], formatterContext);
+                    _logger.InputFormatterRejected(_formatters[i], formatterContext);
                 }
             }
 
             if (formatter == null)
             {
-                _logger?.NoInputFormatterSelected(formatterContext);
+                _logger.NoInputFormatterSelected(formatterContext);
 
                 var message = Resources.FormatUnsupportedContentType(httpContext.Request.ContentType);
                 var exception = new UnsupportedContentTypeException(message);
                 bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
-                _logger?.DoneAttemptingToBindModel(bindingContext);
+                _logger.DoneAttemptingToBindModel(bindingContext);
                 return;
             }
 
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 if (result.HasError)
                 {
                     // Formatter encountered an error. Do not use the model it returned.
-                    _logger?.DoneAttemptingToBindModel(bindingContext);
+                    _logger.DoneAttemptingToBindModel(bindingContext);
                     return;
                 }
 
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
             }
 
-            _logger?.DoneAttemptingToBindModel(bindingContext);
+            _logger.DoneAttemptingToBindModel(bindingContext);
         }
 
         private bool ShouldHandleException(IInputFormatter formatter)

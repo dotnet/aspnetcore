@@ -9,7 +9,7 @@ using System.Text;
 
 namespace System.Net.Http.QPack
 {
-    internal class QPackEncoder
+    internal sealed class QPackEncoder
     {
         private IEnumerator<KeyValuePair<string, string>>? _enumerator;
 
@@ -477,18 +477,19 @@ namespace System.Net.Http.QPack
                 case 400:
                 case 404:
                 case 500:
-                    // TODO this isn't safe, some index can be larger than 64. Encoded here!
-                    buffer[0] = (byte)(0xC0 | H3StaticTable.StatusIndex[statusCode]);
-                    return 1;
+                    EncodeStaticIndexedHeaderField(H3StaticTable.StatusIndex[statusCode], buffer, out var bytesWritten);
+                    return bytesWritten;
                 default:
-                    // Send as Literal Header Field Without Indexing - Indexed Name
-                    buffer[0] = 0x08;
+                    // https://tools.ietf.org/html/draft-ietf-quic-qpack-21#section-4.5.4
+                    // Index is 63 - :status
+                    buffer[0] = 0b01011111;
+                    buffer[1] = 0b00110000;
 
-                    ReadOnlySpan<byte> statusBytes = StatusCodes.ToStatusBytes(statusCode);
-                    buffer[1] = (byte)statusBytes.Length;
-                    statusBytes.CopyTo(buffer.Slice(2));
+                    var statusBytes = StatusCodes.ToStatusBytes(statusCode);
+                    buffer[2] = (byte)statusBytes.Length;
+                    statusBytes.CopyTo(buffer.Slice(3));
 
-                    return 2 + statusBytes.Length;
+                    return 3 + statusBytes.Length;
             }
         }
     }

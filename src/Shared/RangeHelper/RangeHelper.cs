@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Diagnostics;
@@ -29,7 +31,7 @@ namespace Microsoft.AspNetCore.Internal
         /// range parsed from the <paramref name="requestHeaders"/> or <c>null</c> if it cannot be normalized.</returns>
         /// <remark>If the Range header exists but cannot be parsed correctly, or if the provided length is 0, then the range request cannot be satisfied (status 416). 
         /// This results in (<c>true</c>,<c>null</c>) return values.</remark>
-        public static (bool isRangeRequest, RangeItemHeaderValue range) ParseRange(
+        public static (bool isRangeRequest, RangeItemHeaderValue? range) ParseRange(
             HttpContext context,
             RequestHeaders requestHeaders,
             long length,
@@ -82,14 +84,14 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             // Normalize the ranges
-            var range = NormalizeRange(ranges.SingleOrDefault(), length);
+            var range = NormalizeRange(ranges.Single(), length);
 
             // Return the single range
             return (true, range);
         }
 
         // Internal for testing
-        internal static RangeItemHeaderValue NormalizeRange(RangeItemHeaderValue range, long length)
+        internal static RangeItemHeaderValue? NormalizeRange(RangeItemHeaderValue range, long length)
         {
             var start = range.From;
             var end = range.To;
@@ -107,7 +109,7 @@ namespace Microsoft.AspNetCore.Internal
                     end = length - 1;
                 }
             }
-            else
+            else if (end.HasValue)
             {
                 // suffix range "-X" e.g. the last X bytes, resolve
                 if (end.Value == 0)

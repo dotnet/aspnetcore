@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,12 +21,11 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
 
         public string Name { get; }
 
-        public string this[string key]
+        public string? this[string key]
         {
             get
             {
-                string value;
-                return _map.TryGetValue(key, out value) ? value : null;
+                return _map.TryGetValue(key, out var value) ? value : null;
             }
             set
             {

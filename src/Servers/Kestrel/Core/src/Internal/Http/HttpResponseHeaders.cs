@@ -76,14 +76,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private void SetValueUnknown(string key, StringValues value)
         {
             ValidateHeaderNameCharacters(key);
-            Unknown[key] = value;
+            Unknown[GetInternedHeaderName(key)] = value;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool AddValueUnknown(string key, StringValues value)
         {
             ValidateHeaderNameCharacters(key);
-            Unknown.Add(key, value);
+            Unknown.Add(GetInternedHeaderName(key), value);
             // Return true, above will throw and exit for false
             return true;
         }
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _currentKnownType = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
-                    ? collection.MaybeUnknown.GetEnumerator()
+                    ? collection.MaybeUnknown!.GetEnumerator()
                     : default;
             }
 

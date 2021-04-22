@@ -16,7 +16,7 @@ export class TestConnection implements IConnection {
     public parsedSentData: any[];
     public lastInvocationId: string | null;
 
-    private autoHandshake: boolean | null;
+    private _autoHandshake: boolean | null;
 
     constructor(autoHandshake: boolean = true, hasInherentKeepAlive: boolean = false) {
         this.onreceive = null;
@@ -24,7 +24,7 @@ export class TestConnection implements IConnection {
         this.sentData = [];
         this.parsedSentData = [];
         this.lastInvocationId = null;
-        this.autoHandshake = autoHandshake;
+        this._autoHandshake = autoHandshake;
         this.baseUrl = "http://example.com";
         this.features.inherentKeepAlive = hasInherentKeepAlive;
     }
@@ -37,7 +37,7 @@ export class TestConnection implements IConnection {
         const invocation = TextMessageFormat.parse(data)[0];
         const parsedInvocation = JSON.parse(invocation);
         const invocationId = parsedInvocation.invocationId;
-        if (parsedInvocation.protocol && parsedInvocation.version && this.autoHandshake) {
+        if (parsedInvocation.protocol && parsedInvocation.version && this._autoHandshake) {
             this.receiveHandshakeResponse();
         }
         if (invocationId) {
@@ -66,18 +66,18 @@ export class TestConnection implements IConnection {
 
     public receive(data: any): void {
         const payload = JSON.stringify(data);
-        this.invokeOnReceive(TextMessageFormat.write(payload));
+        this._invokeOnReceive(TextMessageFormat.write(payload));
     }
 
     public receiveText(data: string) {
-        this.invokeOnReceive(data);
+        this._invokeOnReceive(data);
     }
 
     public receiveBinary(data: ArrayBuffer) {
-        this.invokeOnReceive(data);
+        this._invokeOnReceive(data);
     }
 
-    private invokeOnReceive(data: string | ArrayBuffer) {
+    private _invokeOnReceive(data: string | ArrayBuffer) {
         if (this.onreceive) {
             this.onreceive(data);
         }

@@ -27,7 +27,7 @@ __AndroidToolchain=aarch64-linux-android
 
 for i in "$@"
     do
-        lowerI="$(echo $i | awk '{print tolower($0)}')"
+        lowerI="$(echo $i | tr "[:upper:]" "[:lower:]")"
         case $lowerI in
         -?|-h|--help)
             usage
@@ -106,6 +106,7 @@ __AndroidPackages+=" libandroid-glob"
 __AndroidPackages+=" liblzma"
 __AndroidPackages+=" krb5"
 __AndroidPackages+=" openssl"
+__AndroidPackages+=" openldap"
 
 for path in $(wget -qO- http://termux.net/dists/stable/main/binary-$__AndroidArch/Packages |\
     grep -A15 "Package: \(${__AndroidPackages// /\\|}\)" | grep -v "static\|tool" | grep Filename); do
