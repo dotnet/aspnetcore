@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             quicListenerOptions.IdleTimeout = options.IdleTimeout;
 
             _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
-            _listener.Start();
         }
 
         public EndPoint EndPoint { get; set; }
@@ -77,7 +76,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 
             _disposed = true;
 
-            _listener.Close();
             _listener.Dispose();
 
             return new ValueTask();
