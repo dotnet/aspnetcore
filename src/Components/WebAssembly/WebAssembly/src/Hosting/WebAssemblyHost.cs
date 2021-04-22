@@ -158,13 +158,28 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
                 _renderer = new WebAssemblyRenderer(Services, loggerFactory);
 
-                var rootComponents = _rootComponents;
-                for (var i = 0; i < rootComponents.Length; i++)
+                var initializationTcs = new TaskCompletionSource();
+                WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
                 {
-                    var rootComponent = rootComponents[i];
-                    await _renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
-                }
+                    var (rootComponents, renderer, initializationTcs) = state;
 
+                    try
+                    {
+                        for (var i = 0; i < rootComponents.Length; i++)
+                        {
+                            var rootComponent = rootComponents[i];
+                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
+                        }
+
+                        initializationTcs.SetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        initializationTcs.SetException(ex);
+                    }
+                });
+
+                await initializationTcs.Task;
                 store.ExistingState.Clear();
 
                 await tcs.Task;
