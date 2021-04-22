@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                     {
                         // Kestrel does not return proper error responses:
                         // https://github.com/aspnet/KestrelHttpServer/issues/43
-                        await next();
+                        await next(ct);
                     }
                     catch (Exception ex)
                     {

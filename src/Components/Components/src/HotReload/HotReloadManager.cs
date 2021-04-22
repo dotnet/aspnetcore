@@ -20,6 +20,6 @@ namespace Microsoft.AspNetCore.Components.HotReload
             OnDeltaApplied?.Invoke();
         }
 
-        public static void OnAfterUpdate(Type[]? _) => OnDeltaApplied?.Invoke();
+        public static void AfterUpdate(Type[]? _) => OnDeltaApplied?.Invoke();
     }
 }

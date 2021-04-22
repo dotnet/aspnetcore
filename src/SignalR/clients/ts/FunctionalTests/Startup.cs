@@ -145,7 +145,7 @@ namespace FunctionalTests
                     return Task.CompletedTask;
                 }
 
-                return next.Invoke();
+                return next.Invoke(context);
             });
 
             app.Use((context, next) =>
@@ -159,7 +159,7 @@ namespace FunctionalTests
                     return Task.CompletedTask;
                 }
 
-                return next.Invoke();
+                return next.Invoke(context);
             });
 
             app.Use((context, next) =>
@@ -170,7 +170,7 @@ namespace FunctionalTests
                     return context.Response.WriteAsync($"{{ \"url\": \"{newUrl}\" }}");
                 }
 
-                return next();
+                return next(context);
             });
 
             app.Use(async (context, next) =>
@@ -194,7 +194,7 @@ namespace FunctionalTests
                     context.Response.Cookies.Append("expiredCookie", "doesntmatter", expiredCookieOptions);
                 }
 
-                await next.Invoke();
+                await next.Invoke(context);
             });
 
             app.Use((context, next) =>
@@ -205,7 +205,7 @@ namespace FunctionalTests
                     return context.Response.WriteAsync("Some response from server");
                 }
 
-                return next();
+                return next(context);
             });
 
             app.UseRouting();

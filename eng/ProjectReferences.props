@@ -83,6 +83,7 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" ProjectPath="$(RepoRoot)src\Middleware\HealthChecks.EntityFrameworkCore\src\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src\Middleware\HealthChecks\src\Microsoft.AspNetCore.Diagnostics.HealthChecks.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.HostFiltering" ProjectPath="$(RepoRoot)src\Middleware\HostFiltering\src\Microsoft.AspNetCore.HostFiltering.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.HttpLogging" ProjectPath="$(RepoRoot)src\Middleware\HttpLogging\src\Microsoft.AspNetCore.HttpLogging.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.HttpOverrides" ProjectPath="$(RepoRoot)src\Middleware\HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.HttpsPolicy" ProjectPath="$(RepoRoot)src\Middleware\HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Localization.Routing" ProjectPath="$(RepoRoot)src\Middleware\Localization.Routing\src\Microsoft.AspNetCore.Localization.Routing.csproj" />

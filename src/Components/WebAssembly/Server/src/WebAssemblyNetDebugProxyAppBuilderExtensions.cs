@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             app.Map("/_framework/debug", app =>
             {
-                app.Use(async (context, next) =>
+                app.Run(async (context) =>
                 {
                     var queryParams = HttpUtility.ParseQueryString(context.Request.QueryString.Value!);
                     var browserParam = queryParams.Get("browser");

@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
 
         private static void ApplyUpdate(Assembly assembly, byte[] metadataDelta, byte[] ilDeta)
         {
-            _handlerActions ??= GetMetadataUpdateHandlerActions();
+            _handlerActions ??= GetMetadataUpdateHandlerActions(AppDomain.CurrentDomain.GetAssemblies());
             var (beforeUpdates, afterUpdates) = _handlerActions.Value;
 
             beforeUpdates.ForEach(a => a(null));
@@ -109,12 +109,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload
             afterUpdates.ForEach(a => a(null));
         }
 
-        private static (List<Action<Type[]?>> BeforeUpdates, List<Action<Type[]?>> AfterUpdates) GetMetadataUpdateHandlerActions()
+        // Internal for unit testing.
+        internal static (List<Action<Type[]?>> BeforeUpdates, List<Action<Type[]?>> AfterUpdates) GetMetadataUpdateHandlerActions(Assembly[] assemblies)
         {
             var beforeUpdates = new List<Action<Type[]?>>();
             var afterUpdates = new List<Action<Type[]?>>();
 
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var assembly in assemblies)
             {
                 foreach (var attribute in assembly.GetCustomAttributes<MetadataUpdateHandlerAttribute>())
                 {
