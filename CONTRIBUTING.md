@@ -8,7 +8,7 @@ Start a discussion on the [repository issue tracker](https://github.com/dotnet/a
 ## Bugs and feature requests?
 **IMPORTANT: If you want to report a security related issue, please see the `Reporting security issues and bugs` section below.**
 
-Before reporting a non-security related bug or filing a new issue try to find an existing issue if such exists. If found, upvote (👍) it and add a comment about your scenario to that issue. Our team pays attention to reactions a lot and having an issue with many upvotes or other positive reactions will help us prioritize it to be worked on sooner rather than later.
+Before reporting a non-security related bug or filing a new issue try to find an existing issue if such exists. If found, upvote (👍) it and add a comment about your unique scenario to that issue. Our team pays attention to reactions a lot and having an issue with many upvotes or other positive reactions will help us prioritize it to be worked on sooner rather than later.
 
 If you can't find an existing issue, log a new issue in the appropriate GitHub repository. Here are some of the most common repositories:
 
