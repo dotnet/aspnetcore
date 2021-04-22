@@ -1,13 +1,8 @@
-﻿body {
+body {
     font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
     font-size: .813em;
     color: #222;
     background-color: #fff;
-}
-
-h1, h2, h3, h4, h5 {
-    /*font-family: 'Segoe UI',Tahoma,Arial,Helvetica,sans-serif;*/
-    font-weight: 100;
 }
 
 h1 {
@@ -22,10 +17,12 @@ h2 {
 h3 {
     color: #363636;
     margin: 5px 5px 0 0;
+    font-weight: normal;
 }
 
 code {
     font-family: Consolas, "Courier New", courier, monospace;
+    font-weight: bold;
 }
 
 body .titleerror {
@@ -99,6 +96,12 @@ body .location {
         background-color: #fbfbfb;
     }
 
+#stackpage .frame .source .highlight {
+    border-left: 3px solid red;
+    margin-left: -3px;
+    font-weight: bold;
+}
+
 #stackpage .frame .source .highlight li span {
     color: #FF0000;
 }
@@ -110,6 +113,11 @@ body .location {
     #stackpage .source ol.collapsible li span {
         color: #606060;
     }
+
+#routingpage .subheader {
+    padding: 5px;
+    border-bottom: 1px #ddd solid;
+}
 
 .page table {
     border-collapse: separate;

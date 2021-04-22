@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -14,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// Represents an <see cref="ActionResult"/> that renders a partial view to the response.
     /// </summary>
-    public class PartialViewResult : ActionResult
+    public class PartialViewResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Gets or sets the HTTP status code.
@@ -27,34 +29,34 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// When <c>null</c>, defaults to <see cref="ControllerActionDescriptor.ActionName"/>.
         /// </remarks>
-        public string ViewName { get; set; }
+        public string? ViewName { get; set; }
 
         /// <summary>
         /// Gets the view data model.
         /// </summary>
-        public object Model => ViewData?.Model;
+        public object? Model => ViewData?.Model;
 
         /// <summary>
         /// Gets or sets the <see cref="ViewDataDictionary"/> used for rendering the view for this result.
         /// </summary>
-        public ViewDataDictionary ViewData { get; set; }
+        public ViewDataDictionary ViewData { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ITempDataDictionary"/> used for rendering the view for this result.
         /// </summary>
-        public ITempDataDictionary TempData { get; set; }
+        public ITempDataDictionary TempData { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="IViewEngine"/> used to locate views.
         /// </summary>
         /// <remarks>When <c>null</c>, an instance of <see cref="ICompositeViewEngine"/> from
         /// <c>ActionContext.HttpContext.RequestServices</c> is used.</remarks>
-        public IViewEngine ViewEngine { get; set; }
+        public IViewEngine? ViewEngine { get; set; }
 
         /// <summary>
         /// Gets or sets the Content-Type header for the response.
         /// </summary>
-        public string ContentType { get; set; }
+        public string? ContentType { get; set; }
 
         /// <inheritdoc />
         public override Task ExecuteResultAsync(ActionContext context)
@@ -65,7 +67,15 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var services = context.HttpContext.RequestServices;
-            var executor = services.GetRequiredService<IActionResultExecutor<PartialViewResult>>();
+            var executor = services.GetService<IActionResultExecutor<PartialViewResult>>();
+            if (executor == null)
+            {
+                throw new InvalidOperationException(Mvc.Core.Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    "AddControllersWithViews()",
+                    "ConfigureServices(...)"));
+            }
+
             return executor.ExecuteAsync(context, this);
         }
     }

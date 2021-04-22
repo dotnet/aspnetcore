@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.ComponentModel;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -18,19 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         private readonly TypeConverter _typeConverter;
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Initializes a new instance of <see cref="SimpleTypeModelBinder"/>.</para>
-        /// </summary>
-        /// <param name="type">The type to create binder for.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
-        public SimpleTypeModelBinder(Type type)
-            : this(type, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="SimpleTypeModelBinder"/>.
@@ -61,6 +48,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
+            _logger.AttemptingToBindModel(bindingContext);
+
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
             if (valueProviderResult == ValueProviderResult.None)
             {
@@ -71,15 +60,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 return Task.CompletedTask;
             }
 
-            _logger.AttemptingToBindModel(bindingContext);
-
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
 
             try
             {
                 var value = valueProviderResult.FirstValue;
 
-                object model;
+                object? model;
                 if (bindingContext.ModelType == typeof(string))
                 {
                     // Already have a string. No further conversion required but handle ConvertEmptyStringToNull.
@@ -130,10 +117,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
 
+        /// <inheritdoc/>
         protected virtual void CheckModel(
             ModelBindingContext bindingContext,
             ValueProviderResult valueProviderResult,
-            object model)
+            object? model)
         {
             // When converting newModel a null value may indicate a failed conversion for an otherwise required
             // model (can't set a ValueType to null). This detects if a null model value is acceptable given the

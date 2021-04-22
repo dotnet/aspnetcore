@@ -4,30 +4,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
-using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Tests
 {
     public class WebHostFunctionalTests : LoggedTest
     {
-        private readonly string _testSitesPath;
-
-        public WebHostFunctionalTests(ITestOutputHelper output) : base(output)
-        {
-            _testSitesPath = GetTestSitesPath();
-        }
-
         [Fact]
         public async Task Start_RequestDelegate_Url()
         {
@@ -52,15 +42,13 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderApp";
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
-                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken, retryCount: 5);
 
                 var responseText = await response.Content.ReadAsStringAsync();
                 try
                 {
                     // Assert server is Kestrel
                     Assert.Equal("Kestrel", response.Headers.Server.ToString());
-                    // Set from default config
-                    Assert.Equal("http://localhost:5002/", deploymentResult.ApplicationBaseUri);
                     // The application name will be sent in response when all asserts succeed in the test app.
                     Assert.Equal(applicationName, responseText);
                 }
@@ -79,15 +67,13 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderOfTApp";
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
-                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken, retryCount: 5);
 
                 var responseText = await response.Content.ReadAsStringAsync();
                 try
                 {
                     // Assert server is Kestrel
                     Assert.Equal("Kestrel", response.Headers.Server.ToString());
-                    // Set from default config
-                    Assert.Equal("http://localhost:5002/", deploymentResult.ApplicationBaseUri);
                     // The application name will be sent in response when all asserts succeed in the test app.
                     Assert.Equal(applicationName, responseText);
                 }
@@ -138,7 +124,7 @@ namespace Microsoft.AspNetCore.Tests
     }
 }
 ");
-                using (var webHost = WebHost.Start(context => context.Response.WriteAsync("Hello, World!")))
+                using (var webHost = WebHost.Start("http://127.0.0.1:0", context => context.Response.WriteAsync("Hello, World!")))
                 {
                     var factory = (ILoggerFactory)webHost.Services.GetService(typeof(ILoggerFactory));
                     var logger = factory.CreateLogger("Test");
@@ -162,6 +148,41 @@ namespace Microsoft.AspNetCore.Tests
             finally
             {
                 File.Delete("appsettings.json");
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task RunsInIISExpressInProcess()
+        {
+            var applicationName = "CreateDefaultBuilderApp";
+            var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+            {
+                TargetFramework = "net6.0",
+                HostingModel =  HostingModel.InProcess
+            };
+
+            SetEnvironmentVariables(deploymentParameters, "Development");
+
+            using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, LoggerFactory))
+            {
+                var deploymentResult = await deployer.DeployAsync();
+                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), Logger, deploymentResult.HostShutdownToken, retryCount: 5);
+
+                var responseText = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    // Assert server is IISExpress
+                    Assert.Equal("Microsoft-IIS/10.0", response.Headers.Server.ToString());
+                    // The application name will be sent in response when all asserts succeed in the test app.
+                    Assert.Equal(applicationName, responseText);
+                }
+                catch (XunitException)
+                {
+                    Logger.LogWarning(response.ToString());
+                    Logger.LogWarning(responseText);
+                    throw;
+                }
             }
         }
 
@@ -190,24 +211,28 @@ namespace Microsoft.AspNetCore.Tests
             bool setTestEnvVars = false,
             string environment = "Development")
         {
-            using (StartLog(out var loggerFactory, applicationName))
+            var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                var logger = loggerFactory.CreateLogger(nameof(WebHost.Start));
-                var deploymentParameters = new DeploymentParameters(Path.Combine(_testSitesPath, applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64);
+                TargetFramework = "net6.0",
+            };
 
-                if (setTestEnvVars)
-                {
-                    deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("aspnetcore_environment", environment));
-                    deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("envKey", "envValue"));
-                }
-
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
-                {
-                    var deploymentResult = await deployer.DeployAsync();
-
-                    await assertAction(deploymentResult, logger);
-                }
+            if (setTestEnvVars)
+            {
+                SetEnvironmentVariables(deploymentParameters, environment);
             }
+
+            using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, LoggerFactory))
+            {
+                var deploymentResult = await deployer.DeployAsync();
+
+                await assertAction(deploymentResult, Logger);
+            }
+        }
+
+        private static void SetEnvironmentVariables(DeploymentParameters deploymentParameters, string environment)
+        {
+            deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("aspnetcore_environment", environment));
+            deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("envKey", "envValue"));
         }
 
         private static string GetTestSitesPath()
@@ -217,7 +242,7 @@ namespace Microsoft.AspNetCore.Tests
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do
             {
-                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "DefaultBuilder.sln"));
+                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "DefaultBuilder.slnf"));
                 if (solutionFileInfo.Exists)
                 {
                     return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "testassets"));
@@ -229,10 +254,5 @@ namespace Microsoft.AspNetCore.Tests
 
             throw new Exception($"Solution root could not be found using {applicationBasePath}");
         }
-
-        private static int GetWebHostPort(IWebHost webHost)
-            => webHost.ServerFeatures.Get<IServerAddressesFeature>().Addresses
-                .Select(serverAddress => new Uri(serverAddress).Port)
-                .FirstOrDefault();
     }
 }

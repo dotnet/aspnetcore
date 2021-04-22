@@ -12,17 +12,14 @@ namespace Microsoft.Net.Http.Headers
     /// </summary>
     public class MediaTypeHeaderValueComparer : IComparer<MediaTypeHeaderValue>
     {
-        private static readonly MediaTypeHeaderValueComparer _mediaTypeComparer =
-                                                                    new MediaTypeHeaderValueComparer();
-
         private MediaTypeHeaderValueComparer()
         {
         }
 
-        public static MediaTypeHeaderValueComparer QualityComparer
-        {
-            get { return _mediaTypeComparer; }
-        }
+        /// <summary>
+        /// Gets the <see cref="MediaTypeHeaderValueComparer"/> instance.
+        /// </summary>
+        public static MediaTypeHeaderValueComparer QualityComparer { get; } = new MediaTypeHeaderValueComparer();
 
         /// <inheritdoc />
         /// <remarks>
@@ -37,11 +34,21 @@ namespace Microsoft.Net.Http.Headers
         /// If we had a list of media types (comma separated): { text/*;q=0.8, text/*+json;q=0.8, */*;q=1, */*;q=0.8, text/plain;q=0.8 }
         /// Sorting them using Compare would return: { */*;q=0.8, text/*;q=0.8, text/*+json;q=0.8, text/plain;q=0.8, */*;q=1 }
         /// </example>
-        public int Compare(MediaTypeHeaderValue mediaType1, MediaTypeHeaderValue mediaType2)
+        public int Compare(MediaTypeHeaderValue? mediaType1, MediaTypeHeaderValue? mediaType2)
         {
             if (object.ReferenceEquals(mediaType1, mediaType2))
             {
                 return 0;
+            }
+
+            if (mediaType1 is null)
+            {
+                return -1;
+            }
+
+            if (mediaType2 is null)
+            {
+                return 1;
             }
 
             var returnValue = CompareBasedOnQualityFactor(mediaType1, mediaType2);

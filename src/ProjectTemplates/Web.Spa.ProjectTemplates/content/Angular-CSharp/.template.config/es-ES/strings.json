@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "ASP.NET Core con Angular",
+    "description": "Plantilla de proyecto para crear una aplicación ASP.NET Core con Angular"
+  }
+}

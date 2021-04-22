@@ -19,10 +19,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     public class RenderAtEndOfFormTagHelper : TagHelper
     {
         // This TagHelper's order must be greater than the FormTagHelper's. I.e it must be executed after
-        // FormTaghelper does.
+        // FormTagHelper does.
         /// <inheritdoc />
         public override int Order => -900;
 
+        /// <summary>
+        /// Gets the <see cref="Rendering.ViewContext"/> of the executing view.
+        /// </summary>
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }

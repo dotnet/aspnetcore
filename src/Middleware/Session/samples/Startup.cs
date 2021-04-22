@@ -2,33 +2,41 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace SessionSample
 {
     public class Startup
     {
+        public Startup()
+        {
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            // Adds a default in-memory implementation of IDistributedCache
+            // Uncomment the following line to use the in-memory implementation of IDistributedCache
             services.AddDistributedMemoryCache();
 
-            // Uncomment the following line to use the Microsoft SQL Server implementation of IDistributedCache.
+            // Uncomment the following line to use the Microsoft SQL Server implementation of IDistributedCache
+            // and add a PackageReference to Microsoft.Extensions.Caching.SqlServer in the .csrpoj.
             // Note that this would require setting up the session state database.
-            //services.AddSqlServerCache(o =>
+            //services.AddDistributedSqlServerCache(o =>
             //{
-            //    o.ConnectionString = "Server=.;Database=ASPNET5SessionState;Trusted_Connection=True;";
+            //    o.ConnectionString = Configuration["AppSettings:ConnectionString"];
             //    o.SchemaName = "dbo";
             //    o.TableName = "Sessions";
             //});
 
-            // Uncomment the following line to use the Redis implementation of IDistributedCache.
+            // Uncomment the following line to use the Redis implementation of IDistributedCache
+            // and add a PackageReference to Microsoft.Extensions.Caching.StackExchangeRedis in the .csrpoj.
             // This will override any previously registered IDistributedCache service.
-            //services.AddDistributedRedisCache(o =>
+            //services.AddStackExchangeRedisCache(o =>
             //{
             //    o.Configuration = "localhost";
             //    o.InstanceName = "SampleInstance";
@@ -75,16 +83,19 @@ namespace SessionSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .ConfigureLogging(factory => factory.AddConsole())
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .ConfigureLogging(factory => factory.AddConsole())
+                    .UseKestrel()
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+                }).Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -6,11 +6,31 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
+    /// <summary>
+    /// Options to configure reading the request body as a HTTP form.
+    /// </summary>
     public class FormOptions
     {
+        internal static readonly FormOptions Default = new FormOptions();
+
+        /// <summary>
+        /// Default value for <see cref="MemoryBufferThreshold"/>.
+        /// </summary>
         public const int DefaultMemoryBufferThreshold = 1024 * 64;
+
+        /// <summary>
+        /// Default value for <see cref="BufferBodyLengthLimit"/>.
+        /// </summary>
         public const int DefaultBufferBodyLengthLimit = 1024 * 1024 * 128;
+
+        /// <summary>
+        /// Default value for <see cref="MultipartBoundaryLengthLimit"/>.
+        /// </summary>
         public const int DefaultMultipartBoundaryLengthLimit = 128;
+
+        /// <summary>
+        /// Default value for <see cref="MultipartBodyLengthLimit "/>.
+        /// </summary>
         public const long DefaultMultipartBodyLengthLimit = 1024 * 1024 * 128;
 
         /// <summary>

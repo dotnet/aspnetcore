@@ -1,11 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -18,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var connectionId = "0";
             var trace = new Mock<IKestrelTrace>();
-            var httpConnectionManager = new HttpConnectionManager(trace.Object, ResourceCounter.Unlimited);
+            var httpConnectionManager = new ConnectionManager(trace.Object, ResourceCounter.Unlimited);
 
             // Create HttpConnection in inner scope so it doesn't get rooted by the current frame.
             UnrootedConnectionsGetRemovedFromHeartbeatInnerScope(connectionId, httpConnectionManager, trace);
@@ -36,16 +38,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void UnrootedConnectionsGetRemovedFromHeartbeatInnerScope(
             string connectionId,
-            HttpConnectionManager httpConnectionManager,
+            ConnectionManager httpConnectionManager,
             Mock<IKestrelTrace> trace)
         {
-            var httpConnection = new HttpConnection(new HttpConnectionContext
-            {
-                ServiceContext = new TestServiceContext(),
-                ConnectionId = connectionId
-            });
-
-            httpConnectionManager.AddConnection(0, httpConnection);
+            var serviceContext = new TestServiceContext();
+            var mock = new Mock<DefaultConnectionContext>() { CallBase = true };
+            mock.Setup(m => m.ConnectionId).Returns(connectionId);
+            var transportConnectionManager = new TransportConnectionManager(httpConnectionManager);
+            var httpConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, transportConnectionManager, _ => Task.CompletedTask, mock.Object, Mock.Of<IKestrelTrace>());
+            transportConnectionManager.AddConnection(0, httpConnection);
 
             var connectionCount = 0;
             httpConnectionManager.Walk(_ => connectionCount++);

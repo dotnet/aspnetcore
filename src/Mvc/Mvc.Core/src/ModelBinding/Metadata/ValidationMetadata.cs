@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
@@ -23,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets or sets an <see cref="IPropertyValidationFilter"/> implementation that indicates whether this model
         /// should be validated. See <see cref="ModelMetadata.PropertyValidationFilter"/>.
         /// </summary>
-        public IPropertyValidationFilter PropertyValidationFilter { get; set; }
+        public IPropertyValidationFilter? PropertyValidationFilter { get; set; }
 
         /// <summary>
         /// Gets or sets a value that indicates whether children of the model should be validated. If <c>null</c>
@@ -41,5 +43,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// in this list, to be consumed later by an <see cref="Validation.IModelValidatorProvider"/>.
         /// </remarks>
         public IList<object> ValidatorMetadata { get; } = new List<object>();
+
+        /// <summary>
+        /// Gets a value that indicates if the model has validators .
+        /// </summary>
+        public bool? HasValidators { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if validators can be constructed using metadata on properties.
+        /// </summary>
+        internal bool PropertyHasValidators { get; set; }
     }
 }

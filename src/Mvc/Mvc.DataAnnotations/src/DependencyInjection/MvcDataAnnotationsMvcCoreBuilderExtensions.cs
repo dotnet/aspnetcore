@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -55,7 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcCoreBuilder AddDataAnnotationsLocalization(
             this IMvcCoreBuilder builder,
-            Action<MvcDataAnnotationsLocalizationOptions> setupAction)
+            Action<MvcDataAnnotationsLocalizationOptions>? setupAction)
         {
             if (builder == null)
             {
@@ -77,7 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection
         // Internal for testing.
         internal static void AddDataAnnotationsLocalizationServices(
             IServiceCollection services,
-            Action<MvcDataAnnotationsLocalizationOptions> setupAction)
+            Action<MvcDataAnnotationsLocalizationOptions>? setupAction)
         {
             DataAnnotationsLocalizationServices.AddDataAnnotationsLocalizationServices(services, setupAction);
         }

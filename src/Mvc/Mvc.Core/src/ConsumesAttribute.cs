@@ -7,11 +7,10 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Net.Http.Headers;
+using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -26,6 +25,10 @@ namespace Microsoft.AspNetCore.Mvc
         IConsumesActionConstraint,
         IApiRequestMetadataProvider
     {
+        /// <summary>
+        /// The order for consumes attribute.
+        /// </summary>
+        /// <value>Defaults to 200</value>
         public static readonly int ConsumesActionConstraintOrder = 200;
 
         /// <summary>
@@ -77,7 +80,10 @@ namespace Microsoft.AspNetCore.Mvc
 
                 // Confirm the request's content type is more specific than a media type this action supports e.g. OK
                 // if client sent "text/plain" data and this action supports "text/*".
-                if (requestContentType != null && !IsSubsetOfAnyContentType(requestContentType))
+                //
+                // Requests without a content type do not return a 415. It is a common pattern to place [Consumes] on
+                // a controller and have GET actions
+                if (!string.IsNullOrEmpty(requestContentType) && !IsSubsetOfAnyContentType(requestContentType))
                 {
                     context.Result = new UnsupportedMediaTypeResult();
                 }
@@ -125,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc
             // In case there is a single candidate with a constraint it should be selected.
             // If there are multiple actions with consumes action constraints this should result in ambiguous exception
             // unless there is another action without a consumes constraint.
-            if (requestContentType == null)
+            if (string.IsNullOrEmpty(requestContentType))
             {
                 var isActionWithoutConsumeConstraintPresent = context.Candidates.Any(
                     candidate => candidate.Constraints == null ||
@@ -189,16 +195,15 @@ namespace Microsoft.AspNetCore.Mvc
             // If there are multiple IConsumeActionConstraints which are defined at the class and
             // at the action level, the one closest to the action overrides the others. To ensure this
             // we take advantage of the fact that ConsumesAttribute is both an IActionFilter and an
-            // IConsumeActionConstraint. Since filterdescriptor collection is ordered (the last filter is the one
+            // IConsumeActionConstraint. Since FilterDescriptor collection is ordered (the last filter is the one
             // closest to the action), we apply this constraint only if there is no IConsumeActionConstraint after this.
             return actionDescriptor.FilterDescriptors.Last(
                 filter => filter.Filter is IConsumesActionConstraint).Filter == this;
-
         }
 
         private MediaTypeCollection GetContentTypes(string firstArg, string[] args)
         {
-            var completeArgs = new List<string>();
+            var completeArgs = new List<string>(args.Length + 1);
             completeArgs.Add(firstArg);
             completeArgs.AddRange(args);
             var contentTypes = new MediaTypeCollection();

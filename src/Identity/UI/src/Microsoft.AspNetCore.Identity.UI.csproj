@@ -1,60 +1,65 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
     <RazorAssemblyDescription>Compiled Razor views assembly for the ASP.NET Core Identity UI package.</RazorAssemblyDescription>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
-    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-    <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
+    <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+
+    <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
+
+    <GetCurrentProjectStaticWebAssetsDependsOn>
+      $(GetCurrentProjectStaticWebAssetsDependsOn);
+      _UpdatedIdentityUIStaticWebAssets
+    </GetCurrentProjectStaticWebAssetsDependsOn>
+
+    <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="wwwroot/**/*" />
-    <EmbeddedResource Remove="wwwroot/**/.bower.json" />
-    <EmbeddedResource Remove="wwwroot/**/LICENSE*" />
-    <None Remove="wwwroot/**/.bower.json" />
-    <None Remove="wwwroot/**/LICENSE*" />
-    <None Include="THIRD-PARTY-NOTICES" Pack="true" PackagePath="/" />
+    <Content Remove="@(Content)" />
+    <Content Include="wwwroot\**\*" Pack="true" />
+    <None Include="build\*" Pack="true" PackagePath="build\" />
+    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
+    <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
-    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.Identity" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
   </ItemGroup>
 
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_parameter1>Microsoft.AspNetCore.Mvc.AdditionalReference</_parameter1>
-      <_parameter2>$(RazorTargetName).dll,false</_parameter2>
-    </AssemblyAttribute>
+  <Target Name="SetupRazorInputs" BeforeTargets="ResolveRazorGenerateInputs">
+    <ItemGroup>
+      <_RazorGenerate Include="Areas\Identity\Pages\V4\**\*.cshtml" />
 
-    <RazorAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
-      <_Parameter1>BuildNumber</_Parameter1>
-      <_Parameter2>$(BuildNumber)</_Parameter2>
-    </RazorAssemblyAttribute>
+      <RazorGenerate Include="@(_RazorGenerate)" Link="Areas\Identity\Pages\%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
 
-    <RazorTargetAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
-      <_Parameter1>BuildNumber</_Parameter1>
-      <_Parameter2>$(BuildNumber)</_Parameter2>
-    </RazorTargetAssemblyAttribute>
-  </ItemGroup>
+  <Target Name="_UpdatedIdentityUIStaticWebAssets">
 
-  <ItemGroup>
-    <RazorCompile Include="$(GeneratedCommitHashAttributeFile)" />
-    <RazorCompile Include="$(GeneratedInternalAspNetCoreAttributeFile)" />
-  </ItemGroup>
+    <ItemGroup>
+      <StaticWebAsset Remove="@(StaticWebAsset)" />
 
-  <Target Name="VerifyBuildOutputs" AfterTargets="Build" Condition="'$(IsPackageInThisPatch)' == 'true'">
-    <PropertyGroup>
-      <ExpectedOutputFile>$(OutputPath)$(RazorTargetName).dll</ExpectedOutputFile>
-    </PropertyGroup>
+      <_V4Content Include="wwwroot\V4\**" />
 
-    <Error Text="Unable to find precompiled view file $(ExpectedOutputFile)" Condition="!Exists('$(ExpectedOutputFile)')" />
+      <StaticWebAsset Include="@(_V4Content->'%(FullPath)')">
+        <SourceType></SourceType>
+        <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
+        <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)wwwroot/V4'))</ContentRoot>
+        <BasePath>/Identity</BasePath>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+      </StaticWebAsset>
+    </ItemGroup>
+
   </Target>
 
 </Project>

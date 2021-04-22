@@ -10,12 +10,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -26,11 +27,12 @@ namespace Microsoft.AspNetCore.Mvc
     [Controller]
     public abstract class ControllerBase
     {
-        private ControllerContext _controllerContext;
-        private IModelMetadataProvider _metadataProvider;
-        private IModelBinderFactory _modelBinderFactory;
-        private IObjectModelValidator _objectValidator;
-        private IUrlHelper _url;
+        private ControllerContext? _controllerContext;
+        private IModelMetadataProvider? _metadataProvider;
+        private IModelBinderFactory? _modelBinderFactory;
+        private IObjectModelValidator? _objectValidator;
+        private IUrlHelper? _url;
+        private ProblemDetailsFactory? _problemDetailsFactory;
 
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/> for the executing action.
@@ -40,12 +42,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the <see cref="HttpRequest"/> for the executing action.
         /// </summary>
-        public HttpRequest Request => HttpContext?.Request;
+        public HttpRequest Request => HttpContext?.Request!;
 
         /// <summary>
         /// Gets the <see cref="HttpResponse"/> for the executing action.
         /// </summary>
-        public HttpResponse Response => HttpContext?.Response;
+        public HttpResponse Response => HttpContext?.Response!;
 
         /// <summary>
         /// Gets the <see cref="AspNetCore.Routing.RouteData"/> for the executing action.
@@ -100,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc
                     _metadataProvider = HttpContext?.RequestServices?.GetRequiredService<IModelMetadataProvider>();
                 }
 
-                return _metadataProvider;
+                return _metadataProvider!;
             }
             set
             {
@@ -125,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc
                     _modelBinderFactory = HttpContext?.RequestServices?.GetRequiredService<IModelBinderFactory>();
                 }
 
-                return _modelBinderFactory;
+                return _modelBinderFactory!;
             }
             set
             {
@@ -151,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc
                     _url = factory?.GetUrlHelper(ControllerContext);
                 }
 
-                return _url;
+                return _url!;
             }
             set
             {
@@ -176,7 +178,7 @@ namespace Microsoft.AspNetCore.Mvc
                     _objectValidator = HttpContext?.RequestServices?.GetRequiredService<IObjectModelValidator>();
                 }
 
-                return _objectValidator;
+                return _objectValidator!;
             }
             set
             {
@@ -190,9 +192,34 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Gets or sets the <see cref="ProblemDetailsFactory"/>.
+        /// </summary>
+        public ProblemDetailsFactory ProblemDetailsFactory
+        {
+            get
+            {
+                if (_problemDetailsFactory == null)
+                {
+                    _problemDetailsFactory = HttpContext?.RequestServices?.GetRequiredService<ProblemDetailsFactory>();
+                }
+
+                return _problemDetailsFactory!;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _problemDetailsFactory = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> for user associated with the executing action.
         /// </summary>
-        public ClaimsPrincipal User => HttpContext?.User;
+        public ClaimsPrincipal User => HttpContext?.User!;
 
         /// <summary>
         /// Creates a <see cref="StatusCodeResult"/> object by specifying a <paramref name="statusCode"/>.
@@ -200,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="statusCode">The status code to set on the response.</param>
         /// <returns>The created <see cref="StatusCodeResult"/> object for the response.</returns>
         [NonAction]
-        public virtual StatusCodeResult StatusCode(int statusCode)
+        public virtual StatusCodeResult StatusCode([ActionResultStatusCode] int statusCode)
             => new StatusCodeResult(statusCode);
 
         /// <summary>
@@ -210,26 +237,25 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The value to set on the <see cref="ObjectResult"/>.</param>
         /// <returns>The created <see cref="ObjectResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ObjectResult StatusCode(int statusCode, object value)
+        public virtual ObjectResult StatusCode([ActionResultStatusCode] int statusCode, [ActionResultObjectValue] object? value)
         {
-            var result = new ObjectResult(value);
-            result.StatusCode = statusCode;
-
-            return result;
+            return new ObjectResult(value)
+            {
+                StatusCode = statusCode
+            };
         }
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a
-        /// <paramref name="content"/> string.
+        /// Creates a <see cref="ContentResult"/> object by specifying a <paramref name="content"/> string.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
         /// <returns>The created <see cref="ContentResult"/> object for the response.</returns>
         [NonAction]
         public virtual ContentResult Content(string content)
-            => Content(content, (MediaTypeHeaderValue)null);
+            => Content(content, (MediaTypeHeaderValue?)null);
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object by specifying a
         /// <paramref name="content"/> string and a content type.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -240,7 +266,7 @@ namespace Microsoft.AspNetCore.Mvc
             => Content(content, MediaTypeHeaderValue.Parse(contentType));
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object by specifying a
         /// <paramref name="content"/> string, a <paramref name="contentType"/>, and <paramref name="contentEncoding"/>.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -260,27 +286,25 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object by specifying a
         /// <paramref name="content"/> string and a <paramref name="contentType"/>.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
         /// <param name="contentType">The content type (MIME type).</param>
         /// <returns>The created <see cref="ContentResult"/> object for the response.</returns>
         [NonAction]
-        public virtual ContentResult Content(string content, MediaTypeHeaderValue contentType)
+        public virtual ContentResult Content(string content, MediaTypeHeaderValue? contentType)
         {
-            var result = new ContentResult
+            return new ContentResult
             {
                 Content = content,
                 ContentType = contentType?.ToString()
             };
-
-            return result;
         }
 
         /// <summary>
         /// Creates a <see cref="NoContentResult"/> object that produces an empty
-        /// <see cref="StatusCodes.Status204NoContent"/> response.   
+        /// <see cref="StatusCodes.Status204NoContent"/> response.
         /// </summary>
         /// <returns>The created <see cref="NoContentResult"/> object for the response.</returns>
         [NonAction]
@@ -301,9 +325,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="OkObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual OkObjectResult Ok(object value)
+        public virtual OkObjectResult Ok([ActionResultObjectValue] object? value)
             => new OkObjectResult(value);
 
+        #region RedirectResult variants
         /// <summary>
         /// Creates a <see cref="RedirectResult"/> object that redirects (<see cref="StatusCodes.Status302Found"/>)
         /// to the specified <paramref name="url"/>.
@@ -478,7 +503,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="actionName">The name of the action.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToActionResult RedirectToAction(string actionName)
+        public virtual RedirectToActionResult RedirectToAction(string? actionName)
             => RedirectToAction(actionName, routeValues: null);
 
         /// <summary>
@@ -489,7 +514,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToActionResult RedirectToAction(string actionName, object routeValues)
+        public virtual RedirectToActionResult RedirectToAction(string? actionName, object? routeValues)
             => RedirectToAction(actionName, controllerName: null, routeValues: routeValues);
 
         /// <summary>
@@ -500,7 +525,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="controllerName">The name of the controller.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToActionResult RedirectToAction(string actionName, string controllerName)
+        public virtual RedirectToActionResult RedirectToAction(string? actionName, string? controllerName)
             => RedirectToAction(actionName, controllerName, routeValues: null);
 
         /// <summary>
@@ -513,9 +538,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
         public virtual RedirectToActionResult RedirectToAction(
-            string actionName,
-            string controllerName,
-            object routeValues)
+            string? actionName,
+            string? controllerName,
+            object? routeValues)
             => RedirectToAction(actionName, controllerName, routeValues, fragment: null);
 
         /// <summary>
@@ -528,9 +553,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
         public virtual RedirectToActionResult RedirectToAction(
-            string actionName,
-            string controllerName,
-            string fragment)
+            string? actionName,
+            string? controllerName,
+            string? fragment)
             => RedirectToAction(actionName, controllerName, routeValues: null, fragment: fragment);
 
         /// <summary>
@@ -544,10 +569,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
         public virtual RedirectToActionResult RedirectToAction(
-            string actionName,
-            string controllerName,
-            object routeValues,
-            string fragment)
+            string? actionName,
+            string? controllerName,
+            object? routeValues,
+            string? fragment)
         {
             return new RedirectToActionResult(actionName, controllerName, routeValues, fragment)
             {
@@ -568,10 +593,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
         public virtual RedirectToActionResult RedirectToActionPreserveMethod(
-            string actionName = null,
-            string controllerName = null,
-            object routeValues = null,
-            string fragment = null)
+            string? actionName = null,
+            string? controllerName = null,
+            object? routeValues = null,
+            string? fragment = null)
         {
             return new RedirectToActionResult(
                 actionName: actionName,
@@ -592,7 +617,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="actionName">The name of the action.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToActionResult RedirectToActionPermanent(string actionName)
+        public virtual RedirectToActionResult RedirectToActionPermanent(string? actionName)
             => RedirectToActionPermanent(actionName, routeValues: null);
 
         /// <summary>
@@ -604,7 +629,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToActionResult RedirectToActionPermanent(string actionName, object routeValues)
+        public virtual RedirectToActionResult RedirectToActionPermanent(string? actionName, object? routeValues)
             => RedirectToActionPermanent(actionName, controllerName: null, routeValues: routeValues);
 
         /// <summary>
@@ -616,7 +641,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="controllerName">The name of the controller.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName)
+        public virtual RedirectToActionResult RedirectToActionPermanent(string? actionName, string? controllerName)
             => RedirectToActionPermanent(actionName, controllerName, routeValues: null);
 
         /// <summary>
@@ -630,9 +655,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
         public virtual RedirectToActionResult RedirectToActionPermanent(
-            string actionName,
-            string controllerName,
-            string fragment)
+            string? actionName,
+            string? controllerName,
+            string? fragment)
             => RedirectToActionPermanent(actionName, controllerName, routeValues: null, fragment: fragment);
 
         /// <summary>
@@ -646,9 +671,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
         public virtual RedirectToActionResult RedirectToActionPermanent(
-            string actionName,
-            string controllerName,
-            object routeValues)
+            string? actionName,
+            string? controllerName,
+            object? routeValues)
             => RedirectToActionPermanent(actionName, controllerName, routeValues, fragment: null);
 
         /// <summary>
@@ -663,10 +688,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         [NonAction]
         public virtual RedirectToActionResult RedirectToActionPermanent(
-            string actionName,
-            string controllerName,
-            object routeValues,
-            string fragment)
+            string? actionName,
+            string? controllerName,
+            object? routeValues,
+            string? fragment)
         {
             return new RedirectToActionResult(
                 actionName,
@@ -692,10 +717,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>        
         [NonAction]
         public virtual RedirectToActionResult RedirectToActionPermanentPreserveMethod(
-            string actionName = null,
-            string controllerName = null,
-            object routeValues = null,
-            string fragment = null)
+            string? actionName = null,
+            string? controllerName = null,
+            object? routeValues = null,
+            string? fragment = null)
         {
             return new RedirectToActionResult(
                 actionName: actionName,
@@ -715,7 +740,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeName">The name of the route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToRouteResult RedirectToRoute(string routeName)
+        public virtual RedirectToRouteResult RedirectToRoute(string? routeName)
             => RedirectToRoute(routeName, routeValues: null);
 
         /// <summary>
@@ -724,7 +749,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToRouteResult RedirectToRoute(object routeValues)
+        public virtual RedirectToRouteResult RedirectToRoute(object? routeValues)
             => RedirectToRoute(routeName: null, routeValues: routeValues);
 
         /// <summary>
@@ -735,7 +760,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToRouteResult RedirectToRoute(string routeName, object routeValues)
+        public virtual RedirectToRouteResult RedirectToRoute(string? routeName, object? routeValues)
             => RedirectToRoute(routeName, routeValues, fragment: null);
 
         /// <summary>
@@ -746,7 +771,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToRouteResult RedirectToRoute(string routeName, string fragment)
+        public virtual RedirectToRouteResult RedirectToRoute(string? routeName, string? fragment)
             => RedirectToRoute(routeName, routeValues: null, fragment: fragment);
 
         /// <summary>
@@ -759,9 +784,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         [NonAction]
         public virtual RedirectToRouteResult RedirectToRoute(
-            string routeName,
-            object routeValues,
-            string fragment)
+            string? routeName,
+            object? routeValues,
+            string? fragment)
         {
             return new RedirectToRouteResult(routeName, routeValues, fragment)
             {
@@ -780,9 +805,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>       
         [NonAction]
         public virtual RedirectToRouteResult RedirectToRoutePreserveMethod(
-            string routeName = null,
-            object routeValues = null,
-            string fragment = null)
+            string? routeName = null,
+            object? routeValues = null,
+            string? fragment = null)
         {
             return new RedirectToRouteResult(
                 routeName: routeName,
@@ -802,7 +827,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeName">The name of the route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToRouteResult RedirectToRoutePermanent(string routeName)
+        public virtual RedirectToRouteResult RedirectToRoutePermanent(string? routeName)
             => RedirectToRoutePermanent(routeName, routeValues: null);
 
         /// <summary>
@@ -812,7 +837,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToRouteResult RedirectToRoutePermanent(object routeValues)
+        public virtual RedirectToRouteResult RedirectToRoutePermanent(object? routeValues)
             => RedirectToRoutePermanent(routeName: null, routeValues: routeValues);
 
         /// <summary>
@@ -824,7 +849,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToRouteResult RedirectToRoutePermanent(string routeName, object routeValues)
+        public virtual RedirectToRouteResult RedirectToRoutePermanent(string? routeName, object? routeValues)
             => RedirectToRoutePermanent(routeName, routeValues, fragment: null);
 
         /// <summary>
@@ -836,7 +861,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual RedirectToRouteResult RedirectToRoutePermanent(string routeName, string fragment)
+        public virtual RedirectToRouteResult RedirectToRoutePermanent(string? routeName, string? fragment)
             => RedirectToRoutePermanent(routeName, routeValues: null, fragment: fragment);
 
         /// <summary>
@@ -850,9 +875,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         [NonAction]
         public virtual RedirectToRouteResult RedirectToRoutePermanent(
-            string routeName,
-            object routeValues,
-            string fragment)
+            string? routeName,
+            object? routeValues,
+            string? fragment)
         {
             return new RedirectToRouteResult(routeName, routeValues, permanent: true, fragment: fragment)
             {
@@ -871,9 +896,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>       
         [NonAction]
         public virtual RedirectToRouteResult RedirectToRoutePermanentPreserveMethod(
-            string routeName = null,
-            object routeValues = null,
-            string fragment = null)
+            string? routeName = null,
+            object? routeValues = null,
+            string? fragment = null)
         {
             return new RedirectToRouteResult(
                 routeName: routeName,
@@ -903,7 +928,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
         [NonAction]
-        public virtual RedirectToPageResult RedirectToPage(string pageName, object routeValues)
+        public virtual RedirectToPageResult RedirectToPage(string pageName, object? routeValues)
             => RedirectToPage(pageName, pageHandler: null, routeValues: routeValues, fragment: null);
 
         /// <summary>
@@ -914,7 +939,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="pageHandler">The page handler to redirect to.</param>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
         [NonAction]
-        public virtual RedirectToPageResult RedirectToPage(string pageName, string pageHandler)
+        public virtual RedirectToPageResult RedirectToPage(string pageName, string? pageHandler)
             => RedirectToPage(pageName, pageHandler, routeValues: null);
 
         /// <summary>
@@ -925,7 +950,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
         [NonAction]
-        public virtual RedirectToPageResult RedirectToPage(string pageName, string pageHandler, object routeValues)
+        public virtual RedirectToPageResult RedirectToPage(string pageName, string? pageHandler, object? routeValues)
             => RedirectToPage(pageName, pageHandler, routeValues, fragment: null);
 
         /// <summary>
@@ -937,7 +962,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
         [NonAction]
-        public virtual RedirectToPageResult RedirectToPage(string pageName, string pageHandler, string fragment)
+        public virtual RedirectToPageResult RedirectToPage(string pageName, string? pageHandler, string? fragment)
             => RedirectToPage(pageName, pageHandler, routeValues: null, fragment: fragment);
 
         /// <summary>
@@ -950,7 +975,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
         [NonAction]
-        public virtual RedirectToPageResult RedirectToPage(string pageName, string pageHandler, object routeValues, string fragment)
+        public virtual RedirectToPageResult RedirectToPage(string pageName, string? pageHandler, object? routeValues, string? fragment)
             => new RedirectToPageResult(pageName, pageHandler, routeValues, fragment);
 
         /// <summary>
@@ -970,7 +995,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
         [NonAction]
-        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, object routeValues)
+        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, object? routeValues)
             => RedirectToPagePermanent(pageName, pageHandler: null, routeValues: routeValues, fragment: null);
 
         /// <summary>
@@ -981,7 +1006,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="pageHandler">The page handler to redirect to.</param>
         /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
         [NonAction]
-        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, string pageHandler)
+        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, string? pageHandler)
             => RedirectToPagePermanent(pageName, pageHandler, routeValues: null, fragment: null);
 
         /// <summary>
@@ -993,7 +1018,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
         [NonAction]
-        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, string pageHandler, string fragment)
+        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, string? pageHandler, string? fragment)
             => RedirectToPagePermanent(pageName, pageHandler, routeValues: null, fragment: fragment);
 
         /// <summary>
@@ -1008,9 +1033,9 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual RedirectToPageResult RedirectToPagePermanent(
             string pageName,
-            string pageHandler,
-            object routeValues,
-            string fragment)
+            string? pageHandler,
+            object? routeValues,
+            string? fragment)
             => new RedirectToPageResult(pageName, pageHandler, routeValues, permanent: true, fragment: fragment);
 
         /// <summary>
@@ -1026,9 +1051,9 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual RedirectToPageResult RedirectToPagePreserveMethod(
             string pageName,
-            string pageHandler = null,
-            object routeValues = null,
-            string fragment = null)
+            string? pageHandler = null,
+            object? routeValues = null,
+            string? fragment = null)
         {
             if (pageName == null)
             {
@@ -1057,9 +1082,9 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual RedirectToPageResult RedirectToPagePermanentPreserveMethod(
             string pageName,
-            string pageHandler = null,
-            object routeValues = null,
-            string fragment = null)
+            string? pageHandler = null,
+            object? routeValues = null,
+            string? fragment = null)
         {
             if (pageName == null)
             {
@@ -1074,7 +1099,9 @@ namespace Microsoft.AspNetCore.Mvc
                 preserveMethod: true,
                 fragment: fragment);
         }
+        #endregion
 
+        #region FileResult variants
         /// <summary>
         /// Returns a file with the specified <paramref name="fileContents" /> as content (<see cref="StatusCodes.Status200OK"/>),
         /// and the specified <paramref name="contentType" /> as the Content-Type.
@@ -1113,7 +1140,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <returns>The created <see cref="FileContentResult"/> for the response.</returns>
         [NonAction]
-        public virtual FileContentResult File(byte[] fileContents, string contentType, string fileDownloadName)
+        public virtual FileContentResult File(byte[] fileContents, string contentType, string? fileDownloadName)
             => new FileContentResult(fileContents, contentType) { FileDownloadName = fileDownloadName };
 
         /// <summary>
@@ -1128,7 +1155,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileContentResult"/> for the response.</returns>
         [NonAction]
-        public virtual FileContentResult File(byte[] fileContents, string contentType, string fileDownloadName, bool enableRangeProcessing)
+        public virtual FileContentResult File(byte[] fileContents, string contentType, string? fileDownloadName, bool enableRangeProcessing)
             => new FileContentResult(fileContents, contentType)
             {
                 FileDownloadName = fileDownloadName,
@@ -1192,7 +1219,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <returns>The created <see cref="FileContentResult"/> for the response.</returns>
         [NonAction]
-        public virtual FileContentResult File(byte[] fileContents, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        public virtual FileContentResult File(byte[] fileContents, string contentType, string? fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
         {
             return new FileContentResult(fileContents, contentType)
             {
@@ -1216,7 +1243,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileContentResult"/> for the response.</returns>
         [NonAction]
-        public virtual FileContentResult File(byte[] fileContents, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
+        public virtual FileContentResult File(byte[] fileContents, string contentType, string? fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
         {
             return new FileContentResult(fileContents, contentType)
             {
@@ -1236,6 +1263,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileStream">The <see cref="Stream"/> with the contents of the file.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType)
             => File(fileStream, contentType, fileDownloadName: null);
@@ -1250,6 +1280,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, bool enableRangeProcessing)
             => File(fileStream, contentType, fileDownloadName: null, enableRangeProcessing: enableRangeProcessing);
@@ -1265,8 +1298,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
-        public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName)
+        public virtual FileStreamResult File(Stream fileStream, string contentType, string? fileDownloadName)
             => new FileStreamResult(fileStream, contentType) { FileDownloadName = fileDownloadName };
 
         /// <summary>
@@ -1281,8 +1317,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
-        public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName, bool enableRangeProcessing)
+        public virtual FileStreamResult File(Stream fileStream, string contentType, string? fileDownloadName, bool enableRangeProcessing)
             => new FileStreamResult(fileStream, contentType)
             {
                 FileDownloadName = fileDownloadName,
@@ -1300,6 +1339,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
         {
@@ -1322,6 +1364,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
         {
@@ -1345,8 +1390,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
-        public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        public virtual FileStreamResult File(Stream fileStream, string contentType, string? fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
         {
             return new FileStreamResult(fileStream, contentType)
             {
@@ -1369,8 +1417,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
-        public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
+        public virtual FileStreamResult File(Stream fileStream, string contentType, string? fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
         {
             return new FileStreamResult(fileStream, contentType)
             {
@@ -1420,7 +1471,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <returns>The created <see cref="VirtualFileResult"/> for the response.</returns>
         [NonAction]
-        public virtual VirtualFileResult File(string virtualPath, string contentType, string fileDownloadName)
+        public virtual VirtualFileResult File(string virtualPath, string contentType, string? fileDownloadName)
             => new VirtualFileResult(virtualPath, contentType) { FileDownloadName = fileDownloadName };
 
         /// <summary>
@@ -1436,7 +1487,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="VirtualFileResult"/> for the response.</returns>
         [NonAction]
-        public virtual VirtualFileResult File(string virtualPath, string contentType, string fileDownloadName, bool enableRangeProcessing)
+        public virtual VirtualFileResult File(string virtualPath, string contentType, string? fileDownloadName, bool enableRangeProcessing)
             => new VirtualFileResult(virtualPath, contentType)
             {
                 FileDownloadName = fileDownloadName,
@@ -1500,7 +1551,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <returns>The created <see cref="VirtualFileResult"/> for the response.</returns>
         [NonAction]
-        public virtual VirtualFileResult File(string virtualPath, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        public virtual VirtualFileResult File(string virtualPath, string contentType, string? fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
         {
             return new VirtualFileResult(virtualPath, contentType)
             {
@@ -1524,7 +1575,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="VirtualFileResult"/> for the response.</returns>
         [NonAction]
-        public virtual VirtualFileResult File(string virtualPath, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
+        public virtual VirtualFileResult File(string virtualPath, string contentType, string? fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
         {
             return new VirtualFileResult(virtualPath, contentType)
             {
@@ -1577,7 +1628,7 @@ namespace Microsoft.AspNetCore.Mvc
         public virtual PhysicalFileResult PhysicalFile(
             string physicalPath,
             string contentType,
-            string fileDownloadName)
+            string? fileDownloadName)
             => new PhysicalFileResult(physicalPath, contentType) { FileDownloadName = fileDownloadName };
 
         /// <summary>
@@ -1596,7 +1647,7 @@ namespace Microsoft.AspNetCore.Mvc
         public virtual PhysicalFileResult PhysicalFile(
             string physicalPath,
             string contentType,
-            string fileDownloadName,
+            string? fileDownloadName,
             bool enableRangeProcessing)
             => new PhysicalFileResult(physicalPath, contentType)
             {
@@ -1661,7 +1712,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
         [NonAction]
-        public virtual PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        public virtual PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string? fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
         {
             return new PhysicalFileResult(physicalPath, contentType)
             {
@@ -1685,7 +1736,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
         [NonAction]
-        public virtual PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
+        public virtual PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string? fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
         {
             return new PhysicalFileResult(physicalPath, contentType)
             {
@@ -1695,6 +1746,7 @@ namespace Microsoft.AspNetCore.Mvc
                 EnableRangeProcessing = enableRangeProcessing,
             };
         }
+        #endregion
 
         /// <summary>
         /// Creates an <see cref="UnauthorizedResult"/> that produces an <see cref="StatusCodes.Status401Unauthorized"/> response.
@@ -1703,6 +1755,14 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual UnauthorizedResult Unauthorized()
             => new UnauthorizedResult();
+
+        /// <summary>
+        /// Creates an <see cref="UnauthorizedObjectResult"/> that produces a <see cref="StatusCodes.Status401Unauthorized"/> response.
+        /// </summary>
+        /// <returns>The created <see cref="UnauthorizedObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual UnauthorizedObjectResult Unauthorized([ActionResultObjectValue] object? value)
+            => new UnauthorizedObjectResult(value);
 
         /// <summary>
         /// Creates an <see cref="NotFoundResult"/> that produces a <see cref="StatusCodes.Status404NotFound"/> response.
@@ -1717,7 +1777,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="NotFoundObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual NotFoundObjectResult NotFound(object value)
+        public virtual NotFoundObjectResult NotFound([ActionResultObjectValue] object? value)
             => new NotFoundObjectResult(value);
 
         /// <summary>
@@ -1734,7 +1794,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="error">An error object to be returned to the client.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual BadRequestObjectResult BadRequest(object error)
+        public virtual BadRequestObjectResult BadRequest([ActionResultObjectValue] object? error)
             => new BadRequestObjectResult(error);
 
         /// <summary>
@@ -1743,7 +1803,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual BadRequestObjectResult BadRequest(ModelStateDictionary modelState)
+        public virtual BadRequestObjectResult BadRequest([ActionResultObjectValue] ModelStateDictionary modelState)
         {
             if (modelState == null)
             {
@@ -1759,9 +1819,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="UnprocessableEntityResult"/> for the response.</returns>
         [NonAction]
         public virtual UnprocessableEntityResult UnprocessableEntity()
-        {
-            return new UnprocessableEntityResult();
-        }
+            => new UnprocessableEntityResult();
 
         /// <summary>
         /// Creates an <see cref="UnprocessableEntityObjectResult"/> that produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
@@ -1769,10 +1827,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="error">An error object to be returned to the client.</param>
         /// <returns>The created <see cref="UnprocessableEntityObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual UnprocessableEntityObjectResult UnprocessableEntity(object error)
-        {
-            return new UnprocessableEntityObjectResult(error);
-        }
+        public virtual UnprocessableEntityObjectResult UnprocessableEntity([ActionResultObjectValue] object? error)
+            => new UnprocessableEntityObjectResult(error);
 
         /// <summary>
         /// Creates an <see cref="UnprocessableEntityObjectResult"/> that produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
@@ -1780,7 +1836,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="UnprocessableEntityObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual UnprocessableEntityObjectResult UnprocessableEntity(ModelStateDictionary modelState)
+        public virtual UnprocessableEntityObjectResult UnprocessableEntity([ActionResultObjectValue] ModelStateDictionary modelState)
         {
             if (modelState == null)
             {
@@ -1804,7 +1860,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="error">Contains errors to be returned to the client.</param>
         /// <returns>The created <see cref="ConflictObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual ConflictObjectResult Conflict(object error)
+        public virtual ConflictObjectResult Conflict([ActionResultObjectValue] object? error)
             => new ConflictObjectResult(error);
 
         /// <summary>
@@ -1813,15 +1869,62 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="ConflictObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual ConflictObjectResult Conflict(ModelStateDictionary modelState)
+        public virtual ConflictObjectResult Conflict([ActionResultObjectValue] ModelStateDictionary modelState)
             => new ConflictObjectResult(modelState);
+
+        /// <summary>
+        /// Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
+        /// </summary>
+        /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
+        /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+        /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <returns>The created <see cref="ObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ObjectResult Problem(
+            string? detail = null,
+            string? instance = null,
+            int? statusCode = null,
+            string? title = null,
+            string? type = null)
+        {
+            ProblemDetails problemDetails;
+            if (ProblemDetailsFactory == null)
+            {
+                // ProblemDetailsFactory may be null in unit testing scenarios. Improvise to make this more testable.
+                problemDetails = new ProblemDetails
+                {
+                    Detail = detail,
+                    Instance = instance,
+                    Status = statusCode ?? 500,
+                    Title = title,
+                    Type = type,
+                };
+            }
+            else
+            {
+                problemDetails = ProblemDetailsFactory.CreateProblemDetails(
+                    HttpContext,
+                    statusCode: statusCode ?? 500,
+                    title: title,
+                    type: type,
+                    detail: detail,
+                    instance: instance);
+            }
+
+            return new ObjectResult(problemDetails)
+            {
+                StatusCode = problemDetails.Status
+            };
+        }
 
         /// <summary>
         /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual ActionResult ValidationProblem(ValidationProblemDetails descriptor)
+        public virtual ActionResult ValidationProblem([ActionResultObjectValue] ValidationProblemDetails descriptor)
         {
             if (descriptor == null)
             {
@@ -1832,31 +1935,83 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// with validation errors from <paramref name="modelStateDictionary"/>.
         /// </summary>
+        /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual ActionResult ValidationProblem(ModelStateDictionary modelStateDictionary)
-        {
-            if (modelStateDictionary == null)
-            {
-                throw new ArgumentNullException(nameof(modelStateDictionary));
-            }
+        public virtual ActionResult ValidationProblem([ActionResultObjectValue] ModelStateDictionary modelStateDictionary)
+             => ValidationProblem(detail: null, modelStateDictionary: modelStateDictionary);
 
-            var validationProblem = new ValidationProblemDetails(modelStateDictionary);
-            return new BadRequestObjectResult(validationProblem);
-        }
 
         /// <summary>
-        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
         /// with validation errors from <see cref="ModelState"/>.
         /// </summary>
-        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
         [NonAction]
         public virtual ActionResult ValidationProblem()
+            => ValidationProblem(ModelState);
+
+        /// <summary>
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// with a <see cref="ValidationProblemDetails"/> value.
+        /// </summary>
+        /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+        /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <param name="statusCode">The status code.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>. 
+        /// When <see langword="null"/> uses <see cref="ModelState"/>.</param>
+        /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ActionResult ValidationProblem(
+            string? detail = null,
+            string? instance = null,
+            int? statusCode = null,
+            string? title = null,
+            string? type = null,
+            [ActionResultObjectValue] ModelStateDictionary? modelStateDictionary = null)
         {
-            var validationProblem = new ValidationProblemDetails(ModelState);
-            return new BadRequestObjectResult(validationProblem);
+            modelStateDictionary ??= ModelState;
+
+            ValidationProblemDetails? validationProblem;
+            if (ProblemDetailsFactory == null)
+            {
+                // ProblemDetailsFactory may be null in unit testing scenarios. Improvise to make this more testable.
+                validationProblem = new ValidationProblemDetails(modelStateDictionary)
+                {
+                    Detail = detail,
+                    Instance = instance,
+                    Status = statusCode,
+                    Title = title,
+                    Type = type,
+                };
+            }
+            else
+            {
+                validationProblem = ProblemDetailsFactory?.CreateValidationProblemDetails(
+                    HttpContext,
+                    modelStateDictionary,
+                    statusCode: statusCode,
+                    title: title,
+                    type: type,
+                    detail: detail,
+                    instance: instance);
+            }
+
+            if (validationProblem is { Status: 400 })
+            {
+                // For compatibility with 2.x, continue producing BadRequestObjectResult instances if the status code is 400.
+                return new BadRequestObjectResult(validationProblem);
+            }
+
+            return new ObjectResult(validationProblem)
+            {
+                StatusCode = validationProblem?.Status
+            };
         }
 
         /// <summary>
@@ -1866,7 +2021,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedResult Created(string uri, object value)
+        public virtual CreatedResult Created(string uri, [ActionResultObjectValue] object? value)
         {
             if (uri == null)
             {
@@ -1883,7 +2038,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedResult Created(Uri uri, object value)
+        public virtual CreatedResult Created(Uri uri, [ActionResultObjectValue] object? value)
         {
             if (uri == null)
             {
@@ -1900,7 +2055,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedAtActionResult CreatedAtAction(string actionName, object value)
+        public virtual CreatedAtActionResult CreatedAtAction(string? actionName, [ActionResultObjectValue] object? value)
             => CreatedAtAction(actionName, routeValues: null, value: value);
 
         /// <summary>
@@ -1911,7 +2066,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedAtActionResult CreatedAtAction(string actionName, object routeValues, object value)
+        public virtual CreatedAtActionResult CreatedAtAction(string? actionName, object? routeValues, [ActionResultObjectValue] object? value)
             => CreatedAtAction(actionName, controllerName: null, routeValues: routeValues, value: value);
 
         /// <summary>
@@ -1924,10 +2079,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="CreatedAtActionResult"/> for the response.</returns>
         [NonAction]
         public virtual CreatedAtActionResult CreatedAtAction(
-            string actionName,
-            string controllerName,
-            object routeValues,
-            object value)
+            string? actionName,
+            string? controllerName,
+            object? routeValues,
+            [ActionResultObjectValue] object? value)
             => new CreatedAtActionResult(actionName, controllerName, routeValues, value);
 
         /// <summary>
@@ -1937,7 +2092,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, object value)
+        public virtual CreatedAtRouteResult CreatedAtRoute(string? routeName, [ActionResultObjectValue] object? value)
             => CreatedAtRoute(routeName, routeValues: null, value: value);
 
         /// <summary>
@@ -1947,7 +2102,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedAtRouteResult CreatedAtRoute(object routeValues, object value)
+        public virtual CreatedAtRouteResult CreatedAtRoute(object? routeValues, [ActionResultObjectValue] object? value)
             => CreatedAtRoute(routeName: null, routeValues: routeValues, value: value);
 
         /// <summary>
@@ -1958,7 +2113,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, object routeValues, object value)
+        public virtual CreatedAtRouteResult CreatedAtRoute(string? routeName, object? routeValues, [ActionResultObjectValue] object? value)
             => new CreatedAtRouteResult(routeName, routeValues, value);
 
         /// <summary>
@@ -1975,7 +2130,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedResult Accepted(object value)
+        public virtual AcceptedResult Accepted([ActionResultObjectValue] object? value)
             => new AcceptedResult(location: null, value: value);
 
         /// <summary>
@@ -2002,7 +2157,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// May be null.</param>
         /// <returns>The created <see cref="AcceptedResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedResult Accepted(string uri)
+        public virtual AcceptedResult Accepted(string? uri)
             => new AcceptedResult(location: uri, value: null);
 
         /// <summary>
@@ -2012,7 +2167,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedResult Accepted(string uri, object value)
+        public virtual AcceptedResult Accepted(string? uri, [ActionResultObjectValue] object? value)
             => new AcceptedResult(uri, value);
 
         /// <summary>
@@ -2022,7 +2177,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedResult Accepted(Uri uri, object value)
+        public virtual AcceptedResult Accepted(Uri uri, [ActionResultObjectValue] object? value)
         {
             if (uri == null)
             {
@@ -2038,7 +2193,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="actionName">The name of the action to use for generating the URL.</param>
         /// <returns>The created <see cref="AcceptedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtActionResult AcceptedAtAction(string actionName)
+        public virtual AcceptedAtActionResult AcceptedAtAction(string? actionName)
             => AcceptedAtAction(actionName, routeValues: null, value: null);
 
         /// <summary>
@@ -2048,7 +2203,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
         /// <returns>The created <see cref="AcceptedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName)
+        public virtual AcceptedAtActionResult AcceptedAtAction(string? actionName, string? controllerName)
             => AcceptedAtAction(actionName, controllerName, routeValues: null, value: null);
 
         /// <summary>
@@ -2058,7 +2213,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtActionResult AcceptedAtAction(string actionName, object value)
+        public virtual AcceptedAtActionResult AcceptedAtAction(string? actionName, [ActionResultObjectValue] object? value)
             => AcceptedAtAction(actionName, routeValues: null, value: value);
 
         /// <summary>
@@ -2069,7 +2224,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <returns>The created <see cref="AcceptedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName, object routeValues)
+        public virtual AcceptedAtActionResult AcceptedAtAction(string? actionName, string? controllerName, [ActionResultObjectValue] object? routeValues)
             => AcceptedAtAction(actionName, controllerName, routeValues, value: null);
 
         /// <summary>
@@ -2080,7 +2235,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedAtActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtActionResult AcceptedAtAction(string actionName, object routeValues, object value)
+        public virtual AcceptedAtActionResult AcceptedAtAction(string? actionName, object? routeValues, [ActionResultObjectValue] object? value)
             => AcceptedAtAction(actionName, controllerName: null, routeValues: routeValues, value: value);
 
         /// <summary>
@@ -2093,10 +2248,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="AcceptedAtActionResult"/> for the response.</returns>
         [NonAction]
         public virtual AcceptedAtActionResult AcceptedAtAction(
-            string actionName,
-            string controllerName,
-            object routeValues,
-            object value)
+            string? actionName,
+            string? controllerName,
+            object? routeValues,
+            [ActionResultObjectValue] object? value)
             => new AcceptedAtActionResult(actionName, controllerName, routeValues, value);
 
         /// <summary>
@@ -2105,7 +2260,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <returns>The created <see cref="AcceptedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtRouteResult AcceptedAtRoute(object routeValues)
+        public virtual AcceptedAtRouteResult AcceptedAtRoute([ActionResultObjectValue] object? routeValues)
             => AcceptedAtRoute(routeName: null, routeValues: routeValues, value: null);
 
         /// <summary>
@@ -2114,7 +2269,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeName">The name of the route to use for generating the URL.</param>
         /// <returns>The created <see cref="AcceptedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtRouteResult AcceptedAtRoute(string routeName)
+        public virtual AcceptedAtRouteResult AcceptedAtRoute(string? routeName)
             => AcceptedAtRoute(routeName, routeValues: null, value: null);
 
         /// <summary>
@@ -2124,7 +2279,7 @@ namespace Microsoft.AspNetCore.Mvc
         ///<param name="routeValues">The route data to use for generating the URL.</param>
         /// <returns>The created <see cref="AcceptedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtRouteResult AcceptedAtRoute(string routeName, object routeValues)
+        public virtual AcceptedAtRouteResult AcceptedAtRoute(string? routeName, object? routeValues)
             => AcceptedAtRoute(routeName, routeValues, value: null);
 
         /// <summary>
@@ -2134,7 +2289,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtRouteResult AcceptedAtRoute(object routeValues, object value)
+        public virtual AcceptedAtRouteResult AcceptedAtRoute(object? routeValues, [ActionResultObjectValue] object? value)
             => AcceptedAtRoute(routeName: null, routeValues: routeValues, value: value);
 
         /// <summary>
@@ -2145,7 +2300,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The optional content value to format in the entity body; may be null.</param>
         /// <returns>The created <see cref="AcceptedAtRouteResult"/> for the response.</returns>
         [NonAction]
-        public virtual AcceptedAtRouteResult AcceptedAtRoute(string routeName, object routeValues, object value)
+        public virtual AcceptedAtRouteResult AcceptedAtRoute(string? routeName, object? routeValues, [ActionResultObjectValue] object? value)
             => new AcceptedAtRouteResult(routeName, routeValues, value);
 
         /// <summary>
@@ -2267,6 +2422,15 @@ namespace Microsoft.AspNetCore.Mvc
             => new ForbidResult(authenticationSchemes, properties);
 
         /// <summary>
+        /// Creates a <see cref="SignInResult"/>.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
+        /// <returns>The created <see cref="SignInResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignInResult SignIn(ClaimsPrincipal principal)
+            => new SignInResult(principal);
+
+        /// <summary>
         /// Creates a <see cref="SignInResult"/> with the specified authentication scheme.
         /// </summary>
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
@@ -2275,6 +2439,18 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual SignInResult SignIn(ClaimsPrincipal principal, string authenticationScheme)
             => new SignInResult(authenticationScheme, principal);
+
+        /// <summary>
+        /// Creates a <see cref="SignInResult"/> with <paramref name="properties"/>.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
+        /// <returns>The created <see cref="SignInResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignInResult SignIn(
+            ClaimsPrincipal principal,
+            AuthenticationProperties properties)
+            => new SignInResult(principal, properties);
 
         /// <summary>
         /// Creates a <see cref="SignInResult"/> with the specified authentication scheme and
@@ -2290,6 +2466,23 @@ namespace Microsoft.AspNetCore.Mvc
             AuthenticationProperties properties,
             string authenticationScheme)
             => new SignInResult(authenticationScheme, principal, properties);
+
+        /// <summary>
+        /// Creates a <see cref="SignOutResult"/>.
+        /// </summary>
+        /// <returns>The created <see cref="SignOutResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignOutResult SignOut()
+            => new SignOutResult();
+
+        /// <summary>
+        /// Creates a <see cref="SignOutResult"/> with <paramref name="properties"/>.
+        /// </summary>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
+        /// <returns>The created <see cref="SignOutResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignOutResult SignOut(AuthenticationProperties properties)
+            => new SignOutResult(properties);
 
         /// <summary>
         /// Creates a <see cref="SignOutResult"/> with the specified authentication schemes.
@@ -2356,8 +2549,13 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(prefix));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
-            return await TryUpdateModelAsync(model, prefix, valueProvider);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
+            return await TryUpdateModelAsync(model, prefix, valueProvider!);
         }
 
         /// <summary>
@@ -2430,14 +2628,19 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(includeExpressions));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
                 ControllerContext,
                 MetadataProvider,
                 ModelBinderFactory,
-                valueProvider,
+                valueProvider!,
                 ObjectValidator,
                 includeExpressions);
         }
@@ -2469,14 +2672,19 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(propertyFilter));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
                 ControllerContext,
                 MetadataProvider,
                 ModelBinderFactory,
-                valueProvider,
+                valueProvider!,
                 ObjectValidator,
                 propertyFilter);
         }
@@ -2597,7 +2805,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 modelType,
@@ -2605,7 +2818,7 @@ namespace Microsoft.AspNetCore.Mvc
                 ControllerContext,
                 MetadataProvider,
                 ModelBinderFactory,
-                valueProvider,
+                valueProvider!,
                 ObjectValidator);
         }
 
@@ -2687,7 +2900,7 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual bool TryValidateModel(
             object model,
-            string prefix)
+            string? prefix)
         {
             if (model == null)
             {

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// regardless of whether a single value or multiple values were submitted.
     /// </para>
     /// </remarks>
-    public struct ValueProviderResult : IEquatable<ValueProviderResult>, IEnumerable<string>
+    public readonly struct ValueProviderResult : IEquatable<ValueProviderResult>, IEnumerable<string>
     {
         private static readonly CultureInfo _invariantCulture = CultureInfo.InvariantCulture;
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <param name="values">The submitted values.</param>
         /// <param name="culture">The <see cref="CultureInfo"/> associated with this value.</param>
-        public ValueProviderResult(StringValues values, CultureInfo culture)
+        public ValueProviderResult(StringValues values, CultureInfo? culture)
         {
             Values = values;
             Culture = culture ?? _invariantCulture;
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// to get a single value for processing regardless of whether a single or multiple values were provided
         /// in the request.
         /// </summary>
-        public string FirstValue
+        public string? FirstValue
         {
             get
             {
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public int Length => Values.Count;
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as ValueProviderResult?;
             return other.HasValue && Equals(other.Value);

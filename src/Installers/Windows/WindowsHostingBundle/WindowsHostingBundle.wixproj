@@ -1,24 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
-
-  <Import Project="Product.props" />
 
   <PropertyGroup>
     <Name>WindowsServerHostingBundle</Name>
-    <OutputName>dotnet-hosting-$(PackageVersion)-win</OutputName>
+    <OutputName>WindowsServerHostingBundle</OutputName>
+    <IsShipping>true</IsShipping>
     <ProjectGuid>6F1B115C-1903-40CB-837D-7961AB610F4E</ProjectGuid>
     <OutputType>Bundle</OutputType>
     <Platform>x86</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
 
     <!-- Namespace used to generate stable UUID3 GUIDs for MSI ProductCode, etc. DO NOT CHANGE THIS. -->
     <NamespaceGuid>$(HostingBundleNamespaceGuid)</NamespaceGuid>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x86" />
-    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj" SetPlatform="Platform=x64" />
     <WixExtension Include="WixUtilExtension">
       <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
       <Name>WixUtilExtension</Name>
@@ -35,9 +32,76 @@
 
   <ItemGroup>
     <Content Include="thm.xml" />
+    <Compile Include="ANCM.wxs" />
+    <Compile Include="Bundle.wxs" />
+    <Compile Include="DotNetCore.wxs" />
+    <EmbeddedResource Include="thm.wxl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
+      <SetPlatform>Platform=x86</SetPlatform>
+      <Name>AspNetCoreModuleV2_x86</Name>
+      <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
+      <Private>True</Private>
+      <DoNotHarvest>true</DoNotHarvest>
+    </ProjectReference>
+    <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
+      <SetPlatform>Platform=x64</SetPlatform>
+      <Name>AspNetCoreModuleV2_x64</Name>
+      <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
+      <Private>True</Private>
+      <DoNotHarvest>true</DoNotHarvest>
+    </ProjectReference>
+    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj">
+      <SetPlatform>Platform=x86</SetPlatform>
+      <Name>SharedFrameworkLib_x86</Name>
+      <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>true</DoNotHarvest>
+    </ProjectReference>
+    <ProjectReference Include="..\SharedFrameworkLib\SharedFrameworkLib.wixproj">
+      <SetPlatform>Platform=x64</SetPlatform>
+      <Name>SharedFrameworkLib_x64</Name>
+      <Project>{5244BC49-2568-4701-80A6-EAB8950AB5FA}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>true</DoNotHarvest>
+    </ProjectReference>
   </ItemGroup>
 
   <Import Project="Product.targets" />
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <PackageFileName>dotnet-hosting-$(PackageVersion)-win$(TargetExt)</PackageFileName>
+
+    <BundleNameShort>Microsoft .NET $(PackageBrandingVersion)</BundleNameShort>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BundleNameSub>Windows Server Hosting</BundleNameSub>
+    <BundleName>$(BundleNameShort) - $(BundleNameSub)</BundleName>
+    <BundleNameFull>$(BundleName) ($(Platform))</BundleNameFull>
+    <BundleManufacturer>Microsoft Corporation</BundleManufacturer>
+    <BundleLogPrefix>dd_DotNetCoreWinSvrHosting</BundleLogPrefix>
+
+    <!-- Registration -->
+    <BundleRegManufacturer>Microsoft</BundleRegManufacturer>
+    <BundleRegFamily>.NET</BundleRegFamily>
+    <BundleRegName>Microsoft .NET $(PackageBrandingVersion) - Windows Server Hosting</BundleRegName>
+    <BundleRegName>$(BundleNameFull)</BundleRegName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);BundleName=$(BundleName)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameFull=$(BundleNameFull)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameShort=$(BundleNameShort)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameSub=$(BundleNameSub)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleManufacturer=$(BundleManufacturer)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleLogPrefix=$(BundleLogPrefix)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleRegManufacturer=$(BundleRegManufacturer)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleRegFamily=$(BundleRegFamily)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
+  </PropertyGroup>
 </Project>

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.AspNetCore.Http.Connections
@@ -14,6 +15,9 @@ namespace Microsoft.AspNetCore.Http.Connections
         // Selected because this is the default value of PipeWriter.PauseWriterThreshold.
         // There maybe the opportunity for performance gains by tuning this default.
         private const int DefaultPipeBufferSize = 32768;
+
+        private PipeOptions? _transportPipeOptions;
+        private PipeOptions? _appPipeOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpConnectionDispatcherOptions"/> class.
@@ -34,7 +38,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         public IList<IAuthorizeData> AuthorizationData { get; }
 
         /// <summary>
-        /// Gets or sets a bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the server should use to receive HTTP requests.
+        /// Gets or sets a bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the server should use to receive HTTP requests.
         /// </summary>
         public HttpTransportType Transports { get; set; }
 
@@ -57,5 +61,18 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// Gets or sets the maximum buffer size of the application writer.
         /// </summary>
         public long ApplicationMaxBufferSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum protocol verison supported by the server.
+        /// The default value is 0, the lowest possible protocol version.
+        /// </summary>
+        public int MinimumProtocolVersion { get; set; } = 0;
+
+        // We initialize these lazily based on the state of the options specified here.
+        // Though these are mutable it's extremely rare that they would be mutated past the
+        // call to initialize the routerware.
+        internal PipeOptions TransportPipeOptions => _transportPipeOptions ??= new PipeOptions(pauseWriterThreshold: TransportMaxBufferSize, resumeWriterThreshold: TransportMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
+
+        internal PipeOptions AppPipeOptions => _appPipeOptions ??= new PipeOptions(pauseWriterThreshold: ApplicationMaxBufferSize, resumeWriterThreshold: ApplicationMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
     }
 }

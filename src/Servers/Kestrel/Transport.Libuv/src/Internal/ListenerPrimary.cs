@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     /// A primary listener waits for incoming connections on a specified socket. Incoming
     /// connections may be passed to a secondary listener to handle.
     /// </summary>
-    public class ListenerPrimary : Listener
+    internal class ListenerPrimary : Listener
     {
         // The list of pipes that can be dispatched to (where we've confirmed the _pipeMessage)
         private readonly List<UvPipeHandle> _dispatchPipes = new List<UvPipeHandle>();
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private string _pipeName;
         private byte[] _pipeMessage;
         private IntPtr _fileCompletionInfoPtr;
-        private bool _tryDetachFromIOCP = PlatformApis.IsWindows;
+        private bool _tryDetachFromIOCP = OperatingSystem.IsWindows();
 
         // this message is passed to write2 because it must be non-zero-length,
         // but it has no other functional significance
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public async Task StartAsync(
             string pipeName,
             byte[] pipeMessage,
-            IEndPointInformation endPointInformation,
+            EndPoint endPoint,
             LibuvThread thread)
         {
             _pipeName = pipeName;
@@ -54,12 +54,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             if (_fileCompletionInfoPtr == IntPtr.Zero)
             {
-                var fileCompletionInfo = new FILE_COMPLETION_INFORMATION() { Key = IntPtr.Zero, Port = IntPtr.Zero };
+                var fileCompletionInfo = new FILE_COMPLETION_INFORMATION { Key = IntPtr.Zero, Port = IntPtr.Zero };
                 _fileCompletionInfoPtr = Marshal.AllocHGlobal(Marshal.SizeOf(fileCompletionInfo));
                 Marshal.StructureToPtr(fileCompletionInfo, _fileCompletionInfoPtr, false);
             }
 
-            await StartAsync(endPointInformation, thread).ConfigureAwait(false);
+            await StartAsync(endPoint, thread).ConfigureAwait(false);
 
             await Thread.PostAsync(listener => listener.PostCallback(), this).ConfigureAwait(false);
         }
@@ -69,8 +69,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             ListenPipe = new UvPipeHandle(Log);
             ListenPipe.Init(Thread.Loop, Thread.QueueCloseHandle, false);
             ListenPipe.Bind(_pipeName);
-            ListenPipe.Listen(LibuvConstants.ListenBacklog,
+#pragma warning disable CS0618
+            ListenPipe.Listen(TransportContext.Options.Backlog,
                 (pipe, status, error, state) => ((ListenerPrimary)state).OnListenPipe(pipe, status, error), this);
+#pragma warning restore CS0618
         }
 
         private void OnListenPipe(UvStreamHandle pipe, int status, UvException error)
@@ -89,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 dispatchPipe.Init(Thread.Loop, Thread.QueueCloseHandle, true);
                 pipe.Accept(dispatchPipe);
 
-                // Ensure client sends "Kestrel" before adding pipe to _dispatchPipes.
+                // Ensure client sends _pipeMessage before adding pipe to _dispatchPipes.
                 var readContext = new PipeReadContext(this);
                 dispatchPipe.ReadStart(
                     (handle, status2, state) => ((PipeReadContext)state).AllocCallback(handle, status2),
@@ -228,6 +230,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             public void ReadCallback(UvStreamHandle dispatchPipe, int status)
             {
+                if (status == LibuvConstants.EOF && _bytesRead == 0)
+                {
+                    // This is an unexpected immediate termination of the dispatch pipe most likely caused by an
+                    // external process scanning the pipe, so don't we don't log it too severely.
+                    // https://github.com/dotnet/aspnetcore/issues/4741
+
+                    dispatchPipe.Dispose();
+                    _bufHandle.Free();
+                    _listener.Log.LogDebug("An internal pipe was opened unexpectedly.");
+                    return;
+                }
+
                 try
                 {
                     dispatchPipe.Libuv.ThrowIfErrored(status);
@@ -254,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                         }
                         else
                         {
-                            throw new IOException("Bad data sent over Kestrel pipe.");
+                            throw new IOException("Bad data sent over an internal pipe.");
                         }
                     }
                 }

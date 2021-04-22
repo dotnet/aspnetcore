@@ -1,9 +1,0 @@
-<!--
-This file is temporary until aspnet/Diagnostics and StaticFiles are merged into this repo.
-This is required to provide dependencies for samples and tests.
- -->
-<Project>
-  <ItemGroup>
-    <LatestPackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.1.7" />
-  </ItemGroup>
-</Project>

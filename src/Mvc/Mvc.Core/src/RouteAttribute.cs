@@ -20,12 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="template">The route template. May not be null.</param>
         public RouteAttribute(string template)
         {
-            if (template == null)
-            {
-                throw new ArgumentNullException(nameof(template));
-            }
-
-            Template = template;
+            Template = template ?? throw new ArgumentNullException(nameof(template));
         }
 
         /// <inheritdoc />
@@ -47,6 +42,6 @@ namespace Microsoft.AspNetCore.Mvc
         int? IRouteTemplateProvider.Order => _order;
 
         /// <inheritdoc />
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

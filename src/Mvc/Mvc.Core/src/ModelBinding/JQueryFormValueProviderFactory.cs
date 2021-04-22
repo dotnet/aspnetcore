@@ -1,9 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -34,7 +39,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             var request = context.ActionContext.HttpContext.Request;
 
-            var formCollection = await request.ReadFormAsync();
+            IFormCollection formCollection;
+            try
+            {
+                formCollection = await request.ReadFormAsync();
+            }
+            catch (InvalidDataException ex)
+            {
+                // ReadFormAsync can throw InvalidDataException if the form content is malformed.
+                // Wrap it in a ValueProviderException that the CompositeValueProvider special cases.
+                throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
+            }
+            catch (IOException ex)
+            {
+                // ReadFormAsync can throw IOException if the client disconnects.
+                // Wrap it in a ValueProviderException that the CompositeValueProvider special cases.
+                throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
+            }
 
             var valueProvider = new JQueryFormValueProvider(
                 BindingSource.Form,

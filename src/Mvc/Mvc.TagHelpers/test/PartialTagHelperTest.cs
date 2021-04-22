@@ -9,10 +9,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -362,7 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
-        public async Task ProcessAsync_DoesNotUseModelFromViewdata_IfModelExpressionEvalulatesToNull()
+        public async Task ProcessAsync_DoesNotUseModelFromViewdata_IfModelExpressionEvaluatesToNull()
         {
             // Arrange
             var bufferScope = new TestViewBufferScope();
@@ -456,7 +455,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
-        public async Task ProcessAsync_UsesModelOnViewContextViewData_WhenModelExpresionIsNull()
+        public async Task ProcessAsync_UsesModelOnViewContextViewData_WhenModelExpressionIsNull()
         {
             // Arrange
             var bufferScope = new TestViewBufferScope();
@@ -570,7 +569,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
-        public async Task ProcessAsync_Throws_IfGetViewAndFindReturnNotFoundResults()
+        public async Task ProcessAsync_Throws_If_NotOptional_And_GetViewAndFindReturnNotFoundResults()
         {
             // Arrange
             var bufferScope = new TestViewBufferScope();
@@ -597,6 +596,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 Name = partialName,
                 ViewContext = viewContext,
                 ViewData = viewData,
+                Optional = false
             };
             var tagHelperContext = GetTagHelperContext();
             var output = GetTagHelperOutput();
@@ -605,6 +605,239 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => tagHelper.ProcessAsync(tagHelperContext, output));
             Assert.Equal(expected, exception.Message);
+        }
+        
+        [Fact]
+        public async Task ProcessAsync_IfOptional_And_ViewIsNotFound_WillNotRenderAnything()
+        {
+            // Arrange
+            var expected = string.Empty;
+            var bufferScope = new TestViewBufferScope();
+            var partialName = "_ThisViewDoesNotExists";
+            var model = new object();
+            var viewContext = GetViewContext();
+
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Callback((ViewContext v) =>
+                {
+                    v.Writer.Write(expected);
+                })
+                .Returns(Task.CompletedTask);
+
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine.Setup(v => v.GetView(It.IsAny<string>(), partialName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, searchedLocations: Array.Empty<string>()));
+            viewEngine.Setup(v => v.FindView(viewContext, partialName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, searchedLocations: Array.Empty<string>()));
+
+            var tagHelper = new PartialTagHelper(viewEngine.Object, bufferScope)
+            {
+                Name = partialName,
+                ViewContext = viewContext,
+                Optional = true
+            };
+            var tagHelperContext = GetTagHelperContext();
+            var output = GetTagHelperOutput();
+
+            // Act
+            await tagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            var content = HtmlContentUtilities.HtmlContentToString(output.Content, new HtmlTestEncoder());
+            Assert.Empty(content);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_RendersMainPartial_If_FallbackIsSet_AndMainPartialIsFound()
+        {
+            // Arrange
+            var expected = "Hello from partial!";
+            var bufferScope = new TestViewBufferScope();
+            var partialName = "_Partial";
+            var fallbackName = "_Fallback";
+            var model = new object();
+            var viewContext = GetViewContext();
+
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Callback((ViewContext v) =>
+                {
+                    v.Writer.Write(expected);
+                })
+                .Returns(Task.CompletedTask);
+
+            var fallbackView = new Mock<IView>();
+            fallbackView.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Callback((ViewContext v) =>
+                {
+                    v.Writer.Write("Hello from fallback partial!");
+                })
+                .Returns(Task.CompletedTask);
+
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine.Setup(v => v.GetView(It.IsAny<string>(), partialName, false))
+                .Returns(ViewEngineResult.Found(partialName, view.Object));
+            viewEngine.Setup(v => v.GetView(It.IsAny<string>(), fallbackName, false))
+                .Returns(ViewEngineResult.Found(fallbackName, fallbackView.Object));
+
+            var tagHelper = new PartialTagHelper(viewEngine.Object, bufferScope)
+            {
+                Name = partialName,
+                ViewContext = viewContext,
+                FallbackName = fallbackName
+            };
+            var tagHelperContext = GetTagHelperContext();
+            var output = GetTagHelperOutput();
+
+            // Act
+            await tagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            var content = HtmlContentUtilities.HtmlContentToString(output.Content, new HtmlTestEncoder());
+            Assert.Equal(expected, content);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_IfHasFallback_Throws_When_MainPartialAndFallback_AreNotFound()
+        {
+            // Arrange
+            var bufferScope = new TestViewBufferScope();
+            var partialName = "_Partial";
+            var fallbackName = "_Fallback";
+            var expected = string.Join(
+                Environment.NewLine,
+                $"The partial view '{partialName}' was not found. The following locations were searched:",
+                "PartialNotFound1",
+                "PartialNotFound2",
+                "PartialNotFound3",
+                "PartialNotFound4",
+                $"The fallback partial view '{fallbackName}' was not found. The following locations were searched:",
+                "FallbackNotFound1",
+                "FallbackNotFound2",
+                "FallbackNotFound3",
+                "FallbackNotFound4");
+            var viewData = new ViewDataDictionary(new TestModelMetadataProvider(), new ModelStateDictionary());
+            var viewContext = GetViewContext();
+
+            var view = Mock.Of<IView>();
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine.Setup(v => v.GetView(It.IsAny<string>(), partialName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, new[] { "PartialNotFound1", "PartialNotFound2" }));
+
+            viewEngine.Setup(v => v.FindView(viewContext, partialName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, new[] { $"PartialNotFound3", $"PartialNotFound4" }));
+
+            viewEngine.Setup(v => v.GetView(It.IsAny<string>(), fallbackName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, new[] { "FallbackNotFound1", "FallbackNotFound2" }));
+
+            viewEngine.Setup(v => v.FindView(viewContext, fallbackName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, new[] { $"FallbackNotFound3", $"FallbackNotFound4" }));
+
+            var tagHelper = new PartialTagHelper(viewEngine.Object, bufferScope)
+            {
+                Name = partialName,
+                ViewContext = viewContext,
+                ViewData = viewData,
+                FallbackName = fallbackName
+            };
+            var tagHelperContext = GetTagHelperContext();
+            var output = GetTagHelperOutput();
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => tagHelper.ProcessAsync(tagHelperContext, output));
+            Assert.Equal(expected, exception.Message);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_RendersFallbackView_If_MainIsNotFound_AndGetViewReturnsView()
+        {
+            // Arrange
+            var expected = "Hello from fallback!";
+            var bufferScope = new TestViewBufferScope();
+            var partialName = "_Partial";
+            var fallbackName = "_Fallback";
+            var model = new object();
+            var viewContext = GetViewContext();
+
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Callback((ViewContext v) =>
+                {
+                    v.Writer.Write(expected);
+                })
+                .Returns(Task.CompletedTask);
+
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine.Setup(v => v.GetView(It.IsAny<string>(), partialName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, Array.Empty<string>()));
+            viewEngine.Setup(v => v.FindView(viewContext, partialName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, Array.Empty<string>()));
+            viewEngine.Setup(v => v.GetView(It.IsAny<string>(), fallbackName, false))
+                .Returns(ViewEngineResult.Found(fallbackName, view.Object));
+
+            var tagHelper = new PartialTagHelper(viewEngine.Object, bufferScope)
+            {
+                Name = partialName,
+                ViewContext = viewContext,
+                FallbackName = fallbackName
+            };
+            var tagHelperContext = GetTagHelperContext();
+            var output = GetTagHelperOutput();
+
+            // Act
+            await tagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            var content = HtmlContentUtilities.HtmlContentToString(output.Content, new HtmlTestEncoder());
+            Assert.Equal(expected, content);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_RendersFallbackView_If_MainIsNotFound_AndFindViewReturnsView()
+        {
+            // Arrange
+            var expected = "Hello from fallback!";
+            var bufferScope = new TestViewBufferScope();
+            var partialName = "_Partial";
+            var fallbackName = "_Fallback";
+            var model = new object();
+            var viewContext = GetViewContext();
+
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Callback((ViewContext v) =>
+                {
+                    v.Writer.Write(expected);
+                })
+                .Returns(Task.CompletedTask);
+
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine.Setup(v => v.GetView(It.IsAny<string>(), partialName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, Array.Empty<string>()));
+            viewEngine.Setup(v => v.FindView(viewContext, partialName, false))
+                .Returns(ViewEngineResult.NotFound(partialName, Array.Empty<string>()));
+            viewEngine.Setup(v => v.GetView(It.IsAny<string>(), fallbackName, false))
+                .Returns(ViewEngineResult.NotFound(fallbackName, Array.Empty<string>()));
+            viewEngine.Setup(v => v.FindView(viewContext, fallbackName, false))
+                .Returns(ViewEngineResult.Found(fallbackName, view.Object));
+
+            var tagHelper = new PartialTagHelper(viewEngine.Object, bufferScope)
+            {
+                Name = partialName,
+                ViewContext = viewContext,
+                FallbackName = fallbackName
+            };
+            var tagHelperContext = GetTagHelperContext();
+            var output = GetTagHelperOutput();
+
+            // Act
+            await tagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            var content = HtmlContentUtilities.HtmlContentToString(output.Content, new HtmlTestEncoder());
+            Assert.Equal(expected, content);
         }
 
         private static ViewContext GetViewContext()

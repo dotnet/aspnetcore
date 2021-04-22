@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RemoveDevicePlatformSupport>true</RemoveDevicePlatformSupport>
+    <!-- This is ok since this assembly is not referenced by any application but it is loaded as a hosting startup
+    assembly for apps referencing this package-->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <None Update="build\Microsoft.AspNetCore.SpaProxy.targets" Pack="true" PackagePath="build\Microsoft.AspNetCore.SpaProxy.targets" />
+  </ItemGroup>
+
+</Project>

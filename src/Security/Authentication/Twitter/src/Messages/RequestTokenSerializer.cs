@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Http.Authentication;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
@@ -37,7 +36,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// </summary>
         /// <param name="data">A byte array containing the serialized token</param>
         /// <returns>The Twitter request token</returns>
-        public virtual RequestToken Deserialize(byte[] data)
+        public virtual RequestToken? Deserialize(byte[] data)
         {
             using (var memory = new MemoryStream(data))
             {
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// </summary>
         /// <param name="reader">The reader to use in reading the token bytes</param>
         /// <returns>The token</returns>
-        public static RequestToken Read(BinaryReader reader)
+        public static RequestToken? Read(BinaryReader reader)
         {
             if (reader == null)
             {
@@ -92,7 +91,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             string token = reader.ReadString();
             string tokenSecret = reader.ReadString();
             bool callbackConfirmed = reader.ReadBoolean();
-            AuthenticationProperties properties = PropertiesSerializer.Default.Read(reader);
+            AuthenticationProperties? properties = PropertiesSerializer.Default.Read(reader);
             if (properties == null)
             {
                 return null;

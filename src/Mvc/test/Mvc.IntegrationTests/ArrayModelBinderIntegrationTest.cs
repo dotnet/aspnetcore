@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -368,6 +369,39 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 model.Aliases,
                 (e) => Assert.Equal("Alias1", e),
                 (e) => Assert.Equal("Alias2", e));
+        }
+
+        [Fact]
+        public async Task ArrayModelBinder_ThrowsOn1025Items_AtTopLevel()
+        {
+            // Arrange
+            var expectedMessage = $"Collection bound to 'parameter' exceeded " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). This limit is a " +
+                $"safeguard against incorrect model binders and models. Address issues in " +
+                $"'{typeof(SuccessfulModel)}'. For example, this type may have a property with a model binder that " +
+                $"always succeeds. See the {nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} " +
+                $"documentation for more information.";
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(SuccessfulModel[]),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                // CollectionModelBinder binds an empty collection when value providers are all empty.
+                request.QueryString = new QueryString("?a=b");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(expectedMessage, exception.Message);
         }
     }
 }

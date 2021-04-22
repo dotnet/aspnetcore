@@ -8,22 +8,20 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
+using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
-    public class LongPollingTransportTests
+    public class LongPollingTransportTests : VerifiableLoggedTest
     {
         private static readonly Uri TestUri = new Uri("http://example.com/?id=1234");
 
@@ -58,7 +56,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await longPollingTransport.StopAsync();
                 }
 
-                await transportActiveTask.OrTimeout();
+                await transportActiveTask.DefaultTimeout();
             }
         }
 
@@ -82,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary);
 
-                    await longPollingTransport.Running.OrTimeout();
+                    await longPollingTransport.Running.DefaultTimeout();
 
                     Assert.True(longPollingTransport.Input.TryRead(out var result));
                     Assert.True(result.IsCompleted);
@@ -140,8 +138,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary);
 
-                    var data = await longPollingTransport.Input.ReadAllAsync().OrTimeout();
-                    await longPollingTransport.Running.OrTimeout();
+                    var data = await longPollingTransport.Input.ReadAllAsync().DefaultTimeout();
+                    await longPollingTransport.Running.DefaultTimeout();
                     Assert.Equal(Encoding.UTF8.GetBytes("HelloWorld"), data);
                 }
                 finally
@@ -211,13 +209,60 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                                 await longPollingTransport.Input.ReadAsync();
                             }
 
-                            await ReadAsync().OrTimeout();
+                            await ReadAsync().DefaultTimeout();
                         });
                     Assert.Contains(" 500 ", exception.Message);
                 }
                 finally
                 {
                     await longPollingTransport.StopAsync();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StopTransportWhenConnectionAlreadyStoppedOnServer()
+        {
+            var pollRequestTcs = new TaskCompletionSource();
+
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            var firstPoll = true;
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    if (request.Method == HttpMethod.Delete)
+                    {
+                        // Simulate the server having already cleaned up the connection on the server
+                        return ResponseUtils.CreateResponse(HttpStatusCode.NotFound);
+                    }
+                    else
+                    {
+                        if (firstPoll)
+                        {
+                            firstPoll = false;
+                            return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                        }
+
+                        await pollRequestTcs.Task;
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                    }
+                });
+
+            using (StartVerifiableLog())
+            {
+                using (var httpClient = new HttpClient(mockHttpHandler.Object))
+                {
+                    var longPollingTransport = new LongPollingTransport(httpClient, LoggerFactory);
+
+                    await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary).DefaultTimeout();
+
+                    var stopTask = longPollingTransport.StopAsync();
+
+                    pollRequestTcs.SetResult();
+
+                    await stopTask.DefaultTimeout();
                 }
             }
         }
@@ -257,9 +302,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await longPollingTransport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
 
-                    await longPollingTransport.Running.OrTimeout();
+                    await longPollingTransport.Running.DefaultTimeout();
 
-                    var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await longPollingTransport.Input.ReadAllAsync().OrTimeout());
+                    var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await longPollingTransport.Input.ReadAllAsync().DefaultTimeout());
                     Assert.Contains(" 500 ", exception.Message);
 
                     Assert.True(stopped);
@@ -303,9 +348,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     longPollingTransport.Output.Complete();
 
-                    await longPollingTransport.Running.OrTimeout();
+                    await longPollingTransport.Running.DefaultTimeout();
 
-                    await longPollingTransport.Input.ReadAllAsync().OrTimeout();
+                    await longPollingTransport.Input.ReadAllAsync().DefaultTimeout();
                 }
                 finally
                 {
@@ -336,9 +381,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     longPollingTransport.Output.Complete();
 
-                    await longPollingTransport.Running.OrTimeout();
+                    await longPollingTransport.Running.DefaultTimeout();
 
-                    await longPollingTransport.Input.ReadAllAsync().OrTimeout();
+                    await longPollingTransport.Input.ReadAllAsync().DefaultTimeout();
                 }
                 finally
                 {
@@ -386,7 +431,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary);
 
                     // Wait for the transport to finish
-                    await longPollingTransport.Running.OrTimeout();
+                    await longPollingTransport.Running.DefaultTimeout();
 
                     // Pull Messages out of the channel
                     var message = await longPollingTransport.Input.ReadAllAsync();
@@ -457,7 +502,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     longPollingTransport.Output.Complete();
 
-                    await longPollingTransport.Running.OrTimeout();
+                    await longPollingTransport.Running.DefaultTimeout();
                     await longPollingTransport.Input.ReadAllAsync();
 
                     Assert.Single(sentRequests);
@@ -476,7 +521,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var sentRequests = new List<byte[]>();
             var pollTcs = new TaskCompletionSource<HttpResponseMessage>();
-            var deleteTcs = new TaskCompletionSource<object>();
+            var deleteTcs = new TaskCompletionSource();
             var firstPoll = true;
 
             var mockHttpHandler = new Mock<HttpMessageHandler>();
@@ -508,7 +553,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         // The poll task should have been completed
                         Assert.True(pollTcs.Task.IsCompleted);
 
-                        deleteTcs.TrySetResult(null);
+                        deleteTcs.TrySetResult();
 
                         return ResponseUtils.CreateResponse(HttpStatusCode.Accepted);
                     }
@@ -524,9 +569,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var task = longPollingTransport.StopAsync();
 
-                await deleteTcs.Task.OrTimeout();
+                await deleteTcs.Task.DefaultTimeout();
 
-                await task.OrTimeout();
+                await task.DefaultTimeout();
             }
         }
 
@@ -588,7 +633,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task LongPollingTransportRePollsIfRequestCanceled()
         {
             var numPolls = 0;
-            var completionTcs = new TaskCompletionSource<object>();
+            var completionTcs = new TaskCompletionSource();
 
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
@@ -608,7 +653,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         throw new OperationCanceledException();
                     }
 
-                    completionTcs.SetResult(null);
+                    completionTcs.SetResult();
                     return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
@@ -620,7 +665,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary);
 
-                    var completedTask = await Task.WhenAny(completionTcs.Task, longPollingTransport.Running).OrTimeout();
+                    var completedTask = await Task.WhenAny(completionTcs.Task, longPollingTransport.Running).DefaultTimeout();
                     Assert.Equal(completionTcs.Task, completedTask);
                 }
                 finally

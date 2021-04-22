@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -21,16 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         private readonly MvcOptions _options;
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// Initializes an instance of <see cref="FormatFilter"/>.
-        /// </summary>
-        /// <param name="options">The <see cref="IOptions{MvcOptions}"/></param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public FormatFilter(IOptions<MvcOptions> options)
-            : this(options, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Initializes an instance of <see cref="FormatFilter"/>.
@@ -54,12 +42,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public virtual string GetFormat(ActionContext context)
+        public virtual string? GetFormat(ActionContext context)
         {
             if (context.RouteData.Values.TryGetValue("format", out var obj))
             {
                 // null and string.Empty are equivalent for route values.
-                var routeValue = obj?.ToString();
+                var routeValue = Convert.ToString(obj, CultureInfo.InvariantCulture);
                 return string.IsNullOrEmpty(routeValue) ? null : routeValue;
             }
 
@@ -166,15 +154,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 return;
             }
 
-            var objectResult = context.Result as ObjectResult;
-            if (objectResult == null)
+            if (context.Result is not ObjectResult objectResult)
             {
                 return;
             }
 
             // If the action sets a single content type, then it takes precedence over the user
             // supplied content type based on format mapping.
-            if ((objectResult.ContentTypes != null && objectResult.ContentTypes.Count == 1) ||
+            if (objectResult.ContentTypes.Count == 1 ||
                 !string.IsNullOrEmpty(context.HttpContext.Response.ContentType))
             {
                 _logger.CannotApplyFormatFilterContentType(format);
@@ -183,7 +170,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var contentType = _options.FormatterMappings.GetMediaTypeMappingForFormat(format);
             objectResult.ContentTypes.Clear();
-            objectResult.ContentTypes.Add(contentType);
+            if (!string.IsNullOrEmpty(contentType))
+            {
+                objectResult.ContentTypes.Add(contentType);
+            }
         }
 
         /// <inheritdoc />

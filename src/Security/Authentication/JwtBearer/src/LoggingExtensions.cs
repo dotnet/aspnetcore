@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,21 +8,21 @@ namespace Microsoft.Extensions.Logging
     internal static class LoggingExtensions
     {
         private static Action<ILogger, Exception> _tokenValidationFailed;
-        private static Action<ILogger, Exception> _tokenValidationSucceeded;
+        private static Action<ILogger, Exception?> _tokenValidationSucceeded;
         private static Action<ILogger, Exception> _errorProcessingMessage;
 
         static LoggingExtensions()
         {
             _tokenValidationFailed = LoggerMessage.Define(
-                eventId: 1,
+                eventId: new EventId(1, "TokenValidationFailed"),
                 logLevel: LogLevel.Information,
                 formatString: "Failed to validate the token.");
             _tokenValidationSucceeded = LoggerMessage.Define(
-                eventId: 2,
+                eventId: new EventId(2, "TokenValidationSucceeded"),
                 logLevel: LogLevel.Information,
                 formatString: "Successfully validated the token.");
             _errorProcessingMessage = LoggerMessage.Define(
-                eventId: 3,
+                eventId: new EventId(3, "ProcessingMessageFailed"),
                 logLevel: LogLevel.Error,
                 formatString: "Exception occurred while processing message.");
         }

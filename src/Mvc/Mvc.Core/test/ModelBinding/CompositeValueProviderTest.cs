@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.Internal;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
@@ -39,11 +42,29 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Dictionary<string, StringValues> values,
             CultureInfo culture)
         {
-            var emptyValueProvider =
-                new JQueryFormValueProvider(bindingSource, new Dictionary<string, StringValues>(), culture);
-            var valueProvider = new JQueryFormValueProvider(bindingSource, values, culture);
+            var emptyValueProvider = new QueryStringValueProvider(bindingSource, new QueryCollection(), culture);
+            var valueProvider = new FormValueProvider(bindingSource, new FormCollection(values), culture);
 
             return new CompositeValueProvider() { emptyValueProvider, valueProvider };
+        }
+
+        [Fact]
+        public async Task TryCreateAsync_AddsModelStateError_WhenValueProviderFactoryThrowsValueProviderException()
+        {
+            // Arrange
+            var factory = new Mock<IValueProviderFactory>();
+            factory.Setup(f => f.CreateValueProviderAsync(It.IsAny<ValueProviderFactoryContext>())).ThrowsAsync(new ValueProviderException("Some error"));
+            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor(), new ModelStateDictionary());
+
+            // Act
+            var (success, result) = await CompositeValueProvider.TryCreateAsync(actionContext, new[] { factory.Object });
+
+            // Assert
+            Assert.False(success);
+            var modelState = actionContext.ModelState;
+            Assert.False(modelState.IsValid);
+            var entry = Assert.Single(modelState);
+            Assert.Empty(entry.Key);
         }
 
         [Fact]

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.schema.json",
+  "scenarios": {
+    "blazorwasmbenchmark": {
+      "application": {
+        "job": "blazorwasmbenchmark"
+      }
+    }
+  },
+  "jobs": {
+    "blazorwasmbenchmark": {
+      "source": {
+        "repository": "https://github.com/dotnet/AspNetCore.git",
+        "branchOrCommit": "main",
+        "dockerfile": "src/Components/benchmarkapps/Wasm.Performance/dockerfile"
+      },
+      "buildArguments": [
+        "gitBranch=main"
+      ],
+      "waitForExit": true,
+      "readyStateText": "Application started."
+    }
+  }
+}

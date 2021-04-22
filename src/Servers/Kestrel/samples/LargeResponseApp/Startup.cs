@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace LargeResponseApp
 {
@@ -20,9 +21,8 @@ namespace LargeResponseApp
         {
             app.Run(async (context) =>
             {
-                int numChunks;
                 var path = context.Request.Path;
-                if (!path.HasValue || !int.TryParse(path.Value.Substring(1), out numChunks))
+                if (!path.HasValue || !int.TryParse(path.Value.Substring(1), out var numChunks))
                 {
                     numChunks = _defaultNumChunks;
                 }
@@ -39,13 +39,17 @@ namespace LargeResponseApp
 
         public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel(options =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(IPAddress.Loopback, 5001);
-                })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.Listen(IPAddress.Loopback, 5001);
+                        })
+                        .UseContentRoot(Directory.GetCurrentDirectory())
+                        .UseStartup<Startup>();
+                })                
                 .Build();
 
             return host.RunAsync();

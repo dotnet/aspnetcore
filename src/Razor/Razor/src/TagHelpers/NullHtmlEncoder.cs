@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNetCore.Razor.TagHelpers
@@ -11,12 +12,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     /// A <see cref="HtmlEncoder"/> that does not encode. Should not be used when writing directly to a response
     /// expected to contain valid HTML.
     /// </summary>
-    public class NullHtmlEncoder : HtmlEncoder
+    public sealed class NullHtmlEncoder : HtmlEncoder
     {
         /// <summary>
         /// Initializes a <see cref="NullHtmlEncoder"/> instance.
         /// </summary>
-        protected NullHtmlEncoder()
+        private NullHtmlEncoder()
         {
         }
 
@@ -27,13 +28,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         public static new NullHtmlEncoder Default { get; } = new NullHtmlEncoder();
 
         /// <inheritdoc />
-        public override int MaxOutputCharactersPerInputCharacter
-        {
-            get
-            {
-                return 1;
-            }
-        }
+        public override int MaxOutputCharactersPerInputCharacter => 1;
 
         /// <inheritdoc />
         public override string Encode(string value)
@@ -67,7 +62,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             output.Write(value, startIndex, characterCount);
         }
 
-        /// <inheritdoc />
         public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
         {
             if (output == null)
@@ -85,10 +79,13 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 return;
             }
 
-            output.Write(value.Substring(startIndex, characterCount));
+            var span = value.AsSpan(startIndex, characterCount);
+            
+            output.Write(span);
         }
 
         /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
         {
             return -1;
@@ -112,6 +109,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         }
 
         /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool WillEncode(int unicodeScalar)
         {
             return false;

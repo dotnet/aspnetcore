@@ -144,7 +144,7 @@
     <value>No header data.</value>
   </data>
   <data name="ErrorPageHtml_NoQueryStringData" xml:space="preserve">
-    <value>No QueryString data.</value>
+    <value>No query string data.</value>
   </data>
   <data name="ErrorPageHtml_QueryButton" xml:space="preserve">
     <value>Query</value>
@@ -248,6 +248,36 @@
     <value>Environment:</value>
   </data>
   <data name="ExceptionHandlerOptions_NotConfiguredCorrectly" xml:space="preserve">
-    <value>An error occurred when configuring the exception handler middleware. Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' option must be set in 'UseExceptionHandler()'.</value>
+    <value>An error occurred when configuring the exception handler middleware. Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' property must be set in 'UseExceptionHandler()'. Alternatively, set one of the aforementioned properties in 'Startup.ConfigureServices' as follows: 'services.AddExceptionHandler(options =&gt; { ... });'.</value>
+  </data>
+  <data name="ErrorPageHtml_NoRouteValues" xml:space="preserve">
+    <value>No route values.</value>
+  </data>
+  <data name="ErrorPageHtml_RoutingButton" xml:space="preserve">
+    <value>Routing</value>
+  </data>
+  <data name="ErrorPageHtml_Endpoint" xml:space="preserve">
+    <value>Endpoint</value>
+  </data>
+  <data name="ErrorPageHtml_EndpointDisplayName" xml:space="preserve">
+    <value>Display Name</value>
+  </data>
+  <data name="ErrorPageHtml_EndpointRouteOrder" xml:space="preserve">
+    <value>Route Order</value>
+  </data>
+  <data name="ErrorPageHtml_EndpointRouteHttpMethod" xml:space="preserve">
+    <value>Route HTTP Method</value>
+  </data>
+  <data name="ErrorPageHtml_EndpointRoutePattern" xml:space="preserve">
+    <value>Route Pattern</value>
+  </data>
+  <data name="ErrorPageHtml_NoEndpoint" xml:space="preserve">
+    <value>No endpoint.</value>
+  </data>
+  <data name="ErrorPageHtml_RouteValues" xml:space="preserve">
+    <value>Route Values</value>
+  </data>
+  <data name="ErrorPageHtml_NameColumn" xml:space="preserve">
+    <value>Name</value>
   </data>
 </root>

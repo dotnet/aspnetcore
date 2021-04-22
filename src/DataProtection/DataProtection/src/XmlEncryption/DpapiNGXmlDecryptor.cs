@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// Creates a new instance of a <see cref="DpapiNGXmlDecryptor"/>.
         /// </summary>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public DpapiNGXmlDecryptor(IServiceProvider services)
+        public DpapiNGXmlDecryptor(IServiceProvider? services)
         {
             CryptoUtil.AssertPlatformIsWindows8OrLater();
 
@@ -58,10 +58,10 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 //   <value>{base64}</value>
                 // </encryptedKey>
 
-                var protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value"));
+                var protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value")!);
                 if (_logger.IsDebugLevelEnabled())
                 {
-                    string protectionDescriptorRule;
+                    string? protectionDescriptorRule;
                     try
                     {
                         protectionDescriptorRule = DpapiSecretSerializerHelper.GetRuleFromDpapiNGProtectedPayload(protectedSecret);
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             {
                 // It's OK for us to log the error, as we control the exception, and it doesn't contain
                 // sensitive information.
-                _logger?.ExceptionOccurredTryingToDecryptElement(ex);
+                _logger.ExceptionOccurredTryingToDecryptElement(ex);
                 throw;
             }
         }

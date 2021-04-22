@@ -1,29 +1,51 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
+using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class HttpConnectionContext
+    internal class HttpConnectionContext
     {
-        public string ConnectionId { get; set; }
-        public long HttpConnectionId { get; set; }
-        public HttpProtocols Protocols { get; set; }
-        public ConnectionContext ConnectionContext { get; set; }
-        public ServiceContext ServiceContext { get; set; }
-        public IFeatureCollection ConnectionFeatures { get; set; }
-        public IList<IConnectionAdapter> ConnectionAdapters { get; set; }
-        public MemoryPool<byte> MemoryPool { get; set; }
-        public IPEndPoint LocalEndPoint { get; set; }
-        public IPEndPoint RemoteEndPoint { get; set; }
-        public IDuplexPipe Transport { get; set; }
-        public IDuplexPipe Application { get; set; }
+        public HttpConnectionContext(
+            string connectionId,
+            HttpProtocols protocols,
+            ConnectionContext connectionContext,
+            ServiceContext serviceContext,
+            IFeatureCollection connectionFeatures,
+            MemoryPool<byte> memoryPool,
+            IPEndPoint? localEndPoint,
+            IPEndPoint? remoteEndPoint,
+            IDuplexPipe transport)
+        {
+            ConnectionId = connectionId;
+            Protocols = protocols;
+            ConnectionContext = connectionContext;
+            ServiceContext = serviceContext;
+            ConnectionFeatures = connectionFeatures;
+            MemoryPool = memoryPool;
+            LocalEndPoint = localEndPoint;
+            RemoteEndPoint = remoteEndPoint;
+            Transport = transport;
+        }
+
+        public string ConnectionId { get; }
+        public HttpProtocols Protocols { get; }
+        public ConnectionContext ConnectionContext { get; }
+        public ServiceContext ServiceContext { get; }
+        public IFeatureCollection ConnectionFeatures { get; }
+        public MemoryPool<byte> MemoryPool { get; }
+        public IPEndPoint? LocalEndPoint { get; }
+        public IPEndPoint? RemoteEndPoint { get; }
+        public IDuplexPipe Transport { get; }
+
+        public ITimeoutControl TimeoutControl { get; set; } = default!; // Always set by HttpConnection
+        public ExecutionContext? InitialExecutionContext { get; set; }
     }
 }

@@ -1,15 +1,25 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Reflection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public static class ConversionResultProvider
     {
         public static ConversionResult ConvertTo(object value, Type typeToConvertTo)
+        {
+            return ConvertTo(value, typeToConvertTo, null);
+        }
+
+        internal static ConversionResult ConvertTo(object value, Type typeToConvertTo, IContractResolver contractResolver)
         {
             if (value == null)
             {
@@ -24,8 +34,20 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             {
                 try
                 {
-                    var deserialized = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), typeToConvertTo);
-                    return new ConversionResult(true, deserialized);
+                    if (contractResolver == null)
+                    {
+                        var deserialized = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), typeToConvertTo);
+                        return new ConversionResult(true, deserialized);
+                    }
+                    else
+                    {
+                        var serializerSettings = new JsonSerializerSettings()
+                        {
+                            ContractResolver = contractResolver
+                        };
+                        var deserialized = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), typeToConvertTo, serializerSettings);
+                        return new ConversionResult(true, deserialized);
+                    }
                 }
                 catch
                 {
@@ -39,7 +61,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var targetType = typeToConvertTo;
             if (value == null)
             {
-                return new ConversionResult(IsNullableType(typeToConvertTo), null);
+                return new ConversionResult(canBeConverted: true, convertedInstance: null);
             }
             else if (typeToConvertTo.IsAssignableFrom(value.GetType()))
             {
@@ -59,11 +81,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         private static bool IsNullableType(Type type)
         {
-            var typeInfo = type.GetTypeInfo();
-            if (typeInfo.IsValueType)
+            if (type.IsValueType)
             {
                 // value types are only nullable if they are Nullable<T>
-                return typeInfo.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+                return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
             }
             else
             {

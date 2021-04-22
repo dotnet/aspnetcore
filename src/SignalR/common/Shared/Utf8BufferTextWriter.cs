@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Internal
         private static readonly int MaximumBytesPerUtf8Char = 4;
 
         [ThreadStatic]
-        private static Utf8BufferTextWriter _cachedInstance;
+        private static Utf8BufferTextWriter? _cachedInstance;
 
         private readonly Encoder _encoder;
-        private IBufferWriter<byte> _bufferWriter;
+        private IBufferWriter<byte>? _bufferWriter;
         private Memory<byte> _memory;
         private int _memoryUsed;
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Internal
                 writer = new Utf8BufferTextWriter();
             }
 
-            // Taken off the the thread static
+            // Taken off the thread static
             _cachedInstance = null;
 #if DEBUG
             if (writer._inUse)
@@ -81,9 +81,12 @@ namespace Microsoft.AspNetCore.Internal
             WriteInternal(buffer.AsSpan(index, count));
         }
 
-        public override void Write(char[] buffer)
+        public override void Write(char[]? buffer)
         {
-            WriteInternal(buffer);
+            if (buffer is not null)
+            {
+                WriteInternal(buffer);
+            }
         }
 
         public override void Write(char value)
@@ -111,7 +114,7 @@ namespace Microsoft.AspNetCore.Internal
             // this should be an exceptional case
             var bytesUsed = 0;
             var charsUsed = 0;
-#if NETCOREAPP2_1
+#if NETCOREAPP
             _encoder.Convert(new Span<char>(&value, 1), destination, false, out charsUsed, out bytesUsed, out _);
 #else
             fixed (byte* destinationBytes = &MemoryMarshal.GetReference(destination))
@@ -125,9 +128,12 @@ namespace Microsoft.AspNetCore.Internal
             _memoryUsed += bytesUsed;
         }
 
-        public override void Write(string value)
+        public override void Write(string? value)
         {
-            WriteInternal(value.AsSpan());
+            if (value is not null)
+            {
+                WriteInternal(value.AsSpan());
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -150,10 +156,10 @@ namespace Microsoft.AspNetCore.Internal
                 // Used up the memory from the buffer writer so advance and get more
                 if (_memoryUsed > 0)
                 {
-                    _bufferWriter.Advance(_memoryUsed);
+                    _bufferWriter!.Advance(_memoryUsed);
                 }
 
-                _memory = _bufferWriter.GetMemory(MaximumBytesPerUtf8Char);
+                _memory = _bufferWriter!.GetMemory(MaximumBytesPerUtf8Char);
                 _memoryUsed = 0;
             }
         }
@@ -167,7 +173,7 @@ namespace Microsoft.AspNetCore.Internal
 
                 var bytesUsed = 0;
                 var charsUsed = 0;
-#if NETCOREAPP2_1
+#if NETCOREAPP
                 _encoder.Convert(buffer, destination, false, out charsUsed, out bytesUsed, out _);
 #else
                 unsafe
@@ -189,7 +195,7 @@ namespace Microsoft.AspNetCore.Internal
         {
             if (_memoryUsed > 0)
             {
-                _bufferWriter.Advance(_memoryUsed);
+                _bufferWriter!.Advance(_memoryUsed);
                 _memory = _memory.Slice(_memoryUsed, _memory.Length - _memoryUsed);
                 _memoryUsed = 0;
             }

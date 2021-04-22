@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -23,8 +26,8 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            var routingFeature = httpContext.Features[typeof(IRoutingFeature)] as IRoutingFeature;
-            return routingFeature?.RouteData;
+            var routingFeature = httpContext.Features.Get<IRoutingFeature>();
+            return routingFeature?.RouteData ?? new RouteData(httpContext.Request.RouteValues);
         }
 
         /// <summary>
@@ -34,7 +37,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <param name="key">The key of the route value.</param>
         /// <returns>The corresponding route value, or null.</returns>
-        public static object GetRouteValue(this HttpContext httpContext, string key)
+        public static object? GetRouteValue(this HttpContext httpContext, string key)
         {
             if (httpContext == null)
             {
@@ -46,8 +49,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            var routingFeature = httpContext.Features[typeof(IRoutingFeature)] as IRoutingFeature;
-            return routingFeature?.RouteData.Values[key];
+            return httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues[key];
         }
     }
 }

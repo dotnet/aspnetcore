@@ -1,4 +1,4 @@
 ﻿@{
     var partial = (string)ViewData["Partial"];
 }
-@Html.Partial(partial)
+@(await Html.PartialAsync(partial))

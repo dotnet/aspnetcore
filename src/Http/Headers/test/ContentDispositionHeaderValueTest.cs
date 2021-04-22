@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Xunit;
 
@@ -58,7 +59,7 @@ namespace Microsoft.Net.Http.Headers
         public void Parameters_AddNull_Throw()
         {
             var contentDisposition = new ContentDispositionHeaderValue("inline");
-            Assert.Throws<ArgumentNullException>(() => contentDisposition.Parameters.Add(null));
+            Assert.Throws<ArgumentNullException>(() => contentDisposition.Parameters.Add(null!));
         }
 
         [Fact]
@@ -136,6 +137,21 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(1, contentDisposition.Parameters.Count);
             Assert.Equal("filename", contentDisposition.Parameters.First().Name);
             Assert.Equal("\"=?utf-8?B?RmlsZcODTmFtZS5iYXQ=?=\"", contentDisposition.Parameters.First().Value);
+
+            contentDisposition.Parameters.Remove(contentDisposition.Parameters.First());
+            Assert.Null(contentDisposition.FileName.Value);
+        }
+
+        [Fact]
+        public void FileName_NeedsEncodingBecauseOfNewLine_EncodedAndDecodedCorrectly()
+        {
+            var contentDisposition = new ContentDispositionHeaderValue("inline");
+
+            contentDisposition.FileName = "File\nName.bat";
+            Assert.Equal("File\nName.bat", contentDisposition.FileName);
+            Assert.Equal(1, contentDisposition.Parameters.Count);
+            Assert.Equal("filename", contentDisposition.Parameters.First().Name);
+            Assert.Equal("\"=?utf-8?B?RmlsZQpOYW1lLmJhdA==?=\"", contentDisposition.Parameters.First().Value);
 
             contentDisposition.Parameters.Remove(contentDisposition.Parameters.First());
             Assert.Null(contentDisposition.FileName.Value);
@@ -222,11 +238,22 @@ namespace Microsoft.Net.Http.Headers
             Assert.Null(contentDisposition.FileNameStar.Value);
         }
 
+        [Theory]
+        [InlineData("FileName.bat", "FileName.bat")]
+        [InlineData("FileÃName.bat", "File_Name.bat")]
+        [InlineData("File\nName.bat", "File_Name.bat")]
+        public void SetHttpFileName_ShouldSanitizeFileNameWhereNeeded(string httpFileName, string expectedFileName)
+        {
+            var contentDisposition = new ContentDispositionHeaderValue("inline");
+            contentDisposition.SetHttpFileName(httpFileName);
+            Assert.Equal(expectedFileName, contentDisposition.FileName);
+        }
+
         [Fact]
         public void Dates_AddDateParameterThenUseProperty_ParametersEntryIsOverwritten()
         {
             string validDateString = "\"Tue, 15 Nov 1994 08:12:31 GMT\"";
-            DateTimeOffset validDate = DateTimeOffset.Parse("Tue, 15 Nov 1994 08:12:31 GMT");
+            DateTimeOffset validDate = DateTimeOffset.Parse("Tue, 15 Nov 1994 08:12:31 GMT", CultureInfo.InvariantCulture);
 
             var contentDisposition = new ContentDispositionHeaderValue("inline");
 
@@ -388,7 +415,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.False(contentDisposition1.Equals(contentDisposition2), "No params vs. name.");
             Assert.False(contentDisposition2.Equals(contentDisposition1), "name vs. no params.");
             Assert.False(contentDisposition1.Equals(null), "No params vs. <null>.");
-            Assert.False(contentDisposition1.Equals(contentDisposition3), "No params vs. custom param.");
+            Assert.False(contentDisposition1!.Equals(contentDisposition3), "No params vs. custom param.");
             Assert.False(contentDisposition2.Equals(contentDisposition3), "name vs. custom param.");
             Assert.True(contentDisposition1.Equals(contentDisposition4), "Different casing.");
             Assert.True(contentDisposition2.Equals(contentDisposition5), "Different casing in name.");
@@ -465,7 +492,7 @@ namespace Microsoft.Net.Http.Headers
         {
             { "inline", new ContentDispositionHeaderValue("inline") }, // @"This should be equivalent to not including the header at all."
             { "inline;", new ContentDispositionHeaderValue("inline") },
-            { "inline;name=", new ContentDispositionHeaderValue("inline") { Parameters = { new NameValueHeaderValue("name", "") } } }, // TODO: passing in a null value causes a strange assert on CoreCLR before the test even starts. Not reproducable in the body of a test.
+            { "inline;name=", new ContentDispositionHeaderValue("inline") { Parameters = { new NameValueHeaderValue("name", "") } } }, // TODO: passing in a null value causes a strange assert on CoreCLR before the test even starts. Not reproducible in the body of a test.
             { "inline;name=value", new ContentDispositionHeaderValue("inline") { Name  = "value" } },
             { "inline;name=value;", new ContentDispositionHeaderValue("inline") { Name  = "value" } },
             { "inline;name=value;", new ContentDispositionHeaderValue("inline") { Name  = "value" } },
@@ -589,28 +616,26 @@ namespace Microsoft.Net.Http.Headers
             public bool Valid { get; }
         }
 
-        private void CheckValidParse(string input, ContentDispositionHeaderValue expectedResult)
+        private void CheckValidParse(string? input, ContentDispositionHeaderValue expectedResult)
         {
             var result = ContentDispositionHeaderValue.Parse(input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidParse(string input)
+        private void CheckInvalidParse(string? input)
         {
             Assert.Throws<FormatException>(() => ContentDispositionHeaderValue.Parse(input));
         }
 
-        private void CheckValidTryParse(string input, ContentDispositionHeaderValue expectedResult)
+        private void CheckValidTryParse(string? input, ContentDispositionHeaderValue expectedResult)
         {
-            ContentDispositionHeaderValue result = null;
-            Assert.True(ContentDispositionHeaderValue.TryParse(input, out result), input);
+            Assert.True(ContentDispositionHeaderValue.TryParse(input, out var result), input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidTryParse(string input)
+        private void CheckInvalidTryParse(string? input)
         {
-            ContentDispositionHeaderValue result = null;
-            Assert.False(ContentDispositionHeaderValue.TryParse(input, out result), input);
+            Assert.False(ContentDispositionHeaderValue.TryParse(input, out var result), input);
             Assert.Null(result);
         }
 

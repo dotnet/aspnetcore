@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -38,7 +40,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [InlineData("About")]
         [InlineData("Help")]
         [InlineData("UnboundDynamicAttributes")]
-        [InlineData("ViewComponentTagHelpers")]
         public async Task CanRenderViewsWithTagHelpers(string action)
         {
             // Arrange
@@ -56,11 +57,25 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
             var responseContent = await response.Content.ReadAsStringAsync();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
+        }
+
+        [ConditionalTheory]
+        [InlineData("GlobbingTagHelpers")]
+        [InlineData("ViewComponentTagHelpers")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
+        public Task CanRenderViewsWithTagHelpersNotReadyForHelix(string action)
+            => CanRenderViewsWithTagHelpers(action);
+
+        [Fact]
+        public async Task GivesCorrectCallstackForSyncronousCalls()
+        {
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/15367
+            // Arrange
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await Client.GetAsync("http://localhost/Home/MyHtml"));
+
+            // Assert
+            Assert.Equal("Should be visible", exception.InnerException.InnerException.Message);
         }
 
         [Fact]
@@ -81,15 +96,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
             var responseContent = await response.Content.ReadAsStringAsync();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Fact]
-        public async Task ReregisteringAntiforgeryTokenInsideFormTagHelper_DoesNotAddDuplicateAntiforgeryTokenFields()
+        public async Task ReRegisteringAntiforgeryTokenInsideFormTagHelper_DoesNotAddDuplicateAntiforgeryTokenFields()
         {
             // Arrange
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
@@ -109,19 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(
                 responseContent, "/Employee/DuplicateAntiforgeryTokenRegistration");
-
-#if GENERATE_BASELINES
-            // Reverse usual substitution and insert a format item into the new file content.
-            responseContent = responseContent.Replace(forgeryToken, "{0}");
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            expectedContent = string.Format(expectedContent, forgeryToken);
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent(expectedContent.Trim()),
-                responseContent,
-                ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, forgeryToken);
         }
 
         public static TheoryData TagHelpersAreInheritedFromViewImportsPagesData
@@ -214,15 +213,7 @@ page:<root>root-content</root>"
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var responseContent = await response.Content.ReadAsStringAsync();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent(expectedContent),
-                responseContent,
-                ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Fact]
@@ -250,11 +241,7 @@ page:<root>root-content</root>"
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var responseContent = await response.Content.ReadAsStringAsync();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Fact]
@@ -282,15 +269,7 @@ page:<root>root-content</root>"
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var responseContent = await response.Content.ReadAsStringAsync();
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent(expectedContent),
-                responseContent,
-                ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
 
         [Theory]
@@ -312,12 +291,7 @@ page:<root>root-content</root>"
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var responseContent = await response.Content.ReadAsStringAsync();
-
-#if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
-#endif
+            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
         }
     }
 }

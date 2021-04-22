@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
@@ -19,16 +20,9 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         protected override void InitializeWorker(ViewFeaturesAnalyzerContext analyzerContext)
         {
-            analyzerContext.Context.RegisterSyntaxNodeAction(context =>
+            analyzerContext.Context.RegisterOperationAction(context =>
             {
-                var invocationExpression = (InvocationExpressionSyntax)context.Node;
-                var symbol = context.SemanticModel.GetSymbolInfo(invocationExpression, context.CancellationToken).Symbol;
-                if (symbol == null || symbol.Kind != SymbolKind.Method)
-                {
-                    return;
-                }
-
-                var method = (IMethodSymbol)symbol;
+                var method = ((IInvocationOperation)context.Operation).TargetMethod;
                 if (!analyzerContext.IsHtmlHelperExtensionMethod(method))
                 {
                     return;
@@ -38,17 +32,17 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         SupportedDiagnostic,
-                        invocationExpression.GetLocation(),
+                        context.Operation.Syntax.GetLocation(),
                         new[] { SymbolNames.PartialMethod }));
                 }
                 else if (string.Equals(SymbolNames.RenderPartialMethod, method.Name, StringComparison.Ordinal))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         SupportedDiagnostic,
-                        invocationExpression.GetLocation(),
+                        context.Operation.Syntax.GetLocation(),
                         new[] { SymbolNames.RenderPartialMethod }));
                 }
-            }, SyntaxKind.InvocationExpression);
+            }, OperationKind.Invocation);
         }
     }
 }

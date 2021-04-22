@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,9 +10,13 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class PocoAdapter : IAdapter
     {
-        public bool TryAdd(
+        public virtual bool TryAdd(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -43,7 +47,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryGet(
+        public virtual bool TryGet(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -69,7 +73,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryRemove(
+        public virtual bool TryRemove(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -90,7 +94,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Setting the value to "null" will use the default value in case of value types, and
             // null in case of reference types
             object value = null;
-            if (jsonProperty.PropertyType.GetTypeInfo().IsValueType
+            if (jsonProperty.PropertyType.IsValueType
                 && Nullable.GetUnderlyingType(jsonProperty.PropertyType) == null)
             {
                 value = Activator.CreateInstance(jsonProperty.PropertyType);
@@ -102,7 +106,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryReplace(
+        public virtual bool TryReplace(
             object target,
             string segment,
             IContractResolver
@@ -134,7 +138,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryTest(
+        public virtual bool TryTest(
             object target,
             string segment,
             IContractResolver
@@ -171,7 +175,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryTraverse(
+        public virtual bool TryTraverse(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -197,7 +201,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return false;
         }
 
-        private bool TryGetJsonProperty(
+        protected virtual bool TryGetJsonProperty(
             object target,
             IContractResolver contractResolver,
             string segment,
@@ -220,7 +224,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return false;
         }
 
-        private bool TryConvertValue(object value, Type propertyType, out object convertedValue)
+        protected virtual bool TryConvertValue(object value, Type propertyType, out object convertedValue)
         {
             var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType);
             if (!conversionResult.CanBeConverted)

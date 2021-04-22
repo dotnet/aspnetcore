@@ -1,0 +1,35 @@
+﻿@typeparam TItem
+<table>
+    @if (Header != null)
+    {
+        <thead>
+            @Header
+        </thead>
+    }
+    <tbody>
+        @for (var i  = 0; i < Items.Count; i++)
+        {
+            var item = Items[i];
+            @ItemTemplate(item)
+        }
+
+    </tbody>
+    @if (Footer != null)
+    {
+        <tfoot>@Footer</tfoot>
+    }
+</table>
+
+@code {
+    [Parameter]
+    public RenderFragment Header { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem> ItemTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment Footer { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<TItem> Items { get; set; }
+}

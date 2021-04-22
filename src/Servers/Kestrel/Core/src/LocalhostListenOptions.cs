@@ -1,18 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    internal class LocalhostListenOptions : ListenOptions
+    internal sealed class LocalhostListenOptions : ListenOptions
     {
         internal LocalhostListenOptions(int port)
             : base(new IPEndPoint(IPAddress.Loopback, port))
@@ -28,36 +28,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal override string GetDisplayName()
         {
-            var scheme = ConnectionAdapters.Any(f => f.IsHttps)
-                ? "https"
-                : "http";
-
-            return $"{scheme}://localhost:{IPEndPoint.Port}";
+            return $"{Scheme}://localhost:{IPEndPoint!.Port}";
         }
 
-        internal override async Task BindAsync(AddressBindContext context)
+        internal override async Task BindAsync(AddressBindContext context, CancellationToken cancellationToken)
         {
             var exceptions = new List<Exception>();
 
             try
             {
                 var v4Options = Clone(IPAddress.Loopback);
-                await AddressBinder.BindEndpointAsync(v4Options, context).ConfigureAwait(false);
+                await AddressBinder.BindEndpointAsync(v4Options, context, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex) when (!(ex is IOException))
+            catch (Exception ex) when (!(ex is IOException or OperationCanceledException))
             {
-                context.Logger.LogWarning(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv4 loopback", ex.Message);
+                context.Logger.LogInformation(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv4 loopback", ex.Message);
                 exceptions.Add(ex);
             }
 
             try
             {
                 var v6Options = Clone(IPAddress.IPv6Loopback);
-                await AddressBinder.BindEndpointAsync(v6Options, context).ConfigureAwait(false);
+                await AddressBinder.BindEndpointAsync(v6Options, context, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex) when (!(ex is IOException))
+            catch (Exception ex) when (!(ex is IOException or OperationCanceledException))
             {
-                context.Logger.LogWarning(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv6 loopback", ex.Message);
+                context.Logger.LogInformation(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv6 loopback", ex.Message);
                 exceptions.Add(ex);
             }
 
@@ -74,16 +70,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         // used for cloning to two IPEndpoints
         internal ListenOptions Clone(IPAddress address)
         {
-            var options = new ListenOptions(new IPEndPoint(address, IPEndPoint.Port))
+            var options = new ListenOptions(new IPEndPoint(address, IPEndPoint!.Port))
             {
-                HandleType = HandleType,
                 KestrelServerOptions = KestrelServerOptions,
-                NoDelay = NoDelay,
                 Protocols = Protocols,
+                IsTls = IsTls,
+                HttpsOptions = HttpsOptions,
+                EndpointConfig = EndpointConfig
             };
 
             options._middleware.AddRange(_middleware);
-            options.ConnectionAdapters.AddRange(ConnectionAdapters);
             return options;
         }
     }

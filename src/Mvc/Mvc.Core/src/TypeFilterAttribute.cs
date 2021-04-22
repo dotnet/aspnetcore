@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
     [DebuggerDisplay("TypeFilter: Type={ImplementationType} Order={Order}")]
     public class TypeFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
-        private ObjectFactory _factory;
+        private ObjectFactory? _factory;
 
         /// <summary>
         /// Instantiates a new <see cref="TypeFilterAttribute"/> instance.
@@ -34,12 +34,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="type">The <see cref="Type"/> of filter to create.</param>
         public TypeFilterAttribute(Type type)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            ImplementationType = type;
+            ImplementationType = type ?? throw new ArgumentNullException(nameof(type));
         }
 
         /// <summary>
@@ -49,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Service arguments are found in the dependency injection container i.e. this filter supports constructor
         /// injection in addition to passing the given <see cref="Arguments"/>.
         /// </remarks>
-        public object[] Arguments { get; set; }
+        public object[]? Arguments { get; set; }
 
         /// <summary>
         /// Gets the <see cref="Type"/> of filter to create.
@@ -73,11 +68,17 @@ namespace Microsoft.AspNetCore.Mvc
             if (_factory == null)
             {
                 var argumentTypes = Arguments?.Select(a => a.GetType())?.ToArray();
-
                 _factory = ActivatorUtilities.CreateFactory(ImplementationType, argumentTypes ?? Type.EmptyTypes);
             }
 
-            return (IFilterMetadata)_factory(serviceProvider, Arguments);
+            var filter = (IFilterMetadata)_factory(serviceProvider, Arguments);
+            if (filter is IFilterFactory filterFactory)
+            {
+                // Unwrap filter factories
+                filter = filterFactory.CreateInstance(serviceProvider);
+            }
+
+            return filter;
         }
     }
 }

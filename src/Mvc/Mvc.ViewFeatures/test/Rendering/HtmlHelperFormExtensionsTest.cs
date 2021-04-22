@@ -708,7 +708,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(ActionNameControllerNameRouteValuesAndMethodDataSet))]
-        public void BeginFormWithActionNameContollerNameRouteValuesAndMethodParameters_CallsHtmlGeneratorWithExpectedValues(
+        public void BeginFormWithActionNameControllerNameRouteValuesAndMethodParameters_CallsHtmlGeneratorWithExpectedValues(
             string actionName,
             string controllerName,
             object routeValues,
@@ -754,7 +754,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(ActionNameControllerNameMethodAndHtmlAttributesDataSet))]
-        public void BeginFormWithActionNameContollerNameMethodAndHtmlAttributesParameters_CallsHtmlGeneratorWithExpectedValues(
+        public void BeginFormWithActionNameControllerNameMethodAndHtmlAttributesParameters_CallsHtmlGeneratorWithExpectedValues(
             string actionName,
             string controllerName,
             FormMethod method,
@@ -800,7 +800,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(ActionNameControllerNameMethodAndHtmlAttributesDataSet))]
-        public void BeginFormWithActionNameContollerNameMethodAndHtmlAttributesParameters_WithAntiforgery_CallsHtmlGeneratorWithExpectedValues(
+        public void BeginFormWithActionNameControllerNameMethodAndHtmlAttributesParameters_WithAntiforgery_CallsHtmlGeneratorWithExpectedValues(
             string actionName,
             string controllerName,
             FormMethod method,
@@ -848,7 +848,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         [Theory]
         [MemberData(nameof(ActionNameControllerNameMethodAndHtmlAttributesDataSet))]
-        public void BeginFormWithActionNameContollerNameMethodAndHtmlAttributesParameters_SuppressAntiforgery_CallsHtmlGeneratorWithExpectedValues(
+        public void BeginFormWithActionNameControllerNameMethodAndHtmlAttributesParameters_SuppressAntiforgery_CallsHtmlGeneratorWithExpectedValues(
             string actionName,
             string controllerName,
             FormMethod method,

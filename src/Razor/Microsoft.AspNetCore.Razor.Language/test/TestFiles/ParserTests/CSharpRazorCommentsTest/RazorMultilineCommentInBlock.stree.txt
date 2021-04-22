@@ -1,0 +1,27 @@
+RazorDocument - [0..44)::44 - [LF@{LF    @*LFThis is a commentLF    *@LF}LF]
+    MarkupBlock - [0..44)::44
+        MarkupTextLiteral - [0..2)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+        CSharpCodeBlock - [2..42)::40
+            CSharpStatement - [2..42)::40
+                CSharpTransition - [2..3)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [3..42)::39
+                    RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [4..41)::37
+                        CSharpStatementLiteral - [4..10)::6 - [LF    ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                            NewLine;[LF];
+                            Whitespace;[    ];
+                        RazorComment - [10..39)::29
+                            RazorCommentTransition;[@];
+                            RazorCommentStar;[*];
+                            RazorCommentLiteral;[LFThis is a commentLF    ];
+                            RazorCommentStar;[*];
+                            RazorCommentTransition;[@];
+                        CSharpStatementLiteral - [39..41)::2 - [LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            NewLine;[LF];
+                    RazorMetaCode - [41..42)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupEphemeralTextLiteral - [42..44)::2 - [LF] - Gen<None> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];

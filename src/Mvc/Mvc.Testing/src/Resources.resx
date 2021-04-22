@@ -117,10 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="MissingCreateWebHostBuilderMethod" xml:space="preserve">
-    <value>No method 'public static {0} CreateWebHostBuilder(string[] args)' found on '{1}'. Alternatively, {2} can be extended and 'protected virtual {0} {3}()' can be overridden to provide your own {0} instance.</value>
+  <data name="InvalidAssemblyEntryPoint" xml:space="preserve">
+    <value>The provided Type '{0}' does not belong to an assembly with an entry point. A common cause for this error is providing a Type from a class library.</value>
+  </data>
+  <data name="MissingBuilderMethod" xml:space="preserve">
+    <value>No method 'public static {0} CreateHostBuilder(string[] args)' or 'public static {1} CreateWebHostBuilder(string[] args)' found on '{2}'. Alternatively, {3} can be extended and '{4}' or '{5}' can be overridden to provide your own instance.</value>
   </data>
   <data name="MissingDepsFile" xml:space="preserve">
-    <value>Can't find'{0}'. This file is required for functional tests to run properly. There should be a copy of the file on your source project bin folder. If that is not the case, make sure that the property PreserveCompilationContext is set to true on your project file. E.g '&lt;PreserveCompilationContext&gt;true&lt;/PreserveCompilationContext&gt;'. For functional tests to work they need to either run from the build output folder or the {1} file from your application's output directory must be copied to the folder where the tests are running on. A common cause for this error is having shadow copying enabled when the tests run.</value>
+    <value>Can't find '{0}'. This file is required for functional tests to run properly. There should be a copy of the file on your source project bin folder. If that is not the case, make sure that the property PreserveCompilationContext is set to true on your project file. E.g '&lt;PreserveCompilationContext&gt;true&lt;/PreserveCompilationContext&gt;'. For functional tests to work they need to either run from the build output folder or the {1} file from your application's output directory must be copied to the folder where the tests are running on. A common cause for this error is having shadow copying enabled when the tests run.</value>
   </data>
 </root>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    $CommonMetadataElements$
+    <dependencies>
+      <group targetFramework=".net6.0">
+        <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$componentAnalyzerVersion$" />
+        <dependency id="Microsoft.AspNetCore.Authorization" version="$authorizationVersion$" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    $CommonFileElements$
+    <file src="$OutputPath$$AssemblyName$.dll" target="lib\$DefaultNetCoreTargetFramework$\" />
+    <file src="$OutputPath$$AssemblyName$.pdb" target="lib\$DefaultNetCoreTargetFramework$\" />
+    <file src="$OutputPath$$AssemblyName$.xml" target="lib\$DefaultNetCoreTargetFramework$\" />
+    <file src="$PackageThirdPartyNoticesFile$" target=".\THIRD-PARTY-NOTICES.txt" />
+  </files>
+</package>

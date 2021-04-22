@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.Http
         /// Gets or sets the domain to associate the cookie with.
         /// </summary>
         /// <returns>The domain to associate the cookie with.</returns>
-        public string Domain { get; set; }
+        public string? Domain { get; set; }
 
         /// <summary>
         /// Gets or sets the cookie path.
         /// </summary>
         /// <returns>The cookie path.</returns>
-        public string Path { get; set; }
+        public string? Path { get; set; }
 
         /// <summary>
         /// Gets or sets the expiration date and time for the cookie.
@@ -43,10 +43,10 @@ namespace Microsoft.AspNetCore.Http
         public bool Secure { get; set; }
 
         /// <summary>
-        /// Gets or sets the value for the SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Lax"/>
+        /// Gets or sets the value for the SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Unspecified"/>
         /// </summary>
         /// <returns>The <see cref="SameSiteMode"/> representing the enforcement mode of the cookie.</returns>
-        public SameSiteMode SameSite { get; set; } = SameSiteMode.Lax;
+        public SameSiteMode SameSite { get; set; } = SameSiteMode.Unspecified;
 
         /// <summary>
         /// Gets or sets a value that indicates whether a cookie is accessible by client-side script.

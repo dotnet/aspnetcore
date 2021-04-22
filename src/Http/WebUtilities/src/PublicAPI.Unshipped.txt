@@ -1,0 +1,5 @@
+#nullable enable
+*REMOVED*static Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseNullableQuery(string! queryString) -> System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>?
+static Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseNullableQuery(string? queryString) -> System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>?
+*REMOVED*static Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(string! queryString) -> System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>!
+static Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(string? queryString) -> System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>!

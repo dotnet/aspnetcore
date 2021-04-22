@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace DatabaseErrorPageSample
 {
@@ -12,13 +13,15 @@ namespace DatabaseErrorPageSample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MyContext>(
-                options => options.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=DatabaseErrorPageSample;Trusted_Connection=True;"));
+                options => options.UseSqlite($"Data Source = DatabaseErrorPageSample.db"));
         }
 
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
+#pragma warning disable CS0618 // Type or member is obsolete
             app.UseDatabaseErrorPage();
+#pragma warning restore CS0618 // Type or member is obsolete
             app.Run(context =>
             {
                 context.RequestServices.GetService<MyContext>().Blog.FirstOrDefault();
@@ -26,15 +29,19 @@ namespace DatabaseErrorPageSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseKestrel()
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+                })
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 

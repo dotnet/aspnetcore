@@ -1,11 +1,11 @@
-@page
+﻿@page
 @model IndexModel
 @{
     ViewData["Title"] = "Profile";
 }
 
 <h4>@ViewData["Title"]</h4>
-@Html.Partial("_StatusMessage", Model.StatusMessage)
+<partial name="_StatusMessage" for="StatusMessage" />
 <div class="row">
     <div class="col-md-6">
         <form method="post">

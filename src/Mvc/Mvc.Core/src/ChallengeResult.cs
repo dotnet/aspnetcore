@@ -5,14 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:AuthenticationManager.ChallengeAsync"/>.
+    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.ChallengeAsync"/>.
     /// </summary>
     public class ChallengeResult : ActionResult
     {
@@ -50,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ChallengeResult(AuthenticationProperties properties)
+        public ChallengeResult(AuthenticationProperties? properties)
             : this(Array.Empty<string>(), properties)
         {
         }
@@ -62,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ChallengeResult(string authenticationScheme, AuthenticationProperties properties)
+        public ChallengeResult(string authenticationScheme, AuthenticationProperties? properties)
             : this(new[] { authenticationScheme }, properties)
         {
         }
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ChallengeResult(IList<string> authenticationSchemes, AuthenticationProperties properties)
+        public ChallengeResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
         {
             AuthenticationSchemes = authenticationSchemes;
             Properties = properties;
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the authentication challenge.
         /// </summary>
-        public AuthenticationProperties Properties { get; set; }
+        public AuthenticationProperties? Properties { get; set; }
 
         /// <inheritdoc />
         public override async Task ExecuteResultAsync(ActionContext context)

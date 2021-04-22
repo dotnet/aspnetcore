@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,13 +12,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
     /// <summary>
     /// Exposes the Http.Sys timeout configurations.  These may also be configured in the registry.
+    /// These settings do not apply when attaching to an existing queue.
     /// </summary>
     public sealed class TimeoutManager
     {
         private static readonly int TimeoutLimitSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_TIMEOUT_LIMIT_INFO>();
 
-        private UrlGroup _urlGroup;
+        private UrlGroup? _urlGroup;
         private int[] _timeouts;
         private uint _minSendBytesPerSecond;
 

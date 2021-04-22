@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
@@ -33,8 +32,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <inheritdoc />
         public override int Order => -1000;
 
+        /// <summary>
+        /// Gets the <see cref="IHtmlGenerator"/> used to generate the <see cref="OptionTagHelper"/>'s output.
+        /// </summary>
         protected IHtmlGenerator Generator { get; }
 
+        /// <summary>
+        /// Gets the <see cref="Rendering.ViewContext"/> of the executing view.
+        /// </summary>
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }
@@ -76,8 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             if (!output.Attributes.ContainsName("selected"))
             {
                 // Is this <option/> element a child of a <select/> element the SelectTagHelper targeted?
-                object formDataEntry;
-                context.Items.TryGetValue(typeof(SelectTagHelper), out formDataEntry);
+                context.Items.TryGetValue(typeof(SelectTagHelper), out var formDataEntry);
 
                 // ... And did the SelectTagHelper determine any selected values?
                 var currentValues = formDataEntry as CurrentValues;

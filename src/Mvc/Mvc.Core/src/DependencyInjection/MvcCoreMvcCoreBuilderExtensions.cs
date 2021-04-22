@@ -11,11 +11,13 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extensions for configuring MVC using an <see cref="IMvcCoreBuilder"/>.
+    /// </summary>
     public static class MvcCoreMvcCoreBuilderExtensions
     {
         /// <summary>
@@ -42,12 +44,47 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// Configures <see cref="JsonOptions"/> for the specified <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
+        /// <param name="configure">An <see cref="Action"/> to configure the <see cref="JsonOptions"/>.</param>
+        /// <returns>The <see cref="IMvcBuilder"/>.</returns>
+        public static IMvcCoreBuilder AddJsonOptions(
+            this IMvcCoreBuilder builder,
+            Action<JsonOptions> configure)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            builder.Services.Configure(configure);
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds services to support <see cref="FormatterMappings"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
+        /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcCoreBuilder AddFormatterMappings(this IMvcCoreBuilder builder)
         {
             AddFormatterMappingsServices(builder.Services);
             return builder;
         }
 
+        /// <summary>
+        /// Configures <see cref="FormatterMappings"/> for the specified <paramref name="setupAction"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">An <see cref="Action"/> to configure the <see cref="FormatterMappings"/>.</param>
+        /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcCoreBuilder AddFormatterMappings(
             this IMvcCoreBuilder builder,
             Action<FormatterMappings> setupAction)
@@ -68,12 +105,23 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<FormatFilter, FormatFilter>();
         }
 
+        /// <summary>
+        /// Configures authentication and authorization services for <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddAuthorization(this IMvcCoreBuilder builder)
         {
             AddAuthorizationServices(builder.Services);
             return builder;
         }
 
+        /// <summary>
+        /// Configures authentication and authorization services for <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">An <see cref="Action"/> to configure the <see cref="AuthorizationOptions"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddAuthorization(
             this IMvcCoreBuilder builder,
             Action<AuthorizationOptions> setupAction)
@@ -93,7 +141,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddAuthenticationCore();
             services.AddAuthorization();
-            services.AddAuthorizationPolicyEvaluator();
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, AuthorizationApplicationModelProvider>());
@@ -138,7 +185,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            builder.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(new AssemblyPart(assembly)));
+            builder.ConfigureApplicationPartManager(manager =>
+            {
+                var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
+                foreach (var applicationPart in partFactory.GetApplicationParts(assembly))
+                {
+                    manager.ApplicationParts.Add(applicationPart);
+                }
+            });
 
             return builder;
         }
@@ -170,11 +224,39 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Configures <see cref="ApiBehaviorOptions"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">The configure action.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
+        public static IMvcCoreBuilder ConfigureApiBehaviorOptions(
+            this IMvcCoreBuilder builder,
+            Action<ApiBehaviorOptions> setupAction)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
+            builder.Services.Configure(setupAction);
+
+            return builder;
+        }
+
+        /// <summary>
         /// Sets the <see cref="CompatibilityVersion"/> for ASP.NET Core MVC for the application.
         /// </summary>
         /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
         /// <param name="version">The <see cref="CompatibilityVersion"/> value to configure.</param>
         /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
+        [Obsolete("This API is obsolete and will be removed in a future version. Consider removing usages.",
+            DiagnosticId = "ASP5001",
+            UrlFormat = "https://aka.ms/aspnetcore-warnings/{0}")]
         public static IMvcCoreBuilder SetCompatibilityVersion(this IMvcCoreBuilder builder, CompatibilityVersion version)
         {
             if (builder == null)

@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -10,8 +12,11 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ActionResult"/> that returns a Created (201) response with a Location header.
     /// </summary>
+    [DefaultStatusCode(DefaultStatusCode)]
     public class CreatedResult : ObjectResult
     {
+        private const int DefaultStatusCode = StatusCodes.Status201Created;
+
         private string _location;
 
         /// <summary>
@@ -20,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="location">The location at which the content has been created.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public CreatedResult(string location, object value)
+        public CreatedResult(string location, object? value)
             : base(value)
         {
             if (location == null)
@@ -29,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             Location = location;
-            StatusCode = StatusCodes.Status201Created;
+            StatusCode = DefaultStatusCode;
         }
 
         /// <summary>
@@ -38,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="location">The location at which the content has been created.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public CreatedResult(Uri location, object value)
+        public CreatedResult(Uri location, object? value)
             : base(value)
         {
             if (location == null)
@@ -55,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc
                 Location = location.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
             }
 
-            StatusCode = StatusCodes.Status201Created;
+            StatusCode = DefaultStatusCode;
         }
 
         /// <summary>
@@ -64,6 +69,7 @@ namespace Microsoft.AspNetCore.Mvc
         public string Location
         {
             get => _location;
+            [MemberNotNull(nameof(_location))]
             set
             {
                 if (value == null)

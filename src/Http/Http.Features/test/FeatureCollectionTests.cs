@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
             interfaces[typeof(IThing)] = thing;
 
-            object thing2 = interfaces[typeof(IThing)];
+            var thing2 = interfaces[typeof(IThing)];
             Assert.Equal(thing2, thing);
         }
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
             interfaces[typeof(IThing)] = null;
 
-            object thing2 = interfaces[typeof(IThing)];
+            var thing2 = interfaces[typeof(IThing)];
             Assert.Null(thing2);
         }
     }

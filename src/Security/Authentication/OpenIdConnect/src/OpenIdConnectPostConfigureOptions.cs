@@ -18,6 +18,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     {
         private readonly IDataProtectionProvider _dp;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OpenIdConnectPostConfigureOptions"/>.
+        /// </summary>
+        /// <param name="dataProtection">The <see cref="IDataProtectionProvider"/>.</param>
         public OpenIdConnectPostConfigureOptions(IDataProtectionProvider dataProtection)
         {
             _dp = dataProtection;
@@ -40,15 +44,15 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             if (options.StateDataFormat == null)
             {
                 var dataProtector = options.DataProtectionProvider.CreateProtector(
-                    typeof(OpenIdConnectHandler).FullName, name, "v1");
+                    typeof(OpenIdConnectHandler).FullName!, name, "v1");
                 options.StateDataFormat = new PropertiesDataFormat(dataProtector);
             }
 
             if (options.StringDataFormat == null)
             {
                 var dataProtector = options.DataProtectionProvider.CreateProtector(
-                    typeof(OpenIdConnectHandler).FullName,
-                    typeof(string).FullName,
+                    typeof(OpenIdConnectHandler).FullName!,
+                    typeof(string).FullName!,
                     name,
                     "v1");
 
@@ -87,13 +91,17 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                         options.MetadataAddress += ".well-known/openid-configuration";
                     }
 
-                    if (options.RequireHttpsMetadata && !options.MetadataAddress.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    if (options.RequireHttpsMetadata && !(options.MetadataAddress?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ?? false))
                     {
                         throw new InvalidOperationException("The MetadataAddress or Authority must use HTTPS unless disabled for development by setting RequireHttpsMetadata=false.");
                     }
 
                     options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(options.MetadataAddress, new OpenIdConnectConfigurationRetriever(),
-                        new HttpDocumentRetriever(options.Backchannel) { RequireHttps = options.RequireHttpsMetadata });
+                        new HttpDocumentRetriever(options.Backchannel) { RequireHttps = options.RequireHttpsMetadata })
+                    {
+                        RefreshInterval = options.RefreshInterval,
+                        AutomaticRefreshInterval = options.AutomaticRefreshInterval,
+                    };
                 }
             }
         }

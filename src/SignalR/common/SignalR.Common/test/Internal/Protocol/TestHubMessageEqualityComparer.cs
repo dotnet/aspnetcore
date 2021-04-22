@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                     return StreamInvocationMessagesEqual(streamInvocationMessage, (StreamInvocationMessage)y);
                 case CancelInvocationMessage cancelItemMessage:
                     return string.Equals(cancelItemMessage.InvocationId, ((CancelInvocationMessage)y).InvocationId, StringComparison.Ordinal);
-                case PingMessage pingMessage:
+                case PingMessage _:
                     // If the types are equal (above), then we're done.
                     return true;
                 case CloseMessage closeMessage:
@@ -46,34 +46,36 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         private bool CompletionMessagesEqual(CompletionMessage x, CompletionMessage y)
         {
-            return SequenceEqual(x.Headers, y.Headers) &&
-                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
-                string.Equals(x.Error, y.Error, StringComparison.Ordinal) &&
-                x.HasResult == y.HasResult &&
-                (Equals(x.Result, y.Result) || SequenceEqual(x.Result, y.Result));
+            return SequenceEqual(x.Headers, y.Headers)
+                && string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal)
+                && string.Equals(x.Error, y.Error, StringComparison.Ordinal)
+                && x.HasResult == y.HasResult
+                && (Equals(x.Result, y.Result) || SequenceEqual(x.Result, y.Result));
         }
 
         private bool StreamItemMessagesEqual(StreamItemMessage x, StreamItemMessage y)
         {
-            return SequenceEqual(x.Headers, y.Headers) &&
-                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
-                (Equals(x.Item, y.Item) || SequenceEqual(x.Item, y.Item));
+            return SequenceEqual(x.Headers, y.Headers)
+                && string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal)
+                && (Equals(x.Item, y.Item) || SequenceEqual(x.Item, y.Item));
         }
 
         private bool InvocationMessagesEqual(InvocationMessage x, InvocationMessage y)
         {
-            return SequenceEqual(x.Headers, y.Headers) &&
-                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
-                string.Equals(x.Target, y.Target, StringComparison.Ordinal) &&
-                ArgumentListsEqual(x.Arguments, y.Arguments);
+            return SequenceEqual(x.Headers, y.Headers)
+                && string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal)
+                && string.Equals(x.Target, y.Target, StringComparison.Ordinal)
+                && ArgumentListsEqual(x.Arguments, y.Arguments)
+                && StringArrayEqual(x.StreamIds, y.StreamIds);
         }
 
         private bool StreamInvocationMessagesEqual(StreamInvocationMessage x, StreamInvocationMessage y)
         {
-            return SequenceEqual(x.Headers, y.Headers) &&
-                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
-                string.Equals(x.Target, y.Target, StringComparison.Ordinal) &&
-                ArgumentListsEqual(x.Arguments, y.Arguments);
+            return SequenceEqual(x.Headers, y.Headers)
+                && string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal)
+                && string.Equals(x.Target, y.Target, StringComparison.Ordinal)
+                && ArgumentListsEqual(x.Arguments, y.Arguments)
+                && StringArrayEqual(x.StreamIds, y.StreamIds);
         }
 
         private bool ArgumentListsEqual(object[] left, object[] right)
@@ -125,6 +127,34 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             }
 
             return !leftMoved && !rightMoved;
+        }
+
+        private bool StringArrayEqual(string[] left, string[] right)
+        {
+            if (left == null && right == null)
+            {
+                return true;
+            }
+
+            if (left == null || right == null)
+            {
+                return false;
+            }
+
+            if (left.Length != right.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < left.Length; i++)
+            {
+                if (!string.Equals(left[i], right[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public int GetHashCode(HubMessage obj)

@@ -37,6 +37,32 @@ namespace BasicWebSite.Controllers
             return Ok(new RedirectHandlerResponse { Url = value, Body = number.Value });
         }
 
+        [HttpGet("Testing/RedirectHandler/Headers")]
+        public IActionResult RedirectHandlerHeaders()
+        {
+            if (!Request.Headers.TryGetValue("X-Added-Header", out var value))
+            {
+                return Content("No header present");
+            }
+            else
+            {
+                return RedirectToAction(nameof(RedirectHandlerHeadersRedirect));
+            }
+        }
+
+        [HttpGet("Testing/RedirectHandler/Headers/Redirect")]
+        public IActionResult RedirectHandlerHeadersRedirect()
+        {
+            if (Request.Headers.TryGetValue("X-Added-Header", out var value))
+            {
+                return Content("true");
+            }
+            else
+            {
+                return Content("false");
+            }
+        }
+
         [HttpGet("Testing/AntiforgerySimulator/{value}")]
         public IActionResult AntiforgerySimulator([FromRoute]int value)
         {

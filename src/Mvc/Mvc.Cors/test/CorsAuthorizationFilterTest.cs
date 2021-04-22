@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 
             // Assert
             var response = authorizationContext.HttpContext.Response;
-            Assert.Equal(200, response.StatusCode);
+            Assert.Equal(204, response.StatusCode);
             Assert.Equal("http://example.com", response.Headers[CorsConstants.AccessControlAllowOrigin]);
             Assert.Equal("header1,header2", response.Headers[CorsConstants.AccessControlAllowHeaders]);
 
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
         }
 
         [Fact]
-        public async Task PreFlight_FailedMatch_Writes200()
+        public async Task PreFlight_FailedMatch_RespondsWith204NoContent()
         {
             // Arrange
             var mockEngine = GetFailingEngine();
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
             await authorizationContext.Result.ExecuteResultAsync(authorizationContext);
 
             // Assert
-            Assert.Equal(200, authorizationContext.HttpContext.Response.StatusCode);
+            Assert.Equal(204, authorizationContext.HttpContext.Response.StatusCode);
             Assert.Empty(authorizationContext.HttpContext.Response.Headers);
         }
 
@@ -92,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 
             // Assert
             var response = authorizationContext.HttpContext.Response;
-            Assert.Equal(200, response.StatusCode);
+            Assert.Equal(204, response.StatusCode);
             Assert.Equal("http://example.com", response.Headers[CorsConstants.AccessControlAllowOrigin]);
             Assert.Equal("exposed1,exposed2", response.Headers[CorsConstants.AccessControlExposeHeaders]);
         }
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
                 {
                     var headers = response1.Headers;
                     headers[CorsConstants.AccessControlMaxAge] =
-                        result1.PreflightMaxAge.Value.TotalSeconds.ToString();
+                        result1.PreflightMaxAge.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
                     headers[CorsConstants.AccessControlAllowOrigin] = result1.AllowedOrigin;
                     if (result1.SupportsCredentials)
                     {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,9 +11,13 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class ListAdapter : IAdapter
     {
-        public bool TryAdd(
+        public virtual bool TryAdd(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -32,7 +36,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (!TryConvertValue(value, typeArgument, segment, out var convertedValue, out errorMessage))
+            if (!TryConvertValue(value, typeArgument, segment, contractResolver, out var convertedValue, out errorMessage))
             {
                 return false;
             }
@@ -50,7 +54,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryGet(
+        public virtual bool TryGet(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -84,7 +88,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryRemove(
+        public virtual bool TryRemove(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -115,7 +119,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryReplace(
+        public virtual bool TryReplace(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -134,7 +138,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (!TryConvertValue(value, typeArgument, segment, out var convertedValue, out errorMessage))
+            if (!TryConvertValue(value, typeArgument, segment, contractResolver, out var convertedValue, out errorMessage))
             {
                 return false;
             }
@@ -152,7 +156,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryTest(
+        public virtual bool TryTest(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -171,7 +175,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (!TryConvertValue(value, typeArgument, segment, out var convertedValue, out errorMessage))
+            if (!TryConvertValue(value, typeArgument, segment, contractResolver, out var convertedValue, out errorMessage))
             {
                 return false;
             }
@@ -189,7 +193,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        public bool TryTraverse(
+        public virtual bool TryTraverse(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -224,14 +228,31 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        private bool TryConvertValue(
+        protected virtual bool TryConvertValue(
             object originalValue,
             Type listTypeArgument,
             string segment,
             out object convertedValue,
             out string errorMessage)
         {
-            var conversionResult = ConversionResultProvider.ConvertTo(originalValue, listTypeArgument);
+            return TryConvertValue(
+                originalValue,
+                listTypeArgument,
+                segment,
+                null,
+                out convertedValue,
+                out errorMessage);
+        }
+
+        protected virtual bool TryConvertValue(
+            object originalValue,
+            Type listTypeArgument,
+            string segment,
+            IContractResolver contractResolver,
+            out object convertedValue,
+            out string errorMessage)
+        {
+            var conversionResult = ConversionResultProvider.ConvertTo(originalValue, listTypeArgument, contractResolver);
             if (!conversionResult.CanBeConverted)
             {
                 convertedValue = null;
@@ -244,7 +265,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        private bool TryGetListTypeArgument(IList list, out Type listTypeArgument, out string errorMessage)
+        protected virtual bool TryGetListTypeArgument(IList list, out Type listTypeArgument, out string errorMessage)
         {
             // Arrays are not supported as they have fixed size and operations like Add, Insert do not make sense
             var listType = list.GetType();
@@ -272,7 +293,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        private bool TryGetPositionInfo(
+        protected virtual bool TryGetPositionInfo(
             IList list,
             string segment,
             OperationType operationType,
@@ -318,7 +339,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        private struct PositionInfo
+        /// <summary>
+        /// This API supports infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected readonly struct PositionInfo
         {
             public PositionInfo(PositionType type, int index)
             {
@@ -330,7 +355,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             public int Index { get; }
         }
 
-        private enum PositionType
+        /// <summary>
+        /// This API supports infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected enum PositionType
         {
             Index, // valid index
             EndOfList, // '-'
@@ -338,7 +367,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             OutOfBounds
         }
 
-        private enum OperationType
+        /// <summary>
+        /// This API supports infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected enum OperationType
         {
             Add,
             Remove,

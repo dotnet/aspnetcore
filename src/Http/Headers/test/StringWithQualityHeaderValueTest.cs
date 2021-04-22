@@ -94,7 +94,7 @@ namespace Microsoft.Net.Http.Headers
             var value9 = new StringWithQualityHeaderValue("x");
 
             Assert.False(value1.Equals(null), "t; q=0.123 vs. <null>");
-            Assert.True(value1.Equals(value2), "t; q=0.123 vs. t; q=0.123");
+            Assert.True(value1!.Equals(value2), "t; q=0.123 vs. t; q=0.123");
             Assert.True(value1.Equals(value3), "t; q=0.123 vs. T; q=0.123");
             Assert.False(value1.Equals(value4), "t; q=0.123 vs. t");
             Assert.False(value4.Equals(value1), "t vs. t; q=0.123");
@@ -293,8 +293,7 @@ namespace Microsoft.Net.Http.Headers
                 "text7,text8;q=0.5",
                 " text9 , text10 ; q = 0.5 ",
             };
-            IList<StringWithQualityHeaderValue> results;
-            Assert.True(StringWithQualityHeaderValue.TryParseList(inputs, out results));
+            Assert.True(StringWithQualityHeaderValue.TryParseList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -331,8 +330,7 @@ namespace Microsoft.Net.Http.Headers
                 "text7,text8;q=0.5",
                 " text9 , text10 ; q = 0.5 ",
             };
-            IList<StringWithQualityHeaderValue> results;
-            Assert.True(StringWithQualityHeaderValue.TryParseStrictList(inputs, out results));
+            Assert.True(StringWithQualityHeaderValue.TryParseStrictList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -354,7 +352,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseList_WithSomeInvlaidValues_IgnoresInvalidValues()
+        public void ParseList_WithSomeInvalidValues_IgnoresInvalidValues()
         {
             var inputs = new[]
             {
@@ -392,7 +390,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseStrictList_WithSomeInvlaidValues_Throws()
+        public void ParseStrictList_WithSomeInvalidValues_Throws()
         {
             var inputs = new[]
             {
@@ -412,7 +410,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void TryParseList_WithSomeInvlaidValues_IgnoresInvalidValues()
+        public void TryParseList_WithSomeInvalidValues_IgnoresInvalidValues()
         {
             var inputs = new[]
             {
@@ -428,8 +426,7 @@ namespace Microsoft.Net.Http.Headers
                 "text7,text8;q=0.5",
                 " text9 , text10 ; q = 0.5 ",
             };
-            IList<StringWithQualityHeaderValue> results;
-            Assert.True(StringWithQualityHeaderValue.TryParseList(inputs, out results));
+            Assert.True(StringWithQualityHeaderValue.TryParseList(inputs, out var results));
 
             var expectedResults = new[]
             {
@@ -451,7 +448,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void TryParseStrictList_WithSomeInvlaidValues_ReturnsFalse()
+        public void TryParseStrictList_WithSomeInvalidValues_ReturnsFalse()
         {
             var inputs = new[]
             {
@@ -467,29 +464,26 @@ namespace Microsoft.Net.Http.Headers
                 "text7,text8;q=0.5",
                 " text9 , text10 ; q = 0.5 ",
             };
-            IList<StringWithQualityHeaderValue> results;
-            Assert.False(StringWithQualityHeaderValue.TryParseStrictList(inputs, out results));
+            Assert.False(StringWithQualityHeaderValue.TryParseStrictList(inputs, out var results));
         }
 
         #region Helper methods
 
-        private void CheckValidParse(string input, StringWithQualityHeaderValue expectedResult)
+        private void CheckValidParse(string? input, StringWithQualityHeaderValue expectedResult)
         {
             var result = StringWithQualityHeaderValue.Parse(input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckValidTryParse(string input, StringWithQualityHeaderValue expectedResult)
+        private void CheckValidTryParse(string? input, StringWithQualityHeaderValue expectedResult)
         {
-            StringWithQualityHeaderValue result = null;
-            Assert.True(StringWithQualityHeaderValue.TryParse(input, out result));
+            Assert.True(StringWithQualityHeaderValue.TryParse(input, out var result));
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidTryParse(string input)
+        private void CheckInvalidTryParse(string? input)
         {
-            StringWithQualityHeaderValue result = null;
-            Assert.False(StringWithQualityHeaderValue.TryParse(input, out result));
+            Assert.False(StringWithQualityHeaderValue.TryParse(input, out var result));
             Assert.Null(result);
         }
 

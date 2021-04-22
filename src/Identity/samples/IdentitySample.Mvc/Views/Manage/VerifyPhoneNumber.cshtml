@@ -3,14 +3,14 @@
     ViewData["Title"] = "Verify Phone Number";
 }
 
-<h2>@ViewData["Title"].</h2>
+<h1>@ViewData["Title"].</h1>
 
 <form asp-controller="Manage" asp-action="VerifyPhoneNumber" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" role="form">
     <input asp-for="PhoneNumber" type="hidden" />
     <h4>Add a phone number.</h4>
     <h5>@ViewData["Status"]</h5>
     <hr />
-    <div asp-validation-summary="All" class="text-danger"></div>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="form-group">
         <label asp-for="Code" class="col-md-2 control-label"></label>
         <div class="col-md-10">

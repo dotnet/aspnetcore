@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// <summary>
     /// Result of locating a <see cref="IRazorPage"/>.
     /// </summary>
-    public struct RazorPageResult
+    public readonly struct RazorPageResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="RazorPageResult"/> for a successful discovery.
@@ -64,12 +64,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// Gets the <see cref="IRazorPage"/> if found.
         /// </summary>
         /// <remarks>This property is <c>null</c> if the page was not found.</remarks>
-        public IRazorPage Page { get; }
+        public IRazorPage? Page { get; }
 
         /// <summary>
         /// Gets the locations that were searched when <see cref="Page"/> could not be found.
         /// </summary>
         /// <remarks>This property is <c>null</c> if the page was found.</remarks>
-        public IEnumerable<string> SearchedLocations { get; }
+        public IEnumerable<string>? SearchedLocations { get; }
     }
 }

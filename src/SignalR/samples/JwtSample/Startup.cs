@@ -4,6 +4,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -17,7 +18,7 @@ namespace JwtSample
 {
     public class Startup
     {
-        private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+        private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(16));
         private readonly JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
         public void ConfigureServices(IServiceCollection services)
@@ -63,14 +64,20 @@ namespace JwtSample
                 });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseFileServer();
-            app.UseSignalR(options => options.MapHub<Broadcaster>("/broadcast"));
 
-            var routeBuilder = new RouteBuilder(app);
-            routeBuilder.MapGet("generatetoken", c => c.Response.WriteAsync(GenerateToken(c)));
-            app.UseRouter(routeBuilder.Build());
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<Broadcaster>("/broadcast");
+                endpoints.MapGet("/generatetoken", context =>
+                {
+                    return context.Response.WriteAsync(GenerateToken(context));
+                });
+            });
         }
 
         private string GenerateToken(HttpContext httpContext)

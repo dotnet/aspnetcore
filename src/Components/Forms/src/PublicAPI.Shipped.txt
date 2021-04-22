@@ -1,0 +1,59 @@
+﻿#nullable enable
+Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator
+Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator.DataAnnotationsValidator() -> void
+Microsoft.AspNetCore.Components.Forms.EditContext
+Microsoft.AspNetCore.Components.Forms.EditContext.EditContext(object! model) -> void
+Microsoft.AspNetCore.Components.Forms.EditContext.Field(string! fieldName) -> Microsoft.AspNetCore.Components.Forms.FieldIdentifier
+Microsoft.AspNetCore.Components.Forms.EditContext.GetValidationMessages() -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Components.Forms.EditContext.GetValidationMessages(Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Components.Forms.EditContext.GetValidationMessages(System.Linq.Expressions.Expression<System.Func<object!>!>! accessor) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Components.Forms.EditContext.IsModified() -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsModified(System.Linq.Expressions.Expression<System.Func<object!>!>! accessor) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsModified(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.MarkAsUnmodified() -> void
+Microsoft.AspNetCore.Components.Forms.EditContext.MarkAsUnmodified(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> void
+Microsoft.AspNetCore.Components.Forms.EditContext.Model.get -> object!
+Microsoft.AspNetCore.Components.Forms.EditContext.NotifyFieldChanged(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> void
+Microsoft.AspNetCore.Components.Forms.EditContext.NotifyValidationStateChanged() -> void
+Microsoft.AspNetCore.Components.Forms.EditContext.OnFieldChanged -> System.EventHandler<Microsoft.AspNetCore.Components.Forms.FieldChangedEventArgs!>?
+Microsoft.AspNetCore.Components.Forms.EditContext.OnValidationRequested -> System.EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs!>?
+Microsoft.AspNetCore.Components.Forms.EditContext.OnValidationStateChanged -> System.EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs!>?
+Microsoft.AspNetCore.Components.Forms.EditContext.Properties.get -> Microsoft.AspNetCore.Components.Forms.EditContextProperties!
+Microsoft.AspNetCore.Components.Forms.EditContext.Validate() -> bool
+Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions
+Microsoft.AspNetCore.Components.Forms.EditContextProperties
+Microsoft.AspNetCore.Components.Forms.EditContextProperties.EditContextProperties() -> void
+Microsoft.AspNetCore.Components.Forms.EditContextProperties.Remove(object! key) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContextProperties.TryGetValue(object! key, out object? value) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContextProperties.this[object! key].get -> object!
+Microsoft.AspNetCore.Components.Forms.EditContextProperties.this[object! key].set -> void
+Microsoft.AspNetCore.Components.Forms.FieldChangedEventArgs
+Microsoft.AspNetCore.Components.Forms.FieldChangedEventArgs.FieldChangedEventArgs(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> void
+Microsoft.AspNetCore.Components.Forms.FieldChangedEventArgs.FieldIdentifier.get -> Microsoft.AspNetCore.Components.Forms.FieldIdentifier
+Microsoft.AspNetCore.Components.Forms.FieldIdentifier
+Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Equals(Microsoft.AspNetCore.Components.Forms.FieldIdentifier otherIdentifier) -> bool
+Microsoft.AspNetCore.Components.Forms.FieldIdentifier.FieldIdentifier(object! model, string! fieldName) -> void
+Microsoft.AspNetCore.Components.Forms.FieldIdentifier.FieldName.get -> string!
+Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Model.get -> object!
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.Add(System.Linq.Expressions.Expression<System.Func<object!>!>! accessor, System.Collections.Generic.IEnumerable<string!>! messages) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.Add(System.Linq.Expressions.Expression<System.Func<object!>!>! accessor, string! message) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.Add(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier, System.Collections.Generic.IEnumerable<string!>! messages) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.Add(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier, string! message) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.Clear() -> void
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.Clear(System.Linq.Expressions.Expression<System.Func<object!>!>! accessor) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.Clear(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.ValidationMessageStore(Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.this[Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier].get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Components.Forms.ValidationMessageStore.this[System.Linq.Expressions.Expression<System.Func<object!>!>! accessor].get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs
+Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.ValidationRequestedEventArgs() -> void
+Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs
+Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs.ValidationStateChangedEventArgs() -> void
+override Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator.OnInitialized() -> void
+override Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Components.Forms.FieldIdentifier.GetHashCode() -> int
+static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.AddDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> Microsoft.AspNetCore.Components.Forms.EditContext!
+static Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> Microsoft.AspNetCore.Components.Forms.FieldIdentifier
+static readonly Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.Empty -> Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs!
+static readonly Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs.Empty -> Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs!

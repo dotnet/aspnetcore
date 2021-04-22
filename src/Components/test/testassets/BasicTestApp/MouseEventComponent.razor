@@ -1,0 +1,120 @@
+﻿@using System.Collections.Generic
+@using System.Text.Json
+
+<div>
+    <h2>Mouse position</h2>
+    <p>
+        Output: <span id="output">@message</span>
+    </p>
+    <p>
+        Mouseover: <input id="mouseover_input" type="text" @onmouseover="OnMouseOver" @onmouseout="OnMouseOut" />
+    </p>
+    <p>
+        <span id="mousemove_input" @onmousemove="OnMouseMove">Mousemove city!</span>
+    </p>
+    <p>
+        Mousedown: <input id="mousedown_input" @onmousedown="OnMouseDown" @onmouseup="OnMouseUp" />
+    </p>
+    <p>
+        Pointerdown: <input id="pointerdown_input" @onpointerdown="OnPointerDown" />
+    </p>
+    <p>
+        <div id="drag_input" draggable="true" @ondragstart="OnDragStart">Drag Me</div>
+        <div id="drop" @ondrop="OnDrop" ondragover="event.preventDefault()" style="width: 100px; height: 100px; border: dotted">Drop Target</div>
+    </p>
+    <p>
+        <button id="clear_event_log" @onclick="Clear">Clear</button>
+    </p>
+
+    <p>
+        Another input (to distract you) <input id="other" />
+    </p>
+
+    <p>
+        Polymorphic args handler:
+        <div id="polymorphic_event_elem" draggable="true" @onpointerup="OnPolymorphicEvent" @ondragstart="OnPolymorphicEvent">Click or drag me</div>
+    </p>
+</div>
+
+@code {
+
+    string message;
+
+    void OnMouseOver(MouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmouseover,";
+    }
+
+    void OnMouseOut(MouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmouseout,";
+    }
+
+    void OnMouseMove(MouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmousemove,";
+    }
+
+    void OnMouseDown(MouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmousedown,";
+    }
+
+    void OnMouseUp(MouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmouseup,";
+    }
+
+    void OnPointerDown(PointerEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onpointerdown";
+    }
+
+    void OnDragStart(DragEventArgs e)
+    {
+        DumpEvent(e);
+        message += "ondragstart,";
+    }
+
+    void OnDrop(DragEventArgs e)
+    {
+        DumpEvent(e);
+        message += "ondrop,";
+    }
+
+    void OnPolymorphicEvent(EventArgs e)
+    {
+        // The purpose of this handler is to show that, even though the declared args type is
+        // the EventArgs base class, at runtime we actually receive the subclass corresponding
+        // to the event that occurred. Note that this will only be supported for the built-in
+        // web event types (for back compatibility), and cannot work for any custom events,
+        // since we have no way to know which subclass you'd want for a custom event.
+        message += e.GetType().FullName;
+
+        switch (e)
+        {
+            case PointerEventArgs pointerEvent:
+                message += $":{pointerEvent.PointerType}";
+                break;
+            case DragEventArgs dragEvent:
+                message += $":{dragEvent.Buttons}";
+                break;
+        }
+    }
+
+    void DumpEvent(MouseEventArgs e)
+    {
+        Console.WriteLine(JsonSerializer.Serialize(e));
+    }
+
+    void Clear()
+    {
+        message = string.Empty;
+    }
+}

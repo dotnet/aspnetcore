@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Text;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
@@ -17,25 +18,28 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             encoderShouldEmitUTF8Identifier: false,
             throwOnInvalidBytes: true);
 
-        public static string DecodeAndUnescapePath(byte[] rawUrlBytes)
+        public static string DecodeAndUnescapePath(Span<byte> rawUrlBytes)
         {
-            if (rawUrlBytes == null)
-            {
-                throw new ArgumentNullException(nameof(rawUrlBytes));
-            }
-
-            if (rawUrlBytes.Length == 0)
-            {
-                throw new ArgumentException("Length of the URL cannot be zero.", nameof(rawUrlBytes));
-            }
-
+            Debug.Assert(rawUrlBytes.Length != 0, "Length of the URL cannot be zero.");
             var rawPath = RawUrlHelper.GetPath(rawUrlBytes);
+
+            if (rawPath.Length == 0)
+            {
+                return "/";
+            }
+
+            // OPTIONS *
+            // RemoveDotSegments Asserts path always starts with a '/'
+            if (rawPath.Length == 1 && rawPath[0] == (byte)'*')
+            {
+                return "*";
+            }
 
             var unescapedPath = Unescape(rawPath);
 
             var length = PathNormalizer.RemoveDotSegments(unescapedPath);
 
-            return UTF8.GetString(unescapedPath.Array, unescapedPath.Offset, length);
+            return UTF8.GetString(unescapedPath.Slice(0, length));
         }
 
         /// <summary>
@@ -43,19 +47,16 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         /// </summary>
         /// <param name="rawPath">The raw path string to be unescaped</param>
         /// <returns>The unescaped path string</returns>
-        private static ArraySegment<byte> Unescape(ArraySegment<byte> rawPath)
+        private static Span<byte> Unescape(Span<byte> rawPath)
         {
             // the slot to read the input
-            var reader = rawPath.Offset;
+            var reader = 0;
 
             // the slot to write the unescaped byte
-            var writer = rawPath.Offset;
+            var writer = 0;
 
             // the end of the path
-            var end = rawPath.Offset + rawPath.Count;
-
-            // the byte array
-            var buffer = rawPath.Array;
+            var end = rawPath.Length;
 
             while (true)
             {
@@ -64,31 +65,31 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     break;
                 }
 
-                if (rawPath.Array[reader] == '%')
+                if (rawPath[reader] == '%')
                 {
                     var decodeReader = reader;
 
                     // If decoding process succeeds, the writer iterator will be moved
                     // to the next write-ready location. On the other hand if the scanned
                     // percent-encodings cannot be interpreted as sequence of UTF-8 octets,
-                    // these bytes should be copied to output as is. 
-                    // The decodeReader iterator is always moved to the first byte not yet 
+                    // these bytes should be copied to output as is.
+                    // The decodeReader iterator is always moved to the first byte not yet
                     // be scanned after the process. A failed decoding means the chars
-                    // between the reader and decodeReader can be copied to output untouched. 
-                    if (!DecodeCore(ref decodeReader, ref writer, end, buffer))
+                    // between the reader and decodeReader can be copied to output untouched.
+                    if (!DecodeCore(ref decodeReader, ref writer, end, rawPath))
                     {
-                        Copy(reader, decodeReader, ref writer, buffer);
+                        Copy(reader, decodeReader, ref writer, rawPath);
                     }
 
                     reader = decodeReader;
                 }
                 else
                 {
-                    buffer[writer++] = buffer[reader++];
+                    rawPath[writer++] = rawPath[reader++];
                 }
             }
 
-            return new ArraySegment<byte>(buffer, rawPath.Offset, writer - rawPath.Offset);
+            return rawPath.Slice(0, writer);
         }
 
         /// <summary>
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         /// <param name="writer">The place to write to</param>
         /// <param name="end">The end of the buffer</param>
         /// <param name="buffer">The byte array</param>
-        private static bool DecodeCore(ref int reader, ref int writer, int end, byte[] buffer)
+        private static bool DecodeCore(ref int reader, ref int writer, int end, Span<byte> buffer)
         {
             // preserves the original head. if the percent-encodings cannot be interpreted as sequence of UTF-8 octets,
             // bytes from this till the last scanned one will be copied to the memory pointed by writer.
@@ -234,7 +235,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return true;
         }
 
-        private static void Copy(int begin, int end, ref int writer, byte[] buffer)
+        private static void Copy(int begin, int end, ref int writer, Span<byte> buffer)
         {
             while (begin != end)
             {
@@ -244,25 +245,25 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         /// <summary>
         /// Read the percent-encoding and try unescape it.
-        /// 
-        /// The operation first peek at the character the <paramref name="scan"/> 
-        /// iterator points at. If it is % the <paramref name="scan"/> is then 
-        /// moved on to scan the following to characters. If the two following 
-        /// characters are hexadecimal literals they will be unescaped and the 
+        ///
+        /// The operation first peek at the character the <paramref name="scan"/>
+        /// iterator points at. If it is % the <paramref name="scan"/> is then
+        /// moved on to scan the following to characters. If the two following
+        /// characters are hexadecimal literals they will be unescaped and the
         /// value will be returned.
-        /// 
-        /// If the first character is not % the <paramref name="scan"/> iterator 
+        ///
+        /// If the first character is not % the <paramref name="scan"/> iterator
         /// will be removed beyond the location of % and -1 will be returned.
-        /// 
-        /// If the following two characters can't be successfully unescaped the 
-        /// <paramref name="scan"/> iterator will be move behind the % and -1 
+        ///
+        /// If the following two characters can't be successfully unescaped the
+        /// <paramref name="scan"/> iterator will be move behind the % and -1
         /// will be returned.
         /// </summary>
         /// <param name="scan">The value to read</param>
         /// <param name="end">The end of the buffer</param>
         /// <param name="buffer">The byte array</param>
         /// <returns>The unescaped byte if success. Otherwise return -1.</returns>
-        private static int? UnescapePercentEncoding(ref int scan, int end, byte[] buffer)
+        private static int? UnescapePercentEncoding(ref int scan, int end, ReadOnlySpan<byte> buffer)
         {
             if (buffer[scan++] != '%')
             {
@@ -294,7 +295,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         /// <summary>
         /// Read the next char and convert it into hexadecimal value.
-        /// 
+        ///
         /// The <paramref name="scan"/> iterator will be moved to the next
         /// byte no matter no matter whether the operation successes.
         /// </summary>
@@ -302,7 +303,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         /// <param name="end">The end of the buffer</param>
         /// <param name="buffer">The byte array</param>
         /// <returns>The hexadecimal value if successes, otherwise -1.</returns>
-        private static int? ReadHex(ref int scan, int end, byte[] buffer)
+        private static int? ReadHex(ref int scan, int end, ReadOnlySpan<byte> buffer)
         {
             if (scan == end)
             {

@@ -9,6 +9,10 @@ namespace Microsoft.AspNetCore.SignalR
     /// <summary>
     /// The exception thrown from a hub when an error occurs.
     /// </summary>
+    /// <remarks>
+    /// Exceptions often contain sensitive information, such as connection information. Because of this, SignalR does not expose the details
+    /// of exceptions that occur on the server to the client. However, instances of <see cref="HubException"/> <b>are</b> sent to the client.
+    /// </remarks>
     [Serializable]
     public class HubException : Exception
     {
@@ -24,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// with a specified error message.
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
-        public HubException(string message) : base(message)
+        public HubException(string? message) : base(message)
         {
         }
 
@@ -34,7 +38,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
         /// <param name="innerException">The exception that is the cause of the current exception, or <c>null</c> if no inner exception is specified.</param>
-        public HubException(string message, Exception innerException) : base(message, innerException)
+        public HubException(string? message, Exception? innerException) : base(message, innerException)
         {
         }
 

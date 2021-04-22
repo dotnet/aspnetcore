@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
+    internal class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
     {
         private static readonly string Purpose = "Microsoft.AspNetCore.Antiforgery.AntiforgeryToken.v1";
         private const byte TokenVersion = 0x01;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             var serializationContext = _pool.Get();
 
-            Exception innerException = null;
+            Exception? innerException = null;
             try
             {
                 var count = serializedToken.Length;
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
          *   |    `- Username: UTF-8 string with 7-bit integer length prefix
          *   `- AdditionalData: UTF-8 string with 7-bit integer length prefix
          */
-        private static AntiforgeryToken Deserialize(BinaryReader reader)
+        private static AntiforgeryToken? Deserialize(BinaryReader reader)
         {
             // we can only consume tokens of the same serialized version that we generate
             var embeddedVersion = reader.ReadByte();
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             {
                 var writer = serializationContext.Writer;
                 writer.Write(TokenVersion);
-                writer.Write(token.SecurityToken.GetData());
+                writer.Write(token.SecurityToken!.GetData());
                 writer.Write(token.IsCookieToken);
 
                 if (!token.IsCookieToken)
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                     else
                     {
                         writer.Write(false /* isClaimsBased */);
-                        writer.Write(token.Username);
+                        writer.Write(token.Username!);
                     }
 
                     writer.Write(token.AdditionalData);

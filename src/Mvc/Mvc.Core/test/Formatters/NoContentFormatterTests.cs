@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             get
             {
-                // object value, bool useDeclaredTypeAsString, bool expectedCanwriteResult, bool useNonNullContentType
+                // object value, bool useDeclaredTypeAsString, bool expectedCanWriteResult, bool useNonNullContentType
                 yield return new object[] { "valid value", true, false, true };
                 yield return new object[] { "valid value", false, false, true };
                 yield return new object[] { "", false, false, true };

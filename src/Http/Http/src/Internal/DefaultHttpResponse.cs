@@ -3,44 +3,53 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    public class DefaultHttpResponse : HttpResponse
+    internal sealed class DefaultHttpResponse : HttpResponse
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpResponseFeature> _nullResponseFeature = f => null;
-        private readonly static Func<IFeatureCollection, IResponseCookiesFeature> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
+        private readonly static Func<IFeatureCollection, IHttpResponseFeature?> _nullResponseFeature = f => null;
+        private readonly static Func<IFeatureCollection, IHttpResponseBodyFeature?> _nullResponseBodyFeature = f => null;
+        private readonly static Func<IFeatureCollection, IResponseCookiesFeature?> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
 
-        private HttpContext _context;
+        private readonly DefaultHttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
 
-        public DefaultHttpResponse(HttpContext context)
-        {
-            Initialize(context);
-        }
-
-        public virtual void Initialize(HttpContext context)
+        public DefaultHttpResponse(DefaultHttpContext context)
         {
             _context = context;
-            _features = new FeatureReferences<FeatureInterfaces>(context.Features);
+            _features.Initalize(context.Features);
         }
 
-        public virtual void Uninitialize()
+        public void Initialize()
         {
-            _context = null;
-            _features = default(FeatureReferences<FeatureInterfaces>);
+            _features.Initalize(_context.Features);
+        }
+
+        public void Initialize(int revision)
+        {
+            _features.Initalize(_context.Features, revision);
+        }
+
+        public void Uninitialize()
+        {
+            _features = default;
         }
 
         private IHttpResponseFeature HttpResponseFeature =>
-            _features.Fetch(ref _features.Cache.Response, _nullResponseFeature);
+            _features.Fetch(ref _features.Cache.Response, _nullResponseFeature)!;
+
+        private IHttpResponseBodyFeature HttpResponseBodyFeature =>
+            _features.Fetch(ref _features.Cache.ResponseBody, _nullResponseBodyFeature)!;
 
         private IResponseCookiesFeature ResponseCookiesFeature =>
-            _features.Fetch(ref _features.Cache.Cookies, _newResponseCookiesFeature);
-
+            _features.Fetch(ref _features.Cache.Cookies, _newResponseCookiesFeature)!;
 
         public override HttpContext HttpContext { get { return _context; } }
 
@@ -57,8 +66,22 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public override Stream Body
         {
-            get { return HttpResponseFeature.Body; }
-            set { HttpResponseFeature.Body = value; }
+            get { return HttpResponseBodyFeature.Stream; }
+            set
+            {
+                var otherFeature = _features.Collection.Get<IHttpResponseBodyFeature>()!;
+
+                if (otherFeature is StreamResponseBodyFeature streamFeature
+                    && streamFeature.PriorFeature != null
+                    && object.ReferenceEquals(value, streamFeature.PriorFeature.Stream))
+                {
+                    // They're reverting the stream back to the prior one. Revert the whole feature.
+                    _features.Collection.Set(streamFeature.PriorFeature);
+                    return;
+                }
+
+                _features.Collection.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(value, otherFeature));
+            }
         }
 
         public override long? ContentLength
@@ -96,6 +119,11 @@ namespace Microsoft.AspNetCore.Http.Internal
             get { return HttpResponseFeature.HasStarted; }
         }
 
+        public override PipeWriter BodyWriter
+        {
+            get { return HttpResponseBodyFeature.Writer; }
+        }
+
         public override void OnStarting(Func<object, Task> callback, object state)
         {
             if (callback == null)
@@ -130,10 +158,23 @@ namespace Microsoft.AspNetCore.Http.Internal
             Headers[HeaderNames.Location] = location;
         }
 
+        public override Task StartAsync(CancellationToken cancellationToken = default)
+        {
+            if (HasStarted)
+            {
+                return Task.CompletedTask;
+            }
+
+            return HttpResponseBodyFeature.StartAsync(cancellationToken);
+        }
+
+        public override Task CompleteAsync() => HttpResponseBodyFeature.CompleteAsync();
+
         struct FeatureInterfaces
         {
-            public IHttpResponseFeature Response;
-            public IResponseCookiesFeature Cookies;
+            public IHttpResponseFeature? Response;
+            public IHttpResponseBodyFeature? ResponseBody;
+            public IResponseCookiesFeature? Cookies;
         }
     }
 }

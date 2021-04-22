@@ -3,14 +3,15 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace SystemdTestApp
@@ -42,49 +43,52 @@ namespace SystemdTestApp
                 Console.WriteLine("Unobserved exception: {0}", e.Exception);
             };
 
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel((context, options) =>
+                        {
+                            var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
+
+                            options.Listen(IPAddress.Loopback, basePort, listenOptions =>
+                            {
+                                // Uncomment the following to enable Nagle's algorithm for this endpoint.
+                                //listenOptions.NoDelay = false;
+
+                                listenOptions.UseConnectionLogging();
+                            });
+
+                            options.Listen(IPAddress.Loopback, basePort + 1, listenOptions =>
+                            {
+                                listenOptions.UseHttps();
+                                listenOptions.UseConnectionLogging();
+                            });
+
+                            options.UseSystemd();
+
+                            // The following section should be used to demo sockets
+                            //options.ListenUnixSocket("/tmp/kestrel-test.sock");
+                        })
+                        .UseContentRoot(Directory.GetCurrentDirectory())
+                        .UseStartup<Startup>();
+
+                    if (string.Equals(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture), Environment.GetEnvironmentVariable("LISTEN_PID")))
+                    {
+                        // Use libuv if activated by systemd, since that's currently the only transport that supports being passed a socket handle.
+#pragma warning disable CS0618
+                        webHostBuilder.UseLibuv(options =>
+                        {
+                            // Uncomment the following line to change the default number of libuv threads for all endpoints.
+                            // options.ThreadCount = 4;
+                        });
+#pragma warning restore CS0618
+                    }
+                })
                 .ConfigureLogging((_, factory) =>
                 {
                     factory.AddConsole();
-                })
-                .UseKestrel((context, options) =>
-                {
-                    var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
-
-                    // Run callbacks on the transport thread
-                    options.ApplicationSchedulingMode = SchedulingMode.Inline;
-
-                    options.Listen(IPAddress.Loopback, basePort, listenOptions =>
-                    {
-                        // Uncomment the following to enable Nagle's algorithm for this endpoint.
-                        //listenOptions.NoDelay = false;
-
-                        listenOptions.UseConnectionLogging();
-                    });
-
-                    options.Listen(IPAddress.Loopback, basePort + 1, listenOptions =>
-                    {
-                        listenOptions.UseHttps("testCert.pfx", "testPassword");
-                        listenOptions.UseConnectionLogging();
-                    });
-
-                    options.UseSystemd();
-
-                    // The following section should be used to demo sockets
-                    //options.ListenUnixSocket("/tmp/kestrel-test.sock");
-                })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>();
-
-            if (string.Equals(Process.GetCurrentProcess().Id.ToString(), Environment.GetEnvironmentVariable("LISTEN_PID")))
-            {
-                // Use libuv if activated by systemd, since that's currently the only transport that supports being passed a socket handle.
-                hostBuilder.UseLibuv(options =>
-                 {
-                     // Uncomment the following line to change the default number of libuv threads for all endpoints.
-                     // options.ThreadCount = 4;
-                 });
-            }
+                });
 
             return hostBuilder.Build().RunAsync();
         }

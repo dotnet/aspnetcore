@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
+using System;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
@@ -9,6 +10,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
     /// <summary>
     /// Options for configuring authentication using Azure Active Directory.
     /// </summary>
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     public class AzureADOptions
     {
         /// <summary>
@@ -50,7 +52,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
         public string Instance { get; set; }
 
         /// <summary>
-        /// Gets or sets the domain of the Azure Active Directory tennant.
+        /// Gets or sets the domain of the Azure Active Directory tenant.
         /// </summary>
         public string Domain { get; set; }
 

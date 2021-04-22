@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     // Note this type should only be used while the request buffer remains pinned
-    internal class CookedUrl
+    internal readonly struct CookedUrl
     {
         private readonly HttpApiTypes.HTTP_COOKED_URL _nativeCookedUrl;
 
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             _nativeCookedUrl = nativeCookedUrl;
         }
 
-        internal unsafe string GetFullUrl()
+        internal unsafe string? GetFullUrl()
         {
             if (_nativeCookedUrl.pFullUrl != null && _nativeCookedUrl.FullUrlLength > 0)
             {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return null;
         }
 
-        internal unsafe string GetHost()
+        internal unsafe string? GetHost()
         {
             if (_nativeCookedUrl.pHost != null && _nativeCookedUrl.HostLength > 0)
             {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return null;
         }
 
-        internal unsafe string GetAbsPath()
+        internal unsafe string? GetAbsPath()
         {
             if (_nativeCookedUrl.pAbsPath != null && _nativeCookedUrl.AbsPathLength > 0)
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return null;
         }
 
-        internal unsafe string GetQueryString()
+        internal unsafe string? GetQueryString()
         {
             if (_nativeCookedUrl.pQueryString != null && _nativeCookedUrl.QueryStringLength > 0)
             {

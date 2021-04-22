@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
@@ -13,34 +14,34 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public partial class LongPollingTransport : ITransport
+    internal partial class LongPollingTransport : ITransport
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
-        private IDuplexPipe _application;
-        private IDuplexPipe _transport;
+        private IDuplexPipe? _application;
+        private IDuplexPipe? _transport;
         // Volatile so that the poll loop sees the updated value set from a different thread
-        private volatile Exception _error;
+        private volatile Exception? _error;
 
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
 
         internal Task Running { get; private set; } = Task.CompletedTask;
 
-        public PipeReader Input => _transport.Input;
+        public PipeReader Input => _transport!.Input;
 
-        public PipeWriter Output => _transport.Output;
+        public PipeWriter Output => _transport!.Output;
 
         public LongPollingTransport(HttpClient httpClient)
             : this(httpClient, null)
         { }
 
-        public LongPollingTransport(HttpClient httpClient, ILoggerFactory loggerFactory)
+        public LongPollingTransport(HttpClient httpClient, ILoggerFactory? loggerFactory)
         {
             _httpClient = httpClient;
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             if (transferFormat != TransferFormat.Binary && transferFormat != TransferFormat.Text)
             {
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             // Make initial long polling request
             // Server uses first long polling request to finish initializing connection and it returns without data
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-            using (var response = await _httpClient.SendAsync(request))
+            using (var response = await _httpClient.SendAsync(request, cancellationToken))
             {
                 response.EnsureSuccessStatusCode();
             }
@@ -69,6 +70,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         private async Task ProcessAsync(Uri url)
         {
+            Debug.Assert(_application != null);
+
             // Start sending and polling (ask for binary if the server supports it)
             var receiving = Poll(url, _transportCts.Token);
             var sending = SendUtils.SendMessages(url, _application, _httpClient, _logger);
@@ -92,7 +95,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             else
             {
                 // Set the sending error so we communicate that to the application
-                _error = sending.IsFaulted ? sending.Exception.InnerException : null;
+                _error = sending.IsFaulted ? sending.Exception!.InnerException : null;
 
                 // Cancel the poll request
                 _transportCts.Cancel();
@@ -129,14 +132,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 throw;
             }
 
-            _transport.Output.Complete();
-            _transport.Input.Complete();
+            _transport!.Output.Complete();
+            _transport!.Input.Complete();
 
             Log.TransportStopped(_logger, null);
         }
 
         private async Task Poll(Uri pollUrl, CancellationToken cancellationToken)
         {
+            Debug.Assert(_application != null);
+
             Log.StartReceive(_logger);
 
             // Allocate this once for the duration of the transport so we can continuously write to it
@@ -161,7 +166,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                         // just want to start a new poll.
                         continue;
                     }
-                    catch (WebException ex) when (ex.Status == WebExceptionStatus.RequestCanceled)
+                    catch (WebException ex) when (!OperatingSystem.IsBrowser() && ex.Status == WebExceptionStatus.RequestCanceled)
                     {
                         // SendAsync on .NET Framework doesn't reliably throw OperationCanceledException.
                         // Catch the WebException and test it.
@@ -221,8 +226,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 Log.SendingDeleteRequest(_logger, url);
                 var response = await _httpClient.DeleteAsync(url);
-                response.EnsureSuccessStatusCode();
-                Log.DeleteRequestAccepted(_logger, url);
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    Log.ConnectionAlreadyClosedSendingDeleteRequest(_logger, url);
+                }
+                else
+                {
+                    // Check for non-404 errors
+                    response.EnsureSuccessStatusCode();
+                    Log.DeleteRequestAccepted(_logger, url);
+                }
             }
             catch (Exception ex)
             {

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <AdditionalRunArguments>--pathbase /subdir</AdditionalRunArguments>
+
+    <!-- Resx generation on Resources.resx only -->
+    <GenerateResxSource>false</GenerateResxSource>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
+    <StaticWebAssetBasePath>/subdir</StaticWebAssetBasePath>
+
+    <!-- Avoid spending time brotli compression publish output.-->
+    <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="Microsoft.Extensions.Localization" />
+  </ItemGroup>
+
+</Project>

@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
@@ -253,6 +252,65 @@ namespace Microsoft.AspNetCore.Mvc.Core.Rendering
 
             // Assert
             Assert.Equal("<span>Hello</span>", HtmlContentUtilities.HtmlContentToString(tag));
+        }
+
+        [Fact]
+        public void Constructor_Copy_CopiesTagRenderMode()
+        {
+            // Arrange
+            var originalTagBuilder = new TagBuilder("p");
+            originalTagBuilder.TagRenderMode = TagRenderMode.SelfClosing;
+
+            // Act
+            var clonedTagBuilder = new TagBuilder(originalTagBuilder);
+
+
+            // Assert
+            Assert.Equal(originalTagBuilder.TagRenderMode, clonedTagBuilder.TagRenderMode);
+        }
+
+        [Fact]
+        public void Constructor_Copy_DoesShallowCopyOfInnerHtml()
+        {
+            // Arrange
+            var originalTagBuilder = new TagBuilder("p");
+            originalTagBuilder.InnerHtml.AppendHtml("<span>Hello</span>");
+
+            // Act
+            var clonedTagBuilder = new TagBuilder(originalTagBuilder);
+
+            // Assert
+            Assert.NotEqual(originalTagBuilder.InnerHtml, clonedTagBuilder.InnerHtml);
+            Assert.Equal(HtmlContentUtilities.HtmlContentToString(originalTagBuilder.RenderBody()), HtmlContentUtilities.HtmlContentToString(clonedTagBuilder.RenderBody()));
+        }
+
+        [Fact]
+        public void Constructor_Copy_DoesShallowCopyOfAttributes()
+        {
+            // Arrange
+            var originalTagBuilder = new TagBuilder("p");
+            originalTagBuilder.AddCssClass("class1");
+
+            // Act
+            var clonedTagBuilder = new TagBuilder(originalTagBuilder);
+
+            // Assert
+            Assert.NotSame(originalTagBuilder.Attributes, clonedTagBuilder.Attributes);
+            Assert.Equal(originalTagBuilder.Attributes, clonedTagBuilder.Attributes);
+        }
+
+        [Fact]
+        public void Constructor_Copy_CopiesTagName()
+        {
+            // Arrange
+            var originalTagBuilder = new TagBuilder("p");
+
+            // Act
+
+            var clonedTagBuilder = new TagBuilder(originalTagBuilder);
+
+            // Assert
+            Assert.Equal(originalTagBuilder.TagName, clonedTagBuilder.TagName);
         }
     }
 }

@@ -79,16 +79,5 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// <inheritdoc />
         public virtual IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
             _localizer.GetAllStrings(includeParentCultures);
-
-        /// <inheritdoc />
-        public virtual IHtmlLocalizer WithCulture(CultureInfo culture)
-        {
-            if (culture == null)
-            {
-                throw new ArgumentNullException(nameof(culture));
-            }
-
-            return _localizer.WithCulture(culture);
-        }
     }
 }

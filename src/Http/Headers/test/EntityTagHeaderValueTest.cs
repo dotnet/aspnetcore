@@ -92,7 +92,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.False(etag1.Equals(etag2), "Different casing.");
             Assert.False(etag2.Equals(etag1), "Different casing.");
             Assert.False(etag1.Equals(null), "tag vs. <null>.");
-            Assert.False(etag1.Equals(etag3), "strong vs. weak.");
+            Assert.False(etag1!.Equals(etag3), "strong vs. weak.");
             Assert.False(etag3.Equals(etag1), "weak vs. strong.");
             Assert.False(etag1.Equals(etag4), "tag vs. tag1.");
             Assert.False(etag1.Equals(etag6), "tag vs. *.");
@@ -264,8 +264,7 @@ namespace Microsoft.Net.Http.Headers
         [Fact]
         public void TryParseList_NullOrEmptyArray_ReturnsFalse()
         {
-            IList<EntityTagHeaderValue> results = null;
-            Assert.False(EntityTagHeaderValue.TryParseList(null, out results));
+            Assert.False(EntityTagHeaderValue.TryParseList(null, out var results));
             Assert.False(EntityTagHeaderValue.TryParseList(new string[0], out results));
             Assert.False(EntityTagHeaderValue.TryParseList(new string[] { "" }, out results));
         }
@@ -351,8 +350,7 @@ namespace Microsoft.Net.Http.Headers
                 "\"tag\", \"tag\"",
                 "W/\"tag\"",
             };
-            IList<EntityTagHeaderValue> results;
-            Assert.True(EntityTagHeaderValue.TryParseList(inputs, out results));
+            Assert.True(EntityTagHeaderValue.TryParseList(inputs, out var results));
             var expectedResults = new[]
             {
                 new EntityTagHeaderValue("\"tag\""),
@@ -384,8 +382,7 @@ namespace Microsoft.Net.Http.Headers
                 "\"tag\", \"tag\"",
                 "W/\"tag\"",
             };
-            IList<EntityTagHeaderValue> results;
-            Assert.True(EntityTagHeaderValue.TryParseStrictList(inputs, out results));
+            Assert.True(EntityTagHeaderValue.TryParseStrictList(inputs, out var results));
             var expectedResults = new[]
             {
                 new EntityTagHeaderValue("\"tag\""),
@@ -403,7 +400,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseList_WithSomeInvlaidValues_ExcludesInvalidValues()
+        public void ParseList_WithSomeInvalidValues_ExcludesInvalidValues()
         {
             var inputs = new[]
             {
@@ -433,7 +430,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseStrictList_WithSomeInvlaidValues_Throws()
+        public void ParseStrictList_WithSomeInvalidValues_Throws()
         {
             var inputs = new[]
             {
@@ -451,7 +448,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void TryParseList_WithSomeInvlaidValues_ExcludesInvalidValues()
+        public void TryParseList_WithSomeInvalidValues_ExcludesInvalidValues()
         {
             var inputs = new[]
             {
@@ -465,8 +462,7 @@ namespace Microsoft.Net.Http.Headers
                 "\"tag\", \"tag\"",
                 "W/\"tag\"",
             };
-            IList<EntityTagHeaderValue> results;
-            Assert.True(EntityTagHeaderValue.TryParseList(inputs, out results));
+            Assert.True(EntityTagHeaderValue.TryParseList(inputs, out var results));
             var expectedResults = new[]
             {
                 new EntityTagHeaderValue("\"tag\""),
@@ -482,7 +478,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void TryParseStrictList_WithSomeInvlaidValues_ReturnsFalse()
+        public void TryParseStrictList_WithSomeInvalidValues_ReturnsFalse()
         {
             var inputs = new[]
             {
@@ -496,32 +492,29 @@ namespace Microsoft.Net.Http.Headers
                 "\"tag\", \"tag\"",
                 "W/\"tag\"",
             };
-            IList<EntityTagHeaderValue> results;
-            Assert.False(EntityTagHeaderValue.TryParseStrictList(inputs, out results));
+            Assert.False(EntityTagHeaderValue.TryParseStrictList(inputs, out var results));
         }
 
-        private void CheckValidParse(string input, EntityTagHeaderValue expectedResult)
+        private void CheckValidParse(string? input, EntityTagHeaderValue expectedResult)
         {
             var result = EntityTagHeaderValue.Parse(input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidParse(string input)
+        private void CheckInvalidParse(string? input)
         {
             Assert.Throws<FormatException>(() => EntityTagHeaderValue.Parse(input));
         }
 
-        private void CheckValidTryParse(string input, EntityTagHeaderValue expectedResult)
+        private void CheckValidTryParse(string? input, EntityTagHeaderValue expectedResult)
         {
-            EntityTagHeaderValue result = null;
-            Assert.True(EntityTagHeaderValue.TryParse(input, out result));
+            Assert.True(EntityTagHeaderValue.TryParse(input, out var result));
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckInvalidTryParse(string input)
+        private void CheckInvalidTryParse(string? input)
         {
-            EntityTagHeaderValue result = null;
-            Assert.False(EntityTagHeaderValue.TryParse(input, out result));
+            Assert.False(EntityTagHeaderValue.TryParse(input, out var result));
             Assert.Null(result);
         }
 

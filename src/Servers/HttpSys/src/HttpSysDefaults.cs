@@ -3,11 +3,14 @@
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
+    /// <summary>
+    /// Constants for HttpSys.
+    /// </summary>
     public static class HttpSysDefaults
     {
         /// <summary>
         /// The name of the authentication scheme used.
         /// </summary>
-        public static readonly string AuthenticationScheme = "Windows";
+        public const string AuthenticationScheme = "Windows";
     }
 }

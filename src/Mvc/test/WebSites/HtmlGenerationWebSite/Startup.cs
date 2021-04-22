@@ -4,6 +4,7 @@
 using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,29 +17,34 @@ namespace HtmlGenerationWebSite
         {
             // Add MVC services to the services container. Change default FormTagHelper.AntiForgery to false. Usually
             // null which is interpreted as true unless element includes an action attribute.
-            services.AddMvc().InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = false);
+            services.AddMvc(ConfigureMvcOptions)
+                .InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = false);
 
             services.AddSingleton(typeof(ISignalTokenProviderService<>), typeof(SignalTokenProviderService<>));
             services.AddSingleton<ProductsService>();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public virtual void Configure(IApplicationBuilder app)
         {
             app.UseStaticFiles();
-            app.UseMvc(routes =>
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "areaRoute",
-                    template: "{area:exists}/{controller}/{action}/{id?}",
+                    pattern: "{area:exists}/{controller}/{action}/{id?}",
                     defaults: new { action = "Index" });
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "productRoute",
-                    template: "Product/{action}",
+                    pattern: "Product/{action}",
                     defaults: new { controller = "Product" });
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller}/{action}/{id?}",
+                    pattern: "{controller}/{action}/{id?}",
                     defaults: new { controller = "HtmlGeneration_Home", action = "Index" });
+
+                endpoints.MapRazorPages();
             });
         }
 
@@ -56,5 +62,9 @@ namespace HtmlGenerationWebSite
                 .UseStartup<Startup>()
                 .UseKestrel()
                 .UseIISIntegration();
+
+        protected virtual void ConfigureMvcOptions(MvcOptions options)
+        {
+        }
     }
 }

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.IO;
 using System.Text;
@@ -106,7 +108,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MutipartReader_ReadSinglePartBody_Success()
+        public async Task MultipartReader_ReadSinglePartBody_Success()
         {
             var stream = MakeStream(OnePartBody);
             var reader = new MultipartReader(Boundary, stream);
@@ -123,7 +125,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MutipartReader_HeaderCountExceeded_Throws()
+        public async Task MultipartReader_HeaderCountExceeded_Throws()
         {
             var stream = MakeStream(OnePartBodyTwoHeaders);
             var reader = new MultipartReader(Boundary, stream)
@@ -136,7 +138,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MutipartReader_HeadersLengthExceeded_Throws()
+        public async Task MultipartReader_HeadersLengthExceeded_Throws()
         {
             var stream = MakeStream(OnePartBodyTwoHeaders);
             var reader = new MultipartReader(Boundary, stream)
@@ -149,7 +151,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MutipartReader_ReadSinglePartBodyWithTrailingWhitespace_Success()
+        public async Task MultipartReader_ReadSinglePartBodyWithTrailingWhitespace_Success()
         {
             var stream = MakeStream(OnePartBodyWithTrailingWhitespace);
             var reader = new MultipartReader(Boundary, stream);
@@ -166,7 +168,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MutipartReader_ReadSinglePartBodyWithoutLastCRLF_Success()
+        public async Task MultipartReader_ReadSinglePartBodyWithoutLastCRLF_Success()
         {
             var stream = MakeStream(OnePartBodyWithoutFinalCRLF);
             var reader = new MultipartReader(Boundary, stream);
@@ -183,7 +185,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MutipartReader_ReadTwoPartBody_Success()
+        public async Task MultipartReader_ReadTwoPartBody_Success()
         {
             var stream = MakeStream(TwoPartBody);
             var reader = new MultipartReader(Boundary, stream);
@@ -209,7 +211,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MutipartReader_ReadTwoPartBodyWithUnicodeFileName_Success()
+        public async Task MultipartReader_ReadTwoPartBodyWithUnicodeFileName_Success()
         {
             var stream = MakeStream(TwoPartBodyWithUnicodeFileName);
             var reader = new MultipartReader(Boundary, stream);
@@ -235,7 +237,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MutipartReader_ThreePartBody_Success()
+        public async Task MultipartReader_ThreePartBody_Success()
         {
             var stream = MakeStream(ThreePartBody);
             var reader = new MultipartReader(Boundary, stream);
@@ -270,7 +272,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public void MutipartReader_BufferSizeMustBeLargerThanBoundary_Throws()
+        public void MultipartReader_BufferSizeMustBeLargerThanBoundary_Throws()
         {
             var stream = MakeStream(ThreePartBody);
             Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -280,7 +282,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MutipartReader_TwoPartBodyIncompleteBuffer_TwoSectionsReadSuccessfullyThirdSectionThrows()
+        public async Task MultipartReader_TwoPartBodyIncompleteBuffer_TwoSectionsReadSuccessfullyThirdSectionThrows()
         {
             var stream = MakeStream(TwoPartBodyIncompleteBuffer);
             var reader = new MultipartReader(Boundary, stream);
@@ -311,7 +313,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MutipartReader_ReadInvalidUtf8Header_ReplacementCharacters()
+        public async Task MultipartReader_ReadInvalidUtf8Header_ReplacementCharacters()
         {
             var body1 =
 "--9051914041544843365972754266\r\n" +
@@ -346,7 +348,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task MutipartReader_ReadInvalidUtf8SurrogateHeader_ReplacementCharacters()
+        public async Task MultipartReader_ReadInvalidUtf8SurrogateHeader_ReplacementCharacters()
         {
             var body1 =
 "--9051914041544843365972754266\r\n" +
@@ -372,7 +374,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
             Assert.Single(section.Headers);
-            Assert.Equal("form-data; name=\"text\" filename=\"a\uFFFDU.txt\"", section.Headers["Content-Disposition"][0]);
+            Assert.Equal("form-data; name=\"text\" filename=\"a\uFFFD\uFFFDU.txt\"", section.Headers["Content-Disposition"][0]);
             var buffer = new MemoryStream();
             await section.Body.CopyToAsync(buffer);
             Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));

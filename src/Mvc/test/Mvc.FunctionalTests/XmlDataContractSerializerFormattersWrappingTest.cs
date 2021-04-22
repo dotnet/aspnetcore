@@ -1,24 +1,32 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Testing;
+using XmlFormattersWebSite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class XmlDataContractSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<XmlFormattersWebSite.Startup>>
+    public class XmlDataContractSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<Startup>>
     {
-        public XmlDataContractSerializerFormattersWrappingTest(MvcTestFixture<XmlFormattersWebSite.Startup> fixture)
+        public XmlDataContractSerializerFormattersWrappingTest(MvcTestFixture<Startup> fixture)
         {
-            Client = fixture.CreateDefaultClient();
+            Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(builder => builder.UseStartup<Startup>());
+            Client = Factory.CreateDefaultClient();
         }
 
         public HttpClient Client { get; }
+        public WebApplicationFactory<Startup> Factory { get; }
 
         [ConditionalTheory]
         // Mono issue - https://github.com/aspnet/External/issues/18
@@ -207,6 +215,96 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 "<key3>key1-error</key3><key4>key2-error</key4></SerializableErrorWrapper>" +
                 "</ArrayOfSerializableErrorWrapper>",
                 result);
+        }
+
+        [Fact]
+        public async Task ProblemDetails_IsSerialized()
+        {
+            // Arrange
+            using (new ActivityReplacer())
+            {
+                // Act
+                var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningClientErrorStatusCodeResult");
+
+                // Assert
+                await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+                var content = await response.Content.ReadAsStringAsync();
+                var root = XDocument.Parse(content).Root;
+                Assert.Equal("404", root.Element(root.Name.Namespace.GetName("status"))?.Value);
+                Assert.Equal("Not Found", root.Element(root.Name.Namespace.GetName("title"))?.Value);
+                Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", root.Element(root.Name.Namespace.GetName("type"))?.Value);
+                // Activity is not null
+                Assert.NotNull(root.Element(root.Name.Namespace.GetName("traceId"))?.Value);
+            }
+        }
+
+        [Fact]
+        public async Task ProblemDetails_WithExtensionMembers_IsSerialized()
+        {
+            // Arrange
+            var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
+                "<instance>instance</instance>" +
+                "<status>404</status>" +
+                "<title>title</title>" +
+                "<Correlation>correlation</Correlation>" +
+                "<Accounts>Account1 Account2</Accounts>" +
+                "</problem>";
+
+            // Act
+            var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningProblemDetails");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+            var content = await response.Content.ReadAsStringAsync();
+            XmlAssert.Equal(expected, content);
+        }
+
+        [Fact]
+        public async Task ValidationProblemDetails_IsSerialized()
+        {
+            // Arrange
+            using (new ActivityReplacer())
+            {
+                // Act
+                var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningValidationProblem");
+
+                // Assert
+                await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+                var content = await response.Content.ReadAsStringAsync();
+                var root = XDocument.Parse(content).Root;
+
+                Assert.Equal("400", root.Element(root.Name.Namespace.GetName("status"))?.Value);
+                Assert.Equal("One or more validation errors occurred.", root.Element(root.Name.Namespace.GetName("title"))?.Value);
+                var mvcErrors = root.Element(root.Name.Namespace.GetName("MVC-Errors"));
+                Assert.NotNull(mvcErrors);
+                Assert.Equal("The State field is required.", mvcErrors.Element(root.Name.Namespace.GetName("State"))?.Value);
+                // Activity is not null
+                Assert.NotNull(root.Element(root.Name.Namespace.GetName("traceId"))?.Value);
+            }
+        }
+
+        [Fact]
+        public async Task ValidationProblemDetails_WithExtensionMembers_IsSerialized()
+        {
+            // Arrange
+            var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
+                "<detail>some detail</detail>" +
+                "<status>400</status>" +
+                "<title>One or more validation errors occurred.</title>" +
+                "<type>some type</type>" +
+                "<CorrelationId>correlation</CorrelationId>" +
+                "<MVC-Errors>" +
+                "<Error1>ErrorValue</Error1>" +
+                "</MVC-Errors>" +
+                "</problem>";
+
+            // Act
+            var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningValidationDetailsWithMetadata");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var content = await response.Content.ReadAsStringAsync();
+            XmlAssert.Equal(expected, content);
         }
     }
 }

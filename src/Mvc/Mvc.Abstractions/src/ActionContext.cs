@@ -36,10 +36,6 @@ namespace Microsoft.AspNetCore.Mvc
                 actionContext.ActionDescriptor,
                 actionContext.ModelState)
         {
-            if (actionContext == null)
-            {
-                throw new ArgumentNullException(nameof(actionContext));
-            }
         }
 
         /// <summary>
@@ -101,10 +97,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// The property setter is provided for unit test purposes only.
         /// </remarks>
-        public ActionDescriptor ActionDescriptor
-        {
-            get; set;
-        }
+        public ActionDescriptor ActionDescriptor { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="Http.HttpContext"/> for the current request.
@@ -112,18 +105,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// The property setter is provided for unit test purposes only.
         /// </remarks>
-        public HttpContext HttpContext
-        {
-            get; set;
-        }
+        public HttpContext HttpContext { get; set; } = default!;
 
         /// <summary>
         /// Gets the <see cref="ModelStateDictionary"/>.
         /// </summary>
-        public ModelStateDictionary ModelState
-        {
-            get;
-        }
+        public ModelStateDictionary ModelState { get; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="AspNetCore.Routing.RouteData"/> for the current request.
@@ -131,9 +118,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// The property setter is provided for unit test purposes only.
         /// </remarks>
-        public RouteData RouteData
-        {
-            get; set;
-        }
+        public RouteData RouteData { get; set; } = default!;
     }
 }

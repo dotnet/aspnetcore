@@ -15,11 +15,12 @@ namespace Microsoft.AspNetCore.Mvc
     {
         /// <summary>
         /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
-        /// </summary>       
+        /// </summary>
         /// <param name="statusCode">The HTTP response status code.</param>
         public ProducesResponseTypeAttribute(int statusCode)
             : this(typeof(void), statusCode)
         {
+            IsResponseTypeSetByDefault = true;
         }
 
         /// <summary>
@@ -29,13 +30,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="statusCode">The HTTP response status code.</param>
         public ProducesResponseTypeAttribute(Type type, int statusCode)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            Type = type;
+            Type = type ?? throw new ArgumentNullException(nameof(type));
             StatusCode = statusCode;
+            IsResponseTypeSetByDefault = false;
         }
 
         /// <summary>
@@ -47,6 +44,18 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the HTTP status code of the response.
         /// </summary>
         public int StatusCode { get; set; }
+
+        /// <summary>
+        /// Used to distinguish a `Type` set by default in the constructor versus
+        /// one provided by the user.
+        ///
+        /// When <see langword="false"/>, then <see cref="Type"/> is set by user.
+        ///
+        /// When <see langword="true"/>, then <see cref="Type"/> is set by by
+        /// default in the constructor
+        /// </summary>
+        /// <value></value>
+        internal bool IsResponseTypeSetByDefault { get; }
 
         /// <inheritdoc />
         void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes)

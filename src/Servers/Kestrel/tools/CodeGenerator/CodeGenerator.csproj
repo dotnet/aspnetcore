@@ -1,13 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <IsImplementationProject>false</IsImplementationProject>
+    <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="$(KestrelSharedSourceRoot)KnownHeaders.cs" />
+    <Compile Include="$(SharedSourceRoot)runtime\Http2\Hpack\H2StaticTable.cs" Link="Shared\runtime\Http2\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)runtime\Http2\Hpack\HeaderField.cs" Link="Shared\runtime\Http2\%(Filename)%(Extension)" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
@@ -15,8 +19,8 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\Core\src</StartWorkingDirectory>
-    <StartArguments>Internal/Http/HttpHeaders.Generated.cs Internal/Http/HttpProtocol.Generated.cs Internal/Infrastructure/HttpUtilities.Generated.cs</StartArguments>
+    <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\</StartWorkingDirectory>
+    <StartArguments>Core/src/Internal/Http/HttpHeaders.Generated.cs Core/src/Internal/Http/HttpProtocol.Generated.cs Core/src/Internal/Infrastructure/HttpUtilities.Generated.cs Core/src/Internal/Http2/Http2Connection.Generated.cs shared/TransportMultiplexedConnection.Generated.cs shared/TransportConnection.Generated.cs</StartArguments>
   </PropertyGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,18 +6,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public interface ISocketsTrace : ILogger
+    internal interface ISocketsTrace : ILogger
     {
-        void ConnectionReadFin(string connectionId);
+        void ConnectionReadFin(SocketConnection connection);
 
-        void ConnectionWriteFin(string connectionId);
+        void ConnectionWriteFin(SocketConnection connection, string reason);
 
-        void ConnectionError(string connectionId, Exception ex);
+        void ConnectionError(SocketConnection connection, Exception ex);
 
         void ConnectionReset(string connectionId);
+        void ConnectionReset(SocketConnection connection);
 
-        void ConnectionPause(string connectionId);
+        void ConnectionPause(SocketConnection connection);
 
-        void ConnectionResume(string connectionId);
+        void ConnectionResume(SocketConnection connection);
     }
 }

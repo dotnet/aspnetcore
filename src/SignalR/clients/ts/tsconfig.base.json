@@ -2,7 +2,7 @@
     "compileOnSave": false,
     "compilerOptions": {
         "module": "es2015",
-        "target": "es5",
+        "target": "es2019",
         "sourceMap": true,
         "moduleResolution": "node",
         "inlineSources": true,
@@ -14,14 +14,16 @@
         "noUnusedParameters": true,
         "suppressImplicitAnyIndexErrors": true,
         "noEmitOnError": true,
+        "skipLibCheck": true,
         "stripInternal": true,
-        "lib": [ "es5", "es2015.promise", "es2015.iterable", "dom" ],
+        "strict": true,
+        "lib": [ "es2019", "dom" ],
         "baseUrl": ".",
         "paths": {
-            "@aspnet/signalr": [
+            "@microsoft/signalr": [
                 "./signalr"
             ],
-            "@aspnet/signalr-protocol-msgpack": [
+            "@microsoft/signalr-protocol-msgpack": [
                 "./signalr-protocol-msgpack"
             ]
         }

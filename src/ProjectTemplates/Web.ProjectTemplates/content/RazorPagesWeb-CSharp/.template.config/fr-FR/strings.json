@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Application web ASP.NET Core",
+    "description": "Modèle de projet permettant de créer une application ASP.NET Core avec des exemples de contenus basés sur des pages Razor en ASP.NET."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Aplicación Blazor Server",
+    "description": "Plantilla de proyecto para crear una aplicación Blazor Server que se ejecuta del lado servidor dentro de una aplicación de ASP.NET Core y controla las interacciones de los usuarios a través de una conexión de SignalR. Esta plantilla se puede usar para las aplicaciones web con interfaces de usuario dinámicas enriquecidas."
+  }
+}

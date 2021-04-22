@@ -37,5 +37,10 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 arg is StreamItemMessage ||
                 arg is StreamInvocationMessage;
         }
+        
+        public Type GetStreamItemType(string streamId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace VersioningWebSite
 {
-    public class VersionPutAttribute : VersionRoute, IActionHttpMethodProvider
+    public class VersionPutAttribute : VersionRouteAttribute, IActionHttpMethodProvider
     {
         public VersionPutAttribute(string template)
             : base(template)

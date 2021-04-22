@@ -8,14 +8,13 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
     // Represents a binary blob (token) that contains random data.
     // Useful for binary data inside a serialized stream.
     [DebuggerDisplay("{DebuggerString}")]
-    public sealed class BinaryBlob : IEquatable<BinaryBlob>
+    internal sealed class BinaryBlob : IEquatable<BinaryBlob>
     {
-        private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
         private readonly byte[] _data;
 
         // Generates a new token using a specified bit length.
@@ -60,12 +59,12 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as BinaryBlob);
         }
 
-        public bool Equals(BinaryBlob other)
+        public bool Equals(BinaryBlob? other)
         {
             if (other == null)
             {
@@ -92,7 +91,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         private static byte[] GenerateNewToken(int bitLength)
         {
             var data = new byte[bitLength / 8];
-            _randomNumberGenerator.GetBytes(data);
+            RandomNumberGenerator.Fill(data);
             return data;
         }
 

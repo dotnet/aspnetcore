@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Basic test app</title>
+    <base href="/subdir/" />
+    <link href="style.css" rel="stylesheet" />
+    <link rel="icon" href="data:,">
+
+    <!-- Used by ExternalContentPackage -->
+    <link href="_content/TestContentPackage/styles.css" rel="stylesheet" />
+
+    <!-- App bundle that contains a reference to the scoped css bundle created by TestContentPackage -->
+    <link href="BasicTestApp.styles.css" rel="stylesheet" />
+</head>
+
+<body>
+    <root>Loading...</root>
+
+    <!-- Explicit display:none required so StartupErrorNotificationTest can observe it change -->
+    <div id="blazor-error-ui" style="display: none;">
+        An unhandled error has occurred.
+        <a href class='reload'>Reload</a>
+        <a class='dismiss' style="cursor: pointer;">🗙</a>
+    </div>
+
+    <!-- Used for specific test cases -->
+    <script src="js/jsinteroptests.js"></script>
+    <script src="js/renderattributestest.js"></script>
+    <script src="js/webComponentPerformingJsInterop.js"></script>
+    <script src="js/customLinkElement.js"></script>
+
+    <script>
+        // Used by ElementRefComponent
+        function setElementValue(element, newValue) {
+            element.value = newValue;
+            return element.value;
+        }
+
+        function navigationManagerNavigate() {
+            Blazor.navigateTo('/subdir/some-path');
+        }
+
+        function getCurrentUrl() {
+            return location.href;
+        }
+    </script>
+    <script src="_framework/blazor.webassembly.js"></script>
+
+    <!-- Used by ExternalContentPackage -->
+    <script src="_content/TestContentPackage/prompt.js"></script>
+</body>
+
+</html>

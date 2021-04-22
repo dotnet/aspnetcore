@@ -15,12 +15,18 @@ namespace Microsoft.AspNetCore.Authorization
         /// </summary>
         /// <param name="policyName">The policy name to retrieve.</param>
         /// <returns>The named <see cref="AuthorizationPolicy"/>.</returns>
-        Task<AuthorizationPolicy> GetPolicyAsync(string policyName);
+        Task<AuthorizationPolicy?> GetPolicyAsync(string policyName);
 
         /// <summary>
         /// Gets the default authorization policy.
         /// </summary>
         /// <returns>The default authorization policy.</returns>
         Task<AuthorizationPolicy> GetDefaultPolicyAsync();
+
+        /// <summary>
+        /// Gets the fallback authorization policy.
+        /// </summary>
+        /// <returns>The fallback authorization policy.</returns>
+        Task<AuthorizationPolicy?> GetFallbackPolicyAsync();
     }
 }

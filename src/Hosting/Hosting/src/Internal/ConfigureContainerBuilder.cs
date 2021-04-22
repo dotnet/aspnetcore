@@ -1,26 +1,29 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public class ConfigureContainerBuilder
+    internal class ConfigureContainerBuilder
     {
-        public ConfigureContainerBuilder(MethodInfo configureContainerMethod)
+        public ConfigureContainerBuilder(MethodInfo? configureContainerMethod)
         {
             MethodInfo = configureContainerMethod;
         }
 
-        public MethodInfo MethodInfo { get; }
+        public MethodInfo? MethodInfo { get; }
 
-        public Func<Action<object>, Action<object>> ConfigureContainerFilters { get; set; }
+        public Func<Action<object>, Action<object>> ConfigureContainerFilters { get; set; } = f => f;
 
         public Action<object> Build(object instance) => container => Invoke(instance, container);
 
         public Type GetContainerType()
         {
+            Debug.Assert(MethodInfo != null, "Shouldn't be called when there is no Configure method.");
+
             var parameters = MethodInfo.GetParameters();
             if (parameters.Length != 1)
             {
@@ -46,7 +49,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             var arguments = new object[1] { container };
 
-            MethodInfo.Invoke(instance, arguments);
+            MethodInfo.InvokeWithoutWrappingExceptions(instance, arguments);
         }
     }
 }

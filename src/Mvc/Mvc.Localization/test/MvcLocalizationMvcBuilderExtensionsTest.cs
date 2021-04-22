@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -104,6 +106,9 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
         {
             // Arrange
             var builder = new TestMvcBuilder();
+
+            builder.Services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+
             var dataAnnotationLocalizerProvider = new Func<Type, IStringLocalizerFactory, IStringLocalizer>((type, factory) =>
             {
                 return null;

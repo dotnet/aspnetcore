@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public void UseMiddleware_MutlipleInvokeMethods_ThrowsException()
+        public void UseMiddleware_MultipleInvokeMethods_ThrowsException()
         {
             var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareMultipleInvokesStub));
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public void UseMiddleware_MutlipleInvokeAsyncMethods_ThrowsException()
+        public void UseMiddleware_MultipleInvokeAsyncMethods_ThrowsException()
         {
             var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareMultipleInvokeAsyncStub));
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public void UseMiddleware_MutlipleInvokeAndInvokeAsyncMethods_ThrowsException()
+        public void UseMiddleware_MultipleInvokeAndInvokeAsyncMethods_ThrowsException()
         {
             var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareMultipleInvokeAndInvokeAsyncStub));
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public void UseMiddlewareWithIvokeWithOutAndRefThrows()
+        public void UseMiddlewareWithInvokeWithOutAndRefThrows()
         {
             var mockServiceProvider = new DummyServiceProvider();
             var builder = new ApplicationBuilder(mockServiceProvider);
@@ -244,10 +244,10 @@ namespace Microsoft.AspNetCore.Http
 
         public class BasicMiddlewareFactory : IMiddlewareFactory
         {
-            public IMiddleware Created { get; private set; }
-            public IMiddleware Released { get; private set; }
+            public IMiddleware? Created { get; private set; }
+            public IMiddleware? Released { get; private set; }
 
-            public IMiddleware Create(Type middlewareType)
+            public IMiddleware? Create(Type middlewareType)
             {
                 Created = Activator.CreateInstance(middlewareType) as IMiddleware;
                 return Created;
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Http
 
         public class BadMiddlewareFactory : IMiddlewareFactory
         {
-            public IMiddleware Create(Type middlewareType) => null;
+            public IMiddleware? Create(Type middlewareType) => null;
 
             public void Release(IMiddleware middleware) { }
         }
@@ -272,14 +272,14 @@ namespace Microsoft.AspNetCore.Http
 
             public void AddService(Type type, object value) => _services[type] = value;
 
-            public object GetService(Type serviceType)
+            public object? GetService(Type serviceType)
             {
                 if (serviceType == typeof(IServiceProvider))
                 {
                     return this;
                 }
 
-                if (_services.TryGetValue(serviceType, out object value))
+                if (_services.TryGetValue(serviceType, out var value))
                 {
                     return value;
                 }
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Http
         {
             public MiddlewareInjectWithOutAndRefParams(RequestDelegate next) { }
 
-            public Task Invoke(HttpContext context, ref IServiceProvider sp1, out IServiceProvider sp2)
+            public Task Invoke(HttpContext context, ref IServiceProvider? sp1, out IServiceProvider? sp2)
             {
                 sp1 = null;
                 sp2 = null;

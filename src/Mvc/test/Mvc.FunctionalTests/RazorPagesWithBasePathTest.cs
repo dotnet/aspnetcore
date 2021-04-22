@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -197,7 +198,7 @@ Hello from page";
             // Assert
             var responseContent = response.Trim();
             var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "/TagHelper/PostWithHandler");
-            var expectedContent = string.Format(expected, forgeryToken);
+            var expectedContent = string.Format(CultureInfo.InvariantCulture, expected, forgeryToken);
 
             Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
         }
@@ -330,7 +331,7 @@ Hello from page";
             var response = await Client.GetStringAsync("/Accounts/PageWithLinks");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -346,7 +347,7 @@ Hello from page";
             var response = await Client.GetStringAsync("/Accounts/RelativeLinks");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -369,7 +370,7 @@ Hello from /Pages/Shared/";
             var response = await Client.GetStringAsync("/Accounts/Manage/RenderPartials");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -384,7 +385,7 @@ Hello from /Pages/Shared/";
         }
 
         [Fact]
-        public async Task AllowAnonymouseToPageConvention_CanBeAppliedToAreaPages()
+        public async Task AllowAnonymousToPageConvention_CanBeAppliedToAreaPages()
         {
             // Act
             var response = await Client.GetStringAsync("/Accounts/RequiresAuth/AllowAnonymous");
@@ -395,7 +396,7 @@ Hello from /Pages/Shared/";
 
         // These test is important as it covers a feature that allows razor pages to use a different
         // model at runtime that wasn't known at compile time. Like a non-generic model used at compile
-        // time and overrided at runtime with a closed-generic model that performs the actual implementation.
+        // time and overriden at runtime with a closed-generic model that performs the actual implementation.
         // An example of this is how the Identity UI library defines a base page model in their views,
         // like how the Register.cshtml view defines its model as RegisterModel and then, at runtime it replaces
         // that model with RegisterModel<TUser> where TUser is the type of the user used to configure identity.
@@ -419,14 +420,16 @@ Hello from /Pages/Shared/";
             var token = AntiforgeryTestHelper.RetrieveAntiforgeryToken(await getPage.Content.ReadAsStringAsync(), "");
             var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getPage);
 
-            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel");
-            message.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel")
             {
-                ["__RequestVerificationToken"] = token,
-                ["ConfirmPassword"] = "",
-                ["Password"] = "",
-                ["Email"] = ""
-            });
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["__RequestVerificationToken"] = token,
+                    ["ConfirmPassword"] = "",
+                    ["Password"] = "",
+                    ["Email"] = ""
+                })
+            };
             message.Headers.TryAddWithoutValidation("Cookie", $"{cookie.Key}={cookie.Value}");
 
             // Act
@@ -442,18 +445,20 @@ Hello from /Pages/Shared/";
         public async Task PageConventions_CustomizedModelCanWorkWithModelState()
         {
             // Arrange
-            var getPage = await Client.GetAsync("/CustomModelTypeModel");
+            var getPage = await Client.GetAsync("/CustomModelTypeModel?Attempts=0");
             var token = AntiforgeryTestHelper.RetrieveAntiforgeryToken(await getPage.Content.ReadAsStringAsync(), "");
             var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getPage);
 
-            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel");
-            message.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel?Attempts=3")
             {
-                ["__RequestVerificationToken"] = token,
-                ["Email"] = "javi@example.com",
-                ["Password"] = "Password.12$",
-                ["ConfirmPassword"] = "Password.12$",
-            });
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["__RequestVerificationToken"] = token,
+                    ["Email"] = "javi@example.com",
+                    ["Password"] = "Password.12$",
+                    ["ConfirmPassword"] = "Password.12$",
+                })
+            };
             message.Headers.TryAddWithoutValidation("Cookie", $"{cookie.Key}={cookie.Value}");
 
             // Act
@@ -465,6 +470,37 @@ Hello from /Pages/Shared/";
         }
 
         [Fact]
+        public async Task PageConventions_CustomizedModelCanWorkWithModelState_EnforcesBindRequired()
+        {
+            // Arrange
+            var getPage = await Client.GetAsync("/CustomModelTypeModel?Attempts=0");
+            var token = AntiforgeryTestHelper.RetrieveAntiforgeryToken(await getPage.Content.ReadAsStringAsync(), "");
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getPage);
+
+            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel")
+            {
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["__RequestVerificationToken"] = token,
+                    ["Email"] = "javi@example.com",
+                    ["Password"] = "Password.12$",
+                    ["ConfirmPassword"] = "Password.12$",
+                })
+            };
+            message.Headers.TryAddWithoutValidation("Cookie", $"{cookie.Key}={cookie.Value}");
+
+            // Act
+            var response = await Client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Contains(
+                "A value for the &#x27;Attempts&#x27; parameter or property was not provided.",
+                responseText);
+        }
+
+        [Fact]
         public async Task ValidationAttributes_OnTopLevelProperties()
         {
             // Act
@@ -473,6 +509,17 @@ Hello from /Pages/Shared/";
             // Assert
             Assert.Contains("Name is required", response);
             Assert.Contains("18 &#x2264; Age &#x2264; 60", response);
+        }
+
+        [Fact]
+        public async Task CompareValidationAttributes_OnTopLevelProperties()
+        {
+            // Act
+            var response = await Client.GetStringAsync("/Validation/PageWithCompareValidation?password=test&comparePassword=different");
+
+            // Assert
+            Assert.Contains("User name is required", response);
+            Assert.Contains("Password and confirm password do not match.", response);
         }
 
         [Fact]
@@ -506,7 +553,7 @@ Hello from /Pages/Shared/";
         }
 
         [Fact]
-        public async Task ViewDataAttributes_SetInPageModel_AreTransferedToLayout()
+        public async Task ViewDataAttributes_SetInPageModel_AreTransferredToLayout()
         {
             // Arrange
             var document = await Client.GetHtmlDocumentAsync("/ViewData/ViewDataInPage");
@@ -526,7 +573,7 @@ Hello from /Pages/Shared/";
         }
 
         [Fact]
-        public async Task ViewDataAttributes_SetInPageWithoutModel_AreTransferedToLayout()
+        public async Task ViewDataAttributes_SetInPageWithoutModel_AreTransferredToLayout()
         {
             // Arrange
             var document = await Client.GetHtmlDocumentAsync("/ViewData/ViewDataInPageWithoutModel");
@@ -551,6 +598,160 @@ Hello from /Pages/Shared/";
 
             var title = document.QuerySelector("title").TextContent;
             Assert.Equal("View Data in Pages", title);
+        }
+
+        [Fact]
+        public async Task Antiforgery_RequestWithoutAntiforgeryToken_Returns200ForHeadRequests()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Head, "/Antiforgery/AntiforgeryDefault");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Antiforgery_RequestWithoutAntiforgeryToken_Returns400BadRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Antiforgery/AntiforgeryDefault");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Antiforgery_RequestWithAntiforgeryToken_Succeeds()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Antiforgery/AntiforgeryDefault");
+            await AddAntiforgeryHeadersAsync(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Antiforgery_IgnoreAntiforgeryTokenAppliedToModelWorks()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Antiforgery/IgnoreAntiforgery");
+            await AddAntiforgeryHeadersAsync(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ViewDataSetInViewStart_IsAvailableToPage()
+        {
+            // Arrange & Act
+            var document = await Client.GetHtmlDocumentAsync("/ViewData/ViewDataSetInViewStart");
+
+            // Assert
+            var valueSetInViewStart = document.RequiredQuerySelector("#valuefromviewstart").TextContent;
+            var valueSetInPageModel = document.RequiredQuerySelector("#valuefrompagemodel").TextContent;
+            var valueSetInPage = document.RequiredQuerySelector("#valuefrompage").TextContent;
+
+            Assert.Equal("Value from _ViewStart", valueSetInViewStart);
+            Assert.Equal("Value from Page Model", valueSetInPageModel);
+            Assert.Equal("Value from Page", valueSetInPage);
+        }
+
+        [Fact]
+        public async Task RoundTrippingFormFileInputWorks()
+        {
+            // Arrange
+            var url = "/PropertyBinding/BindFormFile";
+            var response = await Client.GetAsync(url);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+
+            var document = await response.GetHtmlDocumentAsync();
+
+            var property1 = document.RequiredQuerySelector("#property1").GetAttribute("name");
+            var file1 = document.RequiredQuerySelector("#file1").GetAttribute("name");
+            var file2 = document.RequiredQuerySelector("#file2").GetAttribute("name");
+            var file3 = document.RequiredQuerySelector("#file3").GetAttribute("name");
+            var antiforgeryToken = document.RetrieveAntiforgeryToken();
+
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(response);
+
+            var content = new MultipartFormDataContent
+            {
+                { new StringContent("property1-value"), property1 },
+                { new StringContent("test-value1"), file1, "test1.txt" },
+                { new StringContent("test-value2"), file3, "test2.txt" }
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = content,
+            };
+            request.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
+            request.Headers.Add("RequestVerificationToken", antiforgeryToken);
+
+            response = await Client.SendAsync(request);
+
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task AuthAttribute_AppliedOnPageWorks()
+        {
+            // Act
+            using var response = await Client.GetAsync("/Filters/AuthFilterOnPage");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/Login?ReturnUrl=%2FFilters%2FAuthFilterOnPage", response.Headers.Location.PathAndQuery);
+        }
+
+        [Fact]
+        public async Task AuthAttribute_AppliedOnPageWithModelWorks()
+        {
+            // Act
+            using var response = await Client.GetAsync("/Filters/AuthFilterOnPageWithModel");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/Login?ReturnUrl=%2FFilters%2FAuthFilterOnPageWithModel", response.Headers.Location.PathAndQuery);
+        }
+
+        [Fact]
+        public async Task FiltersAppliedToPageAndPageModelAreExecuted()
+        {
+            // Act
+            using var response = await Client.GetAsync("/Filters/FiltersAppliedToPageAndPageModel");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            Assert.Equal(new[] { "PageModelFilterValue" }, response.Headers.GetValues("PageModelFilterKey"));
+            Assert.Equal(new[] { "PageFilterValue" }, response.Headers.GetValues("PageFilterKey"));
+        }
+
+        private async Task AddAntiforgeryHeadersAsync(HttpRequestMessage request)
+        {
+            var response = await Client.GetAsync(request.RequestUri);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseBody);
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(response);
+
+            request.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
+            request.Headers.Add("RequestVerificationToken", formToken);
         }
     }
 }

@@ -9,20 +9,22 @@ namespace ApiExplorerWebSite
 {
     public class ActionDescriptorChangeProvider : IActionDescriptorChangeProvider
     {
-        private ActionDescriptorChangeProvider()
+        public ActionDescriptorChangeProvider(WellKnownChangeToken changeToken)
         {
+            ChangeToken = changeToken;
         }
 
-        public static ActionDescriptorChangeProvider Instance { get; } = new ActionDescriptorChangeProvider();
-
-        public CancellationTokenSource TokenSource { get; private set; }
-
-        public bool HasChanged { get; set; }
+        public WellKnownChangeToken ChangeToken { get; }
 
         public IChangeToken GetChangeToken()
         {
-            TokenSource = new CancellationTokenSource();
-            return new CancellationChangeToken(TokenSource.Token);
+            if (ChangeToken.TokenSource.IsCancellationRequested)
+            {
+                var changeTokenSource = new CancellationTokenSource();
+                return new CancellationChangeToken(changeTokenSource.Token);
+            }
+            
+            return new CancellationChangeToken(ChangeToken.TokenSource.Token);
         }
     }
 }

@@ -8,12 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing
 {
     public class RouteTest
     {
-        private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
+        private static readonly RequestDelegate NullHandler = (c) => Task.CompletedTask;
         private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
 
         [Fact]
@@ -653,11 +652,11 @@ namespace Microsoft.AspNetCore.Routing
         public void GetVirtualPath_AlwaysUsesDefaultUrlEncoder()
         {
             // Arrange
-            var nameRouteValue = "name with %special #characters Jörn";
+            var nameRouteValue = "name with %special #characters JÃ¶rn";
             var expected = "/Home/Index?name=" + UrlEncoder.Default.Encode(nameRouteValue);
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+            services.AddOptions();
             services.AddRouting();
             // This test encoder should not be used by Routing and should always use the default one.
             services.AddSingleton<UrlEncoder>(new UrlTestEncoder());
@@ -1520,7 +1519,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+            services.AddOptions();
             services.AddRouting();
 
             var context = new DefaultHttpContext
@@ -1581,13 +1580,28 @@ namespace Microsoft.AspNetCore.Routing
             // Assert
             var templateRoute = (Route)routeBuilder.Routes[0];
 
-            // Assert
             Assert.Equal(expectedDictionary.Count, templateRoute.DataTokens.Count);
             foreach (var expectedKey in expectedDictionary.Keys)
             {
                 Assert.True(templateRoute.DataTokens.ContainsKey(expectedKey));
                 Assert.Equal(expectedDictionary[expectedKey], templateRoute.DataTokens[expectedKey]);
             }
+        }
+
+        [Fact]
+        public void RegisteringRoute_WithParameterPolicy_AbleToAddTheRoute()
+        {
+            // Arrange
+            var routeBuilder = CreateRouteBuilder();
+
+            // Act
+            routeBuilder.MapRoute("mockName",
+                                  "{controller:test-policy}/{action}");
+
+            // Assert
+            var templateRoute = (Route)routeBuilder.Routes[0];
+
+            Assert.Empty(templateRoute.Constraints);
         }
 
         [Fact]
@@ -1751,6 +1765,8 @@ namespace Microsoft.AspNetCore.Routing
             var services = new ServiceCollection();
             services.AddSingleton<IInlineConstraintResolver>(_inlineConstraintResolver);
             services.AddSingleton<RoutingMarkerService>();
+            services.AddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
+            services.Configure<RouteOptions>(ConfigureRouteOptions);
 
             var applicationBuilder = Mock.Of<IApplicationBuilder>();
             applicationBuilder.ApplicationServices = services.BuildServiceProvider();
@@ -1836,28 +1852,24 @@ namespace Microsoft.AspNetCore.Routing
 
         private static IInlineConstraintResolver GetInlineConstraintResolver()
         {
-            var routeOptions = new Mock<IOptions<RouteOptions>>();
-            routeOptions
-                .SetupGet(o => o.Value)
-                .Returns(new RouteOptions());
+            var routeOptions = new RouteOptions();
+            ConfigureRouteOptions(routeOptions);
 
-            return new DefaultInlineConstraintResolver(routeOptions.Object);
+            var routeOptionsMock = new Mock<IOptions<RouteOptions>>();
+            routeOptionsMock
+                .SetupGet(o => o.Value)
+                .Returns(routeOptions);
+
+            return new DefaultInlineConstraintResolver(routeOptionsMock.Object, new TestServiceProvider());
         }
 
-        private class CapturingConstraint : IRouteConstraint
+        private static void ConfigureRouteOptions(RouteOptions options)
         {
-            public IDictionary<string, object> Values { get; private set; }
+            options.ConstraintMap["test-policy"] = typeof(TestPolicy);
+        }
 
-            public bool Match(
-                HttpContext httpContext,
-                IRouter route,
-                string routeKey,
-                RouteValueDictionary values,
-                RouteDirection routeDirection)
-            {
-                Values = new RouteValueDictionary(values);
-                return true;
-            }
+        private class TestPolicy : IParameterPolicy
+        {
         }
     }
 }

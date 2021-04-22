@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering
@@ -70,6 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             public override string ToString()
             {
                 return string.Format(
+                    CultureInfo.InvariantCulture,
                     "{{ SomeProperty = {0} }}", SomeProperty ?? "(null)");
             }
         }

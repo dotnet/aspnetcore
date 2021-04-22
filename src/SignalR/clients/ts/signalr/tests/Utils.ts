@@ -3,31 +3,63 @@
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
-export function delay(durationInMilliseconds: number): Promise<void> {
+export function registerUnhandledRejectionHandler(): void {
+    process.on("unhandledRejection", (error) => {
+        if (error && (error as Error).stack) {
+            console.error((error as Error).stack);
+        } else {
+            console.error(error);
+        }
+    });
+}
+
+export function delayUntil(timeoutInMilliseconds: number, condition?: () => boolean): Promise<void> {
     const source = new PromiseSource<void>();
-    setTimeout(() => source.resolve(), durationInMilliseconds);
+    let timeWait: number = 0;
+    const interval = setInterval(() => {
+        timeWait += 10;
+        if (condition) {
+            if (condition() === true) {
+                source.resolve();
+                clearInterval(interval);
+            } else if (timeoutInMilliseconds <= timeWait) {
+                source.reject(new Error("Timed out waiting for condition"));
+                clearInterval(interval);
+            }
+        } else if (timeoutInMilliseconds <= timeWait) {
+            source.resolve();
+            clearInterval(interval);
+        }
+    }, 10);
     return source.promise;
 }
 
 export class PromiseSource<T = void> implements Promise<T> {
     public promise: Promise<T>;
 
-    private resolver: (value?: T | PromiseLike<T>) => void;
-    private rejecter: (reason?: any) => void;
+    private _resolver!: (value: T | PromiseLike<T>) => void;
+    private _rejecter!: (reason?: any) => void;
 
     constructor() {
         this.promise = new Promise<T>((resolve, reject) => {
-            this.resolver = resolve;
-            this.rejecter = reject;
+            this._resolver = resolve;
+            this._rejecter = reject;
         });
     }
 
-    public resolve(value?: T | PromiseLike<T>) {
-        this.resolver(value);
+    public [Symbol.toStringTag]: string;
+
+    // @ts-ignore: onfinally not used
+    public finally(onfinally?: (() => void) | null): Promise<T> {
+        throw new Error("Method not implemented.");
+    }
+
+    public resolve(value: T | PromiseLike<T>) {
+        this._resolver(value);
     }
 
     public reject(reason?: any) {
-        this.rejecter(reason);
+        this._rejecter(reason);
     }
 
     // Look like a promise so we can be awaited directly;
@@ -36,5 +68,28 @@ export class PromiseSource<T = void> implements Promise<T> {
     }
     public catch<TResult = never>(onrejected?: (reason: any) => TResult | PromiseLike<TResult>): Promise<T | TResult> {
         return this.promise.catch(onrejected);
+    }
+}
+
+export class SyncPoint {
+    private _atSyncPoint: PromiseSource;
+    private _continueFromSyncPoint: PromiseSource;
+
+    constructor() {
+        this._atSyncPoint = new PromiseSource();
+        this._continueFromSyncPoint = new PromiseSource();
+    }
+
+    public waitForSyncPoint(): Promise<void> {
+        return this._atSyncPoint.promise;
+    }
+
+    public continue() {
+        this._continueFromSyncPoint.resolve();
+    }
+
+    public waitToContinue(): Promise<void> {
+        this._atSyncPoint.resolve();
+        return this._continueFromSyncPoint.promise;
     }
 }

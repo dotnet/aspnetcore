@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.WebSockets;
 using System.Reflection;
@@ -22,12 +23,15 @@ namespace Microsoft.AspNetCore.Owin
 {
     using SendFileFunc = Func<string, long, long?, CancellationToken, Task>;
 
+    /// <summary>
+    /// OWIN feature collection.
+    /// </summary>
     public class OwinFeatureCollection :
         IFeatureCollection,
         IHttpRequestFeature,
         IHttpResponseFeature,
+        IHttpResponseBodyFeature,
         IHttpConnectionFeature,
-        IHttpSendFileFeature,
         ITlsConnectionFeature,
         IHttpRequestIdentifierFeature,
         IHttpRequestLifetimeFeature,
@@ -35,9 +39,17 @@ namespace Microsoft.AspNetCore.Owin
         IHttpWebSocketFeature,
         IOwinEnvironmentFeature
     {
+        /// <summary>
+        /// Gets or sets OWIN environment values.
+        /// </summary>
         public IDictionary<string, object> Environment { get; set; }
+        private PipeWriter _responseBodyWrapper;
         private bool _headersSent;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OwinFeatureCollection"/>.
+        /// </summary>
+        /// <param name="environment">The environment values.</param>
         public OwinFeatureCollection(IDictionary<string, object> environment)
         {
             Environment = environment;
@@ -150,6 +162,24 @@ namespace Microsoft.AspNetCore.Owin
             set { Prop(OwinConstants.ResponseBody, value); }
         }
 
+        Stream IHttpResponseBodyFeature.Stream
+        {
+            get { return Prop<Stream>(OwinConstants.ResponseBody); }
+        }
+
+        PipeWriter IHttpResponseBodyFeature.Writer
+        {
+            get
+            {
+                if (_responseBodyWrapper == null)
+                {
+                    _responseBodyWrapper = PipeWriter.Create(Prop<Stream>(OwinConstants.ResponseBody), new StreamPipeWriterOptions(leaveOpen: true));
+                }
+
+                return _responseBodyWrapper;
+            }
+        }
+
         bool IHttpResponseFeature.HasStarted
         {
             get { return _headersSent; }
@@ -186,13 +216,13 @@ namespace Microsoft.AspNetCore.Owin
 
         int IHttpConnectionFeature.RemotePort
         {
-            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.RemotePort)); }
+            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.RemotePort), CultureInfo.InvariantCulture); }
             set { Prop(OwinConstants.CommonKeys.RemotePort, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
         int IHttpConnectionFeature.LocalPort
         {
-            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.LocalPort)); }
+            get { return int.Parse(Prop<string>(OwinConstants.CommonKeys.LocalPort), CultureInfo.InvariantCulture); }
             set { Prop(OwinConstants.CommonKeys.LocalPort, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
@@ -202,16 +232,7 @@ namespace Microsoft.AspNetCore.Owin
             set { Prop(OwinConstants.CommonKeys.ConnectionId, value); }
         }
 
-        private bool SupportsSendFile
-        {
-            get
-            {
-                object obj;
-                return Environment.TryGetValue(OwinConstants.SendFiles.SendAsync, out obj) && obj != null;
-            }
-        }
-
-        Task IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
+        Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
             object obj;
             if (Environment.TryGetValue(OwinConstants.SendFiles.SendAsync, out obj))
@@ -279,8 +300,6 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
-        IAuthenticationHandler IHttpAuthenticationFeature.Handler { get; set; }
-
         /// <summary>
         /// Gets or sets if the underlying server supports WebSockets. This is enabled by default.
         /// The value should be consistent across requests.
@@ -309,16 +328,19 @@ namespace Microsoft.AspNetCore.Owin
 
         // IFeatureCollection
 
+        /// <inheritdoc/>
         public int Revision
         {
             get { return 0; } // Not modifiable
         }
 
+        /// <inheritdoc/>
         public bool IsReadOnly
         {
             get { return true; }
         }
 
+        /// <inheritdoc/>
         public object this[Type key]
         {
             get { return Get(key); }
@@ -328,14 +350,10 @@ namespace Microsoft.AspNetCore.Owin
         private bool SupportsInterface(Type key)
         {
             // Does this type implement the requested interface?
-            if (key.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
+            if (key.IsAssignableFrom(GetType()))
             {
                 // Check for conditional features
-                if (key == typeof(IHttpSendFileFeature))
-                {
-                    return SupportsSendFile;
-                }
-                else if (key == typeof(ITlsConnectionFeature))
+                if (key == typeof(ITlsConnectionFeature))
                 {
                     return SupportsClientCerts;
                 }
@@ -350,6 +368,7 @@ namespace Microsoft.AspNetCore.Owin
             return false;
         }
 
+        /// <inheritdoc/>
         public object Get(Type key)
         {
             if (SupportsInterface(key))
@@ -359,16 +378,19 @@ namespace Microsoft.AspNetCore.Owin
             return null;
         }
 
+        /// <inheritdoc/>
         public void Set(Type key, object value)
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public TFeature Get<TFeature>()
         {
             return (TFeature)this[typeof(TFeature)];
         }
 
+        /// <inheritdoc/>
         public void Set<TFeature>(TFeature instance)
         {
             this[typeof(TFeature)] = instance;
@@ -379,10 +401,12 @@ namespace Microsoft.AspNetCore.Owin
             return GetEnumerator();
         }
 
+        /// <inheritdoc/>
         public IEnumerator<KeyValuePair<Type, object>> GetEnumerator()
         {
             yield return new KeyValuePair<Type, object>(typeof(IHttpRequestFeature), this);
             yield return new KeyValuePair<Type, object>(typeof(IHttpResponseFeature), this);
+            yield return new KeyValuePair<Type, object>(typeof(IHttpResponseBodyFeature), this);
             yield return new KeyValuePair<Type, object>(typeof(IHttpConnectionFeature), this);
             yield return new KeyValuePair<Type, object>(typeof(IHttpRequestIdentifierFeature), this);
             yield return new KeyValuePair<Type, object>(typeof(IHttpRequestLifetimeFeature), this);
@@ -390,10 +414,6 @@ namespace Microsoft.AspNetCore.Owin
             yield return new KeyValuePair<Type, object>(typeof(IOwinEnvironmentFeature), this);
 
             // Check for conditional features
-            if (SupportsSendFile)
-            {
-                yield return new KeyValuePair<Type, object>(typeof(IHttpSendFileFeature), this);
-            }
             if (SupportsClientCerts)
             {
                 yield return new KeyValuePair<Type, object>(typeof(ITlsConnectionFeature), this);
@@ -404,6 +424,32 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
+        void IHttpResponseBodyFeature.DisableBuffering()
+        {
+        }
+
+        async Task IHttpResponseBodyFeature.StartAsync(CancellationToken cancellationToken)
+        {
+            if (_responseBodyWrapper != null)
+            {
+                await _responseBodyWrapper.FlushAsync(cancellationToken);
+            }
+
+            // The pipe may or may not have flushed the stream. Make sure the stream gets flushed to trigger response start.
+            await Prop<Stream>(OwinConstants.ResponseBody).FlushAsync(cancellationToken);
+        }
+
+        Task IHttpResponseBodyFeature.CompleteAsync()
+        {
+            if (_responseBodyWrapper != null)
+            {
+                return _responseBodyWrapper.FlushAsync().AsTask();
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
         public void Dispose()
         {
         }

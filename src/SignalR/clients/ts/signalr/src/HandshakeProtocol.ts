@@ -13,6 +13,7 @@ export interface HandshakeRequestMessage {
 /** @private */
 export interface HandshakeResponseMessage {
     readonly error: string;
+    readonly minorVersion: number;
 }
 
 /** @private */
@@ -38,7 +39,7 @@ export class HandshakeProtocol {
             // content before separator is handshake response
             // optional content after is additional messages
             const responseLength = separatorIndex + 1;
-            messageData = String.fromCharCode.apply(null, binaryData.slice(0, responseLength));
+            messageData = String.fromCharCode.apply(null, Array.prototype.slice.call(binaryData.slice(0, responseLength)));
             remainingData = (binaryData.byteLength > responseLength) ? binaryData.slice(responseLength).buffer : null;
         } else {
             const textData: string = data;
@@ -56,7 +57,11 @@ export class HandshakeProtocol {
 
         // At this point we should have just the single handshake message
         const messages = TextMessageFormat.parse(messageData);
-        responseMessage = JSON.parse(messages[0]);
+        const response = JSON.parse(messages[0]);
+        if (response.type) {
+            throw new Error("Expected a handshake response from the server.");
+        }
+        responseMessage = response;
 
         // multiple messages could have arrived with handshake
         // return additional data to be parsed as usual, or null if all parsed
