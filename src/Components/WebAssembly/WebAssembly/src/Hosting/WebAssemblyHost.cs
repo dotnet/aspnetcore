@@ -158,20 +158,28 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
                 _renderer = new WebAssemblyRenderer(Services, loggerFactory);
 
-                WebAssemblyCallQueue.Schedule((_rootComponents, _renderer), static state =>
+                var initializationTcs = new TaskCompletionSource();
+                WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
                 {
-                    var (rootComponents, renderer) = state;
-                    for (var i = 0; i < rootComponents.Length; i++)
-                    {
-                        var rootComponent = rootComponents[i];
+                    var (rootComponents, renderer, initializationTcs) = state;
 
-                        // No need to await because we want the root components to be added in parallel (e.g.,
-                        // not waiting for each other's OnInitializedAsync tasks), and any async exceptions will
-                        // be handled by normal component lifecycle mechanisms.
-                        _ = renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
+                    try
+                    {
+                        for (var i = 0; i < rootComponents.Length; i++)
+                        {
+                            var rootComponent = rootComponents[i];
+                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
+                        }
+
+                        initializationTcs.SetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        initializationTcs.SetException(ex);
                     }
                 });
 
+                await initializationTcs.Task;
                 store.ExistingState.Clear();
 
                 await tcs.Task;
