@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var fileContents = File.ReadAllBytes(dllPath);
             File.WriteAllBytes(dllPath, fileContents);
 
-            deploymentResult.AssertWorkerProcessStop();
+            await deploymentResult.AssertRecycledAsync();
 
             response = await deploymentResult.HttpClient.GetAsync("Wow!");
             Assert.True(response.IsSuccessStatusCode);
@@ -166,7 +166,70 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             DirectoryCopy(deploymentResult.ContentRoot, secondTempDir.DirectoryPath, copySubDirs: true);
             DirectoryCopy(secondTempDir.DirectoryPath, deploymentResult.ContentRoot, copySubDirs: true);
 
-            deploymentResult.AssertWorkerProcessStop();
+            await deploymentResult.AssertRecycledAsync();
+
+            response = await deploymentResult.HttpClient.GetAsync("Wow!");
+            Assert.True(response.IsSuccessStatusCode);
+        }
+
+        [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        public async Task ShadowCopyIgnoresItsOwnDirectoryWithRelativePathSegmentWhenCopying()
+        {
+            using var directory = TempDirectory.Create();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+            deploymentParameters.HandlerSettings["shadowCopyDirectory"] = "./ShadowCopy/../ShadowCopy/";
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            DirectoryCopy(deploymentResult.ContentRoot, Path.Combine(directory.DirectoryPath, "0"), copySubDirs: true);
+
+            var response = await deploymentResult.HttpClient.GetAsync("Wow!");
+            Assert.True(response.IsSuccessStatusCode);
+
+            using var secondTempDir = TempDirectory.Create();
+
+            // copy back and forth to cause file change notifications.
+            DirectoryCopy(deploymentResult.ContentRoot, secondTempDir.DirectoryPath, copySubDirs: true);
+            DirectoryCopy(secondTempDir.DirectoryPath, deploymentResult.ContentRoot, copySubDirs: true, ignoreDirectory: "ShadowCopy");
+
+            await deploymentResult.AssertRecycledAsync();
+
+            Assert.True(Directory.Exists(Path.Combine(deploymentResult.ContentRoot, "ShadowCopy")));
+            // Make sure folder isn't being recursively copied
+            Assert.False(Directory.Exists(Path.Combine(deploymentResult.ContentRoot, "ShadowCopy", "0", "ShadowCopy")));
+
+            response = await deploymentResult.HttpClient.GetAsync("Wow!");
+            Assert.True(response.IsSuccessStatusCode);
+        }
+
+        [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        public async Task ShadowCopyIgnoresItsOwnDirectoryWhenCopying()
+        {
+            using var directory = TempDirectory.Create();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.HandlerSettings["experimentalEnableShadowCopy"] = "true";
+            deploymentParameters.HandlerSettings["shadowCopyDirectory"] = "./ShadowCopy";
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            DirectoryCopy(deploymentResult.ContentRoot, Path.Combine(directory.DirectoryPath, "0"), copySubDirs: true);
+
+            var response = await deploymentResult.HttpClient.GetAsync("Wow!");
+            Assert.True(response.IsSuccessStatusCode);
+
+            using var secondTempDir = TempDirectory.Create();
+
+            // copy back and forth to cause file change notifications.
+            DirectoryCopy(deploymentResult.ContentRoot, secondTempDir.DirectoryPath, copySubDirs: true);
+            DirectoryCopy(secondTempDir.DirectoryPath, deploymentResult.ContentRoot, copySubDirs: true, ignoreDirectory: "ShadowCopy");
+
+            await deploymentResult.AssertRecycledAsync();
+
+            Assert.True(Directory.Exists(Path.Combine(deploymentResult.ContentRoot, "ShadowCopy")));
+            // Make sure folder isn't being recursively copied
+            Assert.False(Directory.Exists(Path.Combine(deploymentResult.ContentRoot, "ShadowCopy", "0", "ShadowCopy")));
+
             response = await deploymentResult.HttpClient.GetAsync("Wow!");
             Assert.True(response.IsSuccessStatusCode);
         }
@@ -222,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         // copied from https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
-        private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string ignoreDirectory = "")
         {
             // Get the subdirectories for the specified directory.
             DirectoryInfo dir = new DirectoryInfo(sourceDirName);
@@ -252,6 +315,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             {
                 foreach (DirectoryInfo subdir in dirs)
                 {
+                    if (string.Equals(subdir.Name, ignoreDirectory))
+                    {
+                        continue;
+                    }
                     string tempPath = Path.Combine(destDirName, subdir.Name);
                     DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
                 }
