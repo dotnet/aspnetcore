@@ -6,7 +6,11 @@ One of the easiest ways to contribute is to participate in discussions on GitHub
 Start a discussion on the [repository issue tracker](https://github.com/dotnet/aspnetcore/issues).
 
 ## Bugs and feature requests?
-For non-security related bugs, log a new issue in the appropriate GitHub repository. Here are some of the most common repositories:
+**IMPORTANT: If you want to report a security related issue, please see the `Reporting security issues and bugs` section below.**
+
+Before reporting a non-security related bug or filing a new issue try to find an existing issue if such exists. If found, upvote (👍) it and add a comment about your scenarioto to that issue. Our team pays attention to reactions a lot and having an issue with many upvotes or other positive reactions will help us prioritize it to be worked on sooner rather than later.
+
+If you can't find an existing issue, log a new issue in the appropriate GitHub repository. Here are some of the most common repositories:
 
 * [Docs](https://github.com/aspnet/Docs)
 * [AspNetCore](https://github.com/dotnet/aspnetcore)
