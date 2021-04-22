@@ -50,6 +50,17 @@ Each app server mounts the same `BasicTestApp` application under each scenario.
 
 To run the tests for this project, [run the tests on the command line](../../docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
 
+By default, WebAssembly E2E tests that run as part of the CI or when run in Release builds run with trimming enabled. It's possible that tests that successfully run locally might fail as part of the CI run due to errors introduced due to trimming. To test this scenario locally, either run the E2E tests in release build or with the `TestTrimmedApps` property set. For e.g.
+
+```
+dotnet test -c Release
+```
+or
+```
+dotnet build /p:TestTrimmedApps=true
+dotnet test --no-build
+```
+
 ## More Information
 
 For more information, see the [ASP.NET Core README](../../README.md).

@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -16,6 +15,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler, transportType: transportType, accessTokenProvider: AccessTokenProvider),
                     async (connection) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync().DefaultTimeout();
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 1"));
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 2"));
                     });
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(testHttpHandler, transportType: transportType, loggerFactory: LoggerFactory),
                         async (connection) =>
                         {
-                            await connection.StartAsync().OrTimeout();
+                            await connection.StartAsync().DefaultTimeout();
 
                             var feature = connection.Features.Get<IConnectionInherentKeepAliveFeature>();
                             Assert.NotNull(feature);
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler, transportType: transportType),
                     async (connection) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync().DefaultTimeout();
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
                     });
                 // Fail safe in case the code is modified and some requests don't execute as a result
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler, transportType: transportType),
                     async (connection) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync().DefaultTimeout();
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
                     });
                 // Fail safe in case the code is modified and some requests don't execute as a result
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler),
                     async (connection) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync().DefaultTimeout();
                         Assert.Contains("This is a test", Encoding.UTF8.GetString(await connection.Transport.Input.ReadAllAsync()));
                     });
             }
@@ -241,11 +241,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler),
                     async (connection) =>
                     {
-                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync().DefaultTimeout();
 
-                        await connection.Transport.Output.WriteAsync(data).OrTimeout();
+                        await connection.Transport.Output.WriteAsync(data).DefaultTimeout();
 
-                        Assert.Equal(data, await sendTcs.Task.OrTimeout());
+                        Assert.Equal(data, await sendTcs.Task.DefaultTimeout());
 
                         longPollTcs.TrySetResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
                     });
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     async (connection) =>
                     {
                         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                            () => connection.Transport.Output.WriteAsync(new byte[0]).OrTimeout());
+                            () => connection.Transport.Output.WriteAsync(new byte[0]).DefaultTimeout());
                         Assert.Equal($"Cannot access the {nameof(Transport)} pipe before the connection has started.", exception.Message);
                     });
             }
@@ -271,11 +271,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(),
                     async (connection) =>
                     {
-                        await connection.StartAsync().OrTimeout();
-                        await connection.DisposeAsync().OrTimeout();
+                        await connection.StartAsync().DefaultTimeout();
+                        await connection.DisposeAsync().DefaultTimeout();
 
                         var exception = await Assert.ThrowsAsync<ObjectDisposedException>(
-                            () => connection.Transport.Output.WriteAsync(new byte[0]).OrTimeout());
+                            () => connection.Transport.Output.WriteAsync(new byte[0]).DefaultTimeout());
                         Assert.Equal(nameof(HttpConnection), exception.ObjectName);
                     });
             }
@@ -288,12 +288,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(transport: transport),
                     async (connection) =>
                     {
-                        await connection.StartAsync().OrTimeout();
-                        await connection.DisposeAsync().OrTimeout();
+                        await connection.StartAsync().DefaultTimeout();
+                        await connection.DisposeAsync().DefaultTimeout();
 
                         // This will throw OperationCanceledException if it's forcibly terminated
                         // which we don't want
-                        await transport.Receiving.OrTimeout();
+                        await transport.Receiving.DefaultTimeout();
                     });
             }
 
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(transport: transport, transferFormat: TransferFormat.Binary),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync(TransferFormat.Text).DefaultTimeout();
 
                         Assert.Equal(TransferFormat.Text, transport.Format);
                     });

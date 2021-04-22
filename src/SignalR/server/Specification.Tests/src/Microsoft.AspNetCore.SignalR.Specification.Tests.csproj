@@ -12,6 +12,7 @@
     <Compile Include="..\..\..\common\testassets\Tests.Utils\HubConnectionContextUtils.cs" Link="HubConnectionContextUtils.cs" />
     <Compile Include="..\..\..\common\testassets\Tests.Utils\TaskExtensions.cs" Link="TaskExtensions.cs" />
     <Compile Include="..\..\..\common\testassets\Tests.Utils\TestClient.cs" Link="TestClient.cs" />
+    <Compile Include="$(SharedSourceRoot)TaskExtensions.cs" LinkBase="Shared\TaskExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
