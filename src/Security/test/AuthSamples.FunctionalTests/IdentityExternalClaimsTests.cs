@@ -29,7 +29,7 @@ namespace AuthSamples.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/8387")]
+        [Fact]
         public async Task MyClaimsRedirectsToLoginPageWhenNotLoggedIn()
         {
             // Arrange & Act

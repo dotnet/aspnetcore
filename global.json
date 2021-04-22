@@ -1,19 +1,19 @@
 {
   "sdk": {
-    "version": "6.0.100-preview.4.21216.8"
+    "version": "6.0.100-preview.4.21219.3"
   },
   "tools": {
-    "dotnet": "6.0.100-preview.4.21216.8",
+    "dotnet": "6.0.100-preview.4.21219.3",
     "runtimes": {
       "dotnet/x64": [
-        "2.1.25",
+        "2.1.27",
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "dotnet/x86": [
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "aspnetcore/x64": [
-        "3.1.13"
+        "3.1.14"
       ]
     },
     "Git": "2.22.0",
