@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Rewrite.PatternSegments;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
@@ -61,9 +62,9 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                         if (context.Current >= '0' && context.Current <= '9')
                         {
                             context.Next();
-                            var ruleVariable = context.Capture();
+                            var ruleVariable = context.Capture()!;
                             context.Back();
-                            var parsedIndex = int.Parse(ruleVariable);
+                            var parsedIndex = int.Parse(ruleVariable, CultureInfo.InvariantCulture);
 
                             results.Add(new RuleMatchSegment(parsedIndex));
                         }
@@ -116,7 +117,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                 }
 
                 // Need to verify server variable captured exists
-                var rawServerVariable = context.Capture();
+                var rawServerVariable = context.Capture()!;
                 results.Add(ServerVariables.FindServerVariable(rawServerVariable, context));
             }
             else if (context.Current >= '0' && context.Current <= '9')
@@ -125,12 +126,12 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                 // store information in the testString result to know what to look up.
                 context.Mark();
                 context.Next();
-                var rawConditionParameter = context.Capture();
+                var rawConditionParameter = context.Capture()!;
 
                 // Once we leave this method, the while loop will call next again. Because
                 // capture is exclusive, we need to go one past the end index, capture, and then go back.
                 context.Back();
-                var parsedIndex = int.Parse(rawConditionParameter);
+                var parsedIndex = int.Parse(rawConditionParameter, CultureInfo.InvariantCulture);
                 results.Add(new ConditionMatchSegment(parsedIndex));
             }
             else
@@ -149,7 +150,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
         private static void ParseLiteral(ParserContext context, IList<PatternSegment> results)
         {
             context.Mark();
-            string literal;
+            string? literal;
             while (true)
             {
                 if (context.Current == Percent || context.Current == Dollar)
@@ -165,7 +166,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
                 }
             }
             // add results
-            results.Add(new LiteralSegment(literal));
+            results.Add(new LiteralSegment(literal!));
         }
     }
 }

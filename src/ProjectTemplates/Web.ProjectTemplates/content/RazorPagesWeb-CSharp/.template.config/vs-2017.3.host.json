@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/vs-2017.3.host",
   "name": {
-    "text": "Web Application",
+    "text": "ASP.NET Core Web App",
     "package": "{0CD94836-1526-4E85-87D3-FB5274C5AFC9}",
     "id": "1017"
   },

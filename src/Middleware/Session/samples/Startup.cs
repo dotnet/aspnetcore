@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace SessionSample
@@ -21,7 +23,8 @@ namespace SessionSample
             // Uncomment the following line to use the in-memory implementation of IDistributedCache
             services.AddDistributedMemoryCache();
 
-            // Uncomment the following line to use the Microsoft SQL Server implementation of IDistributedCache.
+            // Uncomment the following line to use the Microsoft SQL Server implementation of IDistributedCache
+            // and add a PackageReference to Microsoft.Extensions.Caching.SqlServer in the .csrpoj.
             // Note that this would require setting up the session state database.
             //services.AddDistributedSqlServerCache(o =>
             //{
@@ -30,7 +33,8 @@ namespace SessionSample
             //    o.TableName = "Sessions";
             //});
 
-            // Uncomment the following line to use the Redis implementation of IDistributedCache.
+            // Uncomment the following line to use the Redis implementation of IDistributedCache
+            // and add a PackageReference to Microsoft.Extensions.Caching.StackExchangeRedis in the .csrpoj.
             // This will override any previously registered IDistributedCache service.
             //services.AddStackExchangeRedisCache(o =>
             //{
@@ -79,16 +83,19 @@ namespace SessionSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .ConfigureLogging(factory => factory.AddConsole())
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .ConfigureLogging(factory => factory.AddConsole())
+                    .UseKestrel()
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+                }).Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

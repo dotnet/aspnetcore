@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Net.Http.Headers;
 
 namespace FunctionalTests
 {
@@ -41,7 +43,7 @@ namespace FunctionalTests
 
         public int GetNumRedirects()
         {
-            return int.Parse(Context.GetHttpContext().Request.Query["numRedirects"]);
+            return int.Parse(Context.GetHttpContext().Request.Query["numRedirects"], CultureInfo.InvariantCulture);
         }
 
         public void ThrowException(string message)
@@ -134,6 +136,11 @@ namespace FunctionalTests
         public string GetContentTypeHeader()
         {
             return Context.GetHttpContext().Request.Headers["Content-Type"];
+        }
+
+        public string GetHeader(string headerName)
+        {
+            return Context.GetHttpContext().Request.Headers[headerName];
         }
 
         public string GetCookie(string cookieName)

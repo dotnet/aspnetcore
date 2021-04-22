@@ -10,8 +10,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost
@@ -32,19 +34,36 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             Assert.True(context.RequestAborted.CanBeCanceled);
-            Assert.Equal("HTTP/1.1", context.Request.Protocol);
+            Assert.Equal(HttpProtocol.Http11, context.Request.Protocol);
             Assert.Equal("POST", context.Request.Method);
             Assert.Equal("https", context.Request.Scheme);
             Assert.Equal("example.com", context.Request.Host.Value);
             Assert.Equal("/A/Path", context.Request.PathBase.Value);
             Assert.Equal("/and/file.txt", context.Request.Path.Value);
             Assert.Equal("?and=query", context.Request.QueryString.Value);
+            Assert.Null(context.Request.CanHaveBody());
             Assert.NotNull(context.Request.Body);
             Assert.NotNull(context.Request.Headers);
             Assert.NotNull(context.Response.Headers);
             Assert.NotNull(context.Response.Body);
             Assert.Equal(404, context.Response.StatusCode);
             Assert.Null(context.Features.Get<IHttpResponseFeature>().ReasonPhrase);
+        }
+
+        [Fact]
+        public async Task UserAgentHeaderWorks()
+        {
+            var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0";
+            var builder = new WebHostBuilder().Configure(app => { });
+            var server = new TestServer(builder);
+            server.BaseAddress = new Uri("https://example.com/");
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers[HeaderNames.UserAgent] = userAgent;
+            });
+
+            var actualResult = context.Request.Headers[HeaderNames.UserAgent];
+            Assert.Equal(userAgent, actualResult);
         }
 
         [Fact]
@@ -159,7 +178,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
@@ -181,7 +200,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
@@ -194,7 +213,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.DefaultTimeout());
             block.SetResult(0);
         }
 
@@ -218,7 +237,7 @@ namespace Microsoft.AspNetCore.TestHost
             await block.Task;
             cts.Cancel();
 
-            await Assert.ThrowsAsync<OperationCanceledException>(() => contextTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => contextTask.DefaultTimeout());
         }
 
         [Fact]
@@ -230,7 +249,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
@@ -244,7 +263,7 @@ namespace Microsoft.AspNetCore.TestHost
             var readTask = responseStream.ReadAsync(new byte[100], 0, 100, cts.Token);
             Assert.False(readTask.IsCompleted);
             cts.Cancel();
-            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.DefaultTimeout());
             block.SetResult(0);
         }
 
@@ -327,7 +346,7 @@ namespace Microsoft.AspNetCore.TestHost
 
             var ex = await Assert.ThrowsAsync<Exception>(() => server.SendAsync(c => { }));
             Assert.Equal("The application aborted the request.", ex.Message);
-            await requestAborted.Task.WithTimeout();
+            await requestAborted.Task.DefaultTimeout();
         }
 
         private class VerifierLogger : ILogger<IWebHost>

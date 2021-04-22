@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Runtime.Serialization;
 
@@ -16,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// Creates a new instance of <see cref="AmbiguousActionException" />.
         /// </summary>
         /// <param name="message">The exception message.</param>
-        public AmbiguousActionException(string message)
+        public AmbiguousActionException(string? message)
             : base(message)
         {
         }

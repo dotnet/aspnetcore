@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 {
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
             private MemoryHandle _inputHandle;
 
-            private IntPtr _requestHandler;
+            private NativeSafeHandle? _requestHandler;
 
             private Memory<byte> _memory;
 
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 _engine = engine;
             }
 
-            public void Initialize(IntPtr requestHandler, Memory<byte> memory)
+            public void Initialize(NativeSafeHandle requestHandler, Memory<byte> memory)
             {
                 _requestHandler = requestHandler;
                 _memory = memory;
@@ -31,6 +32,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
             protected override unsafe bool InvokeOperation(out int hr, out int bytes)
             {
+                Debug.Assert(_requestHandler != null, "Must initialize first.");
+
                 _inputHandle = _memory.Pin();
                 hr = NativeMethods.HttpReadRequestBytes(
                     _requestHandler,

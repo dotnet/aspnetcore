@@ -26,13 +26,13 @@ namespace Microsoft.AspNetCore.StaticFiles
         private readonly ILogger _logger;
         private readonly IFileProvider _fileProvider;
         private readonly string _method;
-        private readonly string _contentType;
+        private readonly string? _contentType;
 
         private IFileInfo _fileInfo;
-        private EntityTagHeaderValue _etag;
-        private RequestHeaders _requestHeaders;
-        private ResponseHeaders _responseHeaders;
-        private RangeItemHeaderValue _range;
+        private EntityTagHeaderValue? _etag;
+        private RequestHeaders? _requestHeaders;
+        private ResponseHeaders? _responseHeaders;
+        private RangeItemHeaderValue? _range;
 
         private long _length;
         private readonly PathString _subPath;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private RequestType _requestType;
 
-        public StaticFileContext(HttpContext context, StaticFileOptions options, ILogger logger, IFileProvider fileProvider, string contentType, PathString subPath)
+        public StaticFileContext(HttpContext context, StaticFileOptions options, ILogger logger, IFileProvider fileProvider, string? contentType, PathString subPath)
         {
             _context = context;
             _options = options;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             _fileProvider = fileProvider;
             _method = _request.Method;
             _contentType = contentType;
-            _fileInfo = null;
+            _fileInfo = default!;
             _etag = null;
             _requestHeaders = null;
             _responseHeaders = null;
@@ -83,9 +83,9 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
         }
 
-        private RequestHeaders RequestHeaders => (_requestHeaders ??= _request.GetTypedHeaders());
+        private RequestHeaders RequestHeaders => _requestHeaders ??= _request.GetTypedHeaders();
 
-        private ResponseHeaders ResponseHeaders => (_responseHeaders ??= _response.GetTypedHeaders());
+        private ResponseHeaders ResponseHeaders => _responseHeaders ??= _response.GetTypedHeaders();
 
         public bool IsHeadMethod => _requestType.HasFlag(RequestType.IsHead);
 
@@ -107,9 +107,9 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
         }
 
-        public string SubPath => _subPath.Value;
+        public string SubPath => _subPath.Value!;
 
-        public string PhysicalPath => _fileInfo?.PhysicalPath;
+        public string PhysicalPath => _fileInfo.PhysicalPath;
 
         public bool LookupFileInfo()
         {
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             // 14.24 If-Match
             var ifMatch = requestHeaders.IfMatch;
-            if (ifMatch != null && ifMatch.Any())
+            if (ifMatch?.Count > 0)
             {
                 _ifMatchState = PreconditionState.PreconditionFailed;
                 foreach (var etag in ifMatch)
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             // 14.26 If-None-Match
             var ifNoneMatch = requestHeaders.IfNoneMatch;
-            if (ifNoneMatch != null && ifNoneMatch.Any())
+            if (ifNoneMatch?.Count > 0)
             {
                 _ifNoneMatchState = PreconditionState.ShouldProcess;
                 foreach (var etag in ifNoneMatch)
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 responseHeaders.ETag = _etag;
                 responseHeaders.Headers[HeaderNames.AcceptRanges] = "bytes";
             }
-            if (statusCode == Constants.Status200Ok)
+            if (statusCode == StatusCodes.Status200OK)
             {
                 // this header is only returned here for 200
                 // it already set to the returned range for 206
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 _response.ContentLength = _length;
             }
 
-            _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo));
+            _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo!));
         }
 
         public PreconditionState GetPreconditionState()
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 case PreconditionState.ShouldProcess:
                     if (IsHeadMethod)
                     {
-                        await SendStatusAsync(Constants.Status200Ok);
+                        await SendStatusAsync(StatusCodes.Status200OK);
                         return;
                     }
 
@@ -324,11 +324,11 @@ namespace Microsoft.AspNetCore.StaticFiles
                     return;
                 case PreconditionState.NotModified:
                     _logger.FileNotModified(SubPath);
-                    await SendStatusAsync(Constants.Status304NotModified);
+                    await SendStatusAsync(StatusCodes.Status304NotModified);
                     return;
                 case PreconditionState.PreconditionFailed:
                     _logger.PreconditionFailed(SubPath);
-                    await SendStatusAsync(Constants.Status412PreconditionFailed);
+                    await SendStatusAsync(StatusCodes.Status412PreconditionFailed);
                     return;
                 default:
                     var exception = new NotImplementedException(GetPreconditionState().ToString());
@@ -340,17 +340,15 @@ namespace Microsoft.AspNetCore.StaticFiles
         public async Task SendAsync()
         {
             SetCompressionMode();
-            ApplyResponseHeaders(Constants.Status200Ok);
+            ApplyResponseHeaders(StatusCodes.Status200OK);
             try
             {
                 await _context.Response.SendFileAsync(_fileInfo, 0, _length, _context.RequestAborted);
             }
             catch (OperationCanceledException ex)
             {
-                _logger.WriteCancelled(ex);
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
-                // However, if it was canceled for any other reason we need to prevent empty responses.
-                _context.Abort();
+                _logger.WriteCancelled(ex);
             }
         }
 
@@ -363,7 +361,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // SHOULD include a Content-Range field with a byte-range-resp-spec of "*". The instance-length specifies
                 // the current length of the selected resource.  e.g. */length
                 ResponseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
-                ApplyResponseHeaders(Constants.Status416RangeNotSatisfiable);
+                ApplyResponseHeaders(StatusCodes.Status416RangeNotSatisfiable);
 
                 _logger.RangeNotSatisfiable(SubPath);
                 return;
@@ -372,7 +370,8 @@ namespace Microsoft.AspNetCore.StaticFiles
             ResponseHeaders.ContentRange = ComputeContentRange(_range, out var start, out var length);
             _response.ContentLength = length;
             SetCompressionMode();
-            ApplyResponseHeaders(Constants.Status206PartialContent);
+            ApplyResponseHeaders(StatusCodes.Status206PartialContent);
+
             try
             {
                 var logPath = !string.IsNullOrEmpty(_fileInfo.PhysicalPath) ? _fileInfo.PhysicalPath : SubPath;
@@ -381,18 +380,16 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
             catch (OperationCanceledException ex)
             {
-                _logger.WriteCancelled(ex);
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
-                // However, if it was canceled for any other reason we need to prevent empty responses.
-                _context.Abort();
+                _logger.WriteCancelled(ex);
             }
         }
 
         // Note: This assumes ranges have been normalized to absolute byte offsets.
         private ContentRangeHeaderValue ComputeContentRange(RangeItemHeaderValue range, out long start, out long length)
         {
-            start = range.From.Value;
-            long end = range.To.Value;
+            start = range.From!.Value;
+            var end = range.To!.Value;
             length = end - start + 1;
             return new ContentRangeHeaderValue(start, end, _length);
         }

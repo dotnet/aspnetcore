@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections;
@@ -8,8 +8,10 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
+#pragma warning disable ASP5001 // Type or member is obsolete
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+    [System.Obsolete]
     public class ConfigureCompatibilityOptionsTest
     {
         [Fact]

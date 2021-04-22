@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' == 'core'">netcoreapp3.1</_RepoTaskAssemblyFolder>
+    <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' == 'core'">net6.0</_RepoTaskAssemblyFolder>
     <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' != 'core'">net472</_RepoTaskAssemblyFolder>
     <_RepoTaskAssembly>$(ArtifactsBinDir)RepoTasks\Release\$(_RepoTaskAssemblyFolder)\RepoTasks.dll</_RepoTaskAssembly>
   </PropertyGroup>

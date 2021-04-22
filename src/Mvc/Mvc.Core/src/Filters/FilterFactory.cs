@@ -46,13 +46,22 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             // Cache the filter items based on the following criteria
             // 1. Are created statically (ex: via filter attributes, added to global filter list etc.)
             // 2. Are re-usable
+            var allFiltersAreReusable = true;
             for (var i = 0; i < staticFilterItems.Length; i++)
             {
                 var item = staticFilterItems[i];
                 if (!item.IsReusable)
                 {
                     item.Filter = null;
+                    allFiltersAreReusable = false;
                 }
+            }
+
+            if (allFiltersAreReusable && filterProviders.Length == 1 && filterProviders[0] is DefaultFilterProvider defaultFilterProvider)
+            {
+                // If we know we can safely cache all filters and only the default filter provider is registered, we can
+                // probably re-use filters between requests.
+                actionDescriptor.CachedResuableFilters = filters;
             }
 
             return new FilterFactoryResult(staticFilterItems, filters);
@@ -76,6 +85,11 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             if (cachedFilterItems == null)
             {
                 throw new ArgumentNullException(nameof(cachedFilterItems));
+            }
+
+            if (actionContext.ActionDescriptor.CachedResuableFilters is { } cached)
+            {
+                return cached;
             }
 
             // Deep copy the cached filter items as filter providers could modify them

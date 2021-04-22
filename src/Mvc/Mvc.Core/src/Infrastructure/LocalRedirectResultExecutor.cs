@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Threading.Tasks;
@@ -11,11 +13,19 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+    /// <summary>
+    /// A <see cref="IActionResultExecutor{LocalRedirectResult}"/> that handles <see cref="LocalRedirectResult"/>.
+    /// </summary>
     public class LocalRedirectResultExecutor : IActionResultExecutor<LocalRedirectResult>
     {
         private readonly ILogger _logger;
         private readonly IUrlHelperFactory _urlHelperFactory;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="LocalRedirectResultExecutor"/>.
+        /// </summary>
+        /// <param name="loggerFactory">Used to create loggers.</param>
+        /// <param name="urlHelperFactory">Used to create url helpers.</param>
         public LocalRedirectResultExecutor(ILoggerFactory loggerFactory, IUrlHelperFactory urlHelperFactory)
         {
             if (loggerFactory == null)

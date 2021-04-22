@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -224,7 +225,7 @@ namespace Microsoft.AspNetCore.Components.Test
                     {
                         Assert.Equal(RenderTreeEditType.StepOut, edit.Type);
                     });
-                AssertFrame.Text(update.ReferenceFrames[0], (5 - i).ToString());
+                AssertFrame.Text(update.ReferenceFrames[0], (5 - i).ToString(CultureInfo.InvariantCulture));
             }
         }
 
@@ -484,10 +485,103 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void CanGetEventArgsTypeForHandler()
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer();
+
+            var component = new EventComponent
+            {
+                OnArbitraryDelegateEvent = (Func<DerivedEventArgs, Task>)(args => Task.CompletedTask),
+            };
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+
+            // Assert: Can determine event args type
+            var eventArgsType = renderer.GetEventArgsType(eventHandlerId);
+            Assert.Same(typeof(DerivedEventArgs), eventArgsType);
+        }
+
+        [Fact]
+        public void CanGetEventArgsTypeForParameterlessHandler()
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer();
+
+            var component = new EventComponent
+            {
+                OnArbitraryDelegateEvent = (Func<Task>)(() => Task.CompletedTask),
+            };
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+
+            // Assert: Can determine event args type
+            var eventArgsType = renderer.GetEventArgsType(eventHandlerId);
+            Assert.Same(typeof(EventArgs), eventArgsType);
+        }
+
+        [Fact]
+        public void CannotGetEventArgsTypeForMultiParameterHandler()
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer();
+
+            var component = new EventComponent
+            {
+                OnArbitraryDelegateEvent = (Action<EventArgs, string>)((x, y) => { }),
+            };
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+
+            // Assert: Cannot determine event args type
+            var ex = Assert.Throws<InvalidOperationException>(() => renderer.GetEventArgsType(eventHandlerId));
+            Assert.Contains("declares more than one parameter", ex.Message);
+        }
+
+        [Fact]
+        public void CannotGetEventArgsTypeForHandlerWithNonEventArgsParameter()
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer();
+
+            var component = new EventComponent
+            {
+                OnArbitraryDelegateEvent = (Action<DateTime>)(arg => { }),
+            };
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+
+            // Assert: Cannot determine event args type
+            var ex = Assert.Throws<InvalidOperationException>(() => renderer.GetEventArgsType(eventHandlerId));
+            Assert.Contains($"must inherit from {typeof(EventArgs).FullName}", ex.Message);
+        }
+
+        [Fact]
         public void DispatchEventHandlesSynchronousExceptionsFromEventHandlers()
         {
             // Arrange: Render a component with an event handler
-            var renderer = new TestRenderer {
+            var renderer = new TestRenderer
+            {
                 ShouldHandleExceptions = true
             };
 
@@ -2087,6 +2181,238 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void RenderBatch_HandlesSynchronousExceptionsInAsyncDisposableComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var exception1 = new InvalidOperationException();
+
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(() => throw exception1));
+                    builder.CloseComponent();
+                }
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
+            var innerException = Assert.Single(aex.Flatten().InnerExceptions);
+            Assert.Same(exception1, innerException);
+        }
+
+        [Fact]
+        public void RenderBatch_CanDisposeSynchronousAsyncDisposableImplementations()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(() => default));
+                    builder.CloseComponent();
+                }
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            Assert.Empty(renderer.HandledExceptions);
+        }
+
+        [Fact]
+        public void RenderBatch_CanDisposeAsynchronousAsyncDisposables()
+        {
+            // Arrange
+            var semaphore = new Semaphore(0, 1);
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            renderer.OnExceptionHandled = () => semaphore.Release();
+            var exception1 = new InvalidOperationException();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(async () => { await tcs.Task; }));
+                    builder.CloseComponent();
+                }
+            });
+
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            Assert.Empty(renderer.HandledExceptions);
+
+            // Continue execution
+            tcs.SetResult();
+            Assert.False(semaphore.WaitOne(10));
+            Assert.Empty(renderer.HandledExceptions);
+        }
+
+        [Fact]
+        public void RenderBatch_HandlesAsynchronousExceptionsInAsyncDisposableComponents()
+        {
+            // Arrange
+            var semaphore = new Semaphore(0, 1);
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            renderer.OnExceptionHandled = () => semaphore.Release();
+            var exception1 = new InvalidOperationException();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(async () => { await tcs.Task; throw exception1; }));
+                    builder.CloseComponent();
+                }
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            Assert.Empty(renderer.HandledExceptions);
+
+            // Continue execution
+            tcs.SetResult();
+            semaphore.WaitOne();
+            var aex = Assert.IsType<InvalidOperationException>(Assert.Single(renderer.HandledExceptions));
+            Assert.Same(exception1, aex);
+        }
+
+        [Fact]
+        public void RenderBatch_ReportsSynchronousCancelationsAsErrors()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(() => throw new TaskCanceledException()));
+                    builder.CloseComponent();
+                }
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
+            Assert.IsType<TaskCanceledException>(Assert.Single(aex.Flatten().InnerExceptions));
+        }
+
+        [Fact]
+        public void RenderBatch_ReportsAsynchronousCancelationsAsErrors()
+        {
+            // Arrange
+            var semaphore = new Semaphore(0, 1);
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            renderer.OnExceptionHandled += () => semaphore.Release();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                if (firstRender)
+                {
+                    builder.AddContent(0, "Hello");
+                    builder.OpenComponent<AsyncDisposableComponent>(1);
+                    builder.AddAttribute(
+                        1,
+                        nameof(AsyncDisposableComponent.AsyncDisposeAction),
+                        (Func<ValueTask>)(() => new ValueTask(tcs.Task)));
+                    builder.CloseComponent();
+                }
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Equal(new[] { 1, }, renderer.Batches[1].DisposedComponentIDs);
+
+            // Outer component is still alive and not disposed.
+            Assert.False(component.Disposed);
+            Assert.Empty(renderer.HandledExceptions);
+
+            // Cancel execution
+            tcs.SetCanceled();
+
+            semaphore.WaitOne();
+            var aex = Assert.IsType<TaskCanceledException>(Assert.Single(renderer.HandledExceptions));
+        }
+
+        [Fact]
         public void RenderBatch_DoesNotDisposeComponentMultipleTimes()
         {
             // Arrange
@@ -2575,7 +2901,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public async Task CanCombineBindAndConditionalAttribute()
         {
-            // This test represents https://github.com/aspnet/Blazor/issues/624
+            // This test represents https://github.com/dotnet/blazor/issues/624
 
             // Arrange: Rendered with textbox enabled
             var renderer = new TestRenderer();
@@ -2589,7 +2915,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act: Toggle the checkbox
             var eventArgs = new ChangeEventArgs { Value = true };
-            var renderTask =  renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+            var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
 
             Assert.True(renderTask.IsCompletedSuccessfully);
             var latestBatch = renderer.Batches.Last();
@@ -2810,8 +3136,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(10, component.OnAfterRenderCallCount);
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7487")]
+        [Fact]
         public async Task CanTriggerEventHandlerDisposedInEarlierPendingBatchAsync()
         {
             // This represents the scenario where the same event handler is being triggered
@@ -3574,11 +3899,71 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act &A Assert
             renderer.Dispose();
 
-            // All components must be disposed even if some throw as part of being diposed.
+            // All components must be disposed even if some throw as part of being disposed.
             Assert.True(component.Disposed);
             var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
             Assert.Contains(exception1, aex.InnerExceptions);
             Assert.Contains(exception2, aex.InnerExceptions);
+        }
+
+        [Fact]
+        public async Task DisposingRenderer_CapturesSyncExceptionsFromAllRegisteredAsyncDisposableComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var exception1 = new InvalidOperationException();
+            var disposed = false;
+
+            var component = new TestComponent(builder =>
+            {
+                builder.AddContent(0, "Hello");
+                builder.OpenComponent<AsyncDisposableComponent>(1);
+                builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(() => { disposed = true; throw exception1; }));
+                builder.CloseComponent();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act
+            await renderer.DisposeAsync();
+
+            // Assert
+            Assert.True(disposed);
+            var handledException = Assert.Single(renderer.HandledExceptions);
+            Assert.Same(exception1, handledException);
+        }
+
+        [Fact]
+        public async Task DisposingRenderer_CapturesAsyncExceptionsFromAllRegisteredAsyncDisposableComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var exception1 = new InvalidOperationException();
+            var disposed = false;
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var component = new TestComponent(builder =>
+            {
+                builder.AddContent(0, "Hello");
+                builder.OpenComponent<AsyncDisposableComponent>(1);
+                builder.AddAttribute(1, nameof(AsyncDisposableComponent.AsyncDisposeAction), (Func<ValueTask>)(async () => { await tcs.Task; disposed = true; throw exception1; }));
+                builder.CloseComponent();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act
+            var disposal = renderer.DisposeAsync();
+            Assert.False(disposed);
+            Assert.False(disposal.IsCompleted);
+
+            tcs.TrySetResult();
+            await disposal;
+
+            // Assert
+            Assert.True(disposed);
+            var handledException = Assert.Single(renderer.HandledExceptions);
+            Assert.Same(exception1, handledException);
         }
 
         [Theory]
@@ -3734,6 +4119,309 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
         }
 
+        [Fact]
+        public void CanUseCustomComponentActivatorFromConstructorParameter()
+        {
+            // Arrange
+            var serviceProvider = new TestServiceProvider();
+            var componentActivator = new TestComponentActivator<MessageComponent>();
+            var renderer = new TestRenderer(serviceProvider, componentActivator);
+
+            // Act: Ask for TestComponent
+            var suppliedComponent = renderer.InstantiateComponent<TestComponent>();
+
+            // Assert: We actually receive MessageComponent
+            Assert.IsType<MessageComponent>(suppliedComponent);
+            Assert.Collection(componentActivator.RequestedComponentTypes,
+                requestedType => Assert.Equal(typeof(TestComponent), requestedType));
+        }
+
+        [Fact]
+        public void CanUseCustomComponentActivatorFromServiceProvider()
+        {
+            // Arrange
+            var serviceProvider = new TestServiceProvider();
+            var componentActivator = new TestComponentActivator<MessageComponent>();
+            serviceProvider.AddService<IComponentActivator>(componentActivator);
+            var renderer = new TestRenderer(serviceProvider);
+
+            // Act: Ask for TestComponent
+            var suppliedComponent = renderer.InstantiateComponent<TestComponent>();
+
+            // Assert: We actually receive MessageComponent
+            Assert.IsType<MessageComponent>(suppliedComponent);
+            Assert.Collection(componentActivator.RequestedComponentTypes,
+                requestedType => Assert.Equal(typeof(TestComponent), requestedType));
+        }
+
+        [Fact]
+        public async Task ThrowsIfComponentProducesInvalidRenderTree()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "myElem");
+            });
+            var rootComponentId = renderer.AssignRootComponentId(component);
+
+            // Act/Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+            Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed.", ex.Message);
+        }
+
+        [Fact]
+        public void RenderingExceptionsCanBeHandledByClosestErrorBoundary()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var exception = new InvalidTimeZoneException("Error during render");
+            var rootComponentId = renderer.AssignRootComponentId(new TestComponent(builder =>
+            {
+                TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                {
+                    builder.OpenComponent<ErrorThrowingComponent>(0);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringRender), exception);
+                    builder.CloseComponent();
+                });
+            }));
+
+            // Act
+            renderer.RenderRootComponent(rootComponentId);
+
+            // Assert
+            var batch = renderer.Batches.Single();
+            var errorThrowingComponentId = batch.GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+            var componentFrames = batch.GetComponentFrames<TestErrorBoundary>();
+            Assert.Collection(componentFrames.Select(f => (TestErrorBoundary)f.Component),
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+
+            // The failed subtree is disposed
+            Assert.Equal(errorThrowingComponentId, batch.DisposedComponentIDs.Single());
+        }
+
+        [Fact]
+        public void SetParametersAsyncExceptionsCanBeHandledByClosestErrorBoundary_Sync()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            Exception exception = null;
+            var rootComponent = new TestComponent(builder =>
+            {
+                TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                {
+                    builder.OpenComponent<ErrorThrowingComponent>(0);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringParameterSettingSync), exception);
+                    builder.CloseComponent();
+                });
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            renderer.RenderRootComponent(rootComponentId);
+            var errorBoundaries = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>()
+                .Select(f => (TestErrorBoundary)f.Component);
+            var errorThrowingComponentId = renderer.Batches.Single()
+                .GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+
+            // Act
+            exception = new InvalidTimeZoneException("Error during SetParametersAsync");
+            rootComponent.TriggerRender();
+
+            // Assert
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+
+            // The failed subtree is disposed
+            Assert.Equal(errorThrowingComponentId, renderer.Batches[1].DisposedComponentIDs.Single());
+        }
+
+        [Fact]
+        public async Task SetParametersAsyncExceptionsCanBeHandledByClosestErrorBoundary_Async()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var exception = new InvalidTimeZoneException("Error during SetParametersAsync");
+            TaskCompletionSource exceptionTcs = null;
+            var rootComponent = new TestComponent(builder =>
+            {
+                TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                {
+                    builder.OpenComponent<ErrorThrowingComponent>(0);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringParameterSettingAsync), exceptionTcs?.Task);
+                    builder.CloseComponent();
+                });
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            renderer.RenderRootComponent(rootComponentId);
+            var errorBoundaries = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>()
+                .Select(f => (TestErrorBoundary)f.Component).ToArray();
+            var errorThrowingComponentId = renderer.Batches.Single()
+                .GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+
+            // Act/Assert 1: No synchronous errors
+            exceptionTcs = new TaskCompletionSource();
+            rootComponent.TriggerRender();
+            Assert.Equal(2, renderer.Batches.Count);
+
+            // Act/Assert 2: Asynchronous error
+            exceptionTcs.SetException(exception);
+            await errorBoundaries[1].ReceivedErrorTask;
+            Assert.Equal(3, renderer.Batches.Count);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+
+            // The failed subtree is disposed
+            Assert.Equal(errorThrowingComponentId, renderer.Batches[2].DisposedComponentIDs.Single());
+        }
+
+        [Fact]
+        public void EventDispatchExceptionsCanBeHandledByClosestErrorBoundary_Sync()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var exception = new InvalidTimeZoneException("Error during event");
+            var rootComponentId = renderer.AssignRootComponentId(new TestComponent(builder =>
+            {
+                TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                {
+                    builder.OpenComponent<ErrorThrowingComponent>(0);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringEventSync), exception);
+                    builder.CloseComponent();
+                });
+            }));
+            renderer.RenderRootComponent(rootComponentId);
+            var errorBoundaries = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>()
+                .Select(f => (TestErrorBoundary)f.Component);
+            var errorThrowingComponentId = renderer.Batches.Single()
+                .GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+            var eventHandlerId = renderer.Batches.Single().ReferenceFrames
+                .Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onmakeerror")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
+
+            // Assert
+            Assert.True(task.IsCompletedSuccessfully);
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+
+            // The failed subtree is disposed
+            Assert.Equal(errorThrowingComponentId, renderer.Batches[1].DisposedComponentIDs.Single());
+        }
+
+        [Fact]
+        public async Task EventDispatchExceptionsCanBeHandledByClosestErrorBoundary_Async()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var exception = new InvalidTimeZoneException("Error during event");
+            var exceptionTcs = new TaskCompletionSource();
+            var rootComponentId = renderer.AssignRootComponentId(new TestComponent(builder =>
+            {
+                TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                {
+                    builder.OpenComponent<ErrorThrowingComponent>(0);
+                    builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringEventAsync), exceptionTcs.Task);
+                    builder.CloseComponent();
+                });
+            }));
+            renderer.RenderRootComponent(rootComponentId);
+            var errorBoundaries = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>()
+                .Select(f => (TestErrorBoundary)f.Component);
+            var errorThrowingComponentId = renderer.Batches.Single()
+                .GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+            var eventHandlerId = renderer.Batches.Single().ReferenceFrames
+                .Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onmakeerror")
+                .AttributeEventHandlerId;
+
+            // Act/Assert 1: No error synchronously
+            var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
+            Assert.Single(renderer.Batches);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Null(component.ReceivedException));
+
+            // Act/Assert 2: Error is handled asynchronously
+            exceptionTcs.SetException(exception);
+            await dispatchEventTask;
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+
+            // The failed subtree is disposed
+            Assert.Equal(errorThrowingComponentId, renderer.Batches[1].DisposedComponentIDs.Single());
+        }
+
+        [Fact]
+        public async Task EventDispatchExceptionsCanBeHandledByClosestErrorBoundary_AfterDisposal()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var disposeChildren = false;
+            var exception = new InvalidTimeZoneException("Error during event");
+            var exceptionTcs = new TaskCompletionSource();
+            var rootComponent = new TestComponent(builder =>
+            {
+                if (!disposeChildren)
+                {
+                    TestErrorBoundary.RenderNestedErrorBoundaries(builder, builder =>
+                    {
+                        builder.OpenComponent<ErrorThrowingComponent>(0);
+                        builder.AddAttribute(1, nameof(ErrorThrowingComponent.ThrowDuringEventAsync), exceptionTcs.Task);
+                        builder.CloseComponent();
+                    });
+                }
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            renderer.RenderRootComponent(rootComponentId);
+            var errorBoundaries = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>()
+                .Select(f => (TestErrorBoundary)f.Component);
+            var errorThrowingComponentId = renderer.Batches.Single()
+                .GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+            var eventHandlerId = renderer.Batches.Single().ReferenceFrames
+                .Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onmakeerror")
+                .AttributeEventHandlerId;
+
+            // Act/Assert 1: No error synchronously
+            var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
+            Assert.Single(renderer.Batches);
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Null(component.ReceivedException));
+
+            // Act 2: Before the async error occurs, dispose the hierarchy containing the error boundary and erroring component
+            disposeChildren = true;
+            rootComponent.TriggerRender();
+            Assert.Equal(2, renderer.Batches.Count);
+            Assert.Contains(errorThrowingComponentId, renderer.Batches.Last().DisposedComponentIDs);
+
+            // Assert 2: Error is still handled
+            exceptionTcs.SetException(exception);
+            await dispatchEventTask;
+            Assert.Equal(2, renderer.Batches.Count); // Didn't re-render as the error boundary was already gone
+            Assert.Collection(errorBoundaries,
+                component => Assert.Null(component.ReceivedException),
+                component => Assert.Same(exception, component.ReceivedException));
+        }
+
+        private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
+        {
+            public List<Type> RequestedComponentTypes { get; } = new List<Type>();
+
+            public IComponent CreateInstance(Type componentType)
+            {
+                RequestedComponentTypes.Add(componentType);
+                return new TResult();
+            }
+        }
+
         private class NoOpRenderer : Renderer
         {
             public NoOpRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)
@@ -3869,6 +4557,9 @@ namespace Microsoft.AspNetCore.Components.Test
             [Parameter]
             public EventCallback<DerivedEventArgs> OnClickEventCallbackOfT { get; set; }
 
+            [Parameter]
+            public Delegate OnArbitraryDelegateEvent { get; set; }
+
             public bool SkipElement { get; set; }
             private int renderCount = 0;
 
@@ -3914,6 +4605,12 @@ namespace Microsoft.AspNetCore.Components.Test
                     {
                         builder.AddAttribute(5, "onclickaction", OnClickAsyncAction);
                     }
+
+                    if (OnArbitraryDelegateEvent != null)
+                    {
+                        builder.AddAttribute(6, "onarbitrarydelegateevent", OnArbitraryDelegateEvent);
+                    }
+
                     builder.CloseElement();
                     builder.CloseElement();
                 }
@@ -3945,10 +4642,9 @@ namespace Microsoft.AspNetCore.Components.Test
                     builder.OpenComponent<T>(1);
                     if (ChildParameters != null)
                     {
-                        var sequence = 2;
                         foreach (var kvp in ChildParameters)
                         {
-                            builder.AddAttribute(sequence++, kvp.Key, kvp.Value);
+                            builder.AddAttribute(2, kvp.Key, kvp.Value);
                         }
                     }
                     builder.CloseComponent();
@@ -4102,6 +4798,24 @@ namespace Microsoft.AspNetCore.Components.Test
             }
         }
 
+        private class AsyncDisposableComponent : AutoRenderComponent, IAsyncDisposable
+        {
+            public bool Disposed { get; private set; }
+
+            [Parameter]
+            public Func<ValueTask> AsyncDisposeAction { get; set; }
+
+            public ValueTask DisposeAsync()
+            {
+                Disposed = true;
+                return AsyncDisposeAction == null ? default : AsyncDisposeAction.Invoke();
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+            }
+        }
+
         class TestAsyncRenderer : TestRenderer
         {
             public Task NextUpdateDisplayReturnTask { get; set; }
@@ -4146,9 +4860,8 @@ namespace Microsoft.AspNetCore.Components.Test
                 // Cheap closure
                 void CreateFragment(RenderTreeBuilder builder)
                 {
-                    var s = 0;
-                    builder.OpenElement(s++, "p");
-                    builder.AddContent(s++, n);
+                    builder.OpenElement(0, "p");
+                    builder.AddContent(1, n);
                     builder.CloseElement();
                 }
             }
@@ -4227,16 +4940,15 @@ namespace Microsoft.AspNetCore.Components.Test
 
             return component => builder =>
             {
-                var s = 0;
-                builder.OpenElement(s++, "div");
-                builder.AddContent(s++, $"Id: {component.TestId} BuildRenderTree, {Guid.NewGuid()}");
+                builder.OpenElement(0, "div");
+                builder.AddContent(1, $"Id: {component.TestId} BuildRenderTree, {Guid.NewGuid()}");
                 foreach (var child in childrenToRender)
                 {
-                    builder.OpenComponent<NestedAsyncComponent>(s++);
-                    builder.AddAttribute(s++, eventActionsName, component.EventActions);
-                    builder.AddAttribute(s++, whatToRenderName, component.WhatToRender);
-                    builder.AddAttribute(s++, testIdName, child);
-                    builder.AddAttribute(s++, logName, component.Log);
+                    builder.OpenComponent<NestedAsyncComponent>(2);
+                    builder.AddAttribute(3, eventActionsName, component.EventActions);
+                    builder.AddAttribute(4, whatToRenderName, component.WhatToRender);
+                    builder.AddAttribute(5, testIdName, child);
+                    builder.AddAttribute(6, logName, component.Log);
                     builder.CloseComponent();
                 }
 
@@ -4494,6 +5206,89 @@ namespace Microsoft.AspNetCore.Components.Test
                 // Return a task that never completes to show that access is forbidden
                 // after the synchronous return, not just after the returned task completes
                 return new TaskCompletionSource<object>().Task;
+            }
+        }
+
+        private class TestErrorBoundary : AutoRenderComponent, IErrorBoundary
+        {
+            private TaskCompletionSource receivedErrorTaskCompletionSource = new();
+
+            public Exception ReceivedException { get; private set; }
+            public Task ReceivedErrorTask => receivedErrorTaskCompletionSource.Task;
+
+            [Parameter] public RenderFragment ChildContent { get; set; }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+                => ChildContent(builder);
+
+            public void HandleException(Exception error)
+            {
+                ReceivedException = error;
+                receivedErrorTaskCompletionSource.SetResult();
+            }
+
+            public static void RenderNestedErrorBoundaries(RenderTreeBuilder builder, RenderFragment innerContent)
+            {
+                // Create an error boundary
+                builder.OpenComponent<TestErrorBoundary>(0);
+                builder.AddAttribute(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(builder =>
+                {
+                    // ... containing another error boundary, containing the content
+                    builder.OpenComponent<TestErrorBoundary>(0);
+                    builder.AddAttribute(1, nameof(TestErrorBoundary.ChildContent), innerContent);
+                    builder.CloseComponent();
+                }));
+                builder.CloseComponent();
+            }
+        }
+
+        private class ErrorThrowingComponent : AutoRenderComponent, IHandleEvent
+        {
+            [Parameter] public Exception ThrowDuringRender { get; set; }
+            [Parameter] public Exception ThrowDuringEventSync { get; set; }
+            [Parameter] public Task ThrowDuringEventAsync { get; set; }
+            [Parameter] public Exception ThrowDuringParameterSettingSync { get; set; }
+            [Parameter] public Task ThrowDuringParameterSettingAsync { get; set; }
+
+            public override async Task SetParametersAsync(ParameterView parameters)
+            {
+                _ = base.SetParametersAsync(parameters);
+
+                if (ThrowDuringParameterSettingSync is not null)
+                {
+                    throw ThrowDuringParameterSettingSync;
+                }
+
+                if (ThrowDuringParameterSettingAsync is not null)
+                {
+                    await ThrowDuringParameterSettingAsync;
+                }
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                if (ThrowDuringRender is not null)
+                {
+                    throw ThrowDuringRender;
+                }
+
+                builder.OpenElement(0, "someelem");
+                builder.AddAttribute(1, "onmakeerror", EventCallback.Factory.Create(this, () => { }));
+                builder.AddContent(1, "Hello");
+                builder.CloseElement();
+            }
+
+            public async Task HandleEventAsync(EventCallbackWorkItem item, object arg)
+            {
+                if (ThrowDuringEventSync is not null)
+                {
+                    throw ThrowDuringEventSync;
+                }
+
+                if (ThrowDuringEventAsync is not null)
+                {
+                    await ThrowDuringEventAsync;
+                }
             }
         }
     }

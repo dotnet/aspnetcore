@@ -3,11 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop.WebAssembly;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 {
@@ -19,9 +20,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
     {
         private readonly ILogger _logger;
         private readonly int _webAssemblyRendererId;
+        private readonly QueueWithLast<IncomingEventInfo> deferredIncomingEvents = new();
 
         private bool isDispatchingEvent;
-        private Queue<IncomingEventInfo> deferredIncomingEvents = new Queue<IncomingEventInfo>();
 
         /// <summary>
         /// Constructs an instance of <see cref="WebAssemblyRenderer"/>.
@@ -34,6 +35,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             // The WebAssembly renderer registers and unregisters itself with the static registry
             _webAssemblyRendererId = RendererRegistry.Add(this);
             _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
+
+            ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
         }
 
         public override Dispatcher Dispatcher => NullDispatcher.Instance;
@@ -44,13 +47,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// </summary>
         /// <typeparam name="TComponent">The type of the component.</typeparam>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
+        /// <param name="parameters">The parameters for the component.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
         /// <remarks>
         /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
         /// want to await the rendering of the added component.
         /// </remarks>
-        public Task AddComponentAsync<TComponent>(string domElementSelector) where TComponent : IComponent
-            => AddComponentAsync(typeof(TComponent), domElementSelector);
+        public Task AddComponentAsync<[DynamicallyAccessedMembers(Component)] TComponent>(string domElementSelector, ParameterView parameters) where TComponent : IComponent
+            => AddComponentAsync(typeof(TComponent), domElementSelector, parameters);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="WebAssemblyRenderer"/>,
@@ -58,12 +62,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// </summary>
         /// <param name="componentType">The type of the component.</param>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
+        /// <param name="parameters">The list of root component parameters.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
         /// <remarks>
         /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
         /// want to await the rendering of the added component.
         /// </remarks>
-        public Task AddComponentAsync(Type componentType, string domElementSelector)
+        public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, string domElementSelector, ParameterView parameters)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
@@ -80,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 componentId,
                 _webAssemblyRendererId);
 
-            return RenderRootComponentAsync(componentId);
+            return RenderRootComponentAsync(componentId, parameters);
         }
 
         /// <inheritdoc />
@@ -98,7 +103,23 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 _webAssemblyRendererId,
                 batch);
 
-            return Task.CompletedTask;
+            if (deferredIncomingEvents.Count == 0)
+            {
+                // In the vast majority of cases, since the call to update the UI is synchronous,
+                // we just return a pre-completed task from here.
+                return Task.CompletedTask;
+            }
+            else
+            {
+                // However, in the rare case where JS sent us any event notifications that we had to
+                // defer until later, we behave as if the renderbatch isn't acknowledged until we have at
+                // least dispatched those event calls. This is to make the WebAssembly behavior more
+                // consistent with the Server behavior, which receives batch acknowledgements asynchronously
+                // and they are queued up with any other calls from JS such as event calls. If we didn't
+                // do this, then the order of execution could be inconsistent with Server, and in fact
+                // leads to a specific bug: https://github.com/dotnet/aspnetcore/issues/26838
+                return deferredIncomingEvents.Last.StartHandlerCompletionSource.Task;
+            }
         }
 
         /// <inheritdoc />
@@ -118,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         }
 
         /// <inheritdoc />
-        public override Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
+        public override Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
         {
             // Be sure we only run one event handler at once. Although they couldn't run
             // simultaneously anyway (there's only one thread), they could run nested on
@@ -139,7 +160,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             {
                 var info = new IncomingEventInfo(eventHandlerId, eventFieldInfo, eventArgs);
                 deferredIncomingEvents.Enqueue(info);
-                return info.TaskCompletionSource.Task;
+                return info.FinishHandlerCompletionSource.Task;
             }
             else
             {
@@ -166,32 +187,38 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         private async Task ProcessNextDeferredEventAsync()
         {
             var info = deferredIncomingEvents.Dequeue();
-            var taskCompletionSource = info.TaskCompletionSource;
 
             try
             {
-                await DispatchEventAsync(info.EventHandlerId, info.EventFieldInfo, info.EventArgs);
-                taskCompletionSource.SetResult(null);
+                var handlerTask = DispatchEventAsync(info.EventHandlerId, info.EventFieldInfo, info.EventArgs);
+                info.StartHandlerCompletionSource.SetResult();
+                await handlerTask;
+                info.FinishHandlerCompletionSource.SetResult();
             }
             catch (Exception ex)
             {
-                taskCompletionSource.SetException(ex);
+                // Even if the handler threw synchronously, we at least started processing, so always complete successfully
+                info.StartHandlerCompletionSource.TrySetResult();
+
+                info.FinishHandlerCompletionSource.SetException(ex);
             }
         }
 
         readonly struct IncomingEventInfo
         {
             public readonly ulong EventHandlerId;
-            public readonly EventFieldInfo EventFieldInfo;
+            public readonly EventFieldInfo? EventFieldInfo;
             public readonly EventArgs EventArgs;
-            public readonly TaskCompletionSource<object> TaskCompletionSource;
+            public readonly TaskCompletionSource StartHandlerCompletionSource;
+            public readonly TaskCompletionSource FinishHandlerCompletionSource;
 
-            public IncomingEventInfo(ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
+            public IncomingEventInfo(ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
             {
                 EventHandlerId = eventHandlerId;
                 EventFieldInfo = eventFieldInfo;
                 EventArgs = eventArgs;
-                TaskCompletionSource = new TaskCompletionSource<object>();
+                StartHandlerCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                FinishHandlerCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
         }
 
@@ -218,6 +245,31 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                     logger,
                     exception.Message,
                     exception);
+            }
+        }
+
+        private class QueueWithLast<T>
+        {
+            private readonly Queue<T> _items = new();
+
+            public int Count => _items.Count;
+
+            public T? Last { get; private set; }
+
+            public T Dequeue()
+            {
+                if (_items.Count == 1)
+                {
+                    Last = default;
+                }
+
+                return _items.Dequeue();
+            }
+
+            public void Enqueue(T item)
+            {
+                Last = item;
+                _items.Enqueue(item);
             }
         }
     }

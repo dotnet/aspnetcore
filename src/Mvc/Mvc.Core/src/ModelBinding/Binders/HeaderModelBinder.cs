@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -50,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         // to enable unit testing
-        internal IModelBinder InnerModelBinder { get; }
+        internal IModelBinder? InnerModelBinder { get; }
 
         /// <inheritdoc />
         public async Task BindModelAsync(ModelBindingContext bindingContext)
@@ -134,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var headerName = bindingContext.FieldName;
             var request = bindingContext.HttpContext.Request;
 
-            object model;
+            object? model;
             if (bindingContext.ModelType == typeof(string))
             {
                 var value = request.Headers[headerName];
@@ -172,7 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             _logger.DoneAttemptingToBindModel(bindingContext);
         }
 
-        private static object GetCompatibleCollection(ModelBindingContext bindingContext, string[] values)
+        private static object? GetCompatibleCollection(ModelBindingContext bindingContext, string[] values)
         {
             // Almost-always success if IsTopLevelObject.
             if (!bindingContext.IsTopLevelObject && values.Length == 0)

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// Gets an aggregate <see cref="IKeyEscrowSink"/> from the underlying <see cref="IServiceProvider"/>.
         /// This method may return null if no sinks are registered.
         /// </summary>
-        public static IKeyEscrowSink GetKeyEscrowSink(this IServiceProvider services)
+        public static IKeyEscrowSink? GetKeyEscrowSink(this IServiceProvider services)
         {
             var escrowSinks = services?.GetService<IEnumerable<IKeyEscrowSink>>()?.ToList();
             return (escrowSinks != null && escrowSinks.Count > 0) ? new AggregateKeyEscrowSink(escrowSinks) : null;

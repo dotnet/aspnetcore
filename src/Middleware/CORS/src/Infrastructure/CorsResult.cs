@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <summary>
         /// Gets or sets the allowed origin.
         /// </summary>
-        public string AllowedOrigin { get; set; }
+        public string? AllowedOrigin { get; set; }
 
         /// <summary>
         /// Gets or sets a value that determines if the origin is allowed.
@@ -87,17 +88,17 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             builder.Append(SupportsCredentials);
             builder.Append(", PreflightMaxAge: ");
             builder.Append(PreflightMaxAge.HasValue ?
-                PreflightMaxAge.Value.TotalSeconds.ToString() : "null");
+                PreflightMaxAge.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture) : "null");
             builder.Append(", AllowOrigin: ");
             builder.Append(AllowedOrigin);
             builder.Append(", AllowExposedHeaders: {");
-            builder.Append(string.Join(",", AllowedExposedHeaders));
+            builder.AppendJoin(",", AllowedExposedHeaders);
             builder.Append("}");
             builder.Append(", AllowHeaders: {");
-            builder.Append(string.Join(",", AllowedHeaders));
+            builder.AppendJoin(",", AllowedHeaders);
             builder.Append("}");
             builder.Append(", AllowMethods: {");
-            builder.Append(string.Join(",", AllowedMethods));
+            builder.AppendJoin(",", AllowedMethods);
             builder.Append("}");
             return builder.ToString();
         }

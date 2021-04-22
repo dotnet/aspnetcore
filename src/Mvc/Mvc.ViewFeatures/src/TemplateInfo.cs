@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    /// <summary>
+    /// Represents a template which keeps track of visited objects.
+    /// </summary>
     public class TemplateInfo
     {
         // Keep a collection of visited objects to prevent infinite recursion.
@@ -14,6 +17,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private object _formattedModelValue;
         private string _htmlFieldPrefix;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="TemplateInfo"/>.
+        /// </summary>
         public TemplateInfo()
         {
             _htmlFieldPrefix = string.Empty;
@@ -21,6 +27,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _visitedObjects = new HashSet<object>();
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="TemplateInfo"/>.
+        /// </summary>
+        /// <param name="original">The original value to copy.</param>
         public TemplateInfo(TemplateInfo original)
         {
             FormattedModelValue = original.FormattedModelValue;
@@ -55,11 +65,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             set { _htmlFieldPrefix = value ?? string.Empty; }
         }
 
+        /// <summary>
+        /// Gets how many objects have been visited.
+        /// </summary>
         public int TemplateDepth
         {
             get { return _visitedObjects.Count; }
         }
 
+        /// <summary>
+        /// Mark a value as visited.
+        /// </summary>
+        /// <param name="value">The object to visit.</param>
+        /// <returns>If this object is newly visited.</returns>
         public bool AddVisited(object value)
         {
             return _visitedObjects.Add(value);
@@ -92,6 +110,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return HtmlFieldPrefix + "." + partialFieldName;
         }
 
+        /// <summary>
+        /// Checks if a model has been visited already.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
+        /// <returns>Whether the model has been visited.</returns>
         public bool Visited(ModelExplorer modelExplorer)
         {
             return _visitedObjects.Contains(modelExplorer.Model ?? modelExplorer.Metadata.ModelType);

@@ -4,11 +4,13 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -399,6 +401,39 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal("The supplied value is invalid.", modelError.ErrorMessage);
         }
 
+        [Fact]
+        public async Task ReadAsync_RegistersFileStreamForDisposal()
+        {
+            // Arrange
+            var formatter = new NewtonsoftJsonInputFormatter(
+                GetLogger(),
+                _serializerSettings,
+                ArrayPool<char>.Shared,
+                _objectPoolProvider,
+                new MvcOptions(),
+                new MvcNewtonsoftJsonOptions());
+            var httpContext = new Mock<HttpContext>();
+            IDisposable registerForDispose = null;
+
+            var content = Encoding.UTF8.GetBytes("\"Hello world\"");
+            httpContext.Setup(h => h.Request.Body).Returns(new NonSeekableReadStream(content, allowSyncReads: false));
+            httpContext.Setup(h => h.Request.ContentType).Returns("application/json");
+            httpContext.Setup(h => h.Response.RegisterForDispose(It.IsAny<IDisposable>()))
+                .Callback((IDisposable disposable) => registerForDispose = disposable)
+                .Verifiable();
+
+            var formatterContext = CreateInputFormatterContext(typeof(string), httpContext.Object);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.Equal("Hello world", result.Model);
+            Assert.NotNull(registerForDispose);
+            Assert.IsType<FileBufferingReadStream>(registerForDispose);
+            httpContext.Verify();
+        }
+
         private class TestableJsonInputFormatter : NewtonsoftJsonInputFormatter
         {
             public TestableJsonInputFormatter(JsonSerializerSettings settings, ObjectPoolProvider objectPoolProvider)
@@ -416,8 +451,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             return NullLogger.Instance;
         }
 
-        protected override TextInputFormatter GetInputFormatter()
-            => CreateFormatter(allowInputFormatterExceptionMessages: true);
+        protected override TextInputFormatter GetInputFormatter(bool allowInputFormatterExceptionMessages = true)
+            => CreateFormatter(allowInputFormatterExceptionMessages: allowInputFormatterExceptionMessages);
 
         private NewtonsoftJsonInputFormatter CreateFormatter(JsonSerializerSettings serializerSettings = null, bool allowInputFormatterExceptionMessages = false)
         {
@@ -494,7 +529,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             public override short ReadJson(JsonReader reader, Type objectType, short existingValue, bool hasExistingValue, JsonSerializer serializer)
             {
-                return short.Parse(reader.Value.ToString());
+                return short.Parse(reader.Value.ToString(), CultureInfo.InvariantCulture);
             }
 
             public override void WriteJson(JsonWriter writer, short value, JsonSerializer serializer)

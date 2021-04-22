@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Assert
             Assert.Equal(500, problemDetails.Status);
-            Assert.Equal("An error occured while processing your request.", problemDetails.Title);
+            Assert.Equal("An error occurred while processing your request.", problemDetails.Title);
             Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
             Assert.Null(problemDetails.Instance);
             Assert.Null(problemDetails.Detail);

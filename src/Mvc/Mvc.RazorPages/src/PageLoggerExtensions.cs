@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -35,47 +36,56 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             _pageModelFactoryExecuting = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 new EventId(101, "ExecutingModelFactory"),
-               "Executing page model factory for page {Page} ({AssemblyName})");
+               "Executing page model factory for page {Page} ({AssemblyName})",
+               skipEnabledCheck: true);
 
             _pageModelFactoryExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 new EventId(102, "ExecutedModelFactory"),
-                "Executed page model factory for page {Page} ({AssemblyName})");
+                "Executed page model factory for page {Page} ({AssemblyName})",
+               skipEnabledCheck: true);
 
             _pageFactoryExecuting = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 new EventId(101, "ExecutingPageFactory"),
-               "Executing page factory for page {Page} ({AssemblyName})");
+               "Executing page factory for page {Page} ({AssemblyName})",
+               skipEnabledCheck: true);
 
             _pageFactoryExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 new EventId(102, "ExecutedPageFactory"),
-                "Executed page factory for page {Page} ({AssemblyName})");
+                "Executed page factory for page {Page} ({AssemblyName})",
+               skipEnabledCheck: true);
 
             _handlerMethodExecuting = LoggerMessage.Define<string, ModelValidationState>(
                 LogLevel.Information,
                 new EventId(101, "ExecutingHandlerMethod"),
-                "Executing handler method {HandlerName} - ModelState is {ValidationState}");
+                "Executing handler method {HandlerName} - ModelState is {ValidationState}",
+               skipEnabledCheck: true);
 
             _handlerMethodExecutingWithArguments = LoggerMessage.Define<string, string[]>(
                 LogLevel.Trace,
                 new EventId(103, "HandlerMethodExecutingWithArguments"),
-                "Executing handler method {HandlerName} with arguments ({Arguments})");
+                "Executing handler method {HandlerName} with arguments ({Arguments})",
+               skipEnabledCheck: true);
 
             _handlerMethodExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Information,
                 new EventId(102, "ExecutedHandlerMethod"),
-                "Executed handler method {HandlerName}, returned result {ActionResult}.");
+                "Executed handler method {HandlerName}, returned result {ActionResult}.",
+               skipEnabledCheck: true);
 
             _implicitHandlerMethodExecuting = LoggerMessage.Define<ModelValidationState>(
                 LogLevel.Information,
                 new EventId(103, "ExecutingImplicitHandlerMethod"),
-                "Executing an implicit handler method - ModelState is {ValidationState}");
+                "Executing an implicit handler method - ModelState is {ValidationState}",
+               skipEnabledCheck: true);
 
             _implicitHandlerMethodExecuted = LoggerMessage.Define<string>(
                 LogLevel.Information,
                 new EventId(104, "ExecutedImplicitHandlerMethod"),
-                "Executed an implicit handler method, returned result {ActionResult}.");
+                "Executed an implicit handler method, returned result {ActionResult}.",
+               skipEnabledCheck: true);
 
             _pageFilterShortCircuit = LoggerMessage.Define<object>(
                LogLevel.Debug,
@@ -161,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                     var convertedArguments = new string[arguments.Length];
                     for (var i = 0; i < arguments.Length; i++)
                     {
-                        convertedArguments[i] = Convert.ToString(arguments[i]);
+                        convertedArguments[i] = Convert.ToString(arguments[i], CultureInfo.InvariantCulture);
                     }
 
                     _handlerMethodExecutingWithArguments(logger, handlerName, convertedArguments, null);
@@ -184,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             if (logger.IsEnabled(LogLevel.Information))
             {
                 var handlerName = handler.MethodInfo.Name;
-                _handlerMethodExecuted(logger, handlerName, Convert.ToString(result), null);
+                _handlerMethodExecuted(logger, handlerName, Convert.ToString(result, CultureInfo.InvariantCulture), null);
             }
         }
 
@@ -192,7 +202,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                _implicitHandlerMethodExecuted(logger, Convert.ToString(result), null);
+                _implicitHandlerMethodExecuted(logger, Convert.ToString(result, CultureInfo.InvariantCulture), null);
             }
         }
 

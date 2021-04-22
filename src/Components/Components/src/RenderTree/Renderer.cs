@@ -1,13 +1,20 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
@@ -18,20 +25,25 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     //
     // Provides mechanisms for rendering hierarchies of <see cref="IComponent"/> instances,
     // dispatching events to them, and notifying when the user interface is being updated.
-    public abstract partial class Renderer : IDisposable
+    public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
+        private readonly Dictionary<IComponent, ComponentState> _componentStateByComponent = new Dictionary<IComponent, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
         private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
         private readonly ILogger<Renderer> _logger;
+        private readonly ComponentFactory _componentFactory;
+        private HotReloadEnvironment? _hotReloadEnvironment;
+        private List<(ComponentState, ParameterView)>? _rootComponents;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
         private ulong _lastEventHandlerId;
-        private List<Task> _pendingTasks;
+        private List<Task>? _pendingTasks;
         private bool _disposed;
+        private Task? _disposeTask;
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -54,6 +66,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+            : this(serviceProvider, loggerFactory, GetComponentActivatorOrDefault(serviceProvider))
+        {
+            // This overload is provided for back-compatibility
+        }
+
+        /// <summary>
+        /// Constructs an instance of <see cref="Renderer"/>.
+        /// </summary>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="componentActivator">The <see cref="IComponentActivator"/>.</param>
+        public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
         {
             if (serviceProvider is null)
             {
@@ -65,22 +89,85 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
+            if (componentActivator is null)
+            {
+                throw new ArgumentNullException(nameof(componentActivator));
+            }
+
             _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
+            _componentFactory = new ComponentFactory(componentActivator);
+
+            InitializeHotReload(serviceProvider);
+        }
+
+        private void InitializeHotReload(IServiceProvider serviceProvider)
+        {
+            // HotReloadEnvironment is a test-specific feature and may not be available in a running app. We'll fallback to the default instance
+            // if the test fixture does not provide one.
+            _hotReloadEnvironment = serviceProvider.GetService<HotReloadEnvironment>() ?? HotReloadEnvironment.Instance;
+
+            if (_hotReloadEnvironment.IsHotReloadEnabled)
+            {
+                HotReloadManager.OnDeltaApplied += RenderRootComponentsOnHotReload;
+            }
+        }
+
+        private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
+        {
+            return serviceProvider.GetService<IComponentActivator>()
+                ?? DefaultComponentActivator.Instance;
         }
 
         /// <summary>
-        /// Gets the <see cref="Microsoft.AspNetCore.Components.Dispatcher" /> associated with this <see cref="Renderer" />.
+        /// Gets the <see cref="Components.Dispatcher" /> associated with this <see cref="Renderer" />.
         /// </summary>
         public abstract Dispatcher Dispatcher { get; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Components.ElementReferenceContext"/> associated with this <see cref="Renderer"/>,
+        /// if it exists.
+        /// </summary>
+        protected internal ElementReferenceContext? ElementReferenceContext { get; protected set; }
+
+        /// <summary>
+        /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a hot-reload change.
+        /// </summary>
+        internal bool IsHotReloading { get; private set; }
+
+        private async void RenderRootComponentsOnHotReload()
+        {
+            await Dispatcher.InvokeAsync(() =>
+            {
+                if (_rootComponents is null)
+                {
+                    return;
+                }
+
+                IsHotReloading = true;
+                try
+                {
+                    foreach (var (componentState, initialParameters) in _rootComponents)
+                    {
+                        componentState.SetDirectParameters(initialParameters);
+                    }
+                }
+                finally
+                {
+                    IsHotReloading = false;
+                }
+            });
+        }
 
         /// <summary>
         /// Constructs a new component of the specified type.
         /// </summary>
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
-        protected IComponent InstantiateComponent(Type componentType)
-            => ComponentFactory.Instance.InstantiateComponent(_serviceProvider, componentType);
+        protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
+        {
+            return _componentFactory.InstantiateComponent(_serviceProvider, componentType);
+        }
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -142,9 +229,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // remaining work.
             // During the synchronous rendering process we don't wait for the pending asynchronous
             // work to finish as it will simply trigger new renders that will be handled afterwards.
-            // During the asynchronous rendering process we want to wait up untill al components have
+            // During the asynchronous rendering process we want to wait up until all components have
             // finished rendering so that we can produce the complete output.
             var componentState = GetRequiredComponentState(componentId);
+            CaptureRootComponentForHotReload(initialParameters, componentState);
+
             componentState.SetDirectParameters(initialParameters);
 
             try
@@ -155,6 +244,20 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             finally
             {
                 _pendingTasks = null;
+            }
+        }
+
+        /// <remarks>
+        /// Intentionally authored as a separate method call so we can trim this code.
+        /// </remarks>
+        private void CaptureRootComponentForHotReload(ParameterView initialParameters, ComponentState componentState)
+        {
+            if (_hotReloadEnvironment?.IsHotReloadEnabled ?? false)
+            {
+                // when we're doing hot-reload, stash away the parameters used while rendering root components.
+                // We'll use this to trigger re-renders on hot reload updates.
+                _rootComponents ??= new();
+                _rootComponents.Add((componentState, initialParameters.Clone()));
             }
         }
 
@@ -189,6 +292,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var componentState = new ComponentState(this, componentId, component, parentComponentState);
             Log.InitializingComponent(_logger, componentState, parentComponentState);
             _componentStateById.Add(componentId, componentState);
+            _componentStateByComponent.Add(component, componentState);
             component.Attach(new RenderHandle(this, componentId));
             return componentState;
         }
@@ -210,16 +314,22 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
         /// has completed.
         /// </returns>
-        public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo fieldInfo, EventArgs eventArgs)
+        public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs)
         {
             Dispatcher.AssertAccess();
 
-            if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))
-            {
-                throw new ArgumentException($"There is no event handler associated with this event. EventId: '{eventHandlerId}'.", nameof(eventHandlerId));
-            }
-
+            var callback = GetRequiredEventCallback(eventHandlerId);
             Log.HandlingEvent(_logger, eventHandlerId, eventArgs);
+
+            // Try to match it up with a receiver so that, if the event handler later throws, we can route the error to the
+            // correct error boundary (even if the receiving component got disposed in the meantime).
+            ComponentState? receiverComponentState = null;
+            if (callback.Receiver is IComponent receiverComponent) // The receiver might be null or not an IComponent
+            {
+                // Even if the receiver is an IComponent, it might not be one of ours, or might be disposed already
+                // We can only route errors to error boundaries if the receiver is known and not yet disposed at this stage
+                _componentStateByComponent.TryGetValue(receiverComponent, out receiverComponentState);
+            }
 
             if (fieldInfo != null)
             {
@@ -227,7 +337,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 UpdateRenderTreeToMatchClientState(latestEquivalentEventHandlerId, fieldInfo);
             }
 
-            Task task = null;
+            Task? task = null;
             try
             {
                 // The event handler might request multiple renders in sequence. Capture them
@@ -238,7 +348,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             catch (Exception e)
             {
-                HandleException(e);
+                HandleExceptionViaErrorBoundary(e, receiverComponentState);
                 return Task.CompletedTask;
             }
             finally
@@ -252,27 +362,47 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             // Task completed synchronously or is still running. We already processed all of the rendering
             // work that was queued so let our error handler deal with it.
-            return GetErrorHandledTask(task);
+            var result = GetErrorHandledTask(task, receiverComponentState);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the event arguments type for the specified event handler.
+        /// </summary>
+        /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
+        /// <returns>The parameter type expected by the event handler. Normally this is a subclass of <see cref="EventArgs"/>.</returns>
+        public Type GetEventArgsType(ulong eventHandlerId)
+        {
+            var methodInfo = GetRequiredEventCallback(eventHandlerId).Delegate?.Method;
+
+            // The DispatchEventAsync code paths allow for the case where Delegate or its method
+            // is null, and in this case the event receiver just receives null. This won't happen
+            // under normal circumstances, but to avoid creating a new failure scenario, allow for
+            // that edge case here too.
+            return methodInfo == null
+                ? typeof(EventArgs)
+                : EventArgsTypeCache.GetEventArgsType(methodInfo);
         }
 
         internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
         {
-            if (frame.FrameType != RenderTreeFrameType.Component)
+            if (frame.FrameTypeField != RenderTreeFrameType.Component)
             {
                 throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frame));
             }
 
-            if (frame.ComponentState != null)
+            if (frame.ComponentStateField != null)
             {
                 throw new ArgumentException($"The frame already has a non-null component instance", nameof(frame));
             }
 
-            var newComponent = InstantiateComponent(frame.ComponentType);
+            var newComponent = InstantiateComponent(frame.ComponentTypeField);
             var newComponentState = AttachAndInitComponent(newComponent, parentComponentId);
-            frame = frame.WithComponent(newComponentState);
+            frame.ComponentStateField = newComponentState;
+            frame.ComponentIdField = newComponentState.ComponentId;
         }
 
-        internal void AddToPendingTasks(Task task)
+        internal void AddToPendingTasks(Task task, ComponentState? owningComponentState)
         {
             switch (task == null ? TaskStatus.RanToCompletion : task.Status)
             {
@@ -288,12 +418,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     // an 'async' state machine (the ones generated using async/await) where even
                     // the synchronous exceptions will get captured and converted into a faulted
                     // task.
-                    HandleException(task.Exception.GetBaseException());
+                    var baseException = task.Exception.GetBaseException();
+                    HandleExceptionViaErrorBoundary(baseException, owningComponentState);
                     break;
                 default:
                     // It's important to evaluate the following even if we're not going to use
                     // handledErrorTask below, because it has the side-effect of calling HandleException.
-                    var handledErrorTask = GetErrorHandledTask(task);
+                    var handledErrorTask = GetErrorHandledTask(task, owningComponentState);
 
                     // The pendingTasks collection is only used during prerendering to track quiescence,
                     // so will be null at other times.
@@ -307,7 +438,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             var id = ++_lastEventHandlerId;
 
-            if (frame.AttributeValue is EventCallback callback)
+            if (frame.AttributeValueField is EventCallback callback)
             {
                 // We hit this case when a EventCallback object is produced that needs an explicit receiver.
                 // Common cases for this are "chained bind" or "chained event handler" when a component
@@ -317,7 +448,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // the receiver.
                 _eventBindings.Add(id, callback);
             }
-            else if (frame.AttributeValue is MulticastDelegate @delegate)
+            else if (frame.AttributeValueField is MulticastDelegate @delegate)
             {
                 // This is the common case for a delegate, where the receiver of the event
                 // is the same as delegate.Target. In this case since the receiver is implicit we can
@@ -329,7 +460,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // NOTE: we do not to handle EventCallback<T> here. EventCallback<T> is only used when passing
             // a callback to a component, and never when used to attaching a DOM event handler.
 
-            frame = frame.WithAttributeEventHandlerId(id);
+            frame.AttributeEventHandlerIdField = id;
         }
 
         /// <summary>
@@ -367,6 +498,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _eventHandlerIdReplacements.Add(oldEventHandlerId, newEventHandlerId);
         }
 
+        private EventCallback GetRequiredEventCallback(ulong eventHandlerId)
+        {
+            if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))
+            {
+                throw new ArgumentException($"There is no event handler associated with this event. EventId: '{eventHandlerId}'.", nameof(eventHandlerId));
+            }
+
+            return callback;
+        }
+
         private ulong FindLatestEventHandlerIdInChain(ulong eventHandlerId)
         {
             while (_eventHandlerIdReplacements.TryGetValue(eventHandlerId, out var replacementEventHandlerId))
@@ -388,7 +529,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 : null;
 
         /// <summary>
-        /// Processses pending renders requests from components if there are any.
+        /// Processes pending renders requests from components if there are any.
         /// </summary>
         protected virtual void ProcessPendingRender()
         {
@@ -564,7 +705,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 }
                 else if (task.Status == TaskStatus.Faulted)
                 {
-                    HandleException(task.Exception);
+                    HandleExceptionViaErrorBoundary(task.Exception, state);
                     return;
                 }
             }
@@ -572,14 +713,19 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // The Task is incomplete.
             // Queue up the task and we can inspect it later.
             batch = batch ?? new List<Task>();
-            batch.Add(GetErrorHandledTask(task));
+            batch.Add(GetErrorHandledTask(task, state));
         }
 
         private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)
         {
             var componentState = renderQueueEntry.ComponentState;
             Log.RenderingComponent(_logger, componentState);
-            componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment);
+            componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment, out var renderFragmentException);
+            if (renderFragmentException != null)
+            {
+                // If this returns, the error was handled by an error boundary. Otherwise it throws.
+                HandleExceptionViaErrorBoundary(renderFragmentException, componentState);
+            }
 
             List<Exception> exceptions = null;
 
@@ -589,12 +735,46 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
                 var disposeComponentState = GetRequiredComponentState(disposeComponentId);
                 Log.DisposingComponent(_logger, disposeComponentState);
-                if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                if (!(disposeComponentState.Component is IAsyncDisposable))
                 {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
+                    if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                    {
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(exception);
+                    }
                 }
+                else
+                {
+                    var result = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
+                    if (result.IsCompleted)
+                    {
+                        if (!result.IsCompletedSuccessfully)
+                        {
+                            exceptions ??= new List<Exception>();
+                            exceptions.Add(result.Exception);
+                        }
+                    }
+                    else
+                    {
+                        // We set owningComponentState to null because we don't want exceptions during disposal to be recoverable
+                        AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result), owningComponentState: null);
+
+                        async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
+                        {
+                            try
+                            {
+                                await result;
+                            }
+                            catch (Exception e)
+                            {
+                                HandleException(e);
+                            }
+                        }
+                    }
+                }
+
                 _componentStateById.Remove(disposeComponentId);
+                _componentStateByComponent.Remove(disposeComponentState.Component);
                 _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
             }
 
@@ -656,7 +836,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
         }
 
-        private async Task GetErrorHandledTask(Task taskToHandle)
+        private async Task GetErrorHandledTask(Task taskToHandle, ComponentState? owningComponentState)
         {
             try
             {
@@ -664,10 +844,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             catch (Exception ex)
             {
+                // Ignore errors due to task cancellations.
                 if (!taskToHandle.IsCanceled)
                 {
-                    // Ignore errors due to task cancellations.
-                    HandleException(ex);
+                    HandleExceptionViaErrorBoundary(ex, owningComponentState);
                 }
             }
         }
@@ -685,6 +865,47 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         /// <summary>
+        /// If the exception can be routed to an error boundary around <paramref name="errorSourceOrNull"/>, do so.
+        /// Otherwise handle it as fatal.
+        /// </summary>
+        private void HandleExceptionViaErrorBoundary(Exception error, ComponentState? errorSourceOrNull)
+        {
+            // We only get here in specific situations. Currently, all of them are when we're
+            // already on the sync context (and if not, we have a bug we want to know about).
+            Dispatcher.AssertAccess();
+
+            // Find the closest error boundary, if any
+            var candidate = errorSourceOrNull;
+            while (candidate is not null)
+            {
+                if (candidate.Component is IErrorBoundary errorBoundary)
+                {
+                    // Don't just trust the error boundary to dispose its subtree - force it to do so by
+                    // making it render an empty fragment. Ensures that failed components don't continue to
+                    // operate, which would be a whole new kind of edge case to support forever.
+                    AddToRenderQueue(candidate.ComponentId, builder => { });
+
+                    try
+                    {
+                        errorBoundary.HandleException(error);
+                    }
+                    catch (Exception errorBoundaryException)
+                    {
+                        // If *notifying* about an exception fails, it's OK for that to be fatal
+                        HandleException(errorBoundaryException);
+                    }
+
+                    return; // Handled successfully
+                }
+
+                candidate = candidate.ParentComponentState;
+            }
+
+            // It's unhandled, so treat as fatal
+            HandleException(error);
+        }
+
+        /// <summary>
         /// Releases all resources currently used by this <see cref="Renderer"/> instance.
         /// </summary>
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
@@ -695,11 +916,34 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // It's important that we handle all exceptions here before reporting any of them.
             // This way we can dispose all components before an error handler kicks in.
             List<Exception> exceptions = null;
+            List<Task> asyncDisposables = null;
             foreach (var componentState in _componentStateById.Values)
             {
                 Log.DisposingComponent(_logger, componentState);
 
-                if (componentState.Component is IDisposable disposable)
+                // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
+                // but in case they do, we prefer the async overload since we understand the sync overload
+                // is implemented for more "constrained" scenarios.
+                // Component authors are responsible for their IAsyncDisposable implementations not taking
+                // forever.
+                if (componentState.Component is IAsyncDisposable asyncDisposable)
+                {
+                    try
+                    {
+                        var task = asyncDisposable.DisposeAsync();
+                        if (!task.IsCompletedSuccessfully)
+                        {
+                            asyncDisposables ??= new();
+                            asyncDisposables.Add(task.AsTask());
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(exception);
+                    }
+                }
+                else if (componentState.Component is IDisposable disposable)
                 {
                     try
                     {
@@ -714,15 +958,45 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
 
             _componentStateById.Clear(); // So we know they were all disposed
+            _componentStateByComponent.Clear();
             _batchBuilder.Dispose();
 
-            if (exceptions?.Count > 1)
+            NotifyExceptions(exceptions);
+
+            if (asyncDisposables?.Count >= 1)
             {
-                HandleException(new AggregateException("Exceptions were encountered while disposing components.", exceptions));
+                _disposeTask = HandleAsyncExceptions(asyncDisposables);
             }
-            else if (exceptions?.Count == 1)
+
+            async Task HandleAsyncExceptions(List<Task> tasks)
             {
-                HandleException(exceptions[0]);
+                List<Exception> asyncExceptions = null;
+                foreach (var task in tasks)
+                {
+                    try
+                    {
+                        await task;
+                    }
+                    catch (Exception exception)
+                    {
+                        asyncExceptions ??= new List<Exception>();
+                        asyncExceptions.Add(exception);
+                    }
+                }
+
+                NotifyExceptions(asyncExceptions);
+            }
+
+            void NotifyExceptions(List<Exception> exceptions)
+            {
+                if (exceptions?.Count > 1)
+                {
+                    HandleException(new AggregateException("Exceptions were encountered while disposing components.", exceptions));
+                }
+                else if (exceptions?.Count == 1)
+                {
+                    HandleException(exceptions[0]);
+                }
             }
         }
 
@@ -732,6 +1006,45 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void Dispose()
         {
             Dispose(disposing: true);
+        }
+
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
+        {
+            DisposeForHotReload();
+
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (_disposeTask != null)
+            {
+                await _disposeTask;
+            }
+            else
+            {
+                Dispose();
+                if (_disposeTask != null)
+                {
+                    await _disposeTask;
+                }
+                else
+                {
+                    await default(ValueTask);
+                }
+            }
+        }
+
+        /// <remarks>
+        /// Intentionally authored as a separate method call so we can trim this code.
+        /// </remarks>
+        private void DisposeForHotReload()
+        {
+            if (_hotReloadEnvironment?.IsHotReloadEnabled ?? false)
+            {
+                HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
+            }
         }
     }
 }

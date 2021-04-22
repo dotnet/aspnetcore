@@ -7,15 +7,15 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, bool, Exception> _needsConsent;
-        private static Action<ILogger, bool, Exception> _hasConsent;
-        private static Action<ILogger, Exception> _consentGranted;
-        private static Action<ILogger, Exception> _consentWithdrawn;
-        private static Action<ILogger, string, Exception> _cookieSuppressed;
-        private static Action<ILogger, string, Exception> _deleteCookieSuppressed;
-        private static Action<ILogger, string, Exception> _upgradedToSecure;
-        private static Action<ILogger, string, string, Exception> _upgradedSameSite;
-        private static Action<ILogger, string, Exception> _upgradedToHttpOnly;
+        private static Action<ILogger, bool, Exception?> _needsConsent;
+        private static Action<ILogger, bool, Exception?> _hasConsent;
+        private static Action<ILogger, Exception?> _consentGranted;
+        private static Action<ILogger, Exception?> _consentWithdrawn;
+        private static Action<ILogger, string, Exception?> _cookieSuppressed;
+        private static Action<ILogger, string, Exception?> _deleteCookieSuppressed;
+        private static Action<ILogger, string, Exception?> _upgradedToSecure;
+        private static Action<ILogger, string, string, Exception?> _upgradedSameSite;
+        private static Action<ILogger, string, Exception?> _upgradedToHttpOnly;
 
         static LoggingExtensions()
         {

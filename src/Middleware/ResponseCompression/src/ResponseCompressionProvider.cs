@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// If no compression providers are specified then GZip is used by default.
         /// </summary>
         /// <param name="services">Services to use when instantiating compression providers.</param>
-        /// <param name="options"></param>
+        /// <param name="options">The options for this instance.</param>
         public ResponseCompressionProvider(IServiceProvider services, IOptions<ResponseCompressionOptions> options)
         {
             if (services == null)
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         }
 
         /// <inheritdoc />
-        public virtual ICompressionProvider GetCompressionProvider(HttpContext context)
+        public virtual ICompressionProvider? GetCompressionProvider(HttpContext context)
         {
             // e.g. Accept-Encoding: gzip, deflate, sdch
             var accept = context.Request.Headers[HeaderNames.AcceptEncoding];
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return null;
             }
 
-            if (!StringWithQualityHeaderValue.TryParseList(accept, out var encodings) || !encodings.Any())
+            if (!StringWithQualityHeaderValue.TryParseList(accept, out var encodings) || encodings.Count == 0)
             {
                 _logger.NoAcceptEncoding();
                 return null;
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 }
             }
 
-            ICompressionProvider selectedProvider = null;
+            ICompressionProvider? selectedProvider = null;
             if (candidates.Count <= 1)
             {
                 selectedProvider = candidates.FirstOrDefault().Provider;
@@ -252,13 +252,13 @@ namespace Microsoft.AspNetCore.ResponseCompression
             return null;
         }
 
-        private bool? ShouldCompressPartial(string mimeType)
+        private bool? ShouldCompressPartial(string? mimeType)
         {
-            int? slashPos = mimeType?.IndexOf('/');
+            var slashPos = mimeType?.IndexOf('/');
 
             if (slashPos >= 0)
             {
-                string partialMimeType = mimeType.Substring(0, slashPos.Value) + "/*";
+                var partialMimeType = mimeType!.Substring(0, slashPos.Value) + "/*";
                 return ShouldCompressExact(partialMimeType);
             }
 
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         private readonly struct ProviderCandidate : IEquatable<ProviderCandidate>
         {
-            public ProviderCandidate(string encodingName, double quality, int priority, ICompressionProvider provider)
+            public ProviderCandidate(string encodingName, double quality, int priority, ICompressionProvider? provider)
             {
                 EncodingName = encodingName;
                 Quality = quality;
@@ -281,14 +281,14 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
             public int Priority { get; }
 
-            public ICompressionProvider Provider { get; }
+            public ICompressionProvider? Provider { get; }
 
             public bool Equals(ProviderCandidate other)
             {
                 return string.Equals(EncodingName, other.EncodingName, StringComparison.OrdinalIgnoreCase);
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is ProviderCandidate candidate && Equals(candidate);
             }

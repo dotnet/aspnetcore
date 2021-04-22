@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.Identity
         public static readonly string DefaultProvider = "Default";
 
         /// <summary>
-        /// Default token provider name used by the email provider. />.
+        /// Default token provider name used by the email provider.
         /// </summary>
         public static readonly string DefaultEmailProvider = "Email";
 
         /// <summary>
-        /// Default token provider name used by the phone provider. />.
+        /// Default token provider name used by the phone provider.
         /// </summary>
         public static readonly string DefaultPhoneProvider = "Phone";
 

@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.TestHost
                 if (!_req.Content.Headers.TryAddWithoutValidation(name, value))
                 {
                     // TODO: throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.InvalidHeaderName, name), "name");
-                    throw new ArgumentException("Invalid header name: " + name, "name");
+                    throw new ArgumentException("Invalid header name: " + name, nameof(name));
                 }
             }
             return this;

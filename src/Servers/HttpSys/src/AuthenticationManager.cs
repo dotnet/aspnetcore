@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static readonly int AuthInfoSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_SERVER_AUTHENTICATION_INFO>();
 
-        private UrlGroup _urlGroup;
+        private UrlGroup? _urlGroup;
         private AuthenticationSchemes _authSchemes;
         private bool _allowAnonymous = true;
 
@@ -45,11 +45,26 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        /// <summary>
+        /// Indicates if anonymous requests will be surfaced to the application or challenged by the server.
+        /// The default value is true.
+        /// </summary>
         public bool AllowAnonymous
         {
             get { return _allowAnonymous; }
             set { _allowAnonymous = value; }
         }
+
+        /// <summary>
+        /// If true the server should set HttpContext.User. If false the server will only provide an
+        /// identity when explicitly requested by the AuthenticationScheme. The default is true.
+        /// </summary>
+        public bool AutomaticAuthentication { get; set; } = true;
+
+        /// <summary> 
+        /// Sets the display name shown to users on login pages. The default is null.
+        /// </summary> 
+        public string? AuthenticationDisplayName { get; set; }
 
         internal void SetUrlGroupSecurity(UrlGroup urlGroup)
         {
@@ -92,12 +107,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal static IList<string> GenerateChallenges(AuthenticationSchemes authSchemes)
         {
-            IList<string> challenges = new List<string>();
-
             if (authSchemes == AuthenticationSchemes.None)
             {
-                return challenges;
+                return Array.Empty<string>();
             }
+
+            IList<string> challenges = new List<string>();
 
             // Order by strength.
             if ((authSchemes & AuthenticationSchemes.Kerberos) == AuthenticationSchemes.Kerberos)

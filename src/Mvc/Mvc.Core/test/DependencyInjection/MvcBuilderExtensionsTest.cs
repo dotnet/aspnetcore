@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
             var manager = new ApplicationPartManager();
             var builder = new MvcBuilder(Mock.Of<IServiceCollection>(), manager);
 
-            var assembly = typeof(MvcBuilder).GetTypeInfo().Assembly;
+            var assembly = typeof(MvcBuilder).Assembly;
 
             // Act
             var result = builder.AddApplicationPart(assembly);

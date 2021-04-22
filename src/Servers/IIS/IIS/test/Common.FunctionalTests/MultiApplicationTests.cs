@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task FailsAndLogsWhenRunningTwoInProcessApps()
         {
             var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
@@ -50,13 +51,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             if (DeployerSelector.HasNewShim)
             {
-                Assert.Contains("500.35 - ANCM Multiple In-Process Applications in same Process", await result2.Content.ReadAsStringAsync());
+                Assert.Contains("500.35", await result2.Content.ReadAsStringAsync());
             }
 
             EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool(), Logger);
         }
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [InlineData(HostingModel.OutOfProcess)]
         [InlineData(HostingModel.InProcess)]
         public async Task FailsAndLogsEventLogForMixedHostingModel(HostingModel firstApp)
@@ -77,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             if (DeployerSelector.HasNewShim)
             {
-                Assert.Contains("500.34 - ANCM Mixed Hosting Models Not Supported", await result2.Content.ReadAsStringAsync());
+                Assert.Contains("500.34", await result2.Content.ReadAsStringAsync());
             }
 
             EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.", Logger);

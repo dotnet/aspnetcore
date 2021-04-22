@@ -29,10 +29,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="value">The value to format in the entity body.</param>
         public AcceptedAtActionResult(
-            string actionName,
-            string controllerName,
-            object routeValues,
-            [ActionResultObjectValue] object value)
+            string? actionName,
+            string? controllerName,
+            object? routeValues,
+            [ActionResultObjectValue] object? value)
             : base(value)
         {
             ActionName = actionName;
@@ -44,22 +44,22 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper" /> used to generate URLs.
         /// </summary>
-        public IUrlHelper UrlHelper { get; set; }
+        public IUrlHelper? UrlHelper { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the action to use for generating the URL.
         /// </summary>
-        public string ActionName { get; set; }
+        public string? ActionName { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the controller to use for generating the URL.
         /// </summary>
-        public string ControllerName { get; set; }
+        public string? ControllerName { get; set; }
 
         /// <summary>
         /// Gets or sets the route data to use for generating the URL.
         /// </summary>
-        public RouteValueDictionary RouteValues { get; set; }
+        public RouteValueDictionary? RouteValues { get; set; }
 
         /// <inheritdoc />
         public override void OnFormatting(ActionContext context)

@@ -20,9 +20,15 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
+    /// <summary>
+    /// An authentication handler that supports OAuth.
+    /// </summary>
+    /// <typeparam name="TOptions">The type of options.</typeparam>
     public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> where TOptions : OAuthOptions, new()
     {
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
+        /// <summary>
+        /// Gets the <see cref="HttpClient"/> instance used to communicate with the remote authentication provider.
+        /// </summary>
         protected HttpClient Backchannel => Options.Backchannel;
 
         /// <summary>
@@ -35,6 +41,10 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             set { base.Events = value; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="OAuthHandler{TOptions}"/>.
+        /// </summary>
+        /// <inheritdoc />
         public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
@@ -45,6 +55,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <returns>A new instance of the events instance.</returns>
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new OAuthEvents());
 
+        /// <inheritdoc />
         protected override async Task<HandleRequestResult> HandleRemoteAuthenticateAsync()
         {
             var query = Request.Query;
@@ -174,6 +185,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             }
         }
 
+        /// <summary>
+        /// Exchanges the authorization code for a authorization token from the remote provider.
+        /// </summary>
+        /// <param name="context">The <see cref="OAuthCodeExchangeContext"/>.</param>
+        /// <returns>The response <see cref="OAuthTokenResponse"/>.</returns>
         protected virtual async Task<OAuthTokenResponse> ExchangeCodeAsync(OAuthCodeExchangeContext context)
         {
             var tokenRequestParameters = new Dictionary<string, string>()
@@ -188,19 +204,20 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             // PKCE https://tools.ietf.org/html/rfc7636#section-4.5, see BuildChallengeUrl
             if (context.Properties.Items.TryGetValue(OAuthConstants.CodeVerifierKey, out var codeVerifier))
             {
-                tokenRequestParameters.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
+                tokenRequestParameters.Add(OAuthConstants.CodeVerifierKey, codeVerifier!);
                 context.Properties.Items.Remove(OAuthConstants.CodeVerifierKey);
             }
 
-            var requestContent = new FormUrlEncodedContent(tokenRequestParameters);
+            var requestContent = new FormUrlEncodedContent(tokenRequestParameters!);
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, Options.TokenEndpoint);
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             requestMessage.Content = requestContent;
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
             var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
             if (response.IsSuccessStatusCode)
             {
-                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(Context.RequestAborted));
                 return OAuthTokenResponse.Success(payload);
             }
             else
@@ -219,16 +236,24 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             return output.ToString();
         }
 
+        /// <summary>
+        /// Creates an <see cref="AuthenticationTicket"/> from the specified <paramref name="tokens"/>.
+        /// </summary>
+        /// <param name="identity">The <see cref="ClaimsIdentity"/>.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <param name="tokens">The <see cref="OAuthTokenResponse"/>.</param>
+        /// <returns>The <see cref="AuthenticationTicket"/>.</returns>
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
             using (var user = JsonDocument.Parse("{}"))
             {
                 var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, user.RootElement);
                 await Events.CreatingTicket(context);
-                return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
+                return new AuthenticationTicket(context.Principal!, context.Properties, Scheme.Name);
             }
         }
 
+        /// <inheritdoc />
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             if (string.IsNullOrEmpty(properties.RedirectUri))
@@ -258,6 +283,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Logger.HandleChallenge(location, cookie);
         }
 
+        /// <summary>
+        /// Constructs the OAuth challenge url.
+        /// </summary>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <param name="redirectUri">The url to redirect to once the challenge is completed.</param>
+        /// <returns>The challenge url.</returns>
         protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
             var scopeParameter = properties.GetParameter<ICollection<string>>(OAuthChallengeProperties.ScopeKey);
@@ -274,14 +305,13 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             if (Options.UsePkce)
             {
                 var bytes = new byte[32];
-                CryptoRandom.GetBytes(bytes);
+                RandomNumberGenerator.Fill(bytes);
                 var codeVerifier = Base64UrlTextEncoder.Encode(bytes);
 
                 // Store this for use during the code redemption.
                 properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
 
-                using var sha256 = SHA256.Create();
-                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
+                var challengeBytes = SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier));
                 var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
 
                 parameters[OAuthConstants.CodeChallengeKey] = codeChallenge;
@@ -290,7 +320,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             parameters["state"] = Options.StateDataFormat.Protect(properties);
 
-            return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters);
+            return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters!);
         }
 
         /// <summary>

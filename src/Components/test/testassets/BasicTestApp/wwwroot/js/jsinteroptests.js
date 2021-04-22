@@ -30,6 +30,17 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
     var returnDotNetObjectByRefResult = DotNet.invokeMethod(assemblyName, 'ReturnDotNetObjectByRef');
     results['resultReturnDotNetObjectByRefSync'] = DotNet.invokeMethod(assemblyName, 'ExtractNonSerializedValue', returnDotNetObjectByRefResult['Some sync instance']);
 
+    var jsObjectReference = DotNet.createJSObjectReference({
+        prop: 'successful',
+        noop: function () { }
+    });
+
+    var returnedObject = DotNet.invokeMethod(assemblyName, 'RoundTripJSObjectReference', jsObjectReference);
+    results['roundTripJSObjectReference'] = returnedObject && returnedObject.prop;
+
+    DotNet.disposeJSObjectReference(jsObjectReference);
+    results['invokeDisposedJSObjectReferenceException'] = DotNet.invokeMethod(assemblyName, 'InvokeDisposedJSObjectReferenceException', jsObjectReference);
+
     var instanceMethodResult = instanceMethodsTarget.invokeMethod('InstanceMethod', {
       stringValue: 'My string',
       dtoByRef: dotNetObjectByRef
@@ -65,6 +76,17 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
 
   const returnDotNetObjectByRefAsync = await DotNet.invokeMethodAsync(assemblyName, 'ReturnDotNetObjectByRefAsync');
   results['resultReturnDotNetObjectByRefAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', returnDotNetObjectByRefAsync['Some async instance']);
+
+  var jsObjectReference = DotNet.createJSObjectReference({
+    prop: 'successful',
+    noop: function () { }
+  });
+
+  var returnedObject = await DotNet.invokeMethodAsync(assemblyName, 'RoundTripJSObjectReferenceAsync', jsObjectReference);
+  results['roundTripJSObjectReferenceAsync'] = returnedObject && returnedObject.prop;
+
+  DotNet.disposeJSObjectReference(jsObjectReference);
+  results['invokeDisposedJSObjectReferenceExceptionAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'InvokeDisposedJSObjectReferenceExceptionAsync', jsObjectReference);
 
   const instanceMethodAsync = await instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
     stringValue: 'My string',
@@ -167,6 +189,8 @@ window.jsInteropTests = {
   asyncFunctionThrowsAsyncException: asyncFunctionThrowsAsyncException,
   returnPrimitive: returnPrimitive,
   returnPrimitiveAsync: returnPrimitiveAsync,
+  returnJSObjectReference: returnJSObjectReference,
+  addViaJSObjectReference: addViaJSObjectReference,
   receiveDotNetObjectByRef: receiveDotNetObjectByRef,
   receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync
 };
@@ -193,6 +217,32 @@ function returnArrayAsync() {
       resolve(returnArray());
     }, 100);
   });
+}
+
+function returnJSObjectReference() {
+  return {
+    identity: function (value) {
+      return value;
+    },
+    nonFunction: 123,
+    nested: {
+      add: function (a, b) {
+        return a + b;
+      }
+    },
+    dispose: function () {
+      DotNet.disposeJSObjectReference(this);
+    },
+    unmarshalledFunction: function (fields) {
+      const message = Blazor.platform.readStringField(fields, 0);
+      const numberField = Blazor.platform.readInt32Field(fields, 8);
+      return message === "Sent from .NET" && numberField === 42;
+    }
+  };
+}
+
+function addViaJSObjectReference(jsObjectReference, a, b) {
+  return jsObjectReference.nested.add(a, b);
 }
 
 function functionThrowsException() {

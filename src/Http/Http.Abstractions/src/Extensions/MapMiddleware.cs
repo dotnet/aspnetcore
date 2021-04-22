@@ -32,6 +32,11 @@ namespace Microsoft.AspNetCore.Builder.Extensions
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (options.Branch == null)
+            {
+                throw new ArgumentException("Branch not set on options.", nameof(options));
+            }
+
             _next = next;
             _options = options;
         }
@@ -48,25 +53,29 @@ namespace Microsoft.AspNetCore.Builder.Extensions
                 throw new ArgumentNullException(nameof(context));
             }
 
-            PathString matchedPath;
-            PathString remainingPath;
-
-            if (context.Request.Path.StartsWithSegments(_options.PathMatch, out matchedPath, out remainingPath))
+            if (context.Request.Path.StartsWithSegments(_options.PathMatch, out var matchedPath, out var remainingPath))
             {
-                // Update the path
                 var path = context.Request.Path;
                 var pathBase = context.Request.PathBase;
-                context.Request.PathBase = pathBase.Add(matchedPath);
-                context.Request.Path = remainingPath;
+
+                if (!_options.PreserveMatchedPathSegment)
+                {
+                    // Update the path
+                    context.Request.PathBase = pathBase.Add(matchedPath);
+                    context.Request.Path = remainingPath;
+                }
 
                 try
                 {
-                    await _options.Branch(context);
+                    await _options.Branch!(context);
                 }
                 finally
                 {
-                    context.Request.PathBase = pathBase;
-                    context.Request.Path = path;
+                    if (!_options.PreserveMatchedPathSegment)
+                    {
+                        context.Request.PathBase = pathBase;
+                        context.Request.Path = path;
+                    }
                 }
             }
             else

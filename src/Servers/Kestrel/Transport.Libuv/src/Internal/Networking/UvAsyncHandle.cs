@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             {
                 handle = IntPtr.Zero;
 
-                if (Thread.CurrentThread.ManagedThreadId == ThreadId)
+                if (Environment.CurrentManagedThreadId == ThreadId)
                 {
                     _uv.close(memory, _destroyMemory);
                 }

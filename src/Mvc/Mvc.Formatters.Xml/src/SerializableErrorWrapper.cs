@@ -18,6 +18,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         // other ModelState entries because the character is not legal in an expression name.
         internal static readonly string EmptyKey = "MVC-Empty";
 
+        /// <summary>
+        /// Initializes a new <see cref="SerializableErrorWrapper"/>
+        /// </summary>
         // Note: XmlSerializer requires to have default constructor
         public SerializableErrorWrapper()
         {

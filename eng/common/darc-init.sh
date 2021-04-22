@@ -6,7 +6,7 @@ versionEndpoint='https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc
 verbosity='minimal'
 
 while [[ $# > 0 ]]; do
-  opt="$(echo "$1" | awk '{print tolower($0)}')"
+  opt="$(echo "$1" | tr "[:upper:]" "[:lower:]")"
   case "$opt" in
     --darcversion)
       darcVersion=$2
@@ -68,7 +68,7 @@ function InstallDarcCli {
     fi
   fi
 
-  local arcadeServicesSource="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"
+  local arcadeServicesSource="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"
 
   echo "Installing Darc CLI version $darcVersion..."
   echo "You may need to restart your command shell if this is the first dotnet tool you have installed."

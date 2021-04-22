@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private readonly ActionConstraintCache _actionConstraintCache;
         private readonly ILogger _logger;
 
-        private ActionSelectionTable<ActionDescriptor> _cache;
+        private ActionSelectionTable<ActionDescriptor>? _cache;
 
         /// <summary>
         /// Creates a new <see cref="ActionSelector"/>.
@@ -80,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return matches;
         }
 
-        public ActionDescriptor SelectBestCandidate(RouteContext context, IReadOnlyList<ActionDescriptor> candidates)
+        public ActionDescriptor? SelectBestCandidate(RouteContext context, IReadOnlyList<ActionDescriptor> candidates)
         {
             if (context == null)
             {
@@ -92,9 +94,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(candidates));
             }
 
-            var matches = EvaluateActionConstraints(context, candidates);
+            var finalMatches = EvaluateActionConstraints(context, candidates);
 
-            var finalMatches = SelectBestActions(matches);
             if (finalMatches == null || finalMatches.Count == 0)
             {
                 return null;
@@ -121,24 +122,15 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        /// <summary>
-        /// Returns the set of best matching actions.
-        /// </summary>
-        /// <param name="actions">The set of actions that satisfy all constraints.</param>
-        /// <returns>A list of the best matching actions.</returns>
-        private IReadOnlyList<ActionDescriptor> SelectBestActions(IReadOnlyList<ActionDescriptor> actions)
-        {
-            return actions;
-        }
-
-        private IReadOnlyList<ActionDescriptor> EvaluateActionConstraints(
+        private IReadOnlyList<ActionDescriptor>? EvaluateActionConstraints(
             RouteContext context,
             IReadOnlyList<ActionDescriptor> actions)
         {
-            var candidates = new List<ActionSelectorCandidate>();
+            var actionsCount = actions.Count;
+            var candidates = new List<ActionSelectorCandidate>(actionsCount);
 
             // Perf: Avoid allocations
-            for (var i = 0; i < actions.Count; i++)
+            for (var i = 0; i < actionsCount; i++)
             {
                 var action = actions[i];
                 var constraints = _actionConstraintCache.GetActionConstraints(context.HttpContext, action);
@@ -147,12 +139,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var matches = EvaluateActionConstraintsCore(context, candidates, startingOrder: null);
 
-            List<ActionDescriptor> results = null;
+            List<ActionDescriptor>? results = null;
             if (matches != null)
             {
-                results = new List<ActionDescriptor>(matches.Count);
+                var matchesCount = matches.Count;
+                results = new List<ActionDescriptor>(matchesCount);
                 // Perf: Avoid allocations
-                for (var i = 0; i < matches.Count; i++)
+                for (var i = 0; i < matchesCount; i++)
                 {
                     var candidate = matches[i];
                     results.Add(candidate.Action);
@@ -162,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return results;
         }
 
-        private IReadOnlyList<ActionSelectorCandidate> EvaluateActionConstraintsCore(
+        private IReadOnlyList<ActionSelectorCandidate>? EvaluateActionConstraintsCore(
             RouteContext context,
             IReadOnlyList<ActionSelectorCandidate> candidates,
             int? startingOrder)

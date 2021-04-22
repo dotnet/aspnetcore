@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.OpenApi
 
         private string GetInformationalVersion()
         {
-            var assembly = typeof(Application).GetTypeInfo().Assembly;
+            var assembly = typeof(Application).Assembly;
             var attribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
             return attribute.InformationalVersion;
         }

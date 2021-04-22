@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// API conventions are used to influence the output of ApiExplorer. 
     /// Conventions must be static types. Methods in a convention are
     /// matched to an action method using rules specified by <see cref="ApiConventionNameMatchAttribute" />
-    /// that may be applied to a method name or it's parameters and <see cref="ApiConventionTypeMatchAttribute"/>
+    /// that may be applied to a method name or its parameters and <see cref="ApiConventionTypeMatchAttribute"/>
     /// that are applied to parameters.
     /// </para>
     /// <para>
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <para>
         /// Conventions must be static types. Methods in a convention are
         /// matched to an action method using rules specified by <see cref="ApiConventionNameMatchAttribute" />
-        /// that may be applied to a method name or it's parameters and <see cref="ApiConventionTypeMatchAttribute"/>
+        /// that may be applied to a method name or its parameters and <see cref="ApiConventionTypeMatchAttribute"/>
         /// that are applied to parameters.
         /// </para>
         /// </param>
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc
                     continue;
                 }
 
-                var methodDisplayName = TypeNameHelper.GetTypeDisplayName(method.DeclaringType) + "." + method.Name;
+                var methodDisplayName = TypeNameHelper.GetTypeDisplayName(method.DeclaringType!) + "." + method.Name;
                 var errorMessage = Resources.FormatApiConvention_UnsupportedAttributesOnConvention(
                     methodDisplayName,
                     Environment.NewLine + string.Join(Environment.NewLine, unsupportedAttributes) + Environment.NewLine,

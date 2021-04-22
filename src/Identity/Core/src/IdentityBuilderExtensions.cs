@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Adds a <see cref="SignInManager{TUser}"/> for the <seealso cref="IdentityBuilder.UserType"/>.
+        /// Adds a <see cref="SignInManager{TUser}"/> for the <see cref="IdentityBuilder.UserType"/>.
         /// </summary>
         /// <param name="builder">The current <see cref="IdentityBuilder"/> instance.</param>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Adds a <see cref="SignInManager{TUser}"/> for the <seealso cref="IdentityBuilder.UserType"/>.
+        /// Adds a <see cref="SignInManager{TUser}"/> for the <see cref="IdentityBuilder.UserType"/>.
         /// </summary>
         /// <typeparam name="TSignInManager">The type of the sign in manager to add.</typeparam>
         /// <param name="builder">The current <see cref="IdentityBuilder"/> instance.</param>
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Identity
             builder.AddSignInManagerDeps();
             var managerType = typeof(SignInManager<>).MakeGenericType(builder.UserType);
             var customType = typeof(TSignInManager);
-            if (!managerType.GetTypeInfo().IsAssignableFrom(customType.GetTypeInfo()))
+            if (!managerType.IsAssignableFrom(customType))
             {
                 throw new InvalidOperationException(Resources.FormatInvalidManagerType(customType.Name, "SignInManager", builder.UserType.Name));
             }

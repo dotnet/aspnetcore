@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
                 ModelState.AddModelError(string.Empty, ErrorMessage);
             }
 
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/");
 
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
 
         public override async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/");
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User logged in.");
+                    _logger.LogInformation(LoggerEventIds.UserLogin, "User logged in.");
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
                 }
                 if (result.IsLockedOut)
                 {
-                    _logger.LogWarning("User account locked out.");
+                    _logger.LogWarning(LoggerEventIds.UserLockout, "User account locked out.");
                     return RedirectToPage("./Lockout");
                 }
                 else

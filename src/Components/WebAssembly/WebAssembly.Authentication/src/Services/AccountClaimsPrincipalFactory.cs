@@ -16,7 +16,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
     {
         private readonly IAccessTokenProviderAccessor _accessor;
 
-#pragma warning disable PUB0001 // Pubternal type in public API
+        /// <summary>
+        /// Initialize a new instance of <see cref="AccountClaimsPrincipalFactory{TAccount}"/>.
+        /// </summary>
+        /// <param name="accessor"></param>
         public AccountClaimsPrincipalFactory(IAccessTokenProviderAccessor accessor) => _accessor = accessor;
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -66,6 +66,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     case RenderMode.Server:
                     case RenderMode.ServerPrerendered:
                     case RenderMode.Static:
+                    case RenderMode.WebAssembly:
+                    case RenderMode.WebAssemblyPrerendered:
                         _renderMode = value;
                         break;
 
@@ -98,7 +100,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 throw new ArgumentException(Resources.FormatAttributeIsRequired(RenderModeName, TagHelperName), nameof(RenderMode));
             }
 
-            var componentRenderer = ViewContext.HttpContext.RequestServices.GetRequiredService<IComponentRenderer>();
+            var requestServices = ViewContext.HttpContext.RequestServices;
+            var componentRenderer = requestServices.GetRequiredService<IComponentRenderer>();
             var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
 
             // Reset the TagName. We don't want `component` to render.

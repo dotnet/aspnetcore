@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 {
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
         {
             private readonly AsyncIOEngine _engine;
 
-            private IntPtr _requestHandler;
+            private NativeSafeHandle? _requestHandler;
             private bool _moreData;
 
             public AsyncFlushOperation(AsyncIOEngine engine)
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 _engine = engine;
             }
 
-            public void Initialize(IntPtr requestHandler, bool moreData)
+            public void Initialize(NativeSafeHandle requestHandler, bool moreData)
             {
                 _requestHandler = requestHandler;
                 _moreData = moreData;
@@ -27,6 +28,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
             protected override bool InvokeOperation(out int hr, out int bytes)
             {
+                Debug.Assert(_requestHandler != null, "Must initialize first.");
+
                 bytes = 0;
                 hr = NativeMethods.HttpFlushResponseBytes(_requestHandler, _moreData, out var fCompletionExpected);
 

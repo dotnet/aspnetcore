@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Diagnostics
 {
     /// <summary>
-    /// Provides context about the error currently being handled bt the DeveloperExceptionPageMiddleware.
+    /// Provides context about the error currently being handled by the DeveloperExceptionPageMiddleware.
     /// </summary>
     public class ErrorContext
     {

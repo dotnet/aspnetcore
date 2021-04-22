@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -30,16 +31,18 @@ namespace PackageBaselineGenerator
             new Program().Execute(args);
         }
 
-        private readonly CommandOption _source;
+        private readonly CommandOption _sources;
         private readonly CommandOption _output;
         private readonly CommandOption _update;
 
+        private static readonly string[] _defaultSources = new string[] { "https://api.nuget.org/v3/index.json" };
+
         public Program()
         {
-            _source = Option(
-                "-s|--package-source <SOURCE>",
-                "The NuGet source of packages to fetch",
-                CommandOptionType.SingleValue);
+            _sources = Option(
+                "-s|--package-sources <Sources>",
+                "The NuGet source(s) of packages to fetch",
+                CommandOptionType.MultipleValue);
             _output = Option("-o|--output <OUT>", "The generated file output path", CommandOptionType.SingleValue);
             _update = Option("-u|--update", "Regenerate the input (Baseline.xml) file.", CommandOptionType.NoValue);
 
@@ -56,26 +59,32 @@ namespace PackageBaselineGenerator
 
             var inputPath = Path.Combine(Directory.GetCurrentDirectory(), "Baseline.xml");
             var input = XDocument.Load(inputPath);
-            var source = _source.HasValue() ? _source.Value().TrimEnd('/') : "https://api.nuget.org/v3/index.json";
-            var packageSource = new PackageSource(source);
+            var sources = _sources.HasValue() ? _sources.Values.Select(s => s.TrimEnd('/')) : _defaultSources;
+            var packageSources = sources.Select(s => new PackageSource(s));
             var providers = Repository.Provider.GetCoreV3(); // Get v2 and v3 API support
-            var sourceRepository = new SourceRepository(packageSource, providers);
+            var sourceRepositories = packageSources.Select(ps => new SourceRepository(ps, providers));
             if (_update.HasValue())
             {
-                var updateResult = await RunUpdateAsync(inputPath, input, sourceRepository);
+                var updateResult = await RunUpdateAsync(inputPath, input, sourceRepositories);
                 if (updateResult != 0)
                 {
                     return updateResult;
                 }
             }
 
-            var feedType = await sourceRepository.GetFeedType(CancellationToken.None);
-            var feedV3 = feedType == FeedType.HttpV3;
-            var packageBase = source + "/package";
-            if (feedV3)
+            List<(string packageBase, bool feedV3)> packageBases = new List<(string, bool)>();
+            foreach (var sourceRepository in sourceRepositories)
             {
-                var resources = await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>();
-                packageBase = resources.GetServiceEntryUri(ServiceTypes.PackageBaseAddress).ToString().TrimEnd('/');
+                var feedType = await sourceRepository.GetFeedType(CancellationToken.None);
+                var feedV3 = feedType == FeedType.HttpV3;
+                var packageBase = sourceRepository.PackageSource + "/package";
+                if (feedV3)
+                {
+                    var resources = await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>();
+                    packageBase = resources.GetServiceEntryUri(ServiceTypes.PackageBaseAddress).ToString().TrimEnd('/');
+                }
+
+                packageBases.Add((packageBase, feedV3));
             }
 
             var output = _output.HasValue()
@@ -116,17 +125,33 @@ namespace PackageBaselineGenerator
 
                 if (!File.Exists(nupkgPath))
                 {
-                    var url = feedV3 ?
-                        $"{packageBase}/{id.ToLowerInvariant()}/{version}/{id.ToLowerInvariant()}.{version}.nupkg" :
-                        $"{packageBase}/{id}/{version}";
-
-                    Console.WriteLine($"Downloading {url}");
-                    using (var response = await client.GetStreamAsync(url))
+                    foreach ((string packageBase, bool feedV3) in packageBases)
                     {
-                        using (var file = File.Create(nupkgPath))
+                        var url = feedV3 ?
+                            $"{packageBase}/{id.ToLowerInvariant()}/{version}/{id.ToLowerInvariant()}.{version}.nupkg" :
+                            $"{packageBase}/{id}/{version}";
+
+                        Console.WriteLine($"Downloading {url}");
+                        try
                         {
-                            await response.CopyToAsync(file);
+                            using (var response = await client.GetStreamAsync(url))
+                            {
+                                using (var file = File.Create(nupkgPath))
+                                {
+                                    await response.CopyToAsync(file);
+                                }
+                            }
                         }
+                        catch (HttpRequestException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
+                        {
+                            // If it's not found, continue onto the next one.
+                            continue;
+                        }
+                    }
+
+                    if (!File.Exists(nupkgPath))
+                    {
+                        throw new Exception($"Could not download package {id} @ {version} using any input feed");
                     }
                 }
 
@@ -156,7 +181,7 @@ namespace PackageBaselineGenerator
                             StringComparison.OrdinalIgnoreCase))
                         {
                             targetCondition =
-                                $"('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR {targetCondition})";
+                                $"('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == '{defaultTarget}')";
                         }
 
                         var itemGroup = new XElement(
@@ -195,9 +220,11 @@ namespace PackageBaselineGenerator
         private async Task<int> RunUpdateAsync(
             string documentPath,
             XDocument document,
-            SourceRepository sourceRepository)
+            IEnumerable<SourceRepository> sourceRepositories)
         {
-            var packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
+            var packageMetadataResources = await Task.WhenAll(sourceRepositories.Select(async sr =>
+                await sr.GetResourceAsync<PackageMetadataResource>()));
+
             var logger = new Logger(Error, Out);
             var hasChanged = false;
             using (var cacheContext = new SourceCacheContext { NoCache = true })
@@ -206,7 +233,7 @@ namespace PackageBaselineGenerator
                 hasChanged = await TryUpdateVersionAsync(
                     versionAttribute,
                     "Microsoft.AspNetCore.App.Runtime.win-x64",
-                    packageMetadataResource,
+                    packageMetadataResources,
                     logger,
                     cacheContext);
 
@@ -217,7 +244,7 @@ namespace PackageBaselineGenerator
                     var attributeChanged = await TryUpdateVersionAsync(
                         versionAttribute,
                         id,
-                        packageMetadataResource,
+                        packageMetadataResources,
                         logger,
                         cacheContext);
 
@@ -261,25 +288,36 @@ namespace PackageBaselineGenerator
         private static async Task<bool> TryUpdateVersionAsync(
             XAttribute versionAttribute,
             string packageId,
-            PackageMetadataResource packageMetadataResource,
+            IEnumerable<PackageMetadataResource> packageMetadataResources,
             ILogger logger,
             SourceCacheContext cacheContext)
         {
-            var searchMetadata = await packageMetadataResource.GetMetadataAsync(
-                packageId,
-                includePrerelease: false,
-                includeUnlisted: true, // Microsoft.AspNetCore.DataOrotection.Redis package is not listed.
-                sourceCacheContext: cacheContext,
-                log: logger,
-                token: CancellationToken.None);
-
             var currentVersion = NuGetVersion.Parse(versionAttribute.Value);
             var versionRange = new VersionRange(
                 currentVersion,
                 new FloatRange(NuGetVersionFloatBehavior.Patch, currentVersion));
 
-            var latestVersion = versionRange.FindBestMatch(
-                searchMetadata.Select(metadata => metadata.Identity.Version));
+            var searchMetadatas = await Task.WhenAll(
+                packageMetadataResources.Select(async pmr => await pmr.GetMetadataAsync(
+                    packageId,
+                    includePrerelease: false,
+                    includeUnlisted: true, // Microsoft.AspNetCore.DataOrotection.Redis package is not listed.
+                    sourceCacheContext: cacheContext,
+                    log: logger,
+                    token: CancellationToken.None)));
+
+            // Find the latest version among each search metadata
+            NuGetVersion latestVersion = null;
+            foreach (var searchMetadata in searchMetadatas)
+            {
+                var potentialLatestVersion = versionRange.FindBestMatch(
+                    searchMetadata.Select(metadata => metadata.Identity.Version));
+                if (latestVersion == null ||
+                    (potentialLatestVersion != null && potentialLatestVersion.CompareTo(latestVersion) > 0))
+                {
+                    latestVersion = potentialLatestVersion;
+                }
+            }
 
             if (latestVersion == null)
             {

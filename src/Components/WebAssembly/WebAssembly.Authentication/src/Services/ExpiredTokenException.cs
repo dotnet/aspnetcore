@@ -17,6 +17,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
         private readonly NavigationManager _navigation;
         private readonly AccessTokenResult _tokenResult;
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="AccessTokenNotAvailableException"/>.
+        /// </summary>
+        /// <param name="navigation">The <see cref="NavigationManager"/>.</param>
+        /// <param name="tokenResult">The <see cref="AccessTokenResult"/>.</param>
+        /// <param name="scopes">The scopes.</param>
         public AccessTokenNotAvailableException(
             NavigationManager navigation,
             AccessTokenResult tokenResult,
@@ -28,6 +34,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             _navigation = navigation;
         }
 
+        /// <summary>
+        /// Navigates to <see cref="AccessTokenResult.RedirectUrl"/> to allow refreshing the access token.
+        /// </summary>
         public void Redirect() => _navigation.NavigateTo(_tokenResult.RedirectUrl);
     }
 }

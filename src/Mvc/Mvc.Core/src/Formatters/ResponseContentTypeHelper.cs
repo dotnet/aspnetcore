@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="resolvedContentType">The content type to be used for the response content type header</param>
         /// <param name="resolvedContentTypeEncoding">Encoding to be used for writing the response</param>
         public static void ResolveContentTypeAndEncoding(
-            string actionResultContentType,
+            string? actionResultContentType,
             string httpResponseContentType,
             string defaultContentType,
             out string resolvedContentType,

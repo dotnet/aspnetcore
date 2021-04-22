@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using OpenQA.Selenium.Chrome;
@@ -46,7 +47,7 @@ namespace Interop.FunctionalTests
             StartupLogPath = Path.Combine(ResolvedLogOutputDirectory, $"{ResolvedTestMethodName}.su.json");
             ShutdownLogPath = Path.Combine(ResolvedLogOutputDirectory, $"{ResolvedTestMethodName}.sd.json");
 
-            ChromeArgs = new [] {
+            ChromeArgs = new[] {
                 $"--headless",
                 $"--no-sandbox",
                 $"--disable-gpu",
@@ -62,8 +63,8 @@ namespace Interop.FunctionalTests
             };
         }
 
-        [ConditionalTheory(Skip="Disabling while debugging. https://github.com/aspnet/AspNetCore-Internal/issues/1363")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
+        [ConditionalTheory(Skip = "Disabling while debugging. https://github.com/dotnet/aspnetcore-internal/issues/1363")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81, SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
         [InlineData("", "Interop HTTP/2 GET")]
         [InlineData("?TestMethod=POST", "Interop HTTP/2 POST")]
@@ -71,27 +72,31 @@ namespace Interop.FunctionalTests
         {
             InitializeArgs();
 
-            var hostBuilder = new WebHostBuilder()
-                .UseKestrel(options =>
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(IPAddress.Loopback, 0, listenOptions =>
-                    {
-                        listenOptions.Protocols = HttpProtocols.Http2;
-                        listenOptions.UseHttps(TestResources.GetTestCertificate());
-                    });
+                    webHostBuilder
+                        .UseKestrel(options =>
+                        {
+                            options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                            {
+                                listenOptions.Protocols = HttpProtocols.Http2;
+                                listenOptions.UseHttps(TestResources.GetTestCertificate());
+                            });
+                        })
+                        .Configure(app => app.Run(async context =>
+                        {
+                            if (HttpMethods.IsPost(context.Request.Query["TestMethod"]))
+                            {
+                                await context.Response.WriteAsync(_postHtml);
+                            }
+                            else
+                            {
+                                await context.Response.WriteAsync($"Interop {context.Request.Protocol} {context.Request.Method}");
+                            }
+                        }));
                 })
-                .ConfigureServices(AddTestLogging)
-                .Configure(app => app.Run(async context =>
-                {
-                    if (string.Equals(context.Request.Query["TestMethod"], "POST", StringComparison.OrdinalIgnoreCase))
-                    {
-                        await context.Response.WriteAsync(_postHtml);
-                    }
-                    else
-                    {
-                        await context.Response.WriteAsync($"Interop {context.Request.Protocol} {context.Request.Method}");
-                    }
-                }));
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
     internal class DataAnnotationsModelValidator : IModelValidator
     {
         private static readonly object _emptyValidationContextInstance = new object();
-        private readonly IStringLocalizer _stringLocalizer;
+        private readonly IStringLocalizer? _stringLocalizer;
         private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         public DataAnnotationsModelValidator(
             IValidationAttributeAdapterProvider validationAttributeAdapterProvider,
             ValidationAttribute attribute,
-            IStringLocalizer stringLocalizer)
+            IStringLocalizer? stringLocalizer)
         {
             if (validationAttributeAdapterProvider == null)
             {
@@ -93,9 +93,9 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             };
 
             var result = Attribute.GetValidationResult(validationContext.Model, context);
-            if (result != ValidationResult.Success)
+            if (result is not null)
             {
-                string errorMessage;
+                string? errorMessage;
                 if (_stringLocalizer != null &&
                     !string.IsNullOrEmpty(Attribute.ErrorMessage) &&
                     string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             return Enumerable.Empty<ModelValidationResult>();
         }
 
-        private string GetErrorMessage(ModelValidationContextBase validationContext)
+        private string? GetErrorMessage(ModelValidationContextBase validationContext)
         {
             var adapter = _validationAttributeAdapterProvider.GetAttributeAdapter(Attribute, _stringLocalizer);
             return adapter?.GetErrorMessage(validationContext);

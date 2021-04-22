@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 ActionDescriptor = descriptor
             };
-            
+
             var viewContext = new ViewContext();
 
             // Act
@@ -289,6 +289,82 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             Assert.NotNull(testPage.ModelExpressionProviderWithInject);
         }
 
+        [Fact]
+        public void PageFactoryCreatePageDisposerCreatesDisposerForPage()
+        {
+            // Arrange
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton<ILogger>(NullLogger.Instance)
+                .BuildServiceProvider();
+
+            var pageContext = new PageContext
+            {
+                ActionDescriptor = new CompiledPageActionDescriptor
+                {
+                    PageTypeInfo = typeof(DisposablePage).GetTypeInfo()
+                },
+                HttpContext = new DefaultHttpContext
+                {
+                    RequestServices = serviceProvider,
+                },
+            };
+
+            var viewContext = new ViewContext()
+            {
+                HttpContext = pageContext.HttpContext,
+            };
+
+            var factoryProvider = CreatePageFactory();
+
+            // Act
+            var factory = factoryProvider.CreatePageFactory(pageContext.ActionDescriptor);
+            var instance = factory(pageContext, viewContext);
+
+            var disposer = factoryProvider.CreatePageDisposer(pageContext.ActionDescriptor);
+            disposer(pageContext, viewContext, instance);
+
+            // Assert
+            Assert.True(((DisposablePage)instance).Disposed);
+        }
+
+        [Fact]
+        public async Task PageFactoryCreateAsyncPageDisposerCreatesDisposerForPage()
+        {
+            // Arrange
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton<ILogger>(NullLogger.Instance)
+                .BuildServiceProvider();
+
+            var pageContext = new PageContext
+            {
+                ActionDescriptor = new CompiledPageActionDescriptor
+                {
+                    PageTypeInfo = typeof(DisposablePage).GetTypeInfo()
+                },
+                HttpContext = new DefaultHttpContext
+                {
+                    RequestServices = serviceProvider,
+                },
+            };
+
+            var viewContext = new ViewContext()
+            {
+                HttpContext = pageContext.HttpContext,
+            };
+
+            var factoryProvider = CreatePageFactory();
+
+            // Act
+            var factory = factoryProvider.CreatePageFactory(pageContext.ActionDescriptor);
+            var instance = factory(pageContext, viewContext);
+
+            var disposer = factoryProvider.CreateAsyncPageDisposer(pageContext.ActionDescriptor);
+            await disposer(pageContext, viewContext, instance);
+
+            // Assert
+            Assert.True(((DisposablePage)instance).Disposed);
+        }
+
         private static DefaultPageFactoryProvider CreatePageFactory(
             IPageActivatorProvider pageActivator = null,
             IModelMetadataProvider provider = null,
@@ -317,6 +393,31 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 {
                     return (context, viewContext) => Activator.CreateInstance(descriptor.PageTypeInfo.AsType());
                 });
+            activator
+                .Setup(a => a.CreateReleaser(It.IsAny<CompiledPageActionDescriptor>()))
+                .Returns((CompiledPageActionDescriptor descriptor) =>
+                {
+                    return (context, viewContext, instance) => (instance as IDisposable)?.Dispose();
+                });
+
+            activator
+                .Setup(a => a.CreateAsyncReleaser(It.IsAny<CompiledPageActionDescriptor>()))
+                .Returns((CompiledPageActionDescriptor descriptor) =>
+                {
+                    return (context, viewContext, instance) => instance switch
+                    {
+                        IAsyncDisposable asyncDisposable => asyncDisposable.DisposeAsync(),
+                        IDisposable disposable => SyncDispose(disposable),
+                        _ => default
+                    };
+                });
+
+            ValueTask SyncDispose(IDisposable disposable)
+            {
+                disposable.Dispose();
+                return default;
+            }
+
             return activator.Object;
         }
 
@@ -367,6 +468,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
         }
 
+        private class DisposablePage : Page, IDisposable
+        {
+            public bool Disposed { get; set; }
+
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+
+            public override Task ExecuteAsync()
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         private class PropertiesWithoutRazorInject : Page
         {

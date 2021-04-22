@@ -43,10 +43,19 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
         /// <summary>
         /// The file system used to locate resources
         /// </summary>
-        public IFileProvider FileProvider
+        public IFileProvider? FileProvider
         {
             get { return SharedOptions.FileProvider; }
             set { SharedOptions.FileProvider = value; }
+        }
+
+        /// <summary>
+        /// Indicates whether to redirect to add a trailing slash at the end of path. Relative resource links may require this.
+        /// </summary>
+        public bool RedirectToAppendTrailingSlash
+        {
+            get { return SharedOptions.RedirectToAppendTrailingSlash; }
+            set { SharedOptions.RedirectToAppendTrailingSlash = value; }
         }
     }
 }

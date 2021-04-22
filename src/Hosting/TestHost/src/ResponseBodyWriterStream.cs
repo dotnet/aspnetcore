@@ -46,6 +46,11 @@ namespace Microsoft.AspNetCore.TestHost
 
         public override void Flush()
         {
+            if (!_allowSynchronousIO())
+            {
+                throw new InvalidOperationException("Synchronous operations are disallowed. Call WriteAsync or set AllowSynchronousIO to true.");
+            }
+
             FlushAsync().GetAwaiter().GetResult();
         }
 

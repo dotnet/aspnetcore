@@ -10,7 +10,7 @@ using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     // For now this is limited to server-side execution because we don't have the ability to set the
     // culture in client-side Blazor.

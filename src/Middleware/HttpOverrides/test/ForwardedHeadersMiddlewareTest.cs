@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -19,15 +21,23 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task XForwardedForDefaultSettingsChangeRemoteIpAndPort()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -46,16 +56,24 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(1, "11.111.111.11.12345", "10.0.0.1", 99)] // Invalid
         public async Task XForwardedForFirstValueIsInvalid(int limit, string header, string expectedIp, int expectedPort)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedFor,
-                        ForwardLimit = limit,
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                            ForwardLimit = limit,
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -92,20 +110,28 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(3, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "13.113.113.13", 34567, "", true)]
         public async Task XForwardedForForwardLimit(int limit, string header, string expectedIp, int expectedPort, string remainingHeader, bool requireSymmetry)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    var options = new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedFor,
-                        RequireHeaderSymmetry = requireSymmetry,
-                        ForwardLimit = limit,
-                    };
-                    options.KnownProxies.Clear();
-                    options.KnownNetworks.Clear();
-                    app.UseForwardedHeaders(options);
-                });
-            var server = new TestServer(builder);
+                        var options = new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                            RequireHeaderSymmetry = requireSymmetry,
+                            ForwardLimit = limit,
+                        };
+                        options.KnownProxies.Clear();
+                        options.KnownNetworks.Clear();
+                        app.UseForwardedHeaders(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -127,15 +153,23 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData("::", false)]
         public async Task XForwardedForLoopback(string originalIp, bool expectForwarded)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -185,22 +219,30 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(3, "13.113.113.13;34567, 12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "12.112.112.12", 23456, true)] // Invalid 3rd IP
         public async Task XForwardedForForwardKnownIps(int limit, string header, string knownIPs, string expectedIp, int expectedPort, bool requireSymmetry)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    var options = new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedFor,
-                        RequireHeaderSymmetry = requireSymmetry,
-                        ForwardLimit = limit,
-                    };
-                    foreach (var ip in knownIPs.Split(',').Select(text => IPAddress.Parse(text)))
-                    {
-                        options.KnownProxies.Add(ip);
-                    }
-                    app.UseForwardedHeaders(options);
-                });
-            var server = new TestServer(builder);
+                        var options = new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                            RequireHeaderSymmetry = requireSymmetry,
+                            ForwardLimit = limit,
+                        };
+                        foreach (var ip in knownIPs.Split(',').Select(text => IPAddress.Parse(text)))
+                        {
+                            options.KnownProxies.Add(ip);
+                        }
+                        app.UseForwardedHeaders(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -216,15 +258,23 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task XForwardedForOverrideBadIpDoesntChangeRemoteIp()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -237,15 +287,23 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task XForwardedHostOverrideChangesRequestHost()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedHost
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedHost
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -291,29 +349,37 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
         [Theory]
         [MemberData(nameof(HostHeaderData))]
-        public async Task XForwardedHostAllowsValidCharacters(string host)
+        public async Task XForwardedHostAllowsValidCharacters(string hostHeader)
         {
             var assertsExecuted = false;
 
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedHost
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedHost
+                        });
+                        app.Run(context =>
+                        {
+                            Assert.Equal(hostHeader, context.Request.Host.ToString());
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal(host, context.Request.Host.ToString());
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             await server.SendAsync(c =>
             {
-                c.Request.Headers["X-Forwarded-Host"] = host;
+                c.Request.Headers["X-Forwarded-Host"] = hostHeader;
             });
             Assert.True(assertsExecuted);
         }
@@ -368,29 +434,37 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
         [Theory]
         [MemberData(nameof(HostHeaderInvalidData))]
-        public async Task XForwardedHostFailsForInvalidCharacters(string host)
+        public async Task XForwardedHostFailsForInvalidCharacters(string hostHeader)
         {
             var assertsExecuted = false;
 
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedHost
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedHost
+                        });
+                        app.Run(context =>
+                        {
+                            Assert.NotEqual(hostHeader, context.Request.Host.Value);
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        Assert.NotEqual(host, context.Request.Host.Value);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             await server.SendAsync(c =>
             {
-                c.Request.Headers["X-Forwarded-Host"] = host;
+                c.Request.Headers["X-Forwarded-Host"] = hostHeader;
             });
             Assert.True(assertsExecuted);
         }
@@ -411,28 +485,36 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData("xn--c1yn36f:443", "點看")]
         [InlineData("[::ABC]", "[::aBc]")]
         [InlineData("[::1]:80", "[::1]")]
-        public async Task XForwardedHostAllowsSpecifiedHost(string host, string allowedHost)
+        public async Task XForwardedHostAllowsSpecifiedHost(string hostHeader, string allowedHost)
         {
             bool assertsExecuted = false;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedHost,
-                        AllowedHosts = allowedHost.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedHost,
+                            AllowedHosts = allowedHost.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                        });
+                        app.Run(context =>
+                        {
+                            Assert.Equal(hostHeader, context.Request.Headers[HeaderNames.Host]);
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal(host, context.Request.Headers[HeaderNames.Host]);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var response = await server.SendAsync(ctx =>
             {
-                ctx.Request.Headers["X-forwarded-Host"] = host;
+                ctx.Request.Headers["X-forwarded-Host"] = hostHeader;
             });
             Assert.True(assertsExecuted);
         }
@@ -454,28 +536,36 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData("點看", "點看")]
         [InlineData("[::1", "[::1]")]
         [InlineData("[::1:80", "[::1]")]
-        public async Task XForwardedHostFailsMismatchedHosts(string host, string allowedHost)
+        public async Task XForwardedHostFailsMismatchedHosts(string hostHeader, string allowedHost)
         {
             bool assertsExecuted = false;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedHost,
-                        AllowedHosts = new[] { allowedHost }
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedHost,
+                            AllowedHosts = new[] { allowedHost }
+                        });
+                        app.Run(context =>
+                        {
+                            Assert.NotEqual<string>(hostHeader, context.Request.Headers[HeaderNames.Host]);
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        Assert.NotEqual<string>(host, context.Request.Headers[HeaderNames.Host]);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var response = await server.SendAsync(ctx =>
             {
-                ctx.Request.Headers["X-forwarded-Host"] = host;
+                ctx.Request.Headers["X-forwarded-Host"] = hostHeader;
             });
             Assert.True(assertsExecuted);
         }
@@ -484,23 +574,31 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task XForwardedHostStopsAtFirstUnspecifiedHost()
         {
             bool assertsExecuted = false;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedHost,
-                        ForwardLimit = 10,
-                        AllowedHosts = new[] { "bar.com", "*.foo.com" }
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedHost,
+                            ForwardLimit = 10,
+                            AllowedHosts = new[] { "bar.com", "*.foo.com" }
+                        });
+                        app.Run(context =>
+                        {
+                            Assert.Equal("bar.foo.com:432", context.Request.Headers[HeaderNames.Host]);
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal("bar.foo.com:432", context.Request.Headers[HeaderNames.Host]);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var response = await server.SendAsync(ctx =>
             {
                 ctx.Request.Headers["X-forwarded-Host"] = "stuff:523, bar.foo.com:432, bar.com:80";
@@ -518,16 +616,24 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(10, "h3, h2, h1", "h3")]
         public async Task XForwardedProtoOverrideChangesRequestProtocol(int limit, string header, string expected)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedProto,
-                        ForwardLimit = limit,
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedProto,
+                            ForwardLimit = limit,
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -559,21 +665,29 @@ namespace Microsoft.AspNetCore.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedProto
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedProto
+                        });
+                        app.Run(context =>
+                        {
+                            Assert.Equal(scheme, context.Request.Scheme);
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal(scheme, context.Request.Scheme);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             await server.SendAsync(c =>
             {
@@ -608,21 +722,29 @@ namespace Microsoft.AspNetCore.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedProto,
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedProto,
+                        });
+                        app.Run(context =>
+                        {
+                            Assert.Equal("http", context.Request.Scheme);
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal("http", context.Request.Scheme);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             await server.SendAsync(c =>
             {
@@ -642,17 +764,25 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(10, "h3, h2, h1", "::1, badip, ::1", "h1")]
         public async Task XForwardedProtoOverrideLimitedByXForwardedForCount(int limit, string protoHeader, string forHeader, string expected)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
-                        RequireHeaderSymmetry = true,
-                        ForwardLimit = limit,
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
+                            RequireHeaderSymmetry = true,
+                            ForwardLimit = limit,
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -676,17 +806,25 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(10, "h3, h2, h1", "::1, badip, ::1", "h1")]
         public async Task XForwardedProtoOverrideCanBeIndependentOfXForwardedForCount(int limit, string protoHeader, string forHeader, string expected)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
-                        RequireHeaderSymmetry = false,
-                        ForwardLimit = limit,
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
+                            RequireHeaderSymmetry = false,
+                            ForwardLimit = limit,
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -712,23 +850,31 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData("h2, h1", "E::, D::", "F::", true, "http")]
         public async Task XForwardedProtoOverrideLimitedByLoopback(string protoHeader, string forHeader, string remoteIp, bool loopback, string expected)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    var options = new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
-                        RequireHeaderSymmetry = true,
-                        ForwardLimit = 5,
-                    };
-                    if (!loopback)
-                    {
-                        options.KnownNetworks.Clear();
-                        options.KnownProxies.Clear();
-                    }
-                    app.UseForwardedHeaders(options);
-                });
-            var server = new TestServer(builder);
+                        var options = new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
+                            RequireHeaderSymmetry = true,
+                            ForwardLimit = 5,
+                        };
+                        if (!loopback)
+                        {
+                            options.KnownNetworks.Clear();
+                            options.KnownProxies.Clear();
+                        }
+                        app.UseForwardedHeaders(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -753,15 +899,23 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task AllForwardsEnabledChangeRequestRemoteIpHostandProtocol()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.All
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.All
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -778,15 +932,23 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task AllOptionsDisabledRequestDoesntChange()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.None
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.None
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -803,15 +965,23 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task PartiallyEnabledForwardsPartiallyChangesRequest()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+                        app.UseForwardedHeaders(new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -848,16 +1018,24 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 var knownNetworkParts = knownNetwork.Split('/');
                 var networkIp = IPAddress.Parse(knownNetworkParts[0]);
-                var prefixLength = int.Parse(knownNetworkParts[1]);
+                var prefixLength = int.Parse(knownNetworkParts[1], CultureInfo.InvariantCulture);
                 options.KnownNetworks.Add(new IPNetwork(networkIp, prefixLength));
             }
 
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseForwardedHeaders(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseForwardedHeaders(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -872,23 +1050,31 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(2, "httpa, httpb, httpc", "httpb", "httpa")]
         public async Task ForwardersWithDIOptionsRunsOnce(int limit, string header, string expectedScheme, string remainingHeader)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.Configure<ForwardedHeadersOptions>(options =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
-                        options.KnownProxies.Clear();
-                        options.KnownNetworks.Clear();
-                        options.ForwardLimit = limit;
+                        services.Configure<ForwardedHeadersOptions>(options =>
+                        {
+                            options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+                            options.KnownProxies.Clear();
+                            options.KnownNetworks.Clear();
+                            options.ForwardLimit = limit;
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseForwardedHeaders();
+                        app.UseForwardedHeaders();
                     });
-                })
-                .Configure(app =>
-                {
-                    app.UseForwardedHeaders();
-                    app.UseForwardedHeaders();
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {
@@ -904,20 +1090,28 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(2, "httpa, httpb, httpc", "httpa", "")]
         public async Task ForwardersWithDirectOptionsRunsTwice(int limit, string header, string expectedScheme, string remainingHeader)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    var options = new ForwardedHeadersOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ForwardedHeaders = ForwardedHeaders.XForwardedProto,
-                        ForwardLimit = limit,
-                    };
-                    options.KnownProxies.Clear();
-                    options.KnownNetworks.Clear();
-                    app.UseForwardedHeaders(options);
-                    app.UseForwardedHeaders(options);
-                });
-            var server = new TestServer(builder);
+                        var options = new ForwardedHeadersOptions
+                        {
+                            ForwardedHeaders = ForwardedHeaders.XForwardedProto,
+                            ForwardLimit = limit,
+                        };
+                        options.KnownProxies.Clear();
+                        options.KnownNetworks.Clear();
+                        app.UseForwardedHeaders(options);
+                        app.UseForwardedHeaders(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var context = await server.SendAsync(c =>
             {

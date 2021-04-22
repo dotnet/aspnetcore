@@ -5,7 +5,9 @@ using System;
 using System.Buffers.Text;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -14,35 +16,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal sealed partial class HttpRequestHeaders : HttpHeaders
     {
-        private readonly bool _reuseHeaderValues;
-        private readonly bool _useLatin1;
         private long _previousBits = 0;
 
-        public HttpRequestHeaders(bool reuseHeaderValues = true, bool useLatin1 = false)
+        public bool ReuseHeaderValues { get; set; }
+        public Func<string, Encoding?> EncodingSelector { get; set; }
+
+        public HttpRequestHeaders(bool reuseHeaderValues = true, Func<string, Encoding?>? encodingSelector = null)
         {
-            _reuseHeaderValues = reuseHeaderValues;
-            _useLatin1 = useLatin1;
+            ReuseHeaderValues = reuseHeaderValues;
+            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultRequestHeaderEncodingSelector;
         }
 
         public void OnHeadersComplete()
         {
-            var bitsToClear = _previousBits & ~_bits;
+            var newHeaderFlags = _bits;
+            var previousHeaderFlags = _previousBits;
             _previousBits = 0;
 
-            if (bitsToClear != 0)
+            var headersToClear = (~newHeaderFlags) & previousHeaderFlags;
+            if (headersToClear == 0)
             {
-                // Some previous headers were not reused or overwritten.
-
-                // While they cannot be accessed by the current request (as they were not supplied by it)
-                // there is no point in holding on to them, so clear them now,
-                // to allow them to get collected by the GC.
-                Clear(bitsToClear);
+                // All headers were resued.
+                return;
             }
+
+            // Some previous headers were not reused or overwritten.
+            // While they cannot be accessed by the current request (as they were not supplied by it)
+            // there is no point in holding on to them, so clear them now,
+            // to allow them to get collected by the GC.
+            Clear(headersToClear);
         }
 
         protected override void ClearFast()
         {
-            if (!_reuseHeaderValues)
+            if (!ReuseHeaderValues)
             {
                 // If we aren't reusing headers clear them all
                 Clear(_bits);
@@ -64,25 +71,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (!HeaderUtilities.TryParseNonNegativeInt64(value, out var parsed))
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value);
             }
 
             return parsed;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void AppendContentLength(Span<byte> value)
+        private void AppendContentLength(ReadOnlySpan<byte> value)
         {
             if (_contentLength.HasValue)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
             }
 
             if (!Utf8Parser.TryParse(value, out long parsed, out var consumed) ||
                 parsed < 0 ||
                 consumed != value.Length)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderStringNonNullCharacters(_useLatin1));
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderString(HeaderNames.ContentLength, EncodingSelector));
+            }
+
+            _contentLength = parsed;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding? customEncoding)
+        {
+            if (_contentLength.HasValue)
+            {
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
+            }
+
+            // long.MaxValue = 9223372036854775807 (19 chars)
+            Span<char> decodedChars = stackalloc char[20];
+            var numChars = customEncoding!.GetChars(value, decodedChars);
+            long parsed = -1;
+
+            if (numChars > 19 ||
+                !long.TryParse(decodedChars.Slice(0, numChars), NumberStyles.Integer, CultureInfo.InvariantCulture, out parsed) ||
+                parsed < 0)
+            {
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderString(HeaderNames.ContentLength, EncodingSelector));
             }
 
             _contentLength = parsed;
@@ -91,23 +121,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void SetValueUnknown(string key, StringValues value)
         {
-            Unknown[key] = value;
+            Unknown[GetInternedHeaderName(key)] = value;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool AddValueUnknown(string key, StringValues value)
         {
-            Unknown.Add(key, value);
+            Unknown.Add(GetInternedHeaderName(key), value);
             // Return true, above will throw and exit for false
             return true;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private unsafe void AppendUnknownHeaders(Span<byte> name, string valueString)
+        private unsafe void AppendUnknownHeaders(string name, string valueString)
         {
-            string key = name.GetHeaderName();
-            Unknown.TryGetValue(key, out var existing);
-            Unknown[key] = AppendValue(existing, valueString);
+            name = GetInternedHeaderName(name);
+            Unknown.TryGetValue(name, out var existing);
+            Unknown[name] = AppendValue(existing, valueString);
         }
 
         public Enumerator GetEnumerator()
@@ -126,6 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             private readonly long _bits;
             private int _next;
             private KeyValuePair<string, StringValues> _current;
+            private KnownHeaderType _currentKnownType;
             private readonly bool _hasUnknown;
             private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
 
@@ -135,13 +166,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _bits = collection._bits;
                 _next = 0;
                 _current = default;
+                _currentKnownType = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
-                    ? collection.MaybeUnknown.GetEnumerator()
+                    ? collection.MaybeUnknown!.GetEnumerator()
                     : default;
             }
 
             public KeyValuePair<string, StringValues> Current => _current;
+
+            internal KnownHeaderType CurrentKnownType => _currentKnownType;
 
             object IEnumerator.Current => _current;
 

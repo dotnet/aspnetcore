@@ -7,17 +7,21 @@ using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
+    /// <summary>
+    /// A collection of <see cref="IFilterMetadata"/>.
+    /// </summary>
     public class FilterCollection : Collection<IFilterMetadata>
     {
         /// <summary>
-        /// Adds a type representing an <see cref="IFilterMetadata"/>.
+        /// Adds a type representing a <see cref="IFilterMetadata"/>.
         /// </summary>
-        /// <typeparam name="TFilterType">Type representing an <see cref="IFilterMetadata"/>.</typeparam>
-        /// <returns>An <see cref="IFilterMetadata"/> representing the added type.</returns>
+        /// <typeparam name="TFilterType">Type representing a <see cref="IFilterMetadata"/>.</typeparam>
+        /// <returns>A <see cref="IFilterMetadata"/> representing the added type.</returns>
         /// <remarks>
         /// Filter instances will be created using
         /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities"/>.
         /// Use <see cref="AddService(Type)"/> to register a service as a filter.
+        /// The added filter will be assigned an order of 0.
         /// </remarks>
         public IFilterMetadata Add<TFilterType>() where TFilterType : IFilterMetadata
         {
@@ -25,14 +29,15 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         }
 
         /// <summary>
-        /// Adds a type representing an <see cref="IFilterMetadata"/>.
+        /// Adds a type representing a <see cref="IFilterMetadata"/>.
         /// </summary>
-        /// <param name="filterType">Type representing an <see cref="IFilterMetadata"/>.</param>
-        /// <returns>An <see cref="IFilterMetadata"/> representing the added type.</returns>
+        /// <param name="filterType">Type representing a <see cref="IFilterMetadata"/>.</param>
+        /// <returns>A <see cref="IFilterMetadata"/> representing the added type.</returns>
         /// <remarks>
         /// Filter instances will be created using
         /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities"/>.
         /// Use <see cref="AddService(Type)"/> to register a service as a filter.
+        /// The added filter will be assigned an order of 0.
         /// </remarks>
         public IFilterMetadata Add(Type filterType)
         {
@@ -45,11 +50,11 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         }
 
         /// <summary>
-        /// Adds a type representing an <see cref="IFilterMetadata"/>.
+        /// Adds a type representing a <see cref="IFilterMetadata"/>.
         /// </summary>
-        /// <typeparam name="TFilterType">Type representing an <see cref="IFilterMetadata"/>.</typeparam>
+        /// <typeparam name="TFilterType">Type representing a <see cref="IFilterMetadata"/>.</typeparam>
         /// <param name="order">The order of the added filter.</param>
-        /// <returns>An <see cref="IFilterMetadata"/> representing the added type.</returns>
+        /// <returns>A <see cref="IFilterMetadata"/> representing the added type.</returns>
         /// <remarks>
         /// Filter instances will be created using
         /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities"/>.
@@ -61,11 +66,11 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         }
 
         /// <summary>
-        /// Adds a type representing an <see cref="IFilterMetadata"/>.
+        /// Adds a type representing a <see cref="IFilterMetadata"/>.
         /// </summary>
-        /// <param name="filterType">Type representing an <see cref="IFilterMetadata"/>.</param>
+        /// <param name="filterType">Type representing a <see cref="IFilterMetadata"/>.</param>
         /// <param name="order">The order of the added filter.</param>
-        /// <returns>An <see cref="IFilterMetadata"/> representing the added type.</returns>
+        /// <returns>A <see cref="IFilterMetadata"/> representing the added type.</returns>
         /// <remarks>
         /// Filter instances will be created using
         /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities"/>.
@@ -92,14 +97,15 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         }
         
         /// <summary>
-        /// Adds a type representing an <see cref="IFilterMetadata"/>.
+        /// Adds a type representing a <see cref="IFilterMetadata"/>.
         /// </summary>
-        /// <typeparam name="TFilterType">Type representing an <see cref="IFilterMetadata"/>.</typeparam>
-        /// <returns>An <see cref="IFilterMetadata"/> representing the added service type.</returns>
+        /// <typeparam name="TFilterType">Type representing a <see cref="IFilterMetadata"/>.</typeparam>
+        /// <returns>A <see cref="IFilterMetadata"/> representing the added service type.</returns>
         /// <remarks>
         /// Filter instances will be created through dependency injection. Use
         /// <see cref="Add(Type)"/> to register a service that will be created via
         /// type activation.
+        /// The added filter will be assigned an order of 0.
         /// </remarks>
         public IFilterMetadata AddService<TFilterType>() where TFilterType : IFilterMetadata
         {
@@ -107,14 +113,15 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         }
 
         /// <summary>
-        /// Adds a type representing an <see cref="IFilterMetadata"/>.
+        /// Adds a type representing a <see cref="IFilterMetadata"/>.
         /// </summary>
-        /// <param name="filterType">Type representing an <see cref="IFilterMetadata"/>.</param>
-        /// <returns>An <see cref="IFilterMetadata"/> representing the added service type.</returns>
+        /// <param name="filterType">Type representing a <see cref="IFilterMetadata"/>.</param>
+        /// <returns>A <see cref="IFilterMetadata"/> representing the added service type.</returns>
         /// <remarks>
         /// Filter instances will be created through dependency injection. Use
         /// <see cref="Add(Type)"/> to register a service that will be created via
         /// type activation.
+        /// The added filter will be assigned an order of 0.
         /// </remarks>
         public IFilterMetadata AddService(Type filterType)
         {
@@ -127,11 +134,11 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         }
 
         /// <summary>
-        /// Adds a type representing an <see cref="IFilterMetadata"/>.
+        /// Adds a type representing a <see cref="IFilterMetadata"/>.
         /// </summary>
-        /// <typeparam name="TFilterType">Type representing an <see cref="IFilterMetadata"/>.</typeparam>
+        /// <typeparam name="TFilterType">Type representing a <see cref="IFilterMetadata"/>.</typeparam>
         /// <param name="order">The order of the added filter.</param>
-        /// <returns>An <see cref="IFilterMetadata"/> representing the added service type.</returns>
+        /// <returns>A <see cref="IFilterMetadata"/> representing the added service type.</returns>
         /// <remarks>
         /// Filter instances will be created through dependency injection. Use
         /// <see cref="Add(Type)"/> to register a service that will be created via
@@ -143,11 +150,11 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         }
 
         /// <summary>
-        /// Adds a type representing an <see cref="IFilterMetadata"/>.
+        /// Adds a type representing a <see cref="IFilterMetadata"/>.
         /// </summary>
-        /// <param name="filterType">Type representing an <see cref="IFilterMetadata"/>.</param>
+        /// <param name="filterType">Type representing a <see cref="IFilterMetadata"/>.</param>
         /// <param name="order">The order of the added filter.</param>
-        /// <returns>An <see cref="IFilterMetadata"/> representing the added service type.</returns>
+        /// <returns>A <see cref="IFilterMetadata"/> representing the added service type.</returns>
         /// <remarks>
         /// Filter instances will be created through dependency injection. Use
         /// <see cref="Add(Type)"/> to register a service that will be created via

@@ -10,6 +10,10 @@ namespace Microsoft.AspNetCore.SignalR
     /// </summary>
     public class HubMetadata
     {
+        /// <summary>
+        /// Constructs the <see cref="HubMetadata"/> of the given <see cref="Hub"/> type.
+        /// </summary>
+        /// <param name="hubType">The <see cref="Type"/> of the <see cref="Hub"/>.</param>
         public HubMetadata(Type hubType)
         {
             HubType = hubType;

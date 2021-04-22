@@ -7,18 +7,19 @@
     <RootNamespace>Microsoft.AspNetCore.DeveloperCertificates.Tools</RootNamespace>
     <PackageTags>dotnet;developercertificates</PackageTags>
     <PackAsTool>true</PackAsTool>
+    <RemoveDevicePlatformSupport>true</RemoveDevicePlatformSupport>
     <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
     <IsShippingPackage>false</IsShippingPackage>
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="System.Security.Cryptography.Cng" />
   </ItemGroup>
 

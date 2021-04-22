@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
@@ -18,6 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <returns>
         /// The filtered value provider or <see langref="null"/> if the value provider only contains rewritten keys.
         /// </returns>
-        IValueProvider Filter();
+        IValueProvider? Filter();
     }
 }

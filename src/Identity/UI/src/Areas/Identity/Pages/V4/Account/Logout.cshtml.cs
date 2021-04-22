@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
         public override async Task<IActionResult> OnPost(string returnUrl = null)
         {
             await _signInManager.SignOutAsync();
-            _logger.LogInformation("User logged out.");
+            _logger.LogInformation(LoggerEventIds.UserLoggedOut, "User logged out.");
             if (returnUrl != null)
             {
                 return LocalRedirect(returnUrl);

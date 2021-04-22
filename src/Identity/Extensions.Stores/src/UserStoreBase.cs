@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Called to create a new instance of a <see cref="IdentityUserLogin{TKey}"/>.
         /// </summary>
         /// <param name="user">The associated user.</param>
-        /// <param name="login">The sasociated login.</param>
+        /// <param name="login">The associated login.</param>
         /// <returns></returns>
         protected virtual TUserLogin CreateUserLogin(TUser user, UserLoginInfo login)
         {
@@ -428,7 +428,7 @@ namespace Microsoft.AspNetCore.Identity
         public abstract Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Retrieves the associated logins for the specified <param ref="user"/>.
+        /// Retrieves the associated logins for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose associated logins to retrieve.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>

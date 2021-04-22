@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -53,7 +56,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
             {
                 if (!_hasConsent.HasValue)
                 {
-                    var cookie = Context.Request.Cookies[Options.ConsentCookie.Name];
+                    var cookie = Context.Request.Cookies[Options.ConsentCookie.Name!];
                     _hasConsent = string.Equals(cookie, ConsentValue, StringComparison.Ordinal);
                     _logger.HasConsent(_hasConsent.Value);
                 }
@@ -70,7 +73,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
             {
                 var cookieOptions = Options.ConsentCookie.Build(Context);
                 // Note policy will be applied. We don't want to bypass policy because we want HttpOnly, Secure, etc. to apply.
-                Append(Options.ConsentCookie.Name, ConsentValue, cookieOptions);
+                Append(Options.ConsentCookie.Name!, ConsentValue, cookieOptions);
                 _logger.ConsentGranted();
             }
             _hasConsent = true;
@@ -82,7 +85,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
             {
                 var cookieOptions = Options.ConsentCookie.Build(Context);
                 // Note policy will be applied. We don't want to bypass policy because we want HttpOnly, Secure, etc. to apply.
-                Delete(Options.ConsentCookie.Name, cookieOptions);
+                Delete(Options.ConsentCookie.Name!, cookieOptions);
                 _logger.ConsentWithdrawn();
             }
             _hasConsent = false;
@@ -94,6 +97,8 @@ namespace Microsoft.AspNetCore.CookiePolicy
             var key = Options.ConsentCookie.Name;
             var value = ConsentValue;
             var options = Options.ConsentCookie.Build(Context);
+
+            Debug.Assert(key != null);
             ApplyAppendPolicy(ref key, ref value, options);
 
             var setCookieHeaderValue = new Net.Http.Headers.SetCookieHeaderValue(
@@ -115,8 +120,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
         private bool CheckPolicyRequired()
         {
             return !CanTrack
-                || (CookiePolicyOptions.SuppressSameSiteNone && Options.MinimumSameSitePolicy != SameSiteMode.None)
-                || (!CookiePolicyOptions.SuppressSameSiteNone && Options.MinimumSameSitePolicy != SameSiteMode.Unspecified)
+                || Options.MinimumSameSitePolicy != SameSiteMode.Unspecified
                 || Options.HttpOnly != HttpOnlyPolicy.None
                 || Options.Secure != CookieSecurePolicy.None;
         }
@@ -148,6 +152,33 @@ namespace Microsoft.AspNetCore.CookiePolicy
             {
                 _logger.CookieSuppressed(key);
             }
+        }
+
+        public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            var nonSuppressedValues = new List<KeyValuePair<string, string>>(keyValuePairs.Length);
+
+            foreach (var keyValuePair in keyValuePairs)
+            {
+                var key = keyValuePair.Key;
+                var value = keyValuePair.Value;
+
+                if (ApplyAppendPolicy(ref key, ref value, options))
+                {
+                    nonSuppressedValues.Add(KeyValuePair.Create(key, value));
+                }
+                else
+                {
+                    _logger.CookieSuppressed(keyValuePair.Key);
+                }
+            }
+
+            Cookies.Append(CollectionsMarshal.AsSpan(nonSuppressedValues), options);
         }
 
         private bool ApplyAppendPolicy(ref string key, ref string value, CookieOptions options)

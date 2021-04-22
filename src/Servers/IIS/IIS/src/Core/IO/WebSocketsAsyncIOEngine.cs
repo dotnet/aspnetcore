@@ -10,29 +10,29 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 {
     internal partial class WebSocketsAsyncIOEngine: IAsyncIOEngine
     {
-        private readonly object _contextLock;
+        private readonly IISHttpContext _context;
 
-        private readonly IntPtr _handler;
+        private readonly NativeSafeHandle _handler;
 
         private bool _isInitialized;
 
-        private AsyncInitializeOperation _initializationFlush;
+        private AsyncInitializeOperation? _initializationFlush;
 
-        private WebSocketWriteOperation _cachedWebSocketWriteOperation;
+        private WebSocketWriteOperation? _cachedWebSocketWriteOperation;
 
-        private WebSocketReadOperation _cachedWebSocketReadOperation;
+        private WebSocketReadOperation? _cachedWebSocketReadOperation;
 
-        private AsyncInitializeOperation _cachedAsyncInitializeOperation;
+        private AsyncInitializeOperation? _cachedAsyncInitializeOperation;
 
-        public WebSocketsAsyncIOEngine(object contextLock, IntPtr handler)
+        public WebSocketsAsyncIOEngine(IISHttpContext context, NativeSafeHandle handler)
         {
-            _contextLock = contextLock;
+            _context = context;
             _handler = handler;
         }
 
         public ValueTask<int> ReadAsync(Memory<byte> memory)
         {
-            lock (_contextLock)
+            lock (_context._contextLock)
             {
                 ThrowIfNotInitialized();
 
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         public ValueTask<int> WriteAsync(ReadOnlySequence<byte> data)
         {
-            lock (_contextLock)
+            lock (_context._contextLock)
             {
                 ThrowIfNotInitialized();
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         public ValueTask FlushAsync(bool moreData)
         {
-            lock (_contextLock)
+            lock (_context._contextLock)
             {
                 if (_isInitialized)
                 {
@@ -110,11 +110,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             }
         }
 
-        public void Dispose()
+        public void Complete()
         {
-            lock (_contextLock)
+            lock (_context._contextLock)
             {
-                NativeMethods.HttpTryCancelIO(_handler);
+                // Should only call CancelIO if the client hasn't disconnected
+                if (!_context.ClientDisconnected)
+                {
+                    NativeMethods.HttpTryCancelIO(_handler);
+                }
             }
         }
 

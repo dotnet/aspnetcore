@@ -12,13 +12,13 @@ namespace Microsoft.AspNetCore.Mvc.Cors
     /// </summary>
     internal class CorsAuthorizationFilterFactory : IFilterFactory, IOrderedFilter
     {
-        private readonly string _policyName;
+        private readonly string? _policyName;
 
         /// <summary>
         /// Creates a new instance of <see cref="CorsAuthorizationFilterFactory"/>.
         /// </summary>
         /// <param name="policyName">Name used to fetch a CORS policy.</param>
-        public CorsAuthorizationFilterFactory(string policyName)
+        public CorsAuthorizationFilterFactory(string? policyName)
         {
             _policyName = policyName;
         }

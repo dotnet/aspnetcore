@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,23 +12,88 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             IsParameter = isParameter;
 
-            if (!isParameter || segment.IndexOf(':') < 0)
+            IsCatchAll = isParameter && segment.StartsWith('*');
+
+            if (IsCatchAll)
+            {
+                // Only one '*' currently allowed
+                Value = segment[1..];
+
+                var invalidCharacterIndex = Value.IndexOf('*');
+                if (invalidCharacterIndex != -1)
+                {
+                    throw new InvalidOperationException($"Invalid template '{template}'. A catch-all parameter may only have one '*' at the beginning of the segment.");
+                }
+            }
+            else
             {
                 Value = segment;
+            }
+
+            // Process segments that parameters  that do not contain a token separating a type constraint.
+            if (IsParameter)
+            {
+                if (Value.IndexOf(':') < 0)
+                {
+
+                // Set the IsOptional flag to true for segments that contain
+                // a parameter with no type constraints but optionality set
+                // via the '?' token.
+                    var questionMarkIndex = Value.IndexOf('?');
+                    if (questionMarkIndex == Value.Length - 1)
+                {
+                    IsOptional = true;
+                        Value = Value[0..^1];
+                }
+                // If the `?` optional marker shows up in the segment but not at the very end,
+                // then throw an error.
+                    else if (questionMarkIndex >= 0)
+                {
+                    throw new ArgumentException($"Malformed parameter '{segment}' in route '{template}'. '?' character can only appear at the end of parameter name.");
+                }
+
                 Constraints = Array.Empty<RouteConstraint>();
             }
             else
             {
-                var tokens = segment.Split(':');
+                var tokens = Value.Split(':');
                 if (tokens[0].Length == 0)
                 {
                     throw new ArgumentException($"Malformed parameter '{segment}' in route '{template}' has no name before the constraints list.");
                 }
 
                 Value = tokens[0];
-                Constraints = tokens.Skip(1)
-                    .Select(token => RouteConstraint.Parse(template, segment, token))
-                    .ToArray();
+                    IsOptional = tokens[^1].EndsWith('?');
+                    if (IsOptional)
+                    {
+                        tokens[^1] = tokens[^1][0..^1];
+            }
+
+                    Constraints = new RouteConstraint[tokens.Length - 1];
+                    for (var i = 1; i < tokens.Length; i++)
+                    {
+                        Constraints[i - 1] = RouteConstraint.Parse(template, segment, tokens[i]);
+                    }
+                }
+            }
+            else
+            {
+                Constraints = Array.Empty<RouteConstraint>();
+            }
+
+            if (IsParameter)
+            {
+                if (IsOptional && IsCatchAll)
+                {
+                    throw new InvalidOperationException($"Invalid segment '{segment}' in route '{template}'. A catch-all parameter cannot be marked optional.");
+                }
+
+                // Moving the check for this here instead of TemplateParser so we can allow catch-all.
+                // We checked for '*' up above specifically for catch-all segments, this one checks for all others
+                if (Value.IndexOf('*') != -1)
+                {
+                    throw new InvalidOperationException($"Invalid template '{template}'. The character '*' in parameter segment '{{{segment}}}' is not allowed.");
+                }
             }
         }
 
@@ -38,9 +103,13 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public bool IsParameter { get; }
 
+        public bool IsOptional { get;  }
+
+        public bool IsCatchAll { get; }
+
         public RouteConstraint[] Constraints { get; }
 
-        public bool Match(string pathSegment, out object matchedParameterValue)
+        public bool Match(string pathSegment, out object? matchedParameterValue)
         {
             if (IsParameter)
             {
@@ -62,5 +131,17 @@ namespace Microsoft.AspNetCore.Components.Routing
                 return string.Equals(Value, pathSegment, StringComparison.OrdinalIgnoreCase);
             }
         }
+
+        public override string ToString() => this switch
+        {
+            { IsParameter: true, IsOptional: false, IsCatchAll: false, Constraints: { Length: 0 } } => $"{{{Value}}}",
+            { IsParameter: true, IsOptional: false, IsCatchAll: false, Constraints: { Length: > 0 } } => $"{{{Value}:{string.Join(':', Constraints.Select(c => c.ToString()))}}}",
+            { IsParameter: true, IsOptional: true, Constraints: { Length: 0 } } => $"{{{Value}?}}",
+            { IsParameter: true, IsOptional: true, Constraints: { Length: > 0 } } => $"{{{Value}:{string.Join(':', Constraints.Select(c => c.ToString()))}?}}",
+            { IsParameter: true, IsCatchAll: true, Constraints: { Length: 0 } } => $"{{*{Value}}}",
+            { IsParameter: true, IsCatchAll: true, Constraints: { Length: > 0 } } => $"{{*{Value}:{string.Join(':', Constraints.Select(c => c.ToString()))}?}}",
+            { IsParameter: false } => Value,
+            _ => throw new InvalidOperationException("Invalid template segment.")
+        };
     }
 }

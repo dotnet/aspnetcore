@@ -10,16 +10,35 @@ namespace Microsoft.AspNetCore.Authentication.Google
     /// </summary>
     public static class GoogleDefaults
     {
+        /// <summary>
+        /// The default scheme for Google authentication. Defaults to <c>Google</c>.
+        /// </summary>
         public const string AuthenticationScheme = "Google";
 
+        /// <summary>
+        /// The default display name for Google authentication. Defaults to <c>Google</c>.
+        /// </summary>
         public static readonly string DisplayName = "Google";
 
-        // https://developers.google.com/identity/protocols/OAuth2WebServer
+        /// <summary>
+        /// The default endpoint used to perform Google authentication.
+        /// </summary>
+        /// <remarks>
+        /// For more details about this endpoint, see https://developers.google.com/identity/protocols/oauth2/web-server#httprest
+        /// </remarks>
         public static readonly string AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
 
-        public static readonly string TokenEndpoint = "https://www.googleapis.com/oauth2/v4/token";
+        /// <summary>
+        /// The OAuth endpoint used to exchange access tokens.
+        /// </summary>
+        public static readonly string TokenEndpoint = "https://oauth2.googleapis.com/token";
 
-        // https://developers.google.com/apis-explorer/#search/oauth2/oauth2/v2/
+        /// <summary>
+        /// The Google endpoint that is used to gather additional user information.
+        /// </summary>
+        /// <remarks>
+        /// For more details about this endpoint, see https://developers.google.com/apis-explorer/#search/oauth2/oauth2/v2/.
+        /// </remarks>
         public static readonly string UserInformationEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo";
     }
 }

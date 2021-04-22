@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             var expectedHeader = "h1";
             Pipeline1.ConfigurePipeline = (appBuilder) =>
             {
-                appBuilder.Use((httpContext, next) =>
+                appBuilder.Run((httpContext) =>
                 {
                     httpContext.Response.Headers.Add(expectedHeader, "");
                     return Task.FromResult(true); // short circuit the request
@@ -97,12 +97,12 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 appBuilder.Use((httpContext, next) =>
                 {
                     httpContext.Response.Headers["h1"] = "pipeline1";
-                    return next();
+                    return next(httpContext);
                 });
             };
             Pipeline2.ConfigurePipeline = (appBuilder) =>
             {
-                appBuilder.Use((httpContext, next) =>
+                appBuilder.Run((httpContext) =>
                 {
                     httpContext.Response.Headers["h1"] = httpContext.Response.Headers["h1"] + "-pipeline2";
                     return Task.FromResult(true); // short circuits the request
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             var expectedMessage = "Error!!!";
             Pipeline1.ConfigurePipeline = (appBuilder) =>
             {
-                appBuilder.Use((httpContext, next) =>
+                appBuilder.Run((httpContext) =>
                 {
                     throw new InvalidOperationException(expectedMessage);
                 });
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 {
                     try
                     {
-                        await next();
+                        await next(httpContext);
                     }
                     catch
                     {
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             };
             Pipeline2.ConfigurePipeline = (appBuilder) =>
             {
-                appBuilder.Use((httpContext, next) =>
+                appBuilder.Run((httpContext) =>
                 {
                     throw new InvalidOperationException(expectedMessage);
                 });
@@ -372,6 +372,15 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 ReleaseCalled = true;
             }
 
+            public ValueTask ReleaseControllerAsync(ControllerContext context, object controller)
+            {
+                Assert.NotNull(controller);
+                Assert.Same(_controller, controller);
+                ReleaseCalled = true;
+
+                return default;
+            }
+
             public void Verify()
             {
                 if (CreateCalled && !ReleaseCalled)
@@ -441,7 +450,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 return new ControllerActionInvokerCacheEntry(
                     new FilterItem[0],
                     controllerFactory.CreateController,
-                    controllerFactory.ReleaseController,
+                    controllerFactory.ReleaseControllerAsync,
                     null,
                     objectMethodExecutor,
                     ActionMethodExecutor.GetExecutor(objectMethodExecutor));

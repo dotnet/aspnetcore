@@ -12,46 +12,55 @@ namespace Microsoft.AspNetCore.Http.Features
     public interface IHttpRequestFeature
     {
         /// <summary>
-        /// The HTTP-version as defined in RFC 7230. E.g. "HTTP/1.1"
+        /// Gets or set the HTTP-version as defined in RFC 7230. E.g. "HTTP/1.1"
         /// </summary>
         string Protocol { get; set; }
 
         /// <summary>
-        /// The request uri scheme. E.g. "http" or "https". Note this value is not included
-        /// in the original request, it is inferred by checking if the transport used a TLS
+        /// Gets or set the request uri scheme. E.g. "http" or "https".
+        /// <para>
+        /// Note this value is not included in the original request,
+        /// it is inferred by checking if the transport used a TLS
         /// connection or not.
+        /// </para>
         /// </summary>
         string Scheme { get; set; }
 
         /// <summary>
-        /// The request method as defined in RFC 7230. E.g. "GET", "HEAD", "POST", etc..
+        /// Gets or sets the request method as defined in RFC 7230. E.g. "GET", "HEAD", "POST", etc..
         /// </summary>
         string Method { get; set; }
 
         /// <summary>
-        /// The first portion of the request path associated with application root. The value
-        /// is un-escaped. The value may be string.Empty.
+        /// Gets or sets the first portion of the request path associated with application root.
+        /// <para>
+        /// The value is un-escaped. The value may be <see cref="string.Empty"/>.
+        /// </para>
         /// </summary>
         string PathBase { get; set; }
 
         /// <summary>
-        /// The portion of the request path that identifies the requested resource. The value
-        /// is un-escaped. The value may be string.Empty if <see cref="PathBase"/> contains the
+        /// Gets or sets the portion of the request path that identifies the requested resource.
+        /// <para>
+        /// The value is un-escaped. The value may be <see cref="string.Empty"/> if <see cref="PathBase"/> contains the
         /// full path.
+        /// </para>
         /// </summary>
         string Path { get; set; }
 
         /// <summary>
-        /// The query portion of the request-target as defined in RFC 7230. The value
-        /// may be string.Empty. If not empty then the leading '?' will be included. The value
+        /// Gets or sets the query portion of the request-target as defined in RFC 7230. The value
+        /// may be <see cref="string.Empty" />. If not empty then the leading '?' will be included. The value
         /// is in its original form, without un-escaping.
         /// </summary>
         string QueryString { get; set; }
 
         /// <summary>
-        /// The request target as it was sent in the HTTP request. This property contains the
-        /// raw path and full query, as well as other request targets such as * for OPTIONS
-        /// requests (https://tools.ietf.org/html/rfc7230#section-5.3).
+        /// Gets or sets the request target as it was sent in the HTTP request.
+        /// <para>
+        /// This property contains the raw path and full query, as well as other request targets
+        /// such as * for OPTIONS requests (https://tools.ietf.org/html/rfc7230#section-5.3).
+        /// </para>
         /// </summary>
         /// <remarks>
         /// This property is not used internally for routing or authorization decisions. It has not
@@ -60,17 +69,23 @@ namespace Microsoft.AspNetCore.Http.Features
         string RawTarget { get; set; }
 
         /// <summary>
-        /// Headers included in the request, aggregated by header name. The values are not split
-        /// or merged across header lines. E.g. The following headers:
-        /// HeaderA: value1, value2
-        /// HeaderA: value3
+        /// Gets or sets headers included in the request, aggregated by header name.
+        /// <para>
+        /// The values are not split or merged across header lines. E.g. The following headers:
+        /// <list type="bullet">
+        /// <item>HeaderA: value1, value2</item>
+        /// <item>HeaderA: value3</item>
+        /// </list>
         /// Result in Headers["HeaderA"] = { "value1, value2", "value3" }
+        /// </para>
         /// </summary>
         IHeaderDictionary Headers { get; set; }
 
         /// <summary>
-        /// A <see cref="Stream"/> representing the request body, if any. Stream.Null may be used
-        /// to represent an empty request body.
+        /// Gets or sets a <see cref="Stream"/> representing the request body, if any.
+        /// <para>
+        /// <see cref="Stream.Null"/> may be used to represent an empty request body.
+        /// </para>
         /// </summary>
         Stream Body { get; set; }
     }

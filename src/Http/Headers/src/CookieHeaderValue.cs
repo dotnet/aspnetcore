@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 using Microsoft.Extensions.Primitives;
@@ -10,6 +11,9 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.Net.Http.Headers
 {
     // http://tools.ietf.org/html/rfc6265
+    /// <summary>
+    /// Represents the HTTP request <c>Cookie</c> header.
+    /// </summary>
     public class CookieHeaderValue
     {
         private static readonly CookieHeaderParser SingleValueParser = new CookieHeaderParser(supportsMultipleValues: false);
@@ -23,6 +27,10 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CookieHeaderValue"/>.
+        /// </summary>
+        /// <param name="name">The cookie name.</param>
         public CookieHeaderValue(StringSegment name)
             : this(name, StringSegment.Empty)
         {
@@ -32,6 +40,11 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CookieHeaderValue"/>.
+        /// </summary>
+        /// <param name="name">The cookie name.</param>
+        /// <param name="value">The cookie value.</param>
         public CookieHeaderValue(StringSegment name, StringSegment value)
         {
             if (name == null)
@@ -48,6 +61,9 @@ namespace Microsoft.Net.Http.Headers
             Value = value;
         }
 
+        /// <summary>
+        /// Gets or sets the cookie name.
+        /// </summary>
         public StringSegment Name
         {
             get { return _name; }
@@ -58,6 +74,9 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the cookie value.
+        /// </summary>
         public StringSegment Value
         {
             get { return _value; }
@@ -68,6 +87,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <inheritdoc />
         // name="val ue";
         public override string ToString()
         {
@@ -80,152 +100,69 @@ namespace Microsoft.Net.Http.Headers
             return header.ToString();
         }
 
+        /// <summary>
+        /// Parses <paramref name="input"/> as a <see cref="CookieHeaderValue"/> value.
+        /// </summary>
+        /// <param name="input">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
         public static CookieHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return SingleValueParser.ParseValue(input, ref index);
+            return SingleValueParser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out CookieHeaderValue parsedValue)
+        /// <summary>
+        /// Attempts to parse the specified <paramref name="input"/> as a <see cref="CookieHeaderValue"/>.
+        /// </summary>
+        /// <param name="input">The value to parse.</param>
+        /// <param name="parsedValue">The parsed value.</param>
+        /// <returns><see langword="true"/> if input is a valid <see cref="CookieHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out CookieHeaderValue? parsedValue)
         {
             var index = 0;
-            return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
+            return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        public static IList<CookieHeaderValue> ParseList(IList<string> inputs)
+        /// <summary>
+        /// Parses a sequence of inputs as a sequence of <see cref="CookieHeaderValue"/> values.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
+        public static IList<CookieHeaderValue> ParseList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseValues(inputs);
         }
 
-        public static IList<CookieHeaderValue> ParseStrictList(IList<string> inputs)
+        /// <summary>
+        /// Parses a sequence of inputs as a sequence of <see cref="CookieHeaderValue"/> values using string parsing rules.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <returns>The parsed values.</returns>
+        public static IList<CookieHeaderValue> ParseStrictList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseStrictValues(inputs);
         }
 
-        public static bool TryParseList(IList<string> inputs, out IList<CookieHeaderValue> parsedValues)
+        /// <summary>
+        /// Attempts to parse the sequence of values as a sequence of <see cref="CookieHeaderValue"/>.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <param name="parsedValues">The parsed values.</param>
+        /// <returns><see langword="true"/> if all inputs are valid <see cref="CookieHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParseList(IList<string>? inputs, [NotNullWhen(true)] out IList<CookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> inputs, out IList<CookieHeaderValue> parsedValues)
+        /// <summary>
+        /// Attempts to parse the sequence of values as a sequence of <see cref="CookieHeaderValue"/> using string parsing rules.
+        /// </summary>
+        /// <param name="inputs">The values to parse.</param>
+        /// <param name="parsedValues">The parsed values.</param>
+        /// <returns><see langword="true"/> if all inputs are valid <see cref="StringWithQualityHeaderValue"/>, otherwise <see langword="false"/>.</returns>
+        public static bool TryParseStrictList(IList<string>? inputs, [NotNullWhen(true)] out IList<CookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
-        }
-
-        // name=value; name="value"
-        internal static bool TryGetCookieLength(StringSegment input, ref int offset, out CookieHeaderValue parsedValue)
-        {
-            Contract.Requires(offset >= 0);
-
-            parsedValue = null;
-
-            if (StringSegment.IsNullOrEmpty(input) || (offset >= input.Length))
-            {
-                return false;
-            }
-
-            var result = new CookieHeaderValue();
-
-            // The caller should have already consumed any leading whitespace, commas, etc..
-
-            // Name=value;
-
-            // Name
-            var itemLength = HttpRuleParser.GetTokenLength(input, offset);
-            if (itemLength == 0)
-            {
-                return false;
-            }
-            result._name = input.Subsegment(offset, itemLength);
-            offset += itemLength;
-
-            // = (no spaces)
-            if (!ReadEqualsSign(input, ref offset))
-            {
-                return false;
-            }
-
-            // value or "quoted value"
-            // The value may be empty
-            result._value = GetCookieValue(input, ref offset);
-
-            parsedValue = result;
-            return true;
-        }
-
-        // cookie-value      = *cookie-octet / ( DQUOTE* cookie-octet DQUOTE )
-        // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
-        //                     ; US-ASCII characters excluding CTLs, whitespace DQUOTE, comma, semicolon, and backslash
-        internal static StringSegment GetCookieValue(StringSegment input, ref int offset)
-        {
-            Contract.Requires(input != null);
-            Contract.Requires(offset >= 0);
-            Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - offset)));
-
-            var startIndex = offset;
-
-            if (offset >= input.Length)
-            {
-                return StringSegment.Empty;
-            }
-            var inQuotes = false;
-
-            if (input[offset] == '"')
-            {
-                inQuotes = true;
-                offset++;
-            }
-
-            while (offset < input.Length)
-            {
-                var c = input[offset];
-                if (!IsCookieValueChar(c))
-                {
-                    break;
-                }
-
-                offset++;
-            }
-
-            if (inQuotes)
-            {
-                if (offset == input.Length || input[offset] != '"')
-                {
-                    // Missing final quote
-                    return StringSegment.Empty;
-                }
-                offset++;
-            }
-
-            int length = offset - startIndex;
-            if (offset > startIndex)
-            {
-                return input.Subsegment(startIndex, length);
-            }
-
-            return StringSegment.Empty;
-        }
-
-        private static bool ReadEqualsSign(StringSegment input, ref int offset)
-        {
-            // = (no spaces)
-            if (offset >= input.Length || input[offset] != '=')
-            {
-                return false;
-            }
-            offset++;
-            return true;
-        }
-
-        // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
-        //                     ; US-ASCII characters excluding CTLs, whitespace DQUOTE, comma, semicolon, and backslash
-        private static bool IsCookieValueChar(char c)
-        {
-            if (c < 0x21 || c > 0x7E)
-            {
-                return false;
-            }
-            return !(c == '"' || c == ',' || c == ';' || c == '\\');
         }
 
         internal static void CheckNameFormat(StringSegment name, string parameterName)
@@ -249,14 +186,15 @@ namespace Microsoft.Net.Http.Headers
             }
 
             var offset = 0;
-            var result = GetCookieValue(value, ref offset);
+            var result = CookieHeaderParserShared.GetCookieValue(value, ref offset);
             if (result.Length != value.Length)
             {
                 throw new ArgumentException("Invalid cookie value: " + value, parameterName);
             }
         }
 
-        public override bool Equals(object obj)
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
         {
             var other = obj as CookieHeaderValue;
 
@@ -269,6 +207,7 @@ namespace Microsoft.Net.Http.Headers
                 && StringSegment.Equals(_value, other._value, StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return _name.GetHashCode() ^ _value.GetHashCode();

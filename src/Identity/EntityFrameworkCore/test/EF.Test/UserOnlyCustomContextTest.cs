@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 builder.Entity<IdentityUser>(b =>
                 {
                     b.HasKey(u => u.Id);
-                    b.HasIndex(u => u.NormalizedUserName).HasName("UserNameIndex").IsUnique();
-                    b.HasIndex(u => u.NormalizedEmail).HasName("EmailIndex");
+                    b.HasIndex(u => u.NormalizedUserName).HasDatabaseName("UserNameIndex").IsUnique();
+                    b.HasIndex(u => u.NormalizedEmail).HasDatabaseName("EmailIndex");
                     b.ToTable("AspNetUsers");
                     b.Property(u => u.ConcurrencyStamp).IsConcurrencyToken();
 
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             Assert.NotNull(userManager);
 
             const string userName = "admin";
-            const string password = "1qaz@WSX";
+            const string password = "[PLACEHOLDER]-1a";
             var user = new IdentityUser { UserName = userName };
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
             IdentityResultAssert.IsSuccess(await userManager.DeleteAsync(user));

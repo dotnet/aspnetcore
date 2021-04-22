@@ -14,7 +14,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [SkipIfHostableWebCoreNotAvailable]
-    [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, "https://github.com/aspnet/IISIntegration/issues/866")]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "https://github.com/aspnet/IISIntegration/issues/866")]
     public class ClientDisconnectTests : StrictTestServerTests
     {
         [ConditionalFact]
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     requestStartedCompletionSource.SetResult(true);
                     ctx.RequestAborted.Register(() => requestAborted.SetResult(true));
 
-                    await requestAborted.Task.DefaultTimeout();
+                    await requestAborted.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                     for (var i = 0; i < 1000; i++)
                     {
                         await ctx.Response.Body.WriteAsync(data);
@@ -43,12 +43,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 using (var connection = testServer.CreateConnection())
                 {
                     await SendContentLength1Post(connection);
-                    await requestStartedCompletionSource.Task.DefaultTimeout();
+                    await requestStartedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
 
-                await requestAborted.Task.DefaultTimeout();
+                await requestAborted.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
-                await requestCompletedCompletionSource.Task.DefaultTimeout();
+                await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
             }
 
             AssertConnectionDisconnectLog();
@@ -86,10 +86,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 {
                     await SendContentLength1Post(connection);
 
-                    await requestStartedCompletionSource.Task.DefaultTimeout();
+                    await requestStartedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
 
-                await requestCompletedCompletionSource.Task.DefaultTimeout();
+                await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
                 Assert.IsType<OperationCanceledException>(exception);
             }
@@ -124,10 +124,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 using (var connection = testServer.CreateConnection())
                 {
                     await SendContentLength1Post(connection);
-                    await requestStartedCompletionSource.Task.DefaultTimeout();
+                    await requestStartedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
 
-                await requestCompletedCompletionSource.Task.DefaultTimeout();
+                await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
             }
 
             Assert.IsType<ConnectionResetException>(exception);
@@ -168,9 +168,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 {
                     await SendContentLength1Post(connection);
 
-                    await requestStartedCompletionSource.Task.DefaultTimeout();
+                    await requestStartedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                     cancellationTokenSource.Cancel();
-                    await requestCompletedCompletionSource.Task.DefaultTimeout();
+                    await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
 
                 Assert.IsType<OperationCanceledException>(exception);
@@ -207,9 +207,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 using (var connection = testServer.CreateConnection())
                 {
                     await SendContentLength1Post(connection);
-                    await readIsAsyncCompletionSource.Task.DefaultTimeout();
+                    await readIsAsyncCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                     cancellationTokenSource.Cancel();
-                    await requestCompletedCompletionSource.Task.DefaultTimeout();
+                    await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
 
                 try
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1817", FlakyOn.AzP.Windows)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/27400")]
         public async Task ReaderThrowsResetExceptionOnInvalidBody()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                         );
 
                 }
-                await requestCompletedCompletionSource.Task.DefaultTimeout();
+                await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
             }
 
             Assert.IsType<ConnectionResetException>(exception);
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                             );
 
                     }
-                    await requestCompletedCompletionSource.Task.DefaultTimeout();
+                    await requestCompletedCompletionSource.Task.TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
                 }
             }
         }

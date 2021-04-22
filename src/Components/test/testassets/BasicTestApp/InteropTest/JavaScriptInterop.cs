@@ -415,6 +415,47 @@ namespace BasicTestApp.InteropTest
         }
 
         [JSInvokable]
+        public static IJSObjectReference RoundTripJSObjectReference(IJSObjectReference jsObjectReference)
+        {
+            return jsObjectReference;
+        }
+
+        [JSInvokable]
+        public static async Task<IJSObjectReference> RoundTripJSObjectReferenceAsync(IJSObjectReference jSObjectReference)
+        {
+            await Task.Yield();
+            return jSObjectReference;
+        }
+
+        [JSInvokable]
+        public static string InvokeDisposedJSObjectReferenceException(IJSInProcessObjectReference jsObjectReference)
+        {
+            try
+            {
+                jsObjectReference.Invoke<object>("noop");
+                return "No exception thrown";
+            } 
+            catch (JSException e)
+            {
+                return e.Message;
+            }
+        }
+
+        [JSInvokable]
+        public static async Task<string> InvokeDisposedJSObjectReferenceExceptionAsync(IJSObjectReference jsObjectReference)
+        {
+            try
+            {
+                await jsObjectReference.InvokeVoidAsync("noop");
+                return "No exception thrown";
+            } 
+            catch (JSException e)
+            {
+                return e.Message;
+            }
+        }
+
+        [JSInvokable]
         public InstanceMethodOutput InstanceMethod(InstanceMethodInput input)
         {
             // This method shows we can pass in values marshalled both as JSON (the dict itself)

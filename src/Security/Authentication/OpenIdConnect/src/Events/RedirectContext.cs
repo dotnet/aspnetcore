@@ -8,10 +8,15 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
     /// <summary>
     /// When a user configures the <see cref="OpenIdConnectHandler"/> to be notified prior to redirecting to an IdentityProvider
-    /// an instance of <see cref="RedirectContext"/> is passed to the 'RedirectToAuthenticationEndpoint' or 'RedirectToEndSessionEndpoint' events.
+    /// an instance of <see cref="RedirectContext"/> is passed to the <see cref="OpenIdConnectEvents.RedirectToIdentityProvider(RedirectContext)"/>
+    /// and <see cref="OpenIdConnectEvents.RedirectToIdentityProviderForSignOut(RedirectContext)"/>.
     /// </summary>
     public class RedirectContext : PropertiesContext<OpenIdConnectOptions>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="RedirectContext"/>.
+        /// </summary>
+        /// <inheritdoc />
         public RedirectContext(
             HttpContext context,
             AuthenticationScheme scheme,
@@ -19,7 +24,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             AuthenticationProperties properties)
             : base(context, scheme, options, properties) { }
 
-        public OpenIdConnectMessage ProtocolMessage { get; set; }
+        /// <summary>
+        /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
+        /// </summary>
+        public OpenIdConnectMessage ProtocolMessage { get; set; } = default!;
 
         /// <summary>
         /// If true, will skip any default logic for this redirect.

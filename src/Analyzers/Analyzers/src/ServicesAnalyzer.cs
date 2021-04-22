@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Analyzers
                 if (context.Operation is IInvocationOperation invocation &&
                     invocation.Instance == null &&
                     invocation.Arguments.Length >= 1 &&
-                    invocation.Arguments[0].Parameter?.Type == _context.StartupSymbols.IServiceCollection)
+                    SymbolEqualityComparer.Default.Equals(invocation.Arguments[0].Parameter?.Type, _context.StartupSymbols.IServiceCollection))
                 {
                     services.Add(new ServicesItem(invocation));
                 }

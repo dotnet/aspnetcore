@@ -82,13 +82,16 @@ namespace Microsoft.AspNetCore.DataProtection.Test
                 .Throws(new NotSupportedException("This mock doesn't actually work, but shouldn't kill the server"))
                 .Verifiable();
 
-            var builder = new WebHostBuilder()
-                .UseStartup<TestStartup>()
+            var mockServer = new Mock<IServer>();
+            mockServer.Setup(m => m.Features).Returns(new FeatureCollection());
+
+            var builder = new HostBuilder()
                 .ConfigureServices(s =>
                     s.AddDataProtection()
                     .Services
                     .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
-                    .AddSingleton(Mock.Of<IServer>()));
+                    .AddSingleton(mockServer.Object))
+                    .ConfigureWebHost(b => b.UseStartup<TestStartup>());
 
             using (var host = builder.Build())
             {

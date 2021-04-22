@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Mvc
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// By default, this maps to <see cref="ProblemDetails.Type"/>.
         /// </remarks>
-        public string Link { get; set; }
+        public string? Link { get; set; }
 
         /// <summary>
         /// Gets or sets the summary of the client error.
@@ -24,6 +24,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// By default, this maps to <see cref="ProblemDetails.Title"/> and should not change
         /// between multiple occurrences of the same error.
         /// </remarks>
-        public string Title { get; set; }
+        public string? Title { get; set; }
     }
 }

@@ -77,7 +77,18 @@ void FileRedirectionOutput::Append(const std::wstring& text)
 {
     if (m_file.is_open())
     {
-        const auto multiByte = to_multi_byte_string(text, CP_UTF8);
+        auto multiByte = to_multi_byte_string(text, CP_UTF8);
+
+        // Writing \r\n to an ostream will cause two new lines to be written rather
+        // than one. Change all \r\n to \n.
+        std::string slashRslashN = "\r\n";
+        std::string slashN = "\n";
+        size_t start_pos = 0;
+        while ((start_pos = multiByte.find(slashRslashN, start_pos)) != std::string::npos) {
+            multiByte.replace(start_pos, slashRslashN.length(), slashN);
+            start_pos += slashN.length();
+        }
+
         m_file << multiByte;
     }
 }

@@ -1,0 +1,27 @@
+#nullable enable
+Microsoft.Extensions.Caching.SqlServer.SqlServerCache
+Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions
+Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.DefaultSlidingExpiration.get -> System.TimeSpan
+Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.DefaultSlidingExpiration.set -> void
+Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.ExpiredItemsDeletionInterval.get -> System.TimeSpan?
+Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.ExpiredItemsDeletionInterval.set -> void
+Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.SqlServerCacheOptions() -> void
+Microsoft.Extensions.DependencyInjection.SqlServerCachingServicesExtensions
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCache.Get(string key) -> byte[]
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCache.GetAsync(string key, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<byte[]>
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCache.Refresh(string key) -> void
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCache.RefreshAsync(string key, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCache.Remove(string key) -> void
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCache.RemoveAsync(string key, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCache.Set(string key, byte[] value, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions options) -> void
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCache.SetAsync(string key, byte[] value, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions options, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCache.SqlServerCache(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions> options) -> void
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.ConnectionString.get -> string
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.ConnectionString.set -> void
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.SchemaName.get -> string
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.SchemaName.set -> void
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.SystemClock.get -> Microsoft.Extensions.Internal.ISystemClock
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.SystemClock.set -> void
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.TableName.get -> string
+~Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions.TableName.set -> void
+~static Microsoft.Extensions.DependencyInjection.SqlServerCachingServicesExtensions.AddDistributedSqlServerCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Caching.SqlServer.SqlServerCacheOptions> setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection

@@ -43,13 +43,13 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// Gets or sets the consumer key used to communicate with Twitter.
         /// </summary>
         /// <value>The consumer key used to communicate with Twitter.</value>
-        public string ConsumerKey { get; set; }
+        public string? ConsumerKey { get; set; }
 
         /// <summary>
         /// Gets or sets the consumer secret used to sign requests to Twitter.
         /// </summary>
         /// <value>The consumer secret used to sign requests to Twitter.</value>
-        public string ConsumerSecret { get; set; }
+        public string? ConsumerSecret { get; set; }
 
         /// <summary>
         /// Enables the retrieval user details during the authentication process, including
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// <summary>
         /// Gets or sets the type used to secure data handled by the handler.
         /// </summary>
-        public ISecureDataFormat<RequestToken> StateDataFormat { get; set; }
+        public ISecureDataFormat<RequestToken> StateDataFormat { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="TwitterEvents"/> used to handle authentication events.

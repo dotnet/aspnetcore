@@ -6,6 +6,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void BubblingStandardEvent_FiredOnElementWithHandler()
         {
-            Browser.FindElement(By.Id("button-with-onclick")).Click();
+            Browser.Exists(By.Id("button-with-onclick")).Click();
 
             // Triggers event on target and ancestors with handler in upwards direction
             Browser.Equal(
@@ -47,9 +48,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31195")]
         public void BubblingStandardEvent_FiredOnElementWithoutHandler()
         {
-            Browser.FindElement(By.Id("button-without-onclick")).Click();
+            Browser.Exists(By.Id("button-without-onclick")).Click();
 
             // Triggers event on ancestors with handler in upwards direction
             Browser.Equal(
@@ -82,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void NonBubblingEvent_FiredOnElementWithHandler()
         {
-            Browser.FindElement(By.Id("input-with-onfocus")).Click();
+            Browser.Exists(By.Id("input-with-onfocus")).Click();
 
             // Triggers event only on target, not other ancestors with event handler
             Browser.Equal(
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void NonBubblingEvent_FiredOnElementWithoutHandler()
         {
-            Browser.FindElement(By.Id("input-without-onfocus")).Click();
+            Browser.Exists(By.Id("input-without-onfocus")).Click();
 
             // Triggers no event
             Browser.Empty(GetLogLines);
@@ -105,21 +107,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void StopPropagation(string whereToStopPropagation)
         {
             // If stopPropagation is off, we observe the event on the listener and all its ancestors
-            Browser.FindElement(By.Id("button-with-onclick")).Click();
+            Browser.Exists(By.Id("button-with-onclick")).Click();
             Browser.Equal(new[] { "target onclick", "parent onclick" }, GetLogLines);
 
             // If stopPropagation is on, the event doesn't reach the ancestor
             // Note that in the "intermediate element" case, the intermediate element does *not* itself
             // listen for this event, which shows that stopPropagation works independently of handling
             ClearLog();
-            Browser.FindElement(By.Id($"{whereToStopPropagation}-stop-propagation")).Click();
-            Browser.FindElement(By.Id("button-with-onclick")).Click();
+            Browser.Exists(By.Id($"{whereToStopPropagation}-stop-propagation")).Click();
+            Browser.Exists(By.Id("button-with-onclick")).Click();
             Browser.Equal(new[] { "target onclick" }, GetLogLines);
 
             // We can also toggle it back off
             ClearLog();
-            Browser.FindElement(By.Id($"{whereToStopPropagation}-stop-propagation")).Click();
-            Browser.FindElement(By.Id("button-with-onclick")).Click();
+            Browser.Exists(By.Id($"{whereToStopPropagation}-stop-propagation")).Click();
+            Browser.Exists(By.Id("button-with-onclick")).Click();
             Browser.Equal(new[] { "target onclick", "parent onclick" }, GetLogLines);
         }
 
@@ -128,7 +130,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // Clicking a checkbox without preventDefault produces both "click" and "change"
             // events, and it becomes checked
-            var checkboxWithoutPreventDefault = Browser.FindElement(By.Id("checkbox-with-preventDefault-false"));
+            var checkboxWithoutPreventDefault = Browser.Exists(By.Id("checkbox-with-preventDefault-false"));
             checkboxWithoutPreventDefault.Click();
             Browser.Equal(new[] { "Checkbox click", "Checkbox change" }, GetLogLines);
             Browser.True(() => checkboxWithoutPreventDefault.Selected);
@@ -136,7 +138,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Clicking a checkbox with preventDefault produces a "click" event, but no "change"
             // event, and it remains unchecked
             ClearLog();
-            var checkboxWithPreventDefault = Browser.FindElement(By.Id("checkbox-with-preventDefault-true"));
+            var checkboxWithPreventDefault = Browser.Exists(By.Id("checkbox-with-preventDefault-true"));
             checkboxWithPreventDefault.Click();
             Browser.Equal(new[] { "Checkbox click" }, GetLogLines);
             Browser.False(() => checkboxWithPreventDefault.Selected);
@@ -147,14 +149,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // Even though the checkbox we're clicking this case does *not* have preventDefault,
             // if its ancestor does, then we don't get the "change" event and it remains unchecked
-            Browser.FindElement(By.Id($"ancestor-prevent-default")).Click();
-            var checkboxWithoutPreventDefault = Browser.FindElement(By.Id("checkbox-with-preventDefault-false"));
+            Browser.Exists(By.Id($"ancestor-prevent-default")).Click();
+            var checkboxWithoutPreventDefault = Browser.Exists(By.Id("checkbox-with-preventDefault-false"));
             checkboxWithoutPreventDefault.Click();
             Browser.Equal(new[] { "Checkbox click" }, GetLogLines);
             Browser.False(() => checkboxWithoutPreventDefault.Selected);
 
             // We can also toggle it back off dynamically
-            Browser.FindElement(By.Id($"ancestor-prevent-default")).Click();
+            Browser.Exists(By.Id($"ancestor-prevent-default")).Click();
             ClearLog();
             checkboxWithoutPreventDefault.Click();
             Browser.Equal(new[] { "Checkbox click", "Checkbox change" }, GetLogLines);
@@ -165,7 +167,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void PreventDefaultCanBlockKeystrokes()
         {
             // By default, the textbox accepts keystrokes
-            var textbox = Browser.FindElement(By.Id($"textbox-that-can-block-keystrokes"));
+            var textbox = Browser.Exists(By.Id($"textbox-that-can-block-keystrokes"));
             textbox.SendKeys("a");
             Browser.Equal(new[] { "Received keydown" }, GetLogLines);
             Browser.Equal("a", () => textbox.GetAttribute("value"));
@@ -173,27 +175,27 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // We can turn on preventDefault to stop keystrokes
             // There will still be a keydown event, but we're preventing it from actually changing the textbox value
             ClearLog();
-            Browser.FindElement(By.Id($"prevent-keydown")).Click();
+            Browser.Exists(By.Id($"prevent-keydown")).Click();
             textbox.SendKeys("b");
             Browser.Equal(new[] { "Received keydown" }, GetLogLines);
             Browser.Equal("a", () => textbox.GetAttribute("value"));
 
             // We can turn it back off
             ClearLog();
-            Browser.FindElement(By.Id($"prevent-keydown")).Click();
+            Browser.Exists(By.Id($"prevent-keydown")).Click();
             textbox.SendKeys("c");
             Browser.Equal(new[] { "Received keydown" }, GetLogLines);
             Browser.Equal("ac", () => textbox.GetAttribute("value"));
         }
 
         private string[] GetLogLines()
-            => Browser.FindElement(By.TagName("textarea"))
+            => Browser.Exists(By.TagName("textarea"))
             .GetAttribute("value")
             .Replace("\r\n", "\n")
             .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
         void ClearLog()
-            => Browser.FindElement(By.Id("clear-log")).Click();
+            => Browser.Exists(By.Id("clear-log")).Click();
 
         private void TriggerCustomBubblingEvent(string elementId, string eventName)
         {

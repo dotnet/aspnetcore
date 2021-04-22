@@ -6,6 +6,8 @@ using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Threading;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     internal class IOQueue : PipeScheduler, IThreadPoolWorkItem
@@ -13,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly ConcurrentQueue<Work> _workItems = new ConcurrentQueue<Work>();
         private int _doingWork;
 
-        public override void Schedule(Action<object> action, object state)
+        public override void Schedule(Action<object?> action, object? state)
         {
             _workItems.Enqueue(new Work(action, state));
 
@@ -64,10 +66,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private readonly struct Work
         {
-            public readonly Action<object> Callback;
-            public readonly object State;
+            public readonly Action<object?> Callback;
+            public readonly object? State;
 
-            public Work(Action<object> callback, object state)
+            public Work(Action<object?> callback, object? state)
             {
                 Callback = callback;
                 State = state;

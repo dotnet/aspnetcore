@@ -16,10 +16,10 @@ namespace Microsoft.AspNetCore.TestHost
         private readonly HeaderDictionary _headers = new HeaderDictionary();
         private readonly Action<Exception> _abort;
 
-        private Func<Task> _responseStartingAsync = () => Task.FromResult(true);
-        private Func<Task> _responseCompletedAsync = () => Task.FromResult(true);
+        private Func<Task> _responseStartingAsync = () => Task.CompletedTask;
+        private Func<Task> _responseCompletedAsync = () => Task.CompletedTask;
         private int _statusCode;
-        private string _reasonPhrase;
+        private string? _reasonPhrase;
 
         public ResponseFeature(Action<Exception> abort)
         {
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
         }
 
-        public string ReasonPhrase
+        public string? ReasonPhrase
         {
             get => _reasonPhrase;
             set
@@ -65,11 +65,11 @@ namespace Microsoft.AspNetCore.TestHost
 
         public IHeaderDictionary Headers { get; set; }
 
-        public Stream Body { get; set; }
+        public Stream Body { get; set; } = default!;
 
         public Stream Stream => Body;
 
-        internal PipeWriter BodyWriter { get; set; }
+        internal PipeWriter BodyWriter { get; set; } = default!;
 
         public PipeWriter Writer => BodyWriter;
 

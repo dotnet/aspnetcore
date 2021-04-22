@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// Gets or sets the body content.
         /// </summary>
-        IHtmlContent BodyContent { get; set; }
+        IHtmlContent? BodyContent { get; set; }
 
         /// <summary>
         /// Gets or sets a flag that determines if the layout of this page is being rendered.
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// Gets or sets the path of a layout page.
         /// </summary>
-        string Layout { get; set; }
+        string? Layout { get; set; }
 
         /// <summary>
         /// Gets or sets the sections that can be rendered by this page.

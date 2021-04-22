@@ -15,7 +15,7 @@
     <BLDNUMMINOR>$(BUILD_MINOR)</BLDNUMMINOR>
 
     <!-- ANCM msi version is prepended with a 1 due to previous msi versions starting with 8.x.x.0 -->
-    <ANCMFolderVersion>1$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(BUILD_MAJOR)</ANCMFolderVersion>
+    <ANCMFolderVersion>1$(AspNetCoreMajorMinorVersion).$(BUILD_MAJOR)</ANCMFolderVersion>
     <ANCMMsiVersion>$(ANCMFolderVersion).0</ANCMMsiVersion>
 
     <!-- The handler version in the M.A.AspNetCoreV2 nuget package. Today, this is hard coded to 2.0.0

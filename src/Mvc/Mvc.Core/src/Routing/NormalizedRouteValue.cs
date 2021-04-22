@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 
 using System;
 using System.Globalization;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <see cref="Abstractions.ActionDescriptor.RouteValues"/> to get route values
         /// produces consistently cased results.
         /// </remarks>
-        public static string GetNormalizedRouteValue(ActionContext context, string key)
+        public static string? GetNormalizedRouteValue(ActionContext context, string key)
         {
             if (context == null)
             {
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             var actionDescriptor = context.ActionDescriptor;
-            string normalizedValue = null;
+            string? normalizedValue = null;
 
             if (actionDescriptor.RouteValues.TryGetValue(key, out var value) &&
                 !string.IsNullOrEmpty(value))

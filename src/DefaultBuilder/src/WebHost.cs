@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore
         /// <param name="app">A delegate that handles requests to the application.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost Start(RequestDelegate app) =>
-            Start(url: null, app: app);
+            Start(url: null!, app: app);
 
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost Start(string url, RequestDelegate app)
         {
-            var startupAssemblyName = app.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
+            var startupAssemblyName = app.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
             return StartWith(url: url, configureServices: null, app: appBuilder => appBuilder.Run(app), applicationName: startupAssemblyName);
         }
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore
         /// <param name="routeBuilder">A delegate that configures the router for handling requests to the application.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost Start(Action<IRouteBuilder> routeBuilder) =>
-            Start(url: null, routeBuilder: routeBuilder);
+            Start(url: null!, routeBuilder: routeBuilder);
 
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost Start(string url, Action<IRouteBuilder> routeBuilder)
         {
-            var startupAssemblyName = routeBuilder.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
+            var startupAssemblyName = routeBuilder.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
             return StartWith(url, services => services.AddRouting(), appBuilder => appBuilder.UseRouter(routeBuilder), applicationName: startupAssemblyName);
         }
 
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore
         /// <param name="app">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost StartWith(Action<IApplicationBuilder> app) =>
-            StartWith(url: null, app: app);
+            StartWith(url: null!, app: app);
 
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore
         public static IWebHost StartWith(string url, Action<IApplicationBuilder> app) =>
             StartWith(url: url, configureServices: null, app: app, applicationName: null);
 
-        private static IWebHost StartWith(string url, Action<IServiceCollection> configureServices, Action<IApplicationBuilder> app, string applicationName)
+        private static IWebHost StartWith(string? url, Action<IServiceCollection>? configureServices, Action<IApplicationBuilder> app, string? applicationName)
         {
             var builder = CreateDefaultBuilder();
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore
         /// </remarks>
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder CreateDefaultBuilder() =>
-            CreateDefaultBuilder(args: null);
+            CreateDefaultBuilder(args: null!);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHostBuilder"/> class with pre-configured defaults.
@@ -146,6 +146,7 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     load <see cref="IConfiguration"/> from supplied command line args,
         ///     configure the <see cref="ILoggerFactory"/> to log to the console and debug output,
+        ///     configure the <see cref="IWebHostEnvironment.WebRootFileProvider"/> to map static web assets when <see cref="IHostEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     adds the HostFiltering middleware,
         ///     adds the ForwardedHeaders middleware if ASPNETCORE_FORWARDEDHEADERS_ENABLED=true,
         ///     and enable IIS integration.
@@ -188,12 +189,18 @@ namespace Microsoft.AspNetCore
                     config.AddCommandLine(args);
                 }
             })
-            .ConfigureLogging((hostingContext, logging) =>
+            .ConfigureLogging((hostingContext, loggingBuilder) =>
             {
-                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                logging.AddConsole();
-                logging.AddDebug();
-                logging.AddEventSourceLogger();
+                loggingBuilder.Configure(options =>
+                {
+                    options.ActivityTrackingOptions = ActivityTrackingOptions.SpanId
+                                                        | ActivityTrackingOptions.TraceId
+                                                        | ActivityTrackingOptions.ParentId;
+                });
+                loggingBuilder.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                loggingBuilder.AddConsole();
+                loggingBuilder.AddDebug();
+                loggingBuilder.AddEventSourceLogger();
             }).
             UseDefaultServiceProvider((context, options) =>
             {
@@ -216,7 +223,7 @@ namespace Microsoft.AspNetCore
             });
             builder.UseKestrel((builderContext, options) =>
             {
-                options.Configure(builderContext.Configuration.GetSection("Kestrel"));
+                options.Configure(builderContext.Configuration.GetSection("Kestrel"), reloadOnChange: true);
             })
             .ConfigureServices((hostingContext, services) =>
             {

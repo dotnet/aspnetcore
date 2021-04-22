@@ -2,14 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
+using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -19,6 +16,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
     public class ComponentHubReliabilityTest : IgnitorTest<ServerStartup>
     {
         public ComponentHubReliabilityTest(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
@@ -26,15 +24,41 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
 
+        protected override async Task InitializeAsync()
+        {
+            await base.InitializeAsync();
+
+            var rootUri = ServerFixture.RootUri;
+            var baseUri = new Uri(rootUri, "/subdir");
+            var client = new HttpClient();
+            for (var i = 0; i < 10; i++)
+            {
+                try
+                {
+                    var response = await client.GetAsync(baseUri + "/_negotiate");
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        break;
+                    }
+                }
+                catch
+                {
+                    await Task.Delay(500);
+                    throw;
+                }
+            }
+
+        }
+
         [Fact]
         public async Task CannotStartMultipleCircuits()
         {
             // Arrange
             var expectedError = "The circuit host '.*?' has already been initialized.";
+
             var rootUri = ServerFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
-            Assert.Single(Batches);
+            await ConnectAutomaticallyAndWait(baseUri);
 
             var descriptors = await Client.GetPrerenderDescriptors(baseUri);
 
@@ -43,7 +67,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "StartCircuit",
                 baseUri,
                 baseUri + "/home",
-                descriptors));
+                descriptors,
+                null));
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -62,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var descriptors = await Client.GetPrerenderDescriptors(uri);
 
             // Act
-            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", null, null, descriptors));
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", null, null, descriptors, null));
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -73,6 +98,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         // This is a hand-chosen example of something that will cause an exception in creating the circuit host.
         // We want to test this case so that we know what happens when creating the circuit host blows up.
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task StartCircuitCausesInitializationError()
         {
             // Arrange
@@ -85,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Act
             //
             // These are valid URIs by the BaseUri doesn't contain the Uri - so it fails to initialize.
-            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", uri, "http://example.com", descriptors));
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", uri, "http://example.com", descriptors, null), Timeout);
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -120,6 +146,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task CannotInvokeJSInteropCallbackCompletionsBeforeInitialization()
         {
             // Arrange
@@ -134,7 +161,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "EndInvokeJSFromDotNet",
                 3,
                 true,
-                "[]"));
+                "[]"), Timeout);
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -222,8 +249,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             var rootUri = ServerFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
-            Assert.Single(Batches);
+            await ConnectAutomaticallyAndWait(baseUri);
 
             // Act
             await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
@@ -242,6 +268,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task OnLocationChanged_ReportsErrorForExceptionInUserCode()
         {
             // Arrange
@@ -251,8 +278,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             var rootUri = ServerFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
-            Assert.Single(Batches);
+
+            await ConnectAutomaticallyAndWait(baseUri);
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.NavigationFailureComponent");
 
@@ -279,6 +306,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [InlineData("render-throw")]
         [InlineData("afterrender-sync-throw")]
         [InlineData("afterrender-async-throw")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task ComponentLifecycleMethodThrowsExceptionTerminatesTheCircuit(string id)
         {
             if (id == "setparameters-async-throw")
@@ -296,8 +324,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "Unhandled exception in circuit .*";
             var rootUri = ServerFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
-            Assert.Single(Batches);
+            await ConnectAutomaticallyAndWait(baseUri);
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
 
@@ -321,14 +348,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
         public async Task ComponentDisposeMethodThrowsExceptionTerminatesTheCircuit()
         {
             // Arrange
             var expectedError = "Unhandled exception in circuit .*";
             var rootUri = ServerFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
-            Assert.Single(Batches);
+            await ConnectAutomaticallyAndWait(baseUri);
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
 

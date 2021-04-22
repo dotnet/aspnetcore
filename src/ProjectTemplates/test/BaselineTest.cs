@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Templates.Test.Helpers;
@@ -14,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class BaselineTest
+    public class BaselineTest : LoggedTest
     {
         private static readonly Regex TemplateNameRegex = new Regex(
             "new (?<template>[a-zA-Z]+)",
@@ -31,10 +32,9 @@ namespace Templates.Test
             RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline,
             TimeSpan.FromSeconds(1));
 
-        public BaselineTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
+        public BaselineTest(ProjectFactoryFixture projectFactory)
         {
             ProjectFactory = projectFactory;
-            Output = output;
         }
 
         public Project Project { get; set; }
@@ -66,7 +66,18 @@ namespace Templates.Test
         }
 
         public ProjectFactoryFixture ProjectFactory { get; }
-        public ITestOutputHelper Output { get; }
+        private ITestOutputHelper _output;
+        public ITestOutputHelper Output
+        {
+            get
+            {
+                if (_output == null)
+                {
+                    _output = new TestOutputLogger(Logger);
+                }
+                return _output;
+            }
+        }
 
         [Theory]
         [MemberData(nameof(TemplateBaselines))]

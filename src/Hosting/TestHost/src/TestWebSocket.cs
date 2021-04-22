@@ -12,15 +12,15 @@ namespace Microsoft.AspNetCore.TestHost
 {
     internal class TestWebSocket : WebSocket
     {
-        private ReceiverSenderBuffer _receiveBuffer;
-        private ReceiverSenderBuffer _sendBuffer;
-        private readonly string _subProtocol;
+        private readonly ReceiverSenderBuffer _receiveBuffer;
+        private readonly ReceiverSenderBuffer _sendBuffer;
+        private readonly string? _subProtocol;
         private WebSocketState _state;
         private WebSocketCloseStatus? _closeStatus;
-        private string _closeStatusDescription;
-        private Message _receiveMessage;
+        private string? _closeStatusDescription;
+        private Message? _receiveMessage;
 
-        public static Tuple<TestWebSocket, TestWebSocket> CreatePair(string subProtocol)
+        public static Tuple<TestWebSocket, TestWebSocket> CreatePair(string? subProtocol)
         {
             var buffers = new[] { new ReceiverSenderBuffer(), new ReceiverSenderBuffer() };
             return Tuple.Create(
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.TestHost
             get { return _closeStatus; }
         }
 
-        public override string CloseStatusDescription
+        public override string? CloseStatusDescription
         {
             get { return _closeStatusDescription; }
         }
@@ -43,12 +43,12 @@ namespace Microsoft.AspNetCore.TestHost
             get { return _state; }
         }
 
-        public override string SubProtocol
+        public override string? SubProtocol
         {
             get { return _subProtocol; }
         }
 
-        public async override Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
+        public async override Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
         }
 
-        public async override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
+        public async override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             ThrowIfOutputClosed();
@@ -118,8 +118,8 @@ namespace Microsoft.AspNetCore.TestHost
             ThrowIfInputClosed();
             ValidateSegment(buffer);
             // TODO: InvalidOperationException if any receives are currently in progress.
-            
-            Message receiveMessage = _receiveMessage;
+
+            Message? receiveMessage = _receiveMessage;
             _receiveMessage = null;
             if (receiveMessage == null)
             {
@@ -145,10 +145,10 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 int count = Math.Min(buffer.Count, receiveMessage.Buffer.Count);
                 bool endOfMessage = count == receiveMessage.Buffer.Count;
-                Array.Copy(receiveMessage.Buffer.Array, receiveMessage.Buffer.Offset, buffer.Array, buffer.Offset, count);
+                Array.Copy(receiveMessage.Buffer.Array!, receiveMessage.Buffer.Offset, buffer.Array!, buffer.Offset, count);
                 if (!endOfMessage)
                 {
-                    receiveMessage.Buffer = new ArraySegment<byte>(receiveMessage.Buffer.Array, receiveMessage.Buffer.Offset + count, receiveMessage.Buffer.Count - count);
+                    receiveMessage.Buffer = new ArraySegment<byte>(receiveMessage.Buffer.Array!, receiveMessage.Buffer.Offset + count, receiveMessage.Buffer.Count - count);
                     _receiveMessage = receiveMessage;
                 }
                 endOfMessage = endOfMessage && receiveMessage.EndOfMessage;
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentOutOfRangeException(nameof(messageType), messageType, string.Empty);
             }
 
-            var message = new Message(buffer, messageType, endOfMessage, cancellationToken);
+            var message = new Message(buffer, messageType, endOfMessage);
             return _sendBuffer.SendAsync(message, cancellationToken);
         }
 
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
         }
 
-        private TestWebSocket(string subProtocol, ReceiverSenderBuffer readBuffer, ReceiverSenderBuffer writeBuffer)
+        private TestWebSocket(string? subProtocol, ReceiverSenderBuffer readBuffer, ReceiverSenderBuffer writeBuffer)
         {
             _state = WebSocketState.Open;
             _subProtocol = subProtocol;
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         private class Message
         {
-            public Message(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken token)
+            public Message(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage)
             {
                 Buffer = buffer;
                 CloseStatus = null;
@@ -234,9 +234,9 @@ namespace Microsoft.AspNetCore.TestHost
                 MessageType = messageType;
             }
 
-            public Message(WebSocketCloseStatus? closeStatus, string closeStatusDescription)
+            public Message(WebSocketCloseStatus? closeStatus, string? closeStatusDescription)
             {
-                Buffer = new ArraySegment<byte>(new byte[0]);
+                Buffer = new ArraySegment<byte>(Array.Empty<byte>());
                 CloseStatus = closeStatus;
                 CloseStatusDescription = closeStatusDescription;
                 MessageType = WebSocketMessageType.Close;
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
 
             public WebSocketCloseStatus? CloseStatus { get; set; }
-            public string CloseStatusDescription { get; set; }
+            public string? CloseStatusDescription { get; set; }
             public ArraySegment<byte> Buffer { get; set; }
             public bool EndOfMessage { get; set; }
             public WebSocketMessageType MessageType { get; set; }
@@ -255,9 +255,9 @@ namespace Microsoft.AspNetCore.TestHost
             private bool _receiverClosed;
             private bool _senderClosed;
             private bool _disposed;
-            private SemaphoreSlim _sem;
-            private Queue<Message> _messageQueue;
-            
+            private readonly SemaphoreSlim _sem;
+            private readonly Queue<Message> _messageQueue;
+
             public ReceiverSenderBuffer()
             {
                 _sem = new SemaphoreSlim(0);
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.TestHost
 
                     // we return immediately so we need to copy the buffer since the sender can re-use it
                     var array = new byte[message.Buffer.Count];
-                    Array.Copy(message.Buffer.Array, message.Buffer.Offset, array, 0, message.Buffer.Count);
+                    Array.Copy(message.Buffer.Array!, message.Buffer.Offset, array, 0, message.Buffer.Count);
                     message.Buffer = new ArraySegment<byte>(array);
 
                     _messageQueue.Enqueue(message);

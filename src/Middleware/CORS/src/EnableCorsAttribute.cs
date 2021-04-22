@@ -23,12 +23,12 @@ namespace Microsoft.AspNetCore.Cors
         /// Creates a new instance of the <see cref="EnableCorsAttribute"/> with the supplied policy name.
         /// </summary>
         /// <param name="policyName">The name of the policy to be applied.</param>
-        public EnableCorsAttribute(string policyName)
+        public EnableCorsAttribute(string? policyName)
         {
             PolicyName = policyName;
         }
 
         /// <inheritdoc />
-        public string PolicyName { get; set; }
+        public string? PolicyName { get; set; }
     }
 }
