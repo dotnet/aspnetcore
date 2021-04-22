@@ -1,9 +1,9 @@
 <Project>
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">
-        <UsingBrowserRuntimeWorkload Condition="'$(RunAOTCompilation)' == 'true' or '$(UsingMicrosoftNETSdkBlazorWebAssembly)'=='false'" >true</UsingBrowserRuntimeWorkload>
+        <UsingBrowserRuntimeWorkload Condition="'$(RunAOTCompilation)' == 'true' or '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true'" >true</UsingBrowserRuntimeWorkload>
         <UsingBrowserRuntimeWorkload Condition="'$(UsingBrowserRuntimeWorkload)' == ''" >$(WasmNativeWorkload)</UsingBrowserRuntimeWorkload>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)'=='true' and '$(UsingBrowserRuntimeWorkload)' == 'true'">
+    <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' and '$(UsingBrowserRuntimeWorkload)' == 'true'" >
       <WasmGenerateAppBundle>false</WasmGenerateAppBundle>
       <UsingBlazorAOTWorkloadManifest>true</UsingBlazorAOTWorkloadManifest>
     </PropertyGroup>
