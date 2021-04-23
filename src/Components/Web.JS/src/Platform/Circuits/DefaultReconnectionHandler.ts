@@ -44,8 +44,6 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
 };
 
 class ReconnectionProcess {
-  static readonly MaximumFirstRetryInterval = 3000;
-
   readonly reconnectDisplay: ReconnectDisplay;
   isDisposed = false;
 
@@ -83,11 +81,7 @@ class ReconnectionProcess {
         // We got an exception so will try again momentarily
         this.logger.log(LogLevel.Error, err);
       }
-      const delayDuration = i == 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
-      ? ReconnectionProcess.MaximumFirstRetryInterval
-      : options.retryIntervalMilliseconds;
-        this.logger.log(LogLevel.Debug, `Reconnecting in ${delayDuration}`);    
-      await this.delay(delayDuration);
+      await this.delay(options.retryIntervalMilliseconds);
     }
 
     this.reconnectDisplay.failed();
