@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
             }
         }
 
-        internal static MemberAssignment.PropertyEnumerable GetCandidateBindableProperties([DynamicallyAccessedMembers(Component)] Type targetType)
+        internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties([DynamicallyAccessedMembers(Component)] Type targetType)
             => MemberAssignment.GetPropertiesIncludingInherited(targetType, _bindablePropertyFlags);
 
         [DoesNotReturn]
