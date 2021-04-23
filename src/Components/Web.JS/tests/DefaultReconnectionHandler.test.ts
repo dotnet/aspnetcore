@@ -31,7 +31,8 @@ describe('DefaultReconnectionHandler', () => {
     handler.onConnectionDown({
       maxRetries: 1000,
       retryIntervalMilliseconds: 100,
-      dialogId: 'ignored'
+      dialogId: 'ignored',
+      reloadOnCircuitRejected: true
     });
     handler.onConnectionUp();
 
@@ -48,7 +49,8 @@ describe('DefaultReconnectionHandler', () => {
     handler.onConnectionDown({
       maxRetries: 1000,
       retryIntervalMilliseconds: 100,
-      dialogId: 'ignored'
+      dialogId: 'ignored',
+      reloadOnCircuitRejected: true
     });
     expect(testDisplay.show).toHaveBeenCalled();
     expect(testDisplay.failed).not.toHaveBeenCalled();
@@ -67,7 +69,8 @@ describe('DefaultReconnectionHandler', () => {
     handler.onConnectionDown({
       maxRetries: 2,
       retryIntervalMilliseconds: 5,
-      dialogId: 'ignored'
+      dialogId: 'ignored',
+      reloadOnCircuitRejected: true
     });
 
     await delay(500);
@@ -85,7 +88,8 @@ describe('DefaultReconnectionHandler', () => {
     handler.onConnectionDown({
       maxRetries: maxRetries,
       retryIntervalMilliseconds: 5,
-      dialogId: 'ignored'
+      dialogId: 'ignored',
+      reloadOnCircuitRejected: true
     });
 
     await delay(500);
