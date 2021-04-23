@@ -220,7 +220,6 @@ namespace Microsoft.AspNetCore.Components.Reflection
         [DoesNotReturn]
         private static void ThrowForMultipleCaptureUnmatchedValuesParameters([DynamicallyAccessedMembers(Component)] Type targetType)
         {
-            // We don't care about perf here, we want to report an accurate and useful error.
             var propertyNames = new List<string>();
             foreach (var property in targetType.GetProperties(_bindablePropertyFlags))
             {
