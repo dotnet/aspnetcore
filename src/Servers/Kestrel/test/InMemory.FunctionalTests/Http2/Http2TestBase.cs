@@ -432,8 +432,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected void CreateConnection()
         {
-            var limits = _serviceContext.ServerOptions.Limits;
-
             // Always dispatch test code back to the ThreadPool. This prevents deadlocks caused by continuing
             // Http2Connection.ProcessRequestsAsync() loop with writer locks acquired. Run product code inline to make
             // it easier to verify request frames are processed correctly immediately after sending the them.
@@ -1380,6 +1378,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public virtual void BytesWrittenToBuffer(MinDataRate minRate, long size)
             {
                 _realTimeoutControl.BytesWrittenToBuffer(minRate, size);
+            }
+
+            public virtual void Tick(DateTimeOffset now)
+            {
+                _realTimeoutControl.Tick(now);
             }
         }
     }

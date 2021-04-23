@@ -1823,7 +1823,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
                 ignoreNonGoAwayFrames: true,
-                expectedLastStreamId: 0,
+                expectedLastStreamId: 8,
                 expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
                 expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(frame.FormattedType));
         }
