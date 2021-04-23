@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <TestGroupName>Components.EToETests</TestGroupName>
-    <_DefaultProjectFilter>$(MSBuildProjectDirectory)\..\..\..</_DefaultProjectFilter>
+    <TestGroupName>Components.Migration.E2ETests</TestGroupName>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <BaseOutputPath />
@@ -11,10 +10,9 @@
     <OutputPath />
 
     <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
-  </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>;1701;1702;1705;;NU5105;RS0041;CA1416;CS0649</NoWarn>
+    <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
+    <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,14 +28,12 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
-    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Authentication.Server\Wasm.Authentication.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -71,27 +67,6 @@
       <_ContentRootProjectReferences
         Include="@(ReferencePath)"
         Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND $([System.String]::Copy(%(ReferencePath.MSBuildSourceProjectFile)).StartsWith('$(_DefaultProjectRoot)'))" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="_ResolveTestProjectReferences">
-    <ItemGroup>
-      <_ContentRootMetadata
-        Condition="'%(_ContentRootProjectReferences.Identity)' != ''"
-        Include="%(_ContentRootProjectReferences.Identity)"
-        AssemblyName="%(_ContentRootProjectReferences.FusionName)"
-        ContentRootPath="$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))"
-        ContentRootTest="$([System.IO.Path]::GetFileName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))"
-        Priority="0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <AssemblyAttribute
-        Condition=" '%(_ContentRootMetadata.Identity)' != '' "
-        Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>TestAssemblyApplication[%(_ContentRootMetadata.AssemblyName)]</_Parameter1>
-        <_Parameter2>%(_ContentRootMetadata.ContentRootPath)</_Parameter2>
-      </AssemblyAttribute>
     </ItemGroup>
   </Target>
 
