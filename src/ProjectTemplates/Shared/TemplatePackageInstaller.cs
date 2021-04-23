@@ -43,11 +43,11 @@ namespace Templates.Test.Helpers
             "Microsoft.AspNetCore.Blazor.Templates",
         };
 
-        public static string CustomHivePath { get; } = (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+        public static string CustomHivePath { get; } = Path.GetFullPath((string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
                      ? typeof(TemplatePackageInstaller)
                          .Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                          .Single(s => s.Key == "CustomTemplateHivePath").Value
-                     : Path.Combine("Hives", ".templateEngine");
+                     : Path.Combine("Hives", ".templateEngine"));
 
         public static async Task EnsureTemplatingEngineInitializedAsync(ITestOutputHelper output)
         {
@@ -78,7 +78,9 @@ namespace Templates.Test.Helpers
                 output,
                 AppContext.BaseDirectory,
                 DotNetMuxer.MuxerPathOrDefault(),
-                $"new {arguments} --debug:custom-hive \"{CustomHivePath}\"");
+                //--debug:disable-sdk-templates means, don't include C:\Program Files\dotnet\templates, aka. what comes with SDK, so we don't need to uninstall
+                //--debug:custom-hive means, don't install templates on CI/developer machine, instead create new temporary instance
+                $"new {arguments} --debug:disable-sdk-templates --debug:custom-hive \"{CustomHivePath}\"");
 
             await proc.Exited;
 
@@ -105,23 +107,12 @@ namespace Templates.Test.Helpers
 
             Assert.Equal(4, builtPackages.Length);
 
-            /*
-             * The templates are indexed by path, for example:
-              &USERPROFILE%\.templateengine\dotnetcli\v5.0.100-alpha1-013788\packages\nunit3.dotnetnew.template.1.6.1.nupkg
-                Templates:
-                    NUnit 3 Test Project (nunit) C#
-                    NUnit 3 Test Item (nunit-test) C#
-                    NUnit 3 Test Project (nunit) F#
-                    NUnit 3 Test Item (nunit-test) F#
-                    NUnit 3 Test Project (nunit) VB
-                    NUnit 3 Test Item (nunit-test) VB
-                Uninstall Command:
-                    dotnet new -u &USERPROFILE%\.templateengine\dotnetcli\v5.0.100-alpha1-013788\packages\nunit3.dotnetnew.template.1.6.1.nupkg
-
-             * We don't want to construct this path so we'll rely on dotnet new --uninstall --help to construct the uninstall command.
-             */
-            // Workaround for https://github.com/dotnet/sdk/issues/16906
-            // await UninstallExistingTemplatesAsync(output);
+            await VerifyCannotFindTemplateAsync(output, "web");
+            await VerifyCannotFindTemplateAsync(output, "webapp");
+            await VerifyCannotFindTemplateAsync(output, "mvc");
+            await VerifyCannotFindTemplateAsync(output, "react");
+            await VerifyCannotFindTemplateAsync(output, "reactredux");
+            await VerifyCannotFindTemplateAsync(output, "angular");
 
             foreach (var packagePath in builtPackages)
             {
@@ -133,35 +124,6 @@ namespace Templates.Test.Helpers
             await VerifyCanFindTemplate(output, "webapp");
             await VerifyCanFindTemplate(output, "web");
             await VerifyCanFindTemplate(output, "react");
-        }
-
-        private static async Task UninstallExistingTemplatesAsync(ITestOutputHelper output)
-        {
-            var proc = await RunDotNetNew(output, "--uninstall --help");
-            var lines = proc.Output.Split(Environment.NewLine);
-
-            // Remove any previous or prebundled version of the template packages
-            foreach (var packageName in _templatePackages)
-            {
-                // Depending on the ordering, there may be multiple matches:
-                // Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0.3.0.0-preview7.*.nupkg
-                // Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0.0-preview7.*.nupkg
-                // Error on the side of caution and uninstall all of them
-                foreach (var command in lines.Where(l => l.Contains("dotnet new") && l.Contains(packageName, StringComparison.OrdinalIgnoreCase)))
-                {
-                    var uninstallCommand = command.TrimStart();
-                    Debug.Assert(uninstallCommand.StartsWith("dotnet new", StringComparison.Ordinal));
-                    uninstallCommand = uninstallCommand.Substring("dotnet new".Length);
-                    await RunDotNetNew(output, uninstallCommand);
-                }
-            }
-
-            await VerifyCannotFindTemplateAsync(output, "web");
-            await VerifyCannotFindTemplateAsync(output, "webapp");
-            await VerifyCannotFindTemplateAsync(output, "mvc");
-            await VerifyCannotFindTemplateAsync(output, "react");
-            await VerifyCannotFindTemplateAsync(output, "reactredux");
-            await VerifyCannotFindTemplateAsync(output, "angular");
         }
 
         private static async Task VerifyCanFindTemplate(ITestOutputHelper output, string templateName)

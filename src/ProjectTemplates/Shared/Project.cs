@@ -58,7 +58,7 @@ namespace Templates.Test.Helpers
             // Used to set special options in MSBuild
             IDictionary<string, string> environmentVariables = null)
         {
-            var hiveArg = $"--debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
+            var hiveArg = $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
             var argString = $"new {templateName} {hiveArg}";
             environmentVariables ??= new Dictionary<string, string>();
             if (!string.IsNullOrEmpty(auth))
@@ -323,7 +323,7 @@ namespace Templates.Test.Helpers
                     AppContext.BaseDirectory,
                     DotNetMuxer.MuxerPathOrDefault(),
                     arguments +
-                        $" --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
+                        $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
                         $" -o {TemplateOutputDir}");
                 await result.Exited;
                 return result;
