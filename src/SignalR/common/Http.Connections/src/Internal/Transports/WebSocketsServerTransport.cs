@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 
             var subProtocol = _options.SubProtocolSelector?.Invoke(context.WebSockets.WebSocketRequestedProtocols);
 
+            context.Response.Headers[CustomHeaderNames.LongRunning] = "true";
+
             using (var ws = await context.WebSockets.AcceptWebSocketAsync(subProtocol))
             {
                 Log.SocketOpened(_logger, subProtocol);

@@ -40,6 +40,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                 var result = await _application.ReadAsync(token);
                 var buffer = result.Buffer;
 
+                context.Response.Headers[CustomHeaderNames.LongRunning] = "true";
+
                 try
                 {
                     if (buffer.IsEmpty && (result.IsCompleted || result.IsCanceled))

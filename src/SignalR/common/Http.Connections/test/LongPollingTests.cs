@@ -116,5 +116,25 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             var options = new HttpConnectionDispatcherOptions();
             Assert.Equal(options.LongPolling.PollTimeout, TimeSpan.FromSeconds(90));
         }
+
+        [Fact]
+        public async Task IncludesLongRunningHeader()
+        {
+            using (StartVerifiableLog())
+            {
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var context = new DefaultHttpContext();
+
+                var poll = new LongPollingServerTransport(CancellationToken.None, connection.Application.Input, LoggerFactory);
+
+                connection.Transport.Output.Complete();
+
+                await poll.ProcessRequestAsync(context, context.RequestAborted).DefaultTimeout();
+
+                Assert.Equal(204, context.Response.StatusCode);
+                Assert.Equal("true", context.Response.Headers[CustomHeaderNames.LongRunning]);
+            }
+        }
     }
 }
