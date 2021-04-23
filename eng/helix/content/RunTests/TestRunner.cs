@@ -125,6 +125,13 @@ namespace RunTests
         {
             try
             {
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --version 5.0.0-*",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false);
+
                 Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
 
                 await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
@@ -159,13 +166,6 @@ namespace RunTests
                     errorDataReceived: Console.Error.WriteLine,
                     throwOnError: false,
                     cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-                
-                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --version 5.0.0-*",
-                    environmentVariables: EnvironmentVariables,
-                    outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.Error.WriteLine,
-                    throwOnError: false);
 
                 return true;
             }
