@@ -35,6 +35,12 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
       this._currentReconnectionProcess = null;
     }
   }
+
+  onConnectionRejected(options: ReconnectionOptions) {
+    if (options.reloadOnCircuitRejected) {
+      location.reload();
+    }
+  }
 };
 
 class ReconnectionProcess {
@@ -69,7 +75,7 @@ class ReconnectionProcess {
         const result = await this.reconnectCallback();
         if (!result) {
           // If the server responded and refused to reconnect, stop auto-retrying.
-          location.reload();
+          this.reconnectDisplay.rejected();       
           return;
         }
         return;

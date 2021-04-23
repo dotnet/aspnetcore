@@ -49,6 +49,7 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
     const reconnection = existingConnection || await initializeConnection(options, logger, circuit);
     if (!(await circuit.reconnect(reconnection))) {
       logger.log(LogLevel.Information, 'Reconnection attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
+      options.reconnectionHandler!.onConnectionRejected(options.reconnectionOptions);
       return false;
     }
 
