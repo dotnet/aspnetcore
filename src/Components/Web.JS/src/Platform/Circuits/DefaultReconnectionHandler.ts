@@ -57,12 +57,6 @@ class ReconnectionProcess {
   async attemptPeriodicReconnection(options: ReconnectionOptions) {
     for (let i = 0; i < options.maxRetries; i++) {
       this.reconnectDisplay.update(i + 1);
-
-      const delayDuration = i == 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
-                            ? ReconnectionProcess.MaximumFirstRetryInterval
-                            : options.retryIntervalMilliseconds;
-      await this.delay(delayDuration);
-
       if (this.isDisposed) {
         break;
       }
@@ -83,6 +77,11 @@ class ReconnectionProcess {
         // We got an exception so will try again momentarily
         this.logger.log(LogLevel.Error, err);
       }
+      const delayDuration = i == 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
+      ? ReconnectionProcess.MaximumFirstRetryInterval
+      : options.retryIntervalMilliseconds;
+        this.logger.log(LogLevel.Debug, `Reconnecting in ${delayDuration}`);    
+      await this.delay(delayDuration);
     }
 
     this.reconnectDisplay.failed();
