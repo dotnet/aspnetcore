@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -164,6 +165,14 @@ namespace Microsoft.AspNetCore.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
+            var responseCookies = context.Response.Cookies;
+
+            if (string.IsNullOrEmpty(value))
+            {
+                responseCookies.Append(key, string.Empty, options);
+                return;
+            }
+
             var template = new SetCookieHeaderValue(key)
             {
                 Domain = options.Domain,
@@ -177,10 +186,7 @@ namespace Microsoft.AspNetCore.Internal
 
             var templateLength = template.ToString().Length;
 
-            value = value ?? string.Empty;
-
             // Normal cookie
-            var responseCookies = context.Response.Cookies;
             if (!ChunkSize.HasValue || ChunkSize.Value > templateLength + value.Length)
             {
                 responseCookies.Append(key, value, options);
@@ -202,8 +208,9 @@ namespace Microsoft.AspNetCore.Internal
                 var dataSizePerCookie = ChunkSize.Value - templateLength - 3; // Budget 3 chars for the chunkid.
                 var cookieChunkCount = (int)Math.Ceiling(value.Length * 1.0 / dataSizePerCookie);
 
-                responseCookies.Append(key, ChunkCountPrefix + cookieChunkCount.ToString(CultureInfo.InvariantCulture), options);
-
+                var keyValuePairs = new KeyValuePair<string, string>[cookieChunkCount + 1];
+                keyValuePairs[0] = KeyValuePair.Create(key, ChunkCountPrefix + cookieChunkCount.ToString(CultureInfo.InvariantCulture));
+                
                 var offset = 0;
                 for (var chunkId = 1; chunkId <= cookieChunkCount; chunkId++)
                 {
@@ -211,9 +218,10 @@ namespace Microsoft.AspNetCore.Internal
                     var length = Math.Min(dataSizePerCookie, remainingLength);
                     var segment = value.Substring(offset, length);
                     offset += length;
-
-                    responseCookies.Append(key + ChunkKeySuffix + chunkId.ToString(CultureInfo.InvariantCulture), segment, options);
+                    keyValuePairs[chunkId] = KeyValuePair.Create(string.Concat(key, ChunkKeySuffix, chunkId.ToString(CultureInfo.InvariantCulture)), segment);
                 }
+
+                responseCookies.Append(keyValuePairs, options);    
             }
         }
 
@@ -241,14 +249,16 @@ namespace Microsoft.AspNetCore.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var keys = new List<string>();
-            keys.Add(key + "=");
+            var keys = new List<string>
+            {
+                key + "="
+            };
 
             var requestCookie = context.Request.Cookies[key];
             var chunks = ParseChunksCount(requestCookie);
             if (chunks > 0)
             {
-                for (int i = 1; i <= chunks + 1; i++)
+                for (var i = 1; i <= chunks + 1; i++)
                 {
                     var subkey = key + ChunkKeySuffix + i.ToString(CultureInfo.InvariantCulture);
                     keys.Add(subkey + "=");
@@ -275,43 +285,43 @@ namespace Microsoft.AspNetCore.Internal
 
             var responseHeaders = context.Response.Headers;
             var existingValues = responseHeaders[HeaderNames.SetCookie];
+
             if (!StringValues.IsNullOrEmpty(existingValues))
             {
-                responseHeaders[HeaderNames.SetCookie] = existingValues.Where(value => !rejectPredicate(value)).ToArray();
-            }
+                var values = existingValues.ToArray();
+                var newValues = new List<string>();
 
-            AppendResponseCookie(
-                context,
-                key,
-                string.Empty,
-                new CookieOptions()
+                for (var i = 0; i < values.Length; i++)
                 {
-                    Path = options.Path,
-                    Domain = options.Domain,
-                    SameSite = options.SameSite,
-                    Secure = options.Secure,
-                    IsEssential = options.IsEssential,
-                    Expires = DateTimeOffset.UnixEpoch,
-                    HttpOnly = options.HttpOnly,
-                });
-
-            for (int i = 1; i <= chunks; i++)
-            {
-                AppendResponseCookie(
-                    context,
-                    key + "C" + i.ToString(CultureInfo.InvariantCulture),
-                    string.Empty,
-                    new CookieOptions()
+                    if (!rejectPredicate(values[i]))
                     {
-                        Path = options.Path,
-                        Domain = options.Domain,
-                        SameSite = options.SameSite,
-                        Secure = options.Secure,
-                        IsEssential = options.IsEssential,
-                        Expires = DateTimeOffset.UnixEpoch,
-                        HttpOnly = options.HttpOnly,
-                    });
+                        newValues.Add(values[i]);
+                    }
+                }
+
+                responseHeaders[HeaderNames.SetCookie] = new StringValues(newValues.ToArray());
             }
+
+            var responseCookies = context.Response.Cookies;
+
+            var keyValuePairs = new KeyValuePair<string, string>[chunks + 1];
+            keyValuePairs[0] = KeyValuePair.Create(key, string.Empty);
+            
+            for (var i = 1; i <= chunks; i++)
+            {
+                keyValuePairs[i] = KeyValuePair.Create(string.Concat(key, "C", i.ToString(CultureInfo.InvariantCulture)), string.Empty);
+            }
+
+            responseCookies.Append(keyValuePairs, new CookieOptions()
+            {
+                Path = options.Path,
+                Domain = options.Domain,
+                SameSite = options.SameSite,
+                Secure = options.Secure,
+                IsEssential = options.IsEssential,
+                Expires = DateTimeOffset.UnixEpoch,
+                HttpOnly = options.HttpOnly,
+            });
         }
     }
 }

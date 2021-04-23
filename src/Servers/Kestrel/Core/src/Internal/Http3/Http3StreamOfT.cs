@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public Http3Stream(IHttpApplication<TContext> application, Http3Connection connection, Http3StreamContext context) : base(connection, context)
+        public Http3Stream(IHttpApplication<TContext> application, Http3StreamContext context) : base(context)
         {
             _application = application;
         }

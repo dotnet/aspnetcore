@@ -65,25 +65,22 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
         /// </summary>
         public string GetAlgorithmName()
         {
+            const int StackAllocCharSize = 128;
+
             // First, calculate how many characters are in the name.
             uint byteLengthOfNameWithTerminatingNull = GetProperty(Constants.BCRYPT_ALGORITHM_NAME, null, 0);
-            CryptoUtil.Assert(byteLengthOfNameWithTerminatingNull % sizeof(char) == 0 && byteLengthOfNameWithTerminatingNull > sizeof(char), "byteLengthOfNameWithTerminatingNull % sizeof(char) == 0 && byteLengthOfNameWithTerminatingNull > sizeof(char)");
+            CryptoUtil.Assert(byteLengthOfNameWithTerminatingNull % sizeof(char) == 0 && byteLengthOfNameWithTerminatingNull > sizeof(char) && byteLengthOfNameWithTerminatingNull <= StackAllocCharSize * sizeof(char), "byteLengthOfNameWithTerminatingNull % sizeof(char) == 0 && byteLengthOfNameWithTerminatingNull > sizeof(char) && byteLengthOfNameWithTerminatingNull <= StackAllocCharSize * sizeof(char)");
             uint numCharsWithoutNull = (byteLengthOfNameWithTerminatingNull - 1) / sizeof(char);
 
             if (numCharsWithoutNull == 0)
             {
-                return String.Empty; // degenerate case
+                return string.Empty; // degenerate case
             }
 
-            // Allocate a string object and write directly into it (CLR team approves of this mechanism).
-            string retVal = new String((char)0, checked((int)numCharsWithoutNull));
-            uint numBytesCopied;
-            fixed (char* pRetVal = retVal)
-            {
-                numBytesCopied = GetProperty(Constants.BCRYPT_ALGORITHM_NAME, pRetVal, byteLengthOfNameWithTerminatingNull);
-            }
+            char* pBuffer = stackalloc char[StackAllocCharSize];
+            uint numBytesCopied = GetProperty(Constants.BCRYPT_ALGORITHM_NAME, pBuffer, byteLengthOfNameWithTerminatingNull);
             CryptoUtil.Assert(numBytesCopied == byteLengthOfNameWithTerminatingNull, "numBytesCopied == byteLengthOfNameWithTerminatingNull");
-            return retVal;
+            return new string(pBuffer, 0, (int)numCharsWithoutNull);
         }
 
         /// <summary>
