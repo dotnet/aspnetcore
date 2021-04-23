@@ -16,7 +16,7 @@ $currentDirectory = Get-Location
 $env:PLAYWRIGHT_BROWSERS_PATH = "$currentDirectory\ms-playwright"
 $env:PLAYWRIGHT_DRIVER_PATH = "$currentDirectory\.playwright\win-x64\native\playwright.cmd"
 
-$envPath = "$env:PATH;$env:HELIX_CORRELATION_PAYLOAD\node\bin"
+$env:Path = "$env:PATH;$env:HELIX_WORKITEM_ROOT;$env:HELIX_WORKITEM_ROOT\node\bin"
 
 Write-Host "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
 dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
