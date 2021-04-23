@@ -465,7 +465,6 @@ namespace System.Net.Http.QPack
             return true;
         }
 
-        // TODO: use H3StaticTable?
         private int EncodeStatusCode(int statusCode, Span<byte> buffer)
         {
             switch (statusCode)
@@ -485,7 +484,7 @@ namespace System.Net.Http.QPack
                     buffer[0] = 0b01011111;
                     buffer[1] = 0b00110000;
 
-                    var statusBytes = StatusCodes.ToStatusBytes(statusCode);
+                    ReadOnlySpan<byte> statusBytes = StatusCodes.ToStatusBytes(statusCode);
                     buffer[2] = (byte)statusBytes.Length;
                     statusBytes.CopyTo(buffer.Slice(3));
 
