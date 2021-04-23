@@ -13,7 +13,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export DOTNET_MULTILEVEL_LOOKUP=0
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
-export PATH="$PATH:$DIR/node/bin"
+export PATH="$PATH:$DIR:$DIR/node/bin"
 
 # Set playwright stuff
 export PLAYWRIGHT_BROWSERS_PATH="$DIR/ms-playwright"
