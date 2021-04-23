@@ -75,7 +75,7 @@ class ReconnectionProcess {
         const result = await this.reconnectCallback();
         if (!result) {
           // If the server responded and refused to reconnect, stop auto-retrying.
-          this.reconnectDisplay.rejected();
+          location.reload();
           return;
         }
         return;
