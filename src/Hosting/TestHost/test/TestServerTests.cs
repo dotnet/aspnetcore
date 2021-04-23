@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.TestHost
                 container.Services.AddSingleton(new TestService { Message = "ConfigureContainer" });
 
             public void Configure(IApplicationBuilder app) =>
-                app.Use((ctx, next) => ctx.Response.WriteAsync(
+                app.Run(ctx => ctx.Response.WriteAsync(
                     $"{ctx.RequestServices.GetRequiredService<SimpleService>().Message}, {ctx.RequestServices.GetRequiredService<TestService>().Message}"));
         }
 
@@ -472,7 +472,7 @@ namespace Microsoft.AspNetCore.TestHost
                     app.Use(async (context, nxt) =>
                     {
                         context.Features.Set<IServiceProvidersFeature>(this);
-                        await nxt();
+                        await nxt(context);
                     });
                     next(app);
                 };
@@ -514,7 +514,7 @@ namespace Microsoft.AspNetCore.TestHost
                     app.Use(async (context, nxt) =>
                     {
                         context.Features.Set<IServiceProvidersFeature>(this);
-                        await nxt();
+                        await nxt(context);
                     });
                     next(app);
                 };

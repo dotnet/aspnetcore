@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Authentication
                                 }
                                 else
                                 {
-                                    await next();
+                                    await next(context);
                                 }
                             });
                         })

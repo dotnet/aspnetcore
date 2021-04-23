@@ -21,6 +21,9 @@
 
     <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+
+    <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
+    <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,6 +46,29 @@
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Authentication.Server\Wasm.Authentication.Server.csproj" />
+
+    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)trimmed\Wasm.Performance.TestApp\"
+      Condition="'$(TestTrimmedApps)' == 'true'" />
+
+    <ProjectReference
+      Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)trimmed\BasicTestApp\"
+      Condition="'$(TestTrimmedApps)' == 'true'" />
+
+    <ProjectReference
+      Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)trimmed\GlobalizationWasmApp\;"
+      Condition="'$(TestTrimmedApps)' == 'true'" />
+
+    <ProjectReference
+      Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj"
+      Targets="Publish"
+      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)trimmed\StandaloneApp\;"
+      Condition="'$(TestTrimmedApps)' == 'true'" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
@@ -56,6 +82,13 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\WebAssemblyComponentSerializationSettings.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\WebAssemblyComponentMarker.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Microsoft.AspNetCore.E2ETesting.TestTrimmedApps</_Parameter1>
+      <_Parameter2>$(TestTrimmedApps)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>

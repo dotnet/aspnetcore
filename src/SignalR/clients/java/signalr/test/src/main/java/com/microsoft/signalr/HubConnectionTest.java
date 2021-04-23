@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import io.reactivex.rxjava3.core.Completable;
@@ -29,6 +30,7 @@ import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.ReplaySubject;
 import io.reactivex.rxjava3.subjects.SingleSubject;
 
+@ExtendWith({RxJavaUnhandledExceptionsExtensions.class})
 class HubConnectionTest {
     private static final String RECORD_SEPARATOR = "\u001e";
     private static final Type booleanType = (new TypeReference<Boolean>() { }).getType();

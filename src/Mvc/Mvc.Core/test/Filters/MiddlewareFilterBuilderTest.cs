@@ -91,9 +91,9 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             var httpContext = new DefaultHttpContext();
             Pipeline1.ConfigurePipeline = ab =>
             {
-                ab.Use((_, next) =>
+                ab.Use((ctx, next) =>
                 {
-                    return next();
+                    return next(ctx);
                 });
             };
 
@@ -119,9 +119,9 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             Pipeline1.ConfigurePipeline = ab =>
             {
-                ab.Use((_, next) =>
+                ab.Use((ctx, next) =>
                 {
-                    return next();
+                    return next(ctx);
                 });
             };
 
@@ -171,9 +171,9 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             Pipeline1.ConfigurePipeline = ab =>
             {
-                ab.Use((_, next) =>
+                ab.Use((ctx, next) =>
                 {
-                    return next();
+                    return next(ctx);
                 });
             };
 
@@ -239,9 +239,9 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             Pipeline1.ConfigurePipeline = ab =>
             {
-                ab.Use((_, next) =>
+                ab.Use((ctx, next) =>
                 {
-                    return next();
+                    return next(ctx);
                 });
             };
 

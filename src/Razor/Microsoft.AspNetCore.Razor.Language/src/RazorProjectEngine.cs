@@ -226,8 +226,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // into the repository.
             ComponentTypeParamDirective.Register(
                 builder,
-                supportConstraints: true);
-                //supportConstraints: razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0);
+                supportConstraints: razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_6_0) >= 0);
 
             if (razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_5_0) >= 0)
             {

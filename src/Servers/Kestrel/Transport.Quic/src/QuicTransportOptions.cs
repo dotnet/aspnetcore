@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
 {
     /// <summary>
     /// Options for Quic based connections.

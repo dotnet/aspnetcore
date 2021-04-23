@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             var expectedHeader = "h1";
             Pipeline1.ConfigurePipeline = (appBuilder) =>
             {
-                appBuilder.Use((httpContext, next) =>
+                appBuilder.Run((httpContext) =>
                 {
                     httpContext.Response.Headers.Add(expectedHeader, "");
                     return Task.FromResult(true); // short circuit the request
@@ -97,12 +97,12 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 appBuilder.Use((httpContext, next) =>
                 {
                     httpContext.Response.Headers["h1"] = "pipeline1";
-                    return next();
+                    return next(httpContext);
                 });
             };
             Pipeline2.ConfigurePipeline = (appBuilder) =>
             {
-                appBuilder.Use((httpContext, next) =>
+                appBuilder.Run((httpContext) =>
                 {
                     httpContext.Response.Headers["h1"] = httpContext.Response.Headers["h1"] + "-pipeline2";
                     return Task.FromResult(true); // short circuits the request
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             var expectedMessage = "Error!!!";
             Pipeline1.ConfigurePipeline = (appBuilder) =>
             {
-                appBuilder.Use((httpContext, next) =>
+                appBuilder.Run((httpContext) =>
                 {
                     throw new InvalidOperationException(expectedMessage);
                 });
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 {
                     try
                     {
-                        await next();
+                        await next(httpContext);
                     }
                     catch
                     {
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             };
             Pipeline2.ConfigurePipeline = (appBuilder) =>
             {
-                appBuilder.Use((httpContext, next) =>
+                appBuilder.Run((httpContext) =>
                 {
                     throw new InvalidOperationException(expectedMessage);
                 });

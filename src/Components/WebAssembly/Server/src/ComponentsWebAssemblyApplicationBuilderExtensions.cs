@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Builder
                         context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES"));
                     }
 
-                    await next();
+                    await next(context);
                 });
 
                 subBuilder.UseMiddleware<ContentEncodingNegotiator>();
