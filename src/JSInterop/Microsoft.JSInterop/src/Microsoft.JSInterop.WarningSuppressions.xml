@@ -9,6 +9,12 @@
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
+      <argument>IL2065</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.ScanAssemblyForCallableMethods(Microsoft.JSInterop.Infrastructure.DotNetDispatcher.AssemblyKey)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
       <argument>IL2091</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.JSInterop.JSObjectReferenceExtensions.&lt;InvokeAsync&gt;d__4`1.MoveNext</property>
