@@ -133,6 +133,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
                 {
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-11
+                    // An endpoint that completes a graceful shutdown SHOULD use the H3_NO_ERROR error code
+                    // when closing the connection.
+                    _errorCodeFeature.Error = (long)Http3ErrorCode.NoError;
+
                     // Abort accept async loop to initiate graceful shutdown
                     // TODO aborting connection isn't graceful due to runtime issue, will drop data on streams
                     // Either we need to swap to using a cts here or fix runtime to gracefully close connection.
@@ -249,10 +254,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 case TimeoutReason.TimeoutFeature:
                     SendGoAway(GetHighestStreamId()).Preserve();
                     break;
+                case TimeoutReason.ReadDataRate:
+                    Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout), Http3ErrorCode.InternalError);
+                    break;
+                case TimeoutReason.WriteDataRate:
+                    Log.ResponseMinimumDataRateNotSatisfied(_context.ConnectionId, traceIdentifier: null);
+                    Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied), Http3ErrorCode.InternalError);
+                    break;
                 case TimeoutReason.RequestHeaders: // Request header timeout is handled in starting stream queue
                 case TimeoutReason.KeepAlive:  // Keep-alive is handled by msquic
-                case TimeoutReason.ReadDataRate:
-                case TimeoutReason.WriteDataRate:
                 case TimeoutReason.RequestBodyDrain:
                 default:
                     Debug.Assert(false, "Invalid TimeoutReason");
@@ -392,6 +402,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     {
                         await _streamCompletionAwaitable;
                     }
+
+                    _timeoutControl.CancelTimeout();
+                    _timeoutControl.StartDrainTimeout(Limits.MinResponseDataRate, Limits.MaxResponseBufferSize);
                 }
                 catch
                 {

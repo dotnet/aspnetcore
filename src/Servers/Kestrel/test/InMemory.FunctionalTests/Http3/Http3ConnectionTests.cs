@@ -61,12 +61,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task GracefulServerShutdownSendsGoawayClosesConnection()
+        public async Task GracefulServerShutdownClosesConnection()
         {
             await InitializeConnectionAsync(_echoApplication);
+
+            var inboundControlStream = await GetInboundControlStream();
+            await inboundControlStream.ExpectSettingsAsync();
+
             // Trigger server shutdown.
-            MultiplexedConnectionContext.ConnectionClosingCts.Cancel();
+            CloseConnectionGracefully();
+
             Assert.Null(await MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
+
+            await WaitForConnectionStopAsync(0, false, expectedErrorCode: Http3ErrorCode.NoError);
         }
 
         [Theory]
