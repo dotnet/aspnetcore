@@ -4,11 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>Components.Migration.E2ETests</TestGroupName>
 
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <BaseOutputPath />
-
-    <OutputPath />
-
     <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
 
     <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
