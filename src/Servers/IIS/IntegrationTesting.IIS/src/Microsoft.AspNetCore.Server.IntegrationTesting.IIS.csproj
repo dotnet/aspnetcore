@@ -6,7 +6,6 @@
     <Description>Provides support for integration testing using IIS based servers.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
-    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
     <IsTestAssetProject>true</IsTestAssetProject>
     <!-- This is used as a package by ASP.NET benchmarking infrastructure. It is meant for internal use only. -->

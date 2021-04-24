@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <None Update="Testing.DefaultWebSite.StaticWebAssets.V4.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Testing.DefaultWebSite.StaticWebAssets.V5.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
