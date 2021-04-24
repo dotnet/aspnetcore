@@ -550,6 +550,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             _appCompleted = new TaskCompletionSource();
+            _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
         }

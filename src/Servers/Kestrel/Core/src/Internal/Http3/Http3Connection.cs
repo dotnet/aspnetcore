@@ -23,7 +23,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3Connection : ITimeoutHandler, IHttp3StreamLifetimeHandler
     {
+        // Internal for unit testing
         internal readonly Dictionary<long, IHttp3Stream> _streams = new Dictionary<long, IHttp3Stream>();
+        internal IHttp3StreamLifetimeHandler _streamLifetimeHandler;
 
         private long _highestOpenedStreamId;
         private readonly object _sync = new object(); 
@@ -49,6 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _systemClock = context.ServiceContext.SystemClock;
             _timeoutControl = new TimeoutControl(this);
             _context.TimeoutControl ??= _timeoutControl;
+            _streamLifetimeHandler = this;
 
             _errorCodeFeature = context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
 
@@ -303,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             streamContext.LocalEndPoint as IPEndPoint,
                             streamContext.RemoteEndPoint as IPEndPoint,
                             streamContext.Transport,
-                            this,
+                            _streamLifetimeHandler,
                             streamContext,
                             _serverSettings);
                         httpConnectionContext.TimeoutControl = _context.TimeoutControl;
@@ -314,10 +317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         {
                             // Unidirectional stream
                             var stream = new Http3ControlStream<TContext>(application, httpConnectionContext);
-                            lock (_streams)
-                            {
-                                _streams[streamId] = stream;
-                            }
+                            _streamLifetimeHandler.OnStreamCreated(stream);
 
                             ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                         }
@@ -327,11 +327,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             UpdateHighestStreamId(streamId);
 
                             var stream = new Http3Stream<TContext>(application, httpConnectionContext);
-                            lock (_streams)
-                            {
-                                _activeRequestCount++;
-                                _streams[streamId] = stream;
-                            }
+                            _streamLifetimeHandler.OnStreamCreated(stream);
 
                             KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
                             ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
@@ -470,7 +466,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 streamContext.LocalEndPoint as IPEndPoint,
                 streamContext.RemoteEndPoint as IPEndPoint,
                 streamContext.Transport,
-                this,
+                _streamLifetimeHandler,
                 streamContext,
                 _serverSettings);
             httpConnectionContext.TimeoutControl = _context.TimeoutControl;
@@ -490,7 +486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return default;
         }
 
-        public bool OnInboundControlStream(Http3ControlStream stream)
+        bool IHttp3StreamLifetimeHandler.OnInboundControlStream(Http3ControlStream stream)
         {
             lock (_sync)
             {
@@ -503,7 +499,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        public bool OnInboundEncoderStream(Http3ControlStream stream)
+        bool IHttp3StreamLifetimeHandler.OnInboundEncoderStream(Http3ControlStream stream)
         {
             lock (_sync)
             {
@@ -516,7 +512,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        public bool OnInboundDecoderStream(Http3ControlStream stream)
+        bool IHttp3StreamLifetimeHandler.OnInboundDecoderStream(Http3ControlStream stream)
         {
             lock (_sync)
             {
@@ -529,24 +525,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        public void OnStreamCompleted(IHttp3Stream stream)
+        void IHttp3StreamLifetimeHandler.OnStreamCreated(IHttp3Stream stream)
         {
             lock (_streams)
             {
-                _activeRequestCount--;
+                if (stream.IsRequestStream)
+                {
+                    _activeRequestCount++;
+                }
+                _streams[stream.StreamId] = stream;
+            }
+        }
+
+        void IHttp3StreamLifetimeHandler.OnStreamCompleted(IHttp3Stream stream)
+        {
+            lock (_streams)
+            {
+                if (stream.IsRequestStream)
+                {
+                    _activeRequestCount--;
+                }
                 _streams.Remove(stream.StreamId);
             }
 
-            _streamCompletionAwaitable.Complete();
+            if (stream.IsRequestStream)
+            {
+                _streamCompletionAwaitable.Complete();
+            }
         }
 
-        public void OnStreamConnectionError(Http3ConnectionErrorException ex)
+        void IHttp3StreamLifetimeHandler.OnStreamConnectionError(Http3ConnectionErrorException ex)
         {
             Log.Http3ConnectionError(ConnectionId, ex);
             Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
         }
 
-        public void OnInboundControlStreamSetting(Http3SettingType type, long value)
+        void IHttp3StreamLifetimeHandler.OnInboundControlStreamSetting(Http3SettingType type, long value)
         {
             switch (type)
             {
@@ -559,6 +573,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 default:
                     throw new InvalidOperationException("Unexpected setting: " + type);
             }
+        }
+
+        void IHttp3StreamLifetimeHandler.OnStreamHeaderReceived(IHttp3Stream stream)
+        {
+            Debug.Assert(stream.ReceivedHeader);
         }
 
         private static class GracefulCloseInitiator
