@@ -41,7 +41,8 @@
     <Content Include="playwrightSettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <HelixContent Include="..\testassets\**\*" />
+    <HelixContent Include="..\testassets\**\*" LinkBase="testassets"/>
+    <HelixContent Include="..\..\Blazor\testassets\StandaloneApp\**\*" />
   </ItemGroup>
 
 
