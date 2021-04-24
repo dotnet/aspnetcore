@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class EchoAppWithNotification
         {
-            private TaskCompletionSource _writeStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly TaskCompletionSource _writeStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             public Task WriteStartedTask => _writeStartedTcs.Task;
 
