@@ -53,9 +53,10 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 if (item.Value is PropertyInfo property)
                 {
                     yield return property;
+                    continue;
                 }
-                var list = (List<PropertyInfo>)item.Value;
 
+                var list = (List<PropertyInfo>)item.Value;
                 var count = list.Count;
                 for (var i = 0; i < count; i++)
                 {

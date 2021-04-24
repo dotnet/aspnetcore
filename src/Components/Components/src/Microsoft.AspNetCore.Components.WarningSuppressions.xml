@@ -67,5 +67,11 @@
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.LayoutView.&lt;&gt;c__DisplayClass13_0.&lt;WrapInLayout&gt;g__Render|0(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder)</property>
     </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2080</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.Components.Reflection.MemberAssignment.&lt;GetPropertiesIncludingInherited&gt;d__0.MoveNext</property>
+    </attribute>
   </assembly>
 </linker>
