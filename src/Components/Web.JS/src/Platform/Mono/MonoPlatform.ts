@@ -421,7 +421,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         MONO.mono_wasm_setenv('LANG',  `${resourceLoader.startOptions.applicationCulture}.UTF-8`);
       }
     }
-    MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
     let timeZone = "UTC";
     try {
       timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
