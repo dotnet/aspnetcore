@@ -2385,5 +2385,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_RequestLineTooLong, Http3ErrorCode.RequestRejected);
         }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(4)]
+        [InlineData(int.MaxValue)]
+        public async Task UnsupportedControlStreamType(int typeId)
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            var outboundControlStream = await CreateControlStream().DefaultTimeout();
+            await outboundControlStream.SendSettingsAsync(new List<Http3PeerSetting>());
+
+            var inboundControlStream = await GetInboundControlStream();
+            await inboundControlStream.ExpectSettingsAsync();
+
+            // Create unsupported control stream
+            var invalidStream = await CreateControlStream(typeId).DefaultTimeout();
+            await invalidStream.WaitForStreamErrorAsync(
+                Http3ErrorCode.StreamCreationError,
+                CoreStrings.FormatHttp3ControlStreamErrorUnsupportedType(typeId)).DefaultTimeout();
+
+            // Connection is still alive and available for requests
+            var requestStream = await CreateRequestStream().DefaultTimeout();
+            await requestStream.SendHeadersAsync(new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            }, endStream: true);
+
+            await requestStream.ExpectHeadersAsync().DefaultTimeout();
+            await requestStream.ExpectReceiveEndOfStream().DefaultTimeout();
+        }
     }
 }
