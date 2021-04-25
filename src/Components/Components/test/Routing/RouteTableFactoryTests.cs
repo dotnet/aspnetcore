@@ -5,10 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNetCore.Components.Routing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Test.Routing
+namespace Microsoft.AspNetCore.Components.Routing
 {
     public class RouteTableFactoryTests
     {
@@ -16,10 +15,10 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanCacheRouteTable()
         {
             // Arrange
-            var routes1 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+            var routes1 = RouteTableFactory.Create(new RouteKey(GetType().Assembly, null));
 
             // Act
-            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+            var routes2 = RouteTableFactory.Create(new RouteKey(GetType().Assembly, null));
 
             // Assert
             Assert.Same(routes1, routes2);
@@ -29,10 +28,10 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanCacheRouteTableWithDifferentAssembliesAndOrder()
         {
             // Arrange
-            var routes1 = RouteTableFactory.Create(new[] { typeof(object).Assembly, GetType().Assembly, });
+            var routes1 = RouteTableFactory.Create(new RouteKey(typeof(object).Assembly, new[] { typeof(ComponentBase).Assembly, GetType().Assembly, }));
 
             // Act
-            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, typeof(object).Assembly, });
+            var routes2 = RouteTableFactory.Create(new RouteKey(typeof(object).Assembly, new[] { GetType().Assembly, typeof(ComponentBase).Assembly, }));
 
             // Assert
             Assert.Same(routes1, routes2);
@@ -42,10 +41,10 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void DoesNotCacheRouteTableForDifferentAssemblies()
         {
             // Arrange
-            var routes1 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+            var routes1 = RouteTableFactory.Create(new RouteKey(GetType().Assembly, null));
 
             // Act
-            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, typeof(object).Assembly, });
+            var routes2 = RouteTableFactory.Create(new RouteKey(GetType().Assembly, new[] { typeof(object).Assembly }));
 
             // Assert
             Assert.NotSame(routes1, routes2);
@@ -977,7 +976,8 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             routeTable.Route(context);
 
             // Assert
-            Assert.Collection(routeTable.Routes,
+            Assert.Collection(
+                routeTable.Routes,
                 route =>
                 {
                     Assert.Same(typeof(TestHandler1), route.Handler);
@@ -994,13 +994,13 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 {
                     Assert.Same(typeof(TestHandler1), route.Handler);
                     Assert.Equal("products/{param2}/{PaRam1}", route.Template.TemplateText);
-                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames.OrderBy(id => id).ToArray());
+                    Assert.Null(route.UnusedRouteParameterNames);
                 },
                 route =>
                 {
                     Assert.Same(typeof(TestHandler2), route.Handler);
                     Assert.Equal("{unrelated}", route.Template.TemplateText);
-                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames.OrderBy(id => id).ToArray());
+                    Assert.Null(route.UnusedRouteParameterNames);
                 });
 
             Assert.Same(typeof(TestHandler1), context.Handler);
