@@ -185,6 +185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         await HandleEncodingDecodingTask();
                         break;
                     default:
+                        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2-6
                         throw new Http3StreamErrorException(CoreStrings.FormatHttp3ControlStreamErrorUnsupportedType(_headerType), Http3ErrorCode.StreamCreationError);
                 }
             }
