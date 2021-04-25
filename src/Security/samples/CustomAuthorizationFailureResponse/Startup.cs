@@ -34,6 +34,7 @@ namespace CustomAuthorizationFailureResponse
             services.AddAuthorization(options => options.AddPolicy(SamplePolicyNames.CustomPolicyWithCustomForbiddenMessage, policy => policy.AddRequirements(new SampleWithCustomMessageRequirement())));
 
             services.AddTransient<IAuthorizationHandler, SampleRequirementHandler>();
+            services.AddTransient<IAuthorizationHandler, SampleWithCustomMessageRequirementHandler>();
             services.AddTransient<IAuthorizationMiddlewareResultHandler, SampleAuthorizationMiddlewareResultHandler>();
         }
 
