@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
         {
             var configuration = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
-                new KeyValuePair<string, string>("IsEnabledKey", Convert.ToString(enabled))
+                new KeyValuePair<string, string>("IsEnabledKey", Convert.ToString(enabled, null))
             }).Build();
 
             var options = new BatchingLoggerOptions();
