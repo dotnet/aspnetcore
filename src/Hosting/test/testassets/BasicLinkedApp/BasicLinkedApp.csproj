@@ -5,6 +5,7 @@
     <OutputType>Exe</OutputType>
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>link</TrimMode>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
