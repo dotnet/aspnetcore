@@ -686,4 +686,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http3ControlStreamHeaderTimeout" xml:space="preserve">
     <value>Reading the control stream header timed out.</value>
   </data>
+  <data name="Http3ErrorControlStreamClientClosed" xml:space="preserve">
+    <value>The client closed the connection control stream.</value>
+  </data>
 </root>
