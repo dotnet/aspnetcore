@@ -61,12 +61,12 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             contextMock.SetupGet(c => c.SiteName).Returns("Name");
 
             var options = new AzureBlobLoggerOptions();
-            new BlobLoggerConfigureOptions(configuration, contextMock.Object, "OptionalCustomPrefix").Configure(options);
+            new BlobLoggerConfigureOptions(configuration, contextMock.Object, options => options.FileNameFormat = _ =>"FilenameFormat").Configure(options);
 
             Assert.Equal("http://container/url", options.ContainerUrl);
             Assert.Equal("InstanceId", options.ApplicationInstanceId);
             Assert.Equal("Name", options.ApplicationName);
-            Assert.Equal("OptionalCustomPrefix", options.CustomPrefixFileName);
+            Assert.Equal("FilenameFormat", options.FileNameFormat(new AzureBlobLoggerContext("", "", DateTimeOffset.MinValue)));
         }
     }
 }

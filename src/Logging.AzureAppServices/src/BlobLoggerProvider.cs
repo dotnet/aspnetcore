@@ -21,11 +21,9 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
     [ProviderAlias("AzureAppServicesBlob")]
     public class BlobLoggerProvider : BatchingLoggerProvider
     {
-        private readonly string _appName;
-        private readonly string _fileName;
+        private readonly IOptionsMonitor<AzureBlobLoggerOptions> _options;
         private readonly Func<string, ICloudAppendBlob> _blobReferenceFactory;
         private readonly HttpClient _httpClient;
-        private readonly string _customFileNamePrefix;
 
         /// <summary>
         /// Creates a new instance of <see cref="BlobLoggerProvider"/>
@@ -51,12 +49,9 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             Func<string, ICloudAppendBlob> blobReferenceFactory) :
             base(options)
         {
-            var value = options.CurrentValue;
-            _appName = value.ApplicationName;
-            _fileName = value.ApplicationInstanceId + "_" + value.BlobName;
+            _options = options;
             _blobReferenceFactory = blobReferenceFactory;
             _httpClient = new HttpClient();
-            _customFileNamePrefix = value.CustomFileNamePrefix;
         }
 
         internal override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
@@ -65,17 +60,11 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             foreach (var eventGroup in eventGroups)
             {
                 var key = eventGroup.Key;
-                string blobName;
-
-                if (!string.IsNullOrEmpty(_customFileNamePrefix))
-                {
-                    var filename = $"{_customFileNamePrefix}{key.Year}{key.Month:00}{key.Day:00}.txt";
-                    blobName = $"{_appName}/{filename}";
-                }
-                else
-                {
-                    blobName = $"{_appName}/{key.Year}/{key.Month:00}/{key.Day:00}/{key.Hour:00}/{_fileName}";
-                }
+                var options = _options.CurrentValue;
+                string blobName = options.FileNameFormat(new AzureBlobLoggerContext(
+                    options.ApplicationName,
+                    options.ApplicationInstanceId + "_" + options.BlobName,
+                    new DateTimeOffset(key.Year, key.Month, key.Day, key.Hour, 0, 0, TimeSpan.Zero)));
 
                 var blob = _blobReferenceFactory(blobName);
 

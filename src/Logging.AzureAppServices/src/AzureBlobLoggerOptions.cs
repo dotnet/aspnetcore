@@ -11,7 +11,6 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
     /// </summary>
     public class AzureBlobLoggerOptions: BatchingLoggerOptions
     {
-	    public Func<AzureBlobLoggerContext, string> FileNameFormat { get; set; }
 
         private string _blobName = "applicationLog.txt";
         /// <summary>
@@ -31,7 +30,11 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             }
         }
 
-        internal string CustomFileNamePrefix { get; set; }
+        public Func<AzureBlobLoggerContext, string> FileNameFormat { get; set; } = context =>
+        {
+            var timestamp = context.Timestamp;
+            return $"{context.AppName}/{timestamp.Year}/{timestamp.Month:00}/{timestamp.Day:00}/{timestamp.Hour:00}/{context.Identifier}";
+        };
        
         internal string ContainerUrl { get; set; }
 
