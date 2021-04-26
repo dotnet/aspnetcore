@@ -2024,8 +2024,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(c =>
             {
                 c.Response.ContentLength = 0;
-                c.Response.Headers[HeaderNames.SetCookie] = "SetCookie!";
-                c.Response.Headers[HeaderNames.ContentDisposition] = "ContentDisposition!";
+                c.Response.Headers.SetCookie = "SetCookie!";
+                c.Response.Headers.ContentDisposition = "ContentDisposition!";
 
                 return Task.CompletedTask;
             });

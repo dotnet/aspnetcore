@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         public virtual ICompressionProvider? GetCompressionProvider(HttpContext context)
         {
             // e.g. Accept-Encoding: gzip, deflate, sdch
-            var accept = context.Request.Headers[HeaderNames.AcceptEncoding];
+            var accept = context.Request.Headers.AcceptEncoding;
 
             // Note this is already checked in CheckRequestAcceptsCompression which _should_ prevent any of these other methods from being called.
             if (StringValues.IsNullOrEmpty(accept))
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <inheritdoc />
         public bool CheckRequestAcceptsCompression(HttpContext context)
         {
-            if (string.IsNullOrEmpty(context.Request.Headers[HeaderNames.AcceptEncoding]))
+            if (string.IsNullOrEmpty(context.Request.Headers.AcceptEncoding))
             {
                 _logger.NoAcceptEncoding();
                 return false;

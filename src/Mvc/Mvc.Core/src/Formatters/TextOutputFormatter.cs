@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         internal static IList<StringWithQualityHeaderValue> GetAcceptCharsetHeaderValues(OutputFormatterWriteContext context)
         {
             var request = context.HttpContext.Request;
-            if (StringWithQualityHeaderValue.TryParseList(request.Headers[HeaderNames.AcceptCharset], out var result))
+            if (StringWithQualityHeaderValue.TryParseList(request.Headers.AcceptCharset, out var result))
             {
                 return result;
             }

@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CheckHost(HttpContext context, IList<StringSegment> allowedHosts)
         {
-            var host = context.Request.Headers[HeaderNames.Host].ToString();
+            var host = context.Request.Headers.Host.ToString();
 
             if (host.Length == 0)
             {

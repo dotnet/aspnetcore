@@ -270,12 +270,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 properties, authorizationEndpoint);
             await Events.RedirectToAuthorizationEndpoint(redirectContext);
 
-            var location = Context.Response.Headers[HeaderNames.Location];
+            var location = Context.Response.Headers.Location;
             if (location == StringValues.Empty)
             {
                 location = "(not set)";
             }
-            var cookie = Context.Response.Headers[HeaderNames.SetCookie];
+            var cookie = Context.Response.Headers.SetCookie;
             if (cookie == StringValues.Empty)
             {
                 cookie = "(not set)";

@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             // Verifying if Redirect was called with the specific Url and parameter flag.
-            Assert.Equal(expectedPath, httpContext.Response.Headers[HeaderNames.Location].ToString());
+            Assert.Equal(expectedPath, httpContext.Response.Headers.Location.ToString());
             Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
         }
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             // Verifying if Redirect was called with the specific Url and parameter flag.
-            Assert.Equal(expectedPath, httpContext.Response.Headers[HeaderNames.Location].ToString());
+            Assert.Equal(expectedPath, httpContext.Response.Headers.Location.ToString());
             Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
         }
 

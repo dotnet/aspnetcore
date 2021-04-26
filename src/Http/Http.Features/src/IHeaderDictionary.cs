@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http
     /// <summary>
     /// Represents HttpRequest and HttpResponse headers
     /// </summary>
-    public interface IHeaderDictionary : IDictionary<string, StringValues>
+    public partial interface IHeaderDictionary : IDictionary<string, StringValues>
     {
         /// <summary>
         /// IHeaderDictionary has a different indexer contract than IDictionary, where it will return StringValues.Empty for missing entries.

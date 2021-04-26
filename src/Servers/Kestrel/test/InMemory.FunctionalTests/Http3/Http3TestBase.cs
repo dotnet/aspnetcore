@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _echoHost = context =>
             {
-                context.Response.Headers[HeaderNames.Host] = context.Request.Headers[HeaderNames.Host];
+                context.Response.Headers.Host = context.Request.Headers.Host;
 
                 return Task.CompletedTask;
             };

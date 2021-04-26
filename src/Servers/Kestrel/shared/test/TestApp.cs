@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Testing
             await request.Body.CopyToAsync(data);
             var bytes = data.ToArray();
 
-            response.Headers["Content-Length"] = bytes.Length.ToString(CultureInfo.InvariantCulture);
+            response.Headers.ContentLength = bytes.Length;
             await response.Body.WriteAsync(bytes, 0, bytes.Length);
         }
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Testing
             await request.Body.CopyToAsync(data);
             var bytes = data.ToArray();
 
-            response.Headers["Content-Length"] = bytes.Length.ToString(CultureInfo.InvariantCulture);
+            response.Headers.ContentLength = bytes.Length;
             await response.StartAsync();
 
             var memory = response.BodyWriter.GetMemory(bytes.Length);

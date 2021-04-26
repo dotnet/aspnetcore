@@ -25,7 +25,7 @@ namespace ServerComparison.TestSites
             {
                 subApp.Run(async context =>
                 {
-                    context.Response.Headers[HeaderNames.Connection] = "close";
+                    context.Response.Headers.Connection = "close";
                     await context.Response.WriteAsync("Connnection Close");
                     await context.Response.Body.FlushAsync(); // Bypass IIS write-behind buffering
                 });
@@ -44,7 +44,7 @@ namespace ServerComparison.TestSites
             {
                 subApp.Run(context =>
                 {
-                    context.Response.Headers[HeaderNames.TransferEncoding] = "chunked";
+                    context.Response.Headers.TransferEncoding = "chunked";
                     return context.Response.WriteAsync("10\r\nManually Chunked\r\n0\r\n\r\n");
                 });
             });
@@ -53,8 +53,8 @@ namespace ServerComparison.TestSites
             {
                 subApp.Run(context =>
                 {
-                    context.Response.Headers[HeaderNames.Connection] = "close";
-                    context.Response.Headers[HeaderNames.TransferEncoding] = "chunked";
+                    context.Response.Headers.Connection = "close";
+                    context.Response.Headers.TransferEncoding = "chunked";
                     return context.Response.WriteAsync("1A\r\nManually Chunked and Close\r\n0\r\n\r\n");
                 });
             });

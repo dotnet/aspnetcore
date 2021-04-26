@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                      .Configure(app =>
                      {
                          app.UseRewriter(options);
-                         app.Run(context => context.Response.WriteAsync(context.Response.Headers[HeaderNames.Location]));
+                         app.Run(context => context.Response.WriteAsync(context.Response.Headers.Location));
                      });
                  }).Build();
 
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                     .Configure(app =>
                     {
                         app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(context.Response.Headers[HeaderNames.Location]));
+                        app.Run(context => context.Response.WriteAsync(context.Response.Headers.Location));
                     });
                 }).Build();
 

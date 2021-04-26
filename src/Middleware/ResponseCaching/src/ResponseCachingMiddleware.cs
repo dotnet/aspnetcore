@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     // Note: int64 division truncates result and errors may be up to 1 second. This reduction in
                     // accuracy of age calculation is considered appropriate since it is small compared to clock
                     // skews and the "Age" header is an estimate of the real age of cached content.
-                    response.Headers[HeaderNames.Age] = HeaderUtilities.FormatNonNegativeInt64(context.CachedEntryAge.Value.Ticks / TimeSpan.TicksPerSecond);
+                    response.Headers.Age = HeaderUtilities.FormatNonNegativeInt64(context.CachedEntryAge.Value.Ticks / TimeSpan.TicksPerSecond);
 
                     // Copy the cached response body
                     var body = context.CachedResponse.Body;
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 }
             }
 
-            if (HeaderUtilities.ContainsCacheDirective(context.HttpContext.Request.Headers[HeaderNames.CacheControl], CacheControlHeaderValue.OnlyIfCachedString))
+            if (HeaderUtilities.ContainsCacheDirective(context.HttpContext.Request.Headers.CacheControl, CacheControlHeaderValue.OnlyIfCachedString))
             {
                 _logger.GatewayTimeoutServed();
                 context.HttpContext.Response.StatusCode = StatusCodes.Status504GatewayTimeout;
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     context.ResponseDate = context.ResponseTime!.Value;
                     // Setting the date on the raw response headers.
-                    context.HttpContext.Response.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(context.ResponseDate.Value);
+                    context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(context.ResponseDate.Value);
                 }
 
                 // Store the response on the state
@@ -365,9 +365,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     var response = context.HttpContext.Response;
                     // Add a content-length if required
-                    if (!response.ContentLength.HasValue && StringValues.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
+                    if (!response.ContentLength.HasValue && StringValues.IsNullOrEmpty(response.Headers.TransferEncoding))
                     {
-                        context.CachedResponse.Headers[HeaderNames.ContentLength] = HeaderUtilities.FormatNonNegativeInt64(cachedResponseBody.Length);
+                        context.CachedResponse.Headers.ContentLength = cachedResponseBody.Length;
                     }
 
                     context.CachedResponse.Body = cachedResponseBody;
@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         internal static bool ContentIsNotModified(ResponseCachingContext context)
         {
             var cachedResponseHeaders = context.CachedResponseHeaders;
-            var ifNoneMatchHeader = context.HttpContext.Request.Headers[HeaderNames.IfNoneMatch];
+            var ifNoneMatchHeader = context.HttpContext.Request.Headers.IfNoneMatch;
 
             if (!StringValues.IsNullOrEmpty(ifNoneMatchHeader))
             {
@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
             else
             {
-                var ifModifiedSince = context.HttpContext.Request.Headers[HeaderNames.IfModifiedSince];
+                var ifModifiedSince = context.HttpContext.Request.Headers.IfModifiedSince;
                 if (!StringValues.IsNullOrEmpty(ifModifiedSince))
                 {
                     DateTimeOffset modified;

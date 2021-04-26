@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.HostFiltering
                     {
                         app.Use((ctx, next) =>
                         {
-                            ctx.Request.Headers[HeaderNames.Host] = "";
+                            ctx.Request.Headers.Host = "";
                             return next(ctx);
                         });
                         app.UseHostFiltering();
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.HostFiltering
                         {
                             // TestHost's ClientHandler doesn't let you set the host header, only the host in the URI
                             // and that would over-normalize some of our test conditions like casing.
-                            ctx.Request.Headers[HeaderNames.Host] = hosturl;
+                            ctx.Request.Headers.Host = hosturl;
                             return next(ctx);
                         });
                         app.UseHostFiltering();
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.HostFiltering
                         {
                             // TestHost's ClientHandler doesn't let you set the host header, only the host in the URI
                             // and that would reject some of our test conditions.
-                            ctx.Request.Headers[HeaderNames.Host] = hosturl;
+                            ctx.Request.Headers.Host = hosturl;
                             return next(ctx);
                         });
                         app.UseHostFiltering();
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.HostFiltering
                     {
                         app.Use((ctx, next) =>
                         {
-                            ctx.Request.Headers[HeaderNames.Host] = currentHost;
+                            ctx.Request.Headers.Host = currentHost;
                             return next(ctx);
                         });
                         app.UseHostFiltering();

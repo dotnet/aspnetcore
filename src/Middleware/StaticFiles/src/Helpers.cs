@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
             var request = context.Request;
             var redirect = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path + "/", request.QueryString);
-            context.Response.Headers[HeaderNames.Location] = redirect;
+            context.Response.Headers.Location = redirect;
         }
 
         internal static bool TryMatchPath(HttpContext context, PathString matchUrl, bool forDirectory, out PathString subpath)

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             var result = await SendAsync(server, "/Authenticate", new TestConnection());
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
-            Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate", result.Response.Headers.WWWAuthenticate);
             Assert.True(eventInvoked);
         }
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     OnChallenge = context =>
                     {
                         context.Response.StatusCode = StatusCodes.Status418ImATeapot;
-                        context.Response.Headers[HeaderNames.WWWAuthenticate] = "Teapot";
+                        context.Response.Headers.WWWAuthenticate = "Teapot";
                         context.HandleResponse();
                         return Task.CompletedTask;
                     }
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             var result = await SendAsync(server, "/Authenticate", new TestConnection());
             Assert.Equal(StatusCodes.Status418ImATeapot, result.Response.StatusCode);
-            Assert.Equal("Teapot", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Teapot", result.Response.Headers.WWWAuthenticate);
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     OnAuthenticationFailed = context =>
                     {
                         context.Response.StatusCode = StatusCodes.Status418ImATeapot;
-                        context.Response.Headers[HeaderNames.WWWAuthenticate] = "Teapot";
+                        context.Response.Headers.WWWAuthenticate = "Teapot";
                         context.HandleResponse();
                         return Task.CompletedTask;
                     }
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate InvalidBlob");
             Assert.Equal(StatusCodes.Status418ImATeapot, result.Response.StatusCode);
-            Assert.Equal("Teapot", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Teapot", result.Response.Headers.WWWAuthenticate);
         }
 
         [Fact]
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         eventInvoked++;
                         context.Response.StatusCode = StatusCodes.Status418ImATeapot;
-                        context.Response.Headers[HeaderNames.WWWAuthenticate] = "Teapot";
+                        context.Response.Headers.WWWAuthenticate = "Teapot";
                         context.HandleResponse();
                         return Task.CompletedTask;
                     }
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate OtherError");
             Assert.Equal(StatusCodes.Status418ImATeapot, result.Response.StatusCode);
-            Assert.Equal("Teapot", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Teapot", result.Response.Headers.WWWAuthenticate);
             Assert.Equal(1, eventInvoked);
         }
 
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         eventInvoked++;
                         context.Response.StatusCode = StatusCodes.Status418ImATeapot;
-                        context.Response.Headers[HeaderNames.WWWAuthenticate] = "Teapot";
+                        context.Response.Headers.WWWAuthenticate = "Teapot";
                         context.HandleResponse();
                         return Task.CompletedTask;
                     }
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate CredentialError");
             Assert.Equal(StatusCodes.Status418ImATeapot, result.Response.StatusCode);
-            Assert.Equal("Teapot", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Teapot", result.Response.Headers.WWWAuthenticate);
             Assert.Equal(1, eventInvoked);
         }
 
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         eventInvoked++;
                         context.Response.StatusCode = StatusCodes.Status418ImATeapot;
-                        context.Response.Headers[HeaderNames.WWWAuthenticate] = "Teapot";
+                        context.Response.Headers.WWWAuthenticate = "Teapot";
                         context.HandleResponse();
                         return Task.CompletedTask;
                     }
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate ClientError");
             Assert.Equal(StatusCodes.Status418ImATeapot, result.Response.StatusCode);
-            Assert.Equal("Teapot", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Teapot", result.Response.Headers.WWWAuthenticate);
             Assert.Equal(1, eventInvoked);
         }
 
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             var result = await SendAsync(server, "/Authenticate", new TestConnection(), "Negotiate ClientKerberosBlob");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
-            Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate", result.Response.Headers.WWWAuthenticate);
             Assert.Equal(1, callCount);
         }
 
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             var result = await SendAsync(server, "/Authenticate", new TestConnection(), "Negotiate ClientKerberosBlob");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
-            Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate", result.Response.Headers.WWWAuthenticate);
             Assert.Equal(1, callCount);
         }
 
@@ -400,14 +400,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientKerberosBlob1");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
-            Assert.Equal("Negotiate ServerKerberosBlob1", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate ServerKerberosBlob1", result.Response.Headers.WWWAuthenticate);
         }
 
         private static async Task KerberosStage2Auth(TestServer server, TestConnection testConnection)
         {
             var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientKerberosBlob2");
             Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
-            Assert.Equal("Negotiate ServerKerberosBlob2", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal("Negotiate ServerKerberosBlob2", result.Response.Headers.WWWAuthenticate);
         }
 
         private static async Task<IHost> CreateHostAsync(Action<NegotiateOptions> configureOptions = null)
@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 context.Request.Path = path;
                 if (!string.IsNullOrEmpty(authorizationHeader))
                 {
-                    context.Request.Headers[HeaderNames.Authorization] = authorizationHeader;
+                    context.Request.Headers.Authorization = authorizationHeader;
                 }
                 if (connection != null)
                 {

@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         private HttpContext GetHttpContext(string cookieName, string cookieValue)
         {
             var context = GetHttpContext();
-            context.Request.Headers[HeaderNames.Cookie] = $"{cookieName}={cookieValue}";
+            context.Request.Headers.Cookie = $"{cookieName}={cookieValue}";
             return context;
         }
 

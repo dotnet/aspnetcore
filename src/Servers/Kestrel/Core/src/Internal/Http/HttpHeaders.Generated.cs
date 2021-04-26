@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 #nullable enable
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
     internal partial class HttpHeaders
     {
-        private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>(93, StringComparer.OrdinalIgnoreCase)
+        private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>(95, StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.Accept,
             HeaderNames.AcceptCharset,
@@ -193,12 +194,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HeaderNames.WWWAuthenticate,
             HeaderNames.XContentTypeOptions,
             HeaderNames.XFrameOptions,
+            HeaderNames.XPoweredBy,
             HeaderNames.XRequestedWith,
-            HeaderNames.XXssProtection,
+            HeaderNames.XUACompatible,
+            HeaderNames.XXSSProtection,
         };
     }
 
-    internal partial class HttpRequestHeaders
+    internal partial class HttpRequestHeaders : IHeaderDictionary
     {
         private HeaderReferences _headers;
 
@@ -206,24 +209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool HasTransferEncoding => (_bits & 0x80L) != 0;
 
         public int HostCount => _headers._Host.Count;
-        
-        public StringValues HeaderCacheControl
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x1L) != 0)
-                {
-                    value = _headers._CacheControl;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x1L;
-                _headers._CacheControl = value; 
-            }
-        }
+
         public override StringValues HeaderConnection
         {
             get
@@ -239,91 +225,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _bits |= 0x2L;
                 _headers._Connection = value; 
-            }
-        }
-        public StringValues HeaderDate
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x4L) != 0)
-                {
-                    value = _headers._Date;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x4L;
-                _headers._Date = value; 
-            }
-        }
-        public StringValues HeaderGrpcEncoding
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x8L) != 0)
-                {
-                    value = _headers._GrpcEncoding;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x8L;
-                _headers._GrpcEncoding = value; 
-            }
-        }
-        public StringValues HeaderKeepAlive
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x10L) != 0)
-                {
-                    value = _headers._KeepAlive;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x10L;
-                _headers._KeepAlive = value; 
-            }
-        }
-        public StringValues HeaderPragma
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x20L) != 0)
-                {
-                    value = _headers._Pragma;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x20L;
-                _headers._Pragma = value; 
-            }
-        }
-        public StringValues HeaderTrailer
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x40L) != 0)
-                {
-                    value = _headers._Trailer;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x40L;
-                _headers._Trailer = value; 
             }
         }
         public StringValues HeaderTransferEncoding
@@ -343,57 +244,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._TransferEncoding = value; 
             }
         }
-        public StringValues HeaderUpgrade
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x100L) != 0)
-                {
-                    value = _headers._Upgrade;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x100L;
-                _headers._Upgrade = value; 
-            }
-        }
-        public StringValues HeaderVia
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x200L) != 0)
-                {
-                    value = _headers._Via;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x200L;
-                _headers._Via = value; 
-            }
-        }
-        public StringValues HeaderWarning
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x400L) != 0)
-                {
-                    value = _headers._Warning;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x400L;
-                _headers._Warning = value; 
-            }
-        }
         public StringValues HeaderAllow
         {
             get
@@ -409,142 +259,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _bits |= 0x800L;
                 _headers._Allow = value; 
-            }
-        }
-        public StringValues HeaderContentType
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x1000L) != 0)
-                {
-                    value = _headers._ContentType;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x1000L;
-                _headers._ContentType = value; 
-            }
-        }
-        public StringValues HeaderContentEncoding
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x2000L) != 0)
-                {
-                    value = _headers._ContentEncoding;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x2000L;
-                _headers._ContentEncoding = value; 
-            }
-        }
-        public StringValues HeaderContentLanguage
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x4000L) != 0)
-                {
-                    value = _headers._ContentLanguage;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x4000L;
-                _headers._ContentLanguage = value; 
-            }
-        }
-        public StringValues HeaderContentLocation
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x8000L) != 0)
-                {
-                    value = _headers._ContentLocation;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x8000L;
-                _headers._ContentLocation = value; 
-            }
-        }
-        public StringValues HeaderContentMD5
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x10000L) != 0)
-                {
-                    value = _headers._ContentMD5;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x10000L;
-                _headers._ContentMD5 = value; 
-            }
-        }
-        public StringValues HeaderContentRange
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x20000L) != 0)
-                {
-                    value = _headers._ContentRange;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x20000L;
-                _headers._ContentRange = value; 
-            }
-        }
-        public StringValues HeaderExpires
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x40000L) != 0)
-                {
-                    value = _headers._Expires;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x40000L;
-                _headers._Expires = value; 
-            }
-        }
-        public StringValues HeaderLastModified
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x80000L) != 0)
-                {
-                    value = _headers._LastModified;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x80000L;
-                _headers._LastModified = value; 
             }
         }
         public StringValues HeaderAuthority
@@ -615,176 +329,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._Scheme = value; 
             }
         }
-        public StringValues HeaderAccept
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x1000000L) != 0)
-                {
-                    value = _headers._Accept;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x1000000L;
-                _headers._Accept = value; 
-            }
-        }
-        public StringValues HeaderAcceptCharset
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x2000000L) != 0)
-                {
-                    value = _headers._AcceptCharset;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x2000000L;
-                _headers._AcceptCharset = value; 
-            }
-        }
-        public StringValues HeaderAcceptEncoding
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x4000000L) != 0)
-                {
-                    value = _headers._AcceptEncoding;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x4000000L;
-                _headers._AcceptEncoding = value; 
-            }
-        }
-        public StringValues HeaderAcceptLanguage
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x8000000L) != 0)
-                {
-                    value = _headers._AcceptLanguage;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x8000000L;
-                _headers._AcceptLanguage = value; 
-            }
-        }
-        public StringValues HeaderAuthorization
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x10000000L) != 0)
-                {
-                    value = _headers._Authorization;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x10000000L;
-                _headers._Authorization = value; 
-            }
-        }
-        public StringValues HeaderCookie
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x20000000L) != 0)
-                {
-                    value = _headers._Cookie;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x20000000L;
-                _headers._Cookie = value; 
-            }
-        }
-        public StringValues HeaderExpect
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x40000000L) != 0)
-                {
-                    value = _headers._Expect;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x40000000L;
-                _headers._Expect = value; 
-            }
-        }
-        public StringValues HeaderFrom
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x80000000L) != 0)
-                {
-                    value = _headers._From;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x80000000L;
-                _headers._From = value; 
-            }
-        }
-        public StringValues HeaderGrpcAcceptEncoding
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x100000000L) != 0)
-                {
-                    value = _headers._GrpcAcceptEncoding;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x100000000L;
-                _headers._GrpcAcceptEncoding = value; 
-            }
-        }
-        public StringValues HeaderGrpcTimeout
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x200000000L) != 0)
-                {
-                    value = _headers._GrpcTimeout;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x200000000L;
-                _headers._GrpcTimeout = value; 
-            }
-        }
         public StringValues HeaderHost
         {
             get
@@ -802,363 +346,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._Host = value; 
             }
         }
-        public StringValues HeaderIfMatch
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x800000000L) != 0)
-                {
-                    value = _headers._IfMatch;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x800000000L;
-                _headers._IfMatch = value; 
-            }
-        }
-        public StringValues HeaderIfModifiedSince
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x1000000000L) != 0)
-                {
-                    value = _headers._IfModifiedSince;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x1000000000L;
-                _headers._IfModifiedSince = value; 
-            }
-        }
-        public StringValues HeaderIfNoneMatch
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x2000000000L) != 0)
-                {
-                    value = _headers._IfNoneMatch;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x2000000000L;
-                _headers._IfNoneMatch = value; 
-            }
-        }
-        public StringValues HeaderIfRange
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x4000000000L) != 0)
-                {
-                    value = _headers._IfRange;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x4000000000L;
-                _headers._IfRange = value; 
-            }
-        }
-        public StringValues HeaderIfUnmodifiedSince
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x8000000000L) != 0)
-                {
-                    value = _headers._IfUnmodifiedSince;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x8000000000L;
-                _headers._IfUnmodifiedSince = value; 
-            }
-        }
-        public StringValues HeaderMaxForwards
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x10000000000L) != 0)
-                {
-                    value = _headers._MaxForwards;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x10000000000L;
-                _headers._MaxForwards = value; 
-            }
-        }
-        public StringValues HeaderProxyAuthorization
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x20000000000L) != 0)
-                {
-                    value = _headers._ProxyAuthorization;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x20000000000L;
-                _headers._ProxyAuthorization = value; 
-            }
-        }
-        public StringValues HeaderReferer
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x40000000000L) != 0)
-                {
-                    value = _headers._Referer;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x40000000000L;
-                _headers._Referer = value; 
-            }
-        }
-        public StringValues HeaderRange
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x80000000000L) != 0)
-                {
-                    value = _headers._Range;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x80000000000L;
-                _headers._Range = value; 
-            }
-        }
-        public StringValues HeaderTE
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x100000000000L) != 0)
-                {
-                    value = _headers._TE;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x100000000000L;
-                _headers._TE = value; 
-            }
-        }
-        public StringValues HeaderTranslate
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x200000000000L) != 0)
-                {
-                    value = _headers._Translate;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x200000000000L;
-                _headers._Translate = value; 
-            }
-        }
-        public StringValues HeaderUserAgent
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x400000000000L) != 0)
-                {
-                    value = _headers._UserAgent;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x400000000000L;
-                _headers._UserAgent = value; 
-            }
-        }
-        public StringValues HeaderUpgradeInsecureRequests
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x800000000000L) != 0)
-                {
-                    value = _headers._UpgradeInsecureRequests;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x800000000000L;
-                _headers._UpgradeInsecureRequests = value; 
-            }
-        }
-        public StringValues HeaderRequestId
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x1000000000000L) != 0)
-                {
-                    value = _headers._RequestId;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x1000000000000L;
-                _headers._RequestId = value; 
-            }
-        }
-        public StringValues HeaderCorrelationContext
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x2000000000000L) != 0)
-                {
-                    value = _headers._CorrelationContext;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x2000000000000L;
-                _headers._CorrelationContext = value; 
-            }
-        }
-        public StringValues HeaderTraceParent
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x4000000000000L) != 0)
-                {
-                    value = _headers._TraceParent;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x4000000000000L;
-                _headers._TraceParent = value; 
-            }
-        }
-        public StringValues HeaderTraceState
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x8000000000000L) != 0)
-                {
-                    value = _headers._TraceState;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x8000000000000L;
-                _headers._TraceState = value; 
-            }
-        }
-        public StringValues HeaderBaggage
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x10000000000000L) != 0)
-                {
-                    value = _headers._Baggage;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x10000000000000L;
-                _headers._Baggage = value; 
-            }
-        }
-        public StringValues HeaderOrigin
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x20000000000000L) != 0)
-                {
-                    value = _headers._Origin;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x20000000000000L;
-                _headers._Origin = value; 
-            }
-        }
-        public StringValues HeaderAccessControlRequestMethod
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x40000000000000L) != 0)
-                {
-                    value = _headers._AccessControlRequestMethod;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x40000000000000L;
-                _headers._AccessControlRequestMethod = value; 
-            }
-        }
-        public StringValues HeaderAccessControlRequestHeaders
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x80000000000000L) != 0)
-                {
-                    value = _headers._AccessControlRequestHeaders;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x80000000000000L;
-                _headers._AccessControlRequestHeaders = value; 
-            }
-        }
         public StringValues HeaderContentLength
         {
             get
@@ -1173,6 +360,2112 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 _contentLength = ParseContentLength(value);
+            }
+        }
+        
+        StringValues IHeaderDictionary.CacheControl
+        {
+            get
+            {
+                var value = _headers._CacheControl;
+                if ((_bits & 0x1L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x1L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._CacheControl = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._CacheControl = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Connection
+        {
+            get
+            {
+                var value = _headers._Connection;
+                if ((_bits & 0x2L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x2L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Connection = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Connection = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Date
+        {
+            get
+            {
+                var value = _headers._Date;
+                if ((_bits & 0x4L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x4L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Date = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Date = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.GrpcEncoding
+        {
+            get
+            {
+                var value = _headers._GrpcEncoding;
+                if ((_bits & 0x8L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x8L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._GrpcEncoding = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._GrpcEncoding = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.KeepAlive
+        {
+            get
+            {
+                var value = _headers._KeepAlive;
+                if ((_bits & 0x10L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x10L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._KeepAlive = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._KeepAlive = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Pragma
+        {
+            get
+            {
+                var value = _headers._Pragma;
+                if ((_bits & 0x20L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x20L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Pragma = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Pragma = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Trailer
+        {
+            get
+            {
+                var value = _headers._Trailer;
+                if ((_bits & 0x40L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x40L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Trailer = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Trailer = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.TransferEncoding
+        {
+            get
+            {
+                var value = _headers._TransferEncoding;
+                if ((_bits & 0x80L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x80L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._TransferEncoding = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._TransferEncoding = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Upgrade
+        {
+            get
+            {
+                var value = _headers._Upgrade;
+                if ((_bits & 0x100L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x100L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Upgrade = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Upgrade = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Via
+        {
+            get
+            {
+                var value = _headers._Via;
+                if ((_bits & 0x200L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x200L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Via = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Via = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Warning
+        {
+            get
+            {
+                var value = _headers._Warning;
+                if ((_bits & 0x400L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x400L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Warning = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Warning = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Allow
+        {
+            get
+            {
+                var value = _headers._Allow;
+                if ((_bits & 0x800L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x800L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Allow = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Allow = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentType
+        {
+            get
+            {
+                var value = _headers._ContentType;
+                if ((_bits & 0x1000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x1000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentType = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentType = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentEncoding
+        {
+            get
+            {
+                var value = _headers._ContentEncoding;
+                if ((_bits & 0x2000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x2000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentEncoding = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentEncoding = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentLanguage
+        {
+            get
+            {
+                var value = _headers._ContentLanguage;
+                if ((_bits & 0x4000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x4000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentLanguage = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentLanguage = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentLocation
+        {
+            get
+            {
+                var value = _headers._ContentLocation;
+                if ((_bits & 0x8000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x8000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentLocation = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentLocation = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentMD5
+        {
+            get
+            {
+                var value = _headers._ContentMD5;
+                if ((_bits & 0x10000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x10000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentMD5 = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentMD5 = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentRange
+        {
+            get
+            {
+                var value = _headers._ContentRange;
+                if ((_bits & 0x20000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x20000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentRange = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentRange = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Expires
+        {
+            get
+            {
+                var value = _headers._Expires;
+                if ((_bits & 0x40000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x40000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Expires = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Expires = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.LastModified
+        {
+            get
+            {
+                var value = _headers._LastModified;
+                if ((_bits & 0x80000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x80000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._LastModified = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._LastModified = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Accept
+        {
+            get
+            {
+                var value = _headers._Accept;
+                if ((_bits & 0x1000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x1000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Accept = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Accept = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AcceptCharset
+        {
+            get
+            {
+                var value = _headers._AcceptCharset;
+                if ((_bits & 0x2000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x2000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AcceptCharset = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AcceptCharset = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AcceptEncoding
+        {
+            get
+            {
+                var value = _headers._AcceptEncoding;
+                if ((_bits & 0x4000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x4000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AcceptEncoding = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AcceptEncoding = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AcceptLanguage
+        {
+            get
+            {
+                var value = _headers._AcceptLanguage;
+                if ((_bits & 0x8000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x8000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AcceptLanguage = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AcceptLanguage = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Authorization
+        {
+            get
+            {
+                var value = _headers._Authorization;
+                if ((_bits & 0x10000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x10000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Authorization = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Authorization = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Cookie
+        {
+            get
+            {
+                var value = _headers._Cookie;
+                if ((_bits & 0x20000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x20000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Cookie = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Cookie = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Expect
+        {
+            get
+            {
+                var value = _headers._Expect;
+                if ((_bits & 0x40000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x40000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Expect = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Expect = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.From
+        {
+            get
+            {
+                var value = _headers._From;
+                if ((_bits & 0x80000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x80000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._From = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._From = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.GrpcAcceptEncoding
+        {
+            get
+            {
+                var value = _headers._GrpcAcceptEncoding;
+                if ((_bits & 0x100000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x100000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._GrpcAcceptEncoding = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._GrpcAcceptEncoding = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.GrpcTimeout
+        {
+            get
+            {
+                var value = _headers._GrpcTimeout;
+                if ((_bits & 0x200000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x200000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._GrpcTimeout = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._GrpcTimeout = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Host
+        {
+            get
+            {
+                var value = _headers._Host;
+                if ((_bits & 0x400000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x400000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Host = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Host = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.IfMatch
+        {
+            get
+            {
+                var value = _headers._IfMatch;
+                if ((_bits & 0x800000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x800000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._IfMatch = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._IfMatch = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.IfModifiedSince
+        {
+            get
+            {
+                var value = _headers._IfModifiedSince;
+                if ((_bits & 0x1000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x1000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._IfModifiedSince = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._IfModifiedSince = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.IfNoneMatch
+        {
+            get
+            {
+                var value = _headers._IfNoneMatch;
+                if ((_bits & 0x2000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x2000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._IfNoneMatch = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._IfNoneMatch = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.IfRange
+        {
+            get
+            {
+                var value = _headers._IfRange;
+                if ((_bits & 0x4000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x4000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._IfRange = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._IfRange = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.IfUnmodifiedSince
+        {
+            get
+            {
+                var value = _headers._IfUnmodifiedSince;
+                if ((_bits & 0x8000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x8000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._IfUnmodifiedSince = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._IfUnmodifiedSince = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.MaxForwards
+        {
+            get
+            {
+                var value = _headers._MaxForwards;
+                if ((_bits & 0x10000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x10000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._MaxForwards = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._MaxForwards = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ProxyAuthorization
+        {
+            get
+            {
+                var value = _headers._ProxyAuthorization;
+                if ((_bits & 0x20000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x20000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ProxyAuthorization = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ProxyAuthorization = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Referer
+        {
+            get
+            {
+                var value = _headers._Referer;
+                if ((_bits & 0x40000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x40000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Referer = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Referer = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Range
+        {
+            get
+            {
+                var value = _headers._Range;
+                if ((_bits & 0x80000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x80000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Range = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Range = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.TE
+        {
+            get
+            {
+                var value = _headers._TE;
+                if ((_bits & 0x100000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x100000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._TE = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._TE = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Translate
+        {
+            get
+            {
+                var value = _headers._Translate;
+                if ((_bits & 0x200000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x200000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Translate = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Translate = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.UserAgent
+        {
+            get
+            {
+                var value = _headers._UserAgent;
+                if ((_bits & 0x400000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x400000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._UserAgent = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._UserAgent = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.UpgradeInsecureRequests
+        {
+            get
+            {
+                var value = _headers._UpgradeInsecureRequests;
+                if ((_bits & 0x800000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x800000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._UpgradeInsecureRequests = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._UpgradeInsecureRequests = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.RequestId
+        {
+            get
+            {
+                var value = _headers._RequestId;
+                if ((_bits & 0x1000000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x1000000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._RequestId = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._RequestId = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.CorrelationContext
+        {
+            get
+            {
+                var value = _headers._CorrelationContext;
+                if ((_bits & 0x2000000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x2000000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._CorrelationContext = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._CorrelationContext = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.TraceParent
+        {
+            get
+            {
+                var value = _headers._TraceParent;
+                if ((_bits & 0x4000000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x4000000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._TraceParent = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._TraceParent = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.TraceState
+        {
+            get
+            {
+                var value = _headers._TraceState;
+                if ((_bits & 0x8000000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x8000000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._TraceState = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._TraceState = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Baggage
+        {
+            get
+            {
+                var value = _headers._Baggage;
+                if ((_bits & 0x10000000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x10000000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Baggage = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Baggage = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Origin
+        {
+            get
+            {
+                var value = _headers._Origin;
+                if ((_bits & 0x20000000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x20000000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Origin = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Origin = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlRequestMethod
+        {
+            get
+            {
+                var value = _headers._AccessControlRequestMethod;
+                if ((_bits & 0x40000000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x40000000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AccessControlRequestMethod = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AccessControlRequestMethod = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlRequestHeaders
+        {
+            get
+            {
+                var value = _headers._AccessControlRequestHeaders;
+                if ((_bits & 0x80000000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x80000000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AccessControlRequestHeaders = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AccessControlRequestHeaders = default;
+                }
+            }
+        }
+        
+        StringValues IHeaderDictionary.AcceptRanges
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AcceptRanges, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AcceptRanges, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowCredentials
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlAllowCredentials, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlAllowCredentials, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowHeaders
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlAllowHeaders, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlAllowHeaders, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowMethods
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlAllowMethods, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlAllowMethods, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowOrigin
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlAllowOrigin, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlAllowOrigin, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlExposeHeaders
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlExposeHeaders, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlExposeHeaders, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlMaxAge
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlMaxAge, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlMaxAge, value);
+            }
+        }
+        StringValues IHeaderDictionary.Age
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Age, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Age, value);
+            }
+        }
+        StringValues IHeaderDictionary.AltSvc
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AltSvc, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AltSvc, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentDisposition
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentDisposition, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentDisposition, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentSecurityPolicy
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentSecurityPolicy, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentSecurityPolicy, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentSecurityPolicyReportOnly
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentSecurityPolicyReportOnly, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentSecurityPolicyReportOnly, value);
+            }
+        }
+        StringValues IHeaderDictionary.ETag
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ETag, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ETag, value);
+            }
+        }
+        StringValues IHeaderDictionary.GrpcMessage
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.GrpcMessage, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.GrpcMessage, value);
+            }
+        }
+        StringValues IHeaderDictionary.GrpcStatus
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.GrpcStatus, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.GrpcStatus, value);
+            }
+        }
+        StringValues IHeaderDictionary.Link
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Link, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Link, value);
+            }
+        }
+        StringValues IHeaderDictionary.Location
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Location, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Location, value);
+            }
+        }
+        StringValues IHeaderDictionary.ProxyAuthenticate
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ProxyAuthenticate, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ProxyAuthenticate, value);
+            }
+        }
+        StringValues IHeaderDictionary.ProxyConnection
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ProxyConnection, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ProxyConnection, value);
+            }
+        }
+        StringValues IHeaderDictionary.RetryAfter
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.RetryAfter, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.RetryAfter, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketAccept
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketAccept, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketAccept, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketKey
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketKey, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketKey, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketProtocol
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketProtocol, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketProtocol, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketVersion
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketVersion, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketVersion, value);
+            }
+        }
+        StringValues IHeaderDictionary.Server
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Server, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Server, value);
+            }
+        }
+        StringValues IHeaderDictionary.SetCookie
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SetCookie, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SetCookie, value);
+            }
+        }
+        StringValues IHeaderDictionary.StrictTransportSecurity
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.StrictTransportSecurity, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.StrictTransportSecurity, value);
+            }
+        }
+        StringValues IHeaderDictionary.Vary
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Vary, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Vary, value);
+            }
+        }
+        StringValues IHeaderDictionary.WebSocketSubProtocols
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.WebSocketSubProtocols, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.WebSocketSubProtocols, value);
+            }
+        }
+        StringValues IHeaderDictionary.WWWAuthenticate
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.WWWAuthenticate, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.WWWAuthenticate, value);
+            }
+        }
+        StringValues IHeaderDictionary.XContentTypeOptions
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XContentTypeOptions, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XContentTypeOptions, value);
+            }
+        }
+        StringValues IHeaderDictionary.XFrameOptions
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XFrameOptions, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XFrameOptions, value);
+            }
+        }
+        StringValues IHeaderDictionary.XPoweredBy
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XPoweredBy, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XPoweredBy, value);
+            }
+        }
+        StringValues IHeaderDictionary.XRequestedWith
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XRequestedWith, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XRequestedWith, value);
+            }
+        }
+        StringValues IHeaderDictionary.XUACompatible
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XUACompatible, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XUACompatible, value);
+            }
+        }
+        StringValues IHeaderDictionary.XXSSProtection
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XXSSProtection, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XXSSProtection, value);
             }
         }
 
@@ -8073,7 +9366,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
     }
 
-    internal partial class HttpResponseHeaders
+    internal partial class HttpResponseHeaders : IHeaderDictionary
     {
         private static ReadOnlySpan<byte> HeaderBytes => new byte[]
         {
@@ -8086,24 +9379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool HasTransferEncoding => (_bits & 0x80L) != 0;
         public bool HasServer => (_bits & 0x10000000L) != 0;
 
-        
-        public StringValues HeaderCacheControl
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x1L) != 0)
-                {
-                    value = _headers._CacheControl;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x1L;
-                _headers._CacheControl = value; 
-            }
-        }
+
         public override StringValues HeaderConnection
         {
             get
@@ -8120,92 +9396,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _bits |= 0x2L;
                 _headers._Connection = value; 
                 _headers._rawConnection = null;
-            }
-        }
-        public StringValues HeaderDate
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x4L) != 0)
-                {
-                    value = _headers._Date;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x4L;
-                _headers._Date = value; 
-                _headers._rawDate = null;
-            }
-        }
-        public StringValues HeaderGrpcEncoding
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x8L) != 0)
-                {
-                    value = _headers._GrpcEncoding;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x8L;
-                _headers._GrpcEncoding = value; 
-            }
-        }
-        public StringValues HeaderKeepAlive
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x10L) != 0)
-                {
-                    value = _headers._KeepAlive;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x10L;
-                _headers._KeepAlive = value; 
-            }
-        }
-        public StringValues HeaderPragma
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x20L) != 0)
-                {
-                    value = _headers._Pragma;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x20L;
-                _headers._Pragma = value; 
-            }
-        }
-        public StringValues HeaderTrailer
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x40L) != 0)
-                {
-                    value = _headers._Trailer;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x40L;
-                _headers._Trailer = value; 
             }
         }
         public StringValues HeaderTransferEncoding
@@ -8226,57 +9416,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._rawTransferEncoding = null;
             }
         }
-        public StringValues HeaderUpgrade
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x100L) != 0)
-                {
-                    value = _headers._Upgrade;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x100L;
-                _headers._Upgrade = value; 
-            }
-        }
-        public StringValues HeaderVia
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x200L) != 0)
-                {
-                    value = _headers._Via;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x200L;
-                _headers._Via = value; 
-            }
-        }
-        public StringValues HeaderWarning
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x400L) != 0)
-                {
-                    value = _headers._Warning;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x400L;
-                _headers._Warning = value; 
-            }
-        }
         public StringValues HeaderAllow
         {
             get
@@ -8292,176 +9431,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _bits |= 0x800L;
                 _headers._Allow = value; 
-            }
-        }
-        public StringValues HeaderContentType
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x1000L) != 0)
-                {
-                    value = _headers._ContentType;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x1000L;
-                _headers._ContentType = value; 
-            }
-        }
-        public StringValues HeaderContentEncoding
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x2000L) != 0)
-                {
-                    value = _headers._ContentEncoding;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x2000L;
-                _headers._ContentEncoding = value; 
-            }
-        }
-        public StringValues HeaderContentLanguage
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x4000L) != 0)
-                {
-                    value = _headers._ContentLanguage;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x4000L;
-                _headers._ContentLanguage = value; 
-            }
-        }
-        public StringValues HeaderContentLocation
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x8000L) != 0)
-                {
-                    value = _headers._ContentLocation;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x8000L;
-                _headers._ContentLocation = value; 
-            }
-        }
-        public StringValues HeaderContentMD5
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x10000L) != 0)
-                {
-                    value = _headers._ContentMD5;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x10000L;
-                _headers._ContentMD5 = value; 
-            }
-        }
-        public StringValues HeaderContentRange
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x20000L) != 0)
-                {
-                    value = _headers._ContentRange;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x20000L;
-                _headers._ContentRange = value; 
-            }
-        }
-        public StringValues HeaderExpires
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x40000L) != 0)
-                {
-                    value = _headers._Expires;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x40000L;
-                _headers._Expires = value; 
-            }
-        }
-        public StringValues HeaderLastModified
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x80000L) != 0)
-                {
-                    value = _headers._LastModified;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x80000L;
-                _headers._LastModified = value; 
-            }
-        }
-        public StringValues HeaderAcceptRanges
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x100000L) != 0)
-                {
-                    value = _headers._AcceptRanges;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x100000L;
-                _headers._AcceptRanges = value; 
-            }
-        }
-        public StringValues HeaderAge
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x200000L) != 0)
-                {
-                    value = _headers._Age;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x200000L;
-                _headers._Age = value; 
             }
         }
         public StringValues HeaderAltSvc
@@ -8481,262 +9450,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._AltSvc = value; 
             }
         }
-        public StringValues HeaderETag
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x800000L) != 0)
-                {
-                    value = _headers._ETag;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x800000L;
-                _headers._ETag = value; 
-            }
-        }
-        public StringValues HeaderLocation
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x1000000L) != 0)
-                {
-                    value = _headers._Location;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x1000000L;
-                _headers._Location = value; 
-            }
-        }
-        public StringValues HeaderProxyAuthenticate
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x2000000L) != 0)
-                {
-                    value = _headers._ProxyAuthenticate;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x2000000L;
-                _headers._ProxyAuthenticate = value; 
-            }
-        }
-        public StringValues HeaderProxyConnection
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x4000000L) != 0)
-                {
-                    value = _headers._ProxyConnection;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x4000000L;
-                _headers._ProxyConnection = value; 
-            }
-        }
-        public StringValues HeaderRetryAfter
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x8000000L) != 0)
-                {
-                    value = _headers._RetryAfter;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x8000000L;
-                _headers._RetryAfter = value; 
-            }
-        }
-        public StringValues HeaderServer
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x10000000L) != 0)
-                {
-                    value = _headers._Server;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x10000000L;
-                _headers._Server = value; 
-                _headers._rawServer = null;
-            }
-        }
-        public StringValues HeaderSetCookie
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x20000000L) != 0)
-                {
-                    value = _headers._SetCookie;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x20000000L;
-                _headers._SetCookie = value; 
-            }
-        }
-        public StringValues HeaderVary
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x40000000L) != 0)
-                {
-                    value = _headers._Vary;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x40000000L;
-                _headers._Vary = value; 
-            }
-        }
-        public StringValues HeaderWWWAuthenticate
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x80000000L) != 0)
-                {
-                    value = _headers._WWWAuthenticate;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x80000000L;
-                _headers._WWWAuthenticate = value; 
-            }
-        }
-        public StringValues HeaderAccessControlAllowCredentials
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x100000000L) != 0)
-                {
-                    value = _headers._AccessControlAllowCredentials;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x100000000L;
-                _headers._AccessControlAllowCredentials = value; 
-            }
-        }
-        public StringValues HeaderAccessControlAllowHeaders
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x200000000L) != 0)
-                {
-                    value = _headers._AccessControlAllowHeaders;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x200000000L;
-                _headers._AccessControlAllowHeaders = value; 
-            }
-        }
-        public StringValues HeaderAccessControlAllowMethods
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x400000000L) != 0)
-                {
-                    value = _headers._AccessControlAllowMethods;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x400000000L;
-                _headers._AccessControlAllowMethods = value; 
-            }
-        }
-        public StringValues HeaderAccessControlAllowOrigin
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x800000000L) != 0)
-                {
-                    value = _headers._AccessControlAllowOrigin;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x800000000L;
-                _headers._AccessControlAllowOrigin = value; 
-            }
-        }
-        public StringValues HeaderAccessControlExposeHeaders
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x1000000000L) != 0)
-                {
-                    value = _headers._AccessControlExposeHeaders;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x1000000000L;
-                _headers._AccessControlExposeHeaders = value; 
-            }
-        }
-        public StringValues HeaderAccessControlMaxAge
-        {
-            get
-            {
-                StringValues value = default;
-                if ((_bits & 0x2000000000L) != 0)
-                {
-                    value = _headers._AccessControlMaxAge;
-                }
-                return value;
-            }
-            set
-            {
-                _bits |= 0x2000000000L;
-                _headers._AccessControlMaxAge = value; 
-            }
-        }
         public StringValues HeaderContentLength
         {
             get
@@ -8751,6 +9464,1976 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 _contentLength = ParseContentLength(value);
+            }
+        }
+        
+        StringValues IHeaderDictionary.CacheControl
+        {
+            get
+            {
+                var value = _headers._CacheControl;
+                if ((_bits & 0x1L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x1L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._CacheControl = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._CacheControl = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Connection
+        {
+            get
+            {
+                var value = _headers._Connection;
+                if ((_bits & 0x2L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x2L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Connection = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Connection = default;
+                }
+                    _headers._rawConnection = null;
+            }
+        }
+        StringValues IHeaderDictionary.Date
+        {
+            get
+            {
+                var value = _headers._Date;
+                if ((_bits & 0x4L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x4L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Date = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Date = default;
+                }
+                    _headers._rawDate = null;
+            }
+        }
+        StringValues IHeaderDictionary.GrpcEncoding
+        {
+            get
+            {
+                var value = _headers._GrpcEncoding;
+                if ((_bits & 0x8L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x8L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._GrpcEncoding = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._GrpcEncoding = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.KeepAlive
+        {
+            get
+            {
+                var value = _headers._KeepAlive;
+                if ((_bits & 0x10L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x10L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._KeepAlive = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._KeepAlive = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Pragma
+        {
+            get
+            {
+                var value = _headers._Pragma;
+                if ((_bits & 0x20L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x20L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Pragma = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Pragma = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Trailer
+        {
+            get
+            {
+                var value = _headers._Trailer;
+                if ((_bits & 0x40L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x40L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Trailer = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Trailer = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.TransferEncoding
+        {
+            get
+            {
+                var value = _headers._TransferEncoding;
+                if ((_bits & 0x80L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x80L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._TransferEncoding = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._TransferEncoding = default;
+                }
+                    _headers._rawTransferEncoding = null;
+            }
+        }
+        StringValues IHeaderDictionary.Upgrade
+        {
+            get
+            {
+                var value = _headers._Upgrade;
+                if ((_bits & 0x100L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x100L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Upgrade = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Upgrade = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Via
+        {
+            get
+            {
+                var value = _headers._Via;
+                if ((_bits & 0x200L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x200L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Via = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Via = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Warning
+        {
+            get
+            {
+                var value = _headers._Warning;
+                if ((_bits & 0x400L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x400L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Warning = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Warning = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Allow
+        {
+            get
+            {
+                var value = _headers._Allow;
+                if ((_bits & 0x800L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x800L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Allow = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Allow = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentType
+        {
+            get
+            {
+                var value = _headers._ContentType;
+                if ((_bits & 0x1000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x1000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentType = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentType = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentEncoding
+        {
+            get
+            {
+                var value = _headers._ContentEncoding;
+                if ((_bits & 0x2000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x2000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentEncoding = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentEncoding = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentLanguage
+        {
+            get
+            {
+                var value = _headers._ContentLanguage;
+                if ((_bits & 0x4000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x4000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentLanguage = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentLanguage = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentLocation
+        {
+            get
+            {
+                var value = _headers._ContentLocation;
+                if ((_bits & 0x8000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x8000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentLocation = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentLocation = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentMD5
+        {
+            get
+            {
+                var value = _headers._ContentMD5;
+                if ((_bits & 0x10000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x10000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentMD5 = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentMD5 = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ContentRange
+        {
+            get
+            {
+                var value = _headers._ContentRange;
+                if ((_bits & 0x20000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x20000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ContentRange = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ContentRange = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Expires
+        {
+            get
+            {
+                var value = _headers._Expires;
+                if ((_bits & 0x40000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x40000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Expires = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Expires = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.LastModified
+        {
+            get
+            {
+                var value = _headers._LastModified;
+                if ((_bits & 0x80000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x80000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._LastModified = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._LastModified = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AcceptRanges
+        {
+            get
+            {
+                var value = _headers._AcceptRanges;
+                if ((_bits & 0x100000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x100000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AcceptRanges = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AcceptRanges = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Age
+        {
+            get
+            {
+                var value = _headers._Age;
+                if ((_bits & 0x200000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x200000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Age = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Age = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AltSvc
+        {
+            get
+            {
+                var value = _headers._AltSvc;
+                if ((_bits & 0x400000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x400000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AltSvc = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AltSvc = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ETag
+        {
+            get
+            {
+                var value = _headers._ETag;
+                if ((_bits & 0x800000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x800000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ETag = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ETag = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Location
+        {
+            get
+            {
+                var value = _headers._Location;
+                if ((_bits & 0x1000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x1000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Location = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Location = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ProxyAuthenticate
+        {
+            get
+            {
+                var value = _headers._ProxyAuthenticate;
+                if ((_bits & 0x2000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x2000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ProxyAuthenticate = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ProxyAuthenticate = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.ProxyConnection
+        {
+            get
+            {
+                var value = _headers._ProxyConnection;
+                if ((_bits & 0x4000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x4000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ProxyConnection = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ProxyConnection = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.RetryAfter
+        {
+            get
+            {
+                var value = _headers._RetryAfter;
+                if ((_bits & 0x8000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x8000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._RetryAfter = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._RetryAfter = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Server
+        {
+            get
+            {
+                var value = _headers._Server;
+                if ((_bits & 0x10000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x10000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Server = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Server = default;
+                }
+                    _headers._rawServer = null;
+            }
+        }
+        StringValues IHeaderDictionary.SetCookie
+        {
+            get
+            {
+                var value = _headers._SetCookie;
+                if ((_bits & 0x20000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x20000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._SetCookie = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._SetCookie = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.Vary
+        {
+            get
+            {
+                var value = _headers._Vary;
+                if ((_bits & 0x40000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x40000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._Vary = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._Vary = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.WWWAuthenticate
+        {
+            get
+            {
+                var value = _headers._WWWAuthenticate;
+                if ((_bits & 0x80000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x80000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._WWWAuthenticate = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._WWWAuthenticate = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowCredentials
+        {
+            get
+            {
+                var value = _headers._AccessControlAllowCredentials;
+                if ((_bits & 0x100000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x100000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AccessControlAllowCredentials = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AccessControlAllowCredentials = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowHeaders
+        {
+            get
+            {
+                var value = _headers._AccessControlAllowHeaders;
+                if ((_bits & 0x200000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x200000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AccessControlAllowHeaders = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AccessControlAllowHeaders = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowMethods
+        {
+            get
+            {
+                var value = _headers._AccessControlAllowMethods;
+                if ((_bits & 0x400000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x400000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AccessControlAllowMethods = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AccessControlAllowMethods = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowOrigin
+        {
+            get
+            {
+                var value = _headers._AccessControlAllowOrigin;
+                if ((_bits & 0x800000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x800000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AccessControlAllowOrigin = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AccessControlAllowOrigin = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlExposeHeaders
+        {
+            get
+            {
+                var value = _headers._AccessControlExposeHeaders;
+                if ((_bits & 0x1000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x1000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AccessControlExposeHeaders = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AccessControlExposeHeaders = default;
+                }
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlMaxAge
+        {
+            get
+            {
+                var value = _headers._AccessControlMaxAge;
+                if ((_bits & 0x2000000000L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x2000000000L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._AccessControlMaxAge = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._AccessControlMaxAge = default;
+                }
+            }
+        }
+        
+        StringValues IHeaderDictionary.Accept
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Accept, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Accept, value);
+            }
+        }
+        StringValues IHeaderDictionary.AcceptCharset
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AcceptCharset, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AcceptCharset, value);
+            }
+        }
+        StringValues IHeaderDictionary.AcceptEncoding
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AcceptEncoding, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AcceptEncoding, value);
+            }
+        }
+        StringValues IHeaderDictionary.AcceptLanguage
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AcceptLanguage, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AcceptLanguage, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlRequestHeaders
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlRequestHeaders, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlRequestHeaders, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlRequestMethod
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlRequestMethod, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlRequestMethod, value);
+            }
+        }
+        StringValues IHeaderDictionary.Authorization
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Authorization, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Authorization, value);
+            }
+        }
+        StringValues IHeaderDictionary.Baggage
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Baggage, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Baggage, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentDisposition
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentDisposition, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentDisposition, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentSecurityPolicy
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentSecurityPolicy, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentSecurityPolicy, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentSecurityPolicyReportOnly
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentSecurityPolicyReportOnly, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentSecurityPolicyReportOnly, value);
+            }
+        }
+        StringValues IHeaderDictionary.CorrelationContext
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.CorrelationContext, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.CorrelationContext, value);
+            }
+        }
+        StringValues IHeaderDictionary.Cookie
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Cookie, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Cookie, value);
+            }
+        }
+        StringValues IHeaderDictionary.Expect
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Expect, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Expect, value);
+            }
+        }
+        StringValues IHeaderDictionary.From
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.From, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.From, value);
+            }
+        }
+        StringValues IHeaderDictionary.GrpcAcceptEncoding
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.GrpcAcceptEncoding, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.GrpcAcceptEncoding, value);
+            }
+        }
+        StringValues IHeaderDictionary.GrpcMessage
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.GrpcMessage, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.GrpcMessage, value);
+            }
+        }
+        StringValues IHeaderDictionary.GrpcStatus
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.GrpcStatus, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.GrpcStatus, value);
+            }
+        }
+        StringValues IHeaderDictionary.GrpcTimeout
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.GrpcTimeout, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.GrpcTimeout, value);
+            }
+        }
+        StringValues IHeaderDictionary.Host
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Host, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Host, value);
+            }
+        }
+        StringValues IHeaderDictionary.IfMatch
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.IfMatch, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.IfMatch, value);
+            }
+        }
+        StringValues IHeaderDictionary.IfModifiedSince
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.IfModifiedSince, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.IfModifiedSince, value);
+            }
+        }
+        StringValues IHeaderDictionary.IfNoneMatch
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.IfNoneMatch, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.IfNoneMatch, value);
+            }
+        }
+        StringValues IHeaderDictionary.IfRange
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.IfRange, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.IfRange, value);
+            }
+        }
+        StringValues IHeaderDictionary.IfUnmodifiedSince
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.IfUnmodifiedSince, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.IfUnmodifiedSince, value);
+            }
+        }
+        StringValues IHeaderDictionary.Link
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Link, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Link, value);
+            }
+        }
+        StringValues IHeaderDictionary.MaxForwards
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.MaxForwards, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.MaxForwards, value);
+            }
+        }
+        StringValues IHeaderDictionary.Origin
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Origin, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Origin, value);
+            }
+        }
+        StringValues IHeaderDictionary.ProxyAuthorization
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ProxyAuthorization, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ProxyAuthorization, value);
+            }
+        }
+        StringValues IHeaderDictionary.Range
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Range, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Range, value);
+            }
+        }
+        StringValues IHeaderDictionary.Referer
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Referer, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Referer, value);
+            }
+        }
+        StringValues IHeaderDictionary.RequestId
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.RequestId, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.RequestId, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketAccept
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketAccept, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketAccept, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketKey
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketKey, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketKey, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketProtocol
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketProtocol, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketProtocol, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketVersion
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketVersion, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketVersion, value);
+            }
+        }
+        StringValues IHeaderDictionary.StrictTransportSecurity
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.StrictTransportSecurity, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.StrictTransportSecurity, value);
+            }
+        }
+        StringValues IHeaderDictionary.TE
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.TE, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.TE, value);
+            }
+        }
+        StringValues IHeaderDictionary.Translate
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Translate, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Translate, value);
+            }
+        }
+        StringValues IHeaderDictionary.TraceParent
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.TraceParent, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.TraceParent, value);
+            }
+        }
+        StringValues IHeaderDictionary.TraceState
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.TraceState, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.TraceState, value);
+            }
+        }
+        StringValues IHeaderDictionary.UpgradeInsecureRequests
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.UpgradeInsecureRequests, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.UpgradeInsecureRequests, value);
+            }
+        }
+        StringValues IHeaderDictionary.UserAgent
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.UserAgent, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.UserAgent, value);
+            }
+        }
+        StringValues IHeaderDictionary.WebSocketSubProtocols
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.WebSocketSubProtocols, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.WebSocketSubProtocols, value);
+            }
+        }
+        StringValues IHeaderDictionary.XContentTypeOptions
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XContentTypeOptions, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XContentTypeOptions, value);
+            }
+        }
+        StringValues IHeaderDictionary.XFrameOptions
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XFrameOptions, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XFrameOptions, value);
+            }
+        }
+        StringValues IHeaderDictionary.XPoweredBy
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XPoweredBy, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XPoweredBy, value);
+            }
+        }
+        StringValues IHeaderDictionary.XRequestedWith
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XRequestedWith, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XRequestedWith, value);
+            }
+        }
+        StringValues IHeaderDictionary.XUACompatible
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XUACompatible, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XUACompatible, value);
+            }
+        }
+        StringValues IHeaderDictionary.XXSSProtection
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XXSSProtection, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XXSSProtection, value);
             }
         }
 
@@ -13664,7 +16347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
     }
 
-    internal partial class HttpResponseTrailers
+    internal partial class HttpResponseTrailers : IHeaderDictionary
     {
         private static ReadOnlySpan<byte> HeaderBytes => new byte[]
         {
@@ -13673,56 +16356,1621 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private HeaderReferences _headers;
 
 
+
         
-        public StringValues HeaderETag
+        StringValues IHeaderDictionary.ETag
         {
             get
             {
-                StringValues value = default;
+                var value = _headers._ETag;
                 if ((_bits & 0x1L) != 0)
                 {
-                    value = _headers._ETag;
+                    return value;
                 }
-                return value;
+                return default;
             }
             set
             {
-                _bits |= 0x1L;
-                _headers._ETag = value; 
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x1L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._ETag = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._ETag = default;
+                }
             }
         }
-        public StringValues HeaderGrpcMessage
+        StringValues IHeaderDictionary.GrpcMessage
         {
             get
             {
-                StringValues value = default;
+                var value = _headers._GrpcMessage;
                 if ((_bits & 0x2L) != 0)
                 {
-                    value = _headers._GrpcMessage;
+                    return value;
                 }
-                return value;
+                return default;
             }
             set
             {
-                _bits |= 0x2L;
-                _headers._GrpcMessage = value; 
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x2L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._GrpcMessage = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._GrpcMessage = default;
+                }
             }
         }
-        public StringValues HeaderGrpcStatus
+        StringValues IHeaderDictionary.GrpcStatus
+        {
+            get
+            {
+                var value = _headers._GrpcStatus;
+                if ((_bits & 0x4L) != 0)
+                {
+                    return value;
+                }
+                return default;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                var flag = 0x4L;
+                if (value.Count > 0)
+                {
+                    _bits |= flag;
+                    _headers._GrpcStatus = value;
+                }
+                else
+                {
+                    _bits &= ~flag;
+                    _headers._GrpcStatus = default;
+                }
+            }
+        }
+        
+        StringValues IHeaderDictionary.Accept
         {
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x4L) != 0)
+                if (!TryGetUnknown(HeaderNames.Accept, ref value))
                 {
-                    value = _headers._GrpcStatus;
+                    value = default;
                 }
                 return value;
             }
             set
             {
-                _bits |= 0x4L;
-                _headers._GrpcStatus = value; 
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Accept, value);
+            }
+        }
+        StringValues IHeaderDictionary.AcceptCharset
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AcceptCharset, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AcceptCharset, value);
+            }
+        }
+        StringValues IHeaderDictionary.AcceptEncoding
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AcceptEncoding, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AcceptEncoding, value);
+            }
+        }
+        StringValues IHeaderDictionary.AcceptLanguage
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AcceptLanguage, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AcceptLanguage, value);
+            }
+        }
+        StringValues IHeaderDictionary.AcceptRanges
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AcceptRanges, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AcceptRanges, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowCredentials
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlAllowCredentials, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlAllowCredentials, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowHeaders
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlAllowHeaders, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlAllowHeaders, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowMethods
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlAllowMethods, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlAllowMethods, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlAllowOrigin
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlAllowOrigin, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlAllowOrigin, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlExposeHeaders
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlExposeHeaders, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlExposeHeaders, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlMaxAge
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlMaxAge, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlMaxAge, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlRequestHeaders
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlRequestHeaders, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlRequestHeaders, value);
+            }
+        }
+        StringValues IHeaderDictionary.AccessControlRequestMethod
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AccessControlRequestMethod, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AccessControlRequestMethod, value);
+            }
+        }
+        StringValues IHeaderDictionary.Age
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Age, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Age, value);
+            }
+        }
+        StringValues IHeaderDictionary.Allow
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Allow, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Allow, value);
+            }
+        }
+        StringValues IHeaderDictionary.AltSvc
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.AltSvc, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.AltSvc, value);
+            }
+        }
+        StringValues IHeaderDictionary.Authorization
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Authorization, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Authorization, value);
+            }
+        }
+        StringValues IHeaderDictionary.Baggage
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Baggage, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Baggage, value);
+            }
+        }
+        StringValues IHeaderDictionary.CacheControl
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.CacheControl, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.CacheControl, value);
+            }
+        }
+        StringValues IHeaderDictionary.Connection
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Connection, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Connection, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentDisposition
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentDisposition, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentDisposition, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentEncoding
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentEncoding, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentEncoding, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentLanguage
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentLanguage, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentLanguage, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentLocation
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentLocation, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentLocation, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentMD5
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentMD5, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentMD5, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentRange
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentRange, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentRange, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentSecurityPolicy
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentSecurityPolicy, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentSecurityPolicy, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentSecurityPolicyReportOnly
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentSecurityPolicyReportOnly, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentSecurityPolicyReportOnly, value);
+            }
+        }
+        StringValues IHeaderDictionary.ContentType
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ContentType, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ContentType, value);
+            }
+        }
+        StringValues IHeaderDictionary.CorrelationContext
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.CorrelationContext, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.CorrelationContext, value);
+            }
+        }
+        StringValues IHeaderDictionary.Cookie
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Cookie, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Cookie, value);
+            }
+        }
+        StringValues IHeaderDictionary.Date
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Date, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Date, value);
+            }
+        }
+        StringValues IHeaderDictionary.Expires
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Expires, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Expires, value);
+            }
+        }
+        StringValues IHeaderDictionary.Expect
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Expect, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Expect, value);
+            }
+        }
+        StringValues IHeaderDictionary.From
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.From, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.From, value);
+            }
+        }
+        StringValues IHeaderDictionary.GrpcAcceptEncoding
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.GrpcAcceptEncoding, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.GrpcAcceptEncoding, value);
+            }
+        }
+        StringValues IHeaderDictionary.GrpcEncoding
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.GrpcEncoding, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.GrpcEncoding, value);
+            }
+        }
+        StringValues IHeaderDictionary.GrpcTimeout
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.GrpcTimeout, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.GrpcTimeout, value);
+            }
+        }
+        StringValues IHeaderDictionary.Host
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Host, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Host, value);
+            }
+        }
+        StringValues IHeaderDictionary.KeepAlive
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.KeepAlive, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.KeepAlive, value);
+            }
+        }
+        StringValues IHeaderDictionary.IfMatch
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.IfMatch, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.IfMatch, value);
+            }
+        }
+        StringValues IHeaderDictionary.IfModifiedSince
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.IfModifiedSince, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.IfModifiedSince, value);
+            }
+        }
+        StringValues IHeaderDictionary.IfNoneMatch
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.IfNoneMatch, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.IfNoneMatch, value);
+            }
+        }
+        StringValues IHeaderDictionary.IfRange
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.IfRange, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.IfRange, value);
+            }
+        }
+        StringValues IHeaderDictionary.IfUnmodifiedSince
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.IfUnmodifiedSince, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.IfUnmodifiedSince, value);
+            }
+        }
+        StringValues IHeaderDictionary.LastModified
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.LastModified, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.LastModified, value);
+            }
+        }
+        StringValues IHeaderDictionary.Link
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Link, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Link, value);
+            }
+        }
+        StringValues IHeaderDictionary.Location
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Location, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Location, value);
+            }
+        }
+        StringValues IHeaderDictionary.MaxForwards
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.MaxForwards, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.MaxForwards, value);
+            }
+        }
+        StringValues IHeaderDictionary.Origin
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Origin, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Origin, value);
+            }
+        }
+        StringValues IHeaderDictionary.Pragma
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Pragma, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Pragma, value);
+            }
+        }
+        StringValues IHeaderDictionary.ProxyAuthenticate
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ProxyAuthenticate, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ProxyAuthenticate, value);
+            }
+        }
+        StringValues IHeaderDictionary.ProxyAuthorization
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ProxyAuthorization, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ProxyAuthorization, value);
+            }
+        }
+        StringValues IHeaderDictionary.ProxyConnection
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.ProxyConnection, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.ProxyConnection, value);
+            }
+        }
+        StringValues IHeaderDictionary.Range
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Range, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Range, value);
+            }
+        }
+        StringValues IHeaderDictionary.Referer
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Referer, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Referer, value);
+            }
+        }
+        StringValues IHeaderDictionary.RetryAfter
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.RetryAfter, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.RetryAfter, value);
+            }
+        }
+        StringValues IHeaderDictionary.RequestId
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.RequestId, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.RequestId, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketAccept
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketAccept, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketAccept, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketKey
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketKey, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketKey, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketProtocol
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketProtocol, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketProtocol, value);
+            }
+        }
+        StringValues IHeaderDictionary.SecWebSocketVersion
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SecWebSocketVersion, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SecWebSocketVersion, value);
+            }
+        }
+        StringValues IHeaderDictionary.Server
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Server, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Server, value);
+            }
+        }
+        StringValues IHeaderDictionary.SetCookie
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.SetCookie, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.SetCookie, value);
+            }
+        }
+        StringValues IHeaderDictionary.StrictTransportSecurity
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.StrictTransportSecurity, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.StrictTransportSecurity, value);
+            }
+        }
+        StringValues IHeaderDictionary.TE
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.TE, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.TE, value);
+            }
+        }
+        StringValues IHeaderDictionary.Trailer
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Trailer, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Trailer, value);
+            }
+        }
+        StringValues IHeaderDictionary.TransferEncoding
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.TransferEncoding, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.TransferEncoding, value);
+            }
+        }
+        StringValues IHeaderDictionary.Translate
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Translate, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Translate, value);
+            }
+        }
+        StringValues IHeaderDictionary.TraceParent
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.TraceParent, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.TraceParent, value);
+            }
+        }
+        StringValues IHeaderDictionary.TraceState
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.TraceState, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.TraceState, value);
+            }
+        }
+        StringValues IHeaderDictionary.Upgrade
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Upgrade, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Upgrade, value);
+            }
+        }
+        StringValues IHeaderDictionary.UpgradeInsecureRequests
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.UpgradeInsecureRequests, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.UpgradeInsecureRequests, value);
+            }
+        }
+        StringValues IHeaderDictionary.UserAgent
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.UserAgent, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.UserAgent, value);
+            }
+        }
+        StringValues IHeaderDictionary.Vary
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Vary, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Vary, value);
+            }
+        }
+        StringValues IHeaderDictionary.Via
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Via, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Via, value);
+            }
+        }
+        StringValues IHeaderDictionary.Warning
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.Warning, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.Warning, value);
+            }
+        }
+        StringValues IHeaderDictionary.WebSocketSubProtocols
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.WebSocketSubProtocols, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.WebSocketSubProtocols, value);
+            }
+        }
+        StringValues IHeaderDictionary.WWWAuthenticate
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.WWWAuthenticate, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.WWWAuthenticate, value);
+            }
+        }
+        StringValues IHeaderDictionary.XContentTypeOptions
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XContentTypeOptions, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XContentTypeOptions, value);
+            }
+        }
+        StringValues IHeaderDictionary.XFrameOptions
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XFrameOptions, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XFrameOptions, value);
+            }
+        }
+        StringValues IHeaderDictionary.XPoweredBy
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XPoweredBy, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XPoweredBy, value);
+            }
+        }
+        StringValues IHeaderDictionary.XRequestedWith
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XRequestedWith, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XRequestedWith, value);
+            }
+        }
+        StringValues IHeaderDictionary.XUACompatible
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XUACompatible, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XUACompatible, value);
+            }
+        }
+        StringValues IHeaderDictionary.XXSSProtection
+        {
+            get
+            {
+                StringValues value = default;
+                if (!TryGetUnknown(HeaderNames.XXSSProtection, ref value))
+                {
+                    value = default;
+                }
+                return value;
+            }
+            set
+            {
+                if (_isReadOnly) { ThrowHeadersReadOnlyException(); }
+
+                SetValueUnknown(HeaderNames.XXSSProtection, value);
             }
         }
 
