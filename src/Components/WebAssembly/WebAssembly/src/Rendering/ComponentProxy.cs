@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             {
                 return default;
             }
+
+            return default;
         }
     }
 }

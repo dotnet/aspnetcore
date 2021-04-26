@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             throw new NotImplementedException();
         }
 
-        internal record DescriptorOrAlias
+        public class DescriptorOrAlias
         {
             public const string DescriptorKind = "Descriptor";
             public const string AliasKind = "Alias";
@@ -64,15 +64,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 
             public bool IsAlias() => string.Equals(Kind, Alias, StringComparison.OrdinalIgnoreCase);
 
-            public string? Kind;
-            public string? Alias;
-            public ComponentDescriptor? Descriptor;
+            public string? Kind { get; set; }
+            public string? Alias { get; set; }
+            public ComponentDescriptor? Descriptor { get; set; }
         }
 
-        internal record ComponentDescriptor
+        public class ComponentDescriptor
         {
-            public string? Assembly;
-            public string? TypeName;
+            public string? Assembly { get; set; }
+            public string? TypeName { get; set; }
         }
 
         internal ValueTask Initialize()

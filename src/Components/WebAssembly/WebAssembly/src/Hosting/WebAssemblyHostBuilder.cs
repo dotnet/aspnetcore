@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     public sealed class WebAssemblyHostBuilder
     {
         private Func<IServiceProvider> _createServiceProvider;
-        private RootComponentTypeCache? _rootComponentCache;
+        private RootComponentTypeCache _rootComponentCache = new();
         private string? _persistedState;
 
         /// <summary>
@@ -104,7 +104,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
             foreach (var registeredComponent in registeredComponents)
             {
-                _rootComponentCache = new RootComponentTypeCache();
                 var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly!, registeredComponent.TypeName!);
                 if (componentType is null)
                 {
