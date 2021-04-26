@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http
             };
             var cookieValue = setCookieHeaderValue.ToString();
 
-            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], cookieValue);
+            Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookieValue);
         }
 
         /// <inheritdoc />
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Http
 
             var cookieValue = setCookieHeaderValue.ToString();
 
-            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], cookieValue);
+            Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookieValue);
         }
 
         /// <inheritdoc />
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Http
                 rejectPredicate = (value, encKeyPlusEquals, opts) => value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase);
             }
 
-            var existingValues = Headers[HeaderNames.SetCookie];
+            var existingValues = Headers.SetCookie;
             if (!StringValues.IsNullOrEmpty(existingValues))
             {
                 var values = existingValues.ToArray();
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Http
                     }
                 }
 
-                Headers[HeaderNames.SetCookie] = new StringValues(newValues.ToArray());
+                Headers.SetCookie = new StringValues(newValues.ToArray());
             }
 
             Append(key, string.Empty, new CookieOptions

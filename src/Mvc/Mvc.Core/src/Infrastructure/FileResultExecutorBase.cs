@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 // basis for the actual filename, where possible.
                 var contentDisposition = new ContentDispositionHeaderValue("attachment");
                 contentDisposition.SetHttpFileName(result.FileDownloadName);
-                context.HttpContext.Response.Headers[HeaderNames.ContentDisposition] = contentDisposition.ToString();
+                context.HttpContext.Response.Headers.ContentDisposition = contentDisposition.ToString();
             }
         }
 
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static void SetAcceptRangeHeader(HttpResponse response)
         {
-            response.Headers[HeaderNames.AcceptRanges] = AcceptRangeHeaderValue;
+            response.Headers.AcceptRanges = AcceptRangeHeaderValue;
         }
 
         internal bool IfRangeValid(

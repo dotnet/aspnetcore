@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.WebSockets
                 if (!_anyOriginAllowed)
                 {
                     // Check for Origin header
-                    var originHeader = context.Request.Headers[HeaderNames.Origin];
+                    var originHeader = context.Request.Headers.Origin;
 
                     if (!StringValues.IsNullOrEmpty(originHeader) && webSocketFeature.IsWebSocketRequest)
                     {
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.WebSockets
                     }
                 }
 
-                string key = _context.Request.Headers[HeaderNames.SecWebSocketKey];
+                string key = _context.Request.Headers.SecWebSocketKey;
 
                 HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 

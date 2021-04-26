@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
                 return _next(context);
             }
 
-            context.Response.Headers[HeaderNames.StrictTransportSecurity] = _strictTransportSecurityValue;
+            context.Response.Headers.StrictTransportSecurity = _strictTransportSecurityValue;
             _logger.AddingHstsHeader();
 
             return _next(context);

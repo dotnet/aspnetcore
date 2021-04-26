@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
+                context.Response.Headers.Location = context.RedirectUri;
                 context.Response.StatusCode = 401;
             }
             else
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
+                context.Response.Headers.Location = context.RedirectUri;
                 context.Response.StatusCode = 403;
             }
             else
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
+                context.Response.Headers.Location = context.RedirectUri;
             }
             else
             {
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
+                context.Response.Headers.Location = context.RedirectUri;
             }
             else
             {
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         private static bool IsAjaxRequest(HttpRequest request)
         {
             return string.Equals(request.Query[HeaderNames.XRequestedWith], "XMLHttpRequest", StringComparison.Ordinal) ||
-                string.Equals(request.Headers[HeaderNames.XRequestedWith], "XMLHttpRequest", StringComparison.Ordinal);
+                string.Equals(request.Headers.XRequestedWith, "XMLHttpRequest", StringComparison.Ordinal);
         }
 
         /// <summary>

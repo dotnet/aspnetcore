@@ -12,29 +12,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
     public class Http2HeadersEnumeratorBenchmark
     {
         private Http2HeadersEnumerator _enumerator;
-        private HttpResponseHeaders _knownSingleValueResponseHeaders;
-        private HttpResponseHeaders _knownMultipleValueResponseHeaders;
-        private HttpResponseHeaders _unknownSingleValueResponseHeaders;
-        private HttpResponseHeaders _unknownMultipleValueResponseHeaders;
+        private IHeaderDictionary _knownSingleValueResponseHeaders;
+        private IHeaderDictionary _knownMultipleValueResponseHeaders;
+        private IHeaderDictionary _unknownSingleValueResponseHeaders;
+        private IHeaderDictionary _unknownMultipleValueResponseHeaders;
 
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _knownSingleValueResponseHeaders = new HttpResponseHeaders
-            {
-                HeaderServer = "Value",
-                HeaderDate = "Value",
-                HeaderContentType = "Value",
-                HeaderSetCookie = "Value"
-            };
+            _knownSingleValueResponseHeaders = new HttpResponseHeaders();
 
-            _knownMultipleValueResponseHeaders = new HttpResponseHeaders
-            {
-                HeaderServer = new StringValues(new[] { "One", "Two" }),
-                HeaderDate = new StringValues(new[] { "One", "Two" }),
-                HeaderContentType = new StringValues(new[] { "One", "Two" }),
-                HeaderSetCookie = new StringValues(new[] { "One", "Two" })
-            };
+            _knownSingleValueResponseHeaders.Server = "Value";
+            _knownSingleValueResponseHeaders.Date = "Value";
+            _knownSingleValueResponseHeaders.ContentType = "Value";
+            _knownSingleValueResponseHeaders.SetCookie = "Value";
+
+            _knownMultipleValueResponseHeaders = new HttpResponseHeaders();
+
+            _knownMultipleValueResponseHeaders.Server = new StringValues(new[] { "One", "Two" });
+            _knownMultipleValueResponseHeaders.Date = new StringValues(new[] { "One", "Two" });
+            _knownMultipleValueResponseHeaders.ContentType = new StringValues(new[] { "One", "Two" });
+            _knownMultipleValueResponseHeaders.SetCookie = new StringValues(new[] { "One", "Two" });
 
             _unknownSingleValueResponseHeaders = new HttpResponseHeaders();
             _unknownSingleValueResponseHeaders.Append("One", "Value");

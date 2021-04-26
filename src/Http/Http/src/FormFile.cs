@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public string ContentDisposition
         {
-            get { return Headers[HeaderNames.ContentDisposition]; }
-            set { Headers[HeaderNames.ContentDisposition] = value; }
+            get { return Headers.ContentDisposition; }
+            set { Headers.ContentDisposition = value; }
         }
 
         /// <summary>
@@ -51,8 +51,8 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public string ContentType
         {
-            get { return Headers[HeaderNames.ContentType]; }
-            set { Headers[HeaderNames.ContentType] = value; }
+            get { return Headers.ContentType; }
+            set { Headers.ContentType = value; }
         }
 
         /// <summary>

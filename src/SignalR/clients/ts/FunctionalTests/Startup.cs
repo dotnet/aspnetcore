@@ -118,23 +118,23 @@ namespace FunctionalTests
             // This is for testing purposes only (karma hosts the client on its own server), never do this in production
             app.Use((context, next) =>
             {
-                var originHeader = context.Request.Headers[HeaderNames.Origin];
+                var originHeader = context.Request.Headers.Origin;
                 if (!StringValues.IsNullOrEmpty(originHeader))
                 {
                     logger.LogInformation("Setting CORS headers.");
-                    context.Response.Headers[HeaderNames.AccessControlAllowOrigin] = originHeader;
-                    context.Response.Headers[HeaderNames.AccessControlAllowCredentials] = "true";
+                    context.Response.Headers.AccessControlAllowOrigin = originHeader;
+                    context.Response.Headers.AccessControlAllowCredentials = "true";
 
-                    var requestMethod = context.Request.Headers[HeaderNames.AccessControlRequestMethod];
+                    var requestMethod = context.Request.Headers.AccessControlRequestMethod;
                     if (!StringValues.IsNullOrEmpty(requestMethod))
                     {
-                        context.Response.Headers[HeaderNames.AccessControlAllowMethods] = requestMethod;
+                        context.Response.Headers.AccessControlAllowMethods = requestMethod;
                     }
 
-                    var requestHeaders = context.Request.Headers[HeaderNames.AccessControlRequestHeaders];
+                    var requestHeaders = context.Request.Headers.AccessControlRequestHeaders;
                     if (!StringValues.IsNullOrEmpty(requestHeaders))
                     {
-                        context.Response.Headers[HeaderNames.AccessControlAllowHeaders] = requestHeaders;
+                        context.Response.Headers.AccessControlAllowHeaders = requestHeaders;
                     }
                 }
 
