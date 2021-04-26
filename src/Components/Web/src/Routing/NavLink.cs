@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
 
             _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
-            _isActive = ShouldMatch(NavigationManager.Uri);
+            _isActive = ShouldMatch(RemoveQueryString(NavigationManager.Uri));
 
             _class = (string?)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             // We could just re-render always, but for this component we know the
             // only relevant state change is to the _isActive property.
-            var shouldBeActiveNow = ShouldMatch(args.Location);
+            var shouldBeActiveNow = ShouldMatch(RemoveQueryString(args.Location));
             if (shouldBeActiveNow != _isActive)
             {
                 _isActive = shouldBeActiveNow;
@@ -172,6 +172,9 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private string? CombineWithSpace(string? str1, string str2)
             => str1 == null ? str2 : $"{str1} {str2}";
+
+        private string RemoveQueryString(string path)
+            => path.Split('?')[0];
 
         private static bool IsStrictlyPrefixWithSeparator(string value, string prefix)
         {
