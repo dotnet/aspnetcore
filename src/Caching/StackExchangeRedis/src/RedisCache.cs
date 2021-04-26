@@ -192,7 +192,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 {
                     if(_options.ConnectionMultiplexerFactory == null)
                     {
-                        if (_options.ConfigurationOptions != null)
+                        if (_options.ConfigurationOptions is not null)
                         {
                             _connection = ConnectionMultiplexer.Connect(_options.ConfigurationOptions);
                         }
