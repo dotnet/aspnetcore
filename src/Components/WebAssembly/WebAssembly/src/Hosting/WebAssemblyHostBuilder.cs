@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
@@ -36,7 +35,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// </summary>
         /// <param name="args">The argument passed to the application's main method.</param>
         /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
-        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(JSInteropMethods))]
+        [DynamicDependency(nameof(JSInteropMethods.NotifyLocationChanged), typeof(JSInteropMethods))]
+        [DynamicDependency(nameof(JSInteropMethods.DispatchEvent), typeof(JSInteropMethods))]
         [DynamicDependency(JsonSerialized, typeof(WebEventDescriptor))]
         public static WebAssemblyHostBuilder CreateDefault(string[]? args = default)
         {
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var services = _createServiceProvider();
             var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
-            return new WebAssemblyHost(services, scope, Configuration, RootComponents.ToArray(), _persistedState);
+            return new WebAssemblyHost(services, scope, Configuration, RootComponents, _persistedState);
         }
 
         internal void InitializeDefaultServices()

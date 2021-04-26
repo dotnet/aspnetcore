@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -65,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="fieldIdentifier">The identifier for the field.</param>
         /// <returns>The validation messages for the specified field within this <see cref="ValidationMessageStore"/>.</returns>
         public IEnumerable<string> this[FieldIdentifier fieldIdentifier]
-            => _messages.TryGetValue(fieldIdentifier, out var messages) ? messages : Enumerable.Empty<string>();
+            => _messages.TryGetValue(fieldIdentifier, out var messages) ? messages : Array.Empty<string>();
 
         /// <summary>
         /// Gets the validation messages within this <see cref="ValidationMessageStore"/> for the specified field.

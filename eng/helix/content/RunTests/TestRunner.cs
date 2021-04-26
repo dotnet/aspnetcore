@@ -29,6 +29,7 @@ namespace RunTests
         {
             try
             {
+                EnvironmentVariables.Add("DOTNET_CLI_HOME", Options.HELIX_WORKITEM_ROOT);
                 EnvironmentVariables.Add("PATH", Options.Path);
                 EnvironmentVariables.Add("helix", Options.HelixQueue);
 
@@ -71,7 +72,7 @@ namespace RunTests
                 DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.NETCore.App"));
                 DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.AspNetCore.App"));
                 DisplayContents(Path.Combine(Options.DotnetRoot, "packs", "Microsoft.AspNetCore.App.Ref"));
-                
+
                 return true;
             }
             catch (Exception e)
