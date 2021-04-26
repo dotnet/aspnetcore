@@ -12,7 +12,7 @@
     "start": "ng serve --port 5002",
 //#endif
     "build": "ng build",
-    "build:ssr": "ng run Company.Webapplication1:server:dev",
+    "build:ssr": "ng run Company.WebApplication1:server:dev",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
