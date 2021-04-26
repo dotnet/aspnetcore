@@ -7,3 +7,4 @@ static readonly Microsoft.Net.Http.Headers.HeaderNames.Link -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.ProxyConnection -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.XContentTypeOptions -> string!
 static readonly Microsoft.Net.Http.Headers.HeaderNames.XXssProtection -> string!
+static readonly Microsoft.Net.Http.Headers.HeaderNames.XForwardedFor -> string!

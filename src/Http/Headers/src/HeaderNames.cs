@@ -283,6 +283,9 @@ namespace Microsoft.Net.Http.Headers
         /// <summary>Gets the <c>X-Frame-Options</c> HTTP header name.</summary>
         public static readonly string XFrameOptions = "X-Frame-Options";
 
+        /// <summary>Gets the <c>X-Forwarded-For</c> HTTP header name.</summary>
+        public static readonly string XForwardedFor = "X-Forwarded-For";
+
         /// <summary>Gets the <c>X-Requested-With</c> HTTP header name.</summary>
         public static readonly string XRequestedWith = "X-Requested-With";
 
