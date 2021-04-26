@@ -1,0 +1,61 @@
+#nullable enable
+*REMOVED*Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature
+*REMOVED*Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature.DisableRequestBuffering() -> void
+*REMOVED*Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature.DisableResponseBuffering() -> void
+*REMOVED*Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature
+*REMOVED*Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature.SendFileAsync(string! path, long offset, long? count, System.Threading.CancellationToken cancellation) -> System.Threading.Tasks.Task!
+*REMOVED*Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string!
+*REMOVED*Microsoft.AspNetCore.Http.ISession.TryGetValue(string! key, out byte[]! value) -> bool
+*REMOVED*Microsoft.AspNetCore.Http.Features.IFeatureCollection
+*REMOVED*Microsoft.AspNetCore.Http.Features.IFeatureCollection.Get<TFeature>() -> TFeature
+*REMOVED*Microsoft.AspNetCore.Http.Features.IFeatureCollection.IsReadOnly.get -> bool
+*REMOVED*Microsoft.AspNetCore.Http.Features.IFeatureCollection.Revision.get -> int
+*REMOVED*Microsoft.AspNetCore.Http.Features.IFeatureCollection.Set<TFeature>(TFeature instance) -> void
+*REMOVED*Microsoft.AspNetCore.Http.Features.IFeatureCollection.this[System.Type! key].get -> object?
+*REMOVED*Microsoft.AspNetCore.Http.Features.IFeatureCollection.this[System.Type! key].set -> void
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureCollection
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureCollection.FeatureCollection() -> void
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureCollection.FeatureCollection(Microsoft.AspNetCore.Http.Features.IFeatureCollection! defaults) -> void
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureCollection.Get<TFeature>() -> TFeature?
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type!, object!>>!
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureCollection.IsReadOnly.get -> bool
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureCollection.Set<TFeature>(TFeature instance) -> void
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].get -> object?
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].set -> void
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReference<T>
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Fetch(Microsoft.AspNetCore.Http.Features.IFeatureCollection! features) -> T?
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Update(Microsoft.AspNetCore.Http.Features.IFeatureCollection! features, T feature) -> T
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Cache -> TCache?
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Collection.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.FeatureReferences(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Fetch<TFeature, TState>(ref TFeature? cached, TState state, System.Func<TState, TFeature?>! factory) -> TFeature?
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Fetch<TFeature>(ref TFeature? cached, System.Func<Microsoft.AspNetCore.Http.Features.IFeatureCollection!, TFeature?>! factory) -> TFeature?
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection, int revision) -> void
+*REMOVED*Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Revision.get -> int
+*REMOVED*static readonly Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Default -> Microsoft.AspNetCore.Http.Features.FeatureReference<T>
+*REMOVED*virtual Microsoft.AspNetCore.Http.Features.FeatureCollection.Revision.get -> int
+Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].get -> string?
+Microsoft.AspNetCore.Http.ISession.TryGetValue(string! key, out byte[]? value) -> bool
+Microsoft.AspNetCore.Http.IResponseCookies.Append(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string!, string!>> keyValuePairs, Microsoft.AspNetCore.Http.CookieOptions! options) -> void
+Microsoft.AspNetCore.Http.Features.IFeatureCollection (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.Get<TFeature>() -> TFeature? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.IsReadOnly.get -> bool (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.Revision.get -> int (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.Set<TFeature>(TFeature? instance) -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.this[System.Type! key].get -> object? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.IFeatureCollection.this[System.Type! key].set -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureCollection.FeatureCollection(int initialCapacity) -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureCollection (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureCollection.FeatureCollection() -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureCollection.FeatureCollection(Microsoft.AspNetCore.Http.Features.IFeatureCollection! defaults) -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureCollection.Get<TFeature>() -> TFeature? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type!, object!>>! (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureCollection.IsReadOnly.get -> bool (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureCollection.Set<TFeature>(TFeature? instance) -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].get -> object? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].set -> void (forwarded, contained in Microsoft.Extensions.Features)
+virtual Microsoft.AspNetCore.Http.Features.FeatureCollection.Revision.get -> int (forwarded, contained in Microsoft.Extensions.Features)
+~Microsoft.AspNetCore.Http.Features.FeatureReference<> (forwarded, contained in Microsoft.Extensions.Features)
+~Microsoft.AspNetCore.Http.Features.FeatureReferences<> (forwarded, contained in Microsoft.Extensions.Features)
