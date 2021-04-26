@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json' or set 'CircuitOptions.DetailedErrors'. " +
                 "Location change to 'http://example.com' failed.";
 
-            await using (var server = await StartServer<ServerStartup>(verifyLogs: false))
+            await using (var server = await StartServer<ServerStartup>(expectedErrorsFilter: (WriteContext val) => true))
             {
                 ConcurrentQueue<Microsoft.AspNetCore.SignalR.Tests.LogRecord> logs = new();
                 server.ServerLogged += (LogRecord record) => logs.Enqueue(record);
@@ -321,13 +321,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json' or set 'CircuitOptions.DetailedErrors'. " +
                 "Location change failed.";
 
-            await using (var server = await StartServer<ServerStartup>(verifyLogs: false))
+            await using (var server = await StartServer<ServerStartup>(expectedErrorsFilter: (WriteContext val) => true))
             {
-                // while (!System.Diagnostics.Debugger.IsAttached)
-                // {
-                //     System.Console.WriteLine($"Waiting to attach on ${System.Diagnostics.Process.GetCurrentProcess().Id}");
-                //     System.Threading.Thread.Sleep(1000);
-                // }
                 ConcurrentQueue<Microsoft.AspNetCore.SignalR.Tests.LogRecord> logs = new();
                 server.ServerLogged += (LogRecord record) => logs.Enqueue(record);
                 var rootUri = server.Url;
@@ -377,7 +372,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             // Arrange
             var expectedError = "Unhandled exception in circuit .*";
-            await using (var server = await StartServer<ServerStartup>(verifyLogs: false))
+            await using (var server = await StartServer<ServerStartup>(expectedErrorsFilter: (WriteContext val) => true))
             {
                 ConcurrentQueue<Microsoft.AspNetCore.SignalR.Tests.LogRecord> logs = new();
                 server.ServerLogged += (LogRecord record) => logs.Enqueue(record);
@@ -414,7 +409,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = "Unhandled exception in circuit .*";
-            await using (var server = await StartServer<ServerStartup>(verifyLogs: false))
+            await using (var server = await StartServer<ServerStartup>(expectedErrorsFilter: (WriteContext val) => true))
             {
                 ConcurrentQueue<Microsoft.AspNetCore.SignalR.Tests.LogRecord> logs = new();
                 server.ServerLogged += (LogRecord record) => logs.Enqueue(record);
