@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private readonly IServiceProvider _services;
         private readonly IConfiguration _configuration;
         private readonly RootComponentMappingCollection _rootComponents;
+        private readonly RootComponentTypeCache _rootComponentTypeCache;
         private readonly string? _persistedState;
 
         // NOTE: the host is disposable because it OWNs references to disposable things.
@@ -39,12 +41,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private bool _disposed;
         private bool _started;
         private WebAssemblyRenderer? _renderer;
+        private RendererHandle? _rendererHandle;
 
         internal WebAssemblyHost(
             IServiceProvider services,
             AsyncServiceScope scope,
             IConfiguration configuration,
             RootComponentMappingCollection rootComponents,
+            RootComponentTypeCache rootComponentTypeCache,
             string? persistedState)
         {
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
@@ -54,6 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             _scope = scope;
             _configuration = configuration;
             _rootComponents = rootComponents;
+            _rootComponentTypeCache = rootComponentTypeCache;
             _persistedState = persistedState;
         }
 
@@ -149,6 +154,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             {
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
                 _renderer = new WebAssemblyRenderer(Services, loggerFactory);
+                var jsRuntime = _scope.ServiceProvider.GetRequiredService<IJSRuntime>();
+                _rendererHandle = new RendererHandle(
+                    _renderer,
+                    _rootComponentTypeCache,
+                    jsRuntime);
+
+                await _rendererHandle.Initialize();
 
                 var initializationTcs = new TaskCompletionSource();
                 WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>

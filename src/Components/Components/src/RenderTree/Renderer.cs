@@ -249,6 +249,61 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         /// <summary>
+        /// Removes a root component from the renderer along with any contents this component is currently rendering in the DOM.
+        /// </summary>
+        /// <param name="componentId">The ID for the root component</param>
+        /// <returns></returns>
+        protected Task RemoveRootComponent(int componentId)
+        {
+            var componentState = _componentStateById[componentId];
+            if (componentState.Component is IAsyncDisposable asyncDisposable)
+            {
+                DisposeComponentAsynchronously(asyncDisposable, out var exception, out var disposeTask);
+                if (exception != null)
+                {
+                    HandleException(exception);
+                }
+                else if (disposeTask != null)
+                {
+                    return HandleAsyncExceptions(disposeTask);
+                }
+            }
+            else if (componentState.Component is IDisposable)
+            {
+                HandleException(DisposeComponentSynchronously(componentState));
+            }
+
+            return Task.CompletedTask;
+
+            async Task HandleAsyncExceptions(Task task)
+            {
+                try
+                {
+                    await task;
+                }
+                catch (Exception exception)
+                {
+                    HandleException(exception);
+                }
+            }
+        }
+
+        /// <remarks>
+        /// Intentionally authored as a separate method call so we can trim this code.
+        /// </remarks>
+        private void CaptureRootComponentForHotReload(ParameterView initialParameters, ComponentState componentState)
+        {
+            if (_hotReloadEnvironment?.IsHotReloadEnabled ?? false)
+            {
+                // when we're doing hot-reload, stash away the parameters used while rendering root components.
+                // We'll use this to trigger re-renders on hot reload updates.
+                _rootComponents ??= new();
+                _rootComponents.Add((componentState, initialParameters.Clone()));
+            }
+        }
+
+
+        /// <summary>
         /// Allows derived types to handle exceptions during rendering. Defaults to rethrowing the original exception.
         /// </summary>
         /// <param name="exception">The <see cref="Exception"/>.</param>
@@ -915,30 +970,24 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // forever.
                 if (componentState.Component is IAsyncDisposable asyncDisposable)
                 {
-                    try
+                    DisposeComponentAsynchronously(asyncDisposable, out var exception, out var unfinishedTask);
+                    if (exception != null)
                     {
-                        var task = asyncDisposable.DisposeAsync();
-                        if (!task.IsCompletedSuccessfully)
-                        {
-                            asyncDisposables ??= new();
-                            asyncDisposables.Add(task.AsTask());
-                        }
-                    }
-                    catch (Exception exception)
-                    {
-                        exceptions ??= new List<Exception>();
+                        exceptions ??= new();
                         exceptions.Add(exception);
                     }
-                }
-                else if (componentState.Component is IDisposable disposable)
-                {
-                    try
+                    if (unfinishedTask != null)
                     {
-                        componentState.Dispose();
+                        asyncDisposables ??= new();
+                        asyncDisposables.Add(unfinishedTask);
                     }
-                    catch (Exception exception)
+                }
+                else if (componentState.Component is IDisposable)
+                {
+                    var exception = DisposeComponentSynchronously(componentState);
+                    if (exception != null)
                     {
-                        exceptions ??= new List<Exception>();
+                        exceptions ??= new();
                         exceptions.Add(exception);
                     }
                 }
@@ -984,6 +1033,38 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 {
                     HandleException(exceptions[0]);
                 }
+            }
+        }
+
+        private static Exception DisposeComponentSynchronously(ComponentState component)
+        {
+            try
+            {
+                component.Dispose();
+            }
+            catch (Exception exception)
+            {
+                return exception;
+            }
+
+            return null;
+        }
+
+        private static void DisposeComponentAsynchronously(IAsyncDisposable asyncDisposable, out Exception exception, out Task disposeTask)
+        {
+            disposeTask = null;
+            exception = null;
+            try
+            {
+                var task = asyncDisposable.DisposeAsync();
+                if (!task.IsCompletedSuccessfully)
+                {
+                    disposeTask = task.AsTask();
+                }
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
             }
         }
 

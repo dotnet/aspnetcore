@@ -15,6 +15,7 @@ import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { WasmInputFile } from './WasmInputFile';
+import { ComponentProxy } from './Rendering/DynamicComponents';
 
 declare var Module: EmscriptenModule;
 let started = false;
@@ -118,6 +119,22 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
       attachRootComponentToLogicalElement(rendererId, element, componentId);
     }
   };
+
+  Blazor._internal.setComponentRenderer = (renderer) => {
+    if (Blazor._internal.setComponentRenderer) {
+      throw new Error('Component renderer already initialized.');
+    }
+
+    const componentRenderer = renderer;
+    Blazor.renderRootComponent = async (typeNameOrAlias: string, targetElement: HTMLElement, parameters: object): Promise<ComponentProxy> => {
+      const proxy = componentAttacher.registerDynamicComponent(targetElement);
+      // TODO: Should `renderRootComponent` on the dotnet side wait until the component has fully rendered the first time to return
+      // the handle?
+      const componentHandle = await componentRenderer.invokeMethodAsync<DotNet.DotNetObject>('RenderRootComponent', typeNameOrAlias, proxy.id.toString(), parameters);
+      proxy.setHandler(componentHandle);
+      return proxy;
+    };
+  }
 
   const bootConfigResult = await bootConfigPromise;
   const [resourceLoader] = await Promise.all([
