@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ignoreNonGoAwayFrames: true,
                 expectedLastStreamId: 0,
                 expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
-                expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClientClosed);
+                expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClientClosedInbound);
         }
     }
 }
