@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             // It'll be interesting to determine whether these errors must be fatal or not, and how to handle them.
             _ = RenderRootComponentAsync(componentId, parameters);
 
-            var componentProxy = new ComponentProxy(this, componentId, componentType);
+            var componentProxy = new ComponentProxy(this, domElementSelector, componentId, componentType);
 
             // We want to keep track of the proxy to make sure we can invalidate it in case we need to do so.
             _dynamicComponentsById[componentId] = componentProxy;
@@ -120,9 +121,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             return componentProxy;
         }
 
-        public Task RemoveDynamicComponentAsync(int componentId)
+        public async Task RemoveDynamicComponentAsync(int componentId)
         {
-            return RemoveRootComponent(componentId);
+            await RemoveRootComponent(componentId);
+
+            var component = _dynamicComponentsById[componentId];
+            _dynamicComponentsById.Remove(componentId);
+
+            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(
+                "Blazor._internal.detachRootComponentFromElement",
+                component.Selector,
+                componentId,
+                _webAssemblyRendererId);
         }
 
         /// <inheritdoc />

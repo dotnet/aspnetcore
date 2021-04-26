@@ -256,6 +256,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         protected Task RemoveRootComponent(int componentId)
         {
             var componentState = _componentStateById[componentId];
+            // Force rendering an empty fragment to dispose all children components.
+            _batchBuilder.ComponentRenderQueue.Enqueue(new RenderQueueEntry(componentState, builder => { }));
+            // If there were a pending render in place (there shouldn't) the method below will throw.
+            ProcessPendingRender();
+            // Once this component is disposed it won't be able to trigger more renders, since everything up to the disposal happens
+            // synchronously there's no way that anything else gets queued in the mean time.
             if (componentState.Component is IAsyncDisposable asyncDisposable)
             {
                 DisposeComponentAsynchronously(asyncDisposable, out var exception, out var disposeTask);

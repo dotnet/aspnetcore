@@ -30,6 +30,10 @@ export class BrowserRenderer {
     rootComponentsPendingFirstRender[componentId] = element;
   }
 
+  public detachRootComponentFromLogicalElement(componentId: number): void {
+    this.detachComponentFromElement(componentId);
+  }
+
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
     const element = this.childComponentLocations[componentId];
     if (!element) {
@@ -70,6 +74,10 @@ export class BrowserRenderer {
 
   private attachComponentToElement(componentId: number, element: LogicalElement) {
     this.childComponentLocations[componentId] = element;
+  }
+
+  private detachComponentFromElement(componentId: number) {
+    delete this.childComponentLocations[componentId];
   }
 
   private applyEdits(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {

@@ -3,7 +3,7 @@ import '../Platform/Platform';
 import '../Environment';
 import { RenderBatch } from './RenderBatch/RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
-import { toLogicalElement, LogicalElement } from './LogicalElements';
+import { toLogicalElement, LogicalElement, toRegularElement } from './LogicalElements';
 
 interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
@@ -29,6 +29,16 @@ export function attachRootComponentToElement(elementSelector: string, componentI
   // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
   // Only client-side Blazor supplies a browser renderer ID
   attachRootComponentToLogicalElement(browserRendererId || 0, toLogicalElement(element, /* allow existing contents */ true), componentId);
+}
+
+export function detachRootComponentFromElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number) {
+  let browserRenderer = browserRenderers[browserRendererId];
+  if (!browserRenderer) {
+    throw new Error(`Renderer with id ${browserRendererId} doesn't exist.`);
+  }
+
+  browserRenderer.detachRootComponentFromLogicalElement(componentId);
+  toRegularElement(logicalElement);
 }
 
 export function getRendererer(browserRendererId: number) {

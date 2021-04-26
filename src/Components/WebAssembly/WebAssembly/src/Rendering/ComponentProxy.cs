@@ -13,17 +13,20 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 
         private bool _disposed = false;
 
-        public ComponentProxy(WebAssemblyRenderer renderer, int componentId, Type componentType)
+        public ComponentProxy(WebAssemblyRenderer renderer, string selector, int componentId, Type componentType)
         {
             _renderer = renderer;
+            Selector = selector;
             _componentId = componentId;
             _componentType = componentType;
         }
 
+        public string Selector { get; }
+
         [JSInvokable]
         public ValueTask DisposeAsync()
         {
-            if (!_disposed)
+            if (_disposed)
             {
                 return default;
             }

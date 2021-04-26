@@ -31,13 +31,14 @@ export class ComponentProxy {
     return this.handler!.invokeMethodAsync('SetParametersAsync', parameters);
   }
 
-  public dispose(): Promise<void> {
+  public async dispose(): Promise<void> {
     this.ensureHandler();
 
     const handler = this.handler!;
     this.handler = undefined;
     this.disposed = true;
-    return handler.invokeMethodAsync("DisposeAsync");
+    await handler.invokeMethodAsync("DisposeAsync");
+    this.element.innerHTML = '';
   }
 
   private ensureHandler() {

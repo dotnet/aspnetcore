@@ -3,7 +3,7 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
 import * as Environment from './Environment';
 import { byteArrayBeingTransferred, monoPlatform } from './Platform/Mono/MonoPlatform';
-import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
+import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement, detachRootComponentFromElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { shouldAutoStart } from './BootCommon';
 import { setEventDispatcher } from './Rendering/Events/EventDispatcher';
@@ -119,6 +119,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
       attachRootComponentToLogicalElement(rendererId, element, componentId);
     }
   };
+
+  Blazor._internal.detachRootComponentFromElement = (selector, componentId, rendererId) => {
+    const dynamicComponent = componentAttacher.resolveRegisteredElement(selector);
+    if (dynamicComponent != undefined) {
+      detachRootComponentFromElement(componentId, dynamicComponent, rendererId);
+    }
+  }
 
   Blazor._internal.setComponentRenderer = (renderer) => {
     if (Blazor.renderRootComponent) {

@@ -79,6 +79,12 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
   return element as unknown as LogicalElement;
 }
 
+export function toRegularElement(element: LogicalElement): void {
+  if (logicalChildrenPropname in element) { // If it's already a logical element, leave it alone
+    delete element[logicalChildrenPropname];
+  }
+}
+
 export function createAndInsertLogicalContainer(parent: LogicalElement, childIndex: number): LogicalElement {
   const containerElement = document.createComment('!');
   insertLogicalChild(containerElement, parent, childIndex);
