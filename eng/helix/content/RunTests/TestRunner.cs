@@ -125,12 +125,14 @@ namespace RunTests
         {
             try
             {
+                // Install dotnet-dump first so we can catch any failures from running dotnet after this (installing tools, running tests, etc.)
                 await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                     $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --version 5.0.0-*",
                     environmentVariables: EnvironmentVariables,
                     outputDataReceived: Console.WriteLine,
                     errorDataReceived: Console.Error.WriteLine,
-                    throwOnError: false);
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
                 Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
 
