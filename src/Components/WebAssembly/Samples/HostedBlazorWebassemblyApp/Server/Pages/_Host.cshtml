@@ -1,22 +1,58 @@
 ﻿@page "/"
 @namespace HostedBlazorWebassemblyApp.Server.Pages
-@using HostedBlazorWebassemblyApp.Client 
+@using HostedBlazorWebassemblyApp.Client
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>HostedBlazorWebassemblyApp</title>
-    <base href="/" />
-    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
-    <link href="css/app.css" rel="stylesheet" />
-    <link href="HostedBlazorWebassemblyApp.Client.styles.css" rel="stylesheet" />
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<title>HostedBlazorWebassemblyApp</title>
+	<base href="/" />
+	<link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+	<link href="css/app.css" rel="stylesheet" />
+	<link href="HostedBlazorWebassemblyApp.Client.styles.css" rel="stylesheet" />
 </head>
 <body>
-    <div id="app"><component type="typeof(App)" render-mode="WebAssemblyPrerendered" /></div>
-    <persist-component-state />
-    <script src="_framework/blazor.webassembly.js"></script>
+	<button id="start" onclick="loadMe()" disabled>Click me to render the App component</button>
+	<button id="stop" onclick="unloadMe()" disabled>Remove app component</button>
+	<script src="_framework/blazor.webassembly.js" autostart="false"></script>
+	<script>
+		var proxies = [];
+		async function loadMe(){
+			var component = document.createElement("div");
+			proxies.push(await Blazor.renderRootComponent({
+				Kind: 'Descriptor',
+				Descriptor: {
+					Assembly: 'HostedBlazorWebassemblyApp.Client',
+					TypeName: 'HostedBlazorWebassemblyApp.Client.Pages.Counter'
+				},
+			},
+			component));
+
+			document.querySelector('body').appendChild(component);
+			document.querySelector('#stop').disabled = false;
+		}
+
+		async function unloadMe(){
+			if(proxies.length === 0){
+				console.log('No components to remove.');
+			}
+
+			const current = proxies.pop();
+			const element = current.element;
+			
+			await current.dispose();
+			document.querySelector('body').removeChild(element);
+
+			document.querySelector('#stop').disabled = proxies.length === 0;
+		}
+
+		Blazor.start({})
+		.then(() => {
+			document.querySelector('#start').disabled = false;
+		});
+	</script>
 </body>
 </html>
