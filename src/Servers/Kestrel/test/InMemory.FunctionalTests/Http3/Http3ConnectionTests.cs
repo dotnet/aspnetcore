@@ -132,5 +132,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
                 expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(Http3Formatting.ToFormattedType(frame.Type)));
         }
+
+        [Fact]
+        public async Task ControlStream_ClientCloses_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            var controlStream = await CreateControlStream(id: 0);
+            await controlStream.SendSettingsAsync(new List<Http3PeerSetting>());
+
+            await controlStream.EndStreamAsync();
+
+            await WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
+                expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClientClosedInbound);
+        }
     }
 }

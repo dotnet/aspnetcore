@@ -222,13 +222,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                     if (result.IsCompleted)
                     {
+                        if (!_context.StreamContext.ConnectionClosed.IsCancellationRequested)
+                        {
+                            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1-2
+                            throw new Http3ConnectionErrorException(CoreStrings.Http3ErrorControlStreamClientClosedInbound, Http3ErrorCode.ClosedCriticalStream);
+                        }
+
                         return;
                     }
-                }
-                catch (Http3ConnectionErrorException ex)
-                {
-                    _errorCodeFeature.Error = (long)ex.ErrorCode;
-                    _context.StreamLifetimeHandler.OnStreamConnectionError(ex);
                 }
                 finally
                 {

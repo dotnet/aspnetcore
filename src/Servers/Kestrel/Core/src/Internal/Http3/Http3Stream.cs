@@ -389,7 +389,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             return;
                         }
                     }
-
                     finally
                     {
                         Input.AdvanceTo(consumed, examined);
