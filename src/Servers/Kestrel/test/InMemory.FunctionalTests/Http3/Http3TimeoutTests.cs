@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -263,6 +264,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
         */
 
+        private class EchoAppWithNotification
+        {
+            private readonly TaskCompletionSource _writeStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public Task WriteStartedTask => _writeStartedTcs.Task;
+
+            public async Task RunApp(HttpContext context)
+            {
+                await context.Response.Body.FlushAsync();
+
+                var buffer = new byte[16 * 1024];
+                int received;
+
+                while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    var writeTask = context.Response.Body.WriteAsync(buffer, 0, received);
+                    _writeStartedTcs.TrySetResult();
+
+                    await writeTask;
+                }
+            }
+        }
+
         [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21520")]
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnSmallWrite_AbortsConnectionAfterGracePeriod()
@@ -278,12 +302,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
-            var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
+            var app = new EchoAppWithNotification();
+            var requestStream = await InitializeConnectionAndStreamsAsync(app.RunApp);
 
             await requestStream.SendHeadersAsync(_browserRequestHeaders, endStream: false);
             await requestStream.SendDataAsync(_helloWorldBytes, endStream: true);
 
             await requestStream.ExpectHeadersAsync();
+
+            await app.WriteStartedTask.DefaultTimeout();
 
             // Complete timing of the request body so we don't induce any unexpected request body rate timeouts.
             _timeoutControl.Tick(mockSystemClock.UtcNow);
@@ -306,7 +333,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21520")]
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnLargeWrite_AbortsConnectionAfterRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -320,18 +346,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
-            var requestStream = await InitializeConnectionAndStreamsAsync(_echoApplication);
+            var app = new EchoAppWithNotification();
+            var requestStream = await InitializeConnectionAndStreamsAsync(app.RunApp);
 
             await requestStream.SendHeadersAsync(_browserRequestHeaders, endStream: false);
             await requestStream.SendDataAsync(_maxData, endStream: true);
 
             await requestStream.ExpectHeadersAsync();
 
+            await app.WriteStartedTask.DefaultTimeout();
+
             // Complete timing of the request body so we don't induce any unexpected request body rate timeouts.
             _timeoutControl.Tick(mockSystemClock.UtcNow);
 
             var timeToWriteMaxData = TimeSpan.FromSeconds((requestStream.BytesReceived + _maxData.Length) / limits.MinResponseDataRate.BytesPerSecond) +
-                Heartbeat.Interval - TimeSpan.FromSeconds(.5);
+                limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5);
 
             // Don't read data frame to induce "socket" backpressure.
             AdvanceClock(timeToWriteMaxData);
