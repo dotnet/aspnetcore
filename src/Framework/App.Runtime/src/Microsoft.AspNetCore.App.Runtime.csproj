@@ -454,7 +454,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <Crossgen2Args>$(Crossgen2Args) --targetos:$(Crossgen2TargetOs)</Crossgen2Args>
       <Crossgen2Args>$(Crossgen2Args) -O</Crossgen2Args>
       <Crossgen2Args>$(Crossgen2Args) @&quot;$(CrossgenToolDir)PlatformAssembliesPathsCrossgen2.rsp&quot;</Crossgen2Args>
-      <Crossgen2Args>$(Crossgen2Args) @&quot;-m:$(RuntimePackageRoot)tools\StandardOptimizationData.mibc&quot;</Crossgen2Args>
+      <Crossgen2Args Condition="Exists('$(RuntimePackageRoot)tools\StandardOptimizationData.mibc')">$(Crossgen2Args) &quot;-m:$(RuntimePackageRoot)tools\StandardOptimizationData.mibc&quot;</Crossgen2Args>
       <Crossgen2Args Condition="'$(GenerateCrossgenProfilingSymbols)' == 'true' and '$(TargetOsName)' == 'win'">$(Crossgen2Args) --pdb --pdb-path:&quot;$(CrossgenSymbolsTargetDir)&quot;</Crossgen2Args>
       <Crossgen2Args Condition="'$(GenerateCrossgenProfilingSymbols)' == 'true' and '$(TargetOsName)' != 'win'">$(Crossgen2Args) --perfmap --perfmap-path:&quot;$(CrossgenSymbolsTargetDir)&quot;</Crossgen2Args>
     </PropertyGroup>
