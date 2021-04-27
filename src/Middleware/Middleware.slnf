@@ -89,6 +89,7 @@
       "src\\Http\\Authentication.Core\\src\\Microsoft.AspNetCore.Authentication.Core.csproj",
       "src\\Http\\Authentication.Abstractions\\src\\Microsoft.AspNetCore.Authentication.Abstractions.csproj",
       "src\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",
+      "src\\Http\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",
       "src\\DataProtection\\DataProtection\\src\\Microsoft.AspNetCore.DataProtection.csproj",
