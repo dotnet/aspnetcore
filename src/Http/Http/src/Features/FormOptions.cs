@@ -44,36 +44,42 @@ namespace Microsoft.AspNetCore.Http.Features
         /// If this threshold is exceeded then the buffer will be moved to a temp file on disk instead.
         /// This also applies when buffering individual multipart section bodies.
         /// </summary>
+        /// <value>Defaults to 64k.</value>
         public int MemoryBufferThreshold { get; set; } = DefaultMemoryBufferThreshold;
 
         /// <summary>
         /// If <see cref="BufferBody"/> is enabled, this is the limit for the total number of bytes that will
         /// be buffered. Forms that exceed this limit will throw an <see cref="InvalidDataException"/> when parsed.
         /// </summary>
+        /// <value>Defaults to 128M.</value>
         public long BufferBodyLengthLimit { get; set; } = DefaultBufferBodyLengthLimit;
 
         /// <summary>
         /// A limit for the number of form entries to allow.
         /// Forms that exceed this limit will throw an <see cref="InvalidDataException"/> when parsed.
         /// </summary>
+        /// <value>Defaults to 1024.</value>
         public int ValueCountLimit { get; set; } = FormReader.DefaultValueCountLimit;
 
         /// <summary>
         /// A limit on the length of individual keys. Forms containing keys that exceed this limit will
         /// throw an <see cref="InvalidDataException"/> when parsed.
         /// </summary>
+        /// <value>Defaults to 2048.</value>
         public int KeyLengthLimit { get; set; } = FormReader.DefaultKeyLengthLimit;
 
         /// <summary>
         /// A limit on the length of individual form values. Forms containing values that exceed this
         /// limit will throw an <see cref="InvalidDataException"/> when parsed.
         /// </summary>
+        /// <value>Defaults to 4096.</value>
         public int ValueLengthLimit { get; set; } = FormReader.DefaultValueLengthLimit;
 
         /// <summary>
         /// A limit for the length of the boundary identifier. Forms with boundaries that exceed this
         /// limit will throw an <see cref="InvalidDataException"/> when parsed.
         /// </summary>
+        /// <value>Defaults to 2048.</value>
         public int MultipartBoundaryLengthLimit { get; set; } = DefaultMultipartBoundaryLengthLimit;
 
         /// <summary>
@@ -81,18 +87,21 @@ namespace Microsoft.AspNetCore.Http.Features
         /// be combined. Form sections that exceed this limit will throw an <see cref="InvalidDataException"/>
         /// when parsed.
         /// </summary>
+        /// <value>Defaults to 16.</value>
         public int MultipartHeadersCountLimit { get; set; } = MultipartReader.DefaultHeadersCountLimit;
 
         /// <summary>
         /// A limit for the total length of the header keys and values in each multipart section.
         /// Form sections that exceed this limit will throw an <see cref="InvalidDataException"/> when parsed.
         /// </summary>
+        /// <value>Defaults to 16k.</value>
         public int MultipartHeadersLengthLimit { get; set; } = MultipartReader.DefaultHeadersLengthLimit;
 
         /// <summary>
         /// A limit for the length of each multipart body. Forms sections that exceed this limit will throw an
         /// <see cref="InvalidDataException"/> when parsed.
         /// </summary>
+        /// <value>Defaults to 128.</value>
         public long MultipartBodyLengthLimit { get; set; } = DefaultMultipartBodyLengthLimit;
     }
 }
