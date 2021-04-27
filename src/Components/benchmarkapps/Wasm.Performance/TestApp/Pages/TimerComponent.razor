@@ -7,7 +7,6 @@
 
 @code
 {
-    Random random = new Random();
     Timer timer;
     int red = 128;
     int green = 128;
@@ -22,9 +21,9 @@
     {
         InvokeAsync(() =>
         {
-            red = random.Next(0, 256);
-            green = random.Next(0, 256);
-            blue = random.Next(0, 256);
+            red = Random.Shared.Next(0, 256);
+            green = Random.Shared.Next(0, 256);
+            blue = Random.Shared.Next(0, 256);
             StateHasChanged();
             BenchmarkEvent.Send(JSRuntime, "Finished updating color");
         });
