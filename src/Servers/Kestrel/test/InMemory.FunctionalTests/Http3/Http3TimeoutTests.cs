@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -26,9 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var controlStream = await GetInboundControlStream().DefaultTimeout();
             await controlStream.ExpectSettingsAsync().DefaultTimeout();
 
-            await AssertIsTrueRetryAsync(
-                () => Connection._streams.Count == 2,
-                "Wait until streams have been created.").DefaultTimeout();
+            await requestStream.OnStreamCreatedTask.DefaultTimeout();
 
             var serverRequestStream = Connection._streams[requestStream.StreamId];
 
@@ -63,9 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var controlStream = await GetInboundControlStream().DefaultTimeout();
             await controlStream.ExpectSettingsAsync().DefaultTimeout();
 
-            await AssertIsTrueRetryAsync(
-                () => Connection._streams.Count == 2,
-                "Wait until streams have been created.").DefaultTimeout();
+            await requestStream.OnStreamCreatedTask.DefaultTimeout();
 
             var serverRequestStream = Connection._streams[requestStream.StreamId];
 
@@ -76,13 +74,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await requestStream.SendHeadersAsync(headers).DefaultTimeout();
 
-            await AssertIsTrueRetryAsync(
-                () => serverRequestStream.ReceivedHeader,
-                "Request stream has read headers.").DefaultTimeout();
+            await requestStream.OnHeaderReceivedTask.DefaultTimeout();
 
             TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
 
             await requestStream.SendDataAsync(Memory<byte>.Empty, endStream: true);
+
+            await requestStream.ExpectHeadersAsync();
 
             await requestStream.ExpectReceiveEndOfStream();
         }
@@ -107,9 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var outboundControlStream = await CreateControlStream(id: null);
 
-            await AssertIsTrueRetryAsync(
-                () => Connection._streams.Count == 1,
-                "Wait until streams have been created.").DefaultTimeout();
+            await outboundControlStream.OnStreamCreatedTask.DefaultTimeout();
 
             var serverInboundControlStream = Connection._streams[outboundControlStream.StreamId];
 
@@ -143,20 +139,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var outboundControlStream = await CreateControlStream(id: null);
 
-            await AssertIsTrueRetryAsync(
-                () => Connection._streams.Count == 1,
-                "Wait until streams have been created.").DefaultTimeout();
-
-            var serverInboundControlStream = Connection._streams[outboundControlStream.StreamId];
+            await outboundControlStream.OnStreamCreatedTask.DefaultTimeout();
 
             TriggerTick(now);
             TriggerTick(now + limits.RequestHeadersTimeout);
 
             await outboundControlStream.WriteStreamIdAsync(id: 0);
 
-            await AssertIsTrueRetryAsync(
-                () => serverInboundControlStream.ReceivedHeader,
-                "Control stream has read header.").DefaultTimeout();
+            await outboundControlStream.OnHeaderReceivedTask.DefaultTimeout();
 
             TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
         }
@@ -183,35 +173,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var outboundControlStream = await CreateControlStream(id: null);
 
-            await AssertIsTrueRetryAsync(
-                () => Connection._streams.Count == 1,
-                "Wait until streams have been created.").DefaultTimeout();
+            await outboundControlStream.OnStreamCreatedTask.DefaultTimeout();
 
             var serverInboundControlStream = Connection._streams[outboundControlStream.StreamId];
 
             TriggerTick(now);
 
             Assert.Equal(TimeSpan.MaxValue.Ticks, serverInboundControlStream.HeaderTimeoutTicks);
-        }
-
-        private static async Task AssertIsTrueRetryAsync(Func<bool> assert, string message)
-        {
-            const int Retries = 10;
-
-            for (var i = 0; i < Retries; i++)
-            {
-                if (i > 0)
-                {
-                    await Task.Delay((i + 1) * 10);
-                }
-
-                if (assert())
-                {
-                    return;
-                }
-            }
-
-            throw new Exception($"Assert failed after {Retries} retries: {message}");
         }
     }
 }

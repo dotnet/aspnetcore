@@ -154,6 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             try
             {
                 _headerType = await TryReadStreamHeaderAsync();
+                _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
                 switch (_headerType)
                 {
@@ -194,6 +195,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 _errorCodeFeature.Error = (long)ex.ErrorCode;
                 _context.StreamLifetimeHandler.OnStreamConnectionError(ex);
+            }
+            finally
+            {
+                _context.StreamLifetimeHandler.OnStreamCompleted(this);
             }
         }
 

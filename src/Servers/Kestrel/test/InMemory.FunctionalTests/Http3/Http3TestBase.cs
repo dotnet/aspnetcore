@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -47,6 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected Task _connectionTask;
         protected readonly TaskCompletionSource _closedStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+        internal readonly ConcurrentDictionary<long, Http3StreamBase> _runningStreams = new ConcurrentDictionary<long, Http3StreamBase>();
 
         protected readonly RequestDelegate _noopApplication;
         protected readonly RequestDelegate _echoApplication;
@@ -242,8 +244,72 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             httpConnectionContext.TimeoutControl = _mockTimeoutControl.Object;
 
             Connection = new Http3Connection(httpConnectionContext);
+            Connection._streamLifetimeHandler = new LifetimeHandlerInterceptor(Connection, this);
+
             _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
                            .Callback<TimeoutReason>(r => Connection.OnTimeout(r));
+        }
+
+        private class LifetimeHandlerInterceptor : IHttp3StreamLifetimeHandler
+        {
+            private readonly IHttp3StreamLifetimeHandler _inner;
+            private readonly Http3TestBase _http3TestBase;
+
+            public LifetimeHandlerInterceptor(IHttp3StreamLifetimeHandler inner, Http3TestBase http3TestBase)
+            {
+                _inner = inner;
+                _http3TestBase = http3TestBase;
+            }
+
+            public bool OnInboundControlStream(Internal.Http3.Http3ControlStream stream)
+            {
+                return _inner.OnInboundControlStream(stream);
+            }
+
+            public void OnInboundControlStreamSetting(Internal.Http3.Http3SettingType type, long value)
+            {
+                _inner.OnInboundControlStreamSetting(type, value);
+            }
+
+            public bool OnInboundDecoderStream(Internal.Http3.Http3ControlStream stream)
+            {
+                return _inner.OnInboundDecoderStream(stream);
+            }
+
+            public bool OnInboundEncoderStream(Internal.Http3.Http3ControlStream stream)
+            {
+                return _inner.OnInboundEncoderStream(stream);
+            }
+
+            public void OnStreamCompleted(IHttp3Stream stream)
+            {
+                _inner.OnStreamCompleted(stream);
+            }
+
+            public void OnStreamConnectionError(Http3ConnectionErrorException ex)
+            {
+                _inner.OnStreamConnectionError(ex);
+            }
+
+            public void OnStreamCreated(IHttp3Stream stream)
+            {
+                _inner.OnStreamCreated(stream);
+
+                if (_http3TestBase._runningStreams.TryGetValue(stream.StreamId, out var testStream))
+                {
+                    testStream._onStreamCreatedTcs.TrySetResult();
+                }
+            }
+
+            public void OnStreamHeaderReceived(IHttp3Stream stream)
+            {
+                _inner.OnStreamHeaderReceived(stream);
+
+                if (_http3TestBase._runningStreams.TryGetValue(stream.StreamId, out var testStream))
+                {
+                    testStream._onHeaderReceivedTcs.TrySetResult();
+                }
+            }
         }
 
         protected void ConnectionClosed()
@@ -294,6 +360,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async ValueTask<Http3ControlStream> CreateControlStream(int? id)
         {
             var stream = new Http3ControlStream(this, StreamInitiator.Client);
+            _runningStreams[stream.StreamId] = stream;
+
             MultiplexedConnectionContext.ToServerAcceptQueue.Writer.TryWrite(stream.StreamContext);
             if (id != null)
             {
@@ -305,6 +373,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal ValueTask<Http3RequestStream> CreateRequestStream()
         {
             var stream = new Http3RequestStream(this, Connection);
+            _runningStreams[stream.StreamId] = stream;
+
             MultiplexedConnectionContext.ToServerAcceptQueue.Writer.TryWrite(stream.StreamContext);
             return new ValueTask<Http3RequestStream>(stream);
         }
@@ -318,11 +388,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public class Http3StreamBase : IProtocolErrorCodeFeature
         {
+            internal TaskCompletionSource _onStreamCreatedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            internal TaskCompletionSource _onHeaderReceivedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
             internal DuplexPipe.DuplexPipePair _pair;
             internal Http3TestBase _testBase;
             internal Http3Connection _connection;
             private long _bytesReceived;
             public long Error { get; set; }
+
+            public Task OnStreamCreatedTask => _onStreamCreatedTcs.Task;
+            public Task OnHeaderReceivedTask => _onHeaderReceivedTcs.Task;
 
             protected Task SendAsync(ReadOnlySpan<byte> span)
             {
