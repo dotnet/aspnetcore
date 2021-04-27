@@ -1160,7 +1160,7 @@
         "ClientApp/e2e/src/app.e2e-spec.ts",
         "ClientApp/e2e/src/app.po.ts",
         "ClientApp/e2e/protractor.conf.js",
-        "ClientApp/e2e/tsconfig.e2e.json",
+        "ClientApp/e2e/tsconfig.json",
         "ClientApp/src/app/counter/counter.component.html",
         "ClientApp/src/app/counter/counter.component.spec.ts",
         "ClientApp/src/app/counter/counter.component.ts",
