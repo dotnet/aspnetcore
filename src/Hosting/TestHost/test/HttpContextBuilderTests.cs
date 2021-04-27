@@ -59,10 +59,10 @@ namespace Microsoft.AspNetCore.TestHost
             server.BaseAddress = new Uri("https://example.com/");
             var context = await server.SendAsync(c =>
             {
-                c.Request.Headers[HeaderNames.UserAgent] = userAgent;
+                c.Request.Headers.UserAgent = userAgent;
             });
 
-            var actualResult = context.Request.Headers[HeaderNames.UserAgent];
+            var actualResult = context.Request.Headers.UserAgent;
             Assert.Equal(userAgent, actualResult);
         }
 

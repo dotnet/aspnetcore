@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 
         private void TechEmpowerPlaintext()
         {
-            var responseHeaders = _responseHeaders;
-            responseHeaders.HeaderContentType = "text/plain";
+            var responseHeaders = _responseHeadersDict;
+            responseHeaders.ContentType = "text/plain";
             responseHeaders.ContentLength = _helloWorldPayload.Length;
 
             var writer = new BufferWriter<PipeWriter>(_writer);
@@ -71,8 +71,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 
         private void PlaintextChunked()
         {
-            var responseHeaders = _responseHeaders;
-            responseHeaders.HeaderContentType = "text/plain";
+            var responseHeaders = _responseHeadersDict;
+            responseHeaders.ContentType = "text/plain";
 
             var writer = new BufferWriter<PipeWriter>(_writer);
             _responseHeaders.CopyTo(ref writer);
@@ -80,11 +80,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 
         private void LiveAspNet()
         {
-            var responseHeaders = _responseHeaders;
-            responseHeaders.HeaderContentEncoding = "gzip";
-            responseHeaders.HeaderContentType = "text/html; charset=utf-8";
-            _responseHeadersDict[HeaderNames.StrictTransportSecurity] = "max-age=31536000; includeSubdomains";
-            responseHeaders.HeaderVary = "Accept-Encoding";
+            var responseHeaders = _responseHeadersDict;
+            responseHeaders.ContentEncoding = "gzip";
+            responseHeaders.ContentType = "text/html; charset=utf-8";
+            responseHeaders.StrictTransportSecurity = "max-age=31536000; includeSubdomains";
+            responseHeaders.Vary = "Accept-Encoding";
             _responseHeadersDict["X-Powered-By"] = "ASP.NET";
 
             var writer = new BufferWriter<PipeWriter>(_writer);
@@ -93,9 +93,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 
         private void PlaintextWithCookie()
         {
-            var responseHeaders = _responseHeaders;
-            responseHeaders.HeaderContentType = "text/plain";
-            responseHeaders.HeaderSetCookie = "prov=20629ccd-8b0f-e8ef-2935-cd26609fc0bc; __qca=P0-1591065732-1479167353442; _ga=GA1.2.1298898376.1479167354; _gat=1; sgt=id=9519gfde_3347_4762_8762_df51458c8ec2; acct=t=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric&s=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric";
+            var responseHeaders = _responseHeadersDict;
+            responseHeaders.ContentType = "text/plain";
+            responseHeaders.SetCookie = "prov=20629ccd-8b0f-e8ef-2935-cd26609fc0bc; __qca=P0-1591065732-1479167353442; _ga=GA1.2.1298898376.1479167354; _gat=1; sgt=id=9519gfde_3347_4762_8762_df51458c8ec2; acct=t=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric&s=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric";
             responseHeaders.ContentLength = _helloWorldPayload.Length;
 
             var writer = new BufferWriter<PipeWriter>(_writer);
@@ -104,10 +104,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 
         private void PlaintextChunkedWithCookie()
         {
-            var responseHeaders = _responseHeaders;
-            responseHeaders.HeaderContentType = "text/plain";
-            responseHeaders.HeaderSetCookie = "prov=20629ccd-8b0f-e8ef-2935-cd26609fc0bc; __qca=P0-1591065732-1479167353442; _ga=GA1.2.1298898376.1479167354; _gat=1; sgt=id=9519gfde_3347_4762_8762_df51458c8ec2; acct=t=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric&s=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric";
-            responseHeaders.HeaderTransferEncoding = "chunked";
+            var responseHeaders = _responseHeadersDict;
+            responseHeaders.ContentType = "text/plain";
+            responseHeaders.SetCookie = "prov=20629ccd-8b0f-e8ef-2935-cd26609fc0bc; __qca=P0-1591065732-1479167353442; _ga=GA1.2.1298898376.1479167354; _gat=1; sgt=id=9519gfde_3347_4762_8762_df51458c8ec2; acct=t=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric&s=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric";
+            responseHeaders.TransferEncoding = "chunked";
 
             var writer = new BufferWriter<PipeWriter>(_writer);
             _responseHeaders.CopyTo(ref writer);

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private readonly IServiceScope _scope;
         private readonly IServiceProvider _services;
         private readonly IConfiguration _configuration;
-        private readonly RootComponentMapping[] _rootComponents;
+        private readonly RootComponentMappingCollection _rootComponents;
         private readonly string? _persistedState;
 
         // NOTE: the host is disposable because it OWNs references to disposable things.
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             IServiceProvider services,
             IServiceScope scope,
             IConfiguration configuration,
-            RootComponentMapping[] rootComponents,
+            RootComponentMappingCollection rootComponents,
             string? persistedState)
         {
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
@@ -158,13 +158,27 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
                 _renderer = new WebAssemblyRenderer(Services, loggerFactory);
 
-                var rootComponents = _rootComponents;
-                for (var i = 0; i < rootComponents.Length; i++)
+                var initializationTcs = new TaskCompletionSource();
+                WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
                 {
-                    var rootComponent = rootComponents[i];
-                    await _renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
-                }
+                    var (rootComponents, renderer, initializationTcs) = state;
 
+                    try
+                    {
+                foreach (var rootComponent in rootComponents)
+                        {
+                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
+                        }
+
+                        initializationTcs.SetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        initializationTcs.SetException(ex);
+                    }
+                });
+
+                await initializationTcs.Task;
                 store.ExistingState.Clear();
 
                 await tcs.Task;

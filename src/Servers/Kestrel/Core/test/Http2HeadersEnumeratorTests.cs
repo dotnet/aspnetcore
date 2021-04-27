@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
+
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -17,14 +19,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void CanIterateOverResponseHeaders()
         {
-            var responseHeaders = new HttpResponseHeaders
-            {
-                ContentLength = 9,
-                HeaderAcceptRanges = "AcceptRanges!",
-                HeaderAge = new StringValues(new[] { "1", "2" }),
-                HeaderDate = "Date!",
-                HeaderGrpcEncoding = "Identity!"
-            };
+            var responseHeaders = (IHeaderDictionary)new HttpResponseHeaders();
+
+            responseHeaders.ContentLength = 9;
+            responseHeaders.AcceptRanges = "AcceptRanges!";
+            responseHeaders.Age = new StringValues(new[] { "1", "2" });
+            responseHeaders.Date = "Date!";
+            responseHeaders.GrpcEncoding = "Identity!";
+
             responseHeaders.Append("Name1", "Value1");
             responseHeaders.Append("Name2", "Value2-1");
             responseHeaders.Append("Name2", "Value2-2");
@@ -53,11 +55,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void CanIterateOverResponseTrailers()
         {
-            var responseTrailers = new HttpResponseTrailers
-            {
-                ContentLength = 9,
-                HeaderETag = "ETag!"
-            };
+            var responseTrailers = (IHeaderDictionary)new HttpResponseTrailers();
+
+            responseTrailers.ContentLength = 9;
+            responseTrailers.ETag = "ETag!";
+
             responseTrailers.Append("Name1", "Value1");
             responseTrailers.Append("Name2", "Value2-1");
             responseTrailers.Append("Name2", "Value2-2");
@@ -104,10 +106,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("Value2-2", e.Current.Value);
             Assert.Equal(-1, e.HPackStaticTableId);
 
-            var responseTrailers = new HttpResponseTrailers
-            {
-                HeaderGrpcStatus = "1"
-            };
+            var responseTrailers = (IHeaderDictionary)new HttpResponseTrailers();
+
+            responseTrailers.GrpcStatus = "1";
+
             responseTrailers.Append("Name1", "Value1");
             responseTrailers.Append("Name2", "Value2-1");
             responseTrailers.Append("Name2", "Value2-2");

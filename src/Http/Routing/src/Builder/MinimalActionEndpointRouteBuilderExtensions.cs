@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Provides extension methods for <see cref="IEndpointRouteBuilder"/> to define HTTP API endpoints.
     /// </summary>
-    public static class MinmalActionEndpointRouteBuilderExtensions
+    public static class MinimalActionEndpointRouteBuilderExtensions
     {
         // Avoid creating a new array every call
         private static readonly string[] GetVerb = new[] { "GET" };

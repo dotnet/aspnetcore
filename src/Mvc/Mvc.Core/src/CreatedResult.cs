@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             base.OnFormatting(context);
 
-            context.HttpContext.Response.Headers[HeaderNames.Location] = Location;
+            context.HttpContext.Response.Headers.Location = Location;
         }
     }
 }

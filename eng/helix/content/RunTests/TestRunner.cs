@@ -29,6 +29,7 @@ namespace RunTests
         {
             try
             {
+                EnvironmentVariables.Add("DOTNET_CLI_HOME", Options.HELIX_WORKITEM_ROOT);
                 EnvironmentVariables.Add("PATH", Options.Path);
                 EnvironmentVariables.Add("helix", Options.HelixQueue);
 
@@ -71,7 +72,7 @@ namespace RunTests
                 DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.NETCore.App"));
                 DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.AspNetCore.App"));
                 DisplayContents(Path.Combine(Options.DotnetRoot, "packs", "Microsoft.AspNetCore.App.Ref"));
-                
+
                 return true;
             }
             catch (Exception e)
@@ -125,6 +126,15 @@ namespace RunTests
         {
             try
             {
+                // Install dotnet-dump first so we can catch any failures from running dotnet after this (installing tools, running tests, etc.)
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --version 5.0.0-*",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
                 Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
 
                 await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
@@ -159,13 +169,6 @@ namespace RunTests
                     errorDataReceived: Console.Error.WriteLine,
                     throwOnError: false,
                     cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-                
-                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --version 5.0.0-*",
-                    environmentVariables: EnvironmentVariables,
-                    outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.Error.WriteLine,
-                    throwOnError: false);
 
                 return true;
             }

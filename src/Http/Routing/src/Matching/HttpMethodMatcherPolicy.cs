@@ -414,7 +414,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                     // Prevent ArgumentException from duplicate key if header already added, such as when the
                     // request is re-executed by an error handler (see https://github.com/dotnet/aspnetcore/issues/6415)
-                    context.Response.Headers[HeaderNames.Allow] = allow;
+                    context.Response.Headers.Allow = allow;
 
                     return Task.CompletedTask;
                 },

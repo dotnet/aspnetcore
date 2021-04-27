@@ -307,7 +307,7 @@
     <value>IHttpUpgradeFeature.UpgradeAsync was already called and can only be called once per connection.</value>
   </data>
   <data name="BadRequest_RequestBodyTooLarge" xml:space="preserve">
-    <value>Request body too large.</value>
+    <value>Request body too large. The max request body size is {maxRequestBodySize} bytes.</value>
   </data>
   <data name="MaxRequestBodySizeCannotBeModifiedAfterRead" xml:space="preserve">
     <value>The maximum request body size cannot be modified after the app has already started reading from the request body.</value>
@@ -682,5 +682,14 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="Http3StreamErrorRequestEndedNoHeaders" xml:space="preserve">
     <value>Request stream ended without headers.</value>
+  </data>
+  <data name="Http3ControlStreamHeaderTimeout" xml:space="preserve">
+    <value>Reading the control stream header timed out.</value>
+  </data>
+  <data name="Http3ErrorControlStreamClientClosedInbound" xml:space="preserve">
+    <value>The client closed the connection control stream inbound to the server.</value>
+  </data>
+  <data name="Http3ControlStreamErrorUnsupportedType" xml:space="preserve">
+    <value>Stream type {type} is unsupported.</value>
   </data>
 </root>

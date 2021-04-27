@@ -37,7 +37,7 @@ namespace IISSample
 
                 await context.Response.WriteAsync("Address:" + Environment.NewLine);
                 await context.Response.WriteAsync("Scheme: " + context.Request.Scheme + Environment.NewLine);
-                await context.Response.WriteAsync("Host: " + context.Request.Headers["Host"] + Environment.NewLine);
+                await context.Response.WriteAsync("Host: " + context.Request.Headers.Host + Environment.NewLine);
                 await context.Response.WriteAsync("PathBase: " + context.Request.PathBase.Value + Environment.NewLine);
                 await context.Response.WriteAsync("Path: " + context.Request.Path.Value + Environment.NewLine);
                 await context.Response.WriteAsync("Query: " + context.Request.QueryString.Value + Environment.NewLine);

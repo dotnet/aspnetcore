@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                                 }
                                 else if (handler == null || !await handler(context))
                                 {
-                                    await next();
+                                    await next(context);
                                 }
                             });
                         })

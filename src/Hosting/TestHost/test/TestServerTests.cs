@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.TestHost
                 container.Services.AddSingleton(new TestService { Message = "ConfigureContainer" });
 
             public void Configure(IApplicationBuilder app) =>
-                app.Use((ctx, next) => ctx.Response.WriteAsync(
+                app.Run(ctx => ctx.Response.WriteAsync(
                     $"{ctx.RequestServices.GetRequiredService<SimpleService>().Message}, {ctx.RequestServices.GetRequiredService<TestService>().Message}"));
         }
 
@@ -472,7 +472,7 @@ namespace Microsoft.AspNetCore.TestHost
                     app.Use(async (context, nxt) =>
                     {
                         context.Features.Set<IServiceProvidersFeature>(this);
-                        await nxt();
+                        await nxt(context);
                     });
                     next(app);
                 };
@@ -514,7 +514,7 @@ namespace Microsoft.AspNetCore.TestHost
                     app.Use(async (context, nxt) =>
                     {
                         context.Features.Set<IServiceProvidersFeature>(this);
-                        await nxt();
+                        await nxt(context);
                     });
                     next(app);
                 };
@@ -771,7 +771,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ManuallySetHostWinsOverInferredHostFromRequestUri(string uri)
         {
             RequestDelegate appDelegate = ctx =>
-                ctx.Response.WriteAsync(ctx.Request.Headers[HeaderNames.Host]);
+                ctx.Response.WriteAsync(ctx.Request.Headers.Host);
 
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);

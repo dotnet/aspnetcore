@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                         app.Use(async (ctx, next) =>
                         {
                             ctx.Features.Set(mockSendFile.Object);
-                            await next();
+                            await next(ctx);
                         });
                         app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
                     })

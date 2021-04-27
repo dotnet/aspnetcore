@@ -28,8 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
         private static readonly UTF8EncodingSealed DefaultRequestHeaderEncoding = new UTF8EncodingSealed();
-        private static readonly SpanAction<char, IntPtr> _getHeaderName = GetHeaderName;
-        private static readonly SpanAction<char, IntPtr> _getAsciiStringNonNullCharacters = GetAsciiStringNonNullCharacters;
+        private static readonly SpanAction<char, IntPtr> s_getHeaderName = GetHeaderName;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
@@ -86,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             fixed (byte* source = &MemoryMarshal.GetReference(span))
             {
-                return string.Create(span.Length, new IntPtr(source), _getHeaderName);
+                return string.Create(span.Length, new IntPtr(source), s_getHeaderName);
             }
         }
 
@@ -94,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             fixed (char* output = &MemoryMarshal.GetReference(buffer))
             {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // This version of AsciiUtilities returns null if there are any null (0 byte) characters
                 // in the string
                 if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
                 {
@@ -104,37 +103,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         public static string GetAsciiStringNonNullCharacters(this Span<byte> span)
-            => GetAsciiStringNonNullCharacters((ReadOnlySpan<byte>)span);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe string GetAsciiStringNonNullCharacters(this ReadOnlySpan<byte> span)
-        {
-            if (span.IsEmpty)
-            {
-                return string.Empty;
-            }
-
-            fixed (byte* source = &MemoryMarshal.GetReference(span))
-            {
-                return string.Create(span.Length, new IntPtr(source), _getAsciiStringNonNullCharacters);
-            }
-        }
+            => StringUtilities.GetAsciiStringNonNullCharacters(span);
 
         public static string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
             => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, DefaultRequestHeaderEncoding);
-
-        private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
-        {
-            fixed (char* output = &MemoryMarshal.GetReference(buffer))
-            {
-                // StringUtilities.TryGetAsciiString returns null if there are any null (0 byte) characters
-                // in the string
-                if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
-                {
-                    throw new InvalidOperationException();
-                }
-            }
-        }
 
         public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector)
         {

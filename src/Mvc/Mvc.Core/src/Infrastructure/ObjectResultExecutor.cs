@@ -21,8 +21,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// </summary>
     public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
     {
-        private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
-
         /// <summary>
         /// Creates a new <see cref="ObjectResultExecutor"/>.
         /// </summary>
@@ -54,8 +52,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             FormatterSelector = formatterSelector;
             WriterFactory = writerFactory.CreateWriter;
             Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
-            var options = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
-            _asyncEnumerableReaderFactory = new AsyncEnumerableReader(options);
         }
 
         /// <summary>
@@ -103,21 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             var value = result.Value;
-
-            if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
-            {
-                return ExecuteAsyncEnumerable(context, result, value, reader);
-            }
-
             return ExecuteAsyncCore(context, result, objectType, value);
-        }
-
-        private async Task ExecuteAsyncEnumerable(ActionContext context, ObjectResult result, object asyncEnumerable, Func<object, Task<ICollection>> reader)
-        {
-            Log.BufferingAsyncEnumerable(Logger, asyncEnumerable);
-
-            var enumerated = await reader(asyncEnumerable);
-            await ExecuteAsyncCore(context, result, enumerated.GetType(), enumerated);
         }
 
         private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type? objectType, object? value)
@@ -166,21 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static class Log
-        {
-            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
-                LogLevel.Debug,
-                new EventId(1, "BufferingAsyncEnumerable"),
-                "Buffering IAsyncEnumerable instance of type '{Type}'.",
-                skipEnabledCheck: true);
-
-            public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-            {
-                if (logger.IsEnabled(LogLevel.Debug))
-                {
-                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
-                }
-            }
-        }
+        // Removed Log.
+        // new EventId(1, "BufferingAsyncEnumerable")
     }
 }

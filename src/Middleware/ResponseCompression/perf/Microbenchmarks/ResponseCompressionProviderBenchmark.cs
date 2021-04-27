@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Benchmarks
         {
             var context = new DefaultHttpContext();
 
-            context.Request.Headers[HeaderNames.AcceptEncoding] = AcceptEncoding;
+            context.Request.Headers.AcceptEncoding = AcceptEncoding;
 
             return Provider.GetCompressionProvider(context);
         }

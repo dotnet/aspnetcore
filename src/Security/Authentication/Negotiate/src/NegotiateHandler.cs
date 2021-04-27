@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 persistence = (AuthPersistence)connectionItems[AuthPersistenceKey]!;
                 _negotiateState = persistence?.State;
 
-                var authorizationHeader = Request.Headers[HeaderNames.Authorization];
+                var authorizationHeader = Request.Headers.Authorization;
 
                 if (StringValues.IsNullOrEmpty(authorizationHeader))
                 {

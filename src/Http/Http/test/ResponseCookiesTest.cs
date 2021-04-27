@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public void AppendSameSiteNoneWithoutSecureLogsWarning()
         {
-            var headers = new HeaderDictionary();
+            var headers = (IHeaderDictionary)new HeaderDictionary();
             var features = MakeFeatures(headers);
             var services = new ServiceCollection();
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Tests
                 SameSite = SameSiteMode.None,
             });
 
-            var cookieHeaderValues = headers[HeaderNames.SetCookie];
+            var cookieHeaderValues = headers.SetCookie;
             Assert.Single(cookieHeaderValues);
             Assert.StartsWith(testCookie, cookieHeaderValues[0]);
             Assert.Contains("path=/", cookieHeaderValues[0]);
@@ -60,14 +60,14 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public void DeleteCookieShouldSetDefaultPath()
         {
-            var headers = new HeaderDictionary();
+            var headers = (IHeaderDictionary)new HeaderDictionary();
             var features = MakeFeatures(headers);
             var cookies = new ResponseCookies(features);
             var testCookie = "TestCookie";
 
             cookies.Delete(testCookie);
 
-            var cookieHeaderValues = headers[HeaderNames.SetCookie];
+            var cookieHeaderValues = headers.SetCookie;
             Assert.Single(cookieHeaderValues);
             Assert.StartsWith(testCookie, cookieHeaderValues[0]);
             Assert.Contains("path=/", cookieHeaderValues[0]);
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public void DeleteCookieWithCookieOptionsShouldKeepPropertiesOfCookieOptions()
         {
-            var headers = new HeaderDictionary();
+            var headers = (IHeaderDictionary)new HeaderDictionary();
             var features = MakeFeatures(headers);
             var cookies = new ResponseCookies(features);
             var testCookie = "TestCookie";
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Http.Tests
 
             cookies.Delete(testCookie, options);
 
-            var cookieHeaderValues = headers[HeaderNames.SetCookie];
+            var cookieHeaderValues = headers.SetCookie;
             Assert.Single(cookieHeaderValues);
             Assert.StartsWith(testCookie, cookieHeaderValues[0]);
             Assert.Contains("path=/", cookieHeaderValues[0]);
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public void NoParamsDeleteRemovesCookieCreatedByAdd()
         {
-            var headers = new HeaderDictionary();
+            var headers = (IHeaderDictionary)new HeaderDictionary();
             var features = MakeFeatures(headers);
             var cookies = new ResponseCookies(features);
             var testCookie = "TestCookie";
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             cookies.Append(testCookie, testCookie);
             cookies.Delete(testCookie);
 
-            var cookieHeaderValues = headers[HeaderNames.SetCookie];
+            var cookieHeaderValues = headers.SetCookie;
             Assert.Single(cookieHeaderValues);
             Assert.StartsWith(testCookie, cookieHeaderValues[0]);
             Assert.Contains("path=/", cookieHeaderValues[0]);
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public void ProvidesMaxAgeWithCookieOptionsArgumentExpectMaxAgeToBeSet()
         {
-            var headers = new HeaderDictionary();
+            var headers = (IHeaderDictionary)new HeaderDictionary();
             var features = MakeFeatures(headers);
             var cookies = new ResponseCookies(features);
             var cookieOptions = new CookieOptions();
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Http.Tests
 
             cookies.Append(testCookie, testCookie, cookieOptions);
 
-            var cookieHeaderValues = headers[HeaderNames.SetCookie];
+            var cookieHeaderValues = headers.SetCookie;
             Assert.Single(cookieHeaderValues);
             Assert.Contains($"max-age={maxAgeTime.TotalSeconds}", cookieHeaderValues[0]);
         }
@@ -147,13 +147,13 @@ namespace Microsoft.AspNetCore.Http.Tests
         [InlineData("QUI+REU/Rw==", "key=QUI%2BREU%2FRw%3D%3D")]
         public void EscapesValuesBeforeSettingCookie(string value, string expected)
         {
-            var headers = new HeaderDictionary();
+            var headers = (IHeaderDictionary)new HeaderDictionary();
             var features = MakeFeatures(headers);
             var cookies = new ResponseCookies(features);
 
             cookies.Append("key", value);
 
-            var cookieHeaderValues = headers[HeaderNames.SetCookie];
+            var cookieHeaderValues = headers.SetCookie;
             Assert.Single(cookieHeaderValues);
             Assert.StartsWith(expected, cookieHeaderValues[0]);
         }
@@ -177,14 +177,14 @@ namespace Microsoft.AspNetCore.Http.Tests
         [InlineData("base64", "QUI+REU/Rw==", "base64=QUI%2BREU%2FRw%3D%3D")]
         public void AppContextSwitchEscapesKeysAndValuesBeforeSettingCookie(string key, string value, string expected)
         {
-            var headers = new HeaderDictionary();
+            var headers = (IHeaderDictionary)new HeaderDictionary();
             var features = MakeFeatures(headers);
             var cookies = new ResponseCookies(features);
             cookies._enableCookieNameEncoding = true;
 
             cookies.Append(key, value);
 
-            var cookieHeaderValues = headers[HeaderNames.SetCookie];
+            var cookieHeaderValues = headers.SetCookie;
             Assert.Single(cookieHeaderValues);
             Assert.StartsWith(expected, cookieHeaderValues[0]);
         }

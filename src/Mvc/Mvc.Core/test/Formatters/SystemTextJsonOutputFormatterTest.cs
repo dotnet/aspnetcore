@@ -1,8 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -81,6 +83,36 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-16")));
         }
 
+        [Fact]
+        public async Task WriteResponseBodyAsync_ForLargeAsyncEnumerable()
+        {
+            // Arrange
+            var expected = new MemoryStream();
+            await JsonSerializer.SerializeAsync(expected, LargeAsync(), new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            var formatter = GetOutputFormatter();
+            var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+            var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
+
+            var body = new MemoryStream();
+            var actionContext = GetActionContext(mediaType, body);
+
+            var asyncEnumerable = LargeAsync();
+            var outputFormatterContext = new OutputFormatterWriteContext(
+                actionContext.HttpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                asyncEnumerable.GetType(),
+                asyncEnumerable)
+            {
+                ContentType = new StringSegment(mediaType.ToString()),
+            };
+
+            // Act
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+            // Assert
+            Assert.Equal(expected.ToArray(), body.ToArray());
+        }
+
         private class Person
         {
             public string Name { get; set; }
@@ -106,6 +138,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             public override void Write(Utf8JsonWriter writer, ThrowingFormatterModel value, JsonSerializerOptions options)
             {
                 throw new TimeZoneNotFoundException();
+            }
+        }
+
+        private static async IAsyncEnumerable<int> LargeAsync()
+        {
+            await Task.Yield();
+            // MvcOptions.MaxIAsyncEnumerableBufferLimit is 8192. Pick some value larger than that.
+            foreach (var i in Enumerable.Range(0, 9000))
+            {
+                yield return i;
             }
         }
     }

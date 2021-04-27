@@ -47,7 +47,7 @@ namespace TestServer
                         resourceRequestLog.AddRequest(context.Request);
                     }
 
-                    return next();
+                    return next(context);
                 });
 
                 app.UseStaticFiles();
