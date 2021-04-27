@@ -144,6 +144,8 @@ namespace CodeGenerator
                 HeaderNames.Baggage,
             })
             .Concat(corsRequestHeaders)
+            .OrderBy(header => header)
+            .OrderBy(header => !requestPrimaryHeaders.Contains(header))
             .Select((header, index) => new KnownHeader
             {
                 Name = header,
@@ -209,6 +211,8 @@ namespace CodeGenerator
                 HeaderNames.Trailer,
             })
             .Concat(corsResponseHeaders)
+            .OrderBy(header => header)
+            .OrderBy(header => !responsePrimaryHeaders.Contains(header))
             .Select((header, index) => new KnownHeader
             {
                 Name = header,
@@ -232,6 +236,8 @@ namespace CodeGenerator
                 HeaderNames.GrpcMessage,
                 HeaderNames.GrpcStatus
             }
+            .OrderBy(header => header)
+            .OrderBy(header => !responsePrimaryHeaders.Contains(header))
             .Select((header, index) => new KnownHeader
             {
                 Name = header,
