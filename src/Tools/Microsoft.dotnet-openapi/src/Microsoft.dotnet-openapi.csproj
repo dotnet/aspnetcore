@@ -7,7 +7,6 @@
     <AssemblyName>dotnet-openapi</AssemblyName>
     <PackageId>Microsoft.dotnet-openapi</PackageId>
     <PackAsTool>true</PackAsTool>
-    <RemoveDevicePlatformSupport>true</RemoveDevicePlatformSupport>
   </PropertyGroup>
 
   <ItemGroup>
