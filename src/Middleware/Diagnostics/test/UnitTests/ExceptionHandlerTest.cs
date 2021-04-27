@@ -313,6 +313,73 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         [Fact]
+        public async Task ExceptionHandlerSucceeded_IfExceptionHandlerResponseHasStarted()
+        {
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Use(async (httpContext, next) =>
+                        {
+                            Exception exception = null;
+                            try
+                            {
+                                await next(httpContext);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                exception = ex;
+                            }
+
+                            Assert.Null(exception);
+                        });
+
+                        app.UseExceptionHandler("/handle-errors");
+
+                        app.Map("/handle-errors", (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run(async (httpContext) =>
+                            {
+                                httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                                await httpContext.Response.WriteAsync("Custom 404");
+                            });
+                        });
+
+                        app.Run(httpContext =>
+                        {
+                            httpContext.Response.Headers.Add("Cache-Control", new[] { "max-age=3600" });
+                            httpContext.Response.Headers.Add("Pragma", new[] { "max-age=3600" });
+                            httpContext.Response.Headers.Add("Expires", new[] { DateTime.UtcNow.AddDays(10).ToString("R") });
+                            httpContext.Response.Headers.Add("ETag", new[] { "abcdef" });
+
+                            throw new InvalidOperationException("Something bad happened");
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(string.Empty);
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                Assert.Equal("Custom 404", await response.Content.ReadAsStringAsync());
+                IEnumerable<string> values;
+                Assert.True(response.Headers.CacheControl.NoCache);
+                Assert.True(response.Headers.CacheControl.NoStore);
+                Assert.True(response.Headers.TryGetValues("Pragma", out values));
+                Assert.Single(values);
+                Assert.Equal("no-cache", values.First());
+                Assert.False(response.Headers.TryGetValues("Expires", out _));
+                Assert.False(response.Headers.TryGetValues("ETag", out _));
+            }
+        }
+
+        [Fact]
         public async Task DoesNotClearCacheHeaders_WhenResponseHasAlreadyStarted()
         {
             var expiresTime = DateTime.UtcNow.AddDays(10).ToString("R");
