@@ -6,7 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -181,5 +185,404 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(TimeSpan.MaxValue.Ticks, serverInboundControlStream.HeaderTimeoutTicks);
         }
+
+        [Fact]
+        public async Task DATA_Received_TooSlowlyOnSmallRead_AbortsConnectionAfterGracePeriod()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            // Use non-default value to ensure the min request and response rates aren't mixed up.
+            limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(_readRateApplication);
+
+            var inboundControlStream = await GetInboundControlStream();
+            await inboundControlStream.ExpectSettingsAsync();
+
+            // _helloWorldBytes is 12 bytes, and 12 bytes / 240 bytes/sec = .05 secs which is far below the grace period.
+            await requestStream.SendHeadersAsync(ReadRateRequestHeaders(_helloWorldBytes.Length), endStream: false);
+            await requestStream.SendDataAsync(_helloWorldBytes, endStream: false);
+
+            await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectDataAsync();
+
+            // Don't send any more data and advance just to and then past the grace period.
+            AdvanceClock(limits.MinRequestBodyDataRate.GracePeriod);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            AdvanceClock(TimeSpan.FromTicks(1));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+
+            await WaitForConnectionErrorAsync<ConnectionAbortedException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: 8,
+                Http3ErrorCode.InternalError,
+                null);
+
+            _mockTimeoutHandler.VerifyNoOtherCalls();
+        }
+
+        /*
+         * Additional work around closing connections is required before response drain can be supported.
+        [Fact]
+        public async Task ResponseDrain_SlowerThanMinimumDataRate_AbortsConnection()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            var inboundControlStream = await GetInboundControlStream();
+            await inboundControlStream.ExpectSettingsAsync();
+
+            CloseConnectionGracefully();
+
+            await inboundControlStream.ReceiveFrameAsync().DefaultTimeout();
+            await inboundControlStream.ReceiveFrameAsync().DefaultTimeout();
+            await inboundControlStream.ReceiveEndAsync().DefaultTimeout();
+
+            //await WaitForConnectionStopAsync(expectedLastStreamId: VariableLengthIntegerHelper.EightByteLimit, ignoreNonGoAwayFrames: false, expectedErrorCode: Http3ErrorCode.NoError);
+
+            AdvanceClock(TimeSpan.FromSeconds(inboundControlStream.BytesReceived / limits.MinResponseDataRate.BytesPerSecond) +
+                limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            AdvanceClock(TimeSpan.FromSeconds(1));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+
+            _mockTimeoutHandler.VerifyNoOtherCalls();
+        }
+        */
+
+        private class EchoAppWithNotification
+        {
+            private readonly TaskCompletionSource _writeStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public Task WriteStartedTask => _writeStartedTcs.Task;
+
+            public async Task RunApp(HttpContext context)
+            {
+                await context.Response.Body.FlushAsync();
+
+                var buffer = new byte[16 * 1024];
+                int received;
+
+                while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    var writeTask = context.Response.Body.WriteAsync(buffer, 0, received);
+                    _writeStartedTcs.TrySetResult();
+
+                    await writeTask;
+                }
+            }
+        }
+
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21520")]
+        public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnSmallWrite_AbortsConnectionAfterGracePeriod()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            // Use non-default value to ensure the min request and response rates aren't mixed up.
+            limits.MinResponseDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+
+            // Disable response buffering so "socket" backpressure is observed immediately.
+            limits.MaxResponseBufferSize = 0;
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            var app = new EchoAppWithNotification();
+            var requestStream = await InitializeConnectionAndStreamsAsync(app.RunApp);
+
+            await requestStream.SendHeadersAsync(_browserRequestHeaders, endStream: false);
+            await requestStream.SendDataAsync(_helloWorldBytes, endStream: true);
+
+            await requestStream.ExpectHeadersAsync();
+
+            await app.WriteStartedTask.DefaultTimeout();
+
+            // Complete timing of the request body so we don't induce any unexpected request body rate timeouts.
+            _timeoutControl.Tick(mockSystemClock.UtcNow);
+
+            // Don't read data frame to induce "socket" backpressure.
+            AdvanceClock(TimeSpan.FromSeconds((requestStream.BytesReceived + _helloWorldBytes.Length) / limits.MinResponseDataRate.BytesPerSecond) +
+                limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            AdvanceClock(TimeSpan.FromSeconds(1));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+
+            // The "hello, world" bytes are buffered from before the timeout, but not an END_STREAM data frame.
+            var data = await requestStream.ExpectDataAsync();
+            Assert.Equal(_helloWorldBytes.Length, data.Length);
+
+            _mockTimeoutHandler.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnLargeWrite_AbortsConnectionAfterRateTimeout()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            // Use non-default value to ensure the min request and response rates aren't mixed up.
+            limits.MinResponseDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+
+            // Disable response buffering so "socket" backpressure is observed immediately.
+            limits.MaxResponseBufferSize = 0;
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            var app = new EchoAppWithNotification();
+            var requestStream = await InitializeConnectionAndStreamsAsync(app.RunApp);
+
+            await requestStream.SendHeadersAsync(_browserRequestHeaders, endStream: false);
+            await requestStream.SendDataAsync(_maxData, endStream: true);
+
+            await requestStream.ExpectHeadersAsync();
+
+            await app.WriteStartedTask.DefaultTimeout();
+
+            // Complete timing of the request body so we don't induce any unexpected request body rate timeouts.
+            _timeoutControl.Tick(mockSystemClock.UtcNow);
+
+            var timeToWriteMaxData = TimeSpan.FromSeconds((requestStream.BytesReceived + _maxData.Length) / limits.MinResponseDataRate.BytesPerSecond) +
+                limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5);
+
+            // Don't read data frame to induce "socket" backpressure.
+            AdvanceClock(timeToWriteMaxData);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            AdvanceClock(TimeSpan.FromSeconds(1));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
+
+            // The _maxData bytes are buffered from before the timeout, but not an END_STREAM data frame.
+            await requestStream.ExpectDataAsync();
+
+            _mockTimeoutHandler.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task DATA_Received_TooSlowlyOnLargeRead_AbortsConnectionAfterRateTimeout()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            // Use non-default value to ensure the min request and response rates aren't mixed up.
+            limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(_readRateApplication);
+
+            var inboundControlStream = await GetInboundControlStream();
+            await inboundControlStream.ExpectSettingsAsync();
+
+            // _maxData is 16 KiB, and 16 KiB / 240 bytes/sec ~= 68 secs which is far above the grace period.
+            await requestStream.SendHeadersAsync(ReadRateRequestHeaders(_maxData.Length), endStream: false);
+            await requestStream.SendDataAsync(_maxData, endStream: false);
+
+            await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectDataAsync();
+
+            // Due to the imprecision of floating point math and the fact that TimeoutControl derives rate from elapsed
+            // time for reads instead of vice versa like for writes, use a half-second instead of single-tick cushion.
+            var timeToReadMaxData = TimeSpan.FromSeconds(_maxData.Length / limits.MinRequestBodyDataRate.BytesPerSecond) - TimeSpan.FromSeconds(.5);
+
+            // Don't send any more data and advance just to and then past the rate timeout.
+            AdvanceClock(timeToReadMaxData);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            AdvanceClock(TimeSpan.FromSeconds(1));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+
+            await WaitForConnectionErrorAsync<ConnectionAbortedException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: null,
+                Http3ErrorCode.InternalError,
+                null);
+
+            _mockTimeoutHandler.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task DATA_Received_TooSlowlyOnMultipleStreams_AbortsConnectionAfterAdditiveRateTimeout()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            // Use non-default value to ensure the min request and response rates aren't mixed up.
+            limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            await InitializeConnectionAsync(_readRateApplication);
+
+            var inboundControlStream = await GetInboundControlStream();
+            await inboundControlStream.ExpectSettingsAsync();
+
+            var requestStream1 = await CreateRequestStream();
+
+            // _maxData is 16 KiB, and 16 KiB / 240 bytes/sec ~= 68 secs which is far above the grace period.
+            await requestStream1.SendHeadersAsync(ReadRateRequestHeaders(_maxData.Length), endStream: false);
+            await requestStream1.SendDataAsync(_maxData, endStream: false);
+
+            await requestStream1.ExpectHeadersAsync();
+            await requestStream1.ExpectDataAsync();
+
+            var requestStream2 = await CreateRequestStream();
+
+            await requestStream2.SendHeadersAsync(ReadRateRequestHeaders(_maxData.Length), endStream: false);
+            await requestStream2.SendDataAsync(_maxData, endStream: false);
+
+            await requestStream2.ExpectHeadersAsync();
+            await requestStream2.ExpectDataAsync();
+
+            var timeToReadMaxData = TimeSpan.FromSeconds(_maxData.Length / limits.MinRequestBodyDataRate.BytesPerSecond);
+            // Double the timeout for the second stream.
+            timeToReadMaxData += timeToReadMaxData;
+
+            // Due to the imprecision of floating point math and the fact that TimeoutControl derives rate from elapsed
+            // time for reads instead of vice versa like for writes, use a half-second instead of single-tick cushion.
+            timeToReadMaxData -= TimeSpan.FromSeconds(.5);
+
+            // Don't send any more data and advance just to and then past the rate timeout.
+            AdvanceClock(timeToReadMaxData);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            AdvanceClock(TimeSpan.FromSeconds(1));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+
+            await WaitForConnectionErrorAsync<ConnectionAbortedException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: null,
+                Http3ErrorCode.InternalError,
+                null);
+
+            _mockTimeoutHandler.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task DATA_Received_TooSlowlyOnSecondStream_AbortsConnectionAfterNonAdditiveRateTimeout()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            // Use non-default value to ensure the min request and response rates aren't mixed up.
+            limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            await InitializeConnectionAsync(_readRateApplication);
+
+            var inboundControlStream = await GetInboundControlStream();
+            await inboundControlStream.ExpectSettingsAsync();
+
+            var requestStream1 = await CreateRequestStream();
+
+            // _maxData is 16 KiB, and 16 KiB / 240 bytes/sec ~= 68 secs which is far above the grace period.
+            await requestStream1.SendHeadersAsync(ReadRateRequestHeaders(_maxData.Length), endStream: false);
+            await requestStream1.SendDataAsync(_maxData, endStream: true);
+
+            await requestStream1.ExpectHeadersAsync();
+            await requestStream1.ExpectDataAsync();
+
+            await requestStream1.ExpectReceiveEndOfStream();
+
+            var requestStream2 = await CreateRequestStream();
+
+            await requestStream2.SendHeadersAsync(ReadRateRequestHeaders(_maxData.Length), endStream: false);
+            await requestStream2.SendDataAsync(_maxData, endStream: false);
+
+            await requestStream2.ExpectHeadersAsync();
+            await requestStream2.ExpectDataAsync();
+
+            // Due to the imprecision of floating point math and the fact that TimeoutControl derives rate from elapsed
+            // time for reads instead of vice versa like for writes, use a half-second instead of single-tick cushion.
+            var timeToReadMaxData = TimeSpan.FromSeconds(_maxData.Length / limits.MinRequestBodyDataRate.BytesPerSecond) - TimeSpan.FromSeconds(.5);
+
+            // Don't send any more data and advance just to and then past the rate timeout.
+            AdvanceClock(timeToReadMaxData);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            AdvanceClock(TimeSpan.FromSeconds(1));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+
+            await WaitForConnectionErrorAsync<ConnectionAbortedException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: null,
+                Http3ErrorCode.InternalError,
+                null);
+
+            _mockTimeoutHandler.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task DATA_Received_SlowlyWhenRateLimitDisabledPerRequest_DoesNotAbortConnection()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            // Use non-default value to ensure the min request and response rates aren't mixed up.
+            limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            var requestStream = await InitializeConnectionAndStreamsAsync(context =>
+            {
+               // Completely disable rate limiting for this stream.
+               context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
+                return _readRateApplication(context);
+            });
+
+            var inboundControlStream = await GetInboundControlStream();
+            await inboundControlStream.ExpectSettingsAsync();
+
+            // _helloWorldBytes is 12 bytes, and 12 bytes / 240 bytes/sec = .05 secs which is far below the grace period.
+            await requestStream.SendHeadersAsync(ReadRateRequestHeaders(_helloWorldBytes.Length), endStream: false);
+            await requestStream.SendDataAsync(_helloWorldBytes, endStream: false);
+
+            await requestStream.ExpectHeadersAsync();
+
+            await requestStream.ExpectDataAsync();
+
+            // Don't send any more data and advance just to and then past the grace period.
+            AdvanceClock(limits.MinRequestBodyDataRate.GracePeriod);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            AdvanceClock(TimeSpan.FromTicks(1));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            await requestStream.SendDataAsync(_helloWorldBytes, endStream: true);
+
+            await requestStream.ExpectReceiveEndOfStream();
+
+            _mockTimeoutHandler.VerifyNoOtherCalls();
+        }
+
     }
 }
