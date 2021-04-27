@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using StackExchange.Redis.Profiling;
@@ -27,7 +28,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         /// <summary>
         /// Gets or sets a delegate to create the ConnectionMultiplexer instance.
         /// </summary>
-        public Func<IConnectionMultiplexer> ConnectionMultiplexerFactory { get; set; }
+        public Func<Task<IConnectionMultiplexer>> ConnectionMultiplexerFactory { get; set; }
 
         /// <summary>
         /// The Redis instance name.

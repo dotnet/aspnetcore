@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         private const string DataKey = "data";
         private const long NotPresent = -1;
 
-        private volatile ConnectionMultiplexer _connection;
+        private volatile IConnectionMultiplexer _connection;
         private IDatabase _cache;
         private bool _disposed;
 
@@ -203,7 +203,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     }
                     else
                     {
-                        _connection = _options.ConnectionMultiplexerFactory() as ConnectionMultiplexer;
+                        _connection = _options.ConnectionMultiplexerFactory().GetAwaiter().GetResult();
                     }
 
                     TryRegisterProfiler();
@@ -233,7 +233,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 {
                     if(_options.ConnectionMultiplexerFactory == null)
                     {
-                        if (_options.ConfigurationOptions != null)
+                        if (_options.ConfigurationOptions is not null)
                         {
                             _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions).ConfigureAwait(false);
                         }
@@ -244,7 +244,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     }
                     else
                     {
-                        _connection = _options.ConnectionMultiplexerFactory() as ConnectionMultiplexer;
+                        _connection = await _options.ConnectionMultiplexerFactory();
                     }
 
                     TryRegisterProfiler();
