@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.HttpLogging
             Encoding.Latin1 // TODO allowed by default? Make this configurable?
         };
 
-        public static bool TryGetEncodingForMediaType(string contentType, List<MediaTypeState> mediaTypeList, [NotNullWhen(true)] out Encoding? encoding)
+        public static bool TryGetEncodingForMediaType(string? contentType, List<MediaTypeState> mediaTypeList, [NotNullWhen(true)] out Encoding? encoding)
         {
             encoding = null;
             if (mediaTypeList == null || mediaTypeList.Count == 0 || string.IsNullOrEmpty(contentType))
