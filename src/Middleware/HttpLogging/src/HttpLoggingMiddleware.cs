@@ -133,6 +133,11 @@ namespace Microsoft.AspNetCore.HttpLogging
                     }
                 }
 
+                if (options.ModifyRequestLog != null)
+                {
+                    await options.ModifyRequestLog(context, options, list);
+                }
+
                 var httpRequestLog = new HttpRequestLog(list);
 
                 _logger.RequestLog(httpRequestLog);
@@ -172,7 +177,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 if (responseBufferingStream == null || responseBufferingStream.FirstWrite == false)
                 {
                     // No body, write headers here.
-                    LogResponseHeaders(response, options, _logger);
+                    await LogResponseHeaders(context, options, _logger);
                 }
 
                 if (responseBufferingStream != null)
@@ -207,8 +212,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             list.Add(new KeyValuePair<string, string?>(key, value));
         }
 
-        public static void LogResponseHeaders(HttpResponse response, HttpLoggingOptions options, ILogger logger)
+        public static async ValueTask LogResponseHeaders(HttpContext context, HttpLoggingOptions options, ILogger logger)
         {
+            var response = context.Response;
             var list = new List<KeyValuePair<string, string?>>(
                 response.Headers.Count + DefaultResponseFieldsMinusHeaders);
 
@@ -221,6 +227,11 @@ namespace Microsoft.AspNetCore.HttpLogging
             if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
             {
                 FilterHeaders(list, response.Headers, options._internalResponseHeaders);
+            }
+
+            if (options.ModifyResponseLog != null)
+            {
+                await options.ModifyResponseLog(context, options, list);
             }
 
             var httpResponseLog = new HttpResponseLog(list);

@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpLogging
@@ -74,5 +76,15 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// Maximum response body size to log (in bytes). Defaults to 32 KB.
         /// </summary>
         public int ResponseBodyLogLimit { get; set; } = 32 * 1024;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Func<HttpContext, HttpLoggingOptions, IList<KeyValuePair<string, string?>>, ValueTask>? ModifyRequestLog { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Func<HttpContext, HttpLoggingOptions, IList<KeyValuePair<string, string?>>, ValueTask>? ModifyResponseLog { get; set; }
     }
 }

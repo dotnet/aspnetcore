@@ -138,13 +138,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         /// <summary>
         /// Flag for logging HTTP Request properties and headers.
-        /// Includes <see cref="RequestProperties"/> and <see cref="RequestHeaders"/>
+        /// Includes <see cref="RequestProperties"/> and <see cref="RequestHeaders"/>.
         /// </summary>
         RequestPropertiesAndHeaders = RequestProperties | RequestHeaders,
 
         /// <summary>
         /// Flag for logging HTTP Response properties and headers.
-        /// Includes <see cref="ResponseStatusCode"/> and <see cref="ResponseHeaders"/>
+        /// Includes <see cref="ResponseStatusCode"/> and <see cref="ResponseHeaders"/>.
         /// </summary>
         ResponsePropertiesAndHeaders = ResponseStatusCode | ResponseHeaders,
 
