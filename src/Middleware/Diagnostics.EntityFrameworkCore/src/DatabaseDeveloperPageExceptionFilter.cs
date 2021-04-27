@@ -85,8 +85,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             catch (Exception e)
             {
                 _logger.DatabaseErrorPageMiddlewareException(e);
-                return;
             }
+
+            // Error could not be handled, let the next filter try
+            await next(errorContext);
         }
     }
 }
