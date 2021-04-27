@@ -57,13 +57,15 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         internal override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
         {
             var eventGroups = messages.GroupBy(GetBlobKey);
+            var options = _options.CurrentValue;
+            var identifier = options.ApplicationInstanceId + "_" + options.BlobName;
+
             foreach (var eventGroup in eventGroups)
             {
                 var key = eventGroup.Key;
-                var options = _options.CurrentValue;
                 string blobName = options.FileNameFormat(new AzureBlobLoggerContext(
                     options.ApplicationName,
-                    options.ApplicationInstanceId + "_" + options.BlobName,
+                    identifier,
                     new DateTimeOffset(key.Year, key.Month, key.Day, key.Hour, 0, 0, TimeSpan.Zero)));
 
                 var blob = _blobReferenceFactory(blobName);
