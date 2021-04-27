@@ -12,6 +12,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.HttpLogging
 {
@@ -855,6 +856,75 @@ namespace Microsoft.AspNetCore.HttpLogging
             await middleware.Invoke(httpContext);
 
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for body."));
+        }
+
+        [Fact]
+        public async Task CanWriteCustomRequestLogs()
+        {
+            var options = CreateOptionsAccessor();
+            options.CurrentValue.LoggingFields = HttpLoggingFields.Request;
+
+            options.CurrentValue.ModifyRequestLog = (c, o, l) =>
+            {
+                l.Add(new KeyValuePair<string, string>("Trace Identifier", c.TraceIdentifier));
+                return default;
+            };
+
+            var middleware = new HttpLoggingMiddleware(
+                c =>
+                {
+                    return Task.CompletedTask;
+                },
+                options,
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Protocol = "HTTP/1.0";
+            httpContext.Request.Method = "GET";
+            httpContext.Request.Scheme = "http";
+            httpContext.Request.Path = new PathString("/foo");
+            httpContext.Request.PathBase = new PathString("/foo");
+            httpContext.Request.QueryString = new QueryString("?foo");
+            httpContext.Request.Headers["Connection"] = "keep-alive";
+            httpContext.Request.ContentType = "text/plain";
+            httpContext.TraceIdentifier = "123";
+
+            await middleware.Invoke(httpContext);
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Method: GET"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("QueryString: ?foo"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Trace Identifier: 123"));
+        }
+
+        [Fact]
+        public async Task CanWriteCustomResponseLogs()
+        {
+            var options = CreateOptionsAccessor();
+            options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
+            string traceIdentifier = null;
+            options.CurrentValue.ModifyResponseLog = (c, o, l) =>
+            {
+                traceIdentifier = c.TraceIdentifier;
+                l.Add(new KeyValuePair<string, string>("Trace Identifier", traceIdentifier));
+                return default;
+            };
+
+            var middleware = new HttpLoggingMiddleware(
+                c =>
+                {
+                    return Task.CompletedTask;
+                },
+                options,
+                LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+            var httpContext = new DefaultHttpContext();
+
+            await middleware.Invoke(httpContext);
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains($"Trace Identifier: {traceIdentifier}"));
         }
 
         private IOptionsMonitor<HttpLoggingOptions> CreateOptionsAccessor()

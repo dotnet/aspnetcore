@@ -25,7 +25,10 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.HttpLoggingOptions() -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.MediaTypeOptions.get -> Microsoft.AspNetCore.HttpLogging.MediaTypeOptions!
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ModifyRequestLog.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!, System.Collections.Generic.IList<(string!, string!)>!, System.Threading.Tasks.ValueTask>?
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ModifyRequestLog.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!, System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string!, string?>>!, System.Threading.Tasks.ValueTask>?
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ModifyRequestLog.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ModifyResponseLog.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!, System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string!, string?>>!, System.Threading.Tasks.ValueTask>?
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ModifyResponseLog.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestHeaders.get -> System.Collections.Generic.ISet<string!>!
