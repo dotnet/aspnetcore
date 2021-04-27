@@ -264,15 +264,17 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             var headers = httpContext.Request.Headers;
-            if (!headers.TryGetValue(HeaderNames.TraceParent, out var requestId))
+            var requestId = headers.TraceParent;
+            if (requestId.Count == 0)
             {
-                headers.TryGetValue(HeaderNames.RequestId, out requestId);
+                requestId = headers.RequestId;
             }
 
             if (!StringValues.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
-                if (headers.TryGetValue(HeaderNames.TraceState, out var traceState))
+                var traceState = headers.TraceState;
+                if (traceState.Count > 0)
                 {
                     activity.TraceStateString = traceState;
                 }

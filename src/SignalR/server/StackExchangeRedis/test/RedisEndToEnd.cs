@@ -48,12 +48,12 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 
                 var connection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, LoggerFactory);
 
-                await connection.StartAsync().OrTimeout();
-                var str = await connection.InvokeAsync<string>("Echo", "Hello, World!").OrTimeout();
+                await connection.StartAsync().DefaultTimeout();
+                var str = await connection.InvokeAsync<string>("Echo", "Hello, World!").DefaultTimeout();
 
                 Assert.Equal("Hello, World!", str);
 
-                await connection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
             }
         }
 
@@ -76,16 +76,16 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 
                 var groupName = $"TestGroup_{transportType}_{protocolName}_{Guid.NewGuid()}";
 
-                await secondConnection.StartAsync().OrTimeout();
-                await connection.StartAsync().OrTimeout();
-                await connection.InvokeAsync("AddSelfToGroup", groupName).OrTimeout();
-                await secondConnection.InvokeAsync("AddSelfToGroup", groupName).OrTimeout();
-                await connection.InvokeAsync("EchoGroup", groupName, "Hello, World!").OrTimeout();
+                await secondConnection.StartAsync().DefaultTimeout();
+                await connection.StartAsync().DefaultTimeout();
+                await connection.InvokeAsync("AddSelfToGroup", groupName).DefaultTimeout();
+                await secondConnection.InvokeAsync("AddSelfToGroup", groupName).DefaultTimeout();
+                await connection.InvokeAsync("EchoGroup", groupName, "Hello, World!").DefaultTimeout();
 
-                Assert.Equal("Hello, World!", await tcs.Task.OrTimeout());
-                Assert.Equal("Hello, World!", await tcs2.Task.OrTimeout());
+                Assert.Equal("Hello, World!", await tcs.Task.DefaultTimeout());
+                Assert.Equal("Hello, World!", await tcs2.Task.DefaultTimeout());
 
-                await connection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
             }
         }
 
@@ -106,15 +106,15 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 var tcs2 = new TaskCompletionSource<string>();
                 secondConnection.On<string>("Echo", message => tcs2.TrySetResult(message));
 
-                await secondConnection.StartAsync().OrTimeout();
-                await connection.StartAsync().OrTimeout();
-                await connection.InvokeAsync("EchoUser", "userA", "Hello, World!").OrTimeout();
+                await secondConnection.StartAsync().DefaultTimeout();
+                await connection.StartAsync().DefaultTimeout();
+                await connection.InvokeAsync("EchoUser", "userA", "Hello, World!").DefaultTimeout();
 
-                Assert.Equal("Hello, World!", await tcs.Task.OrTimeout());
-                Assert.Equal("Hello, World!", await tcs2.Task.OrTimeout());
+                Assert.Equal("Hello, World!", await tcs.Task.DefaultTimeout());
+                Assert.Equal("Hello, World!", await tcs2.Task.DefaultTimeout());
 
-                await connection.DisposeAsync().OrTimeout();
-                await secondConnection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+                await secondConnection.DisposeAsync().DefaultTimeout();
             }
         }
 
@@ -136,14 +136,14 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 var tcs = new TaskCompletionSource<string>();
                 firstConnection.On<string>("Echo", message => tcs.TrySetResult(message));
 
-                await secondConnection.StartAsync().OrTimeout();
-                await firstConnection.StartAsync().OrTimeout();
-                await secondConnection.DisposeAsync().OrTimeout();
-                await firstConnection.InvokeAsync("EchoUser", "userA", "Hello, World!").OrTimeout();
+                await secondConnection.StartAsync().DefaultTimeout();
+                await firstConnection.StartAsync().DefaultTimeout();
+                await secondConnection.DisposeAsync().DefaultTimeout();
+                await firstConnection.InvokeAsync("EchoUser", "userA", "Hello, World!").DefaultTimeout();
 
-                Assert.Equal("Hello, World!", await tcs.Task.OrTimeout());
+                Assert.Equal("Hello, World!", await tcs.Task.DefaultTimeout());
 
-                await firstConnection.DisposeAsync().OrTimeout();
+                await firstConnection.DisposeAsync().DefaultTimeout();
             }
         }
 

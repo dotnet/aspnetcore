@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
+
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -43,8 +45,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Span<byte> buffer = new byte[1024 * 16];
 
-            var headers = new HttpResponseHeaders();
-            headers.HeaderCacheControl = "private";
+            var headers = (IHeaderDictionary)new HttpResponseHeaders();
+            headers.CacheControl = "private";
 
             var enumerator = new Http2HeadersEnumerator();
             enumerator.Initialize(headers);
@@ -68,10 +70,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Span<byte> buffer = new byte[1024 * 16];
 
-            var headers = new HttpResponseHeaders();
-            headers.HeaderCacheControl = "private";
-            headers.HeaderDate = "Mon, 21 Oct 2013 20:13:21 GMT";
-            headers.HeaderLocation = "https://www.example.com";
+            var headers = (IHeaderDictionary)new HttpResponseHeaders();
+            headers.CacheControl = "private";
+            headers.Date = "Mon, 21 Oct 2013 20:13:21 GMT";
+            headers.Location = "https://www.example.com";
 
             var enumerator = new Http2HeadersEnumerator();
 
@@ -145,9 +147,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 });
 
             // Third response
-            headers.HeaderDate = "Mon, 21 Oct 2013 20:13:22 GMT";
-            headers.HeaderContentEncoding = "gzip";
-            headers.HeaderSetCookie = "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";
+            headers.Date = "Mon, 21 Oct 2013 20:13:22 GMT";
+            headers.ContentEncoding = "gzip";
+            headers.SetCookie = "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";
 
             enumerator.Initialize(headers);
             Assert.True(HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out length));

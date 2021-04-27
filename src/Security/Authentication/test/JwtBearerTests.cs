@@ -1018,7 +1018,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                                 }
                                 else
                                 {
-                                    await next();
+                                    await next(context);
                                 }
                             });
                         })

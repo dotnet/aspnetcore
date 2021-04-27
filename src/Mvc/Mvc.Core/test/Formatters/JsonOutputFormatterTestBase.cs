@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = contentType.ToString();
-            httpContext.Request.Headers[HeaderNames.AcceptCharset] = contentType.Charset.ToString();
+            httpContext.Request.Headers.AcceptCharset = contentType.Charset.ToString();
 
 
             httpContext.Response.Body = responseStream ?? new MemoryStream();

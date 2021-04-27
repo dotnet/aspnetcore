@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -235,9 +236,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnReadStarting()
         {
-            if (_contentLength > _context.MaxRequestBodySize)
+            var maxRequestBodySize = _context.MaxRequestBodySize;
+            if (_contentLength > maxRequestBodySize)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
             }
         }
 

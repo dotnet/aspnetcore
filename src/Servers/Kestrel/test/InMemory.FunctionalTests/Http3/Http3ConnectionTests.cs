@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -130,6 +131,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 0,
                 expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
                 expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(Http3Formatting.ToFormattedType(frame.Type)));
+        }
+
+        [Fact]
+        public async Task ControlStream_ClientCloses_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            var controlStream = await CreateControlStream(id: 0);
+            await controlStream.SendSettingsAsync(new List<Http3PeerSetting>());
+
+            await controlStream.EndStreamAsync();
+
+            await WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
+                expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClientClosedInbound);
         }
     }
 }

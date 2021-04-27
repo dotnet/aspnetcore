@@ -9,13 +9,13 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -172,7 +172,8 @@ namespace Microsoft.AspNetCore.Testing
             IPEndPoint localEndPoint = null,
             IPEndPoint remoteEndPoint = null,
             IDuplexPipe transport = null,
-            ITimeoutControl timeoutControl = null)
+            ITimeoutControl timeoutControl = null,
+            IHttp3StreamLifetimeHandler streamLifetimeHandler = null)
         {
             var context = new Http3StreamContext
             (
@@ -185,6 +186,7 @@ namespace Microsoft.AspNetCore.Testing
                 localEndPoint: localEndPoint,
                 remoteEndPoint: remoteEndPoint,
                 transport: transport,
+                streamLifetimeHandler: streamLifetimeHandler,
                 streamContext: null,
                 settings: null
             );

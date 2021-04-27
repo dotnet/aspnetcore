@@ -16,7 +16,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class HttpClientTest : ServerTestBase<DevHostServerFixture<BasicTestApp.Program>>,
+    public class HttpClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestApp.Program>>,
         IClassFixture<BasicTestAppServerSiteFixture<CorsStartup>>
     {
         private readonly ServerFixture _apiServerFixture;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         public HttpClientTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<BasicTestApp.Program> devHostServerFixture,
+            BlazorWasmTestAppFixture<BasicTestApp.Program> devHostServerFixture,
             BasicTestAppServerSiteFixture<CorsStartup> apiServerFixture,
             ITestOutputHelper output)
             : base(browserFixture, devHostServerFixture, output)

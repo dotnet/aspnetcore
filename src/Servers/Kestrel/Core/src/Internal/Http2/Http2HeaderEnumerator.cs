@@ -49,8 +49,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Initialize(IDictionary<string, StringValues> headers)
         {
-            _genericEnumerator = headers.GetEnumerator();
-            _headersType = HeadersType.Untyped;
+            switch (headers)
+            {
+                case HttpResponseHeaders responseHeaders:
+                    _headersType = HeadersType.Headers;
+                    _headersEnumerator = responseHeaders.GetEnumerator();
+                    break;
+                case HttpResponseTrailers responseTrailers:
+                    _headersType = HeadersType.Trailers;
+                    _trailersEnumerator = responseTrailers.GetEnumerator();
+                    break;
+                default:
+                    _headersType = HeadersType.Untyped;
+                    _genericEnumerator = headers.GetEnumerator();
+                    break;
+            }
+
             _hasMultipleValues = false;
         }
 

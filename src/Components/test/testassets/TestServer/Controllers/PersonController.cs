@@ -34,7 +34,7 @@ namespace TestServer.Controllers
         [HttpGet("referrer")]
         public string GetReferer()
         {
-            return $"The referrer is: {Request.Headers["Referer"].ToString()}";
+            return $"The referrer is: {Request.Headers.Referer.ToString()}";
         }
 
         // PUT api/person

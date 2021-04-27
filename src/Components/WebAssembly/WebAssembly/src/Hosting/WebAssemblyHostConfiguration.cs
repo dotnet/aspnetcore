@@ -27,12 +27,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <summary>
         /// Gets the sources used to obtain configuration values.
         /// </summary>
-        IList<IConfigurationSource> IConfigurationBuilder.Sources => new ReadOnlyCollection<IConfigurationSource>(_sources.ToList());
+        IList<IConfigurationSource> IConfigurationBuilder.Sources => new ReadOnlyCollection<IConfigurationSource>(_sources.ToArray());
 
         /// <summary>
         /// Gets the providers used to obtain configuration values.
         /// </summary>
-        IEnumerable<IConfigurationProvider> IConfigurationRoot.Providers => new ReadOnlyCollection<IConfigurationProvider>(_providers.ToList());
+        IEnumerable<IConfigurationProvider> IConfigurationRoot.Providers => new ReadOnlyCollection<IConfigurationProvider>(_providers.ToArray());
 
         /// <summary>
         /// Gets a key/value collection that can be used to share data between the <see cref="IConfigurationBuilder"/>
@@ -94,11 +94,22 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <returns>The configuration sub-sections.</returns>
         IEnumerable<IConfigurationSection> IConfiguration.GetChildren()
         {
-            return _providers
-                .SelectMany(s => s.GetChildKeys(Enumerable.Empty<string>(), null))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(key => this.GetSection(key))
-                .ToList();
+            var hashSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var result = new List<IConfigurationSection>();
+            foreach (var provider in _providers)
+            {
+                foreach (var child in provider.GetChildKeys(Enumerable.Empty<string>(), parentPath: null))
+                {
+                    if (!hashSet.Add(child))
+                    {
+                        continue;
+                    }
+
+                    result.Add(GetSection(child));
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

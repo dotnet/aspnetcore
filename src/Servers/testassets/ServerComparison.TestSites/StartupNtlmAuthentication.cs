@@ -30,7 +30,7 @@ namespace ServerComparison.TestSites
             {
                 try
                 {
-                    await next();
+                    await next(context);
                 }
                 catch (Exception ex)
                 {
@@ -45,7 +45,7 @@ namespace ServerComparison.TestSites
             });
 
             app.UseAuthentication();
-            app.Use((context, next) =>
+            app.Run((context) =>
             {
                 if (context.Request.Path.Equals("/Anonymous"))
                 {

@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Linq;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.AspNetCore.Components.Authorization
@@ -29,13 +29,22 @@ namespace Microsoft.AspNetCore.Components.Authorization
         {
             // Allow Anonymous skips all authorization
             var allAttributes = type.GetCustomAttributes(inherit: true);
-            if (allAttributes.OfType<IAllowAnonymous>().Any())
+            List<IAuthorizeData> authorizeDatas = null;
+            for (var i = 0; i < allAttributes.Length; i++)
             {
-                return null;
+                if (allAttributes[i] is IAllowAnonymous)
+                {
+                    return null;
+                }
+
+                if (allAttributes[i] is IAuthorizeData authorizeData)
+                {
+                    authorizeDatas ??= new();
+                    authorizeDatas.Add(authorizeData);
+                }
             }
 
-            var authorizeDataAttributes = allAttributes.OfType<IAuthorizeData>().ToArray();
-            return authorizeDataAttributes.Length > 0 ? authorizeDataAttributes : null;
+            return authorizeDatas?.ToArray();
         }
     }
 }

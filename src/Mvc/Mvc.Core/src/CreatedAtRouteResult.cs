@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new InvalidOperationException(Resources.NoRoutesMatched);
             }
 
-            context.HttpContext.Response.Headers[HeaderNames.Location] = url;
+            context.HttpContext.Response.Headers.Location = url;
         }
     }
 }

@@ -8,11 +8,11 @@ using System.Net.Quic;
 using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections.Experimental;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     /// <summary>
     /// Listens for new Quic Connections.
@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             quicListenerOptions.IdleTimeout = options.IdleTimeout;
 
             _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
-            _listener.Start();
         }
 
         public EndPoint EndPoint { get; set; }
@@ -77,7 +76,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
             _disposed = true;
 
-            _listener.Close();
             _listener.Dispose();
 
             return new ValueTask();

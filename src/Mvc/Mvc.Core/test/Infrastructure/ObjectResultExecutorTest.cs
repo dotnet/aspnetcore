@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/xml"; // This will not be used
             httpContext.Response.ContentType = "text/json";
 
             var result = new ObjectResult("input")
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/xml"; // This will not be used
             httpContext.Response.ContentType = "text/plain";
 
             var result = new ObjectResult("input");
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/xml"; // This will not be used
             httpContext.Response.ContentType = "application/json";
 
             var result = new ObjectResult("input");
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/xml"; // This will not be used
             httpContext.Response.ContentType = "application/json";
 
             var result = new ObjectResult("input");
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/json"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/json"; // This will not be used
             httpContext.Response.ContentType = "application/xml"; // This will not be used
 
             var result = new ObjectResult(new ProblemDetails())
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext() { HttpContext = httpContext };
-            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Request.Headers.Accept = "application/xml"; // This will not be used
 
             var result = new ObjectResult(new ProblemDetails())
             {
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Assert
             Assert.Equal(
                 "application/json; charset=utf-8",
-                actionContext.HttpContext.Response.Headers[HeaderNames.ContentType]);
+                actionContext.HttpContext.Response.Headers.ContentType);
         }
 
         [Fact]
@@ -390,13 +390,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 HttpContext = GetHttpContext(),
             };
-            actionContext.HttpContext.Request.Headers[HeaderNames.Accept] = acceptHeader;
+            actionContext.HttpContext.Request.Headers.Accept = acceptHeader;
 
             // Act
             await executor.ExecuteAsync(actionContext, result);
 
             // Assert
-            Assert.Equal(expectedContentType, actionContext.HttpContext.Response.Headers[HeaderNames.ContentType]);
+            Assert.Equal(expectedContentType, actionContext.HttpContext.Response.Headers.ContentType);
         }
 
         [Theory]
@@ -427,13 +427,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 HttpContext = GetHttpContext(),
             };
-            actionContext.HttpContext.Request.Headers[HeaderNames.Accept] = acceptHeader;
+            actionContext.HttpContext.Request.Headers.Accept = acceptHeader;
 
             // Act
             await executor.ExecuteAsync(actionContext, result);
 
             // Assert
-            var responseContentType = actionContext.HttpContext.Response.Headers[HeaderNames.ContentType];
+            var responseContentType = actionContext.HttpContext.Response.Headers.ContentType;
             MediaTypeAssert.Equal(expectedContentType, responseContentType);
         }
 
@@ -457,106 +457,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Assert
             var formatterContext = formatter.LastOutputFormatterContext;
             Assert.Null(formatterContext.Object);
-        }
-
-        [Fact]
-        public async Task ObjectResult_ReadsAsyncEnumerables()
-        {
-            // Arrange
-            var executor = CreateExecutor();
-            var result = new ObjectResult(AsyncEnumerable());
-            var formatter = new TestJsonOutputFormatter();
-            result.Formatters.Add(formatter);
-
-            var actionContext = new ActionContext()
-            {
-                HttpContext = GetHttpContext(),
-            };
-
-            // Act
-            await executor.ExecuteAsync(actionContext, result);
-
-            // Assert
-            var formatterContext = formatter.LastOutputFormatterContext;
-            Assert.Equal(typeof(List<string>), formatterContext.ObjectType);
-            var value = Assert.IsType<List<string>>(formatterContext.Object);
-            Assert.Equal(new[] { "Hello 0", "Hello 1", "Hello 2", "Hello 3", }, value);
-        }
-
-        [Fact]
-        public async Task ObjectResult_Throws_IfEnumerableThrows()
-        {
-            // Arrange
-            var executor = CreateExecutor();
-            var result = new ObjectResult(AsyncEnumerable(throwError: true));
-            var formatter = new TestJsonOutputFormatter();
-            result.Formatters.Add(formatter);
-
-            var actionContext = new ActionContext()
-            {
-                HttpContext = GetHttpContext(),
-            };
-
-            // Act & Assert
-            await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => executor.ExecuteAsync(actionContext, result));
-        }
-
-        [Fact]
-        public async Task ObjectResult_AsyncEnumeration_AtLimit()
-        {
-            // Arrange
-            var count = 24;
-            var executor = CreateExecutor(options: new MvcOptions { MaxIAsyncEnumerableBufferLimit = count });
-            var result = new ObjectResult(AsyncEnumerable(count: count));
-            var formatter = new TestJsonOutputFormatter();
-            result.Formatters.Add(formatter);
-
-            var actionContext = new ActionContext()
-            {
-                HttpContext = GetHttpContext(),
-            };
-
-            // Act
-            await executor.ExecuteAsync(actionContext, result);
-
-            // Assert
-            var formatterContext = formatter.LastOutputFormatterContext;
-            var value = Assert.IsType<List<string>>(formatterContext.Object);
-            Assert.Equal(24, value.Count);
-        }
-
-        [Theory]
-        [InlineData(25)]
-        [InlineData(1024)]
-        public async Task ObjectResult_Throws_IfEnumerationExceedsLimit(int count)
-        {
-            // Arrange
-            var executor = CreateExecutor(options: new MvcOptions { MaxIAsyncEnumerableBufferLimit = 24 });
-            var result = new ObjectResult(AsyncEnumerable(count: count));
-            var formatter = new TestJsonOutputFormatter();
-            result.Formatters.Add(formatter);
-
-            var actionContext = new ActionContext()
-            {
-                HttpContext = GetHttpContext(),
-            };
-
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => executor.ExecuteAsync(actionContext, result));
-        }
-
-        private static async IAsyncEnumerable<string> AsyncEnumerable(int count = 4, bool throwError = false)
-        {
-            await Task.Yield();
-            for (var i = 0; i < count; i++)
-            {
-                yield return $"Hello {i}";
-            }
-
-            if (throwError)
-            {
-                throw new TimeZoneNotFoundException();
-            }
         }
 
         private static IServiceCollection CreateServices()
