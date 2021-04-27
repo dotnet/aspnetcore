@@ -7,7 +7,6 @@
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
-    <SkipHelixArm>true</SkipHelixArm>
     <BaseOutputPath />
     <OutputPath />
 
