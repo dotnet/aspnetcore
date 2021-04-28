@@ -11,17 +11,6 @@ namespace Microsoft.AspNetCore.WebSockets
 {
     internal static class HandshakeHelpers
     {
-        /// <summary>
-        /// Gets request headers needed process the handshake on the server.
-        /// </summary>
-        public static readonly string[] NeededHeaders = new[]
-        {
-            HeaderNames.Upgrade,
-            HeaderNames.Connection,
-            HeaderNames.SecWebSocketKey,
-            HeaderNames.SecWebSocketVersion
-        };
-
         // "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
         // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
         private static ReadOnlySpan<byte> EncodedWebSocketKey => new byte[]

@@ -163,41 +163,60 @@ namespace Microsoft.AspNetCore.WebSockets
                     return false;
                 }
 
-                if (!requestHeaders[HeaderNames.Connection].Contains(HeaderNames.Upgrade))
+                bool validUpgrade = false, validConnection = false, validVersion = false;
+
+                var values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Connection);
+                foreach (var value in values)
                 {
-                    return false;
+                    if (string.Equals(value, HeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
+                        if (values.Length == 1)
+                        {
+                            requestHeaders.Connection = HeaderNames.Upgrade;
+                        }
+                        validConnection = true;
+                        break;
+                    }
                 }
 
-                if (!requestHeaders[HeaderNames.Upgrade].Contains(Constants.Headers.UpgradeWebSocket))
+                values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Upgrade);
+                foreach (var value in values)
                 {
-                    return false;
+                    if (string.Equals(value, Constants.Headers.UpgradeWebSocket, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
+                        if (values.Length == 1)
+                        {
+                            requestHeaders.Upgrade = Constants.Headers.UpgradeWebSocket;
+                        }
+                        validUpgrade = true;
+                        break;
+                    }
                 }
 
-                if (!requestHeaders[HeaderNames.SecWebSocketVersion].Contains(Constants.Headers.SupportedVersion))
+                values = requestHeaders.GetCommaSeparatedValues(HeaderNames.SecWebSocketVersion);
+                foreach (var value in values)
                 {
-                    return false;
+                    if (string.Equals(value, Constants.Headers.SupportedVersion, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
+                        if (values.Length == 1)
+                        {
+                            requestHeaders.SecWebSocketVersion = Constants.Headers.SupportedVersion;
+                        }
+                        validVersion = true;
+                        break;
+                    }
                 }
+
 
                 if (!HandshakeHelpers.IsRequestKeyValid(requestHeaders[HeaderNames.SecWebSocketKey].ToString()))
                 {
                     return false;
                 }
 
-                // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
-                if (requestHeaders[HeaderNames.Connection].Count == 1)
-                {
-                    requestHeaders[HeaderNames.Connection] = HeaderNames.Upgrade;
-                }
-                if (requestHeaders[HeaderNames.Upgrade].Count == 1)
-                {
-                    requestHeaders[HeaderNames.Upgrade] = Constants.Headers.UpgradeWebSocket;
-                }
-                if (requestHeaders[HeaderNames.SecWebSocketVersion].Count == 1)
-                {
-                    requestHeaders[HeaderNames.SecWebSocketVersion] = Constants.Headers.SupportedVersion;
-                }
-
-                return true;
+                return validConnection && validUpgrade && validVersion;
             }
         }
     }

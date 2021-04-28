@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
     {
         public static IDisposable CreateServer(ILoggerFactory loggerFactory, out int port, Func<HttpContext, Task> app, Action<WebSocketOptions> configure = null)
         {
+            Exception exceptionFromApp = null;
             configure = configure ?? (o => { });
             Action<IApplicationBuilder> startup = builder =>
             {
@@ -31,6 +33,8 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                     }
                     catch (Exception ex)
                     {
+                        // capture the exception from the app, we'll throw this at the end of the test when the server is disposed
+                        exceptionFromApp = ex;
                         if (ct.Response.HasStarted)
                         {
                             throw;
@@ -69,7 +73,29 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             host.Start();
             port = host.GetPort();
 
-            return host;
+            return new Disposable(() =>
+            {
+                host.Dispose();
+                if (exceptionFromApp is not null)
+                {
+                    ExceptionDispatchInfo.Throw(exceptionFromApp);
+                }
+            });
+        }
+
+        private class Disposable : IDisposable
+        {
+            private readonly Action _dispose;
+
+            public Disposable(Action dispose)
+            {
+                _dispose = dispose;
+            }
+
+            public void Dispose()
+            {
+                _dispose();
+            }
         }
     }
 }
