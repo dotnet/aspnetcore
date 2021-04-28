@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// Default value for <see cref="BufferBodyLengthLimit"/>.
         /// </summary>
         /// <value>
-        /// Defaults to <c>134,217,728 bytes‬</c>, which is approximately 1.07GB.
+        /// Defaults to <c>134,217,728 bytes‬</c>, which is 128MB.
         /// </value>
         public const int DefaultBufferBodyLengthLimit = 1024 * 1024 * 128;
 
