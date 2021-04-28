@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// Default value for <see cref="MemoryBufferThreshold"/>.
         /// </summary>
         /// <value>
-        /// Defaults to <c>65,536 bytes‬</c>, which is approximately 0.52MB.
+        /// Defaults to <c>65,536 bytes‬</c>, which is approximately 64KB.
         /// </value>
         public const int DefaultMemoryBufferThreshold = 1024 * 64;
 
