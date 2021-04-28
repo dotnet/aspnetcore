@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Rewrite
                 var newUrl = UriHelper.BuildAbsolute("https", host, req.PathBase, req.Path, req.QueryString, default);
                 var response = context.HttpContext.Response;
                 response.StatusCode = StatusCode;
-                response.Headers[HeaderNames.Location] = newUrl;
+                response.Headers.Location = newUrl;
                 context.Result = RuleResult.EndResponse;
                 context.Logger.RedirectedToHttps();
             }

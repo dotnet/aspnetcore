@@ -132,7 +132,8 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                 await _options.ExceptionHandler!(context);
 
-                if (context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+                // If the response has already started, assume exception handler was successful.
+                if (context.Response.HasStarted || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
                 {
                     if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
                     {

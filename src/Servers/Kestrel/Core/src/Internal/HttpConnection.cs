@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                     default:
                         // SelectProtocol() only returns Http1, Http2 or None.
-                        throw new NotSupportedException($"{nameof(SelectProtocol)} returned something other than Http1, Http2, Http3 or None.");
+                        throw new NotSupportedException($"{nameof(SelectProtocol)} returned something other than Http1, Http2 or None.");
                 }   
 
                 _requestProcessor = requestProcessor;

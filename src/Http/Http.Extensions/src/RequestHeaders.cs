@@ -219,11 +219,11 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return HostString.FromUriComponent(Headers[HeaderNames.Host]);
+                return HostString.FromUriComponent(Headers.Host);
             }
             set
             {
-                Headers[HeaderNames.Host] = value.ToUriComponent();
+                Headers.Host = value.ToUriComponent();
             }
         }
 
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                if (Uri.TryCreate(Headers[HeaderNames.Referer], UriKind.RelativeOrAbsolute, out var uri))
+                if (Uri.TryCreate(Headers.Referer, UriKind.RelativeOrAbsolute, out var uri))
                 {
                     return uri;
                 }

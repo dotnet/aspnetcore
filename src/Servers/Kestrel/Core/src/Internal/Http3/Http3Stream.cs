@@ -20,7 +20,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal abstract partial class Http3Stream : HttpProtocol, IHttpHeadersHandler, IThreadPoolWorkItem, ITimeoutHandler, IRequestProcessor
+    internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpHeadersHandler, IThreadPoolWorkItem, ITimeoutHandler, IRequestProcessor
     {
         private static ReadOnlySpan<byte> AuthorityBytes => new byte[10] { (byte)':', (byte)'a', (byte)'u', (byte)'t', (byte)'h', (byte)'o', (byte)'r', (byte)'i', (byte)'t', (byte)'y' };
         private static ReadOnlySpan<byte> MethodBytes => new byte[7] { (byte)':', (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d' };
@@ -48,21 +48,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private int _totalParsedHeaderSize;
         private bool _isMethodConnect;
 
-        private readonly Http3Connection _http3Connection;
         private TaskCompletionSource? _appCompleted;
 
         public Pipe RequestBodyPipe { get; }
 
-        public Http3Stream(Http3Connection http3Connection, Http3StreamContext context)
+        public Http3Stream(Http3StreamContext context)
         {
             Initialize(context);
 
             InputRemaining = null;
 
-            // First, determine how we know if an Http3stream is unidirectional or bidirectional
-            var httpLimits = context.ServiceContext.ServerOptions.Limits;
-            var http3Limits = httpLimits.Http3;
-            _http3Connection = http3Connection;
             _context = context;
 
             _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
@@ -72,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 context.Transport.Output,
                 context.StreamContext,
                 context.TimeoutControl,
-                httpLimits.MinResponseDataRate,
+                context.ServiceContext.ServerOptions.Limits.MinResponseDataRate,
                 context.ConnectionId,
                 context.MemoryPool,
                 context.ServiceContext.Log,
@@ -99,6 +94,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
         public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
+        public long StreamId => _streamIdFeature.StreamId;
+
+        public long HeaderTimeoutTicks { get; set; }
+        public bool ReceivedHeader => _appCompleted != null; // TCS is assigned once headers are received
+
+        public bool IsRequestStream => true;
 
         public void Abort(ConnectionAbortedException ex)
         {
@@ -388,7 +389,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             return;
                         }
                     }
-
                     finally
                     {
                         Input.AdvanceTo(consumed, examined);
@@ -406,10 +406,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 error = ex;
                 _errorCodeFeature.Error = (long)ex.ErrorCode;
 
-                Log.Http3ConnectionError(_http3Connection.ConnectionId, ex);
-                _http3Connection.Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode);
-
-                // TODO: HTTP/3 stream will be aborted by connection. Check this is correct.
+                _context.StreamLifetimeHandler.OnStreamConnectionError(ex);
             }
             catch (Exception ex)
             {
@@ -442,7 +439,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     await _context.StreamContext.DisposeAsync();
 
-                    _http3Connection.RemoveStream(_streamIdFeature.StreamId);
+                    _context.StreamLifetimeHandler.OnStreamCompleted(this);
                 }
             }
         }
@@ -552,6 +549,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             _appCompleted = new TaskCompletionSource();
+            _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
         }

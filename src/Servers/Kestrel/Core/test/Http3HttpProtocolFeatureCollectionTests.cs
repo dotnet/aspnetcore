@@ -18,11 +18,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public Http3HttpProtocolFeatureCollectionTests()
         {
-            var connection = new Http3Connection(TestContextFactory.CreateHttp3ConnectionContext());
-
             var streamContext = TestContextFactory.CreateHttp3StreamContext(transport: DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions()).Application);
 
-            var http3Stream = new TestHttp3Stream(connection, streamContext);
+            var http3Stream = new TestHttp3Stream(streamContext);
             http3Stream.Reset();
             _http3Collection = http3Stream;
         }
@@ -61,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class TestHttp3Stream : Http3Stream
         {
-            public TestHttp3Stream(Http3Connection connection, Http3StreamContext context) : base(connection, context)
+            public TestHttp3Stream(Http3StreamContext context) : base(context)
             {
             }
 

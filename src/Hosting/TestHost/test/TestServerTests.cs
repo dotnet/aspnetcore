@@ -771,7 +771,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ManuallySetHostWinsOverInferredHostFromRequestUri(string uri)
         {
             RequestDelegate appDelegate = ctx =>
-                ctx.Response.WriteAsync(ctx.Request.Headers[HeaderNames.Host]);
+                ctx.Response.WriteAsync(ctx.Request.Headers.Host);
 
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);

@@ -421,15 +421,11 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         MONO.mono_wasm_setenv('LANG',  `${resourceLoader.startOptions.applicationCulture}.UTF-8`);
       }
     }
-    MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
     let timeZone = "UTC";
     try {
       timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     } catch { }
     MONO.mono_wasm_setenv("TZ", timeZone || 'UTC');
-    // Turn off full-gc to prevent browser freezing.
-    const mono_wasm_enable_on_demand_gc = cwrap('mono_wasm_enable_on_demand_gc', null, ['number']);
-    mono_wasm_enable_on_demand_gc(0);
     if (resourceLoader.bootConfig.modifiableAssemblies) {
       // Configure the app to enable hot reload in Development.
       MONO.mono_wasm_setenv('DOTNET_MODIFIABLE_ASSEMBLIES', resourceLoader.bootConfig.modifiableAssemblies);

@@ -357,8 +357,8 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal(
                 $"The property '{nameof(HasCaptureUnmatchedValuesProperty.CaptureUnmatchedValues)}' on component type '{typeof(HasCaptureUnmatchedValuesProperty).FullName}' cannot be set explicitly when " +
                 $"also used to capture unmatched values. Unmatched values:" + Environment.NewLine +
-                $"test1" + Environment.NewLine +
-                $"test2",
+                $"test2" + Environment.NewLine +
+                $"test1",
                 ex.Message);
         }
 

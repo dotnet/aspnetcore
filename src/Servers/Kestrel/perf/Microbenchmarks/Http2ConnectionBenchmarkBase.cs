@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
     public abstract class Http2ConnectionBenchmarkBase
     {
         private MemoryPool<byte> _memoryPool;
-        private HttpRequestHeaders _httpRequestHeaders;
+        private IHeaderDictionary _httpRequestHeaders;
         private Http2Connection _connection;
         private DynamicHPackEncoder _hpackEncoder;
         private Http2HeadersEnumerator _requestHeadersEnumerator;
@@ -50,10 +50,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             _connectionPair = DuplexPipe.CreateConnectionPair(options, options);
 
             _httpRequestHeaders = new HttpRequestHeaders();
-            _httpRequestHeaders.HeaderMethod = new StringValues("GET");
-            _httpRequestHeaders.HeaderPath = new StringValues("/");
-            _httpRequestHeaders.HeaderScheme = new StringValues("http");
-            _httpRequestHeaders.HeaderAuthority = new StringValues("localhost:80");
+            _httpRequestHeaders[HeaderNames.Method] = new StringValues("GET");
+            _httpRequestHeaders[HeaderNames.Path] = new StringValues("/");
+            _httpRequestHeaders[HeaderNames.Scheme] = new StringValues("http");
+            _httpRequestHeaders[HeaderNames.Authority] = new StringValues("localhost:80");
 
             _headersBuffer = new byte[1024 * 16];
             _hpackEncoder = new DynamicHPackEncoder();

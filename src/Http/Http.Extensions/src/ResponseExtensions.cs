@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Http
                 response.StatusCode = permanent ? StatusCodes.Status301MovedPermanently : StatusCodes.Status302Found;
             }
 
-            response.Headers[HeaderNames.Location] = location;
+            response.Headers.Location = location;
         }
     }
 }

@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Rewrite
                         break;
                     case RuleResult.EndResponse:
                         _logger.RewriteMiddlewareRequestResponseComplete(
-                            context.Response.Headers[HeaderNames.Location],
+                            context.Response.Headers.Location,
                             context.Response.StatusCode);
                         return Task.CompletedTask;
                     case RuleResult.SkipRemainingRules:
