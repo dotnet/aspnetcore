@@ -89,5 +89,4 @@ static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JS
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.TimeSpan timeout, params object![]! args) -> System.Threading.Tasks.ValueTask
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, params object![]! args) -> System.Threading.Tasks.ValueTask
 virtual Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(string! identifier, string? argsJson) -> string?
-virtual Microsoft.JSInterop.JSRuntime.BeginInvokeJS(long taskId, string! identifier, string? argsJson) -> void
 ~Microsoft.JSInterop.DotNetObjectReference<TValue>
