@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 });
 
             Assert.False(nextFilterInvoked);
-            Assert.Contains(sink.Writes, w => w.Message == "The response has already started, the database developer page exception filter will not be executed.");
+            Assert.Contains(sink.Writes, w => w.Message == "The response has already started, the next developer page exception filter will not be executed.");
         }
     }
 }
