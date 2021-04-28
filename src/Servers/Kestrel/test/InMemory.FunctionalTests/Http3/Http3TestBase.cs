@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', 16 * 1024));
 
         internal TestServiceContext _serviceContext;
+        internal HttpConnection _httpConnection;
         internal readonly TimeoutControl _timeoutControl;
         internal readonly Mock<IKestrelTrace> _mockKestrelTrace = new Mock<IKestrelTrace>();
         internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
@@ -260,18 +261,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected void TriggerTick(DateTimeOffset now)
         {
             _serviceContext.MockSystemClock.UtcNow = now;
-            Connection?.Tick();
+            Connection?.Tick(now);
         }
 
         protected async Task InitializeConnectionAsync(RequestDelegate application)
         {
-            if (Connection == null)
-            {
-                CreateConnection();
-            }
+            MultiplexedConnectionContext = new TestMultiplexedConnectionContext(this);
 
-            // Skip all heartbeat and lifetime notification feature registrations.
-            _connectionTask = Connection.ProcessStreamsAsync(new DummyApplication(application));
+            var httpConnectionContext = new Http3ConnectionContext(
+                connectionId: "TestConnectionId",
+                protocols: HttpProtocols.Http3,
+                connectionContext: MultiplexedConnectionContext,
+                connectionFeatures: MultiplexedConnectionContext.Features,
+                serviceContext: _serviceContext,
+                memoryPool: _memoryPool,
+                localEndPoint: null,
+                remoteEndPoint: null);
+            httpConnectionContext.TimeoutControl = _mockTimeoutControl.Object;
+
+            _httpConnection = new HttpConnection(httpConnectionContext);
+            _httpConnection.Initialize(Connection);
+            _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
+                               .Callback<TimeoutReason>(r => _httpConnection.OnTimeout(r));
+
+            // ProcessRequestAsync will create the Http3Connection
+            _connectionTask = _httpConnection.ProcessRequestsAsync(new DummyApplication(application));
+
+            Connection = (Http3Connection)_httpConnection._requestProcessor;
+            Connection._streamLifetimeHandler = new LifetimeHandlerInterceptor(Connection, this);
 
             await GetInboundControlStream();
         }
@@ -283,27 +300,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             OutboundControlStream = await CreateControlStream();
 
             return await CreateRequestStream();
-        }
-
-        protected void CreateConnection()
-        {
-            MultiplexedConnectionContext = new TestMultiplexedConnectionContext(this);
-
-            var httpConnectionContext = new Http3ConnectionContext(
-                connectionId: "TestConnectionId",
-                connectionContext: MultiplexedConnectionContext,
-                connectionFeatures: MultiplexedConnectionContext.Features,
-                serviceContext: _serviceContext,
-                memoryPool: _memoryPool,
-                localEndPoint: null,
-                remoteEndPoint: null);
-            httpConnectionContext.TimeoutControl = _mockTimeoutControl.Object;
-
-            Connection = new Http3Connection(httpConnectionContext);
-            Connection._streamLifetimeHandler = new LifetimeHandlerInterceptor(Connection, this);
-
-            _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
-                           .Callback<TimeoutReason>(r => Connection.OnTimeout(r));
         }
 
         private class LifetimeHandlerInterceptor : IHttp3StreamLifetimeHandler

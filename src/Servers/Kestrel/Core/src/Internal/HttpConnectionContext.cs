@@ -4,14 +4,12 @@
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net;
-using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class HttpConnectionContext
+    internal class HttpConnectionContext : BaseHttpConnectionContext
     {
         public HttpConnectionContext(
             string connectionId,
@@ -22,30 +20,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             MemoryPool<byte> memoryPool,
             IPEndPoint? localEndPoint,
             IPEndPoint? remoteEndPoint,
-            IDuplexPipe transport)
+            IDuplexPipe transport) : base(connectionId, protocols, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
         {
-            ConnectionId = connectionId;
-            Protocols = protocols;
-            ConnectionContext = connectionContext;
-            ServiceContext = serviceContext;
-            ConnectionFeatures = connectionFeatures;
-            MemoryPool = memoryPool;
-            LocalEndPoint = localEndPoint;
-            RemoteEndPoint = remoteEndPoint;
             Transport = transport;
         }
 
-        public string ConnectionId { get; }
-        public HttpProtocols Protocols { get; }
-        public ConnectionContext ConnectionContext { get; }
-        public ServiceContext ServiceContext { get; }
-        public IFeatureCollection ConnectionFeatures { get; }
-        public MemoryPool<byte> MemoryPool { get; }
-        public IPEndPoint? LocalEndPoint { get; }
-        public IPEndPoint? RemoteEndPoint { get; }
         public IDuplexPipe Transport { get; }
-
-        public ITimeoutControl TimeoutControl { get; set; } = default!; // Always set by HttpConnection
-        public ExecutionContext? InitialExecutionContext { get; set; }
     }
 }

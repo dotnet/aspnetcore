@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             var context = new HttpConnectionContext(
                 "TestConnectionId",
-                Server.Kestrel.Core.HttpProtocols.Http1,
+                HttpProtocols.Http1,
                 connectionContext,
                 serviceContext,
                 connectionFeatures,
@@ -84,6 +84,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             var http3ConnectionContext = new Http3ConnectionContext(
                 "TestConnectionId",
+                HttpProtocols.Http3,
                 connectionContext ?? new TestMultiplexedConnectionContext(),
                 serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures ?? new FeatureCollection(),

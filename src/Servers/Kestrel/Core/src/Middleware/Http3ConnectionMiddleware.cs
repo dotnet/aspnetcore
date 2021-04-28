@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
@@ -25,8 +24,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             var memoryPoolFeature = connectionContext.Features.Get<IMemoryPoolFeature>();
 
-            var http3ConnectionContext = new Http3ConnectionContext(
+            var httpConnectionContext = new Http3ConnectionContext(
                 connectionContext.ConnectionId,
+                HttpProtocols.Http3,
                 connectionContext,
                 _serviceContext,
                 connectionContext.Features,
@@ -34,9 +34,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 connectionContext.LocalEndPoint as IPEndPoint,
                 connectionContext.RemoteEndPoint as IPEndPoint);
 
-            var connection = new Http3Connection(http3ConnectionContext);
+            var connection = new HttpConnection(httpConnectionContext);
 
-            return connection.ProcessStreamsAsync(_application);
+            return connection.ProcessRequestsAsync(_application);
         }
     }
 }
