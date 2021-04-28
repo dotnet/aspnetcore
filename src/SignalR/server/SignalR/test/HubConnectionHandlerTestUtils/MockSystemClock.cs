@@ -9,8 +9,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public class MockSystemClock : ISystemClock
     {
-        private static Random _random = new Random();
-
         private long _utcNowTicks;
 
         public MockSystemClock()
@@ -41,7 +39,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         private long NextLong(long minValue, long maxValue)
         {
-            return (long)(_random.NextDouble() * (maxValue - minValue) + minValue);
+            return (long)(Random.Shared.NextDouble() * (maxValue - minValue) + minValue);
         }
     }
 }
