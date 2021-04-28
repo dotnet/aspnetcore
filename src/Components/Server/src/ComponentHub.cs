@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Components.Server
             return false;
         }
 
-        public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson, byte[][] byteArrays)
         {
             var circuitHost = await GetActiveCircuitAsync();
             if (circuitHost == null)
@@ -195,10 +195,10 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-            _ = circuitHost.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+            _ = circuitHost.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson, byteArrays);
         }
 
-        public async ValueTask EndInvokeJSFromDotNet(long asyncHandle, bool succeeded, string arguments)
+        public async ValueTask EndInvokeJSFromDotNet(long callId, bool succeeded, string resultOrError, byte[][] byteArrays)
         {
             var circuitHost = await GetActiveCircuitAsync();
             if (circuitHost == null)
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-            _ = circuitHost.EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
+            _ = circuitHost.EndInvokeJSFromDotNet(callId, succeeded, resultOrError, byteArrays);
         }
 
         public async ValueTask DispatchBrowserEvent(string eventDescriptor, string eventArgs)

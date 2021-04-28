@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         // BeginInvokeDotNetFromJS is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        public async Task BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public async Task BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson, byte[][]? byteArrays)
         {
             AssertInitialized();
             AssertNotDisposed();
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
                     var invocationInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
-                    DotNetDispatcher.BeginInvokeDotNet(JSRuntime, invocationInfo, argsJson);
+                    DotNetDispatcher.BeginInvokeDotNet(JSRuntime, invocationInfo, argsJson, byteArrays);
                 });
             }
             catch (Exception ex)
@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         // EndInvokeJSFromDotNet is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        public async Task EndInvokeJSFromDotNet(long asyncCall, bool succeeded, string arguments)
+        public async Task EndInvokeJSFromDotNet(long callId, bool succeeded, string resultOrError, byte[][]? byteArrays)
         {
             AssertInitialized();
             AssertNotDisposed();
@@ -374,14 +374,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     if (!succeeded)
                     {
                         // We can log the arguments here because it is simply the JS error with the call stack.
-                        Log.EndInvokeJSFailed(_logger, asyncCall, arguments);
+                        Log.EndInvokeJSFailed(_logger, callId, resultOrError);
                     }
                     else
                     {
-                        Log.EndInvokeJSSucceeded(_logger, asyncCall);
+                        Log.EndInvokeJSSucceeded(_logger, callId);
                     }
 
-                    DotNetDispatcher.EndInvokeJS(JSRuntime, arguments);
+                    DotNetDispatcher.EndInvokeJS(JSRuntime, resultOrError, byteArrays);
                 });
             }
             catch (Exception ex)

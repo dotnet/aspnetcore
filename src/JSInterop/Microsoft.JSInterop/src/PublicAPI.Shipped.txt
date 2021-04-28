@@ -72,12 +72,8 @@ Microsoft.JSInterop.JSRuntime.JSRuntime() -> void
 Microsoft.JSInterop.JSRuntime.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
 Microsoft.JSInterop.JSRuntimeExtensions
 abstract Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string?
-abstract Microsoft.JSInterop.JSRuntime.BeginInvokeJS(long taskId, string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> void
 abstract Microsoft.JSInterop.JSRuntime.EndInvokeDotNet(Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, in Microsoft.JSInterop.Infrastructure.DotNetInvocationResult invocationResult) -> void
 static Microsoft.JSInterop.DotNetObjectReference.Create<TValue>(TValue! value) -> Microsoft.JSInterop.DotNetObjectReference<TValue!>!
-static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.BeginInvokeDotNet(Microsoft.JSInterop.JSRuntime! jsRuntime, Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, string! argsJson) -> void
-static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.EndInvokeJS(Microsoft.JSInterop.JSRuntime! jsRuntime, string! arguments) -> void
-static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.Invoke(Microsoft.JSInterop.JSRuntime! jsRuntime, in Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, string! argsJson) -> string?
 static Microsoft.JSInterop.JSInProcessObjectReferenceExtensions.InvokeVoid(this Microsoft.JSInterop.IJSInProcessObjectReference! jsObjectReference, string! identifier, params object?[]! args) -> void
 static Microsoft.JSInterop.JSInProcessRuntimeExtensions.InvokeVoid(this Microsoft.JSInterop.IJSInProcessRuntime! jsRuntime, string! identifier, params object?[]! args) -> void
 static Microsoft.JSInterop.JSObjectReferenceExtensions.InvokeAsync<TValue>(this Microsoft.JSInterop.IJSObjectReference! jsObjectReference, string! identifier, System.Threading.CancellationToken cancellationToken, params object?[]! args) -> System.Threading.Tasks.ValueTask<TValue>

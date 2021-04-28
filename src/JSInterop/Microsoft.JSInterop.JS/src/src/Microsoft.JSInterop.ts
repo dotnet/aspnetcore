@@ -3,7 +3,7 @@
 export module DotNet {
   (window as any).DotNet = DotNet; // Ensure reachable from anywhere
 
-  export type JsonReviver = ((key: any, value: any) => any);
+  export type JsonReviver = ((key: any, value: any, byteArrays: Uint8Array[] | undefined) => any);
   const jsonRevivers: JsonReviver[] = [];
 
   class JSObject {
@@ -152,15 +152,16 @@ export module DotNet {
 
   /**
    * Parses the given JSON string using revivers to restore args passed from .NET to JS.
-   * 
-   * @param json The JSON stirng to parse.
+   *
+   * @param json The JSON string to parse.
+   * @param byteArrays The byte array data to revive.
    */
-  export function parseJsonWithRevivers(json: string): any {
+  export function parseJsonWithRevivers(json: string, byteArrays?: Uint8Array[] | undefined): any {
     return json ? JSON.parse(json, (key, initialValue) => {
       // Invoke each reviver in order, passing the output from the previous reviver,
       // so that each one gets a chance to transform the value
       return jsonRevivers.reduce(
-        (latestValue, reviver) => reviver(key, latestValue),
+        (latestValue, reviver) => reviver(key, latestValue, byteArrays),
         initialValue
       );
     }) : null;
@@ -169,8 +170,9 @@ export module DotNet {
   function invokePossibleInstanceMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
     const dispatcher = getRequiredDispatcher();
     if (dispatcher.invokeDotNetFromJS) {
-      const argsJson = JSON.stringify(args, argReplacer);
-      const resultJson = dispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+      const byteArrays : Uint8Array[] = [];
+      const argsJson = JSON.stringify(args, (key, value) => argReplacer(key, value, byteArrays));
+      const resultJson = dispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson, byteArrays);
       return resultJson ? parseJsonWithRevivers(resultJson) : null;
     } else {
       throw new Error('The current dispatcher does not support synchronous calls from JS to .NET. Use invokeMethodAsync instead.');
@@ -188,8 +190,9 @@ export module DotNet {
     });
 
     try {
-      const argsJson = JSON.stringify(args, argReplacer);
-      getRequiredDispatcher().beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+      const byteArrays : Uint8Array[] = [];
+      const argsJson = JSON.stringify(args, (key, value) => argReplacer(key, value, byteArrays));
+      getRequiredDispatcher().beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson, byteArrays);
     } catch (ex) {
       // Synchronous failure
       completePendingCall(asyncCallId, false, ex);
@@ -206,13 +209,13 @@ export module DotNet {
     throw new Error('No .NET call dispatcher has been set.');
   }
 
-  function completePendingCall(asyncCallId: number, success: boolean, resultOrError: any) {
-    if (!pendingAsyncCalls.hasOwnProperty(asyncCallId)) {
-      throw new Error(`There is no pending async call with ID ${asyncCallId}.`);
+  function completePendingCall(callId: number, success: boolean, resultOrError: any) {
+    if (!pendingAsyncCalls.hasOwnProperty(callId)) {
+      throw new Error(`There is no pending async call with ID ${callId}.`);
     }
 
-    const asyncCall = pendingAsyncCalls[asyncCallId];
-    delete pendingAsyncCalls[asyncCallId];
+    const asyncCall = pendingAsyncCalls[callId];
+    delete pendingAsyncCalls[callId];
     if (success) {
       asyncCall.resolve(resultOrError);
     } else {
@@ -244,9 +247,10 @@ export module DotNet {
      * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
      * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null or undefined to call static methods.
      * @param argsJson JSON representation of arguments to pass to the method.
+     * @param byteArrays Byte array data extracted from the arguments for direct transfer.
      * @returns JSON representation of the result of the invocation.
      */
-    invokeDotNetFromJS?(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): string | null;
+    invokeDotNetFromJS?(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string, byteArrays: Uint8Array[] | null): string | null;
 
     /**
      * Invoked by the runtime to begin an asynchronous call to a .NET method.
@@ -256,8 +260,9 @@ export module DotNet {
      * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
      * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null to call static methods.
      * @param argsJson JSON representation of arguments to pass to the method.
+     * @param byteArrays Byte array data extracted from the arguments for direct transfer.
      */
-    beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void;
+    beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string, byteArrays: Uint8Array[] | null): void;
 
     /**
      * Invoked by the runtime to complete an asynchronous JavaScript function call started from .NET
@@ -265,8 +270,9 @@ export module DotNet {
      * @param callId A value identifying the asynchronous operation.
      * @param succeded Whether the operation succeeded or not.
      * @param resultOrError The serialized result or the serialized error from the async operation.
+     * @param byteArrays Byte array data extracted from the arguments for direct transfer.
      */
-    endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;
+    endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any, byteArrays: Uint8Array[] | null): void;
   }
 
   /**
@@ -294,17 +300,19 @@ export module DotNet {
      *
      * @param identifier Identifies the globally-reachable function to invoke.
      * @param argsJson JSON representation of arguments to be passed to the function.
+     * @param byteArrays Byte array data extracted from the arguments for direct transfer.
      * @param resultType The type of result expected from the JS interop call.
      * @param targetInstanceId The instance ID of the target JS object.
      * @returns JSON representation of the invocation result.
      */
-    invokeJSFromDotNet: (identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number) => {
-      const returnValue = findJSFunction(identifier, targetInstanceId).apply(null, parseJsonWithRevivers(argsJson));
+    invokeJSFromDotNet: (identifier: string, argsJson: string, byteArrays: Uint8Array[], resultType: JSCallResultType, targetInstanceId: number) => {
+      const returnValue = findJSFunction(identifier, targetInstanceId).apply(null, parseJsonWithRevivers(argsJson, byteArrays));
       const result = createJSCallResult(returnValue, resultType);
 
+      const returnedByteArrays : Uint8Array[] = [];
       return result === null || result === undefined
         ? null
-        : JSON.stringify(result, argReplacer);
+        : JSON.stringify(result, (key, value) => argReplacer(key, value, returnedByteArrays)); // TODO; what is this used for? Seems like it doesn't actually invoke anything
     },
 
     /**
@@ -313,14 +321,15 @@ export module DotNet {
      * @param asyncHandle A value identifying the asynchronous operation. This value will be passed back in a later call to endInvokeJSFromDotNet.
      * @param identifier Identifies the globally-reachable function to invoke.
      * @param argsJson JSON representation of arguments to be passed to the function.
+     * @param byteArrays Byte array data extracted from the arguments for direct transfer.
      * @param resultType The type of result expected from the JS interop call.
      * @param targetInstanceId The ID of the target JS object instance.
      */
-    beginInvokeJSFromDotNet: (asyncHandle: number, identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number): void => {
+    beginInvokeJSFromDotNet: (asyncHandle: number, identifier: string, argsJson: string, byteArrays: Uint8Array[], resultType: JSCallResultType, targetInstanceId: number): void => {
       // Coerce synchronous functions into async ones, plus treat
       // synchronous exceptions the same as async ones
       const promise = new Promise<any>(resolve => {
-        const synchronousResultOrPromise = findJSFunction(identifier, targetInstanceId).apply(null, parseJsonWithRevivers(argsJson));
+        const synchronousResultOrPromise = findJSFunction(identifier, targetInstanceId).apply(null, parseJsonWithRevivers(argsJson, byteArrays));
         resolve(synchronousResultOrPromise);
       });
 
@@ -328,22 +337,24 @@ export module DotNet {
       if (asyncHandle) {
         // On completion, dispatch result back to .NET
         // Not using "await" because it codegens a lot of boilerplate
+        const byteArrays : Uint8Array[] = [];
         promise.then(
-          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, JSON.stringify([asyncHandle, true, createJSCallResult(result, resultType)], argReplacer)),
-          error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([asyncHandle, false, formatError(error)]))
+          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, JSON.stringify([asyncHandle, true, createJSCallResult(result, resultType)], (key, value) => argReplacer(key, value, byteArrays)), byteArrays),
+          error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([asyncHandle, false, formatError(error)]), null)
         );
       }
     },
 
     /**
      * Receives notification that an async call from JS to .NET has completed.
-     * @param asyncCallId The identifier supplied in an earlier call to beginInvokeDotNetFromJS.
+     * @param callId The identifier supplied in an earlier call to beginInvokeDotNetFromJS.
      * @param success A flag to indicate whether the operation completed successfully.
      * @param resultOrExceptionMessage Either the operation result or an error message.
+     * @param byteArrays Byte array data extracted from the arguments for direct transfer.
      */
-    endInvokeDotNetFromJS: (asyncCallId: string, success: boolean, resultOrExceptionMessage: any): void => {
+    endInvokeDotNetFromJS: (callId: string, success: boolean, resultOrExceptionMessage: any): void => {
       const resultOrError = success ? resultOrExceptionMessage : new Error(resultOrExceptionMessage);
-      completePendingCall(parseInt(asyncCallId), success, resultOrError);
+      completePendingCall(parseInt(callId), success, resultOrError);
     }
   }
 
@@ -392,7 +403,7 @@ export module DotNet {
   }
 
   const dotNetObjectRefKey = '__dotNetObject';
-  attachReviver(function reviveDotNetObject(key: any, value: any) {
+  attachReviver(function reviveDotNetObject(key: any, value: any, byteArrays: Uint8Array[] | undefined) {
     if (value && typeof value === 'object' && value.hasOwnProperty(dotNetObjectRefKey)) {
       return new DotNetObject(value.__dotNetObject);
     }
@@ -401,7 +412,7 @@ export module DotNet {
     return value;
   });
 
-  attachReviver(function reviveJSObjectReference(key: any, value: any) {
+  attachReviver(function reviveJSObjectReference(key: any, value: any, byteArrays: Uint8Array[] | undefined) {
     if (value && typeof value === 'object' && value.hasOwnProperty(jsObjectIdKey)) {
       const id = value[jsObjectIdKey];
       const jsObject = cachedJSObjectsById[id];
@@ -411,6 +422,22 @@ export module DotNet {
       } else {
         throw new Error(`JS object instance with ID ${id} does not exist (has it been disposed?).`);
       }
+    }
+
+    // Unrecognized - let another reviver handle it
+    return value;
+  });
+
+  const byteArrayRefKey = '__byte[]';
+  attachReviver(function reviveByteArray(key: any, value: any, byteArrays: Uint8Array[] | undefined) {
+    if (value && typeof value === 'object' && value.hasOwnProperty(byteArrayRefKey) && byteArrays) {
+      const index = value[byteArrayRefKey];
+
+      if (index >= byteArrays.length || index < 0) {
+        throw new Error(`Byte array index '${index}' does not exist.`)
+      }
+
+      return byteArrays[value[byteArrayRefKey]];
     }
 
     // Unrecognized - let another reviver handle it
@@ -428,7 +455,18 @@ export module DotNet {
     }
   }
 
-  function argReplacer(key: string, value: any) {
-    return value instanceof DotNetObject ? value.serializeAsArg() : value;
+  function argReplacer(key: string, value: any, byteArrays: Uint8Array[]) {
+    if (value instanceof DotNetObject)
+    {
+      return value.serializeAsArg();
+    }
+    else if (value instanceof Uint8Array)
+    {
+      var index = byteArrays.length;
+      byteArrays.push(value);
+      return { [byteArrayRefKey]: index };
+    }
+
+    return value;
   }
 }

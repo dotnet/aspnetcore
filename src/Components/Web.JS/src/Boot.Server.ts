@@ -104,7 +104,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId));
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
-  connection.on('JS.EndInvokeDotNet', (args: string) => DotNet.jsCallDispatcher.endInvokeDotNetFromJS(...(DotNet.parseJsonWithRevivers(args) as [string, boolean, unknown])));
+  connection.on('JS.EndInvokeDotNet', (args: string, byteArrays: Uint8Array[]) => DotNet.jsCallDispatcher.endInvokeDotNetFromJS(...(DotNet.parseJsonWithRevivers(args, byteArrays) as [string, boolean, unknown])));
 
   const renderQueue = RenderQueue.getOrCreate(logger);
   connection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {
@@ -128,11 +128,11 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   }
 
   DotNet.attachDispatcher({
-    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void => {
-      connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
+    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson, byteArrays): void => {
+      connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson, byteArrays);
     },
-    endInvokeJSFromDotNet: (asyncHandle, succeeded, argsJson): void => {
-      connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
+    endInvokeJSFromDotNet: (asyncHandle, succeeded, resultOrError, byteArrays): void => {
+      connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, resultOrError, byteArrays);
     },
   });
 

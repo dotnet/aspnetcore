@@ -1,4 +1,10 @@
 #nullable enable
 Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker
+Microsoft.JSInterop.JSRuntime.SerializeArgs(object?[]! args) -> (string!, byte[]![]?)
+abstract Microsoft.JSInterop.JSRuntime.BeginInvokeJS(long taskId, string! identifier, string? argsJson, byte[]![]? byteArrays, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> void
 static Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker.ReadJSObjectReferenceIdentifier(ref System.Text.Json.Utf8JsonReader reader) -> long
 static Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker.WriteJSObjectReference(System.Text.Json.Utf8JsonWriter! writer, Microsoft.JSInterop.Implementation.JSObjectReference! objectReference) -> void
+static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.BeginInvokeDotNet(Microsoft.JSInterop.JSRuntime! jsRuntime, Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, string! argsJson, byte[]![]? byteArrays) -> void
+static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.EndInvokeJS(Microsoft.JSInterop.JSRuntime! jsRuntime, string! arguments, byte[]![]? byteArrays) -> void
+static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.Invoke(Microsoft.JSInterop.JSRuntime! jsRuntime, in Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, string! argsJson, byte[]![]? byteArrays) -> string?
+virtual Microsoft.JSInterop.JSRuntime.BeginInvokeJS(long taskId, string! identifier, string? argsJson, byte[]![]? byteArrays) -> void

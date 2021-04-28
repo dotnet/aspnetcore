@@ -70,12 +70,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private void EndInvokeDotNetCore(string callId, bool success, object resultOrError)
         {
-            _clientProxy.SendAsync(
+            var args = new[] { callId, success, resultOrError };
+            var (argsJson, byteArrays) = SerializeArgs(args);
+ 
+             _clientProxy.SendAsync(
                 "JS.EndInvokeDotNet",
-                JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptions));
+                argsJson,
+                byteArrays);
         }
 
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, byte[][]? byteArrays, JSCallResultType resultType, long targetInstanceId)
         {
             if (_clientProxy is null)
             {
@@ -87,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             Log.BeginInvokeJS(_logger, asyncHandle, identifier);
 
-            _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson, (int)resultType, targetInstanceId);
+            _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson, byteArrays, (int)resultType, targetInstanceId);
         }
 
         public static class Log
