@@ -20,7 +20,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpHeadersHandler, IThreadPoolWorkItem, ITimeoutHandler, IRequestProcessor
+    internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpHeadersHandler, IThreadPoolWorkItem
     {
         private static ReadOnlySpan<byte> AuthorityBytes => new byte[10] { (byte)':', (byte)'a', (byte)'u', (byte)'t', (byte)'h', (byte)'o', (byte)'r', (byte)'i', (byte)'t', (byte)'y' };
         private static ReadOnlySpan<byte> MethodBytes => new byte[7] { (byte)':', (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d' };
@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly Http3FrameWriter _frameWriter;
         private readonly Http3OutputProducer _http3Output;
         private int _isClosed;
-        private int _gracefulCloseInitiator;
         private readonly Http3StreamContext _context;
         private readonly IProtocolErrorCodeFeature _errorCodeFeature;
         private readonly IStreamIdFeature _streamIdFeature;
@@ -100,11 +99,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public bool ReceivedHeader => _appCompleted != null; // TCS is assigned once headers are received
 
         public bool IsRequestStream => true;
-
-        public void Abort(ConnectionAbortedException ex)
-        {
-            Abort(ex, Http3ErrorCode.InternalError);
-        }
 
         public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
         {
@@ -318,26 +312,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private static bool IsConnectionSpecificHeaderField(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             return name.SequenceEqual(ConnectionBytes) || (name.SequenceEqual(TeBytes) && !value.SequenceEqual(TrailersBytes));
-        }
-
-        public void HandleReadDataRateTimeout()
-        {
-            Debug.Assert(Limits.MinRequestBodyDataRate != null);
-
-            Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, null, Limits.MinRequestBodyDataRate.BytesPerSecond);
-            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout), Http3ErrorCode.RequestRejected);
-        }
-
-        public void HandleRequestHeadersTimeout()
-        {
-            Log.ConnectionBadRequest(ConnectionId, KestrelBadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
-            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout), Http3ErrorCode.RequestRejected);
-        }
-
-        public void OnInputOrOutputCompleted()
-        {
-            TryClose();
-            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), Http3ErrorCode.NoError);
         }
 
         protected override void OnRequestProcessingEnded()
@@ -591,23 +565,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return RequestBodyPipe.Writer.FlushAsync().AsTask();
         }
 
-        public void StopProcessingNextRequest()
-            => StopProcessingNextRequest(serverInitiated: true);
-
-        public void StopProcessingNextRequest(bool serverInitiated)
-        {
-            var initiator = serverInitiated ? GracefulCloseInitiator.Server : GracefulCloseInitiator.Client;
-
-            if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
-            {
-                Input.CancelPendingRead();
-            }
-        }
-
-        public void Tick(DateTimeOffset now)
-        {
-        }
-
         protected override void OnReset()
         {
             // Reset Http3 Features
@@ -849,11 +806,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         /// Used to kick off the request processing loop by derived classes.
         /// </summary>
         public abstract void Execute();
-
-        public void OnTimeout(TimeoutReason reason)
-        {
-            throw new NotImplementedException();
-        }
 
         protected enum RequestHeaderParsingState
         {
