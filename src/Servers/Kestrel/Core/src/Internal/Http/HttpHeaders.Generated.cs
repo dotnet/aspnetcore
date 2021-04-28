@@ -7850,7 +7850,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x1L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Accept, _collection._headers._Accept);
-                        _currentKnownType = KnownHeaderType.Accept;
                         _next = 1;
                         return true;
                     }
@@ -7858,7 +7857,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x2L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Connection, _collection._headers._Connection);
-                        _currentKnownType = KnownHeaderType.Connection;
                         _next = 2;
                         return true;
                     }
@@ -7866,7 +7864,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x4L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Host, _collection._headers._Host);
-                        _currentKnownType = KnownHeaderType.Host;
                         _next = 3;
                         return true;
                     }
@@ -7874,7 +7871,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x8L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.UserAgent, _collection._headers._UserAgent);
-                        _currentKnownType = KnownHeaderType.UserAgent;
                         _next = 4;
                         return true;
                     }
@@ -7882,7 +7878,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x10L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Authority, _collection._headers._Authority);
-                        _currentKnownType = KnownHeaderType.Authority;
                         _next = 5;
                         return true;
                     }
@@ -7890,7 +7885,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x20L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Method, _collection._headers._Method);
-                        _currentKnownType = KnownHeaderType.Method;
                         _next = 6;
                         return true;
                     }
@@ -7898,7 +7892,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x40L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Path, _collection._headers._Path);
-                        _currentKnownType = KnownHeaderType.Path;
                         _next = 7;
                         return true;
                     }
@@ -7906,7 +7899,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x80L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Scheme, _collection._headers._Scheme);
-                        _currentKnownType = KnownHeaderType.Scheme;
                         _next = 8;
                         return true;
                     }
@@ -7914,7 +7906,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x100L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AcceptCharset, _collection._headers._AcceptCharset);
-                        _currentKnownType = KnownHeaderType.AcceptCharset;
                         _next = 9;
                         return true;
                     }
@@ -7922,7 +7913,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x200L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AcceptEncoding, _collection._headers._AcceptEncoding);
-                        _currentKnownType = KnownHeaderType.AcceptEncoding;
                         _next = 10;
                         return true;
                     }
@@ -7930,7 +7920,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x400L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AcceptLanguage, _collection._headers._AcceptLanguage);
-                        _currentKnownType = KnownHeaderType.AcceptLanguage;
                         _next = 11;
                         return true;
                     }
@@ -7938,7 +7927,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x800L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestHeaders, _collection._headers._AccessControlRequestHeaders);
-                        _currentKnownType = KnownHeaderType.AccessControlRequestHeaders;
                         _next = 12;
                         return true;
                     }
@@ -7946,7 +7934,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x1000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestMethod, _collection._headers._AccessControlRequestMethod);
-                        _currentKnownType = KnownHeaderType.AccessControlRequestMethod;
                         _next = 13;
                         return true;
                     }
@@ -7954,7 +7941,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x2000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Authorization, _collection._headers._Authorization);
-                        _currentKnownType = KnownHeaderType.Authorization;
                         _next = 14;
                         return true;
                     }
@@ -7962,7 +7948,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x4000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Baggage, _collection._headers._Baggage);
-                        _currentKnownType = KnownHeaderType.Baggage;
                         _next = 15;
                         return true;
                     }
@@ -7970,7 +7955,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x8000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.CacheControl, _collection._headers._CacheControl);
-                        _currentKnownType = KnownHeaderType.CacheControl;
                         _next = 16;
                         return true;
                     }
@@ -7978,7 +7962,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x10000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentType, _collection._headers._ContentType);
-                        _currentKnownType = KnownHeaderType.ContentType;
                         _next = 17;
                         return true;
                     }
@@ -7986,7 +7969,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x20000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Cookie, _collection._headers._Cookie);
-                        _currentKnownType = KnownHeaderType.Cookie;
                         _next = 18;
                         return true;
                     }
@@ -7994,7 +7976,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x40000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.CorrelationContext, _collection._headers._CorrelationContext);
-                        _currentKnownType = KnownHeaderType.CorrelationContext;
                         _next = 19;
                         return true;
                     }
@@ -8002,7 +7983,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x80000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Date, _collection._headers._Date);
-                        _currentKnownType = KnownHeaderType.Date;
                         _next = 20;
                         return true;
                     }
@@ -8010,7 +7990,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x100000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Expect, _collection._headers._Expect);
-                        _currentKnownType = KnownHeaderType.Expect;
                         _next = 21;
                         return true;
                     }
@@ -8018,7 +7997,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x200000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.From, _collection._headers._From);
-                        _currentKnownType = KnownHeaderType.From;
                         _next = 22;
                         return true;
                     }
@@ -8026,7 +8004,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x400000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.GrpcAcceptEncoding, _collection._headers._GrpcAcceptEncoding);
-                        _currentKnownType = KnownHeaderType.GrpcAcceptEncoding;
                         _next = 23;
                         return true;
                     }
@@ -8034,7 +8011,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x800000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.GrpcEncoding, _collection._headers._GrpcEncoding);
-                        _currentKnownType = KnownHeaderType.GrpcEncoding;
                         _next = 24;
                         return true;
                     }
@@ -8042,7 +8018,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x1000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.GrpcTimeout, _collection._headers._GrpcTimeout);
-                        _currentKnownType = KnownHeaderType.GrpcTimeout;
                         _next = 25;
                         return true;
                     }
@@ -8050,7 +8025,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x2000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.IfMatch, _collection._headers._IfMatch);
-                        _currentKnownType = KnownHeaderType.IfMatch;
                         _next = 26;
                         return true;
                     }
@@ -8058,7 +8032,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x4000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.IfModifiedSince, _collection._headers._IfModifiedSince);
-                        _currentKnownType = KnownHeaderType.IfModifiedSince;
                         _next = 27;
                         return true;
                     }
@@ -8066,7 +8039,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x8000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.IfNoneMatch, _collection._headers._IfNoneMatch);
-                        _currentKnownType = KnownHeaderType.IfNoneMatch;
                         _next = 28;
                         return true;
                     }
@@ -8074,7 +8046,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x10000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.IfRange, _collection._headers._IfRange);
-                        _currentKnownType = KnownHeaderType.IfRange;
                         _next = 29;
                         return true;
                     }
@@ -8082,7 +8053,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x20000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.IfUnmodifiedSince, _collection._headers._IfUnmodifiedSince);
-                        _currentKnownType = KnownHeaderType.IfUnmodifiedSince;
                         _next = 30;
                         return true;
                     }
@@ -8090,7 +8060,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x40000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.KeepAlive, _collection._headers._KeepAlive);
-                        _currentKnownType = KnownHeaderType.KeepAlive;
                         _next = 31;
                         return true;
                     }
@@ -8098,7 +8067,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x80000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.MaxForwards, _collection._headers._MaxForwards);
-                        _currentKnownType = KnownHeaderType.MaxForwards;
                         _next = 32;
                         return true;
                     }
@@ -8106,7 +8074,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x100000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Origin, _collection._headers._Origin);
-                        _currentKnownType = KnownHeaderType.Origin;
                         _next = 33;
                         return true;
                     }
@@ -8114,7 +8081,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x200000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Pragma, _collection._headers._Pragma);
-                        _currentKnownType = KnownHeaderType.Pragma;
                         _next = 34;
                         return true;
                     }
@@ -8122,7 +8088,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x400000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ProxyAuthorization, _collection._headers._ProxyAuthorization);
-                        _currentKnownType = KnownHeaderType.ProxyAuthorization;
                         _next = 35;
                         return true;
                     }
@@ -8130,7 +8095,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x800000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Range, _collection._headers._Range);
-                        _currentKnownType = KnownHeaderType.Range;
                         _next = 36;
                         return true;
                     }
@@ -8138,7 +8102,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x1000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Referer, _collection._headers._Referer);
-                        _currentKnownType = KnownHeaderType.Referer;
                         _next = 37;
                         return true;
                     }
@@ -8146,7 +8109,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x2000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.RequestId, _collection._headers._RequestId);
-                        _currentKnownType = KnownHeaderType.RequestId;
                         _next = 38;
                         return true;
                     }
@@ -8154,7 +8116,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x4000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.TE, _collection._headers._TE);
-                        _currentKnownType = KnownHeaderType.TE;
                         _next = 39;
                         return true;
                     }
@@ -8162,7 +8123,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x8000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.TraceParent, _collection._headers._TraceParent);
-                        _currentKnownType = KnownHeaderType.TraceParent;
                         _next = 40;
                         return true;
                     }
@@ -8170,7 +8130,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x10000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.TraceState, _collection._headers._TraceState);
-                        _currentKnownType = KnownHeaderType.TraceState;
                         _next = 41;
                         return true;
                     }
@@ -8178,7 +8137,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x20000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.TransferEncoding, _collection._headers._TransferEncoding);
-                        _currentKnownType = KnownHeaderType.TransferEncoding;
                         _next = 42;
                         return true;
                     }
@@ -8186,7 +8144,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x40000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Translate, _collection._headers._Translate);
-                        _currentKnownType = KnownHeaderType.Translate;
                         _next = 43;
                         return true;
                     }
@@ -8194,7 +8151,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x80000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Upgrade, _collection._headers._Upgrade);
-                        _currentKnownType = KnownHeaderType.Upgrade;
                         _next = 44;
                         return true;
                     }
@@ -8202,7 +8158,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x100000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.UpgradeInsecureRequests, _collection._headers._UpgradeInsecureRequests);
-                        _currentKnownType = KnownHeaderType.UpgradeInsecureRequests;
                         _next = 45;
                         return true;
                     }
@@ -8210,7 +8165,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x200000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Via, _collection._headers._Via);
-                        _currentKnownType = KnownHeaderType.Via;
                         _next = 46;
                         return true;
                     }
@@ -8218,7 +8172,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if ((_bits & 0x400000000000L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Warning, _collection._headers._Warning);
-                        _currentKnownType = KnownHeaderType.Warning;
                         _next = 47;
                         return true;
                     }
@@ -8226,7 +8179,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (_collection._contentLength.HasValue)
                     {
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _currentKnownType = KnownHeaderType.ContentLength;
                         _next = 48;
                         return true;
                     }
@@ -8234,11 +8186,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {
                         _current = default(KeyValuePair<string, StringValues>);
-                        _currentKnownType = default;
                         return false;
                     }
                     _current = _unknownEnumerator.Current;
-                    _currentKnownType = KnownHeaderType.Unknown;
                     return true;
             }
         }

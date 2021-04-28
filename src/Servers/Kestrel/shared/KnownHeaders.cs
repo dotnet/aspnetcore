@@ -1282,28 +1282,28 @@ $@"        private void Clear(long bitsToClear)
                     if ({header.TestBit()})
                     {{
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.{header.Identifier}, _collection._headers._{header.Identifier});
-                        _currentKnownType = KnownHeaderType.{header.Identifier};
-                        _next = {header.Index + 1};
+                        {(loop.ClassName.Contains("Request") ? "" : @$"_currentKnownType = KnownHeaderType.{header.Identifier};
+                        ")}_next = {header.Index + 1};
                         return true;
                     }}")}
                 {(!loop.ClassName.Contains("Trailers") ? $@"HeaderContentLength: // case {loop.Headers.Count() - 1}
                     if (_collection._contentLength.HasValue)
                     {{
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _currentKnownType = KnownHeaderType.ContentLength;
-                        _next = {loop.Headers.Count()};
+                        {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = KnownHeaderType.ContentLength;
+                        ")}_next = {loop.Headers.Count()};
                         return true;
                     }}" : "")}
                 ExtraHeaders:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {{
                         _current = default(KeyValuePair<string, StringValues>);
-                        _currentKnownType = default;
-                        return false;
+                        {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = default;
+                        ")}return false;
                     }}
                     _current = _unknownEnumerator.Current;
-                    _currentKnownType = KnownHeaderType.Unknown;
-                    return true;
+                    {(loop.ClassName.Contains("Request") ? "" : @"_currentKnownType = KnownHeaderType.Unknown;
+                    ")}return true;
             }}
         }}
     }}
