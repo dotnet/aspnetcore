@@ -110,9 +110,9 @@
     In addition, enforce use of Reference items for projects reference providers.
   -->
   <Target Name="_CheckForReferenceBoundaries" BeforeTargets="CollectPackageReferences;ResolveReferences">
-    <Error
+    <!--<Error
         Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0 AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'"
-        Text="Cannot reference &quot;%(Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
+        Text="Cannot reference &quot;%(Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />-->
 
     <Error
         Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND @(ProjectReferenceProvider->WithMetadataValue('DirectUse', '1')->Count()) != 0 "

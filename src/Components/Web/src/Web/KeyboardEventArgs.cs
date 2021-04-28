@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Components.Web;
+
+[assembly: JsonSerializable(typeof(KeyboardEventArgs))]
 
 namespace Microsoft.AspNetCore.Components.Web
 {

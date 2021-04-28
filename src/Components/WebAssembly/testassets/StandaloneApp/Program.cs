@@ -3,9 +3,13 @@
 
 using System;
 using System.Net.Http;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using StandaloneApp;
+
+[assembly: JsonSerializable(typeof(CoolType))]
 
 namespace StandaloneApp
 {
@@ -19,5 +23,10 @@ namespace StandaloneApp
 
             await builder.Build().RunAsync();
         }
+    }
+
+    public class CoolType
+    {
+        public string Name { get; set; }
     }
 }

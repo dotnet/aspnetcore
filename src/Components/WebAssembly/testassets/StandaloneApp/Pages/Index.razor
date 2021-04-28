@@ -1,5 +1,20 @@
 ﻿@page "/"
+@using Microsoft.JSInterop
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+<button type="button" class="btn btn-primary"
+        onclick="window.returnArrayAsyncJs()">
+    Trigger .NET static method ReturnArrayAsync
+</button>
+
+@code {
+    [JSInvokable(typeof(JsonSourceGeneration.JsonContext))]
+    public static Task<int[]> ReturnArrayAsync(CoolType arg1)
+    {
+        Console.WriteLine(arg1.Name ?? "null");
+        return Task.FromResult(new int[] { 1, 2, 3 });
+    }
+}

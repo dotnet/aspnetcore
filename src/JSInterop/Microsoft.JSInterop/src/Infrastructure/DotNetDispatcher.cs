@@ -22,9 +22,9 @@ namespace Microsoft.JSInterop.Infrastructure
         private const string DisposeDotNetObjectReferenceMethodName = "__Dispose";
         internal static readonly JsonEncodedText DotNetObjectRefKey = JsonEncodedText.Encode("__dotNetObject");
 
-        private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly = new();
+        private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[], DeserializeJSInvokableArgs)>> _cachedMethodsByAssembly = new();
 
-        private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByType = new();
+        private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, (MethodInfo, Type[], DeserializeJSInvokableArgs)>> _cachedMethodsByType = new();
 
         /// <summary>
         /// Receives a call from JS to .NET, locating and invoking the specified method.
@@ -133,10 +133,11 @@ namespace Microsoft.JSInterop.Infrastructure
             AssemblyKey assemblyKey;
             MethodInfo methodInfo;
             Type[] parameterTypes;
+            DeserializeJSInvokableArgs deserializeJSInvokableArgs;
             if (objectReference is null)
             {
                 assemblyKey = new AssemblyKey(assemblyName!);
-                (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
+                (methodInfo, parameterTypes, deserializeJSInvokableArgs) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
             }
             else
             {
@@ -152,10 +153,10 @@ namespace Microsoft.JSInterop.Infrastructure
                     return default;
                 }
 
-                (methodInfo, parameterTypes) = GetCachedMethodInfo(objectReference, methodIdentifier);
+                (methodInfo, parameterTypes, deserializeJSInvokableArgs) = GetCachedMethodInfo(objectReference, methodIdentifier);
             }
 
-            var suppliedArgs = ParseArguments(jsRuntime, methodIdentifier, argsJson, parameterTypes);
+            var suppliedArgs = deserializeJSInvokableArgs(jsRuntime, methodIdentifier, argsJson, parameterTypes);
 
             try
             {
@@ -171,67 +172,6 @@ namespace Microsoft.JSInterop.Infrastructure
                 }
 
                 throw;
-            }
-        }
-
-        internal static object?[] ParseArguments(JSRuntime jsRuntime, string methodIdentifier, string arguments, Type[] parameterTypes)
-        {
-            if (parameterTypes.Length == 0)
-            {
-                return Array.Empty<object>();
-            }
-
-            var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
-            var reader = new Utf8JsonReader(utf8JsonBytes);
-            if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
-            {
-                throw new JsonException("Invalid JSON");
-            }
-
-            var suppliedArgs = new object?[parameterTypes.Length];
-
-            var index = 0;
-            while (index < parameterTypes.Length && reader.Read() && reader.TokenType != JsonTokenType.EndArray)
-            {
-                var parameterType = parameterTypes[index];
-                if (reader.TokenType == JsonTokenType.StartObject && IsIncorrectDotNetObjectRefUse(parameterType, reader))
-                {
-                    throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
-                }
-
-                suppliedArgs[index] = JsonSerializer.Deserialize(ref reader, parameterType, jsRuntime.JsonSerializerOptions);
-                index++;
-            }
-
-            if (index < parameterTypes.Length)
-            {
-                // If we parsed fewer parameters, we can always make a definitive claim about how many parameters were received.
-                throw new ArgumentException($"The call to '{methodIdentifier}' expects '{parameterTypes.Length}' parameters, but received '{index}'.");
-            }
-
-            if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
-            {
-                // Either we received more parameters than we expected or the JSON is malformed.
-                throw new JsonException($"Unexpected JSON token {reader.TokenType}. Ensure that the call to `{methodIdentifier}' is supplied with exactly '{parameterTypes.Length}' parameters.");
-            }
-
-            return suppliedArgs;
-
-            // Note that the JsonReader instance is intentionally not passed by ref (or an in parameter) since we want a copy of the original reader.
-            static bool IsIncorrectDotNetObjectRefUse(Type parameterType, Utf8JsonReader jsonReader)
-            {
-                // Check for incorrect use of DotNetObjectRef<T> at the top level. We know it's
-                // an incorrect use if there's a object that looks like { '__dotNetObject': <some number> },
-                // but we aren't assigning to DotNetObjectRef{T}.
-                if (jsonReader.Read() &&
-                    jsonReader.TokenType == JsonTokenType.PropertyName &&
-                    jsonReader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
-                {
-                    // The JSON payload has the shape we expect from a DotNetObjectRef instance.
-                    return !parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>);
-                }
-
-                return false;
             }
         }
 
@@ -285,7 +225,7 @@ namespace Microsoft.JSInterop.Infrastructure
             }
         }
 
-        private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)
+        private static (MethodInfo, Type[], DeserializeJSInvokableArgs) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)
         {
             if (string.IsNullOrWhiteSpace(assemblyKey.AssemblyName))
             {
@@ -308,7 +248,7 @@ namespace Microsoft.JSInterop.Infrastructure
             }
         }
 
-        private static (MethodInfo methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
+        private static (MethodInfo methodInfo, Type[] parameterTypes, DeserializeJSInvokableArgs) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
         {
             var type = objectReference.Value.GetType();
             var assemblyMethods = _cachedMethodsByType.GetOrAdd(type, ScanTypeForCallableMethods);
@@ -321,9 +261,9 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new ArgumentException($"The type '{type.Name}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
             }
 
-            static Dictionary<string, (MethodInfo, Type[])> ScanTypeForCallableMethods(Type type)
+            static Dictionary<string, (MethodInfo, Type[], DeserializeJSInvokableArgs)> ScanTypeForCallableMethods(Type type)
             {
-                var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
+                var result = new Dictionary<string, (MethodInfo, Type[], DeserializeJSInvokableArgs)>(StringComparer.Ordinal);
 
                 foreach (var method in type.GetMethods(BindingFlags.Instance | BindingFlags.Public))
                 {
@@ -332,7 +272,9 @@ namespace Microsoft.JSInterop.Infrastructure
                         continue;
                     }
 
-                    var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name!;
+                    var jsInvokable = method.GetCustomAttribute<JSInvokableAttribute>(false);
+
+                    var identifier = jsInvokable!.Identifier ?? method.Name!;
                     var parameterTypes = GetParameterTypes(method);
 
                     if (result.ContainsKey(identifier))
@@ -343,7 +285,7 @@ namespace Microsoft.JSInterop.Infrastructure
                             $"the [JSInvokable] attribute.");
                     }
 
-                    result.Add(identifier, (method, parameterTypes));
+                    result.Add(identifier, (method, parameterTypes, jsInvokable.Serializer));
                 }
 
                 return result;
@@ -352,11 +294,11 @@ namespace Microsoft.JSInterop.Infrastructure
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "We expect application code is configured to ensure JSInvokable methods are retained. https://github.com/dotnet/aspnetcore/issues/29946")]
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2072", Justification = "We expect application code is configured to ensure JSInvokable methods are retained. https://github.com/dotnet/aspnetcore/issues/29946")]
-        private static Dictionary<string, (MethodInfo, Type[])> ScanAssemblyForCallableMethods(AssemblyKey assemblyKey)
+        private static Dictionary<string, (MethodInfo, Type[], DeserializeJSInvokableArgs)> ScanAssemblyForCallableMethods(AssemblyKey assemblyKey)
         {
             // TODO: Consider looking first for assembly-level attributes (i.e., if there are any,
             // only use those) to avoid scanning, especially for framework assemblies.
-            var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
+            var result = new Dictionary<string, (MethodInfo, Type[], DeserializeJSInvokableArgs)>(StringComparer.Ordinal);
             var exportedTypes = GetRequiredLoadedAssembly(assemblyKey).GetExportedTypes();
             foreach (var type in exportedTypes)
             {
@@ -367,7 +309,8 @@ namespace Microsoft.JSInterop.Infrastructure
                         continue;
                     }
 
-                    var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name;
+                    var jsInvokable = method.GetCustomAttribute<JSInvokableAttribute>(false);
+                    var identifier = jsInvokable!.Identifier ?? method.Name;
                     var parameterTypes = GetParameterTypes(method);
 
                     if (result.ContainsKey(identifier))
@@ -378,7 +321,7 @@ namespace Microsoft.JSInterop.Infrastructure
                             $"the [JSInvokable] attribute.");
                     }
 
-                    result.Add(identifier, (method, parameterTypes));
+                    result.Add(identifier, (method, parameterTypes, jsInvokable.Serializer));
                 }
             }
 

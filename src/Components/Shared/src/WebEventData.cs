@@ -218,11 +218,11 @@ namespace Microsoft.AspNetCore.Components.Web
             return null;
         }
 
-        static T Deserialize<[DynamicallyAccessedMembers(JsonSerialized)] T>(string json) => JsonSerializer.Deserialize<T>(json, JsonSerializerOptionsProvider.Options)!;
+        static T Deserialize<[DynamicallyAccessedMembers(JsonSerialized)] T>(string json) => WebEvent.JsonDeserialize<T>(json)!;
 
         private static ChangeEventArgs DeserializeChangeEventArgs(string eventArgsJson)
         {
-            var changeArgs = Deserialize<ChangeEventArgs>(eventArgsJson);
+            var changeArgs = WebEvent.JsonDeserialize<ChangeEventArgs>(eventArgsJson);
             var jsonElement = (JsonElement)changeArgs.Value!;
             switch (jsonElement.ValueKind)
             {

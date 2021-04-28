@@ -18,6 +18,7 @@ Microsoft.AspNetCore.Components.Web.ErrorBoundary
 Microsoft.AspNetCore.Components.Web.ErrorBoundary.ErrorBoundary() -> void
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger
 Microsoft.AspNetCore.Components.Web.IErrorBoundaryLogger.LogErrorAsync(System.Exception! exception) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Web.WebEvent
 override Microsoft.AspNetCore.Components.Web.ErrorBoundary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Web.ErrorBoundary.OnErrorAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference, bool preventScroll) -> System.Threading.Tasks.ValueTask
@@ -26,3 +27,4 @@ Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.get -> s
 Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventName.set -> void
 *REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.get -> string!
 *REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor.EventArgsType.set -> void
+static Microsoft.AspNetCore.Components.Web.WebEvent.JsonDeserialize<TEvent>(string! json) -> TEvent
