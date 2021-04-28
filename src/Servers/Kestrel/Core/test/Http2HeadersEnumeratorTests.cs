@@ -40,10 +40,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(new[]
             {
                 CreateHeaderResult(H2StaticTable.Date, "Date", "Date!"),
-                CreateHeaderResult(-1, "Grpc-Encoding", "Identity!"),
                 CreateHeaderResult(H2StaticTable.AcceptRanges, "Accept-Ranges", "AcceptRanges!"),
                 CreateHeaderResult(H2StaticTable.Age, "Age", "1"),
                 CreateHeaderResult(H2StaticTable.Age, "Age", "2"),
+                CreateHeaderResult(-1, "Grpc-Encoding", "Identity!"),
                 CreateHeaderResult(H2StaticTable.ContentLength, "Content-Length", "9"),
                 CreateHeaderResult(-1, "Name1", "Value1"),
                 CreateHeaderResult(-1, "Name2", "Value2-1"),
