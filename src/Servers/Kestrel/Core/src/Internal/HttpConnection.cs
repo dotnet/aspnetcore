@@ -71,10 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         _protocolSelectionState = ProtocolSelectionState.Selected;
                         break;
                     case HttpProtocols.Http3:
-                        // _http2Connection must be initialized before yielding control to the transport thread,
-                        // to prevent a race condition where _http2Connection.Abort() is called just as
-                        // _http2Connection is about to be initialized.
-                        requestProcessor = new Http3Connection((Http3ConnectionContext)_context);
+                        requestProcessor = new Http3Connection((HttpMultiplexedConnectionContext)_context);
                         _protocolSelectionState = ProtocolSelectionState.Selected;
                         break;
                     case HttpProtocols.None:
@@ -215,6 +212,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 error = CoreStrings.EndPointRequiresAtLeastOneProtocol;
             }
 
+            if (_context.Protocols == HttpProtocols.Http3)
+            {
+                return HttpProtocols.Http3;
+            }
+
             if (!http1Enabled && http2Enabled && hasTls && !Http2Id.SequenceEqual(applicationProtocol.Span))
             {
                 error = CoreStrings.EndPointHttp2NotNegotiated;
@@ -230,11 +232,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 // Even if Http2 was enabled, default to Http1 because it's ambiguous without ALPN.
                 return HttpProtocols.Http1;
-            }
-
-            if (_context.Protocols == HttpProtocols.Http3)
-            {
-                return HttpProtocols.Http3;
             }
 
             return http2Enabled && (!hasTls || Http2Id.SequenceEqual(applicationProtocol.Span)) ? HttpProtocols.Http2 : HttpProtocols.Http1;

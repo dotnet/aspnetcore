@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Testing
             return context;
         }
 
-        public static Http3ConnectionContext CreateHttp3ConnectionContext(
+        public static HttpMultiplexedConnectionContext CreateHttp3ConnectionContext(
             MultiplexedConnectionContext connectionContext = null,
             ServiceContext serviceContext = null,
             IFeatureCollection connectionFeatures = null,
@@ -82,9 +82,8 @@ namespace Microsoft.AspNetCore.Testing
             IPEndPoint remoteEndPoint = null,
             ITimeoutControl timeoutControl = null)
         {
-            var http3ConnectionContext = new Http3ConnectionContext(
+            var http3ConnectionContext = new HttpMultiplexedConnectionContext(
                 "TestConnectionId",
-                HttpProtocols.Http3,
                 connectionContext ?? new TestMultiplexedConnectionContext(),
                 serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures ?? new FeatureCollection(),

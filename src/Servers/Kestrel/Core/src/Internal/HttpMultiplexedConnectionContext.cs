@@ -8,17 +8,16 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class Http3ConnectionContext : BaseHttpConnectionContext
+    internal class HttpMultiplexedConnectionContext : BaseHttpConnectionContext
     {
-        public Http3ConnectionContext(
+        public HttpMultiplexedConnectionContext(
             string connectionId,
-            HttpProtocols protocols,
             MultiplexedConnectionContext connectionContext,
             ServiceContext serviceContext,
             IFeatureCollection connectionFeatures,
             MemoryPool<byte> memoryPool,
             IPEndPoint? localEndPoint,
-            IPEndPoint? remoteEndPoint) : base(connectionId, protocols, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+            IPEndPoint? remoteEndPoint) : base(connectionId, HttpProtocols.Http3, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
         {
         }
     }

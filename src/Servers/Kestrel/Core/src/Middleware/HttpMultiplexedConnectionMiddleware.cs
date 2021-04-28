@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class Http3ConnectionMiddleware<TContext> where TContext : notnull
+    internal class HttpMultiplexedConnectionMiddleware<TContext> where TContext : notnull
     {
         private readonly ServiceContext _serviceContext;
         private readonly IHttpApplication<TContext> _application;
 
-        public Http3ConnectionMiddleware(ServiceContext serviceContext, IHttpApplication<TContext> application)
+        public HttpMultiplexedConnectionMiddleware(ServiceContext serviceContext, IHttpApplication<TContext> application)
         {
             _serviceContext = serviceContext;
             _application = application;
@@ -24,9 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             var memoryPoolFeature = connectionContext.Features.Get<IMemoryPoolFeature>();
 
-            var httpConnectionContext = new Http3ConnectionContext(
+            var httpConnectionContext = new HttpMultiplexedConnectionContext(
                 connectionContext.ConnectionId,
-                HttpProtocols.Http3,
                 connectionContext,
                 _serviceContext,
                 connectionContext.Features,

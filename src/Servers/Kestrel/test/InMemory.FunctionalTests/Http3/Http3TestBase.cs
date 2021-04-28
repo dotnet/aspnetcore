@@ -268,9 +268,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             MultiplexedConnectionContext = new TestMultiplexedConnectionContext(this);
 
-            var httpConnectionContext = new Http3ConnectionContext(
+            var httpConnectionContext = new HttpMultiplexedConnectionContext(
                 connectionId: "TestConnectionId",
-                protocols: HttpProtocols.Http3,
                 connectionContext: MultiplexedConnectionContext,
                 connectionFeatures: MultiplexedConnectionContext.Features,
                 serviceContext: _serviceContext,

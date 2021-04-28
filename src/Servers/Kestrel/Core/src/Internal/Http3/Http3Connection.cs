@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private long _highestOpenedStreamId;
         private readonly object _sync = new object(); 
         private readonly MultiplexedConnectionContext _multiplexedContext;
-        private readonly Http3ConnectionContext _context;
+        private readonly HttpMultiplexedConnectionContext _context;
         private bool _aborted;
         private readonly object _protocolSelectionLock = new object();
         private int _gracefulCloseInitiator;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
         private readonly IProtocolErrorCodeFeature _errorCodeFeature;
 
-        public Http3Connection(Http3ConnectionContext context)
+        public Http3Connection(HttpMultiplexedConnectionContext context)
         {
             _multiplexedContext = (MultiplexedConnectionContext)context.ConnectionContext;
             _context = context;
