@@ -30,8 +30,14 @@ namespace CustomAuthorizationFailureResponse
                 .AddAuthentication(SampleAuthenticationSchemes.CustomScheme)
                 .AddScheme<AuthenticationSchemeOptions, SampleAuthenticationHandler>(SampleAuthenticationSchemes.CustomScheme, o => { });
 
-            services.AddAuthorization(options => options.AddPolicy(SamplePolicyNames.CustomPolicy, policy => policy.AddRequirements(new SampleRequirement())));
-            services.AddAuthorization(options => options.AddPolicy(SamplePolicyNames.CustomPolicyWithCustomForbiddenMessage, policy => policy.AddRequirements(new SampleWithCustomMessageRequirement())));
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(SamplePolicyNames.CustomPolicy, policy => 
+                    policy.AddRequirements(new SampleRequirement()));
+                
+                options.AddPolicy(SamplePolicyNames.CustomPolicyWithCustomForbiddenMessage, policy => 
+                    policy.AddRequirements(new SampleWithCustomMessageRequirement()));
+            });
 
             services.AddTransient<IAuthorizationHandler, SampleRequirementHandler>();
             services.AddTransient<IAuthorizationHandler, SampleWithCustomMessageRequirementHandler>();
