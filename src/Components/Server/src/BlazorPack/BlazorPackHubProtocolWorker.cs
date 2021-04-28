@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
 using MessagePack;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -33,6 +34,16 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
                 else if (type == typeof(float))
                 {
                     return reader.ReadSingle();
+                }
+                else if (type == typeof(byte[][]))
+                {
+                    var length = reader.ReadArrayHeader();
+                    var result = new byte[length][];
+                    for (var i = 0; i < length; i++)
+                    {
+                        result[i] = reader.ReadBytes().GetValueOrDefault().ToArray();
+                    }
+                    return result;
                 }
             }
             catch (Exception ex)
@@ -73,6 +84,14 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
 
                 case ArraySegment<byte> bytes:
                     writer.Write(bytes);
+                    break;
+
+                case byte[][] byteArrays:
+                    writer.WriteArrayHeader(byteArrays.Length);
+                    foreach (var bytes in byteArrays)
+                    {
+                        writer.Write(bytes);
+                    }
                     break;
 
                 default:
