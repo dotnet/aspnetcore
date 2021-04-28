@@ -75,8 +75,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             new EventId(7, "DatabaseErrorPageException"),
             "An exception occurred while calculating the database error page content. Skipping display of the database error page.");
 
+        // DatabaseDeveloperPageExceptionFilter
         private static readonly Action<ILogger, Exception?> _responseStartedDatabaseDeveloperPageExceptionFilter =
-            LoggerMessage.Define(LogLevel.Warning, new EventId(1, "ResponseStarted"), "The response has already started, the database developer page exception filter will not be executed.");
+            LoggerMessage.Define(LogLevel.Warning, new EventId(1, "ResponseStarted"), "The response has already started, the next developer page exception filter will not be executed.");
 
         public static void NoContextType(this ILogger logger)
         {
