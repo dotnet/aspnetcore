@@ -99,9 +99,64 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void EntriesCanBeEnumerated()
+        public void EntriesCanBeEnumeratedAfterResets()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            HttpRequestHeaders headers = new HttpRequestHeaders();
+
+            EnumerateEntries((IHeaderDictionary)headers);
+            headers.Reset();
+            EnumerateEntries((IDictionary<string, StringValues>)headers);
+            headers.Reset();
+            EnumerateEntries((IHeaderDictionary)headers);
+            headers.Reset();
+            EnumerateEntries((IDictionary<string, StringValues>)headers);
+        }
+
+        [Fact]
+        public void EnumeratorNotReusedBeforeReset()
+        {
+            HttpRequestHeaders headers = new HttpRequestHeaders();
+            IEnumerable<KeyValuePair<string, StringValues>> enumerable = headers;
+
+            var enumerator0 = enumerable.GetEnumerator();
+            var enumerator1 = enumerable.GetEnumerator();
+
+            Assert.NotSame(enumerator0, enumerator1);
+        }
+
+        [Fact]
+        public void EnumeratorReusedAfterReset()
+        {
+            HttpRequestHeaders headers = new HttpRequestHeaders();
+            IEnumerable<KeyValuePair<string, StringValues>> enumerable = headers;
+
+            var enumerator0 = enumerable.GetEnumerator();
+            headers.Reset();
+            var enumerator1 = enumerable.GetEnumerator();
+
+            Assert.Same(enumerator0, enumerator1);
+        }
+
+        private static void EnumerateEntries(IHeaderDictionary headers)
+        {
+            var v1 = new[] { "localhost" };
+            var v2 = new[] { "0" };
+            var v3 = new[] { "value" };
+            headers.Host = v1;
+            headers.ContentLength = 0;
+            headers["custom"] = v3;
+
+            Assert.Equal(
+                new[] {
+                    new KeyValuePair<string, StringValues>("Host", v1),
+                    new KeyValuePair<string, StringValues>("Content-Length", v2),
+                    new KeyValuePair<string, StringValues>("custom", v3),
+                },
+                headers);
+        }
+
+        private static void EnumerateEntries(IDictionary<string, StringValues> headers)
+        {
             var v1 = new[] { "localhost" };
             var v2 = new[] { "0" };
             var v3 = new[] { "value" };
