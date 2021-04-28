@@ -21,16 +21,25 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <summary>
         /// Gets the default value for <see cref="ValueCountLimit"/>.
         /// </summary>
+        /// <value>
+        /// Defaults to <c>1024</c>.
+        /// </value>
         public const int DefaultValueCountLimit = 1024;
 
         /// <summary>
         /// Gets the default value for <see cref="KeyLengthLimit"/>.
         /// </summary>
+        /// <value>
+        /// Defaults to <c>2,048 bytes‬</c>, which is approximately 16.38KB.
+        /// </value>
         public const int DefaultKeyLengthLimit = 1024 * 2;
 
         /// <summary>
         /// Gets the default value for <see cref="ValueLengthLimit" />.
         /// </summary>
+        /// <value>
+        /// Defaults to <c>4,194,304 bytes‬</c>, which is approximately 4.19MB.
+        /// </value>
         public const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 
         private const int _rentedCharPoolLength = 8192;
