@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
@@ -565,6 +566,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             // Setup the connection state from the http context
             connection.User = connection.HttpContext?.User;
+
+            if (connection.HttpContext is not null)
+            {
+                // TODO: Check if auth is being used for endpoint
+                // TODO: Get auth scheme
+
+                // AuthenticateResult should be cached since the context has already been authenticated. This is just to get the AuthenticateResult
+                var authResult = await connection.HttpContext.AuthenticateAsync();
+                connection.AuthorizationExpiration = authResult.Properties?.ExpiresUtc;
+            }
 
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
