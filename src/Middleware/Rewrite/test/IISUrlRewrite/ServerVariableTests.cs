@@ -142,11 +142,11 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
             context.Request.QueryString = QueryString.FromUriComponent("?bar=1");
             context.Request.ContentLength = 10;
             context.Request.ContentType = "json";
-            context.Request.Headers[HeaderNames.Accept] = "accept";
-            context.Request.Headers[HeaderNames.Cookie] = "cookie";
-            context.Request.Headers[HeaderNames.Referer] = "referer";
-            context.Request.Headers[HeaderNames.UserAgent] = "useragent";
-            context.Request.Headers[HeaderNames.Connection] = "connection";
+            context.Request.Headers.Accept = "accept";
+            context.Request.Headers.Cookie = "cookie";
+            context.Request.Headers.Referer = "referer";
+            context.Request.Headers.UserAgent = "useragent";
+            context.Request.Headers.Connection = "connection";
 
             return context;
         }

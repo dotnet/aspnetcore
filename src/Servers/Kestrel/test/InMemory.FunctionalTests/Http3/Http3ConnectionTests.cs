@@ -61,12 +61,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task GracefulServerShutdownSendsGoawayClosesConnection()
+        public async Task GracefulServerShutdownClosesConnection()
         {
             await InitializeConnectionAsync(_echoApplication);
+
+            var inboundControlStream = await GetInboundControlStream();
+            await inboundControlStream.ExpectSettingsAsync();
+
             // Trigger server shutdown.
-            MultiplexedConnectionContext.ConnectionClosingCts.Cancel();
+            CloseConnectionGracefully();
+
             Assert.Null(await MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
+
+            await WaitForConnectionStopAsync(0, false, expectedErrorCode: Http3ErrorCode.NoError);
         }
 
         [Theory]
@@ -131,6 +138,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedLastStreamId: 0,
                 expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
                 expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(Http3Formatting.ToFormattedType(frame.Type)));
+        }
+
+        [Fact]
+        public async Task ControlStream_ClientCloses_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            var controlStream = await CreateControlStream(id: 0);
+            await controlStream.SendSettingsAsync(new List<Http3PeerSetting>());
+
+            await controlStream.EndStreamAsync();
+
+            await WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+                ignoreNonGoAwayFrames: true,
+                expectedLastStreamId: 0,
+                expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
+                expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClientClosedInbound);
         }
     }
 }

@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             using (var bufferWriter = new MemoryBufferWriter(MinimumSegmentSize))
             {
                 var data = new byte[MinimumSegmentSize];
-                new Random().NextBytes(data);
+                Random.Shared.NextBytes(data);
 
                 // Write half the minimum segment size
                 bufferWriter.Write(data.AsSpan(0, MinimumSegmentSize / 2));

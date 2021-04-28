@@ -24,6 +24,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Hosting.WindowsServices" ProjectPath="$(RepoRoot)src\Hosting\WindowsServices\src\Microsoft.AspNetCore.Hosting.WindowsServices.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Abstractions" ProjectPath="$(RepoRoot)src\Http\Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Core" ProjectPath="$(RepoRoot)src\Http\Authentication.Core\src\Microsoft.AspNetCore.Authentication.Core.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Features" ProjectPath="$(RepoRoot)src\Http\Features\src\Microsoft.Extensions.Features.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Net.Http.Headers" ProjectPath="$(RepoRoot)src\Http\Headers\src\Microsoft.Net.Http.Headers.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Abstractions" ProjectPath="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Extensions" ProjectPath="$(RepoRoot)src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />

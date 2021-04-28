@@ -85,6 +85,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Shared\SignalR\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Microsoft.AspNetCore.E2ETesting.TestTrimmedApps</_Parameter1>
       <_Parameter2>$(TestTrimmedApps)</_Parameter2>

@@ -389,7 +389,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                             return;
                         }
                     }
-
                     finally
                     {
                         Input.AdvanceTo(consumed, examined);
@@ -550,6 +549,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
 
             _appCompleted = new TaskCompletionSource();
+            _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
         }

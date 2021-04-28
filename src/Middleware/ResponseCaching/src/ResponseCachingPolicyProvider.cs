@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
 
             // Verify existence of authorization headers
-            if (!StringValues.IsNullOrEmpty(request.Headers[HeaderNames.Authorization]))
+            if (!StringValues.IsNullOrEmpty(request.Headers.Authorization))
             {
                 context.Logger.RequestWithAuthorizationNotCacheable();
                 return false;
@@ -61,12 +61,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
         public virtual bool AllowCacheStorage(ResponseCachingContext context)
         {
             // Check request no-store
-            return !HeaderUtilities.ContainsCacheDirective(context.HttpContext.Request.Headers[HeaderNames.CacheControl], CacheControlHeaderValue.NoStoreString);
+            return !HeaderUtilities.ContainsCacheDirective(context.HttpContext.Request.Headers.CacheControl, CacheControlHeaderValue.NoStoreString);
         }
 
         public virtual bool IsResponseCacheable(ResponseCachingContext context)
         {
-            var responseCacheControlHeader = context.HttpContext.Response.Headers[HeaderNames.CacheControl];
+            var responseCacheControlHeader = context.HttpContext.Response.Headers.CacheControl;
 
             // Only cache pages explicitly marked with public
             if (!HeaderUtilities.ContainsCacheDirective(responseCacheControlHeader, CacheControlHeaderValue.PublicString))
@@ -92,14 +92,14 @@ namespace Microsoft.AspNetCore.ResponseCaching
             var response = context.HttpContext.Response;
 
             // Do not cache responses with Set-Cookie headers
-            if (!StringValues.IsNullOrEmpty(response.Headers[HeaderNames.SetCookie]))
+            if (!StringValues.IsNullOrEmpty(response.Headers.SetCookie))
             {
                 context.Logger.ResponseWithSetCookieNotCacheable();
                 return false;
             }
 
             // Do not cache responses varying by *
-            var varyHeader = response.Headers[HeaderNames.Vary];
+            var varyHeader = response.Headers.Vary;
             if (varyHeader.Count == 1 && string.Equals(varyHeader, "*", StringComparison.OrdinalIgnoreCase))
             {
                 context.Logger.ResponseWithVaryStarNotCacheable();
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             var age = context.CachedEntryAge!.Value;
             var cachedCacheControlHeaders = context.CachedResponseHeaders[HeaderNames.CacheControl];
-            var requestCacheControlHeaders = context.HttpContext.Request.Headers[HeaderNames.CacheControl];
+            var requestCacheControlHeaders = context.HttpContext.Request.Headers.CacheControl;
 
             // Add min-fresh requirements
             if (HeaderUtilities.TryParseSeconds(requestCacheControlHeaders, CacheControlHeaderValue.MinFreshString, out var minFresh))

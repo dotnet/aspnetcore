@@ -5,6 +5,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal interface IHttp3StreamLifetimeHandler
     {
+        void OnStreamCreated(IHttp3Stream stream);
+        void OnStreamHeaderReceived(IHttp3Stream stream);
         void OnStreamCompleted(IHttp3Stream stream);
         void OnStreamConnectionError(Http3ConnectionErrorException ex);
 

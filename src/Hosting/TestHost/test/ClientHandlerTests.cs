@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.TestHost
             var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0";
             var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
             {
-                var actualResult = context.Request.Headers[HeaderNames.UserAgent];
+                var actualResult = context.Request.Headers.UserAgent;
                 Assert.Equal(userAgent, actualResult);
 
                 return Task.CompletedTask;
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 Assert.True(context.Request.CanHaveBody());
                 Assert.Null(context.Request.ContentLength);
-                Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
+                Assert.Equal("chunked", context.Request.Headers.TransferEncoding);
 
                 return Task.CompletedTask;
             }));
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 Assert.True(context.Request.CanHaveBody());
                 Assert.Null(context.Request.ContentLength);
-                Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
+                Assert.Equal("chunked", context.Request.Headers.TransferEncoding);
 
                 return Task.CompletedTask;
             }));
