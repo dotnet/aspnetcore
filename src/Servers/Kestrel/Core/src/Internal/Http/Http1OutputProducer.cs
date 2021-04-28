@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const int EndChunkLength = 2;
 
         private readonly string _connectionId;
-        private readonly ConnectionContext _connectionContext;
+        private readonly BaseConnectionContext _connectionContext;
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IKestrelTrace _log;
         private readonly IHttpMinResponseDataRateFeature _minResponseDataRateFeature;
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public Http1OutputProducer(
             PipeWriter pipeWriter,
             string connectionId,
-            ConnectionContext connectionContext,
+            BaseConnectionContext connectionContext,
             MemoryPool<byte> memoryPool,
             IKestrelTrace log,
             ITimeoutControl timeoutControl,

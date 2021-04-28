@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                             throw new InvalidOperationException($"Cannot start HTTP/3 server if no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
                         }
 
-                        options.UseHttp3Server(ServiceContext, application, options.Protocols);
+                        options.UseHttp3Server(ServiceContext, application);
                         var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
                         // Add the connection limit middleware

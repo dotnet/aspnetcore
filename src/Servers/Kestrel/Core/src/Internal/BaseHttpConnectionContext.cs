@@ -1,21 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Buffers;
 using System.Net;
+using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class Http3ConnectionContext
+    internal class BaseHttpConnectionContext
     {
-        public Http3ConnectionContext(
+        public BaseHttpConnectionContext(
             string connectionId,
-            MultiplexedConnectionContext connectionContext,
+            HttpProtocols protocols,
+            BaseConnectionContext connectionContext,
             ServiceContext serviceContext,
             IFeatureCollection connectionFeatures,
             MemoryPool<byte> memoryPool,
@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             IPEndPoint? remoteEndPoint)
         {
             ConnectionId = connectionId;
+            Protocols = protocols;
             ConnectionContext = connectionContext;
             ServiceContext = serviceContext;
             ConnectionFeatures = connectionFeatures;
@@ -32,7 +33,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         public string ConnectionId { get; }
-        public MultiplexedConnectionContext ConnectionContext { get; }
+        public HttpProtocols Protocols { get; }
+        public BaseConnectionContext ConnectionContext { get; }
         public ServiceContext ServiceContext { get; }
         public IFeatureCollection ConnectionFeatures { get; }
         public MemoryPool<byte> MemoryPool { get; }
@@ -40,5 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public IPEndPoint? RemoteEndPoint { get; }
 
         public ITimeoutControl TimeoutControl { get; set; } = default!; // Always set by HttpConnection
+        public ExecutionContext? InitialExecutionContext { get; set; }
     }
 }
