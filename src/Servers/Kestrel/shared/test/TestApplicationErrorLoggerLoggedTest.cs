@@ -17,6 +17,12 @@ namespace Microsoft.AspNetCore.Testing
 
         public ConcurrentQueue<LogMessage> LogMessages => TestApplicationErrorLogger.Messages;
 
+        public bool ThrowOnCriticalErrors
+        {
+            get => TestApplicationErrorLogger.ThrowOnCriticalErrors;
+            set => TestApplicationErrorLogger.ThrowOnCriticalErrors = value;
+        }
+
         public bool ThrowOnUngracefulShutdown
         {
             get => TestApplicationErrorLogger.ThrowOnUngracefulShutdown;

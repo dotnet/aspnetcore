@@ -10,5 +10,8 @@
     <RazorUpToDateReloadFileTypes>$(RazorUpToDateReloadFileTypes.Replace('.cshtml', ''))</RazorUpToDateReloadFileTypes>
 
     <AddCshtmlFilesToDotNetWatchList>false</AddCshtmlFilesToDotNetWatchList>
+
+    <!-- Generate checksum attributes used to determine if a compiled view is out-of-sync with any of it's inputs -->
+    <GenerateRazorMetadataSourceChecksumAttributes>true</GenerateRazorMetadataSourceChecksumAttributes>
   </PropertyGroup>
 </Project>

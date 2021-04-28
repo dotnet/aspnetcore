@@ -34,15 +34,15 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var types = new List<INamedTypeSymbol>();
             var visitor = new TagHelperTypeVisitor(iTagHelper, types);
-            var discoveryMode = context.Items.GetTagHelperDiscoveryFilter();
 
-            if ((discoveryMode & TagHelperDiscoveryFilter.CurrentCompilation) == TagHelperDiscoveryFilter.CurrentCompilation)
+            var targetAssembly = context.Items.GetTargetAssembly();
+            if (targetAssembly is not null)
+            {
+                visitor.Visit(targetAssembly.GlobalNamespace);
+            }
+            else
             {
                 visitor.Visit(compilation.Assembly.GlobalNamespace);
-            }
-
-            if ((discoveryMode & TagHelperDiscoveryFilter.ReferenceAssemblies) == TagHelperDiscoveryFilter.ReferenceAssemblies)
-            {
                 foreach (var reference in compilation.References)
                 {
                     if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
@@ -54,6 +54,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     }
                 }
             }
+
 
             var factory = new DefaultTagHelperDescriptorFactory(compilation, context.IncludeDocumentation, context.ExcludeHidden);
             for (var i = 0; i < types.Count; i++)

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,12 +13,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     /// <summary>
     /// A dictionary for HTML attributes.
     /// </summary>
-    public class AttributeDictionary : IDictionary<string, string>, IReadOnlyDictionary<string, string>
+    public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictionary<string, string?>
     {
-        private List<KeyValuePair<string, string>> _items;
+        private List<KeyValuePair<string, string?>>? _items;
 
         /// <inheritdoc />
-        public string this[string key]
+        public string? this[string key]
         {
             get
             {
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     throw new ArgumentNullException(nameof(key));
                 }
 
-                var item = new KeyValuePair<string, string>(key, value);
+                var item = new KeyValuePair<string, string?>(key, value);
                 var index = Find(key);
                 if (index < 0)
                 {
@@ -66,41 +68,41 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public ICollection<string> Keys => new KeyCollection(this);
 
         /// <inheritdoc />
-        public ICollection<string> Values => new ValueCollection(this);
+        public ICollection<string?> Values => new ValueCollection(this);
 
         /// <inheritdoc />
-        IEnumerable<string> IReadOnlyDictionary<string, string>.Keys => new KeyCollection(this);
+        IEnumerable<string> IReadOnlyDictionary<string, string?>.Keys => new KeyCollection(this);
 
         /// <inheritdoc />
-        IEnumerable<string> IReadOnlyDictionary<string, string>.Values => new ValueCollection(this);
+        IEnumerable<string?> IReadOnlyDictionary<string, string?>.Values => new ValueCollection(this);
 
-        private KeyValuePair<string, string> Get(int index)
+        private KeyValuePair<string, string?> Get(int index)
         {
-            Debug.Assert(index >= 0 && index < Count);
+            Debug.Assert(index >= 0 && index < Count && _items != null);
             return _items[index];
         }
 
-        private void Set(int index, KeyValuePair<string, string> value)
+        private void Set(int index, KeyValuePair<string, string?> value)
         {
             Debug.Assert(index >= 0 && index <= Count);
             Debug.Assert(value.Key != null);
 
             if (_items == null)
             {
-                _items = new List<KeyValuePair<string, string>>();
+                _items = new List<KeyValuePair<string, string?>>();
             }
 
             _items[index] = value;
         }
 
-        private void Insert(int index, KeyValuePair<string, string> value)
+        private void Insert(int index, KeyValuePair<string, string?> value)
         {
             Debug.Assert(index >= 0 && index <= Count);
             Debug.Assert(value.Key != null);
 
             if (_items == null)
             {
-                _items = new List<KeyValuePair<string, string>>();
+                _items = new List<KeyValuePair<string, string?>>();
             }
 
             _items.Insert(index, value);
@@ -110,6 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             Debug.Assert(index >= 0 && index < Count);
 
+            Debug.Assert(_items != null);
             _items.RemoveAt(index);
         }
 
@@ -160,14 +163,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public void Add(KeyValuePair<string, string> item)
+        public void Add(KeyValuePair<string, string?> item)
         {
             if (item.Key == null)
             {
                 throw new ArgumentException(
                     Resources.FormatPropertyOfTypeCannotBeNull(
-                        nameof(KeyValuePair<string, string>.Key),
-                        nameof(KeyValuePair<string, string>)),
+                        nameof(KeyValuePair<string, string?>.Key),
+                        nameof(KeyValuePair<string, string?>)),
                     nameof(item));
             }
 
@@ -183,25 +186,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public void Add(string key, string value)
+        public void Add(string key, string? value)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            Add(new KeyValuePair<string, string>(key, value));
+            Add(new KeyValuePair<string, string?>(key, value));
         }
 
         /// <inheritdoc />
-        public bool Contains(KeyValuePair<string, string> item)
+        public bool Contains(KeyValuePair<string, string?> item)
         {
             if (item.Key == null)
             {
                 throw new ArgumentException(
                     Resources.FormatPropertyOfTypeCannotBeNull(
-                        nameof(KeyValuePair<string, string>.Key),
-                        nameof(KeyValuePair<string, string>)),
+                        nameof(KeyValuePair<string, string?>.Key),
+                        nameof(KeyValuePair<string, string?>)),
                     nameof(item));
             }
 
@@ -233,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public void CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<string, string?>[] array, int arrayIndex)
         {
             if (array == null)
             {
@@ -258,14 +261,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public bool Remove(KeyValuePair<string, string> item)
+        public bool Remove(KeyValuePair<string, string?> item)
         {
             if (item.Key == null)
             {
                 throw new ArgumentException(
                     Resources.FormatPropertyOfTypeCannotBeNull(
-                        nameof(KeyValuePair<string, string>.Key),
-                        nameof(KeyValuePair<string, string>)),
+                        nameof(KeyValuePair<string, string?>.Key),
+                        nameof(KeyValuePair<string, string?>)),
                     nameof(item));
             }
 
@@ -306,7 +309,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public bool TryGetValue(string key, out string value)
+        public bool TryGetValue(string key, out string? value)
         {
             if (key == null)
             {
@@ -333,7 +336,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        IEnumerator<KeyValuePair<string, string>> IEnumerable<KeyValuePair<string, string>>.GetEnumerator()
+        IEnumerator<KeyValuePair<string, string?>> IEnumerable<KeyValuePair<string, string?>>.GetEnumerator()
         {
             return GetEnumerator();
         }
@@ -341,7 +344,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// An enumerator for <see cref="AttributeDictionary"/>.
         /// </summary>
-        public struct Enumerator : IEnumerator<KeyValuePair<string, string>>
+        public struct Enumerator : IEnumerator<KeyValuePair<string, string?>>
         {
             private readonly AttributeDictionary _attributes;
 
@@ -359,7 +362,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             /// <inheritdoc />
-            public KeyValuePair<string, string> Current => _attributes.Get(_index);
+            public KeyValuePair<string, string?> Current => _attributes.Get(_index);
 
             /// <inheritdoc />
             object IEnumerator.Current => Current;
@@ -462,7 +465,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return GetEnumerator();
             }
 
-            public struct Enumerator : IEnumerator<string>
+            public struct Enumerator : IEnumerator<string?>
             {
                 private readonly AttributeDictionary _attributes;
 
@@ -496,7 +499,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
         }
 
-        private class ValueCollection : ICollection<string>
+        private class ValueCollection : ICollection<string?>
         {
             private readonly AttributeDictionary _attributes;
 
@@ -509,7 +512,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             public bool IsReadOnly => true;
 
-            public void Add(string item)
+            public void Add(string? item)
             {
                 throw new NotSupportedException();
             }
@@ -519,7 +522,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new NotSupportedException();
             }
 
-            public bool Contains(string item)
+            public bool Contains(string? item)
             {
                 for (var i = 0; i < _attributes.Count; i++)
                 {
@@ -532,7 +535,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return false;
             }
 
-            public void CopyTo(string[] array, int arrayIndex)
+            public void CopyTo(string?[] array, int arrayIndex)
             {
                 if (array == null)
                 {
@@ -555,12 +558,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return new Enumerator(_attributes);
             }
 
-            public bool Remove(string item)
+            public bool Remove(string? item)
             {
                 throw new NotSupportedException();
             }
 
-            IEnumerator<string> IEnumerable<string>.GetEnumerator()
+            IEnumerator<string?> IEnumerable<string?>.GetEnumerator()
             {
                 return GetEnumerator();
             }
@@ -570,7 +573,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return GetEnumerator();
             }
 
-            public struct Enumerator : IEnumerator<string>
+            public struct Enumerator : IEnumerator<string?>
             {
                 private readonly AttributeDictionary _attributes;
 
@@ -583,9 +586,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     _index = -1;
                 }
 
-                public string Current => _attributes.Get(_index).Key;
+                public string? Current => _attributes.Get(_index).Value;
 
-                object IEnumerator.Current => Current;
+                object? IEnumerator.Current => Current;
 
                 public void Dispose()
                 {

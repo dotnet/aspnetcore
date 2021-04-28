@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileName">The path to the file. The path must be relative/virtual.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public VirtualFileResult(string fileName, MediaTypeHeaderValue contentType)
-            : base(contentType?.ToString())
+            : base(contentType.ToString())
         {
             FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
         }
@@ -48,13 +49,14 @@ namespace Microsoft.AspNetCore.Mvc
         public string FileName
         {
             get => _fileName;
+            [MemberNotNull(nameof(_fileName))]
             set => _fileName = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
         /// Gets or sets the <see cref="IFileProvider"/> used to resolve paths.
         /// </summary>
-        public IFileProvider FileProvider { get; set; }
+        public IFileProvider? FileProvider { get; set; }
 
         /// <inheritdoc />
         public override Task ExecuteResultAsync(ActionContext context)

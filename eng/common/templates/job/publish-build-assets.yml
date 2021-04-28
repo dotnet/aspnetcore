@@ -52,6 +52,7 @@ jobs:
       inputs:
         artifactName: AssetManifests
         downloadPath: '$(Build.StagingDirectory)/Download'
+        checkDownloadedFiles: true
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
     

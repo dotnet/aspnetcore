@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         private static readonly Action<ControllerContext, object> _dispose = Dispose;
         private static readonly Func<ControllerContext, object, ValueTask> _disposeAsync = DisposeAsync;
         private static readonly Func<ControllerContext, object, ValueTask> _syncDisposeAsync = SyncDisposeAsync;
-        private readonly Func<ControllerContext, object> _controllerActivatorCreate;
-        private readonly Action<ControllerContext, object> _controllerActivatorRelease;
-        private readonly Func<ControllerContext, object, ValueTask> _controllerActivatorReleaseAsync;
+        private readonly Func<ControllerContext, object>? _controllerActivatorCreate;
+        private readonly Action<ControllerContext, object>? _controllerActivatorRelease;
+        private readonly Func<ControllerContext, object, ValueTask>? _controllerActivatorReleaseAsync;
 
         /// <summary>
         /// Initializes a new instance of <see cref="ControllerActivatorProvider"/>.
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         /// <inheritdoc/>
-        public Action<ControllerContext, object> CreateReleaser(ControllerActionDescriptor descriptor)
+        public Action<ControllerContext, object>? CreateReleaser(ControllerActionDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         /// <inheritdoc/>
-        public Func<ControllerContext, object, ValueTask> CreateAsyncReleaser(ControllerActionDescriptor descriptor)
+        public Func<ControllerContext, object, ValueTask>? CreateAsyncReleaser(ControllerActionDescriptor descriptor)
         {
             if (descriptor == null)
             {

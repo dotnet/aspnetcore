@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
             finally
             {
-                await connection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
             }
         }
     }

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace System.Net.Http.HPack
 {
-    internal partial class HPackEncoder
+    internal static partial class HPackEncoder
     {
         // Things we should add:
         // * Huffman encoding

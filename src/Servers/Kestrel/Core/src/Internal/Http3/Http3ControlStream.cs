@@ -4,6 +4,8 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Threading;
@@ -16,30 +18,34 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal abstract class Http3ControlStream : IThreadPoolWorkItem
+    internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     {
-        private const int ControlStream = 0;
-        private const int EncoderStream = 2;
-        private const int DecoderStream = 3;
+        private const int ControlStreamTypeId = 0;
+        private const int EncoderStreamTypeId = 2;
+        private const int DecoderStreamTypeId = 3;
 
         private readonly Http3FrameWriter _frameWriter;
-        private readonly Http3Connection _http3Connection;
         private readonly Http3StreamContext _context;
         private readonly Http3PeerSettings _serverPeerSettings;
         private readonly IStreamIdFeature _streamIdFeature;
+        private readonly IProtocolErrorCodeFeature _errorCodeFeature;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         private volatile int _isClosed;
         private int _gracefulCloseInitiator;
+        private long _headerType;
 
         private bool _haveReceivedSettingsFrame;
 
-        public Http3ControlStream(Http3Connection http3Connection, Http3StreamContext context)
+        public long StreamId => _streamIdFeature.StreamId;
+
+        public Http3ControlStream(Http3StreamContext context)
         {
             var httpLimits = context.ServiceContext.ServerOptions.Limits;
-            _http3Connection = http3Connection;
             _context = context;
             _serverPeerSettings = context.ServerSettings;
             _streamIdFeature = context.ConnectionFeatures.Get<IStreamIdFeature>()!;
+            _errorCodeFeature = context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
+            _headerType = -1;
 
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,
@@ -54,27 +60,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private void OnStreamClosed()
         {
-            Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"));
+            Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"), Http3ErrorCode.InternalError);
         }
 
         public PipeReader Input => _context.Transport.Input;
         public IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public void Abort(ConnectionAbortedException ex)
-        {
+        public long HeaderTimeoutTicks { get; set; }
+        public bool ReceivedHeader => _headerType >= 0;
 
-        }
+        public bool IsRequestStream => false;
 
-        public void HandleReadDataRateTimeout()
+        public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
         {
-            //Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, null, Limits.MinRequestBodyDataRate.BytesPerSecond);
-            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout));
-        }
+            // TODO - Should there be a check here to track abort state to avoid
+            // running twice for a request?
 
-        public void HandleRequestHeadersTimeout()
-        {
-            //Log.ConnectionBadRequest(ConnectionId, KestrelBadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
-            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout));
+            Log.Http3StreamAbort(_context.ConnectionId, errorCode, abortReason);
+
+            _errorCodeFeature.Error = (long)errorCode;
+            _frameWriter.Abort(abortReason);
+
+            Input.Complete(abortReason);
         }
 
         public void OnInputOrOutputCompleted()
@@ -108,8 +115,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             await _frameWriter.WriteSettingsAsync(_serverPeerSettings.GetNonProtocolDefaults());
         }
 
-        private async ValueTask<long> TryReadStreamIdAsync()
+        private async ValueTask<long> TryReadStreamHeaderAsync()
         {
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2
             while (_isClosed == 0)
             {
                 var result = await Input.ReadAsync();
@@ -144,43 +152,56 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
         {
-            var streamType = await TryReadStreamIdAsync();
-
-            if (streamType == -1)
+            try
             {
-                return;
-            }
+                _headerType = await TryReadStreamHeaderAsync();
+                _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
-            if (streamType == ControlStream)
-            {
-                if (!_http3Connection.SetInboundControlStream(this))
+                switch (_headerType)
                 {
-                    // TODO propagate these errors to connection.
-                    throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
-                }
+                    case ControlStreamTypeId:
+                        if (!_context.StreamLifetimeHandler.OnInboundControlStream(this))
+                        {
+                            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1
+                            throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("control"), Http3ErrorCode.StreamCreationError);
+                        }
 
-                await HandleControlStream();
-            }
-            else if (streamType == EncoderStream)
-            {
-                if (!_http3Connection.SetInboundEncoderStream(this))
-                {
-                    throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
-                }
+                        await HandleControlStream();
+                        break;
+                    case EncoderStreamTypeId:
+                        if (!_context.StreamLifetimeHandler.OnInboundEncoderStream(this))
+                        {
+                            // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
+                            throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("encoder"), Http3ErrorCode.StreamCreationError);
+                        }
 
-                await HandleEncodingDecodingTask();
-            }
-            else if (streamType == DecoderStream)
-            {
-                if (!_http3Connection.SetInboundDecoderStream(this))
-                {
-                    throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
+                        await HandleEncodingDecodingTask();
+                        break;
+                    case DecoderStreamTypeId:
+                        if (!_context.StreamLifetimeHandler.OnInboundDecoderStream(this))
+                        {
+                            // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
+                            throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("decoder"), Http3ErrorCode.StreamCreationError);
+                        }
+                        await HandleEncodingDecodingTask();
+                        break;
+                    default:
+                        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2-6
+                        throw new Http3StreamErrorException(CoreStrings.FormatHttp3ControlStreamErrorUnsupportedType(_headerType), Http3ErrorCode.StreamCreationError);
                 }
-                await HandleEncodingDecodingTask();
             }
-            else
+            catch (Http3StreamErrorException ex)
             {
-                // TODO Close the control stream as it's unexpected.
+                Abort(new ConnectionAbortedException(ex.Message), ex.ErrorCode);
+            }
+            catch (Http3ConnectionErrorException ex)
+            {
+                _errorCodeFeature.Error = (long)ex.ErrorCode;
+                _context.StreamLifetimeHandler.OnStreamConnectionError(ex);
+            }
+            finally
+            {
+                _context.StreamLifetimeHandler.OnStreamCompleted(this);
             }
         }
 
@@ -209,11 +230,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                     if (result.IsCompleted)
                     {
+                        if (!_context.StreamContext.ConnectionClosed.IsCancellationRequested)
+                        {
+                            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1-2
+                            throw new Http3ConnectionErrorException(CoreStrings.Http3ErrorControlStreamClientClosedInbound, Http3ErrorCode.ClosedCriticalStream);
+                        }
+
                         return;
                     }
-                }
-                catch (Http3StreamErrorException)
-                {
                 }
                 finally
                 {
@@ -238,26 +262,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private ValueTask ProcessHttp3ControlStream(in ReadOnlySequence<byte> payload)
         {
-            // Two things:
-            // settings must be sent as the first frame of each control stream by each peer
-            // Can't send more than two settings frames.
             switch (_incomingFrame.Type)
             {
                 case Http3FrameType.Data:
                 case Http3FrameType.Headers:
-                case Http3FrameType.DuplicatePush:
                 case Http3FrameType.PushPromise:
-                    throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2
+                    throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
                 case Http3FrameType.Settings:
                     return ProcessSettingsFrameAsync(payload);
                 case Http3FrameType.GoAway:
-                    return ProcessGoAwayFrameAsync(payload);
+                    return ProcessGoAwayFrameAsync();
                 case Http3FrameType.CancelPush:
                     return ProcessCancelPushFrameAsync();
                 case Http3FrameType.MaxPushId:
                     return ProcessMaxPushIdFrameAsync();
                 default:
-                    return ProcessUnknownFrameAsync();
+                    return ProcessUnknownFrameAsync(_incomingFrame.Type);
             }
         }
 
@@ -265,7 +286,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             if (_haveReceivedSettingsFrame)
             {
-                throw new Http3ConnectionException("H3_SETTINGS_ERROR");
+                // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-settings
+                throw new Http3ConnectionErrorException(CoreStrings.Http3ErrorControlStreamMultipleSettingsFrames, Http3ErrorCode.UnexpectedFrame);
             }
 
             _haveReceivedSettingsFrame = true;
@@ -299,54 +321,74 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // These are client settings, for outbound traffic.
             switch (id)
             {
+                case 0x0:
+                case 0x2:
+                case 0x3:
+                case 0x4:
+                case 0x5:
+                    // HTTP/2 settings are reserved.
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4.1-5
+                    var message = CoreStrings.FormatHttp3ErrorControlStreamReservedSetting("0x" + id.ToString("X", CultureInfo.InvariantCulture));
+                    throw new Http3ConnectionErrorException(message, Http3ErrorCode.SettingsError);
                 case (long)Http3SettingType.QPackMaxTableCapacity:
-                    _http3Connection.ApplyMaxTableCapacity(value);
-                    break;
-                case (long)Http3SettingType.MaxHeaderListSize:
-                    _http3Connection.ApplyMaxHeaderListSize(value);
-                    break;
+                case (long)Http3SettingType.MaxFieldSectionSize:
                 case (long)Http3SettingType.QPackBlockedStreams:
-                    _http3Connection.ApplyBlockedStream(value);
+                    _context.StreamLifetimeHandler.OnInboundControlStreamSetting((Http3SettingType)id, value);
                     break;
                 default:
                     // Ignore all unknown settings.
+                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
                     break;
             }
         }
 
-        private ValueTask ProcessGoAwayFrameAsync(ReadOnlySequence<byte> payload)
+        private ValueTask ProcessGoAwayFrameAsync()
         {
-             throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
+            EnsureSettingsFrame(Http3FrameType.GoAway);
+
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-goaway
+            // PUSH is not implemented so nothing to do.
+
+            // TODO: Double check the connection remains open.
+            return default;
         }
 
         private ValueTask ProcessCancelPushFrameAsync()
         {
-            if (!_haveReceivedSettingsFrame)
-            {
-                throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
-            }
+            EnsureSettingsFrame(Http3FrameType.CancelPush);
+
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-cancel_push
+            // PUSH is not implemented so nothing to do.
 
             return default;
         }
 
         private ValueTask ProcessMaxPushIdFrameAsync()
         {
-            if (!_haveReceivedSettingsFrame)
-            {
-                throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
-            }
+            EnsureSettingsFrame(Http3FrameType.MaxPushId);
+
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-cancel_push
+            // PUSH is not implemented so nothing to do.
 
             return default;
         }
 
-        private ValueTask ProcessUnknownFrameAsync()
+        private ValueTask ProcessUnknownFrameAsync(Http3FrameType frameType)
+        {
+            EnsureSettingsFrame(frameType);
+
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-9
+            // Unknown frames must be explicitly ignored.
+            return default;
+        }
+
+        private void EnsureSettingsFrame(Http3FrameType frameType)
         {
             if (!_haveReceivedSettingsFrame)
             {
-                throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
+                var message = CoreStrings.FormatHttp3ErrorControlStreamFrameReceivedBeforeSettings(Http3Formatting.ToFormattedType(frameType));
+                throw new Http3ConnectionErrorException(message, Http3ErrorCode.MissingSettings);
             }
-
-            return default;
         }
 
         public void StopProcessingNextRequest()

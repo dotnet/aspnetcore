@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 {
     /// <summary>
-    /// An <see cref="IAuthenticatedEncryptorFactory"/> for <see cref="GcmAuthenticatedEncryptor"/>.
+    /// An <see cref="IAuthenticatedEncryptorFactory"/> for <see cref="CngGcmAuthenticatedEncryptor"/>.
     /// </summary>
     public sealed class CngGcmAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
     {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 
         [SupportedOSPlatform("windows")]
         [return: NotNullIfNotNull("configuration")]
-        internal GcmAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
+        internal CngGcmAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
             ISecret secret,
             CngGcmAuthenticatedEncryptorConfiguration configuration)
         {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 return null;
             }
 
-            return new GcmAuthenticatedEncryptor(
+            return new CngGcmAuthenticatedEncryptor(
                 keyDerivationKey: new Secret(secret),
                 symmetricAlgorithmHandle: GetSymmetricBlockCipherAlgorithmHandle(configuration),
                 symmetricAlgorithmKeySizeInBytes: (uint)(configuration.EncryptionAlgorithmKeySize / 8));

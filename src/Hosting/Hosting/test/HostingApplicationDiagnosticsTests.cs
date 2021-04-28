@@ -362,6 +362,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value4");
         }
 
+
         [Fact]
         public void ActivityBaggagePreservesItemsOrder()
         {
@@ -389,7 +390,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             hostingApplication.CreateContext(features);
             Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
 
-            var expectedBaggage = new []
+            var expectedBaggage = new[]
             {
                 KeyValuePair.Create("Key1","value1"),
                 KeyValuePair.Create("Key2","value2"),
@@ -465,7 +466,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
-        public void ActivityOnExportHookIsCalled()
+        public void ActivityOnImportHookIsCalled()
         {
             var diagnosticListener = new DiagnosticListener("DummySource");
             var hostingApplication = CreateApplication(out var features, diagnosticListener: diagnosticListener);
@@ -492,6 +493,37 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.True(Activity.Current.Recorded);
         }
 
+        [Fact]
+        public void ActivityListenersAreCalled()
+        {
+            var hostingApplication = CreateApplication(out var features);
+            var parentSpanId = "";
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = activitySource => true,
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+                ActivityStarted = activity =>
+                {
+                    parentSpanId = Activity.Current.ParentSpanId.ToHexString();
+                }
+            };
+
+            ActivitySource.AddActivityListener(listener);
+
+            features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+            {
+                Headers = new HeaderDictionary()
+                {
+                    {"traceparent", "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"},
+                    {"tracestate", "TraceState1"},
+                    {"baggage", "Key1=value1, Key2=value2"}
+                }
+            });
+
+            hostingApplication.CreateContext(features);
+            Assert.Equal("0123456789abcdef", parentSpanId);
+        }
+
 
         private static void AssertProperty<T>(object o, string name)
         {
@@ -504,7 +536,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         private static HostingApplication CreateApplication(out FeatureCollection features,
-            DiagnosticListener diagnosticListener = null, ILogger logger = null, Action<DefaultHttpContext> configure = null)
+            DiagnosticListener diagnosticListener = null, ActivitySource activitySource = null, ILogger logger = null, Action<DefaultHttpContext> configure = null)
         {
             var httpContextFactory = new Mock<IHttpContextFactory>();
 
@@ -519,6 +551,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 ctx => Task.CompletedTask,
                 logger ?? new NullScopeLogger(),
                 diagnosticListener ?? new NoopDiagnosticListener(),
+                activitySource ?? new ActivitySource("Microsoft.AspNetCore"),
                 httpContextFactory.Object);
 
             return hostingApplication;

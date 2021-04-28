@@ -46,12 +46,12 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 throw new HttpRequestException($"An error occurred when retrieving Google user information ({response.StatusCode}). Please check if the authentication information is correct.");
             }
 
-            using (var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
+            using (var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(Context.RequestAborted)))
             {
                 var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload.RootElement);
                 context.RunClaimActions();
                 await Events.CreatingTicket(context);
-                return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
+                return new AuthenticationTicket(context.Principal!, context.Properties, Scheme.Name);
             }
         }
 
@@ -76,18 +76,18 @@ namespace Microsoft.AspNetCore.Authentication.Google
             var state = Options.StateDataFormat.Protect(properties);
             queryStrings.Add("state", state);
 
-            var authorizationEndpoint = QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings);
+            var authorizationEndpoint = QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, queryStrings!);
             return authorizationEndpoint;
         }
 
-        private void AddQueryString<T>(
+        private static void AddQueryString<T>(
             IDictionary<string, string> queryStrings,
             AuthenticationProperties properties,
             string name,
-            Func<T, string> formatter,
+            Func<T, string?> formatter,
             T defaultValue)
         {
-            string value = null;
+            string? value;
             var parameterValue = properties.GetParameter<T>(name);
             if (parameterValue != null)
             {
@@ -107,11 +107,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
             }
         }
 
-        private void AddQueryString(
+        private static void AddQueryString(
             IDictionary<string, string> queryStrings,
             AuthenticationProperties properties,
             string name,
-            string defaultValue = null)
+            string? defaultValue = null)
             => AddQueryString(queryStrings, properties, name, x => x, defaultValue);
     }
 }

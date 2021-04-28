@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     break;
                 }
 
-                currentTypeInfo = currentTypeInfo.BaseType.GetTypeInfo();
+                currentTypeInfo = currentTypeInfo.BaseType!.GetTypeInfo();
             }
             while (currentTypeInfo != objectTypeInfo);
 
@@ -225,14 +225,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // BindingInfo for properties can be either specified by decorating the property with binding specific attributes.
             // ModelMetadata also adds information from the property's type and any configured IBindingMetadataProvider.
-            var modelMetadata = _modelMetadataProvider.GetMetadataForProperty(propertyInfo.DeclaringType, propertyInfo.Name);
+            var declaringType = propertyInfo.DeclaringType!;
+            var modelMetadata = _modelMetadataProvider.GetMetadataForProperty(declaringType, propertyInfo.Name);
             var bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
 
             if (bindingInfo == null)
             {
                 // Look for BindPropertiesAttribute on the handler type if no BindingInfo was inferred for the property.
                 // This allows a user to enable model binding on properties by decorating the controller type with BindPropertiesAttribute.
-                var declaringType = propertyInfo.DeclaringType;
                 var bindPropertiesAttribute = declaringType.GetCustomAttribute<BindPropertiesAttribute>(inherit: true);
                 if (bindPropertiesAttribute != null)
                 {
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// An <see cref="ActionModel"/> instance for the given action <see cref="MethodInfo"/> or
         /// <c>null</c> if the <paramref name="methodInfo"/> does not represent an action.
         /// </returns>
-        internal ActionModel CreateActionModel(
+        internal ActionModel? CreateActionModel(
             TypeInfo typeInfo,
             MethodInfo methodInfo)
         {
@@ -466,7 +466,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             var attributes = parameterInfo.GetCustomAttributes(inherit: true);
 
-            BindingInfo bindingInfo;
+            BindingInfo? bindingInfo;
             if (_modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
             {
                 var modelMetadata = modelMetadataProviderBase.GetMetadataForParameter(parameterInfo);
@@ -480,7 +480,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             var parameterModel = new ParameterModel(parameterInfo, attributes)
             {
-                ParameterName = parameterInfo.Name,
+                ParameterName = parameterInfo.Name!,
                 BindingInfo = bindingInfo,
             };
 
@@ -646,7 +646,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return false;
         }
 
-        private static SelectorModel CreateSelectorModel(IRouteTemplateProvider route, IList<object> attributes)
+        private static SelectorModel CreateSelectorModel(IRouteTemplateProvider? route, IList<object> attributes)
         {
             var selectorModel = new SelectorModel();
             if (route != null)

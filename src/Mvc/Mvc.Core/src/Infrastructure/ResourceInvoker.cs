@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-#nullable enable
     internal abstract class ResourceInvoker
     {
         protected readonly DiagnosticListener _diagnosticListener;
@@ -1213,7 +1212,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             };
                         }
 
-                        _diagnosticListener.AfterOnResultExecution(_resultExecutedContext, filter);
+                        _diagnosticListener.AfterOnResultExecution(_resultExecutedContext!, filter);
                         _logger.AfterExecutingMethodOnFilter(
                             resultFilterKind,
                             nameof(IAsyncResultFilter.OnResultExecutionAsync),

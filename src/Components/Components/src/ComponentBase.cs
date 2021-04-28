@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components
                 return;
             }
 
-            if (_hasNeverRendered || ShouldRender())
+            if (_hasNeverRendered || ShouldRender() || _renderHandle.IsHotReloading)
             {
                 _hasPendingQueuedRender = true;
 

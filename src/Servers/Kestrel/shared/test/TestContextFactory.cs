@@ -9,13 +9,13 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Testing
                 connectionContext ?? new TestMultiplexedConnectionContext(),
                 serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
                 connectionFeatures ?? new FeatureCollection(),
-                memoryPool ?? SlabMemoryPoolFactory.Create(),
+                memoryPool ?? PinnedBlockMemoryPoolFactory.Create(),
                 localEndPoint,
                 remoteEndPoint);
             http3ConnectionContext.TimeoutControl = timeoutControl;
@@ -100,6 +100,21 @@ namespace Microsoft.AspNetCore.Testing
             KestrelServerOptions serverOptions,
             ILogger logger,
             Func<ListenOptions, Task> createBinding)
+        {
+            var context = new AddressBindContext(
+                serverAddressesFeature,
+                serverOptions,
+                logger,
+                (listenOptions, cancellationToken) => createBinding(listenOptions));
+
+            return context;
+        }
+
+        public static AddressBindContext CreateAddressBindContext(
+            ServerAddressesFeature serverAddressesFeature,
+            KestrelServerOptions serverOptions,
+            ILogger logger,
+            Func<ListenOptions, CancellationToken, Task> createBinding)
         {
             var context = new AddressBindContext(
                 serverAddressesFeature,
@@ -157,7 +172,8 @@ namespace Microsoft.AspNetCore.Testing
             IPEndPoint localEndPoint = null,
             IPEndPoint remoteEndPoint = null,
             IDuplexPipe transport = null,
-            ITimeoutControl timeoutControl = null)
+            ITimeoutControl timeoutControl = null,
+            IHttp3StreamLifetimeHandler streamLifetimeHandler = null)
         {
             var context = new Http3StreamContext
             (
@@ -170,6 +186,7 @@ namespace Microsoft.AspNetCore.Testing
                 localEndPoint: localEndPoint,
                 remoteEndPoint: remoteEndPoint,
                 transport: transport,
+                streamLifetimeHandler: streamLifetimeHandler,
                 streamContext: null,
                 settings: null
             );

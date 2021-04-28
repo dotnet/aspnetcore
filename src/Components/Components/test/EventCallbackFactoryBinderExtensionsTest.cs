@@ -613,7 +613,7 @@ namespace Microsoft.AspNetCore.Components
                 ex.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30312")]
         [ReplaceCulture("fr-FR", "fr-FR")]
         public async Task CreateBinder_NumericType_WithCurrentCulture()
         {
@@ -633,7 +633,7 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal(1, component.Count);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30312")]
         public async Task CreateBinder_NumericType_WithInvariantCulture()
         {
             // Arrange

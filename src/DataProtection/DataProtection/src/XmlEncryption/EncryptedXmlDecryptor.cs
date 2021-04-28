@@ -59,7 +59,6 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             // doesn't handle encrypting the root element all that well.
             var xmlDocument = new XmlDocument();
             xmlDocument.Load(new XElement("root", encryptedElement).CreateReader());
-            var elementToDecrypt = (XmlElement)xmlDocument.DocumentElement!.FirstChild!;
 
             // Perform the decryption and update the document in-place.
             var encryptedXml = new EncryptedXmlWithCertificateKeys(_options, xmlDocument);
@@ -68,7 +67,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             encryptedXml.DecryptDocument();
 
             // Strip the <root /> element back off and convert the XmlDocument to an XElement.
-            return XElement.Load(xmlDocument.DocumentElement.FirstChild!.CreateNavigator()!.ReadSubtree());
+            return XElement.Load(xmlDocument.DocumentElement!.FirstChild!.CreateNavigator()!.ReadSubtree());
         }
 
         void IInternalEncryptedXmlDecryptor.PerformPreDecryptionSetup(EncryptedXml encryptedXml)

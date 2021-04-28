@@ -3,14 +3,14 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components
 {
     internal class ComponentParametersTypeCache
     {
-        private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new ConcurrentDictionary<Key, Type?>();
+        private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
 
         public Type? GetParameterType(string assembly, string type)
         {
@@ -25,10 +25,19 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
+        [RequiresUnreferencedCode("This type attempts to load component parameters that may be trimmed.")]
         private static Type? ResolveType(Key key, Assembly[] assemblies)
         {
-            var assembly = assemblies
-                .FirstOrDefault(a => string.Equals(a.GetName().Name, key.Assembly, StringComparison.Ordinal));
+            Assembly? assembly = null;
+            for (var i = 0; i < assemblies.Length; i++)
+            {
+                var current = assemblies[i];
+                if (current.GetName().Name == key.Assembly)
+                {
+                    assembly = current;
+                    break;
+                }
+            }
 
             if (assembly == null)
             {

@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
-using Microsoft.JSInterop.WebAssembly;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 {
@@ -20,9 +20,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
     {
         private readonly ILogger _logger;
         private readonly int _webAssemblyRendererId;
-
-        private bool isDispatchingEvent;
-        private Queue<IncomingEventInfo> deferredIncomingEvents = new Queue<IncomingEventInfo>();
 
         /// <summary>
         /// Constructs an instance of <see cref="WebAssemblyRenderer"/>.
@@ -53,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
         /// want to await the rendering of the added component.
         /// </remarks>
-        public Task AddComponentAsync<TComponent>(string domElementSelector, ParameterView parameters) where TComponent : IComponent
+        public Task AddComponentAsync<[DynamicallyAccessedMembers(Component)] TComponent>(string domElementSelector, ParameterView parameters) where TComponent : IComponent
             => AddComponentAsync(typeof(TComponent), domElementSelector, parameters);
 
         /// <summary>
@@ -68,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
         /// want to await the rendering of the added component.
         /// </remarks>
-        public Task AddComponentAsync(Type componentType, string domElementSelector, ParameterView parameters)
+        public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, string domElementSelector, ParameterView parameters)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
@@ -96,6 +93,32 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         }
 
         /// <inheritdoc />
+        protected override void ProcessPendingRender()
+        {
+            // For historical reasons, Blazor WebAssembly doesn't enforce that you use InvokeAsync
+            // to dispatch calls that originated from outside the system. Changing that now would be
+            // too breaking, at least until we can make it a prerequisite for multithreading.
+            // So, we don't have a way to guarantee that calls to here are already on our work queue.
+            //
+            // We do need rendering to happen on the work queue so that incoming events can be deferred
+            // until we've finished this rendering process (and other similar cases where we want
+            // execution order to be consistent with Blazor Server, which queues all JS->.NET calls).
+            //
+            // So, if we find that we're here and are not yet on the work queue, get onto it. Either
+            // way, rendering must continue synchronously here and is not deferred until later.
+            if (WebAssemblyCallQueue.IsInProgress)
+            {
+                base.ProcessPendingRender();
+            }
+            else
+            {
+                WebAssemblyCallQueue.Schedule(this, static @this => @this.CallBaseProcessPendingRender());
+            }
+        }
+
+        private void CallBaseProcessPendingRender() => base.ProcessPendingRender();
+
+        /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
             DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
@@ -103,7 +126,22 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 _webAssemblyRendererId,
                 batch);
 
-            return Task.CompletedTask;
+            if (WebAssemblyCallQueue.HasUnstartedWork)
+            {
+                // Because further incoming calls from JS to .NET are already queued (e.g., event notifications),
+                // we have to delay the renderbatch acknowledgement until it gets to the front of that queue.
+                // This is for consistency with Blazor Server which queues all JS-to-.NET calls relative to each
+                // other, and because various bits of cleanup logic rely on this ordering.
+                var tcs = new TaskCompletionSource();
+                WebAssemblyCallQueue.Schedule(tcs, static tcs => tcs.SetResult());
+                return tcs.Task;
+            }
+            else
+            {
+                // Nothing else is pending, so we can treat the renderbatch as acknowledged synchronously.
+                // This lets upstream code skip an expensive code path and avoids some allocations.
+                return Task.CompletedTask;
+            }
         }
 
         /// <inheritdoc />
@@ -119,84 +157,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             else
             {
                 Log.UnhandledExceptionRenderingComponent(_logger, exception);
-            }
-        }
-
-        /// <inheritdoc />
-        public override Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
-        {
-            // Be sure we only run one event handler at once. Although they couldn't run
-            // simultaneously anyway (there's only one thread), they could run nested on
-            // the stack if somehow one event handler triggers another event synchronously.
-            // We need event handlers not to overlap because (a) that's consistent with
-            // server-side Blazor which uses a sync context, and (b) the rendering logic
-            // relies completely on the idea that within a given scope it's only building
-            // or processing one batch at a time.
-            //
-            // The only currently known case where this makes a difference is in the E2E
-            // tests in ReorderingFocusComponent, where we hit what seems like a Chrome bug
-            // where mutating the DOM cause an element's "change" to fire while its "input"
-            // handler is still running (i.e., nested on the stack) -- this doesn't happen
-            // in Firefox. Possibly a future version of Chrome may fix this, but even then,
-            // it's conceivable that DOM mutation events could trigger this too.
-
-            if (isDispatchingEvent)
-            {
-                var info = new IncomingEventInfo(eventHandlerId, eventFieldInfo, eventArgs);
-                deferredIncomingEvents.Enqueue(info);
-                return info.TaskCompletionSource.Task;
-            }
-            else
-            {
-                try
-                {
-                    isDispatchingEvent = true;
-                    return base.DispatchEventAsync(eventHandlerId, eventFieldInfo, eventArgs);
-                }
-                finally
-                {
-                    isDispatchingEvent = false;
-
-                    if (deferredIncomingEvents.Count > 0)
-                    {
-                        // Fire-and-forget because the task we return from this method should only reflect the
-                        // completion of its own event dispatch, not that of any others that happen to be queued.
-                        // Also, ProcessNextDeferredEventAsync deals with its own async errors.
-                        _ = ProcessNextDeferredEventAsync();
-                    }
-                }
-            }
-        }
-
-        private async Task ProcessNextDeferredEventAsync()
-        {
-            var info = deferredIncomingEvents.Dequeue();
-            var taskCompletionSource = info.TaskCompletionSource;
-
-            try
-            {
-                await DispatchEventAsync(info.EventHandlerId, info.EventFieldInfo, info.EventArgs);
-                taskCompletionSource.SetResult();
-            }
-            catch (Exception ex)
-            {
-                taskCompletionSource.SetException(ex);
-            }
-        }
-
-        readonly struct IncomingEventInfo
-        {
-            public readonly ulong EventHandlerId;
-            public readonly EventFieldInfo? EventFieldInfo;
-            public readonly EventArgs EventArgs;
-            public readonly TaskCompletionSource TaskCompletionSource;
-
-            public IncomingEventInfo(ulong eventHandlerId, EventFieldInfo? eventFieldInfo, EventArgs eventArgs)
-            {
-                EventHandlerId = eventHandlerId;
-                EventFieldInfo = eventFieldInfo;
-                EventArgs = eventArgs;
-                TaskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
         }
 

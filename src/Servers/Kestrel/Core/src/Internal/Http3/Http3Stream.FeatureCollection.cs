@@ -58,7 +58,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         void IHttpResetFeature.Reset(int errorCode)
         {
-            var abortReason = new ConnectionAbortedException(CoreStrings.FormatHttp3StreamResetByApplication((Http3ErrorCode)errorCode));
+            var message = CoreStrings.FormatHttp3StreamResetByApplication(Http3Formatting.ToFormattedErrorCode((Http3ErrorCode)errorCode));
+            var abortReason = new ConnectionAbortedException(message);
             ApplicationAbort(abortReason, (Http3ErrorCode)errorCode);
         }
     }

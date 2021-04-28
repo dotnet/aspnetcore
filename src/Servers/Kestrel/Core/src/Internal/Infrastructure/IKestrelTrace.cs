@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void InvalidResponseHeaderRemoved();
 
-        void Http3ConnectionError(string connectionId, Http3ConnectionException ex);
+        void Http3ConnectionError(string connectionId, Http3ConnectionErrorException ex);
 
         void Http3ConnectionClosing(string connectionId);
 

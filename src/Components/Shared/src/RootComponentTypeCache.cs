@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components
@@ -11,7 +10,7 @@ namespace Microsoft.AspNetCore.Components
     // A cache for root component types
     internal class RootComponentTypeCache
     {
-        private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new ConcurrentDictionary<Key, Type?>();
+        private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
 
         public Type? GetRootComponent(string assembly, string type)
         {
@@ -28,8 +27,16 @@ namespace Microsoft.AspNetCore.Components
 
         private static Type? ResolveType(Key key, Assembly[] assemblies)
         {
-            var assembly = assemblies
-                .FirstOrDefault(a => string.Equals(a.GetName().Name, key.Assembly, StringComparison.Ordinal));
+            Assembly? assembly = null;
+            for (var i = 0; i < assemblies.Length; i++)
+            {
+                var current = assemblies[i];
+                if (current.GetName().Name == key.Assembly)
+                {
+                    assembly = current;
+                    break;
+                }
+            }
 
             if (assembly == null)
             {

@@ -49,6 +49,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         private readonly HttpsOptionsCallback? _httpsOptionsCallback;
         private readonly object? _httpsOptionsCallbackState;
 
+        // Pool for cancellation tokens that cancel the handshake
+        private readonly CancellationTokenSourcePool _ctsPool = new();
+
         public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options)
           : this(next, options, loggerFactory: NullLoggerFactory.Instance)
         {
@@ -133,8 +136,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         public async Task OnConnectionAsync(ConnectionContext context)
         {
-            await Task.Yield();
-
             if (context.Features.Get<ITlsConnectionFeature>() != null)
             {
                 await _next(context);
@@ -152,7 +153,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             try
             {
-                using var cancellationTokenSource = new CancellationTokenSource(_handshakeTimeout);
+                using var cancellationTokenSource = _ctsPool.Rent();
+                cancellationTokenSource.CancelAfter(_handshakeTimeout);
+
                 if (_httpsOptionsCallback is null)
                 {
                     await DoOptionsBasedHandshakeAsync(context, sslStream, feature, cancellationTokenSource.Token);
@@ -411,7 +414,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 pool: memoryPool,
                 bufferSize: memoryPool.GetMinimumSegmentSize(),
                 minimumReadSize: memoryPool.GetMinimumAllocSize(),
-                leaveOpen: true
+                leaveOpen: true,
+                useZeroByteReads: true
             );
 
             var outputPipeOptions = new StreamPipeWriterOptions

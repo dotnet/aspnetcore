@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore
                 "Microsoft.AspNetCore.Http.Connections.Common",
                 "Microsoft.AspNetCore.Http.Extensions",
                 "Microsoft.AspNetCore.Http.Features",
+                "Microsoft.AspNetCore.HttpLogging",
                 "Microsoft.AspNetCore.HttpOverrides",
                 "Microsoft.AspNetCore.HttpsPolicy",
                 "Microsoft.AspNetCore.Identity",
@@ -118,6 +119,7 @@ namespace Microsoft.AspNetCore
                 "Microsoft.Extensions.FileProviders.Embedded",
                 "Microsoft.Extensions.FileProviders.Physical",
                 "Microsoft.Extensions.FileSystemGlobbing",
+                "Microsoft.Extensions.Features",
                 "Microsoft.Extensions.Hosting",
                 "Microsoft.Extensions.Hosting.Abstractions",
                 "Microsoft.Extensions.Http",
@@ -141,15 +143,11 @@ namespace Microsoft.AspNetCore
                 "Microsoft.Extensions.WebEncoders",
                 "Microsoft.JSInterop",
                 "Microsoft.Net.Http.Headers",
-                "Microsoft.Win32.SystemEvents",
                 "System.Diagnostics.EventLog",
                 "System.Diagnostics.EventLog.Messages",
-                "System.Drawing.Common",
                 "System.IO.Pipelines",
                 "System.Security.Cryptography.Pkcs",
                 "System.Security.Cryptography.Xml",
-                "System.Security.Permissions",
-                "System.Windows.Extensions"
             };
 
             ListedTargetingPackAssemblies = new SortedDictionary<string, string>
@@ -190,6 +188,7 @@ namespace Microsoft.AspNetCore
                 { "Microsoft.AspNetCore.Http.Connections.Common", "6.0.0.0" },
                 { "Microsoft.AspNetCore.Http.Extensions", "6.0.0.0" },
                 { "Microsoft.AspNetCore.Http.Features", "6.0.0.0" },
+                { "Microsoft.AspNetCore.HttpLogging", "6.0.0.0" },
                 { "Microsoft.AspNetCore.HttpOverrides", "6.0.0.0" },
                 { "Microsoft.AspNetCore.HttpsPolicy", "6.0.0.0" },
                 { "Microsoft.AspNetCore.Identity", "6.0.0.0" },
@@ -253,6 +252,7 @@ namespace Microsoft.AspNetCore
                 { "Microsoft.Extensions.FileProviders.Embedded", "6.0.0.0" },
                 { "Microsoft.Extensions.FileProviders.Physical", "6.0.0.0" },
                 { "Microsoft.Extensions.FileSystemGlobbing", "6.0.0.0" },
+                { "Microsoft.Extensions.Features", "6.0.0.0" },
                 { "Microsoft.Extensions.Hosting", "6.0.0.0" },
                 { "Microsoft.Extensions.Hosting.Abstractions", "6.0.0.0" },
                 { "Microsoft.Extensions.Http", "6.0.0.0" },
@@ -282,9 +282,7 @@ namespace Microsoft.AspNetCore
                 { "System.Security.AccessControl", "6.0.0.0" },
                 { "System.Security.Cryptography.Cng", "6.0.0.0" },
                 { "System.Security.Cryptography.Xml", "6.0.0.0" },
-                { "System.Security.Permissions", "6.0.0.0" },
                 { "System.Security.Principal.Windows", "6.0.0.0" },
-                { "System.Windows.Extensions", "6.0.0.0" }
             };
 
             if (!VerifyAncmBinary())

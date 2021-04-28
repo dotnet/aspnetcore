@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         }
 
         private static object?[]? PrepareArguments(
-            IDictionary<string, object> parameters,
+            IDictionary<string, object?> parameters,
             ObjectMethodExecutor objectMethodExecutor)
         {
             var declaredParameterInfos = objectMethodExecutor.MethodParameters;

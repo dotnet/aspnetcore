@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
@@ -41,11 +40,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <param name="values">Values from <see cref="IViewLocationExpander"/> instances.</param>
         public ViewLocationCacheKey(
             string viewName,
-            string controllerName,
-            string areaName,
-            string pageName,
+            string? controllerName,
+            string? areaName,
+            string? pageName,
             bool isMainPage,
-            IReadOnlyDictionary<string, string> values)
+            IReadOnlyDictionary<string, string?>? values)
         {
             ViewName = viewName;
             ControllerName = controllerName;
@@ -63,17 +62,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// Gets the controller name.
         /// </summary>
-        public string ControllerName { get; }
+        public string? ControllerName { get; }
 
         /// <summary>
         /// Gets the area name.
         /// </summary>
-        public string AreaName { get; }
+        public string? AreaName { get; }
 
         /// <summary>
         /// Gets the page name.
         /// </summary>
-        public string PageName { get; }
+        public string? PageName { get; }
 
         /// <summary>
         /// Determines if the page being found is the main page for an action.
@@ -83,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// Gets the values populated by <see cref="IViewLocationExpander"/> instances.
         /// </summary>
-        public IReadOnlyDictionary<string, string> ViewLocationExpanderValues { get; }
+        public IReadOnlyDictionary<string, string?>? ViewLocationExpanderValues { get; }
 
         /// <inheritdoc />
         public bool Equals(ViewLocationCacheKey y)
@@ -122,14 +121,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (obj is ViewLocationCacheKey)
-            {
-                return Equals((ViewLocationCacheKey)obj);
-            }
-
-            return false;
+            return obj is ViewLocationCacheKey cacheKey && Equals(cacheKey);
         }
 
         /// <inheritdoc />

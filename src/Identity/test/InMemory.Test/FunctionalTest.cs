@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
 {
     public class FunctionalTest
     {
-        const string TestPassword = "1qaz!QAZ";
+        const string TestPassword = "[PLACEHOLDER]-1a";
 
         [Fact]
         public async Task CanChangePasswordOptions()
@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                             }
                             else
                             {
-                                await next();
+                                await next(context);
                             }
                         });
                     })

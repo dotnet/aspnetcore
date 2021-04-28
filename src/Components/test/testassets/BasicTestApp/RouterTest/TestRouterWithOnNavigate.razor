@@ -4,7 +4,7 @@
 
 <button @onclick="TriggerRerender" id="trigger-rerender">Trigger Rerender</button>
 
-<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" OnNavigateAsync="@OnNavigateAsync" PreferExactMatches="true">
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" OnNavigateAsync="@OnNavigateAsync">
     <Navigating>
         <div style="padding: 20px;background-color:blue;color:white;" id="loading-banner">
             <p>Loading the requested page...</p>

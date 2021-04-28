@@ -117,6 +117,7 @@ stages:
             pipeline: $(AzDOPipelineId)
             buildId: $(AzDOBuildId)
             artifactName: PackageArtifacts
+            checkDownloadedFiles: true
 
         - task: PowerShell@2
           displayName: Validate
@@ -128,7 +129,7 @@ stages:
     - job:
       displayName: Signing Validation
       dependsOn: setupMaestroVars
-      condition: eq( ${{ parameters.enableSigningValidation }}, 'true')
+      condition: and( eq( ${{ parameters.enableSigningValidation }}, 'true'), ne( variables['PostBuildSign'], 'true'))
       variables:
         - template: common-variables.yml
         - name: AzDOProjectName
@@ -149,6 +150,7 @@ stages:
             pipeline: $(AzDOPipelineId)
             buildId: $(AzDOBuildId)
             artifactName: PackageArtifacts
+            checkDownloadedFiles: true
             itemPattern: |
               **
               !**/Microsoft.SourceBuild.Intermediate.*.nupkg
@@ -205,6 +207,7 @@ stages:
             pipeline: $(AzDOPipelineId)
             buildId: $(AzDOBuildId)
             artifactName: BlobArtifacts
+            checkDownloadedFiles: true
 
         - task: PowerShell@2
           displayName: Validate

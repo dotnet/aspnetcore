@@ -932,8 +932,8 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
             // Arrange
             var expected =
 @"Microsoft.AspNetCore.Mvc.Routing.UrlHelper
-Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper`1[AspNetCore.InjectedPageProperties]
-Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPageProperties]";
+Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper`1[AspNetCoreGeneratedDocument.InjectedPageProperties]
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCoreGeneratedDocument.InjectedPageProperties]";
 
             // Act
             var response = await Client.GetStringAsync("InjectedPageProperties");

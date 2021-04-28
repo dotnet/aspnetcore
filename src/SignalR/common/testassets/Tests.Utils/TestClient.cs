@@ -12,6 +12,11 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+#if TESTUTILS
+using Microsoft.AspNetCore.Testing;
+#else
+using System.Threading.Tasks.Extensions;
+#endif
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -82,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 // note that the handshake response might not immediately be readable
                 // e.g. server is waiting for request, times out after configured duration,
                 // and sends response with timeout error
-                HandshakeResponseMessage = (HandshakeResponseMessage)await ReadAsync(true).OrTimeout();
+                HandshakeResponseMessage = (HandshakeResponseMessage)await ReadAsync(true).DefaultTimeout();
             }
 
             return connection;

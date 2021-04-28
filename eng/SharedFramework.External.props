@@ -52,16 +52,12 @@
 
       If these are needed as direct dependencies, it is okay to change them to ExternalAspNetCoreAppReference and move up into sections above.
     -->
-    <_TransitiveExternalAspNetCoreAppReference Include="Microsoft.Win32.SystemEvents"                       Version="$(MicrosoftWin32SystemEventsVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Drawing.Common"                              Version="$(SystemDrawingCommonVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsVersion)" />
     <!--
-      Seems arbitrary that the following packages have their ref/ assemblies in our targeting pack but the above
-      three do not. This is likely about our public APIs i.e. external compilation requirements.
+      Seems arbitrary that the following packages have their ref/ assemblies in our targeting pack but the above assemblies
+      do not. This is likely about our public APIs i.e. external compilation requirements.
     -->
     <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Windows.Extensions"                          Version="$(SystemWindowsExtensionsVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsServicingBuild)' == 'true' ">

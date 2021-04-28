@@ -151,3 +151,89 @@ bool Environment::IsRunning64BitProcess()
     GetNativeSystemInfo(&systemInfo);
     return systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
 }
+
+HRESULT Environment::CopyToDirectory(const std::wstring& source, const std::filesystem::path& destination, bool cleanDest, const std::filesystem::path& directoryToIgnore)
+{
+    if (cleanDest && std::filesystem::exists(destination))
+    {
+        std::filesystem::remove_all(destination);
+    }
+
+    Environment::CopyToDirectoryInner(source, destination, directoryToIgnore);
+    return S_OK;
+}
+
+void Environment::CopyToDirectoryInner(const std::filesystem::path& source, const std::filesystem::path& destination, const std::filesystem::path& directoryToIgnore)
+{
+    auto destinationDirEntry = std::filesystem::directory_entry(destination);
+    if (!destinationDirEntry.exists())
+    {
+        CreateDirectory(destination.wstring().c_str(), NULL);
+    }
+
+    for (auto& path : std::filesystem::directory_iterator(source))
+    {
+        if (path.is_regular_file())
+        {
+            auto sourceFile = path.path().filename();
+            auto destinationPath = (destination / sourceFile);
+
+            if (std::filesystem::directory_entry(destinationPath).exists())
+            {
+                auto sourceFileTime = std::filesystem::last_write_time(path);
+                auto destinationFileTime = std::filesystem::last_write_time(destinationPath);
+                if (sourceFileTime <= destinationFileTime) // file write time is the same
+                {
+                    continue;
+                }
+            }
+
+            CopyFile(path.path().wstring().c_str(), destinationPath.wstring().c_str(), FALSE);
+        }
+        else if (path.is_directory())
+        {
+            auto sourceInnerDirectory = path.path();
+
+            // Make sure we aren't navigating into shadow copy directory.
+            if (sourceInnerDirectory.wstring().rfind(directoryToIgnore, 0) != 0)
+            {
+                CopyToDirectoryInner(path.path(), destination / path.path().filename(), directoryToIgnore);
+            }
+        }
+    }
+}
+
+bool Environment::CheckUpToDate(const std::wstring& source, const std::filesystem::path& destination, const std::wstring& extension, const std::filesystem::path& directoryToIgnore)
+{
+    for (auto& path : std::filesystem::directory_iterator(source))
+    {
+        if (path.is_regular_file()
+            && path.path().has_extension()
+            && path.path().filename().extension().wstring() == extension)
+        {
+            auto sourceFile = path.path().filename();
+            auto destinationPath = (destination / sourceFile);
+
+            if (std::filesystem::directory_entry(destinationPath).exists())
+            {
+                auto originalFileTime = std::filesystem::last_write_time(path);
+                auto destFileTime = std::filesystem::last_write_time(destinationPath);
+                if (originalFileTime > destFileTime) // file write time is the same
+                {
+                    return false;
+                }
+            }
+
+            CopyFile(path.path().wstring().c_str(), destinationPath.wstring().c_str(), FALSE);
+        }
+        else if (path.is_directory())
+        {
+            auto sourceInnerDirectory = std::filesystem::directory_entry(path);
+            if (sourceInnerDirectory.path() != directoryToIgnore)
+            {
+                CheckUpToDate(destination / path.path().filename(), path.path(), extension, directoryToIgnore);
+            }
+        }
+    }
+    return true;
+}

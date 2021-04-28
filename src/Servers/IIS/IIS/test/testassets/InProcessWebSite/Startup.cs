@@ -1517,7 +1517,7 @@ namespace TestSite
 #endif
             Assert.Null(httpContext.Request.ContentLength);
             // The client didn't send this header, Http.Sys added it for back compat with HTTP/1.1.
-            Assert.Equal("chunked", httpContext.Request.Headers[HeaderNames.TransferEncoding]);
+            Assert.Equal("chunked", httpContext.Request.Headers.TransferEncoding);
             return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
         }
 

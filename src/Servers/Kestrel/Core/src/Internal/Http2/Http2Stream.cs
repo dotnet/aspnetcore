@@ -114,7 +114,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _keepAlive = true;
             _connectionAborted = false;
 
-            ResetHttp2Features();
+            // Reset Http2 Features
+            _currentIHttpMinRequestBodyDataRateFeature = this;
+            _currentIHttp2StreamIdFeature = this;
+            _currentIHttpResponseTrailersFeature = this;
+            _currentIHttpResetFeature = this;
         }
 
         protected override void OnRequestProcessingEnded()
@@ -145,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         if (!errored)
                         {
                             // Don't block on IO. This never faults.
-                            _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
+                            _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR).Preserve();
                         }
                         RequestBodyPipe.Writer.Complete();
                     }
@@ -545,7 +549,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             DecrementActiveClientStreamCount();
             // Don't block on IO. This never faults.
-            _ = _http2Output.WriteRstStreamAsync(error);
+            _ = _http2Output.WriteRstStreamAsync(error).Preserve();
 
             AbortCore(abortReason);
         }

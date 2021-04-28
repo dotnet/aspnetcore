@@ -66,16 +66,12 @@ namespace Microsoft.AspNetCore.Http.Features
                 }
 
                 var headers = HttpRequestFeature.Headers;
-                StringValues current;
-                if (!headers.TryGetValue(HeaderNames.Cookie, out current))
-                {
-                    current = string.Empty;
-                }
+                var current = headers.Cookie;
 
                 if (_parsedValues == null || _original != current)
                 {
                     _original = current;
-                    _parsedValues = RequestCookieCollection.Parse(current.ToArray());
+                    _parsedValues = RequestCookieCollection.Parse(current);
                 }
 
                 return _parsedValues;
@@ -88,7 +84,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 {
                     if (_parsedValues == null || _parsedValues.Count == 0)
                     {
-                        HttpRequestFeature.Headers.Remove(HeaderNames.Cookie);
+                        HttpRequestFeature.Headers.Cookie = default;
                     }
                     else
                     {
@@ -98,7 +94,7 @@ namespace Microsoft.AspNetCore.Http.Features
                             headers.Add(new CookieHeaderValue(pair.Key, pair.Value).ToString());
                         }
                         _original = headers.ToArray();
-                        HttpRequestFeature.Headers[HeaderNames.Cookie] = _original;
+                        HttpRequestFeature.Headers.Cookie = _original;
                     }
                 }
             }

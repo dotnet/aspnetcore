@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -253,10 +252,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             endpoints.Add((RouteEndpoint)builder.Build());
         }
 
-        private static (RoutePattern resolvedRoutePattern, IDictionary<string, string> resolvedRequiredValues) ResolveDefaultsAndRequiredValues(ActionDescriptor action, RoutePattern attributeRoutePattern)
+        private static (RoutePattern resolvedRoutePattern, IDictionary<string, string?> resolvedRequiredValues) ResolveDefaultsAndRequiredValues(ActionDescriptor action, RoutePattern attributeRoutePattern)
         {
             RouteValueDictionary? updatedDefaults = null;
-            IDictionary<string, string>? resolvedRequiredValues = null;
+            IDictionary<string, string?>? resolvedRequiredValues = null;
 
             foreach (var routeValue in action.RouteValues)
             {
@@ -290,7 +289,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
                         if (resolvedRequiredValues == null)
                         {
-                            resolvedRequiredValues = new Dictionary<string, string>(action.RouteValues);
+                            resolvedRequiredValues = new Dictionary<string, string?>(action.RouteValues);
                         }
 
                         resolvedRequiredValues.Remove(parameter.Name);

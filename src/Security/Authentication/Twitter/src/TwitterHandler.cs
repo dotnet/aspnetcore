@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         protected override async Task<HandleRequestResult> HandleRemoteAuthenticateAsync()
         {
             var query = Request.Query;
-            var protectedRequestToken = Request.Cookies[Options.StateCookie.Name];
+            var protectedRequestToken = Request.Cookies[Options.StateCookie.Name!];
 
             var requestToken = Options.StateDataFormat.Unprotect(protectedRequestToken);
 
@@ -101,7 +102,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
 
-            Response.Cookies.Delete(Options.StateCookie.Name, cookieOptions);
+            Response.Cookies.Delete(Options.StateCookie.Name!, cookieOptions);
 
             var accessToken = await ObtainAccessTokenAsync(requestToken, oauthVerifier);
 
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             JsonDocument user;
             if (Options.RetrieveUserDetails)
             {
-                user = await RetrieveUserDetailsAsync(accessToken, identity);
+                user = await RetrieveUserDetailsAsync(accessToken);
             }
             else
             {
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var context = new TwitterCreatingTicketContext(Context, Scheme, Options, new ClaimsPrincipal(identity), properties, token.UserId, token.ScreenName, token.Token, token.TokenSecret, user);
             await Events.CreatingTicket(context);
 
-            return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
+            return new AuthenticationTicket(context.Principal!, context.Properties, Scheme.Name);
         }
 
         /// <inheritdoc />
@@ -175,17 +176,17 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
 
-            Response.Cookies.Append(Options.StateCookie.Name, Options.StateDataFormat.Protect(requestToken), cookieOptions);
+            Response.Cookies.Append(Options.StateCookie.Name!, Options.StateDataFormat.Protect(requestToken), cookieOptions);
 
             var redirectContext = new RedirectContext<TwitterOptions>(Context, Scheme, Options, properties, twitterAuthenticationEndpoint);
             await Events.RedirectToAuthorizationEndpoint(redirectContext);
         }
 
-        private async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod httpMethod, RequestToken accessToken = null, Dictionary<string, string> extraOAuthPairs = null, Dictionary<string, string> queryParameters = null, Dictionary<string, string> formData = null)
+        private async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod httpMethod, RequestToken? accessToken = null, Dictionary<string, string>? extraOAuthPairs = null, Dictionary<string, string>? queryParameters = null, Dictionary<string, string>? formData = null)
         {
             var authorizationParts = new SortedDictionary<string, string>(extraOAuthPairs ?? new Dictionary<string, string>())
             {
-                { "oauth_consumer_key", Options.ConsumerKey },
+                { "oauth_consumer_key", Options.ConsumerKey! },
                 { "oauth_nonce", Guid.NewGuid().ToString("N") },
                 { "oauth_signature_method", "HMAC-SHA1" },
                 { "oauth_timestamp", GenerateTimeStamp() },
@@ -223,12 +224,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             var canonicalizedRequestBuilder = new StringBuilder();
             canonicalizedRequestBuilder.Append(httpMethod.Method);
-            canonicalizedRequestBuilder.Append("&");
+            canonicalizedRequestBuilder.Append('&');
             canonicalizedRequestBuilder.Append(Uri.EscapeDataString(url));
-            canonicalizedRequestBuilder.Append("&");
+            canonicalizedRequestBuilder.Append('&');
             canonicalizedRequestBuilder.Append(Uri.EscapeDataString(parameterString));
 
-            var signature = ComputeSignature(Options.ConsumerSecret, accessToken?.TokenSecret, canonicalizedRequestBuilder.ToString());
+            var signature = ComputeSignature(Options.ConsumerSecret!, accessToken?.TokenSecret, canonicalizedRequestBuilder.ToString());
             authorizationParts.Add("oauth_signature", signature);
 
             var queryString = "";
@@ -259,7 +260,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             if (formData != null)
             {
-                request.Content = new FormUrlEncodedContent(formData);
+                request.Content = new FormUrlEncodedContent(formData!);
             }
 
             return await Backchannel.SendAsync(request, Context.RequestAborted);
@@ -271,7 +272,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             var response = await ExecuteRequestAsync(TwitterDefaults.RequestTokenEndpoint, HttpMethod.Post, extraOAuthPairs: new Dictionary<string, string>() { { "oauth_callback", callBackUri } });
             await EnsureTwitterRequestSuccess(response);
-            var responseText = await response.Content.ReadAsStringAsync();
+            var responseText = await response.Content.ReadAsStringAsync(Context.RequestAborted);
 
             var responseParameters = new FormCollection(new FormReader(responseText).ReadForm());
             if (!string.Equals(responseParameters["oauth_callback_confirmed"], "true", StringComparison.Ordinal))
@@ -297,7 +298,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 await EnsureTwitterRequestSuccess(response); // throw
             }
 
-            var responseText = await response.Content.ReadAsStringAsync();
+            var responseText = await response.Content.ReadAsStringAsync(Context.RequestAborted);
             var responseParameters = new FormCollection(new FormReader(responseText).ReadForm());
 
             return new AccessToken
@@ -310,7 +311,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         }
 
         // https://dev.twitter.com/rest/reference/get/account/verify_credentials
-        private async Task<JsonDocument> RetrieveUserDetailsAsync(AccessToken accessToken, ClaimsIdentity identity)
+        private async Task<JsonDocument> RetrieveUserDetailsAsync(AccessToken accessToken)
         {
             Logger.RetrieveUserDetails();
 
@@ -321,7 +322,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 Logger.LogError("Email request failed with a status code of " + response.StatusCode);
                 await EnsureTwitterRequestSuccess(response); // throw
             }
-            var responseText = await response.Content.ReadAsStringAsync();
+            var responseText = await response.Content.ReadAsStringAsync(Context.RequestAborted);
 
             var result = JsonDocument.Parse(responseText);
 
@@ -334,7 +335,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             return Convert.ToInt64(secondsSinceUnixEpocStart.TotalSeconds).ToString(CultureInfo.InvariantCulture);
         }
 
-        private string ComputeSignature(string consumerSecret, string tokenSecret, string signatureData)
+        private static string ComputeSignature(string consumerSecret, string? tokenSecret, string signatureData)
         {
             using (var algorithm = new HMACSHA1())
             {
@@ -359,11 +360,11 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 return;
             }
 
-            TwitterErrorResponse errorResponse;
+            TwitterErrorResponse? errorResponse;
             try
             {
                 // Failure, attempt to parse Twitters error message
-                var errorContentStream = await response.Content.ReadAsStreamAsync();
+                var errorContentStream = await response.Content.ReadAsStreamAsync(Context.RequestAborted);
                 errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, ErrorSerializerOptions);
             }
             catch
@@ -382,10 +383,13 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             var errorMessageStringBuilder = new StringBuilder("An error has occurred while calling the Twitter API, error's returned:");
 
-            foreach (var error in errorResponse.Errors)
+            if (errorResponse.Errors != null)
             {
-                errorMessageStringBuilder.Append(Environment.NewLine);
-                errorMessageStringBuilder.Append($"Code: {error.Code}, Message: '{error.Message}'");
+                foreach (var error in errorResponse.Errors)
+                {
+                    errorMessageStringBuilder.Append(Environment.NewLine);
+                    errorMessageStringBuilder.Append($"Code: {error.Code}, Message: '{error.Message}'");
+                }
             }
 
             throw new InvalidOperationException(errorMessageStringBuilder.ToString());

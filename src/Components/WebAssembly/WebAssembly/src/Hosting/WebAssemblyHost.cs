@@ -4,6 +4,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Lifetime;
+using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.Extensions.Configuration;
@@ -21,7 +23,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private readonly IServiceScope _scope;
         private readonly IServiceProvider _services;
         private readonly IConfiguration _configuration;
-        private readonly RootComponentMapping[] _rootComponents;
+        private readonly RootComponentMappingCollection _rootComponents;
+        private readonly string? _persistedState;
 
         // NOTE: the host is disposable because it OWNs references to disposable things.
         //
@@ -36,16 +39,21 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private bool _started;
         private WebAssemblyRenderer? _renderer;
 
-        internal WebAssemblyHost(IServiceProvider services, IServiceScope scope, IConfiguration configuration, RootComponentMapping[] rootComponents)
+        internal WebAssemblyHost(
+            IServiceProvider services,
+            IServiceScope scope,
+            IConfiguration configuration,
+            RootComponentMappingCollection rootComponents,
+            string? persistedState)
         {
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
-            GC.KeepAlive(typeof(EntrypointInvoker));
             GC.KeepAlive(typeof(JSInteropMethods));
 
             _services = services;
             _scope = scope;
             _configuration = configuration;
             _rootComponents = rootComponents;
+            _persistedState = persistedState;
         }
 
         /// <summary>
@@ -57,8 +65,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// Gets the service provider associated with the application.
         /// </summary>
         public IServiceProvider Services => _scope.ServiceProvider;
-
-        internal WebAssemblyCultureProvider CultureProvider { get; set; } = WebAssemblyCultureProvider.Instance!;
 
         /// <summary>
         /// Disposes the host asynchronously.
@@ -114,7 +120,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         }
 
         // Internal for testing.
-        internal async Task RunAsyncCore(CancellationToken cancellationToken)
+        internal async Task RunAsyncCore(CancellationToken cancellationToken, WebAssemblyCultureProvider? cultureProvider = null)
         {
             if (_started)
             {
@@ -123,13 +129,27 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             _started = true;
 
-            CultureProvider.ThrowIfCultureChangeIsUnsupported();
+            cultureProvider ??= WebAssemblyCultureProvider.Instance!;
+            cultureProvider.ThrowIfCultureChangeIsUnsupported();
 
-            // EntryPointInvoker loads satellite assemblies for the application default culture.
             // Application developers might have configured the culture based on some ambient state
             // such as local storage, url etc as part of their Program.Main(Async).
             // This is the earliest opportunity to fetch satellite assemblies for this selection.
-            await CultureProvider.LoadCurrentCultureResourcesAsync();
+            await cultureProvider.LoadCurrentCultureResourcesAsync();
+
+            var manager = Services.GetRequiredService<ComponentApplicationLifetime>();
+            var store = !string.IsNullOrEmpty(_persistedState) ?
+                new PrerenderComponentApplicationStore(_persistedState) :
+                new PrerenderComponentApplicationStore();
+
+            await manager.RestoreStateAsync(store);
+
+            var initializeTask = InitializeHotReloadAsync();
+            if (initializeTask is not null)
+            {
+                // The returned value will be "null" in a trimmed app
+                await initializeTask;
+            }
 
             var tcs = new TaskCompletionSource();
 
@@ -138,15 +158,37 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
                 _renderer = new WebAssemblyRenderer(Services, loggerFactory);
 
-                var rootComponents = _rootComponents;
-                for (var i = 0; i < rootComponents.Length; i++)
+                var initializationTcs = new TaskCompletionSource();
+                WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
                 {
-                    var rootComponent = rootComponents[i];
-                    await _renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
-                }
+                    var (rootComponents, renderer, initializationTcs) = state;
+
+                    try
+                    {
+                foreach (var rootComponent in rootComponents)
+                        {
+                            await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
+                        }
+
+                        initializationTcs.SetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        initializationTcs.SetException(ex);
+                    }
+                });
+
+                await initializationTcs.Task;
+                store.ExistingState.Clear();
 
                 await tcs.Task;
             }
+        }
+
+        private Task? InitializeHotReloadAsync()
+        {
+            // In Development scenarios, wait for hot reload to apply deltas before initiating rendering.
+            return WebAssemblyHotReload.InitializeAsync();
         }
     }
 }

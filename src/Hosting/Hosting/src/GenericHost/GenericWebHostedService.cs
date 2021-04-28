@@ -5,23 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Hosting.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.StackTrace.Sources;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -31,6 +24,7 @@ namespace Microsoft.AspNetCore.Hosting
                                      IServer server,
                                      ILoggerFactory loggerFactory,
                                      DiagnosticListener diagnosticListener,
+                                     ActivitySource activitySource,
                                      IHttpContextFactory httpContextFactory,
                                      IApplicationBuilderFactory applicationBuilderFactory,
                                      IEnumerable<IStartupFilter> startupFilters,
@@ -42,6 +36,7 @@ namespace Microsoft.AspNetCore.Hosting
             Logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Hosting.Diagnostics");
             LifetimeLogger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
             DiagnosticListener = diagnosticListener;
+            ActivitySource = activitySource;
             HttpContextFactory = httpContextFactory;
             ApplicationBuilderFactory = applicationBuilderFactory;
             StartupFilters = startupFilters;
@@ -55,6 +50,7 @@ namespace Microsoft.AspNetCore.Hosting
         // Only for high level lifetime events
         public ILogger LifetimeLogger { get; }
         public DiagnosticListener DiagnosticListener { get; }
+        public ActivitySource ActivitySource { get; }
         public IHttpContextFactory HttpContextFactory { get; }
         public IApplicationBuilderFactory ApplicationBuilderFactory { get; }
         public IEnumerable<IStartupFilter> StartupFilters { get; }
@@ -118,7 +114,7 @@ namespace Microsoft.AspNetCore.Hosting
                 application = ErrorPageBuilder.BuildErrorPageApplication(HostingEnvironment.ContentRootFileProvider, Logger, showDetailedErrors, ex);
             }
 
-            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, HttpContextFactory);
+            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, HttpContextFactory);
 
             await Server.StartAsync(httpApplication, cancellationToken);
 
@@ -126,7 +122,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var address in addresses)
                 {
-                    LifetimeLogger.LogInformation("Now listening on: {address}", address);
+                    LifetimeLogger.ListeningOnAddress(address);
                 }
             }
 
@@ -134,7 +130,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var assembly in Options.WebHostOptions.GetFinalHostingStartupAssemblies())
                 {
-                    Logger.LogDebug("Loaded hosting startup assembly {assemblyName}", assembly);
+                    Logger.StartupAssemblyLoaded(assembly);
                 }
             }
 

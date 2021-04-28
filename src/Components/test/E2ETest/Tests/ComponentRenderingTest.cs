@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void CanRenderTextOnlyComponent()
         {
             var appElement = Browser.MountTestComponent<TextOnlyComponent>();
@@ -356,34 +355,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void CanRenderSvgWithCorrectNamespace()
-        {
-            var appElement = Browser.MountTestComponent<SvgComponent>();
-
-            var svgElement = appElement.FindElement(By.XPath("//*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']"));
-            Assert.NotNull(svgElement);
-
-            var svgCircleElement = appElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
-            Assert.NotNull(svgCircleElement);
-            Assert.Equal("10", svgCircleElement.GetAttribute("r"));
-
-            appElement.FindElement(By.TagName("button")).Click();
-            Browser.Equal("20", () => svgCircleElement.GetAttribute("r"));
-        }
-
-        [Fact]
-        public void CanRenderSvgChildComponentWithCorrectNamespace()
-        {
-            var appElement = Browser.MountTestComponent<SvgWithChildComponent>();
-
-            var svgElement = appElement.FindElement(By.XPath("//*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']"));
-            Assert.NotNull(svgElement);
-
-            var svgCircleElement = appElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
-            Assert.NotNull(svgCircleElement);
-        }
-
-        [Fact]
         public void LogicalElementInsertionWorksHierarchically()
         {
             var appElement = Browser.MountTestComponent<LogicalElementInsertionCases>();
@@ -471,6 +442,28 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // A local helper that gets window.PageYOffset
             long getPageYOffset() => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.pageYOffset");
+        }
+
+        [Theory]
+        [InlineData("focus-button-onafterrender-invoke")]
+        [InlineData("focus-button-onafterrender-await")]
+        public void CanFocusDuringOnAfterRenderAsyncWithFocusInEvent(string triggerButton)
+        {
+            // Represents https://github.com/dotnet/aspnetcore/issues/30070, plus a more complicated
+            // variant where the initial rendering doesn't start from a JS interop call and hence
+            // isn't automatically part of the WebAssemblyCallQueue.
+
+            var appElement = Browser.MountTestComponent<ElementFocusComponent>();
+            var didReceiveFocusLabel = appElement.FindElement(By.Id("focus-event-received"));
+            Browser.Equal("False", () => didReceiveFocusLabel.Text);
+
+            appElement.FindElement(By.Id(triggerButton)).Click();
+            Browser.Equal("True", () => didReceiveFocusLabel.Text);
+            Browser.Equal("focus-input-onafterrender", () => Browser.SwitchTo().ActiveElement().GetAttribute("id"));
+
+            // As well as actually focusing and triggering the onfocusin event, we should not be seeing any errors
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
         }
 
         [Fact]

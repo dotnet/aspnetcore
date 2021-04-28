@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
                 var deploymentResult = await DeployAsync(deploymentParameters);
 
-                var response = await deploymentResult.HttpClient.GetAsync("/Abort").DefaultTimeout();
+                var response = await deploymentResult.HttpClient.GetAsync("/Abort").TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
                 Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
                 // 0x80072f78 ERROR_HTTP_INVALID_SERVER_RESPONSE The server returned an invalid or unrecognized response
@@ -490,7 +490,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
 
                 var deploymentResult = await DeployAsync(deploymentParameters);
-                var response = await deploymentResult.HttpClient.GetAsync("/Abort").DefaultTimeout();
+                var response = await deploymentResult.HttpClient.GetAsync("/Abort").TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
                 Assert.True(false, "Should not reach here");
             }

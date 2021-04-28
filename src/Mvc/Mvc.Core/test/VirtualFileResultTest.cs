@@ -94,9 +94,9 @@ namespace Microsoft.AspNetCore.Mvc
             var httpResponse = actionContext.HttpContext.Response;
             var contentRange = new ContentRangeHeaderValue(startResult.Value, endResult.Value, 33);
             Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
-            Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
-            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
+            Assert.Equal(contentRange.ToString(), httpResponse.Headers.ContentRange);
+            Assert.NotEmpty(httpResponse.Headers.LastModified);
             Assert.Equal(contentLength, httpResponse.ContentLength);
             Assert.Equal(path, sendFileFeature.Name);
             Assert.Equal(startResult, sendFileFeature.Offset);
@@ -138,10 +138,10 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
             Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
+            Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
             var contentRange = new ContentRangeHeaderValue(0, 3, 33);
-            Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
-            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(contentRange.ToString(), httpResponse.Headers.ContentRange);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
             Assert.Equal(4, httpResponse.ContentLength);
             Assert.Equal(path, sendFileFeature.Name);
             Assert.Equal(0, sendFileFeature.Offset);
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
-            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
             Assert.Equal(path, sendFileFeature.Name);
             Assert.Equal(0, sendFileFeature.Offset);
             Assert.Null(sendFileFeature.Length);
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
-            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers.ETag);
             Assert.Equal(path, sendFileFeature.Name);
             Assert.Equal(0, sendFileFeature.Offset);
             Assert.Null(sendFileFeature.Length);
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Mvc
                     .BuildServiceProvider();
 
             var requestHeaders = httpContext.Request.GetTypedHeaders();
-            httpContext.Request.Headers[HeaderNames.Range] = rangeString;
+            httpContext.Request.Headers.Range = rangeString;
             requestHeaders.IfUnmodifiedSince = DateTimeOffset.MinValue.AddDays(1);
             httpContext.Request.Method = HttpMethods.Get;
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
@@ -265,8 +265,8 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
-            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
-            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Empty(httpResponse.Headers.ContentRange);
+            Assert.NotEmpty(httpResponse.Headers.LastModified);
             Assert.Equal(path, sendFileFeature.Name);
             Assert.Equal(0, sendFileFeature.Offset);
             Assert.Null(sendFileFeature.Length);
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Mvc
                     .BuildServiceProvider();
 
             var requestHeaders = httpContext.Request.GetTypedHeaders();
-            httpContext.Request.Headers[HeaderNames.Range] = rangeString;
+            httpContext.Request.Headers.Range = rangeString;
             requestHeaders.IfUnmodifiedSince = DateTimeOffset.MinValue.AddDays(1);
             httpContext.Request.Method = HttpMethods.Get;
             httpContext.Response.Body = new MemoryStream();
@@ -311,9 +311,9 @@ namespace Microsoft.AspNetCore.Mvc
             var body = streamReader.ReadToEndAsync().Result;
             var contentRange = new ContentRangeHeaderValue(33);
             Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
-            Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
-            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
+            Assert.Equal(contentRange.ToString(), httpResponse.Headers.ContentRange);
+            Assert.NotEmpty(httpResponse.Headers.LastModified);
             Assert.Equal(0, httpResponse.ContentLength);
             Assert.Empty(body);
         }
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var requestHeaders = httpContext.Request.GetTypedHeaders();
             requestHeaders.IfUnmodifiedSince = DateTimeOffset.MinValue;
-            httpContext.Request.Headers[HeaderNames.Range] = "bytes = 0-6";
+            httpContext.Request.Headers.Range = "bytes = 0-6";
             httpContext.Request.Method = HttpMethods.Get;
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
@@ -352,8 +352,8 @@ namespace Microsoft.AspNetCore.Mvc
             var httpResponse = actionContext.HttpContext.Response;
             Assert.Equal(StatusCodes.Status412PreconditionFailed, httpResponse.StatusCode);
             Assert.Null(httpResponse.ContentLength);
-            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
-            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Empty(httpResponse.Headers.ContentRange);
+            Assert.NotEmpty(httpResponse.Headers.LastModified);
             Assert.Null(sendFileFeature.Name); // Not called
         }
 
@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var requestHeaders = httpContext.Request.GetTypedHeaders();
             requestHeaders.IfModifiedSince = DateTimeOffset.MinValue.AddDays(1);
-            httpContext.Request.Headers[HeaderNames.Range] = "bytes = 0-6";
+            httpContext.Request.Headers.Range = "bytes = 0-6";
             httpContext.Request.Method = HttpMethods.Get;
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
@@ -391,8 +391,8 @@ namespace Microsoft.AspNetCore.Mvc
             var httpResponse = actionContext.HttpContext.Response;
             Assert.Equal(StatusCodes.Status304NotModified, httpResponse.StatusCode);
             Assert.Null(httpResponse.ContentLength);
-            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
-            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Empty(httpResponse.Headers.ContentRange);
+            Assert.NotEmpty(httpResponse.Headers.LastModified);
             Assert.False(httpResponse.Headers.ContainsKey(HeaderNames.ContentType));
             Assert.Null(sendFileFeature.Name); // Not called
         }
@@ -500,9 +500,9 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(CancellationToken.None, sendFile.Token);
             var contentRange = new ContentRangeHeaderValue(start.Value, end.Value, 33);
             Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
-            Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
-            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
+            Assert.Equal(contentRange.ToString(), httpResponse.Headers.ContentRange);
+            Assert.NotEmpty(httpResponse.Headers.LastModified);
             Assert.Equal(contentLength, httpResponse.ContentLength);
         }
 

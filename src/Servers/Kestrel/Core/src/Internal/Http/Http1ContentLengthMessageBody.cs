@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
             }
 
-            TryStart();
+            await TryStartAsync();
 
             // The while(true) loop is required because the Http1 connection calls CancelPendingRead to unblock
             // the call to StartTimingReadAsync to check if the request timed out.
@@ -132,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
             }
 
-            TryStart();
+            TryStartAsync();
 
             // The while(true) because we don't want to return a canceled ReadResult if the user themselves didn't cancel it.
             while (true)
@@ -235,9 +236,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnReadStarting()
         {
-            if (_contentLength > _context.MaxRequestBodySize)
+            var maxRequestBodySize = _context.MaxRequestBodySize;
+            if (_contentLength > maxRequestBodySize)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
             }
         }
 

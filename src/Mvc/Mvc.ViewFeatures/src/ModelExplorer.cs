@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </remarks>
         public IEnumerable<ModelExplorer> Properties => PropertiesInternal;
 
-        private ModelExplorer[] PropertiesInternal
+        internal ModelExplorer[] PropertiesInternal
         {
             get
             {

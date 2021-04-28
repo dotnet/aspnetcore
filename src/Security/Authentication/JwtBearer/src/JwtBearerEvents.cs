@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
     public class JwtBearerEvents
     {
         /// <summary>
-        /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
+        /// Invoked if authentication fails during request processing. The exceptions will be re-thrown after this event unless suppressed.
         /// </summary>
         public Func<AuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
 

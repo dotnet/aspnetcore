@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
@@ -54,6 +55,9 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 
             if (IsGcmAlgorithm(authenticatedConfiguration.EncryptionAlgorithm))
             {
+#if NETCOREAPP
+                return new AesGcmAuthenticatedEncryptor(secret, GetAlgorithmKeySizeInBits(authenticatedConfiguration.EncryptionAlgorithm) / 8);
+#else
                 // GCM requires CNG, and CNG is only supported on Windows.
                 if (!OSVersionUtil.IsWindows())
                 {
@@ -69,6 +73,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
                 };
 
                 return new CngGcmAuthenticatedEncryptorFactory(_loggerFactory).CreateAuthenticatedEncryptorInstance(secret, configuration);
+#endif
             }
             else
             {

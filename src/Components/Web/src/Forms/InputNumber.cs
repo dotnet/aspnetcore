@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// An input component for editing numeric values.
     /// Supported numeric types are <see cref="int"/>, <see cref="long"/>, <see cref="short"/>, <see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>.
     /// </summary>
-    public class InputNumber<TValue> : InputBase<TValue>
+    public class InputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
     {
         private readonly static string _stepAttributeValue; // Null by default, so only allows whole numbers as per HTML spec
 

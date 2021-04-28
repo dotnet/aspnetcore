@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Connections.Experimental
+namespace Microsoft.AspNetCore.Connections
 {
     /// <summary>
     /// Defines an interface that represents a listener bound to a specific <see cref="EndPoint"/>.
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Connections.Experimental
         /// </summary>
         /// <param name="features">A feature collection to pass options when accepting a connection.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        /// <returns>A <see cref="ValueTask{ConnectionContext}"/> that completes when a connection is accepted, yielding the <see cref="MultiplexedConnectionContext" /> representing the connection.</returns>
+        /// <returns>A <see cref="ValueTask{MultiplexedConnectionContext}"/> that completes when a connection is accepted, yielding the <see cref="MultiplexedConnectionContext" /> representing the connection.</returns>
         ValueTask<MultiplexedConnectionContext?> AcceptAsync(IFeatureCollection? features = null, CancellationToken cancellationToken = default);
     }
 }

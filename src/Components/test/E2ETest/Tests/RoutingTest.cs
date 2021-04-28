@@ -508,12 +508,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31195")]
         public void PreventDefault_CanBlockNavigation_ForInternalNavigation_PreventDefaultTarget()
             => PreventDefault_CanBlockNavigation("internal", "target");
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31195")]
         public void PreventDefault_CanBlockNavigation_ForExternalNavigation_PreventDefaultAncestor()
             => PreventDefault_CanBlockNavigation("external", "ancestor");
 

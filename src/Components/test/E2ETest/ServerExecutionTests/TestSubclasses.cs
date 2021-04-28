@@ -99,4 +99,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
     }
+
+    public class ServerEventCustomArgsTest : EventCustomArgsTest
+    {
+        public ServerEventCustomArgsTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        {
+        }
+    }
+
+    public class ServerErrorBoundaryTest : ErrorBoundaryTest
+    {
+        public ServerErrorBoundaryTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        {
+        }
+    }
 }

@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (headers.HasConnection)
             {
-                var connectionOptions = HttpHeaders.ParseConnection(headers.HeaderConnection);
+                var connectionOptions = HttpHeaders.ParseConnection(headers);
 
                 upgrade = (connectionOptions & ConnectionOptions.Upgrade) != 0;
                 keepAlive = keepAlive || (connectionOptions & ConnectionOptions.KeepAlive) != 0;

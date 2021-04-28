@@ -17,14 +17,14 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class SignalRClientTest : ServerTestBase<DevHostServerFixture<BasicTestApp.Program>>,
+    public class SignalRClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestApp.Program>>,
         IClassFixture<BasicTestAppServerSiteFixture<CorsStartup>>
     {
         private readonly ServerFixture _apiServerFixture;
 
         public SignalRClientTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<BasicTestApp.Program> devHostServerFixture,
+            BlazorWasmTestAppFixture<BasicTestApp.Program> devHostServerFixture,
             BasicTestAppServerSiteFixture<CorsStartup> apiServerFixture,
             ITestOutputHelper output)
             : base(browserFixture, devHostServerFixture, output)
@@ -65,6 +65,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             Browser.Equal("SignalR Client: Echo WebSockets",
                 () => Browser.FindElements(By.CssSelector("li")).FirstOrDefault()?.Text);
+        }
+
+        [Fact]
+        public void SignalRClientSendsUserAgent()
+        {
+            Browser.Exists(By.Id("hub-url")).SendKeys(
+                new Uri(_apiServerFixture.RootUri, "/subdir/chathub").AbsoluteUri);
+            var target = new SelectElement(Browser.Exists(By.Id("transport-type")));
+            target.SelectByText("LongPolling");
+            Browser.Exists(By.Id("hub-connect")).Click();
+
+            Browser.Equal("SignalR Client: Echo LongPolling",
+                () => Browser.FindElements(By.CssSelector("li")).FirstOrDefault()?.Text);
+
+            Browser.Exists(By.Id("hub-useragent")).Click();
+            Assert.NotNull(Browser.FindElement(By.Id("useragent")).Text);
         }
     }
 }

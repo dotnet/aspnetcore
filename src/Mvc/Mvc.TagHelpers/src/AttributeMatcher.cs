@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <returns><c>true</c> if a mode was determined, otherwise <c>false</c>.</returns>
         public static bool TryDetermineMode<TMode>(
             TagHelperContext context,
-            IReadOnlyList<ModeAttributes<TMode>> modeInfos,
+            ModeAttributes<TMode>[] modeInfos,
             Func<TMode, TMode, int> compare,
             out TMode result)
         {
@@ -47,16 +46,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             result = default;
 
             // Perf: Avoid allocating enumerator
-            var modeInfosCount = modeInfos.Count;
             var allAttributes = context.AllAttributes;
             // Read interface .Count once rather than per iteration
             var allAttributesCount = allAttributes.Count;
-            for (var i = 0; i < modeInfosCount; i++)
+            foreach (var modeInfo in modeInfos)
             {
-                var modeInfo = modeInfos[i];
                 var requiredAttributes = modeInfo.Attributes;
                 // If there are fewer attributes present than required, one or more of them must be missing.
-                if (allAttributesCount >= requiredAttributes.Length && 
+                if (allAttributesCount >= requiredAttributes.Length &&
                     !HasMissingAttributes(allAttributes, requiredAttributes) &&
                     compare(result, modeInfo.Mode) <= 0)
                 {

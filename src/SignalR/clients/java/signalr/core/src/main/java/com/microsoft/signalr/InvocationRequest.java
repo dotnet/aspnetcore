@@ -6,8 +6,8 @@ package com.microsoft.signalr;
 import java.lang.reflect.Type;
 import java.util.concurrent.CancellationException;
 
-import io.reactivex.subjects.ReplaySubject;
-import io.reactivex.subjects.Subject;
+import io.reactivex.rxjava3.subjects.ReplaySubject;
+import io.reactivex.rxjava3.subjects.Subject;
 
 class InvocationRequest {
     private final Type returnType;

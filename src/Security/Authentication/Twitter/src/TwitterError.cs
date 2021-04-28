@@ -9,6 +9,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     internal class TwitterError
     {
         public int Code { get; set; }
-        public string Message { get; set; }
+        public string? Message { get; set; }
     }
 }

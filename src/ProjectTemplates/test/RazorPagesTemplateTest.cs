@@ -224,6 +224,7 @@ namespace Templates.Test
 
         [ConditionalFact]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31044")]
         public async Task RazorPagesTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             var project = await BuildAndPublishRazorPagesTemplate(auth: null, new[] { "--razor-runtime-compilation" });
@@ -241,8 +242,12 @@ namespace Templates.Test
         [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
         [InlineData("SingleOrg", null)]
         [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-        [InlineData("SingleOrg", new string[] { "--calls-graph" })]
         public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
+        
+        [ConditionalTheory]
+        [InlineData("SingleOrg", new string[] { "--calls-graph" })]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31729")]
+        public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes_WithSingleOrg(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
 
         private async Task<Project> BuildAndPublishRazorPagesTemplate(string auth, string[] args)
         {

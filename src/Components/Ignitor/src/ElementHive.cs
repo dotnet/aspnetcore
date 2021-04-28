@@ -149,7 +149,7 @@ namespace Ignitor
                             var node = parent.Children[childIndexAtCurrentDepth + siblingIndex];
                             if (node is ElementNode element)
                             {
-                                var attributeName = edit.RemovedAttributeName;
+                                var attributeName = edit.RemovedAttributeName!;
 
                                 // First try to remove any special property we use for this attribute
                                 if (!TryApplySpecialProperty(batch, element, attributeName, default))

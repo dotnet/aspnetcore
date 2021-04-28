@@ -119,11 +119,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected static readonly byte[] _noData = new byte[0];
         protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2PeerSettings.MinAllowedMaxFrameSize));
 
-        private readonly MemoryPool<byte> _memoryPool = SlabMemoryPoolFactory.Create();
+        private readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
 
         internal readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
         internal readonly HPackDecoder _hpackDecoder;
-        internal readonly HPackEncoder _hpackEncoder;
+        internal readonly DynamicHPackEncoder _hpackEncoder;
         private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
         internal readonly TimeoutControl _timeoutControl;
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public Http2TestBase()
         {
             _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
-            _hpackEncoder = new HPackEncoder();
+            _hpackEncoder = new DynamicHPackEncoder();
 
             _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
             _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _echoHost = context =>
             {
-                context.Response.Headers[HeaderNames.Host] = context.Request.Headers[HeaderNames.Host];
+                context.Response.Headers.Host = context.Request.Headers.Host;
 
                 return Task.CompletedTask;
             };
@@ -432,8 +432,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected void CreateConnection()
         {
-            var limits = _serviceContext.ServerOptions.Limits;
-
             // Always dispatch test code back to the ThreadPool. This prevents deadlocks caused by continuing
             // Http2Connection.ProcessRequestsAsync() loop with writer locks acquired. Run product code inline to make
             // it easier to verify request frames are processed correctly immediately after sending the them.
@@ -1380,6 +1378,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public virtual void BytesWrittenToBuffer(MinDataRate minRate, long size)
             {
                 _realTimeoutControl.BytesWrittenToBuffer(minRate, size);
+            }
+
+            public virtual void Tick(DateTimeOffset now)
+            {
+                _realTimeoutControl.Tick(now);
             }
         }
     }

@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     return (TResult)(object)testHref;
                 case "Blazor._internal.registeredComponents.getRegisteredComponentsCount":
                     return (TResult)(object)0;
+                case "Blazor._internal.getPersistedState":
+                    return (TResult)(object)null;
                 default:
                     throw new NotImplementedException($"{nameof(TestJSUnmarshalledRuntime)} has no implementation for '{identifier}'.");
             }

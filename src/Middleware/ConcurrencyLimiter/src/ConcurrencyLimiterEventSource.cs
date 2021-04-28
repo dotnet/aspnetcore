@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         // Used for testing
         internal ConcurrencyLimiterEventSource(string eventSourceName)
-            : base(eventSourceName)
+            : base(eventSourceName, EventSourceSettings.EtwManifestEventFormat)
         {
         }
 

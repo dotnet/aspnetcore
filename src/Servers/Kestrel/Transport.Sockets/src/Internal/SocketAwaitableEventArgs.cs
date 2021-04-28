@@ -2,22 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketAwaitableEventArgs : SocketAsyncEventArgs, ICriticalNotifyCompletion
+    // A slimmed down version of https://github.com/dotnet/runtime/blob/82ca681cbac89d813a3ce397e0c665e6c051ed67/src/libraries/System.Net.Sockets/src/System/Net/Sockets/Socket.Tasks.cs#L798 that
+    // 1. Doesn't support any custom scheduling other than the PipeScheduler (no sync context, no task scheduler)
+    // 2. Doesn't do ValueTask validation using the token
+    // 3. Doesn't support usage outside of async/await (doesn't try to capture and restore the execution context)
+    // 4. Doesn't use cancellation tokens
+    internal class SocketAwaitableEventArgs : SocketAsyncEventArgs, IValueTaskSource<int>
     {
-        private static readonly Action _callbackCompleted = () => { };
+        private static readonly Action<object?> _continuationCompleted = _ => { };
 
         private readonly PipeScheduler _ioScheduler;
 
-        private Action? _callback;
+        private Action<object?>? _continuation;
 
         public SocketAwaitableEventArgs(PipeScheduler ioScheduler)
             : base(unsafeSuppressExecutionContextFlow: true)
@@ -25,14 +28,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _ioScheduler = ioScheduler;
         }
 
-        public SocketAwaitableEventArgs GetAwaiter() => this;
-        public bool IsCompleted => ReferenceEquals(_callback, _callbackCompleted);
-
-        public int GetResult()
+        protected override void OnCompleted(SocketAsyncEventArgs _)
         {
-            Debug.Assert(ReferenceEquals(_callback, _callbackCompleted));
+            var c = _continuation;
 
-            _callback = null;
+            if (c != null || (c = Interlocked.CompareExchange(ref _continuation, _continuationCompleted, null)) != null)
+            {
+                var continuationState = UserToken;
+                UserToken = null;
+                _continuation = _continuationCompleted; // in case someone's polling IsCompleted
+
+                _ioScheduler.Schedule(c, continuationState);
+            }
+        }
+
+        public int GetResult(short token)
+        {
+            _continuation = null;
 
             if (SocketError != SocketError.Success)
             {
@@ -43,36 +55,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             static void ThrowSocketException(SocketError e)
             {
-                throw new SocketException((int)e);
+                throw CreateException(e);
             }
         }
 
-        public void OnCompleted(Action continuation)
+        protected static SocketException CreateException(SocketError e)
         {
-            if (ReferenceEquals(_callback, _callbackCompleted) ||
-                ReferenceEquals(Interlocked.CompareExchange(ref _callback, continuation, null), _callbackCompleted))
+            return new SocketException((int)e);
+        }
+
+        public ValueTaskSourceStatus GetStatus(short token)
+        {
+            return !ReferenceEquals(_continuation, _continuationCompleted) ? ValueTaskSourceStatus.Pending :
+                    SocketError == SocketError.Success ? ValueTaskSourceStatus.Succeeded :
+                    ValueTaskSourceStatus.Faulted;
+        }
+
+        public void OnCompleted(Action<object?> continuation, object? state, short token, ValueTaskSourceOnCompletedFlags flags)
+        {
+            UserToken = state;
+            var prevContinuation = Interlocked.CompareExchange(ref _continuation, continuation, null);
+            if (ReferenceEquals(prevContinuation, _continuationCompleted))
             {
-                Task.Run(continuation);
-            }
-        }
-
-        public void UnsafeOnCompleted(Action continuation)
-        {
-            OnCompleted(continuation);
-        }
-
-        public void Complete()
-        {
-            OnCompleted(this);
-        }
-
-        protected override void OnCompleted(SocketAsyncEventArgs _)
-        {
-            var continuation = Interlocked.Exchange(ref _callback, _callbackCompleted);
-
-            if (continuation != null)
-            {
-                _ioScheduler.Schedule(state => ((Action)state!)(), continuation);
+                UserToken = null;
+                ThreadPool.UnsafeQueueUserWorkItem(continuation, state, preferLocal: true);
             }
         }
     }

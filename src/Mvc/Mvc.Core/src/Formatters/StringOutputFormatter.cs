@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            var valueAsString = (string)context.Object;
+            var valueAsString = (string?)context.Object;
             if (string.IsNullOrEmpty(valueAsString))
             {
                 return Task.CompletedTask;

@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var tagName = startTag.GetTagNameWithOptionalBang();
 
                 // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
-                if (string.IsNullOrEmpty(tagName) || tagName.StartsWith("!"))
+                if (string.IsNullOrEmpty(tagName) || tagName.StartsWith("!", StringComparison.Ordinal))
                 {
                     return false;
                 }
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 rewritten = null;
                 var tagName = endTag.GetTagNameWithOptionalBang();
                 // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
-                if (string.IsNullOrEmpty(tagName) || tagName.StartsWith("!"))
+                if (string.IsNullOrEmpty(tagName) || tagName.StartsWith("!", StringComparison.Ordinal))
                 {
                     return false;
                 }

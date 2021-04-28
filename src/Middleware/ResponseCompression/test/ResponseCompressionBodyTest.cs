@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         public void OnWrite_AppendsAcceptEncodingToVaryHeader_IfNotPresent(string providedVaryHeader, string expectedVaryHeader)
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.Response.Headers[HeaderNames.Vary] = providedVaryHeader;
+            httpContext.Response.Headers.Vary = providedVaryHeader;
             var stream = new ResponseCompressionBody(httpContext, new MockResponseCompressionProvider(flushable: true), new StreamResponseBodyFeature(new MemoryStream()));
 
             stream.Write(new byte[] { }, 0, 0);
 
 
-            Assert.Equal(expectedVaryHeader, httpContext.Response.Headers[HeaderNames.Vary]);
+            Assert.Equal(expectedVaryHeader, httpContext.Response.Headers.Vary);
         }
 
         [Theory]

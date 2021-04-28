@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
             if (response.IsSuccessStatusCode)
             {
-                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(Context.RequestAborted));
                 return OAuthTokenResponse.Success(payload);
             }
             else
@@ -270,12 +270,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 properties, authorizationEndpoint);
             await Events.RedirectToAuthorizationEndpoint(redirectContext);
 
-            var location = Context.Response.Headers[HeaderNames.Location];
+            var location = Context.Response.Headers.Location;
             if (location == StringValues.Empty)
             {
                 location = "(not set)";
             }
-            var cookie = Context.Response.Headers[HeaderNames.SetCookie];
+            var cookie = Context.Response.Headers.SetCookie;
             if (cookie == StringValues.Empty)
             {
                 cookie = "(not set)";

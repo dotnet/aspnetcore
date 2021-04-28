@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1770,7 +1770,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         {
                             // Directive attributes should start with '@' unless the descriptors are misconfigured.
                             // In that case, we would have already logged an error.
-                            var actualAttributeName = attributeName.StartsWith("@") ? attributeName.Substring(1) : attributeName;
+                            var actualAttributeName = attributeName.StartsWith("@", StringComparison.Ordinal) ? attributeName.Substring(1) : attributeName;
 
                             IntermediateNode attributeNode;
                             if (parameterMatch &&
@@ -1908,7 +1908,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         {
                             // Directive attributes should start with '@' unless the descriptors are misconfigured.
                             // In that case, we would have already logged an error.
-                            var actualAttributeName = attributeName.StartsWith("@") ? attributeName.Substring(1) : attributeName;
+                            var actualAttributeName = attributeName.StartsWith("@", StringComparison.Ordinal) ? attributeName.Substring(1) : attributeName;
 
                             IntermediateNode attributeNode;
                             if (parameterMatch &&

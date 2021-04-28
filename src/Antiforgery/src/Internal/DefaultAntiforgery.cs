@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                 // Adding X-Frame-Options header to prevent ClickJacking. See
                 // http://tools.ietf.org/html/draft-ietf-websec-x-frame-options-10
                 // for more information.
-                httpContext.Response.Headers[HeaderNames.XFrameOptions] = "SAMEORIGIN";
+                httpContext.Response.Headers.XFrameOptions = "SAMEORIGIN";
             }
         }
 
@@ -387,12 +387,12 @@ namespace Microsoft.AspNetCore.Antiforgery
                 if (!cacheControlHeaderValue.NoCache || !cacheControlHeaderValue.NoStore)
                 {
                     logWarning = true;
-                    responseHeaders[HeaderNames.CacheControl] = "no-cache, no-store";
+                    responseHeaders.CacheControl = "no-cache, no-store";
                 }
             }
             else
             {
-                responseHeaders[HeaderNames.CacheControl] = "no-cache, no-store";
+                responseHeaders.CacheControl = "no-cache, no-store";
             }
 
             if (responseHeaders.TryGetValue(HeaderNames.Pragma, out var pragmaHeader) && pragmaHeader.Count > 0)
@@ -401,12 +401,12 @@ namespace Microsoft.AspNetCore.Antiforgery
                 if (!string.Equals(pragmaHeader[0], "no-cache", StringComparison.OrdinalIgnoreCase))
                 {
                     logWarning = true;
-                    httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
+                    httpContext.Response.Headers.Pragma = "no-cache";
                 }
             }
             else
             {
-                httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
+                httpContext.Response.Headers.Pragma = "no-cache";
             }
 
             // Since antiforgery token generation is not very obvious to the end users (ex: MVC's form tag generates them

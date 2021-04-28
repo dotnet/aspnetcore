@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 {
     public class HtmlRendererTest
     {
-        protected readonly Func<string, string> _encoder = (string t) => HtmlEncoder.Default.Encode(t);
+        protected readonly HtmlEncoder _encoder = HtmlEncoder.Default;
 
         [Fact]
         public void RenderComponentAsync_CanRenderEmptyElement()
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.AddAttribute(3, "value", "b");
                 rtb.AddAttribute(4, "unrelated-attribute-after", "c");
 
-                foreach (var optionValue in new[] { "a", "b", "c"})
+                foreach (var optionValue in new[] { "a", "b", "c" })
                 {
                     rtb.OpenElement(5, "option");
                     rtb.AddAttribute(6, "unrelated-attribute", "a");

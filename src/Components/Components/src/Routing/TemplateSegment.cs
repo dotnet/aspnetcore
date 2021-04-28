@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -135,11 +134,11 @@ namespace Microsoft.AspNetCore.Components.Routing
         public override string ToString() => this switch
         {
             { IsParameter: true, IsOptional: false, IsCatchAll: false, Constraints: { Length: 0 } } => $"{{{Value}}}",
-            { IsParameter: true, IsOptional: false, IsCatchAll: false, Constraints: { Length: > 0 } } => $"{{{Value}:{string.Join(':', Constraints.Select(c => c.ToString()))}}}",
+            { IsParameter: true, IsOptional: false, IsCatchAll: false, Constraints: { Length: > 0 } } => $"{{{Value}:{string.Join(':', (object[])Constraints)}}}",
             { IsParameter: true, IsOptional: true, Constraints: { Length: 0 } } => $"{{{Value}?}}",
-            { IsParameter: true, IsOptional: true, Constraints: { Length: > 0 } } => $"{{{Value}:{string.Join(':', Constraints.Select(c => c.ToString()))}?}}",
+            { IsParameter: true, IsOptional: true, Constraints: { Length: > 0 } } => $"{{{Value}:{string.Join(':', (object[])Constraints)}?}}",
             { IsParameter: true, IsCatchAll: true, Constraints: { Length: 0 } } => $"{{*{Value}}}",
-            { IsParameter: true, IsCatchAll: true, Constraints: { Length: > 0 } } => $"{{*{Value}:{string.Join(':', Constraints.Select(c => c.ToString()))}?}}",
+            { IsParameter: true, IsCatchAll: true, Constraints: { Length: > 0 } } => $"{{*{Value}:{string.Join(':', (object[])Constraints)}?}}",
             { IsParameter: false } => Value,
             _ => throw new InvalidOperationException("Invalid template segment.")
         };

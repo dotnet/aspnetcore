@@ -26,13 +26,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="type">The object type.</param>
         /// <returns><c>true</c> if the type can be written, otherwise <c>false</c>.</returns>
-        protected virtual bool CanWriteType(Type type)
+        protected virtual bool CanWriteType(Type? type)
         {
             return true;
         }
 
         /// <inheritdoc />
-        public virtual IReadOnlyList<string> GetSupportedContentTypes(
+        public virtual IReadOnlyList<string>? GetSupportedContentTypes(
             string contentType,
             Type objectType)
         {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 return null;
             }
             
-            List<string> mediaTypes = null;
+            List<string>? mediaTypes = null;
 
             var parsedContentType = contentType != null ? new MediaType(contentType) : default(MediaType);
 

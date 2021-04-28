@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.Authentication.WebAssembly.Msal;
 using Microsoft.Authentication.WebAssembly.Msal.Models;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -48,7 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="configure">A callback to configure the <see cref="RemoteAuthenticationOptions{MsalProviderOptions}"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddMsalAuthentication<TRemoteAuthenticationState, TAccount>(this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
+        public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddMsalAuthentication<TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
             where TRemoteAuthenticationState : RemoteAuthenticationState, new()
             where TAccount : RemoteUserAccount
         {

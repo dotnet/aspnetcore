@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.WebSockets
                 if (!_anyOriginAllowed)
                 {
                     // Check for Origin header
-                    var originHeader = context.Request.Headers[HeaderNames.Origin];
+                    var originHeader = context.Request.Headers.Origin;
 
                     if (!StringValues.IsNullOrEmpty(originHeader) && webSocketFeature.IsWebSocketRequest)
                     {
@@ -118,15 +118,16 @@ namespace Microsoft.AspNetCore.WebSockets
                         }
                         else
                         {
-                            var headers = new List<KeyValuePair<string, string>>();
-                            foreach (string headerName in HandshakeHelpers.NeededHeaders)
+                            var requestHeaders = _context.Request.Headers;
+                            var interestingHeaders = new List<KeyValuePair<string, string>>();
+                            foreach (var headerName in HandshakeHelpers.NeededHeaders)
                             {
-                                foreach (var value in _context.Request.Headers.GetCommaSeparatedValues(headerName))
+                                foreach (var value in requestHeaders.GetCommaSeparatedValues(headerName))
                                 {
-                                    headers.Add(new KeyValuePair<string, string>(headerName, value));
+                                    interestingHeaders.Add(new KeyValuePair<string, string>(headerName, value));
                                 }
                             }
-                            _isWebSocketRequest = HandshakeHelpers.CheckSupportedWebSocketRequest(_context.Request.Method, headers);
+                            _isWebSocketRequest = HandshakeHelpers.CheckSupportedWebSocketRequest(_context.Request.Method, interestingHeaders, requestHeaders);
                         }
                     }
                     return _isWebSocketRequest.Value;
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.WebSockets
                     }
                 }
 
-                string key = _context.Request.Headers[HeaderNames.SecWebSocketKey];
+                string key = _context.Request.Headers.SecWebSocketKey;
 
                 HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 

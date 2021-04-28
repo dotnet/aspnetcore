@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Components;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -210,6 +211,37 @@ namespace Test
 @using Microsoft.AspNetCore.Components;
 @typeparam TItem1
 @typeparam TItem2
+
+<h1>Item1</h1>
+@foreach (var item2 in Items2)
+{
+    <p>
+    @ChildContent(item2);
+    </p>
+}
+@code {
+    [Parameter] public TItem1 Item1 { get; set; }
+    [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32193")]
+        public void ComponentWithConstrainedTypeParameters()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components;
+@typeparam TItem1 where TItem1 : class
+@typeparam TItem2 where TItem2 : struct
 
 <h1>Item1</h1>
 @foreach (var item2 in Items2)

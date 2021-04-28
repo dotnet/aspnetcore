@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -147,8 +148,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (challenges.Count > 0)
             {
-                context.Response.Headers[HttpKnownHeaderNames.WWWAuthenticate]
-                    = StringValues.Concat(context.Response.Headers[HttpKnownHeaderNames.WWWAuthenticate], challenges.ToArray());
+                context.Response.Headers[HeaderNames.WWWAuthenticate]
+                    = StringValues.Concat(context.Response.Headers[HeaderNames.WWWAuthenticate], challenges.ToArray());
             }
         }
     }

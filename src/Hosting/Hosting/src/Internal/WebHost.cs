@@ -6,16 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Hosting.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
@@ -23,8 +20,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.StackTrace.Sources;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -160,8 +155,9 @@ namespace Microsoft.AspNetCore.Hosting
             await _hostedServiceExecutor.StartAsync(cancellationToken).ConfigureAwait(false);
 
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
+            var activitySource = _applicationServices.GetRequiredService<ActivitySource>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
-            var hostingApp = new HostingApplication(application, _logger, diagnosticSource, httpContextFactory);
+            var hostingApp = new HostingApplication(application, _logger, diagnosticSource, activitySource, httpContextFactory);
             await Server.StartAsync(hostingApp, cancellationToken).ConfigureAwait(false);
             _startedServer = true;
 
@@ -176,7 +172,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 foreach (var assembly in _options.GetFinalHostingStartupAssemblies())
                 {
-                    _logger.LogDebug("Loaded hosting startup assembly {assemblyName}", assembly);
+                    _logger.StartupAssemblyLoaded(assembly);
                 }
             }
 
@@ -339,7 +335,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public void Dispose()
         {
-            DisposeAsync().GetAwaiter().GetResult();
+            DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
 
         public async ValueTask DisposeAsync()

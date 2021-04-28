@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             // Assert
             Assert.Equal(varyOutput, context.HttpContext.Features.Get<IResponseCachingFeature>().VaryByQueryKeys);
-            Assert.Equal(cacheControlOutput, context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
+            Assert.Equal(cacheControlOutput, context.HttpContext.Response.Headers.CacheControl);
         }
 
         [Fact]

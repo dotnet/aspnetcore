@@ -17,6 +17,7 @@ DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2.dll");
 HANDLE              g_hEventLog = nullptr;
 BOOL                g_fRecycleProcessCalled = FALSE;
 BOOL                g_fInShutdown = FALSE;
+BOOL                g_fInAppOfflineShutdown = FALSE;
 HINSTANCE           g_hServerModule;
 
 VOID

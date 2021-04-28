@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// An input component used for selecting a value from a group of choices.
     /// </summary>
-    public class InputRadio<TValue> : ComponentBase
+    public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : ComponentBase
     {
         /// <summary>
         /// Gets context for this <see cref="InputRadio{TValue}"/>.

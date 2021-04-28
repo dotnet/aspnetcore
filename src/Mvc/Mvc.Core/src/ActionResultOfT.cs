@@ -49,15 +49,15 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the <see cref="ActionResult"/>.
         /// </summary>
-        public ActionResult Result { get; }
+        public ActionResult? Result { get; }
 
         /// <summary>
         /// Gets the value.
         /// </summary>
-        public TValue Value { get; }
+        public TValue? Value { get; }
 
         /// <summary>
-        /// Implictly converts the specified <paramref name="value"/> to an <see cref="ActionResult{TValue}"/>.
+        /// Implicitly converts the specified <paramref name="value"/> to an <see cref="ActionResult{TValue}"/>.
         /// </summary>
         /// <param name="value">The value to convert.</param>
         public static implicit operator ActionResult<TValue>(TValue value)
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Implictly converts the specified <paramref name="result"/> to an <see cref="ActionResult{TValue}"/>.
+        /// Implicitly converts the specified <paramref name="result"/> to an <see cref="ActionResult{TValue}"/>.
         /// </summary>
         /// <param name="result">The <see cref="ActionResult"/>.</param>
         public static implicit operator ActionResult<TValue>(ActionResult result)

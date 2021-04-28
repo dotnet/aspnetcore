@@ -11,11 +11,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     internal static class Constants
     {
-        public const string UserAgent = "User-Agent";
+        public static readonly string UserAgent = "User-Agent";
         public static readonly string UserAgentHeader;
 
         static Constants()
         {
+            if (OperatingSystem.IsBrowser())
+            {
+                UserAgent = "X-SignalR-User-Agent";
+            }
+
             var assemblyVersion = typeof(Constants)
                 .Assembly
                 .GetCustomAttributes<AssemblyInformationalVersionAttribute>()

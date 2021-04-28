@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        public Task InitializeAsync(CancellationToken cancellationToken)
+        public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, CancellationToken cancellationToken)
         {
             Log.InitializationStarted(_logger);
 
@@ -115,6 +115,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                         var (componentType, parameters, sequence) = Descriptors[i];
                         await Renderer.AddComponentAsync(componentType, parameters, sequence.ToString(CultureInfo.InvariantCulture));
                     }
+
+                    // At this point all components have successfully produced an initial render and we can clear the contents of the component
+                    // application state store. This ensures the memory that was not used during the initial render of these components gets
+                    // reclaimed since no-one else is holding on to it any longer.
+                    store.ExistingState.Clear();
 
                     Log.InitializationSucceeded(_logger);
                 }
@@ -399,7 +404,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             WebEventData webEventData;
             try
             {
-                webEventData = WebEventData.Parse(eventDescriptorJson, eventArgsJson);
+                var jsonSerializerOptions = JSRuntime.ReadJsonSerializerOptions();
+                webEventData = WebEventData.Parse(Renderer, jsonSerializerOptions, eventDescriptorJson, eventArgsJson);
             }
             catch (Exception ex)
             {

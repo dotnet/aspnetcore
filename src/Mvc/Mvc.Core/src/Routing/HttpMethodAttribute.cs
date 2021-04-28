@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public abstract class HttpMethodAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
     {
+        private readonly List<string> _httpMethods;
+
         private int? _order;
 
         /// <summary>
@@ -40,12 +42,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(httpMethods));
             }
 
-            HttpMethods = httpMethods;
+            _httpMethods = httpMethods.ToList();
             Template = template;
         }
 
         /// <inheritdoc />
-        public IEnumerable<string> HttpMethods { get; }
+        public IEnumerable<string> HttpMethods => _httpMethods;
 
         /// <inheritdoc />
         public string? Template { get; }

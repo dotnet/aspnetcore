@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,9 +25,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         protected override void OnReadStarting()
         {
             // Note ContentLength or MaxRequestBodySize may be null
-            if (_context.RequestHeaders.ContentLength > _context.MaxRequestBodySize)
+            var maxRequestBodySize = _context.MaxRequestBodySize;
+
+            if (_context.RequestHeaders.ContentLength > maxRequestBodySize)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
             }
         }
 
@@ -46,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public override bool TryRead(out ReadResult readResult)
         {
-            TryStart();
+            TryStartAsync();
 
             var hasResult = _context.RequestBodyPipe.Reader.TryRead(out readResult);
 
@@ -67,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            TryStart();
+            await TryStartAsync();
 
             try
             {

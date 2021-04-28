@@ -23,6 +23,7 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
 
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
+    <Compile Include="$(SharedSourceRoot)SignalR\*.cs" />
   </ItemGroup>
 
 </Project>

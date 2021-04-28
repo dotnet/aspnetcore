@@ -29,5 +29,10 @@ namespace Microsoft.Extensions.Logging.Testing
                 return Formatter(State, Exception);
             }
         }
+
+        public override string ToString()
+        {
+            return $"{LogLevel} {LoggerName}: {Message}";
+        }
     }
 }

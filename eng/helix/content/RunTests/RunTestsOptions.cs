@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -67,7 +68,7 @@ namespace RunTests
                 Quarantined = parseResult.ValueForOption<bool>("--quarantined"),
                 RuntimeVersion = sharedFxVersion,
                 Target = parseResult.ValueForOption<string>("--target"),
-                Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout")),
+                Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout"), CultureInfo.InvariantCulture),
 
                 // When targeting pack builds, it has exactly the same version as the shared framework.
                 AspNetRef = $"Microsoft.AspNetCore.App.Ref.{sharedFxVersion}.nupkg",

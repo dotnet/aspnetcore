@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="culture"></param>
         /// <returns></returns>
         [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-        public static EventCallback<ChangeEventArgs> CreateBinder<T>(
+        public static EventCallback<ChangeEventArgs> CreateBinder<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,

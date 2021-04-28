@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             PageActionDescriptor actionDescriptor,
             CompiledViewDescriptor viewDescriptor)
         {
-            var context = new PageApplicationModelProviderContext(actionDescriptor, viewDescriptor.Type.GetTypeInfo());
+            var context = new PageApplicationModelProviderContext(actionDescriptor, viewDescriptor.Type!.GetTypeInfo());
             for (var i = 0; i < _applicationModelProviders.Length; i++)
             {
                 _applicationModelProviders[i].OnProvidersExecuting(context);

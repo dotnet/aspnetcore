@@ -181,7 +181,7 @@ namespace PackageBaselineGenerator
                             StringComparison.OrdinalIgnoreCase))
                         {
                             targetCondition =
-                                $"('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR {targetCondition})";
+                                $"('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == '{defaultTarget}')";
                         }
 
                         var itemGroup = new XElement(

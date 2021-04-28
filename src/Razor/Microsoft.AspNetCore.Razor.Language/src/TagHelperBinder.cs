@@ -85,17 +85,31 @@ namespace Microsoft.AspNetCore.Razor.Language
             Dictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>> applicableDescriptorMappings = null;
             foreach (var descriptor in descriptors)
             {
-                var applicableRules = descriptor.TagMatchingRules.Where(
-                    rule => TagHelperMatchingConventions.SatisfiesRule(tagNameWithoutPrefix, parentTagNameWithoutPrefix, attributes, rule));
+                // We're avoiding desccriptor.TagMatchingRules.Where and applicableRules.Any() to avoid
+                // Enumerator allocations on this hotpath
+                List<TagMatchingRuleDescriptor> applicableRules = null;
+                for (var i = 0; i < descriptor.TagMatchingRules.Count; i++)
+                {
+                    var rule = descriptor.TagMatchingRules[i];
+                    if (TagHelperMatchingConventions.SatisfiesRule(tagNameWithoutPrefix, parentTagNameWithoutPrefix, attributes, rule))
+                    {
+                        if (applicableRules is null)
+                        {
+                            applicableRules = new List<TagMatchingRuleDescriptor>();
+                        }
 
-                if (applicableRules.Any())
+                        applicableRules.Add(rule);
+                    }
+                }
+
+                if (applicableRules != null && applicableRules.Count > 0)
                 {
                     if (applicableDescriptorMappings == null)
                     {
                         applicableDescriptorMappings = new Dictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>>();
                     }
 
-                    applicableDescriptorMappings[descriptor] = applicableRules.ToList();
+                    applicableDescriptorMappings[descriptor] = applicableRules;
                 }
             }
 

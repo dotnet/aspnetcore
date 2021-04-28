@@ -8,11 +8,11 @@ using System.Net.Quic;
 using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections.Experimental;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
 {
     /// <summary>
     /// Listens for new Quic Connections.
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
         private readonly QuicTransportContext _context;
         private readonly QuicListener _listener;
 
-        public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint)
+        public QuicConnectionListener(QuicTransportOptions options, IQuicTrace log, EndPoint endpoint, SslServerAuthenticationOptions sslServerAuthenticationOptions)
         {
             if (options.Alpn == null)
             {
@@ -34,20 +34,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
             _log = log;
             _context = new QuicTransportContext(_log, options);
             EndPoint = endpoint;
-
             var quicListenerOptions = new QuicListenerOptions();
-            var sslConfig = new SslServerAuthenticationOptions();
-            sslConfig.ServerCertificate = options.Certificate;
-            sslConfig.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
 
-            quicListenerOptions.ServerAuthenticationOptions = sslConfig;
-            quicListenerOptions.CertificateFilePath = options.CertificateFilePath;
-            quicListenerOptions.PrivateKeyFilePath = options.PrivateKeyFilePath;
+            // TODO Should HTTP/3 specific ALPN still be global? Revisit whether it can be statically set once HTTP/3 is finalized.
+            sslServerAuthenticationOptions.ApplicationProtocols = new List<SslApplicationProtocol>() { new SslApplicationProtocol(options.Alpn) };
+
+            quicListenerOptions.ServerAuthenticationOptions = sslServerAuthenticationOptions;
             quicListenerOptions.ListenEndPoint = endpoint as IPEndPoint;
-            quicListenerOptions.IdleTimeout = TimeSpan.FromMinutes(2);
+            quicListenerOptions.IdleTimeout = options.IdleTimeout;
 
             _listener = new QuicListener(QuicImplementationProviders.MsQuic, quicListenerOptions);
-            _listener.Start();
         }
 
         public EndPoint EndPoint { get; set; }
@@ -80,7 +76,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
             _disposed = true;
 
-            _listener.Close();
             _listener.Dispose();
 
             return new ValueTask();

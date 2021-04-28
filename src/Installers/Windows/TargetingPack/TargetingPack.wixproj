@@ -8,6 +8,7 @@
     <ProductNameFolder>Microsoft ASP.NET Core Targeting Pack</ProductNameFolder>
     <ProductNameShort>AspNetCore.TargetingPack</ProductNameShort>
     <OutputType>Package</OutputType>
+    <Cabinet>targeting_pack_$(Platform).cab</Cabinet>
     <IsShipping>true</IsShipping>
     <SkipCopyToArtifactsDirectory Condition="'$(IsTargetingPackBuilding)' == 'false'">true</SkipCopyToArtifactsDirectory>
     <ProjectGuid>0AC34F1B-8056-4FFB-A398-E6BB7D67B48D</ProjectGuid>
@@ -21,6 +22,8 @@
     <NamespaceGuid>DDBB771F-963F-47D3-8510-9ABD04DBE1D1</NamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\TargetingPack\TargetingPackPackage.nuspec</ToolsetInstallerNuspecFile>
+    <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
+    <BundleVersion>$(TargetingPackVersionPrefix)</BundleVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,7 +64,9 @@
   <Target Name="ExtractIntermediateTargetingPack" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <TargetingPackHarvestRoot Condition="'$(TargetingPackHarvestRoot)' == ''">$(InstallersOutputPath)</TargetingPackHarvestRoot>
-      <IntermediateTargetingPackZip>$(TargetingPackHarvestRoot)aspnetcore-targeting-pack-$(PackageVersion).zip</IntermediateTargetingPackZip>
+      <TargetingPackZipVersion>$(TargetingPackVersionPrefix)</TargetingPackZipVersion>
+      <TargetingPackZipVersion Condition="'$(VersionSuffix)' != ''">$(TargetingPackZipVersion)-$(VersionSuffix)</TargetingPackZipVersion>
+      <IntermediateTargetingPackZip>$(TargetingPackHarvestRoot)aspnetcore-targeting-pack-$(TargetingPackZipVersion).zip</IntermediateTargetingPackZip>
     </PropertyGroup>
 
     <Unzip SourceFiles="$(IntermediateTargetingPackZip)" DestinationFolder="$(HarvestSource)" />

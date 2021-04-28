@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         // Used for testing
         internal HttpConnectionsEventSource(string eventSourceName)
-            : base(eventSourceName)
+            : base(eventSourceName, EventSourceSettings.EtwManifestEventFormat)
         {
         }
 

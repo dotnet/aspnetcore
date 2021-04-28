@@ -494,7 +494,7 @@ namespace Microsoft.Net.Http.Headers
 
             // value or "quoted value"
             // The value may be empty
-            result._value = CookieHeaderValue.GetCookieValue(input, ref offset);
+            result._value = CookieHeaderParserShared.GetCookieValue(input, ref offset);
 
             // *(';' SP cookie-av)
             while (offset < input.Length)

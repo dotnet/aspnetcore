@@ -5,6 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -37,6 +38,7 @@ namespace Microsoft.AspNetCore.Components.Server
     {
         private static readonly object CircuitKey = new object();
         private readonly ServerComponentDeserializer _serverComponentSerializer;
+        private readonly IDataProtectionProvider _dataProtectionProvider;
         private readonly CircuitFactory _circuitFactory;
         private readonly CircuitIdFactory _circuitIdFactory;
         private readonly CircuitRegistry _circuitRegistry;
@@ -44,12 +46,14 @@ namespace Microsoft.AspNetCore.Components.Server
 
         public ComponentHub(
             ServerComponentDeserializer serializer,
+            IDataProtectionProvider dataProtectionProvider,
             CircuitFactory circuitFactory,
             CircuitIdFactory circuitIdFactory,
             CircuitRegistry circuitRegistry,
             ILogger<ComponentHub> logger)
         {
             _serverComponentSerializer = serializer;
+            _dataProtectionProvider = dataProtectionProvider;
             _circuitFactory = circuitFactory;
             _circuitIdFactory = circuitIdFactory;
             _circuitRegistry = circuitRegistry;
@@ -74,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.Server
             return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
         }
 
-        public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords)
+        public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
         {
             var circuitHost = GetCircuit();
             if (circuitHost != null)
@@ -114,18 +118,23 @@ namespace Microsoft.AspNetCore.Components.Server
             try
             {
                 var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
-                circuitHost = _circuitFactory.CreateCircuitHost(
+                var store = !string.IsNullOrEmpty(applicationState) ?
+                    new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
+                    new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
+
+                circuitHost = await _circuitFactory.CreateCircuitHostAsync(
                     components,
                     circuitClient,
                     baseUri,
                     uri,
-                    Context.User);
+                    Context.User,
+                    store);
 
                 // Fire-and-forget the initialization process, because we can't block the
                 // SignalR message loop (we'd get a deadlock if any of the initialization
                 // logic relied on receiving a subsequent message from SignalR), and it will
                 // take care of its own errors anyway.
-                _ = circuitHost.InitializeAsync(Context.ConnectionAborted);
+                _ = circuitHost.InitializeAsync(store, Context.ConnectionAborted);
 
                 // It's safe to *publish* the circuit now because nothing will be able
                 // to run inside it until after InitializeAsync completes.

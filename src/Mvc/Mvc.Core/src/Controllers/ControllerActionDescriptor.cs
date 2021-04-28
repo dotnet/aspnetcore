@@ -20,28 +20,28 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// <summary>
         /// The name of the controller.
         /// </summary>
-        public string ControllerName { get; set; }
+        public string ControllerName { get; set; } = default!;
 
         /// <summary>
         /// The name of the action.
         /// </summary>
-        public virtual string ActionName { get; set; }
+        public virtual string ActionName { get; set; } = default!;
 
         /// <summary>
         /// The <see cref="MethodInfo"/>.
         /// </summary>
-        public MethodInfo MethodInfo { get; set; }
+        public MethodInfo MethodInfo { get; set; } = default!;
 
         /// <summary>
         /// The <see cref="TypeInfo"/> of the controller..
         /// </summary>
-        public TypeInfo ControllerTypeInfo { get; set; }
+        public TypeInfo ControllerTypeInfo { get; set; } = default!;
 
         // Cache entry so we can avoid an external cache
-        internal ControllerActionInvokerCacheEntry CacheEntry { get; set; }
+        internal ControllerActionInvokerCacheEntry? CacheEntry { get; set; }
 
         /// <inheritdoc />
-        public override string DisplayName
+        public override string? DisplayName
         {
             get
             {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                         ControllerTypeInfo.Assembly.GetName().Name);
                 }
 
-                return base.DisplayName;
+                return base.DisplayName!;
             }
 
             set

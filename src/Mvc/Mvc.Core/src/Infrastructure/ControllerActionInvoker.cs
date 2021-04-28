@@ -528,7 +528,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             Debug.Assert(_cacheEntry.ControllerBinderDelegate != null);
-            return _cacheEntry.ControllerBinderDelegate(_controllerContext, _instance, _arguments!);
+            return _cacheEntry.ControllerBinderDelegate(_controllerContext, _instance!, _arguments!);
         }
 
         private static object?[]? PrepareArguments(

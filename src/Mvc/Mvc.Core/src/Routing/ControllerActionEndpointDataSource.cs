@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -52,9 +51,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public ControllerActionEndpointConventionBuilder AddRoute(
             string routeName,
             string pattern,
-            RouteValueDictionary defaults,
-            IDictionary<string, object> constraints,
-            RouteValueDictionary dataTokens)
+            RouteValueDictionary? defaults,
+            IDictionary<string, object?>? constraints,
+            RouteValueDictionary? dataTokens)
         {
             lock (Lock)
             {
@@ -109,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return endpoints;
         }
 
-        internal void AddDynamicControllerEndpoint(IEndpointRouteBuilder endpoints, string pattern, Type transformerType, object state, int? order = null)
+        internal void AddDynamicControllerEndpoint(IEndpointRouteBuilder endpoints, string pattern, Type transformerType, object? state, int? order = null)
         {
             CreateInertEndpoints = true;
             lock (Lock)

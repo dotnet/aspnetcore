@@ -63,7 +63,7 @@ describe("ServerSentEventsTransport", () => {
 
             await expect(connectPromise)
                 .rejects
-                .toEqual(new Error("Error occurred while starting EventSource"));
+                .toEqual(new Error("EventSource failed to connect. The connection could not be found on the server, either the connection ID is not present on the server, or a proxy is refusing/buffering the connection. If you have multiple servers check that sticky sessions are enabled."));
             expect(closeCalled).toBe(false);
         });
     });
@@ -164,7 +164,7 @@ describe("ServerSentEventsTransport", () => {
 
             expect(closeCalled).toBe(true);
             expect(TestEventSource.eventSource.closed).toBe(true);
-            expect(error).toEqual(new Error("Error occurred while starting EventSource"));
+            expect(error).toBeUndefined();
         });
     });
 

@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
 
 using System;
 using System.Runtime.ExceptionServices;
@@ -70,12 +69,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Log.JsonResultExecuting(_logger, result.Value);
 
             var value = result.Value;
-            if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
-            {
-                Log.BufferingAsyncEnumerable(_logger, value);
-                value = await reader(value);
-            }
-
             var objectType = value?.GetType() ?? typeof(object);
 
             // Keep this code in sync with SystemTextJsonOutputFormatter
@@ -145,27 +138,17 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
                 LogLevel.Information,
                 new EventId(1, "JsonResultExecuting"),
-                "Executing JsonResult, writing value of type '{Type}'.");
+                "Executing JsonResult, writing value of type '{Type}'.",
+                skipEnabledCheck: true);
 
-            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
-               LogLevel.Debug,
-               new EventId(2, "BufferingAsyncEnumerable"),
-               "Buffering IAsyncEnumerable instance of type '{Type}'.");
+            // EventId 2 BufferingAsyncEnumerable
 
-            public static void JsonResultExecuting(ILogger logger, object value)
+            public static void JsonResultExecuting(ILogger logger, object? value)
             {
                 if (logger.IsEnabled(LogLevel.Information))
                 {
                     var type = value == null ? "null" : value.GetType().FullName;
                     _jsonResultExecuting(logger, type, null);
-                }
-            }
-
-            public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-            {
-                if (logger.IsEnabled(LogLevel.Debug))
-                {
-                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
                 }
             }
         }

@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Testing
             var assemblyName = _assembly.GetName().Name;
 
             // Try to shorten the class name using the assembly name
-            if (className.StartsWith(assemblyName + "."))
+            if (className.StartsWith(assemblyName + ".", StringComparison.Ordinal))
             {
                 className = className.Substring(assemblyName.Length + 1);
             }

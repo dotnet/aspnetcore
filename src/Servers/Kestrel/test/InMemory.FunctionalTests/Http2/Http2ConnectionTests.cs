@@ -1504,6 +1504,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30309")]
         public Task Frame_MultipleStreams_RequestsNotFinished_DefaultMaxStreamsPerConnection_EnhanceYourCalmAfterDoubleMaxStreams()
         {
             // Kestrel tracks max streams per connection * 2
@@ -2023,8 +2024,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(c =>
             {
                 c.Response.ContentLength = 0;
-                c.Response.Headers[HeaderNames.SetCookie] = "SetCookie!";
-                c.Response.Headers[HeaderNames.ContentDisposition] = "ContentDisposition!";
+                c.Response.Headers.SetCookie = "SetCookie!";
+                c.Response.Headers.ContentDisposition = "ContentDisposition!";
 
                 return Task.CompletedTask;
             });
@@ -2412,7 +2413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ignoreNonGoAwayFrames: false,
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
-                expectedErrorMessage: CoreStrings.Http2ErrorHeaderNameUppercase);
+                expectedErrorMessage: CoreStrings.HttpErrorHeaderNameUppercase);
         }
 
         [Fact]
@@ -2426,7 +2427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(":unknown", "0"),
             };
 
-            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.Http2ErrorUnknownPseudoHeaderField);
+            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.HttpErrorUnknownPseudoHeaderField);
         }
 
         [Fact]
@@ -2440,14 +2441,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Status, "200"),
             };
 
-            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.Http2ErrorResponsePseudoHeaderField);
+            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.HttpErrorResponsePseudoHeaderField);
         }
 
         [Theory]
         [MemberData(nameof(DuplicatePseudoHeaderFieldData))]
         public Task HEADERS_Received_HeaderBlockContainsDuplicatePseudoHeaderField_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers)
         {
-            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.Http2ErrorDuplicatePseudoHeaderField);
+            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.HttpErrorDuplicatePseudoHeaderField);
         }
 
         [Theory]
@@ -2470,7 +2471,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(PseudoHeaderFieldAfterRegularHeadersData))]
         public Task HEADERS_Received_HeaderBlockContainsPseudoHeaderFieldAfterRegularHeaders_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers)
         {
-            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.Http2ErrorPseudoHeaderFieldAfterRegularHeaders);
+            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.HttpErrorPseudoHeaderFieldAfterRegularHeaders);
         }
 
         private async Task HEADERS_Received_InvalidHeaderFields_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers, string expectedErrorMessage)
@@ -2494,7 +2495,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForStreamErrorAsync(
                  expectedStreamId: 1,
                  expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
-                 expectedErrorMessage: CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields);
+                 expectedErrorMessage: CoreStrings.HttpErrorMissingMandatoryPseudoHeaderFields);
 
             // Verify that the stream ID can't be re-used
             await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, _browserRequestHeaders);
@@ -2571,7 +2572,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>("connection", "keep-alive")
             };
 
-            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.Http2ErrorConnectionSpecificHeaderField);
+            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
         }
 
         [Fact]
@@ -2585,7 +2586,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>("te", "trailers, deflate")
             };
 
-            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.Http2ErrorConnectionSpecificHeaderField);
+            return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
         }
 
         [Fact]
@@ -2607,6 +2608,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 36,
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_RequestLineLength_StreamError()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, new string('A', 8192 / 2)),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/" + new string('A', 8192 / 2)),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http")
+            };
+
+            await InitializeConnectionAsync(_noopApplication);
+            await StartStreamAsync(1, headers, endStream: true);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.BadRequest_RequestLineTooLong);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
@@ -4290,7 +4309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForStreamErrorAsync(
                 expectedStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
-                expectedErrorMessage: CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields);
+                expectedErrorMessage: CoreStrings.HttpErrorMissingMandatoryPseudoHeaderFields);
 
             // Verify that the stream ID can't be re-used
             await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
@@ -5238,22 +5257,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var data = new TheoryData<byte[], string>();
 
                 // Indexed Header Field - :method: GET
-                data.Add(new byte[] { 0x82 }, CoreStrings.Http2ErrorTrailersContainPseudoHeaderField);
+                data.Add(new byte[] { 0x82 }, CoreStrings.HttpErrorTrailersContainPseudoHeaderField);
 
                 // Indexed Header Field - :path: /
-                data.Add(new byte[] { 0x84 }, CoreStrings.Http2ErrorTrailersContainPseudoHeaderField);
+                data.Add(new byte[] { 0x84 }, CoreStrings.HttpErrorTrailersContainPseudoHeaderField);
 
                 // Indexed Header Field - :scheme: http
-                data.Add(new byte[] { 0x86 }, CoreStrings.Http2ErrorTrailersContainPseudoHeaderField);
+                data.Add(new byte[] { 0x86 }, CoreStrings.HttpErrorTrailersContainPseudoHeaderField);
 
                 // Literal Header Field without Indexing - Indexed Name - :authority: 127.0.0.1
-                data.Add(new byte[] { 0x01, 0x09 }.Concat(Encoding.ASCII.GetBytes("127.0.0.1")).ToArray(), CoreStrings.Http2ErrorTrailersContainPseudoHeaderField);
+                data.Add(new byte[] { 0x01, 0x09 }.Concat(Encoding.ASCII.GetBytes("127.0.0.1")).ToArray(), CoreStrings.HttpErrorTrailersContainPseudoHeaderField);
 
                 // Literal Header Field without Indexing - New Name - contains-Uppercase: 0
                 data.Add(new byte[] { 0x00, 0x12 }
                     .Concat(Encoding.ASCII.GetBytes("contains-Uppercase"))
                     .Concat(new byte[] { 0x01, (byte)'0' })
-                    .ToArray(), CoreStrings.Http2ErrorTrailerNameUppercase);
+                    .ToArray(), CoreStrings.HttpErrorTrailerNameUppercase);
 
                 return data;
             }

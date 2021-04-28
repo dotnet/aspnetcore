@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,9 +67,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public virtual Task ConsumeAsync()
         {
-            TryStart();
+            Task startTask = TryStartAsync();
+            if (!startTask.IsCompletedSuccessfully)
+            {
+                return ConsumeAwaited(startTask);
+            }    
 
             return OnConsumeAsync();
+        }
+
+        private async Task ConsumeAwaited(Task startTask)
+        {
+            await startTask;
+            await OnConsumeAsync();
         }
 
         public virtual ValueTask StopAsync()
@@ -93,20 +104,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _examinedUnconsumedBytes = 0;
         }
 
-        protected void TryProduceContinue()
+        protected ValueTask<FlushResult> TryProduceContinueAsync()
         {
             if (_send100Continue)
             {
-                _context.HttpResponseControl.ProduceContinue();
                 _send100Continue = false;
+                return _context.HttpResponseControl.ProduceContinueAsync();
             }
+
+            return default;
         }
 
-        protected void TryStart()
+        protected Task TryStartAsync()
         {
             if (_context.HasStartedConsumingRequestBody)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             OnReadStarting();
@@ -128,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            OnReadStarted();
+            return OnReadStartedAsync();
         }
 
         protected void TryStop()
@@ -165,32 +178,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
         }
 
-        protected virtual void OnReadStarted()
+        protected virtual Task OnReadStartedAsync()
         {
+            return Task.CompletedTask;
         }
 
         protected void AddAndCheckObservedBytes(long observedBytes)
         {
             _observedBytes += observedBytes;
 
-            if (_observedBytes > _context.MaxRequestBodySize)
+            var maxRequestBodySize = _context.MaxRequestBodySize;
+            if (_observedBytes > maxRequestBodySize)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
             }
         }
 
         protected ValueTask<ReadResult> StartTimingReadAsync(ValueTask<ReadResult> readAwaitable, CancellationToken cancellationToken)
         {
-
-            if (!readAwaitable.IsCompleted && _timingEnabled)
+            if (!readAwaitable.IsCompleted)
             {
-                TryProduceContinue();
+                ValueTask<FlushResult> continueTask = TryProduceContinueAsync();
+                if (!continueTask.IsCompletedSuccessfully)
+                {
+                    return StartTimingReadAwaited(continueTask, readAwaitable, cancellationToken);
+                }
+                else
+                {
+                    continueTask.GetAwaiter().GetResult();
+                }
 
+                if (_timingEnabled)
+                {
+                    _backpressure = true;
+                    _context.TimeoutControl.StartTimingRead();
+                }
+            }
+
+            return readAwaitable;
+        }
+
+        protected async ValueTask<ReadResult> StartTimingReadAwaited(ValueTask<FlushResult> continueTask, ValueTask<ReadResult> readAwaitable, CancellationToken cancellationToken)
+        {
+            await continueTask;
+
+            if (_timingEnabled)
+            {
                 _backpressure = true;
                 _context.TimeoutControl.StartTimingRead();
             }
 
-            return readAwaitable;
+            return await readAwaitable;
         }
 
         protected void CountBytesRead(long bytesInReadResult)

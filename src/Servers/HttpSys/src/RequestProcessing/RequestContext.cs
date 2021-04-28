@@ -114,17 +114,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (!Request.IsHttps)
             {
-                Logger.LogDebug(LoggerEventIds.ChannelBindingNeedsHttps, "TryGetChannelBinding; Channel binding requires HTTPS.");
+                Log.ChannelBindingNeedsHttps(Logger);
                 return false;
             }
 
             value = ClientCertLoader.GetChannelBindingFromTls(Server.RequestQueue, Request.UConnectionId, Logger);
 
             Debug.Assert(value != null, "GetChannelBindingFromTls returned null even though OS supposedly supports Extended Protection");
-            Logger.LogDebug(LoggerEventIds.ChannelBindingRetrived, "Channel binding retrieved.");
+            Log.ChannelBindingRetrieved(Logger);
             return value != null;
         }
-
 
         /// <summary>
         /// Flushes and completes the response.
@@ -178,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogDebug(LoggerEventIds.AbortError, ex, "Abort");
+                    Log.AbortError(Logger, ex);
                 }
                 _requestAbortSource.Dispose();
             }

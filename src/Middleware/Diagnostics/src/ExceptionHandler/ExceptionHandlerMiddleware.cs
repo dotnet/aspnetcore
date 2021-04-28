@@ -132,7 +132,8 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                 await _options.ExceptionHandler!(context);
 
-                if (context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+                // If the response has already started, assume exception handler was successful.
+                if (context.Response.HasStarted || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
                 {
                     if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
                     {
@@ -142,7 +143,9 @@ namespace Microsoft.AspNetCore.Diagnostics
                     return;
                 }
 
-                _logger.ErrorHandlerNotFound();
+                edi = ExceptionDispatchInfo.Capture(new InvalidOperationException($"The exception handler configured on {nameof(ExceptionHandlerOptions)} produced a 404 status response. " +
+                    $"This {nameof(InvalidOperationException)} containing the original exception was thrown since this is often due to a misconfigured {nameof(ExceptionHandlerOptions.ExceptionHandlingPath)}. " +
+                    $"If the exception handler is expected to return 404 status responses then set {nameof(ExceptionHandlerOptions.AllowStatusCode404Response)} to true.", edi.SourceException));
             }
             catch (Exception ex2)
             {
@@ -154,7 +157,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 context.Request.Path = originalPath;
             }
 
-            edi.Throw(); // Re-throw the original if we couldn't handle it
+            edi.Throw(); // Re-throw wrapped exception or the original if we couldn't handle it
         }
 
         private static void ClearHttpContext(HttpContext context)

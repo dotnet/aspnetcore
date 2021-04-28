@@ -58,7 +58,7 @@ namespace Interop.FunctionalTests
             get
             {
                 var dataset = new TheoryData<H2SpecTestCase>();
-                var toSkip = new string[] { /*"http2/5.1/8"*/ };
+                var toSkip = new string[] { "http2/6.9.1/2" };
 
                 var supportsAlpn = Utilities.CurrentPlatformSupportsHTTP2OverTls();
 
@@ -67,7 +67,7 @@ namespace Interop.FunctionalTests
                     string skip = null;
                     if (toSkip.Contains(testcase.Item1))
                     {
-                        skip = "https://github.com/aspnet/KestrelHttpServer/issues/2154";
+                        skip = "https://github.com/dotnet/aspnetcore/issues/30373";
                     }
 
                     dataset.Add(new H2SpecTestCase

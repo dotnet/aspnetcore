@@ -371,7 +371,6 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.cs",
-        "Startup.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
@@ -383,7 +382,6 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.fs",
-        "Startup.fs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
@@ -1194,8 +1192,10 @@
         "ClientApp/.editorconfig",
         "ClientApp/.gitignore",
         "ClientApp/angular.json",
+        "ClientApp/aspnetcore-https.js",
         "ClientApp/package-lock.json",
         "ClientApp/package.json",
+        "ClientApp/proxy.conf.js",
         "ClientApp/README.md",
         "ClientApp/tsconfig.json",
         "ClientApp/tslint.json",
@@ -1233,8 +1233,12 @@
         "ClientApp/src/App.test.js",
         "ClientApp/src/index.js",
         "ClientApp/src/registerServiceWorker.js",
+        "ClientApp/src/setupProxy.js",
         "ClientApp/.env",
+        "ClientApp/.env.development",
         "ClientApp/.gitignore",
+        "ClientApp/aspnetcore-https.js",
+        "ClientApp/aspnetcore-react.js",
         "ClientApp/package-lock.json",
         "ClientApp/package.json",
         "ClientApp/README.md",

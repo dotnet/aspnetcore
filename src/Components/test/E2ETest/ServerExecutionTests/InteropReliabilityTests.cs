@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             {
                 BrowserRendererId = 0,
                 EventHandlerId = 6,
-                EventArgsType = "mouse",
+                EventName = "click",
             };
 
             await Client.ExpectCircuitError(async () =>
@@ -478,7 +478,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             {
                 BrowserRendererId = 0,
                 EventHandlerId = 1,
-                EventArgsType = "mouse",
+                EventName = "click",
             };
 
             await Client.ExpectCircuitError(async () =>

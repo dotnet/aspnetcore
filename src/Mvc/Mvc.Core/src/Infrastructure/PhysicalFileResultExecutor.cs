@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         /// <inheritdoc/>
-        protected virtual Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue range, long rangeLength)
+        protected virtual Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
         {
             if (context == null)
             {

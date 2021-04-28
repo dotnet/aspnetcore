@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             ServerAddressesFeature serverAddressesFeature,
             KestrelServerOptions serverOptions,
             ILogger logger,
-            Func<ListenOptions, Task> createBinding)
+            Func<ListenOptions, CancellationToken, Task> createBinding)
         {
             ServerAddressesFeature = serverAddressesFeature;
             ServerOptions = serverOptions;
@@ -28,6 +29,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public KestrelServerOptions ServerOptions { get; }
         public ILogger Logger { get; }
 
-        public Func<ListenOptions, Task> CreateBinding { get; }
+        public Func<ListenOptions, CancellationToken, Task> CreateBinding { get; }
     }
 }

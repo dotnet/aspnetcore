@@ -91,32 +91,31 @@ namespace Microsoft.AspNetCore.BrowserTesting
 
         private void RecordConsoleMessage(object sender, ConsoleEventArgs e)
         {
-            var message = e.Message;
-            var messageText = message.Text.Replace(Environment.NewLine, $"{Environment.NewLine}      ");
-            var location = message.Location;
-
-            var logMessage = $"[{_page.Url}]{Environment.NewLine}      {messageText}{Environment.NewLine}      ({location.URL}:{location.LineNumber}:{location.ColumnNumber})";
-
             try
             {
+                var message = e.Message;
+                var messageText = message.Text.Replace(Environment.NewLine, $"{Environment.NewLine}      ");
+                var location = message.Location;
+
+                var logMessage = $"[{_page.Url}]{Environment.NewLine}      {messageText}{Environment.NewLine}      ({location.URL}:{location.LineNumber}:{location.ColumnNumber})";
+
                 _logger.Log(MapLogLevel(message.Type), logMessage);
+
+                BrowserConsoleLogs.Add(new LogEntry(messageText, message.Type));
+
+                LogLevel MapLogLevel(string messageType) => messageType switch
+                {
+                    "info" => LogLevel.Information,
+                    "verbose" => LogLevel.Debug,
+                    "warning" => LogLevel.Warning,
+                    "error" => LogLevel.Error,
+                    _ => LogLevel.Information
+                };
             }
             catch
             {
-
-                throw;
+                // Logging after the test is finished should not cause the test to fail
             }
-
-            BrowserConsoleLogs.Add(new LogEntry(messageText, message.Type));
-
-            LogLevel MapLogLevel(string messageType) => messageType switch
-            {
-                "info" => LogLevel.Information,
-                "verbose" => LogLevel.Debug,
-                "warning" => LogLevel.Warning,
-                "error" => LogLevel.Error,
-                _ => LogLevel.Information
-            };
         }
 
         public record LogEntry(string Message, string Level);

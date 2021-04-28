@@ -609,6 +609,45 @@ public class FormTagHelper : {typeof(TagHelper).FullName}
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void RazorView_Layout_WithCssScope()
+        {
+                        // Arrange
+            AddCSharpSyntaxTree($@"
+[{typeof(HtmlTargetElementAttribute).FullName}({"\"all\""})]
+public class AllTagHelper : {typeof(TagHelper).FullName}
+{{
+    public string Bar {{ get; set; }}
+}}
+[{typeof(HtmlTargetElementAttribute).FullName}({"\"form\""})]
+public class FormTagHelper : {typeof(TagHelper).FullName}
+{{
+}}
+");
+
+            // Act
+            // This test case attempts to use all syntaxes that might interact with auto-generated attributes
+            var generated = CompileToCSharp(@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""utf-8"" />
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" />
+    <title>@ViewData[""Title""] - Test layout component</title>
+</head>
+<body>
+    <p>This is a body.</p>
+</body>
+</html>
+", cssScope: "TestCssScope");
+
+            // Assert
+            var intermediate = generated.CodeDocument.GetDocumentIntermediateNode();
+            var csharp = generated.CodeDocument.GetCSharpDocument();
+            AssertDocumentNodeMatchesBaseline(intermediate);
+            AssertCSharpDocumentMatchesBaseline(csharp);
+            CompileToAssembly(generated);
+        }
         #endregion
 
         #region DesignTime

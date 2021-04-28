@@ -58,9 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private bool _autoChunk;
 
-        // We rely on the TimingPipeFlusher to give us ValueTasks that can be safely awaited multiple times.
         private bool _writeStreamSuffixCalled;
-        private ValueTask<FlushResult> _writeStreamSuffixValueTask;
 
         private int _advancedBytesForChunk;
         private Memory<byte> _currentChunkMemory;
@@ -118,31 +116,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public ValueTask<FlushResult> WriteStreamSuffixAsync()
         {
+            ValueTask<FlushResult> result = default;
+
             lock (_contextLock)
             {
-                if (_writeStreamSuffixCalled)
+                if (!_writeStreamSuffixCalled)
                 {
-                    // If WriteStreamSuffixAsync has already been called, no-op and return the previously returned ValueTask.
-                    return _writeStreamSuffixValueTask;
-                }
+                    if (_autoChunk)
+                    {
+                        var writer = new BufferWriter<PipeWriter>(_pipeWriter);
+                        result = WriteAsyncInternal(ref writer, EndChunkedResponseBytes);
+                    }
+                    else if (_unflushedBytes > 0)
+                    {
+                        result = FlushAsync();
+                    }
 
-                if (_autoChunk)
-                {
-                    var writer = new BufferWriter<PipeWriter>(_pipeWriter);
-                    _writeStreamSuffixValueTask = WriteAsyncInternal(ref writer, EndChunkedResponseBytes);
+                    _writeStreamSuffixCalled = true;
                 }
-                else if (_unflushedBytes > 0)
-                {
-                    _writeStreamSuffixValueTask = FlushAsync();
-                }
-                else
-                {
-                    _writeStreamSuffixValueTask = default;
-                }
-
-                _writeStreamSuffixCalled = true;
-                return _writeStreamSuffixValueTask;
             }
+
+            return result;
         }
 
         public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
@@ -533,7 +527,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentMemoryPrefixBytes = 0;
             _autoChunk = false;
             _writeStreamSuffixCalled = false;
-            _writeStreamSuffixValueTask = default;
             _currentChunkMemoryUpdated = false;
             _startCalled = false;
         }

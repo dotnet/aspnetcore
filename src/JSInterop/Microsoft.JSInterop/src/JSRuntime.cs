@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop.Infrastructure;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop
 {
@@ -62,7 +64,7 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+        public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args)
             => InvokeAsync<TValue>(0, identifier, args);
 
         /// <summary>
@@ -76,10 +78,10 @@ namespace Microsoft.JSInterop
         /// </param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
             => InvokeAsync<TValue>(0, identifier, cancellationToken, args);
 
-        internal async ValueTask<TValue> InvokeAsync<TValue>(long targetInstanceId, string identifier, object?[]? args)
+        internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, object?[]? args)
         {
             if (DefaultAsyncTimeout.HasValue)
             {
@@ -91,7 +93,7 @@ namespace Microsoft.JSInterop
             return await InvokeAsync<TValue>(targetInstanceId, identifier, CancellationToken.None, args);
         }
 
-        internal ValueTask<TValue> InvokeAsync<TValue>(
+        internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
             long targetInstanceId,
             string identifier,
             CancellationToken cancellationToken,
@@ -172,6 +174,7 @@ namespace Microsoft.JSInterop
             DotNetInvocationInfo invocationInfo,
             in DotNetInvocationResult invocationResult);
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2072:RequiresUnreferencedCode", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
         internal void EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)
         {
             if (!_pendingTasks.TryRemove(taskId, out var tcs))
