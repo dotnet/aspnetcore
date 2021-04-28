@@ -32,10 +32,10 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
-        /// Adds an Azure Web Apps diagnostics logger. With CustomPrefix the Blob output will be in flat file strucure
+        /// Adds an Azure Web Apps diagnostics logger.
         /// </summary>
-        /// <param name="builder">The extension method argument</param>
-        /// <param name="configureBlobLoggerOptions">An Action to configure the <see cref="AzureBlobLoggerOptions"/></param>
+        /// <param name="builder">The extension method argument.</param>
+        /// <param name="configureBlobLoggerOptions">An Action to configure the <see cref="AzureBlobLoggerOptions"/>.</param>
         /// <returns></returns>
         public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, Action<AzureBlobLoggerOptions> configureBlobLoggerOptions)
         {
