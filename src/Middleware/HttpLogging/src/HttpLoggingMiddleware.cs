@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpLogging
@@ -82,35 +83,89 @@ namespace Microsoft.AspNetCore.HttpLogging
                 var list = new List<KeyValuePair<string, string?>>(
                     request.Headers.Count + DefaultRequestFieldsMinusHeaders);
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
+                if (options.ModifyRequestLog != null)
                 {
-                    AddToList(list, nameof(request.Protocol), request.Protocol);
-                }
+                    var headerDictionary = new HeaderDictionary();
+                    var loggingContext = new HttpRequestLoggingContext(context, options, headerDictionary);
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestMethod))
-                {
-                    AddToList(list, nameof(request.Method), request.Method);
-                }
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
+                    {
+                        loggingContext.Protocol = request.Protocol;
+                    }
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestScheme))
-                {
-                    AddToList(list, nameof(request.Scheme), request.Scheme);
-                }
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestMethod))
+                    {
+                        loggingContext.Method = request.Method;
+                    }
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
-                {
-                    AddToList(list, nameof(request.PathBase), request.PathBase);
-                    AddToList(list, nameof(request.Path), request.Path);
-                }
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestScheme))
+                    {
+                        loggingContext.Scheme = request.Scheme;
+                    }
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestQuery))
-                {
-                    AddToList(list, nameof(request.QueryString), request.QueryString.Value);
-                }
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
+                    {
+                        loggingContext.PathBase = request.PathBase;
+                        loggingContext.Path = request.Path;
+                    }
 
-                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestQuery))
+                    {
+                        loggingContext.Query = request.QueryString.ToString();
+                    }
+
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+                    {
+                        FilterHeaders(headerDictionary, request.Headers, options._internalRequestHeaders);
+                    }
+
+                    await options.ModifyRequestLog(loggingContext);
+
+                    AddToList(list, nameof(request.Protocol), loggingContext.Protocol);
+                    AddToList(list, nameof(request.Method), loggingContext.Method);
+                    AddToList(list, nameof(request.Scheme), loggingContext.Scheme);
+                    AddToList(list, nameof(request.PathBase), loggingContext.PathBase);
+                    AddToList(list, nameof(request.Path), loggingContext.Path);
+                    AddToList(list, nameof(request.QueryString), loggingContext.Query);
+                    AddHeaders(list, headerDictionary);
+
+                    foreach (var item in loggingContext.Extra)
+                    {
+                        AddToList(list, item.Item1, item.Item2);
+                    }
+                }
+                else
                 {
-                    FilterHeaders(list, request.Headers, options._internalRequestHeaders);
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
+                    {
+                        AddToList(list, nameof(request.Protocol), request.Protocol);
+                    }
+
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestMethod))
+                    {
+                        AddToList(list, nameof(request.Method), request.Method);
+                    }
+
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestScheme))
+                    {
+                        AddToList(list, nameof(request.Scheme), request.Scheme);
+                    }
+
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
+                    {
+                        AddToList(list, nameof(request.PathBase), request.PathBase);
+                        AddToList(list, nameof(request.Path), request.Path);
+                    }
+
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestQuery))
+                    {
+                        AddToList(list, nameof(request.QueryString), request.QueryString.Value);
+                    }
+
+                    if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+                    {
+                        FilterHeaders(list, request.Headers, options._internalRequestHeaders);
+                    }
                 }
 
                 if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestBody))
@@ -131,11 +186,6 @@ namespace Microsoft.AspNetCore.HttpLogging
                     {
                         _logger.UnrecognizedMediaType();
                     }
-                }
-
-                if (options.ModifyRequestLog != null)
-                {
-                    await options.ModifyRequestLog(context, options, list);
                 }
 
                 var httpRequestLog = new HttpRequestLog(list);
@@ -218,20 +268,43 @@ namespace Microsoft.AspNetCore.HttpLogging
             var list = new List<KeyValuePair<string, string?>>(
                 response.Headers.Count + DefaultResponseFieldsMinusHeaders);
 
-            if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
-            {
-                list.Add(new KeyValuePair<string, string?>(nameof(response.StatusCode),
-                    response.StatusCode.ToString(CultureInfo.InvariantCulture)));
-            }
-
-            if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
-            {
-                FilterHeaders(list, response.Headers, options._internalResponseHeaders);
-            }
 
             if (options.ModifyResponseLog != null)
             {
-                await options.ModifyResponseLog(context, options, list);
+                var headerDictionary = new HeaderDictionary();
+                var responseLoggingContext = new HttpResponseLoggingContext(context, options, headerDictionary);
+
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
+                {
+                    responseLoggingContext.StatusCode = response.StatusCode.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+                {
+                    FilterHeaders(headerDictionary, response.Headers, options._internalRequestHeaders);
+                }
+
+                await options.ModifyResponseLog(responseLoggingContext);
+
+                list.Add(new KeyValuePair<string, string?>(nameof(response.StatusCode), responseLoggingContext.StatusCode));
+                AddHeaders(list, responseLoggingContext.Headers);
+                foreach (var item in responseLoggingContext.Extra)
+                {
+                    AddToList(list, item.Item1, item.Item2);
+                }
+            }
+            else
+            {
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
+                {
+                    list.Add(new KeyValuePair<string, string?>(nameof(response.StatusCode),
+                        response.StatusCode.ToString(CultureInfo.InvariantCulture)));
+                }
+
+                if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
+                {
+                    FilterHeaders(list, response.Headers, options._internalResponseHeaders);
+                }
             }
 
             var httpResponseLog = new HttpResponseLog(list);
@@ -251,6 +324,31 @@ namespace Microsoft.AspNetCore.HttpLogging
                     keyValues.Add(new KeyValuePair<string, string?>(key, Redacted));
                     continue;
                 }
+                keyValues.Add(new KeyValuePair<string, string?>(key, value.ToString()));
+            }
+        }
+
+        internal static void FilterHeaders(HeaderDictionary output,
+            IHeaderDictionary input,
+            HashSet<string> allowedHeaders)
+        {
+            foreach (var (key, value) in input)
+            {
+                if (!allowedHeaders.Contains(key))
+                {
+                    // Key is not among the "only listed" headers.
+                    output.Add(new KeyValuePair<string, StringValues>(key, Redacted));
+                    continue;
+                }
+                output.Add(new KeyValuePair<string, StringValues>(key, value.ToString()));
+            }
+        }
+
+        internal static void AddHeaders(List<KeyValuePair<string, string?>> keyValues,
+          IHeaderDictionary input)
+        {
+            foreach (var (key, value) in input)
+            {
                 keyValues.Add(new KeyValuePair<string, string?>(key, value.ToString()));
             }
         }

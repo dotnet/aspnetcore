@@ -80,11 +80,11 @@ namespace Microsoft.AspNetCore.HttpLogging
         /// <summary>
         /// 
         /// </summary>
-        public Func<HttpContext, HttpLoggingOptions, IList<KeyValuePair<string, string?>>, ValueTask>? ModifyRequestLog { get; set; }
+        public Func<HttpRequestLoggingContext, ValueTask>? ModifyRequestLog { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public Func<HttpContext, HttpLoggingOptions, IList<KeyValuePair<string, string?>>, ValueTask>? ModifyResponseLog { get; set; }
+        public Func<HttpResponseLoggingContext, ValueTask>? ModifyResponseLog { get; set; }
     }
 }

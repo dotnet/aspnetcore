@@ -25,9 +25,9 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.HttpLoggingOptions() -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.LoggingFields.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.MediaTypeOptions.get -> Microsoft.AspNetCore.HttpLogging.MediaTypeOptions!
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ModifyRequestLog.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!, System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string!, string?>>!, System.Threading.Tasks.ValueTask>?
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ModifyRequestLog.get -> System.Func<Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext!, System.Threading.Tasks.ValueTask>?
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ModifyRequestLog.set -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ModifyResponseLog.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!, System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string!, string?>>!, System.Threading.Tasks.ValueTask>?
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ModifyResponseLog.get -> System.Func<Microsoft.AspNetCore.HttpLogging.HttpResponseLoggingContext!, System.Threading.Tasks.ValueTask>?
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ModifyResponseLog.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestBodyLogLimit.set -> void
@@ -35,6 +35,30 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestHeaders.get -> System
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseHeaders.get -> System.Collections.Generic.ISet<string!>!
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Extra.get -> System.Collections.Generic.List<(string!, string!)>!
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Headers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Method.get -> string?
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Method.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Options.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Path.get -> string?
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Path.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.PathBase.get -> string?
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.PathBase.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Protocol.get -> string?
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Protocol.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Query.get -> string?
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Query.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Scheme.get -> string?
+Microsoft.AspNetCore.HttpLogging.HttpRequestLoggingContext.Scheme.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpResponseLoggingContext
+Microsoft.AspNetCore.HttpLogging.HttpResponseLoggingContext.Extra.get -> System.Collections.Generic.List<(string!, string!)>!
+Microsoft.AspNetCore.HttpLogging.HttpResponseLoggingContext.Headers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
+Microsoft.AspNetCore.HttpLogging.HttpResponseLoggingContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.HttpLogging.HttpResponseLoggingContext.Options.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions!
+Microsoft.AspNetCore.HttpLogging.HttpResponseLoggingContext.StatusCode.get -> string?
+Microsoft.AspNetCore.HttpLogging.HttpResponseLoggingContext.StatusCode.set -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddBinary(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! mediaType) -> void
 Microsoft.AspNetCore.HttpLogging.MediaTypeOptions.AddBinary(string! contentType) -> void

@@ -864,9 +864,9 @@ namespace Microsoft.AspNetCore.HttpLogging
             var options = CreateOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.Request;
 
-            options.CurrentValue.ModifyRequestLog = (c, o, l) =>
+            options.CurrentValue.ModifyRequestLog = (context) =>
             {
-                l.Add(new KeyValuePair<string, string>("Trace Identifier", c.TraceIdentifier));
+                context.Extra.Add(new("Trace Identifier", context.HttpContext.TraceIdentifier));
                 return default;
             };
 
@@ -906,10 +906,10 @@ namespace Microsoft.AspNetCore.HttpLogging
             var options = CreateOptionsAccessor();
             options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
             string traceIdentifier = null;
-            options.CurrentValue.ModifyResponseLog = (c, o, l) =>
+            options.CurrentValue.ModifyResponseLog = (context) =>
             {
-                traceIdentifier = c.TraceIdentifier;
-                l.Add(new KeyValuePair<string, string>("Trace Identifier", traceIdentifier));
+                traceIdentifier = context.HttpContext.TraceIdentifier;
+                context.Extra.Add(new ("Trace Identifier", traceIdentifier));
                 return default;
             };
 
