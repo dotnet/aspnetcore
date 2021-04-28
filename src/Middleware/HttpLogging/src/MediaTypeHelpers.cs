@@ -28,7 +28,10 @@ namespace Microsoft.AspNetCore.HttpLogging
                 return false;
             }
 
-            var mediaType = new MediaTypeHeaderValue(contentType);
+            if (!MediaTypeHeaderValue.TryParse(contentType, out var mediaType))
+            {
+                return false;
+            }
 
             if (mediaType.Charset.HasValue)
             {
