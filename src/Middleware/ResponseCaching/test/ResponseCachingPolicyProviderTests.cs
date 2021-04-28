@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Request.Method = HttpMethods.Get;
-            context.HttpContext.Request.Headers.Authorization = "Basic plaintextUN:plaintextPW";
+            context.HttpContext.Request.Headers.Authorization = "Placeholder";
 
             Assert.False(new ResponseCachingPolicyProvider().AttemptResponseCaching(context));
             TestUtils.AssertLoggedMessages(
