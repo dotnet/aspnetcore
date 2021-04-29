@@ -371,7 +371,7 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactorRe
 ~static Microsoft.AspNetCore.Identity.UserManager<TUser>.GetChangeEmailTokenPurpose(string newEmail) -> string
 ~static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityCore<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.AspNetCore.Identity.IdentityBuilder
 ~static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityCore<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions> setupAction) -> Microsoft.AspNetCore.Identity.IdentityBuilder
-~static System.Security.Claims.PrincipalExtensions.FindFirstValue(this System.Security.Claims.ClaimsPrincipal principal, string claimType) -> string
+~static System.Security.Claims.PrincipalExtensions.FindFirstValue(this System.Security.Claims.ClaimsPrincipal principal, string claimType) -> string?
 ~static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultAuthenticatorProvider -> string
 ~static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultEmailProvider -> string
 ~static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultPhoneProvider -> string
