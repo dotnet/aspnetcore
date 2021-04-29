@@ -20,26 +20,20 @@ namespace Microsoft.AspNetCore.WebUtilities
     {
         /// <summary>
         /// Gets the default value for <see cref="ValueCountLimit"/>.
+        /// Defaults to 1024.
         /// </summary>
-        /// <value>
-        /// Defaults to <c>1024</c>.
-        /// </value>
         public const int DefaultValueCountLimit = 1024;
 
         /// <summary>
         /// Gets the default value for <see cref="KeyLengthLimit"/>.
+        /// Defaults to 2,048 bytes‬, which is approximately 2KB.
         /// </summary>
-        /// <value>
-        /// Defaults to <c>2,048 bytes‬</c>, which is approximately 16.38KB.
-        /// </value>
         public const int DefaultKeyLengthLimit = 1024 * 2;
 
         /// <summary>
         /// Gets the default value for <see cref="ValueLengthLimit" />.
+        /// Defaults to 4,194,304 bytes‬, which is approximately 4MB.
         /// </summary>
-        /// <value>
-        /// Defaults to <c>4,194,304 bytes‬</c>, which is approximately 4.19MB.
-        /// </value>
         public const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 
         private const int _rentedCharPoolLength = 8192;
@@ -83,7 +77,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <summary>
         /// Initializes a new instance of <see cref="FormReader"/>.
         /// </summary>
-        /// <param name="stream">The <see cref="Stream"/> to read. Assumes a <c>utf-8</c> encoded stream.</param>
+        /// <param name="stream">The <see cref="Stream"/> to read. Assumes a utf-8 encoded stream.</param>
         public FormReader(Stream stream)
             : this(stream, Encoding.UTF8, ArrayPool<char>.Shared)
         {
