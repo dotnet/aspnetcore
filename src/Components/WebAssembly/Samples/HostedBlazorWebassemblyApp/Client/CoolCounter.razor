@@ -1,15 +1,5 @@
-﻿<p>Current count: @currentCount, Step: @Increment</p>
+﻿<p>Current count: @currentCount, Step: @Increment, MaxCount: @MaxCount</p>
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
-@if(_dictionary != null)
-{
-	<p>Parameters had @(_dictionary.Count) values.</p>
-	<ul>
- 	@foreach(var (key,value) in _dictionary)
-	{
-		<li>@(key): @value</li>
-	}
-	</ul>	 
-}
 
 @code {
 	private int currentCount = 0;

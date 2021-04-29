@@ -17,6 +17,7 @@
 <body>
 	<button id="start" onclick="loadMe()" disabled>Click me to render the App component</button>
 	<button id="stop" onclick="unloadMe()" disabled>Remove app component</button>
+	<input id="increment" type="number" step="1" onchange="updateIncrementAmount()" placeholder="Update the increment amount" />
 	<script src="_framework/blazor.webassembly.js" autostart="false"></script>
 	<script>
 		var proxies = [];
@@ -42,6 +43,16 @@
 			document.querySelector('body').removeChild(element);
 
 			document.querySelector('#stop').disabled = proxies.length === 0;
+		}
+
+		async function updateIncrementAmount(){
+			if(proxies.length === 0){
+				console.log('No components to update.');
+			}
+			const increment = document.querySelector('#increment').value;
+			for(let proxy of proxies){
+				proxy.setParameters({ Increment: Number.parseInt(increment), MaxCount: 20 });
+			}
 		}
 
 		Blazor.start({})
