@@ -66,7 +66,7 @@ namespace Microsoft.JSInterop
             // Act
             var task = runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true);
 
-            runtime.EndInvokeJS(2, succeeded: true, ref reader);
+            runtime.EndInvokeJS(2, succeeded: true, ref reader, byteArrays: null);
 
             Assert.True(task.IsCompletedSuccessfully);
         }
@@ -122,8 +122,9 @@ namespace Microsoft.JSInterop
             // Act/Assert: Task can be completed
             runtime.EndInvokeJS(
                 runtime.BeginInvokeCalls[1].AsyncHandle,
-                /* succeeded: */ true,
-                ref reader);
+                succeeded: true,
+                ref reader,
+                byteArrays: null);
             Assert.False(unrelatedTask.IsCompleted);
             Assert.True(task.IsCompleted);
             Assert.Equal("my result", task.Result);
@@ -136,19 +137,21 @@ namespace Microsoft.JSInterop
             var runtime = new TestJSRuntime();
 
             var task = runtime.InvokeAsync<TestPoco>("test identifier", Array.Empty<object>());
-            var bytes = Encoding.UTF8.GetBytes("{\"id\":10, \"name\": \"Test\"}");
+            var bytes = Encoding.UTF8.GetBytes("{\"id\":10, \"name\": \"Test\", \"bytes\": { \"__byte[]\": 0 }}");
             var reader = new Utf8JsonReader(bytes);
 
             // Act/Assert: Task can be completed
             runtime.EndInvokeJS(
                 runtime.BeginInvokeCalls[0].AsyncHandle,
-                /* succeeded: */ true,
-                ref reader);
+                succeeded: true,
+                ref reader,
+                byteArrays: new[] { new byte[] { 0x1, 0x2 } });
             Assert.True(task.IsCompleted);
             var poco = task.Result;
             Debug.Assert(poco != null);
             Assert.Equal(10, poco.Id);
             Assert.Equal("Test", poco.Name);
+            Assert.Equal(new byte[] { 0x1, 0x2 }, poco.Bytes);
         }
 
         [Fact]
@@ -165,8 +168,9 @@ namespace Microsoft.JSInterop
             // Act/Assert: Task can be completed
             runtime.EndInvokeJS(
                 runtime.BeginInvokeCalls[0].AsyncHandle,
-                /* succeeded: */ true,
-                ref reader);
+                succeeded: true,
+                ref reader,
+                byteArrays: null);
             Assert.True(task.IsCompleted);
             var poco = task.Result;
             Debug.Assert(poco != null);
@@ -192,8 +196,9 @@ namespace Microsoft.JSInterop
             // Act/Assert: Task can be failed
             runtime.EndInvokeJS(
                 runtime.BeginInvokeCalls[1].AsyncHandle,
-                /* succeeded: */ false,
-                ref reader);
+                succeeded: false,
+                ref reader,
+                byteArrays: null);
             Assert.False(unrelatedTask.IsCompleted);
             Assert.True(task.IsCompleted);
 
@@ -219,8 +224,9 @@ namespace Microsoft.JSInterop
             // Act/Assert: Task can be failed
             runtime.EndInvokeJS(
                 runtime.BeginInvokeCalls[1].AsyncHandle,
-                /* succeeded: */ true,
-                ref reader);
+                succeeded: true,
+                ref reader,
+                byteArrays: null);
             Assert.False(unrelatedTask.IsCompleted);
 
             return AssertTask();
@@ -244,8 +250,8 @@ namespace Microsoft.JSInterop
             var firstReader = new Utf8JsonReader(Encoding.UTF8.GetBytes("\"Some data\""));
             var secondReader = new Utf8JsonReader(Encoding.UTF8.GetBytes("\"Exception\""));
 
-            runtime.EndInvokeJS(asyncHandle, true, ref firstReader);
-            runtime.EndInvokeJS(asyncHandle, false, ref secondReader);
+            runtime.EndInvokeJS(asyncHandle, true, ref firstReader, byteArrays: null);
+            runtime.EndInvokeJS(asyncHandle, false, ref secondReader, byteArrays: null);
 
             return AssertTask();
 
@@ -333,6 +339,8 @@ namespace Microsoft.JSInterop
             public int Id { get; set; }
 
             public string? Name { get; set; }
+
+            public byte[]? Bytes { get; set; }
         }
 
         class TestJSRuntime : JSRuntime
@@ -380,7 +388,7 @@ namespace Microsoft.JSInterop
                 });
             }
 
-            protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+            protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, byte[][]? byteArrays, JSCallResultType resultType, long targetInstanceId)
             {
                 BeginInvokeCalls.Add(new BeginInvokeAsyncArgs
                 {

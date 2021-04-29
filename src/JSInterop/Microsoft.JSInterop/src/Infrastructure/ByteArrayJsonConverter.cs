@@ -24,7 +24,7 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             if (_jsRuntime.ByteArraysToDeserialize is null)
             {
-                throw new JsonException($"ByteArraysToDeserialize not set.");
+                throw new JsonException("ByteArraysToDeserialize not set.");
             }
 
             long? byteArrayIndex = null;

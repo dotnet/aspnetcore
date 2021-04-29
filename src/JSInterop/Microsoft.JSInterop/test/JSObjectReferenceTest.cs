@@ -73,7 +73,7 @@ namespace Microsoft.JSInterop.Tests
         {
             public int BeginInvokeJSInvocationCount { get; private set; }
 
-            protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+            protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, byte[][]? byteArrays, JSCallResultType resultType, long targetInstanceId)
             {
                 BeginInvokeJSInvocationCount++;
             }
@@ -87,7 +87,7 @@ namespace Microsoft.JSInterop.Tests
         {
             public int InvokeJSInvocationCount { get; private set; }
 
-            protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+            protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, byte[][]? byteArrays, JSCallResultType resultType, long targetInstanceId)
             {
             }
 
