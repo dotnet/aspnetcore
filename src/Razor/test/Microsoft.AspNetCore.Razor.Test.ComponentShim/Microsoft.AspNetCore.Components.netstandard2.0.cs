@@ -383,6 +383,7 @@ namespace Microsoft.AspNetCore.Components.CompilerServices
         public static Microsoft.AspNetCore.Components.EventCallback<T> CreateInferredEventCallback<T>(object receiver, System.Action<T> callback, T value) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<T> CreateInferredEventCallback<T>(object receiver, System.Func<T, System.Threading.Tasks.Task> callback, T value) { throw null; }
         public static T TypeCheck<T>(T value) { throw null; }
+        public static T TypeCheckDelegate<T>(T value) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Components.Rendering

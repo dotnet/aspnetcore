@@ -23,7 +23,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            __builder.AddAttribute(2, "OnChanged", new System.Action<System.Int32>(__value => ParentValue = __value));
+            __builder.AddAttribute(2, "OnChanged", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheckDelegate<System.Action<System.Int32>>(__value => ParentValue = __value));
             __builder.CloseComponent();
         }
         #pragma warning restore 1998

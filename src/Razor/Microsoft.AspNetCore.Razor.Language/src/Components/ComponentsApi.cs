@@ -106,6 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public static class RuntimeHelpers
         {
             public static readonly string TypeCheck = "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck";
+            public static readonly string TypeCheckDelegate = "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheckDelegate";
             public static readonly string CreateInferredEventCallback = "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback";
         }
 

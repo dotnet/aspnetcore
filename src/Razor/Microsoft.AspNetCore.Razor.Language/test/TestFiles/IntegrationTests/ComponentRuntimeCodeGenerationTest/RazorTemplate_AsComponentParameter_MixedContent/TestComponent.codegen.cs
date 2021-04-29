@@ -52,7 +52,7 @@ namespace Test
 #line hidden
 #nullable disable
             __builder.OpenComponent<Test.MyComponent>(5);
-            __builder.AddAttribute(6, "Template", new Microsoft.AspNetCore.Components.RenderFragment<Test.Context>(
+            __builder.AddAttribute(6, "Template", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheckDelegate<Microsoft.AspNetCore.Components.RenderFragment<Test.Context>>(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                         template

@@ -22,6 +22,31 @@ namespace Microsoft.AspNetCore.Components.CompilerServices
         /// <summary>
         /// Not intended for use by application code.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <remarks>
+        /// The method is designed to be used in the logic that generates the
+        /// runtime code for a given delegate attribute in the compiler.
+        /// Components accept delegate attributes with values that include:
+        /// * References to Action parameters
+        /// * References to a method group
+        /// * Actions defined via a lambda expression
+        /// Previously, the Razor compiler used a {node.TypeName} constructor to
+        /// support converting method groups to a delegate types in the compiler.
+        /// However, this made it impossible to pass nullable Action types to
+        /// components. Instead of using the constructor to support the conversion,
+        /// we use the `TypeCheckDelegate` conversion which handles the method group
+        /// conversion and supports null values of T.
+        /// </remarks>
+        public static T TypeCheckDelegate<T>(T value)
+        {
+            T explicitValue = (T) value;
+            return explicitValue;
+        }
+
+        /// <summary>
+        /// Not intended for use by application code.
+        /// </summary>
         /// <param name="receiver"></param>
         /// <param name="callback"></param>
         /// <param name="value"></param>
