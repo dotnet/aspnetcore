@@ -68,6 +68,9 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                         options.Listen(IPAddress.Loopback, 0);
                     })
                     .Configure(startup);
+                }).ConfigureHostOptions(o =>
+                {
+                    o.ShutdownTimeout = TimeSpan.FromSeconds(30);
                 }).Build();
 
             host.Start();
