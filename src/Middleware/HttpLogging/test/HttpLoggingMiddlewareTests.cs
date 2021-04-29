@@ -866,6 +866,13 @@ namespace Microsoft.AspNetCore.HttpLogging
 
             options.CurrentValue.ModifyRequestLog = (context) =>
             {
+                context.Headers["Connection"] = "Custom";
+                context.Protocol = "Custom";
+                context.Scheme = "Custom";
+                context.Method = "Custom";
+                context.Path = "Custom";
+                context.PathBase = "Custom";
+                context.Query = "Custom";
                 context.Extra.Add(new("Trace Identifier", context.HttpContext.TraceIdentifier));
                 return default;
             };
@@ -886,17 +893,16 @@ namespace Microsoft.AspNetCore.HttpLogging
             httpContext.Request.PathBase = new PathString("/foo");
             httpContext.Request.QueryString = new QueryString("?foo");
             httpContext.Request.Headers["Connection"] = "keep-alive";
-            httpContext.Request.ContentType = "text/plain";
             httpContext.TraceIdentifier = "123";
 
             await middleware.Invoke(httpContext);
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Method: GET"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("QueryString: ?foo"));
-            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: Custom"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Method: Custom"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: Custom"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: Custom"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("PathBase: Custom"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("QueryString: Custom"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: Custom"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains("Trace Identifier: 123"));
         }
 
@@ -909,6 +915,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             options.CurrentValue.ModifyResponseLog = (context) =>
             {
                 traceIdentifier = context.HttpContext.TraceIdentifier;
+                context.Headers["Connection"] = "Custom";
+                context.StatusCode = "300";
                 context.Extra.Add(new ("Trace Identifier", traceIdentifier));
                 return default;
             };
@@ -924,6 +932,8 @@ namespace Microsoft.AspNetCore.HttpLogging
             var httpContext = new DefaultHttpContext();
 
             await middleware.Invoke(httpContext);
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains($"Connection: Custom"));
+            Assert.Contains(TestSink.Writes, w => w.Message.Contains($"StatusCode: 300"));
             Assert.Contains(TestSink.Writes, w => w.Message.Contains($"Trace Identifier: {traceIdentifier}"));
         }
 
