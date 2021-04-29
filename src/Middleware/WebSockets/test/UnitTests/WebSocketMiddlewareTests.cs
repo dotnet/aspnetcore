@@ -169,6 +169,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         public async Task SendFragmentedData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
                 Assert.True(context.WebSockets.IsWebSocketRequest);
@@ -180,6 +181,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                 Assert.Equal(2, result.Count);
                 int totalReceived = result.Count;
                 Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+                tcs.SetResult();
 
                 result = await webSocket.ReceiveAsync(
                     new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
@@ -187,6 +189,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                 Assert.Equal(2, result.Count);
                 totalReceived += result.Count;
                 Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+                tcs.SetResult();
 
                 result = await webSocket.ReceiveAsync(
                     new ArraySegment<byte>(serverBuffer, totalReceived, serverBuffer.Length - totalReceived), CancellationToken.None);
@@ -202,7 +205,11 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                 {
                     await client.ConnectAsync(new Uri($"ws://127.0.0.1:{port}/"), CancellationToken.None);
                     await client.SendAsync(new ArraySegment<byte>(orriginalData, 0, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                    await tcs.Task;
+                    tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     await client.SendAsync(new ArraySegment<byte>(orriginalData, 2, 2), WebSocketMessageType.Binary, false, CancellationToken.None);
+                    await tcs.Task;
+                    tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     await client.SendAsync(new ArraySegment<byte>(orriginalData, 4, 7), WebSocketMessageType.Binary, true, CancellationToken.None);
                 }
             }
