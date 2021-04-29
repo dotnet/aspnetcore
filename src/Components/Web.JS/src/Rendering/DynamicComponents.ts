@@ -41,6 +41,10 @@ export class ComponentProxy {
     this.element.innerHTML = '';
   }
 
+  public async raiseEvent(eventName: string, eventArgs: unknown) {
+    this.element.dispatchEvent(new CustomEvent(eventName, { detail: eventArgs }));
+  }
+
   private ensureHandler() {
     if (this.disposed) {
       throw new Error('The component has already been disposed.');

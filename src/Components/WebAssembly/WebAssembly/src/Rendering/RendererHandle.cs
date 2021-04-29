@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 
         private ParameterView DeserializeParameters(DynamicComponentDefinition componentDefinition, IJSObjectReference eventRaiser, IDictionary<string, object> parameters)
         {
-            var extraParameters = componentDefinition.HasCatchAllProperty ? new HashSet<string>(StringComparer.Ordinal) : null;
+            var extraParameters = componentDefinition.HasCatchAllProperty ? new HashSet<string>(StringComparer.OrdinalIgnoreCase) : null;
             // Could we just reuse the dictionary?
             var deserializedParameters = new Dictionary<string, object?>();
             foreach (var (name, value) in parameters)
@@ -79,7 +79,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                     }
                     else
                     {
-                        //
                     }
 
                     continue;
@@ -92,6 +91,21 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 else
                 {
                     throw new InvalidOperationException($"Invalid additional parameter '{name}'");
+                }
+            }
+
+            if (componentDefinition.HasCallbackParameter)
+            {
+                foreach (var definition in componentDefinition.Parameters)
+                {
+                    var type = definition.ParameterType;
+                    if (definition.IsCallback && !deserializedParameters.ContainsKey(definition.Name))
+                    {
+                        if (type == typeof(EventCallback))
+                        {
+                            deserializedParameters.Add(definition.Name, new EventCallback(null, new Func<Task>(async () => await eventRaiser.InvokeVoidAsync("raiseEvent", definition.Name))));
+                        }
+                    }
                 }
             }
 
