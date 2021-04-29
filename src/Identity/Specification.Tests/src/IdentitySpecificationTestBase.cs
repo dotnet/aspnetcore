@@ -137,6 +137,16 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
             Assert.True(await manager.RoleExistsAsync(roleName));
         }
+        
+        [Fact]
+        public async Task CanCreateRoleTestWithGeorgianNames()
+        {
+            var manager = CreateRoleManager();
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityRole("ადმინისტრატორი")));
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityRole("მენეჯერი")));
+            Assert.True(await manager.RoleExistsAsync("ადმინისტრატორი"));
+            Assert.True(await manager.RoleExistsAsync("მენეჯერი"));
+        }        
 
         private class AlwaysBadValidator : IUserValidator<TUser>, IRoleValidator<TRole>,
             IPasswordValidator<TUser>
