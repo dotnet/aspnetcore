@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
@@ -108,7 +109,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-            var result = _cache!.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
+            var result = _cache.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
                 new RedisValue[]
                 {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -178,6 +179,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             await GetAndRefreshAsync(key, getData: false, token: token).ConfigureAwait(false);
         }
 
+        [MemberNotNull(nameof(_cache))]
         private void Connect()
         {
             CheckDisposed();
@@ -232,7 +234,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             {
                 if (_cache == null)
                 {
-                    if(_options.ConnectionMultiplexerFactory == null)
+                    if(_options.ConnectionMultiplexerFactory is null)
                     {
                         if (_options.ConfigurationOptions is not null)
                         {
@@ -280,11 +282,11 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             RedisValue[] results;
             if (getData)
             {
-                results = _cache!.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
+                results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
             }
             else
             {
-                results = _cache!.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
+                results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
             }
 
             // TODO: Error handling
@@ -350,7 +352,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             Connect();
 
-            _cache!.KeyDelete(_instance + key);
+            _cache.KeyDelete(_instance + key);
             // TODO: Error handling
         }
 
