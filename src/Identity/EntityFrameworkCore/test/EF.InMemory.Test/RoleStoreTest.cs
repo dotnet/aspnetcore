@@ -41,6 +41,23 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         }
 
         [Fact]
+        public async Task CanCreateRoleWithSingletonManager()
+        {
+            var services = TestIdentityFactory.CreateTestServices();
+            services.AddEntityFrameworkSqlite();
+            services.AddSingleton(InMemoryContext.Create(_fixture.Connection));
+            services.AddTransient<IRoleStore<IdentityRole>, RoleStore<IdentityRole, InMemoryContext>>();
+            services.AddSingleton<RoleManager<IdentityRole>>();
+            var provider = services.BuildServiceProvider();
+            var manager = provider.GetRequiredService<RoleManager<IdentityRole>>();
+            Assert.NotNull(manager);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityRole("ადმინისტრატორი")));
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityRole("მენეჯერი")));
+        }
+
+        
+
+        [Fact]
         public async Task RoleStoreMethodsThrowWhenDisposedTest()
         {
             var store = new RoleStore<IdentityRole>(InMemoryContext.Create(_fixture.Connection));
