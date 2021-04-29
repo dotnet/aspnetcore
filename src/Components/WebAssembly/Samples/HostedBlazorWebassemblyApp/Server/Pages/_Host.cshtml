@@ -22,10 +22,12 @@
 		var proxies = [];
 		async function loadMe(){
 			var component = document.createElement("div");
-			proxies.push(await Blazor.renderRootComponent('my-cool-counter', component, { Increment: 2 }));
+			proxies.push(await Blazor.renderRootComponent('my-cool-counter', component, { Increment: 2, MaxCount: 20 }));
 
 			document.querySelector('body').appendChild(component);
 			document.querySelector('#stop').disabled = false;
+
+			component.addEventListener('MaxCountReached', (event) => { alert('Max count reached!') });
 		}
 
 		async function unloadMe(){

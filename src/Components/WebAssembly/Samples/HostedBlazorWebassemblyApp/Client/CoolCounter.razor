@@ -18,9 +18,17 @@
 
 	[Parameter] public int Increment { get; set; }
 
-    private void IncrementCount()
+	[Parameter] public int MaxCount { get; set; }
+
+	[Parameter] public EventCallback MaxCountReached { get; set; }
+
+    private async Task IncrementCount()
     {
         currentCount+= Increment;
+		if(currentCount >= MaxCount)
+		{
+			await MaxCountReached.InvokeAsync();
+		}
     }
 
 	public override async Task SetParametersAsync(ParameterView parameters)
