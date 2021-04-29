@@ -133,11 +133,19 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
 
     const componentRenderer = renderer;
-    Blazor.renderRootComponent = async (typeNameOrAlias: string, targetElement: HTMLElement, parameters: object): Promise<ComponentProxy> => {
+    Blazor.renderRootComponent = async (elementName: string, targetElement: HTMLElement, parameters: object): Promise<ComponentProxy> => {
       const proxy = componentAttacher.registerDynamicComponent(targetElement);
       // TODO: Should `renderRootComponent` on the dotnet side wait until the component has fully rendered the first time to return
       // the handle?
-      const componentHandle = await componentRenderer.invokeMethodAsync<DotNet.DotNetObject>('RenderRootComponent', typeNameOrAlias, proxy.id.toString(), parameters);
+
+      const proxyAsJSObjectRef = DotNet.createJSObjectReference(proxy);
+
+      const componentHandle = await componentRenderer.invokeMethodAsync<DotNet.DotNetObject>(
+        'RenderRootComponent',
+        elementName,
+        proxy.id.toString(),
+        proxyAsJSObjectRef,
+        parameters);
       proxy.setHandler(componentHandle);
       return proxy;
     };

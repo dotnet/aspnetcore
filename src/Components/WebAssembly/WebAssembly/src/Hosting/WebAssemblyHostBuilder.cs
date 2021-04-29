@@ -64,6 +64,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             // less opinionated.
             Configuration = new WebAssemblyHostConfiguration();
             RootComponents = new RootComponentMappingCollection();
+            DynamicComponentDefinitions = new();
             Services = new ServiceCollection();
             Logging = new LoggingBuilder(Services);
 
@@ -172,6 +173,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         public RootComponentMappingCollection RootComponents { get; }
 
         /// <summary>
+        /// Gets the collection of root component mappings configured for the application.
+        /// </summary>
+        public DynamicComponentCollection DynamicComponentDefinitions { get; }
+
+        /// <summary>
         /// Gets the service collection.
         /// </summary>
         public IServiceCollection Services { get; }
@@ -240,6 +246,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 scope,
                 Configuration,
                 RootComponents,
+                DynamicComponentDefinitions,
                 _rootComponentCache,
                 _persistedState);
         }

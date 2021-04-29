@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Lifetime;
 using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private readonly IServiceProvider _services;
         private readonly IConfiguration _configuration;
         private readonly RootComponentMappingCollection _rootComponents;
+        private readonly DynamicComponentCollection _dynamicComponents;
         private readonly RootComponentTypeCache _rootComponentTypeCache;
         private readonly string? _persistedState;
 
@@ -48,6 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             AsyncServiceScope scope,
             IConfiguration configuration,
             RootComponentMappingCollection rootComponents,
+            DynamicComponentCollection dynamicComponents,
             RootComponentTypeCache rootComponentTypeCache,
             string? persistedState)
         {
@@ -58,6 +61,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             _scope = scope;
             _configuration = configuration;
             _rootComponents = rootComponents;
+            _dynamicComponents = dynamicComponents;
             _rootComponentTypeCache = rootComponentTypeCache;
             _persistedState = persistedState;
         }
@@ -157,10 +161,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var jsRuntime = _scope.ServiceProvider.GetRequiredService<IJSRuntime>();
                 _rendererHandle = new RendererHandle(
                     _renderer,
+                    _dynamicComponents,
                     _rootComponentTypeCache,
-                    jsRuntime);
+                    DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions());
 
-                await _rendererHandle.Initialize();
+                await _rendererHandle.Initialize(DefaultWebAssemblyJSRuntime.Instance);
 
                 var initializationTcs = new TaskCompletionSource();
                 WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
@@ -169,7 +174,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
                     try
                     {
-                foreach (var rootComponent in rootComponents)
+                        foreach (var rootComponent in rootComponents)
                         {
                             await renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
                         }

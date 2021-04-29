@@ -1,4 +1,19 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentCollection
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentCollection.DynamicComponentCollection() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentCollection.Register(string! elementName, System.Type! componentType) -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentDefinition!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentCollection.Register<TComponent>(string! elementName) -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentDefinition!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentDefinition
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentDefinition.AddParameter<TParameter>(string! name) -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentDefinition!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentDefinition.ComponentType.get -> System.Type!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentDefinition.DynamicComponentDefinition(string! name, System.Type! componentType) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentDefinition.Name.get -> string!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentDefinition.Parameters.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentParameter!>!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentParameter
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentParameter.DynamicComponentParameter(string! name, System.Type! parameterType) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentParameter.Name.get -> string!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentParameter.ParameterType.get -> System.Type!
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.DynamicComponentDefinitions.get -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.DynamicComponentCollection!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostConfiguration.this[string! key].get -> string?
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.BaseAddress.get -> string!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.Environment.get -> string!
