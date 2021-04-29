@@ -195,8 +195,7 @@ void Environment::CopyToDirectoryInner(const std::filesystem::path& source, cons
         {
             auto sourceInnerDirectory = path.path();
 
-            // Make sure we aren't navigating into shadow copy directory.
-            if (!std::filesystem::equivalent(sourceInnerDirectory, directoryToIgnore))
+            if (sourceInnerDirectory.wstring().rfind(directoryToIgnore, 0) != 0)
             {
                 CopyToDirectoryInner(path.path(), destination / path.path().filename(), directoryToIgnore, copiedFileCount);
             }
