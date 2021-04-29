@@ -163,9 +163,28 @@ namespace Microsoft.AspNetCore.WebSockets
                     return false;
                 }
 
-                bool validUpgrade = false, validConnection = false, validVersion = false;
+                var foundHeader = false;
 
-                var values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Connection);
+                var values = requestHeaders.GetCommaSeparatedValues(HeaderNames.SecWebSocketVersion);
+                foreach (var value in values)
+                {
+                    if (string.Equals(value, Constants.Headers.SupportedVersion, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
+                        if (values.Length == 1)
+                        {
+                            requestHeaders.SecWebSocketVersion = Constants.Headers.SupportedVersion;
+                        }
+                        foundHeader = true;
+                        break;
+                    }
+                }
+                if (!foundHeader)
+                {
+                    return false;
+                }
+
+                values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Connection);
                 foreach (var value in values)
                 {
                     if (string.Equals(value, HeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase))
@@ -175,9 +194,13 @@ namespace Microsoft.AspNetCore.WebSockets
                         {
                             requestHeaders.Connection = HeaderNames.Upgrade;
                         }
-                        validConnection = true;
+                        foundHeader = true;
                         break;
                     }
+                }
+                if (!foundHeader)
+                {
+                    return false;
                 }
 
                 values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Upgrade);
@@ -190,33 +213,17 @@ namespace Microsoft.AspNetCore.WebSockets
                         {
                             requestHeaders.Upgrade = Constants.Headers.UpgradeWebSocket;
                         }
-                        validUpgrade = true;
+                        foundHeader = true;
                         break;
                     }
                 }
-
-                values = requestHeaders.GetCommaSeparatedValues(HeaderNames.SecWebSocketVersion);
-                foreach (var value in values)
-                {
-                    if (string.Equals(value, Constants.Headers.SupportedVersion, StringComparison.OrdinalIgnoreCase))
-                    {
-                        // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
-                        if (values.Length == 1)
-                        {
-                            requestHeaders.SecWebSocketVersion = Constants.Headers.SupportedVersion;
-                        }
-                        validVersion = true;
-                        break;
-                    }
-                }
-
-
-                if (!HandshakeHelpers.IsRequestKeyValid(requestHeaders[HeaderNames.SecWebSocketKey].ToString()))
+                if (!foundHeader)
                 {
                     return false;
                 }
 
-                return validConnection && validUpgrade && validVersion;
+
+                return HandshakeHelpers.IsRequestKeyValid(requestHeaders.SecWebSocketKey.ToString());
             }
         }
     }

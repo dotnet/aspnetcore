@@ -24,12 +24,12 @@ namespace Microsoft.AspNetCore.WebSockets
         // Verify Method, Upgrade, Connection, version,  key, etc..
         public static void GenerateResponseHeaders(string key, string? subProtocol, IHeaderDictionary headers)
         {
-            headers[HeaderNames.Connection] = HeaderNames.Upgrade;
-            headers[HeaderNames.Upgrade] = Constants.Headers.UpgradeWebSocket;
-            headers[HeaderNames.SecWebSocketAccept] = CreateResponseKey(key);
+            headers.Connection = HeaderNames.Upgrade;
+            headers.Upgrade = Constants.Headers.UpgradeWebSocket;
+            headers.SecWebSocketAccept = CreateResponseKey(key);
             if (!string.IsNullOrWhiteSpace(subProtocol))
             {
-                headers[HeaderNames.SecWebSocketProtocol] = subProtocol;
+                headers.SecWebSocketProtocol = subProtocol;
             }
         }
 
