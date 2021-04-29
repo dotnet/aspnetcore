@@ -18,6 +18,8 @@ namespace HostedBlazorWebassemblyApp.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+            builder.DynamicComponentDefinitions.Register<CoolCounter>("my-cool-counter");
+
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddScoped<IWeatherForecastService, HttpWeatherForecastService>();
 

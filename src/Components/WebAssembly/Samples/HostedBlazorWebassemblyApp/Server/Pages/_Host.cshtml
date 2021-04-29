@@ -22,14 +22,7 @@
 		var proxies = [];
 		async function loadMe(){
 			var component = document.createElement("div");
-			proxies.push(await Blazor.renderRootComponent({
-				Kind: 'Descriptor',
-				Descriptor: {
-					Assembly: 'HostedBlazorWebassemblyApp.Client',
-					TypeName: 'HostedBlazorWebassemblyApp.Client.Pages.Counter'
-				},
-			},
-			component));
+			proxies.push(await Blazor.renderRootComponent('my-cool-counter', component, { Increment: 2 }));
 
 			document.querySelector('body').appendChild(component);
 			document.querySelector('#stop').disabled = false;

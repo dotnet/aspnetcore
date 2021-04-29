@@ -1,0 +1,32 @@
+﻿<p>Current count: @currentCount, Step: @Increment</p>
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+@if(_dictionary != null)
+{
+	<p>Parameters had @(_dictionary.Count) values.</p>
+	<ul>
+ 	@foreach(var (key,value) in _dictionary)
+	{
+		<li>@(key): @value</li>
+	}
+	</ul>	 
+}
+
+@code {
+	private int currentCount = 0;
+	private int _increment = 0;
+	private IReadOnlyDictionary<string, object>? _dictionary;
+
+	[Parameter] public int Increment { get; set; }
+
+    private void IncrementCount()
+    {
+        currentCount+= Increment;
+    }
+
+	public override async Task SetParametersAsync(ParameterView parameters)
+	{
+		_dictionary = parameters.ToDictionary();
+		 await base.SetParametersAsync(parameters);
+		_increment = parameters.GetValueOrDefault<int>(nameof(Increment));
+	}
+}
