@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         }
 
         [Fact]
-        public async Task CanCreateRoleWithSingletonManager()
+        public async Task CanCreateRoleWithSingletonManagerGeorgian()
         {
             var services = TestIdentityFactory.CreateTestServices();
             services.AddEntityFrameworkSqlite();

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -142,10 +143,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task CanCreateRoleTestWithGeorgianNames()
         {
             var manager = CreateRoleManager();
-            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityRole("ადმინისტრატორი")));
-            IdentityResultAssert.IsSuccess(await manager.CreateAsync(new IdentityRole("მენეჯერი")));
-            Assert.True(await manager.RoleExistsAsync("ადმინისტრატორი"));
-            Assert.True(await manager.RoleExistsAsync("მენეჯერი"));
+            var role1 = CreateTestRole("ადმინისტრატორი");
+            var role2 = CreateTestRole("მენეჯერი");
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(role1));
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(role2));
         }        
 
         private class AlwaysBadValidator : IUserValidator<TUser>, IRoleValidator<TRole>,
