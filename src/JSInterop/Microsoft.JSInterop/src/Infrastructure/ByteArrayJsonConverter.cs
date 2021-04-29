@@ -4,13 +4,12 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.JSInterop.Implementation;
 
 namespace Microsoft.JSInterop.Infrastructure
 {
     internal sealed class ByteArrayJsonConverter : JsonConverter<byte[]>
     {
-        private static readonly JsonEncodedText ByteArrayRefKey = JsonEncodedText.Encode("__byte[]");
+        internal static readonly JsonEncodedText ByteArrayRefKey = JsonEncodedText.Encode("__byte[]");
         private readonly JSRuntime _jsRuntime;
 
         public ByteArrayJsonConverter(JSRuntime jsRuntime)

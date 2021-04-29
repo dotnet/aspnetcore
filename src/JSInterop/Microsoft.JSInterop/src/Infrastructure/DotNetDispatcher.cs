@@ -33,8 +33,8 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <param name="byteArrays">Byte array data extracted from the arguments for direct transfer.</param>
-        /// <returns>A JSON representation of the return value, or null.</returns>
-        public static string? Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, string argsJson, byte[][]? byteArrays)
+        /// <returns>A tuple containing the JSON representation of the return value, or null, along with the extracted byte arrays, or null.</returns>
+        public static (string?, byte[][]?) Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, string argsJson, byte[][]? byteArrays)
         {
             // This method doesn't need [JSInvokable] because the platform is responsible for having
             // some way to dispatch calls here. The logic inside here is the thing that checks whether
@@ -50,10 +50,10 @@ namespace Microsoft.JSInterop.Infrastructure
             var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, byteArrays);
             if (syncResult == null)
             {
-                return null;
+                return (null, null);
             }
 
-            return JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions);
+            return jsRuntime.SerializeArgs(syncResult);
         }
 
         /// <summary>

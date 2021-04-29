@@ -79,10 +79,11 @@ namespace Microsoft.JSInterop.Infrastructure
             // Arrange/Act
             var jsRuntime = new TestJSRuntime();
             SomePublicType.DidInvokeMyInvocableStaticVoid = false;
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticVoid", default, default), null, byteArrays: null);
+            var (resultJson, byteArrays) = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticVoid", default, default), null, byteArrays: null);
 
             // Assert
             Assert.Null(resultJson);
+            Assert.Null(byteArrays);
             Assert.True(SomePublicType.DidInvokeMyInvocableStaticVoid);
         }
 
@@ -91,8 +92,10 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             // Arrange/Act
             var jsRuntime = new TestJSRuntime();
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticNonVoid", default, default), null, byteArrays: null);
+            var (resultJson, byteArrays) = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticNonVoid", default, default), null, byteArrays: null);
+            jsRuntime.ByteArraysToDeserialize = byteArrays;
             var result = JsonSerializer.Deserialize<TestDTO>(resultJson, jsRuntime.JsonSerializerOptions);
+            jsRuntime.ByteArraysToDeserialize = null;
 
             // Assert
             Assert.Equal("Test", result.StringVal);
@@ -104,8 +107,10 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             // Arrange/Act
             var jsRuntime = new TestJSRuntime();
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, nameof(SomePublicType.InvokableMethodWithoutCustomIdentifier), default, default), null, byteArrays: null);
+            var (resultJson, byteArrays) = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, nameof(SomePublicType.InvokableMethodWithoutCustomIdentifier), default, default), null, byteArrays: null);
+            jsRuntime.ByteArraysToDeserialize = byteArrays;
             var result = JsonSerializer.Deserialize<TestDTO>(resultJson, jsRuntime.JsonSerializerOptions);
+            jsRuntime.ByteArraysToDeserialize = null;
 
             // Assert
             Assert.Equal("InvokableMethodWithoutCustomIdentifier", result.StringVal);
@@ -130,12 +135,14 @@ namespace Microsoft.JSInterop.Infrastructure
             });
 
             // Act
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticWithParams", default, default), argsJson, byteArrays);
+            var (resultJson, returnedByteArrays) = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticWithParams", default, default), argsJson, byteArrays);
             var result = JsonDocument.Parse(resultJson);
             var root = result.RootElement;
 
             // Assert: First result value marshalled via JSON
+            jsRuntime.ByteArraysToDeserialize = returnedByteArrays;
             var resultDto1 = JsonSerializer.Deserialize<TestDTO>(root[0].GetRawText(), jsRuntime.JsonSerializerOptions);
+            jsRuntime.ByteArraysToDeserialize = null;
 
             Assert.Equal("ANOTHER STRING", resultDto1.StringVal);
             Assert.Equal(756, resultDto1.IntVal);
@@ -162,29 +169,32 @@ namespace Microsoft.JSInterop.Infrastructure
             {
                 new TestDTO { StringVal = "Another string", IntVal = 456, ByteArrayVal = new byte[] { 0x1, 0x12, 0x17 } },
                 new[] { 100, 200 },
-                new byte[] { 0x2, 0x4, 0x7 }
+                new byte[] { 0x2, 0x4, 0x7, 0x11 }
             });
 
             // Act
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableWithByteArrayParams", default, default), argsJson, byteArrays);
+            var (resultJson, returnedByteArrays) = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableWithByteArrayParams", default, default), argsJson, byteArrays);
             var result = JsonDocument.Parse(resultJson);
             var root = result.RootElement;
 
             // Assert: First result value marshalled via JSON
+            jsRuntime.ByteArraysToDeserialize = returnedByteArrays;
             var resultDto1 = JsonSerializer.Deserialize<TestDTO>(root[0].GetRawText(), jsRuntime.JsonSerializerOptions);
+            jsRuntime.ByteArraysToDeserialize = null;
 
             Assert.Equal("ANOTHER STRING", resultDto1.StringVal);
             Assert.Equal(756, resultDto1.IntVal);
+            Assert.Equal(new byte[] { 0x17, 0x12, 0x1 }, resultDto1.ByteArrayVal);
 
             // Assert: Second result value marshalled by ref
             var resultDto2Ref = root[1];
             Assert.False(resultDto2Ref.TryGetProperty(nameof(TestDTO.StringVal), out _));
             Assert.False(resultDto2Ref.TryGetProperty(nameof(TestDTO.IntVal), out _));
+            Assert.False(resultDto2Ref.TryGetProperty(nameof(TestDTO.ByteArrayVal), out _));
 
-            Assert.True(resultDto2Ref.TryGetProperty(DotNetDispatcher.DotNetObjectRefKey.EncodedUtf8Bytes, out var property));
-            var resultDto2 = Assert.IsType<DotNetObjectReference<TestDTO>>(jsRuntime.GetObjectReference(property.GetInt64())).Value;
-            Assert.Equal("MY STRING", resultDto2.StringVal);
-            Assert.Equal(1299, resultDto2.IntVal);
+            Assert.True(resultDto2Ref.TryGetProperty(ByteArrayJsonConverter.ByteArrayRefKey.EncodedUtf8Bytes, out var property));
+            var index = property.GetInt64();
+            Assert.Equal(new byte[] { 0x11, 0x7, 0x4, 0x2 }, returnedByteArrays[index]);
         }
 
         [Fact]
@@ -221,10 +231,11 @@ namespace Microsoft.JSInterop.Infrastructure
             jsRuntime.Invoke<object>("unimportant", objectRef);
 
             // Act
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "InvokableInstanceVoid", 1, default), null, byteArrays: null);
+            var (resultJson, returnedByteArrays) = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "InvokableInstanceVoid", 1, default), null, byteArrays: null);
 
             // Assert
             Assert.Null(resultJson);
+            Assert.Null(returnedByteArrays);
             Assert.True(targetInstance.DidInvokeMyInvocableInstanceVoid);
         }
 
@@ -238,10 +249,11 @@ namespace Microsoft.JSInterop.Infrastructure
             jsRuntime.Invoke<object>("unimportant", objectRef);
 
             // Act
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "BaseClassInvokableInstanceVoid", 1, default), null, byteArrays: null);
+            var (resultJson, returnedByteArrays) = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "BaseClassInvokableInstanceVoid", 1, default), null, byteArrays: null);
 
             // Assert
             Assert.Null(resultJson);
+            Assert.Null(returnedByteArrays);
             Assert.True(targetInstance.DidInvokeMyBaseClassInvocableInstanceVoid);
         }
 
@@ -383,13 +395,14 @@ namespace Microsoft.JSInterop.Infrastructure
             var argsJson = "[\"myvalue\",{\"__dotNetObject\":2}]";
 
             // Act
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "InvokableInstanceMethod", 1, default), argsJson, byteArrays: null);
+            var (resultJson, byteArrays) = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "InvokableInstanceMethod", 1, default), argsJson, byteArrays: null);
 
             // Assert
             Assert.Equal("[\"You passed myvalue\",{\"__dotNetObject\":3}]", resultJson);
             var resultDto = ((DotNetObjectReference<TestDTO>)jsRuntime.GetObjectReference(3)).Value;
             Assert.Equal(1235, resultDto.IntVal);
             Assert.Equal("MY STRING", resultDto.StringVal);
+            Assert.Empty(byteArrays);
         }
 
         [Fact]
@@ -402,10 +415,11 @@ namespace Microsoft.JSInterop.Infrastructure
             var argsJson = "[\"hello world\"]";
 
             // Act
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, nameof(GenericType<int>.EchoStringParameter), 1, default), argsJson, byteArrays: null);
+            var (resultJson, byteArrays) = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, nameof(GenericType<int>.EchoStringParameter), 1, default), argsJson, byteArrays: null);
 
             // Assert
             Assert.Equal("\"hello world\"", resultJson);
+            Assert.Empty(byteArrays);
         }
 
         [Fact]
@@ -418,10 +432,11 @@ namespace Microsoft.JSInterop.Infrastructure
             var argsJson = "[\"hello world\"]";
 
             // Act
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, nameof(GenericType<string>.EchoParameter), 1, default), argsJson, byteArrays: null);
+            var (resultJson, byteArrays) = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, nameof(GenericType<string>.EchoParameter), 1, default), argsJson, byteArrays: null);
 
             // Assert
             Assert.Equal("\"hello world\"", resultJson);
+            Assert.Empty(byteArrays);
         }
 
         [Fact]

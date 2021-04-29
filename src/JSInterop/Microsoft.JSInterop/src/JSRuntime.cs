@@ -164,12 +164,12 @@ namespace Microsoft.JSInterop
         /// Serialize the args to a json string, with the byte arrays
         /// extracted out for seperate transmission.
         /// </summary>
-        /// <param name="args">Arguments to be converted to json.</param>
+        /// <param name="args">Argument(s) to be converted to json.</param>
         /// <returns>
         /// A tuple of the json string and an array containing the extracted
         /// byte arrays from the args.
         /// </returns>
-        protected internal (string, byte[][]?) SerializeArgs(object?[] args)
+        protected internal (string, byte[][]?) SerializeArgs(object? args)
         {
             ByteArraysToSerialize.Clear();
             var serializedArgs = JsonSerializer.Serialize(args, JsonSerializerOptions);
@@ -228,8 +228,8 @@ namespace Microsoft.JSInterop
 
                     ByteArraysToDeserialize = byteArrays;
                     var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
-                    TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
                     ByteArraysToDeserialize = null;
+                    TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
                 }
                 else
                 {
