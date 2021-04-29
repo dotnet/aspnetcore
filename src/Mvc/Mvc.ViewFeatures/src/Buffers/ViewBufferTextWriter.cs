@@ -109,6 +109,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
             {
                 throw new ArgumentNullException(nameof(buffer));
             }
+            
+            if (index == 0 && count == 0)
+            {
+                return;
+            }
 
             if (index < 0 || index >= buffer.Length)
             {
