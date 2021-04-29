@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.JSInterop;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 
         public Task EnableNavigationInterceptionAsync()
         {
-            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.EnableNavigationInterception);
+            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.EnableNavigationInterception);
             return Task.CompletedTask;
         }
     }
