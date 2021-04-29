@@ -183,6 +183,7 @@ namespace Microsoft.AspNetCore.WebSockets
                 {
                     return false;
                 }
+                foundHeader = false;
 
                 values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Connection);
                 foreach (var value in values)
@@ -202,6 +203,7 @@ namespace Microsoft.AspNetCore.WebSockets
                 {
                     return false;
                 }
+                foundHeader = false;
 
                 values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Upgrade);
                 foreach (var value in values)
@@ -221,7 +223,6 @@ namespace Microsoft.AspNetCore.WebSockets
                 {
                     return false;
                 }
-
 
                 return HandshakeHelpers.IsRequestKeyValid(requestHeaders.SecWebSocketKey.ToString());
             }
