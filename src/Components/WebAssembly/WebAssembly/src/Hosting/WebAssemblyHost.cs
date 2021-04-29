@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         private readonly IConfiguration _configuration;
         private readonly RootComponentMappingCollection _rootComponents;
         private readonly DynamicComponentCollection _dynamicComponents;
-        private readonly RootComponentTypeCache _rootComponentTypeCache;
         private readonly string? _persistedState;
 
         // NOTE: the host is disposable because it OWNs references to disposable things.
@@ -51,7 +50,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             IConfiguration configuration,
             RootComponentMappingCollection rootComponents,
             DynamicComponentCollection dynamicComponents,
-            RootComponentTypeCache rootComponentTypeCache,
             string? persistedState)
         {
             // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
@@ -62,7 +60,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             _configuration = configuration;
             _rootComponents = rootComponents;
             _dynamicComponents = dynamicComponents;
-            _rootComponentTypeCache = rootComponentTypeCache;
             _persistedState = persistedState;
         }
 
@@ -162,7 +159,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 _rendererHandle = new RendererHandle(
                     _renderer,
                     _dynamicComponents,
-                    _rootComponentTypeCache,
                     DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions());
 
                 await _rendererHandle.Initialize(DefaultWebAssemblyJSRuntime.Instance);

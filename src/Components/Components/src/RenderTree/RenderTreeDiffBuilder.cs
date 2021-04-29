@@ -544,7 +544,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var newParameters = new ParameterView(newParametersLifetime, newTree, newComponentIndex);
             if (!newParameters.DefinitelyEquals(oldParameters) || (HotReloadFeature.IsSupported && diffContext.Renderer.IsHotReloading))
             {
-                componentState.SetDirectParameters(newParameters);
+                _ = componentState.SetDirectParameters(newParameters);
             }
         }
 
@@ -916,7 +916,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // Set initial parameters
             var initialParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
             var initialParameters = new ParameterView(initialParametersLifetime, frames, frameIndex);
-            childComponentState.SetDirectParameters(initialParameters);
+            _ = childComponentState.SetDirectParameters(initialParameters);
         }
 
         private static void InitializeNewAttributeFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)

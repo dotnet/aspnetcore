@@ -247,7 +247,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 Configuration,
                 RootComponents,
                 DynamicComponentDefinitions,
-                _rootComponentCache,
                 _persistedState);
         }
 

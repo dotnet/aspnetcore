@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return Task.CompletedTask;
         }
 
-        public void SetDirectParameters(ParameterView parameters)
+        public Task SetDirectParameters(ParameterView parameters)
         {
             // Note: We should be careful to ensure that the framework never calls
             // IComponent.SetParametersAsync directly elsewhere. We should only call it
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 parameters = parameters.WithCascadingParameters(_cascadingParameters);
             }
 
-            SupplyCombinedParameters(parameters);
+            return SupplyCombinedParameters(parameters);
         }
 
         public void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
@@ -188,13 +188,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
                 : ParameterView.Empty;
             var allParams = directParams.WithCascadingParameters(_cascadingParameters!);
-            SupplyCombinedParameters(allParams);
+            _ = SupplyCombinedParameters(allParams);
         }
 
         // This should not be called from anywhere except SetDirectParameters or NotifyCascadingValueChanged.
         // Those two methods know how to correctly combine both cascading and non-cascading parameters to supply
         // a consistent set to the recipient.
-        private void SupplyCombinedParameters(ParameterView directAndCascadingParameters)
+        private Task SupplyCombinedParameters(ParameterView directAndCascadingParameters)
         {
             // Normalise sync and async exceptions into a Task
             Task setParametersAsyncTask;
@@ -208,6 +208,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             _renderer.AddToPendingTasks(setParametersAsyncTask, owningComponentState: this);
+            return setParametersAsyncTask;
         }
 
         private bool AddCascadingParameterSubscriptions()

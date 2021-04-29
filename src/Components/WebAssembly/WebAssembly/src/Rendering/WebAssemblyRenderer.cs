@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             // It'll be interesting to determine whether these errors must be fatal or not, and how to handle them.
             _ = RenderRootComponentAsync(componentId, parameters);
 
-            var componentProxy = new ComponentProxy(this, domElementSelector, componentId, componentType);
+            var componentProxy = new ComponentProxy(this, domElementSelector, componentId);
 
             // We want to keep track of the proxy to make sure we can invalidate it in case we need to do so.
             _dynamicComponentsById[componentId] = componentProxy;
@@ -133,6 +133,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 component.Selector,
                 componentId,
                 _webAssemblyRendererId);
+        }
+
+        public Task SetDynamicComponentParameters(int componentId, ParameterView parameters)
+        {
+            return SetComponentParametersAsync(componentId, parameters);
         }
 
         /// <inheritdoc />

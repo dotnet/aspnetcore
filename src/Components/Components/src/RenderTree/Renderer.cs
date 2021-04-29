@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 {
                     foreach (var (componentState, initialParameters) in _rootComponents)
                     {
-                        componentState.SetDirectParameters(initialParameters);
+                        _ = componentState.SetDirectParameters(initialParameters);
                     }
                 }
                 finally
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 _rootComponents.Add((componentState, initialParameters.Clone()));
             }
 
-            componentState.SetDirectParameters(initialParameters);
+            _ = componentState.SetDirectParameters(initialParameters);
 
             try
             {
@@ -292,6 +292,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     HandleException(exception);
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the parameters for the component with the given <paramref name="componentId"/>.
+        /// </summary>
+        /// <param name="componentId">The component id.</param>
+        /// <param name="parameters">The new parameters.</param>
+        /// <returns>A <see cref="Task"/> that will complete when the app finishes applying parameters.</returns>
+        protected Task SetComponentParametersAsync(int componentId, ParameterView parameters)
+        {
+            var state = GetRequiredComponentState(componentId);
+            return state.SetDirectParameters(parameters);
         }
 
         /// <remarks>

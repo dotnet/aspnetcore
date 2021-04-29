@@ -9,16 +9,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
     {
         private readonly WebAssemblyRenderer _renderer;
         private readonly int _componentId;
-        private readonly Type _componentType;
 
         private bool _disposed = false;
+        private DynamicComponentParameterDeserializer? _deserializer;
 
-        public ComponentProxy(WebAssemblyRenderer renderer, string selector, int componentId, Type componentType)
+        public ComponentProxy(WebAssemblyRenderer renderer, string selector, int componentId)
         {
             _renderer = renderer;
             Selector = selector;
             _componentId = componentId;
-            _componentType = componentType;
         }
 
         public string Selector { get; }
@@ -36,14 +35,31 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         }
 
         [JSInvokable]
-        public ValueTask SetParametersAsync(IDictionary<string, object> parameters)
+        public Task SetParametersAsync(IDictionary<string, object> parameters)
         {
             if (_disposed)
             {
-                return default;
+                return Task.CompletedTask;
             }
 
-            return default;
+            if (_deserializer == null)
+            {
+                throw new InvalidOperationException("Parameter deserializer not initialized.");
+            }
+
+            var parameterView = _deserializer.DeserializeParameters(parameters);
+
+            return _renderer.SetDynamicComponentParameters(_componentId, parameterView);
+        }
+
+        internal void SetParameterDeserializer(DynamicComponentParameterDeserializer deserializer)
+        {
+            if(_deserializer != null)
+            {
+                throw new InvalidOperationException("Parameter deserializer already initialized.");
+            }
+
+            _deserializer = deserializer;
         }
     }
 }

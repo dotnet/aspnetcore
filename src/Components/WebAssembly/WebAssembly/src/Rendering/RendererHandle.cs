@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         public RendererHandle(
             WebAssemblyRenderer renderer,
             DynamicComponentCollection dynamicComponents,
-            RootComponentTypeCache rootComponentTypeCache,
             JsonSerializerOptions serializerOptions)
         {
             _renderer = renderer;
@@ -49,23 +48,59 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 throw new InvalidOperationException($"Could not find dynamic component with name '{elementName}'.");
             }
 
-            var parameterView = parameters == null || parameters.Count == 0 ? ParameterView.Empty : DeserializeParameters(componentDefinition, eventRaiser, parameters);
+            var deserializer = new DynamicComponentParameterDeserializer(componentDefinition, eventRaiser, _serializerOptions);
+
+            var parameterView = parameters == null || parameters.Count == 0 ? ParameterView.Empty : deserializer.DeserializeParameters(parameters);
 
             var proxy = _renderer.AddDynamicComponentAsync(componentDefinition.ComponentType, selector, parameterView);
+            proxy.SetParameterDeserializer(deserializer);
             // TODO: This method doesn't actually have to be async?
             // We don't want to wait until the rendering has completed fully to return the proxy, since the component might need to be removed
             // before its done with setParameters.
             return Task.FromResult(DotNetObjectReference.Create(proxy));
         }
 
-        private ParameterView DeserializeParameters(DynamicComponentDefinition componentDefinition, IJSObjectReference eventRaiser, IDictionary<string, object> parameters)
+        internal ValueTask Initialize(IJSRuntime jsRuntime)
         {
-            var extraParameters = componentDefinition.HasCatchAllProperty ? new HashSet<string>(StringComparer.OrdinalIgnoreCase) : null;
+            if (_thisAsDotNetObjectRef != null)
+            {
+                throw new InvalidOperationException("Renderer handle already initialized.");
+            }
+
+            _thisAsDotNetObjectRef = DotNetObjectReference.Create(this);
+            return jsRuntime.InvokeVoidAsync("Blazor._internal.setComponentRenderer", _thisAsDotNetObjectRef);
+        }
+    }
+
+    internal class DynamicComponentParameterDeserializer
+    {
+        private readonly DynamicComponentDefinition? _componentDefinition;
+        private readonly IJSObjectReference? _eventRaiser;
+        private readonly JsonSerializerOptions? _serializerOptions;
+
+        public DynamicComponentParameterDeserializer(
+            DynamicComponentDefinition componentDefinition,
+            IJSObjectReference eventRaiser,
+            JsonSerializerOptions serializerOptions)
+        {
+            _componentDefinition = componentDefinition;
+            _eventRaiser = eventRaiser;
+            _serializerOptions = serializerOptions;
+        }
+
+        public ParameterView DeserializeParameters(IDictionary<string, object> parameters)
+        {
+            if (_componentDefinition == null || _eventRaiser == null || _serializerOptions == null)
+            {
+                throw new InvalidOperationException("Parameter deserializer not initialized.");
+            }
+
+            var extraParameters = _componentDefinition.HasCatchAllProperty ? new HashSet<string>(StringComparer.OrdinalIgnoreCase) : null;
             // Could we just reuse the dictionary?
             var deserializedParameters = new Dictionary<string, object?>();
             foreach (var (name, value) in parameters)
             {
-                var parameterDefinition = componentDefinition.GetParameter(name);
+                var parameterDefinition = _componentDefinition.GetParameter(name);
                 if (parameterDefinition != null)
                 {
                     if (!parameterDefinition.IsCallback)
@@ -94,16 +129,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
                 }
             }
 
-            if (componentDefinition.HasCallbackParameter)
+            if (_componentDefinition.HasCallbackParameter)
             {
-                foreach (var definition in componentDefinition.Parameters)
+                foreach (var definition in _componentDefinition.Parameters)
                 {
                     var type = definition.ParameterType;
                     if (definition.IsCallback && !deserializedParameters.ContainsKey(definition.Name))
                     {
                         if (type == typeof(EventCallback))
                         {
-                            deserializedParameters.Add(definition.Name, new EventCallback(null, new Func<Task>(async () => await eventRaiser.InvokeVoidAsync("raiseEvent", definition.Name))));
+                            deserializedParameters.Add(definition.Name, new EventCallback(null, new Func<Task>(async () => await _eventRaiser.InvokeVoidAsync("raiseEvent", definition.Name))));
                         }
                     }
                 }
@@ -132,37 +167,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             }
 
             return ParameterView.FromDictionary(deserializedParameters);
-        }
-
-        public class DescriptorOrAlias
-        {
-            public const string DescriptorKind = "Descriptor";
-            public const string AliasKind = "Alias";
-
-            public bool IsDescriptor() => string.Equals(Kind, DescriptorKind, StringComparison.OrdinalIgnoreCase);
-
-            public bool IsAlias() => string.Equals(Kind, Alias, StringComparison.OrdinalIgnoreCase);
-
-            public string? Kind { get; set; }
-            public string? Alias { get; set; }
-            public ComponentDescriptor? Descriptor { get; set; }
-        }
-
-        public class ComponentDescriptor
-        {
-            public string? Assembly { get; set; }
-            public string? TypeName { get; set; }
-        }
-
-        internal ValueTask Initialize(IJSRuntime jsRuntime)
-        {
-            if (_thisAsDotNetObjectRef != null)
-            {
-                throw new InvalidOperationException("Renderer handle already initialized.");
-            }
-
-            _thisAsDotNetObjectRef = DotNetObjectReference.Create(this);
-            return jsRuntime.InvokeVoidAsync("Blazor._internal.setComponentRenderer", _thisAsDotNetObjectRef);
         }
     }
 }
