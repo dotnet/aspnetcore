@@ -30,6 +30,16 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             }
         }
 
+        /// <summary>
+        /// Gets or sets the format of the file name.
+        /// Defaults to "AppName/Year/Month/Day/Hour/Identifier".
+        /// </summary>
+        public Func<AzureBlobLoggerContext, string> FileNameFormat { get; set; } = context =>
+        {
+            var timestamp = context.Timestamp;
+            return $"{context.AppName}/{timestamp.Year}/{timestamp.Month:00}/{timestamp.Day:00}/{timestamp.Hour:00}/{context.Identifier}";
+        };
+       
         internal string ContainerUrl { get; set; }
 
         internal string ApplicationName { get; set; }

@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Http
             set { RequestCookiesFeature.Cookies = value; }
         }
 
-        public override string ContentType
+        public override string? ContentType
         {
             get { return Headers.ContentType; }
             set { Headers.ContentType = value; }

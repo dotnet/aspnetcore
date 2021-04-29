@@ -2,29 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
-using System.IO.Pipelines;
 using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class HttpConnectionContext : BaseHttpConnectionContext
+    internal class HttpMultiplexedConnectionContext : BaseHttpConnectionContext
     {
-        public HttpConnectionContext(
+        public HttpMultiplexedConnectionContext(
             string connectionId,
-            HttpProtocols protocols,
-            ConnectionContext connectionContext,
+            MultiplexedConnectionContext connectionContext,
             ServiceContext serviceContext,
             IFeatureCollection connectionFeatures,
             MemoryPool<byte> memoryPool,
             IPEndPoint? localEndPoint,
-            IPEndPoint? remoteEndPoint,
-            IDuplexPipe transport) : base(connectionId, protocols, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+            IPEndPoint? remoteEndPoint) : base(connectionId, HttpProtocols.Http3, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
         {
-            Transport = transport;
         }
-
-        public IDuplexPipe Transport { get; }
     }
 }
