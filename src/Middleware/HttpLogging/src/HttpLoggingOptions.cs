@@ -78,12 +78,16 @@ namespace Microsoft.AspNetCore.HttpLogging
         public int ResponseBodyLogLimit { get; set; } = 32 * 1024;
 
         /// <summary>
-        /// 
+        /// A callback that will be invoked to dynamically modify the RequestLog.
+        /// The <see cref="HttpRequestLoggingContext"/> will be prepopulated with values
+        /// that would be logged.
         /// </summary>
         public Func<HttpRequestLoggingContext, ValueTask>? ModifyRequestLog { get; set; }
 
         /// <summary>
-        /// 
+        /// A callback that will be invoked to dynamically modify the RequestLog.
+        /// The <see cref="HttpResponseLoggingContext"/> will be prepopulated with values
+        /// that would be logged.
         /// </summary>
         public Func<HttpResponseLoggingContext, ValueTask>? ModifyResponseLog { get; set; }
     }

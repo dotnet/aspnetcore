@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
         public static void RequestLog(this ILogger logger, HttpRequestLog requestLog) => logger.Log(
             LogLevel.Information,
-            new EventId(1, "RequestLogLog"),
+            new EventId(1, "RequestLog"),
             requestLog,
             exception: null,
             formatter: HttpRequestLog.Callback);

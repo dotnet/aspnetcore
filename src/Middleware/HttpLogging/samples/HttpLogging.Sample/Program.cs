@@ -17,14 +17,14 @@ namespace HttpLogging.Sample
                 .ConfigureLogging(logging =>
                 {
                     // Json Logging
-                    //logging.ClearProviders();
-                    //logging.AddJsonConsole(options =>
-                    //{
-                    //    options.JsonWriterOptions = new JsonWriterOptions()
-                    //    {
-                    //        Indented = true
-                    //    };
-                    //});
+                    logging.ClearProviders();
+                    logging.AddJsonConsole(options =>
+                    {
+                        options.JsonWriterOptions = new JsonWriterOptions()
+                        {
+                            Indented = true
+                        };
+                    });
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

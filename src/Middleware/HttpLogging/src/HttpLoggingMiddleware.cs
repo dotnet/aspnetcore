@@ -121,12 +121,37 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                     await options.ModifyRequestLog(loggingContext);
 
-                    AddToList(list, nameof(request.Protocol), loggingContext.Protocol);
-                    AddToList(list, nameof(request.Method), loggingContext.Method);
-                    AddToList(list, nameof(request.Scheme), loggingContext.Scheme);
-                    AddToList(list, nameof(request.PathBase), loggingContext.PathBase);
-                    AddToList(list, nameof(request.Path), loggingContext.Path);
-                    AddToList(list, nameof(request.QueryString), loggingContext.Query);
+                    // Checking for null to make sure the key isn't logged if it isn't enabled.
+                    if (loggingContext.Protocol != null)
+                    {
+                        AddToList(list, nameof(request.Protocol), loggingContext.Protocol);
+                    }
+
+                    if (loggingContext.Method != null)
+                    {
+                        AddToList(list, nameof(request.Method), loggingContext.Method);
+                    }
+
+                    if (loggingContext.Scheme != null)
+                    {
+                        AddToList(list, nameof(request.Scheme), loggingContext.Scheme);
+                    }
+
+                    if (loggingContext.PathBase != null)
+                    {
+                        AddToList(list, nameof(request.PathBase), loggingContext.PathBase);
+                    }
+
+                    if (loggingContext.Path != null)
+                    {
+                        AddToList(list, nameof(request.Path), loggingContext.Path);
+                    }
+
+                    if (loggingContext.Query != null)
+                    {
+                        AddToList(list, nameof(request.QueryString), loggingContext.Query);
+                    }
+
                     AddHeaders(list, headerDictionary);
 
                     foreach (var item in loggingContext.Extra)
@@ -268,7 +293,6 @@ namespace Microsoft.AspNetCore.HttpLogging
             var list = new List<KeyValuePair<string, string?>>(
                 response.Headers.Count + DefaultResponseFieldsMinusHeaders);
 
-
             if (options.ModifyResponseLog != null)
             {
                 var headerDictionary = new HeaderDictionary();
@@ -286,7 +310,11 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 await options.ModifyResponseLog(responseLoggingContext);
 
-                list.Add(new KeyValuePair<string, string?>(nameof(response.StatusCode), responseLoggingContext.StatusCode));
+                if (responseLoggingContext.StatusCode != null)
+                {
+                    list.Add(new KeyValuePair<string, string?>(nameof(response.StatusCode), responseLoggingContext.StatusCode));
+                }
+
                 AddHeaders(list, responseLoggingContext.Headers);
                 foreach (var item in responseLoggingContext.Extra)
                 {
@@ -344,12 +372,12 @@ namespace Microsoft.AspNetCore.HttpLogging
             }
         }
 
-        internal static void AddHeaders(List<KeyValuePair<string, string?>> keyValues,
+        internal static void AddHeaders(List<KeyValuePair<string, string?>> output,
           IHeaderDictionary input)
         {
             foreach (var (key, value) in input)
             {
-                keyValues.Add(new KeyValuePair<string, string?>(key, value.ToString()));
+                output.Add(new KeyValuePair<string, string?>(key, value.ToString()));
             }
         }
     }
