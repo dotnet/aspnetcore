@@ -32,9 +32,10 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         private const string SlidingExpirationKey = "sldexp";
         private const string DataKey = "data";
         private const long NotPresent = -1;
+        private static readonly byte[] EmptyByteArray = Array.Empty<byte>();
 
-        private volatile IConnectionMultiplexer _connection;
-        private IDatabase _cache;
+        private volatile IConnectionMultiplexer? _connection;
+        private IDatabase? _cache;
         private bool _disposed;
 
         private readonly RedisCacheOptions _options;
@@ -107,7 +108,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-            var result = _cache.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
+            var result = _cache!.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
                 new RedisValue[]
                 {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -143,7 +144,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-            await _cache.ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
+            await _cache!.ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
                 new RedisValue[]
                 {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -279,11 +280,11 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             RedisValue[] results;
             if (getData)
             {
-                results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
+                results = _cache!.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
             }
             else
             {
-                results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
+                results = _cache!.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
             }
 
             // TODO: Error handling
@@ -298,7 +299,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 return results[2];
             }
 
-            return null;
+            return EmptyByteArray;
         }
 
         private async Task<byte[]> GetAndRefreshAsync(string key, bool getData, CancellationToken token = default(CancellationToken))
@@ -317,11 +318,11 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             RedisValue[] results;
             if (getData)
             {
-                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey).ConfigureAwait(false);
+                results = await _cache!.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey).ConfigureAwait(false);
             }
             else
             {
-                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey).ConfigureAwait(false);
+                results = await _cache!.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey).ConfigureAwait(false);
             }
 
             // TODO: Error handling
@@ -336,7 +337,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 return results[2];
             }
 
-            return null;
+            return EmptyByteArray;
         }
 
         /// <inheritdoc />
@@ -349,7 +350,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             Connect();
 
-            _cache.KeyDelete(_instance + key);
+            _cache!.KeyDelete(_instance + key);
             // TODO: Error handling
         }
 
@@ -363,7 +364,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             await ConnectAsync(token).ConfigureAwait(false);
 
-            await _cache.KeyDeleteAsync(_instance + key).ConfigureAwait(false);
+            await _cache!.KeyDeleteAsync(_instance + key).ConfigureAwait(false);
             // TODO: Error handling
         }
 
@@ -403,7 +404,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 {
                     expr = sldExpr;
                 }
-                _cache.KeyExpire(_instance + key, expr);
+                _cache!.KeyExpire(_instance + key, expr);
                 // TODO: Error handling
             }
         }
@@ -430,7 +431,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 {
                     expr = sldExpr;
                 }
-                await _cache.KeyExpireAsync(_instance + key, expr).ConfigureAwait(false);
+                await _cache!.KeyExpireAsync(_instance + key, expr).ConfigureAwait(false);
                 // TODO: Error handling
             }
         }
