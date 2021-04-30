@@ -47,12 +47,12 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
 
                 await manager.SendAllAsync("Hello", new object[] { "World" }).DefaultTimeout();
 
-                var message = Assert.IsType<InvocationMessage>(await client1.ReadAsync().OrTimeout());
+                var message = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
 
-                message = Assert.IsType<InvocationMessage>(await client2.ReadAsync().OrTimeout());
+                message = Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
 
                 await manager.SendAllAsync("Hello", new object[] { "World" }).DefaultTimeout();
 
-                var message = Assert.IsType<InvocationMessage>(await client1.ReadAsync().OrTimeout());
+                var message = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
 
                 await manager.SendGroupAsync("group", "Hello", new object[] { "World" }).DefaultTimeout();
 
-                var message = Assert.IsType<InvocationMessage>(await client1.ReadAsync().OrTimeout());
+                var message = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
 
                 await manager.SendGroupExceptAsync("group1", "Hello", new object[] { "World" }, new[] { connection2.ConnectionId }).DefaultTimeout();
 
-                var message = Assert.IsType<InvocationMessage>(await client1.ReadAsync().OrTimeout());
+                var message = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.SignalR.Specification.Tests
 
                 await manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).DefaultTimeout();
 
-                var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().OrTimeout());
+                var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);

@@ -4,6 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.AspNetCore.SignalR.Specification.Tests;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -87,13 +88,13 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             return new TestRedisServer();
         }
 
-        public override HubLifetimeManager<MyHub> CreateNewHubLifetimeManager()
+        public override HubLifetimeManager<Hub> CreateNewHubLifetimeManager()
         {
             _server = new TestRedisServer();
             return CreateLifetimeManager(_server);
         }
 
-        public override HubLifetimeManager<MyHub> CreateNewHubLifetimeManager(TestRedisServer backplane)
+        public override HubLifetimeManager<Hub> CreateNewHubLifetimeManager(TestRedisServer backplane)
         {
             return CreateLifetimeManager(backplane);
         }
