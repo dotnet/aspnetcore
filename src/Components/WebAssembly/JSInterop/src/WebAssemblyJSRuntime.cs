@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
@@ -57,6 +58,7 @@ namespace Microsoft.JSInterop.WebAssembly
         }
 
         /// <inheritdoc />
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "TODO: This should be in the xml suppressions file, but can't be because https://github.com/mono/linker/issues/2006")]
         protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
         {
             // For failures, the common case is to call EndInvokeDotNet with the Exception object.
