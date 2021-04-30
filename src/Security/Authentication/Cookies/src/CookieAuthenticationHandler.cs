@@ -398,9 +398,9 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         private async Task ApplyHeaders(bool shouldRedirectToReturnUrl, AuthenticationProperties properties)
         {
-            Response.Headers[HeaderNames.CacheControl] = HeaderValueNoCacheNoStore;
-            Response.Headers[HeaderNames.Pragma] = HeaderValueNoCache;
-            Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
+            Response.Headers.CacheControl = HeaderValueNoCacheNoStore;
+            Response.Headers.Pragma = HeaderValueNoCache;
+            Response.Headers.Expires = HeaderValueEpocDate;
 
             if (shouldRedirectToReturnUrl && Response.StatusCode == 200)
             {

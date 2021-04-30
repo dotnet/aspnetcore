@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             {
                 // If we know we can safely cache all filters and only the default filter provider is registered, we can
                 // probably re-use filters between requests.
-                actionDescriptor.CachedResuableFilters = filters;
+                actionDescriptor.CachedReusableFilters = filters;
             }
 
             return new FilterFactoryResult(staticFilterItems, filters);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 throw new ArgumentNullException(nameof(cachedFilterItems));
             }
 
-            if (actionContext.ActionDescriptor.CachedResuableFilters is { } cached)
+            if (actionContext.ActionDescriptor.CachedReusableFilters is { } cached)
             {
                 return cached;
             }

@@ -10,6 +10,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
 {
@@ -17,8 +18,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
     {
         private Http2HeadersEnumerator _http2HeadersEnumerator;
         private DynamicHPackEncoder _hpackEncoder;
-        private HttpResponseHeaders _knownResponseHeaders;
-        private HttpResponseHeaders _unknownResponseHeaders;
+        private IHeaderDictionary _knownResponseHeaders;
+        private IHeaderDictionary _unknownResponseHeaders;
         private byte[] _buffer;
 
         [GlobalSetup]
@@ -28,21 +29,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
             _hpackEncoder = new DynamicHPackEncoder();
             _buffer = new byte[1024 * 1024];
 
-            _knownResponseHeaders = new HttpResponseHeaders
-            {
-                HeaderServer = "Kestrel",
-                HeaderContentType = "application/json",
-                HeaderDate = "Date!",
-                HeaderContentLength = "0",
-                HeaderAcceptRanges = "Ranges!",
-                HeaderTransferEncoding = "Encoding!",
-                HeaderVia = "Via!",
-                HeaderVary = "Vary!",
-                HeaderWWWAuthenticate = "Authenticate!",
-                HeaderLastModified = "Modified!",
-                HeaderExpires = "Expires!",
-                HeaderAge = "Age!"
-            };
+            _knownResponseHeaders = new HttpResponseHeaders();
+
+            _knownResponseHeaders.Server = "Kestrel";
+            _knownResponseHeaders.ContentType = "application/json";
+            _knownResponseHeaders.Date = "Date!";
+            _knownResponseHeaders.ContentLength = 0;
+            _knownResponseHeaders.AcceptRanges = "Ranges!";
+            _knownResponseHeaders.TransferEncoding = "Encoding!";
+            _knownResponseHeaders.Via = "Via!";
+            _knownResponseHeaders.Vary = "Vary!";
+            _knownResponseHeaders.WWWAuthenticate = "Authenticate!";
+            _knownResponseHeaders.LastModified = "Modified!";
+            _knownResponseHeaders.Expires = "Expires!";
+            _knownResponseHeaders.Age = "Age!";
 
             _unknownResponseHeaders = new HttpResponseHeaders();
             for (var i = 0; i < 10; i++)

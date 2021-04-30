@@ -474,10 +474,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                 Log.StreamingResult(_logger, invocationId, descriptor.MethodExecutor);
 
+                var streamItemMessage = new StreamItemMessage(invocationId, null);
                 await foreach (var streamItem in enumerable)
                 {
+                    streamItemMessage.Item = streamItem;
                     // Send the stream item
-                    await connection.WriteAsync(new StreamItemMessage(invocationId, streamItem));
+                    await connection.WriteAsync(streamItemMessage);
                 }
             }
             catch (ChannelClosedException ex)

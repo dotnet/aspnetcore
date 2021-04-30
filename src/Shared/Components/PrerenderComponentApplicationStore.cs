@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Lifetime;
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.Components
             ExistingState = new();
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple deserialize of primitive types.")]
         public PrerenderComponentApplicationStore(string existingState)
         {
             if (existingState is null)
@@ -38,6 +40,7 @@ namespace Microsoft.AspNetCore.Components
             return Task.FromResult((IDictionary<string, byte[]>)ExistingState);
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple serialize of primitive types.")]
         protected virtual byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state)
         {
             return JsonSerializer.SerializeToUtf8Bytes(state);

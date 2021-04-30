@@ -303,8 +303,18 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
             }
         }
 
+        int copiedFileCount = 0;
+
         shadowCopyPath = shadowCopyPath / directoryNameStr;
-        HRESULT hr = Environment::CopyToDirectory(physicalPath, shadowCopyPath, options.QueryCleanShadowCopyDirectory(), std::filesystem::canonical(shadowCopyBaseDirectory.path()));
+        LOG_INFOF(L"Copying to shadow copy directory %ls.", shadowCopyPath.c_str());
+
+        // Avoid using canonical for shadowCopyBaseDirectory
+        // It could expand to a network drive, or an expanded link folder path
+        // We already made it an absolute path relative to the physicalPath above
+        HRESULT hr = Environment::CopyToDirectory(physicalPath, shadowCopyPath, options.QueryCleanShadowCopyDirectory(), shadowCopyBaseDirectory.path(), copiedFileCount);
+
+        LOG_INFOF(L"Finished copying %d files to shadow copy directory %ls.", copiedFileCount, shadowCopyBaseDirectory.path().c_str());
+
         if (hr != S_OK)
         {
             return std::wstring();

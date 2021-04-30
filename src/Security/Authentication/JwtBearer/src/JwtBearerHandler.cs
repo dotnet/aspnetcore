@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 if (string.IsNullOrEmpty(token))
                 {
-                    string authorization = Request.Headers[HeaderNames.Authorization];
+                    string authorization = Request.Headers.Authorization;
 
                     // If no authorization header found, nothing to process further
                     if (string.IsNullOrEmpty(authorization))

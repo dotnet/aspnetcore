@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -102,8 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
 
             var serverOptions = options.Value ?? new KestrelServerOptions();
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
-            var trace = new KestrelTrace(logger);
+            var trace = new KestrelTrace(loggerFactory);
             var connectionManager = new ConnectionManager(
                 trace,
                 serverOptions.Limits.MaxConcurrentUpgradedConnections);
@@ -171,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                             throw new InvalidOperationException($"Cannot start HTTP/3 server if no {nameof(IMultiplexedConnectionListenerFactory)} is registered.");
                         }
 
-                        options.UseHttp3Server(ServiceContext, application, options.Protocols);
+                        options.UseHttp3Server(ServiceContext, application);
                         var multiplexedConnectionDelegate = ((IMultiplexedConnectionBuilder)options).Build();
 
                         // Add the connection limit middleware

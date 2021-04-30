@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Internal
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers[HeaderNames.Range] = range;
+            httpContext.Request.Headers.Range = range;
 
             // Act
             var (isRangeRequest, parsedRangeResult) = RangeHelper.ParseRange(httpContext, httpContext.Request.GetTypedHeaders(), 10, NullLogger.Instance);
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Internal
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers[HeaderNames.Range] = range;
+            httpContext.Request.Headers.Range = range;
 
             // Act
             var (isRangeRequest, parsedRangeResult) = RangeHelper.ParseRange(httpContext, httpContext.Request.GetTypedHeaders(), 10, NullLogger.Instance);
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Internal
             // Arrange
             var httpContext = new DefaultHttpContext();
             var range = new RangeHeaderValue(1, 2);
-            httpContext.Request.Headers[HeaderNames.Range] = range.ToString();
+            httpContext.Request.Headers.Range = range.ToString();
 
             // Act
             var (isRangeRequest, parsedRange) = RangeHelper.ParseRange(httpContext, httpContext.Request.GetTypedHeaders(), 4, NullLogger.Instance);

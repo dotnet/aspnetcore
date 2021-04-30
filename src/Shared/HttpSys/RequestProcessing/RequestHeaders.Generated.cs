@@ -4,12 +4,9 @@
 
 using System;
 using System.CodeDom.Compiler;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
@@ -32,7 +29,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private StringValues _ContentLanguage;
         private StringValues _ContentLength;
         private StringValues _ContentLocation;
-        private StringValues _ContentMd5;
+        private StringValues _ContentMD5;
         private StringValues _ContentRange;
         private StringValues _ContentType;
         private StringValues _Cookie;
@@ -53,7 +50,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private StringValues _ProxyAuthorization;
         private StringValues _Range;
         private StringValues _Referer;
-        private StringValues _Te;
+        private StringValues _TE;
         private StringValues _Trailer;
         private StringValues _TransferEncoding;
         private StringValues _Translate;
@@ -62,7 +59,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private StringValues _Via;
         private StringValues _Warning;
 
-        internal StringValues Accept
+        public StringValues Accept
         {
             get
 			{
@@ -84,7 +81,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues AcceptCharset
+        public StringValues AcceptCharset
         {
             get
 			{
@@ -106,7 +103,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues AcceptEncoding
+        public StringValues AcceptEncoding
         {
             get
 			{
@@ -128,7 +125,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues AcceptLanguage
+        public StringValues AcceptLanguage
         {
             get
 			{
@@ -150,7 +147,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Allow
+        public StringValues Allow
         {
             get
 			{
@@ -172,7 +169,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Authorization
+        public StringValues Authorization
         {
             get
 			{
@@ -194,7 +191,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues CacheControl
+        public StringValues CacheControl
         {
             get
 			{
@@ -216,7 +213,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Connection
+        public StringValues Connection
         {
             get
 			{
@@ -238,7 +235,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues ContentEncoding
+        public StringValues ContentEncoding
         {
             get
 			{
@@ -260,7 +257,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues ContentLanguage
+        public StringValues ContentLanguage
         {
             get
 			{
@@ -282,7 +279,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues ContentLength
+        public StringValues ContentLength
         {
             get
 			{
@@ -304,7 +301,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues ContentLocation
+        public StringValues ContentLocation
         {
             get
 			{
@@ -326,7 +323,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues ContentMd5
+        public StringValues ContentMD5
         {
             get
 			{
@@ -335,20 +332,20 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentMd5);
 					if (nativeValue != null)
 					{
-						_ContentMd5 = nativeValue;
+						_ContentMD5 = nativeValue;
 					}
                     _flag0 |= 0x1000u;
 				}
-			    return _ContentMd5;
+			    return _ContentMD5;
 		    }
             set 
             {
                 _flag0 |= 0x1000u;
-                _ContentMd5 = value;
+                _ContentMD5 = value;
             }
         }
 
-        internal StringValues ContentRange
+        public StringValues ContentRange
         {
             get
 			{
@@ -370,7 +367,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues ContentType
+        public StringValues ContentType
         {
             get
 			{
@@ -392,7 +389,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Cookie
+        public StringValues Cookie
         {
             get
 			{
@@ -414,7 +411,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Date
+        public StringValues Date
         {
             get
 			{
@@ -436,7 +433,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Expect
+        public StringValues Expect
         {
             get
 			{
@@ -458,7 +455,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Expires
+        public StringValues Expires
         {
             get
 			{
@@ -480,7 +477,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues From
+        public StringValues From
         {
             get
 			{
@@ -502,7 +499,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Host
+        public StringValues Host
         {
             get
 			{
@@ -524,7 +521,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues IfMatch
+        public StringValues IfMatch
         {
             get
 			{
@@ -546,7 +543,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues IfModifiedSince
+        public StringValues IfModifiedSince
         {
             get
 			{
@@ -568,7 +565,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues IfNoneMatch
+        public StringValues IfNoneMatch
         {
             get
 			{
@@ -590,7 +587,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues IfRange
+        public StringValues IfRange
         {
             get
 			{
@@ -612,7 +609,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues IfUnmodifiedSince
+        public StringValues IfUnmodifiedSince
         {
             get
 			{
@@ -634,7 +631,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues KeepAlive
+        public StringValues KeepAlive
         {
             get
 			{
@@ -656,7 +653,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues LastModified
+        public StringValues LastModified
         {
             get
 			{
@@ -678,7 +675,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues MaxForwards
+        public StringValues MaxForwards
         {
             get
 			{
@@ -700,7 +697,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Pragma
+        public StringValues Pragma
         {
             get
 			{
@@ -722,7 +719,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues ProxyAuthorization
+        public StringValues ProxyAuthorization
         {
             get
 			{
@@ -744,7 +741,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Range
+        public StringValues Range
         {
             get
 			{
@@ -766,7 +763,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Referer
+        public StringValues Referer
         {
             get
 			{
@@ -788,7 +785,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Te
+        public StringValues TE
         {
             get
 			{
@@ -797,20 +794,20 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Te);
 					if (nativeValue != null)
 					{
-						_Te = nativeValue;
+						_TE = nativeValue;
 					}
                     _flag1 |= 0x2u;
 				}
-			    return _Te;
+			    return _TE;
 		    }
             set 
             {
                 _flag1 |= 0x2u;
-                _Te = value;
+                _TE = value;
             }
         }
 
-        internal StringValues Trailer
+        public StringValues Trailer
         {
             get
 			{
@@ -832,7 +829,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues TransferEncoding
+        public StringValues TransferEncoding
         {
             get
 			{
@@ -854,7 +851,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Translate
+        public StringValues Translate
         {
             get
 			{
@@ -876,7 +873,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Upgrade
+        public StringValues Upgrade
         {
             get
 			{
@@ -898,7 +895,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues UserAgent
+        public StringValues UserAgent
         {
             get
 			{
@@ -920,7 +917,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Via
+        public StringValues Via
         {
             get
 			{
@@ -942,7 +939,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        internal StringValues Warning
+        public StringValues Warning
         {
             get
 			{
@@ -969,199 +966,199 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             switch (key.Length)
             {
                 case 2:
-                    if (string.Equals(key, "Te", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.TE, StringComparison.OrdinalIgnoreCase)) 
                     {
-                        return Te.Count > 0;
+                        return TE.Count > 0;
                     }
                    break;
                 case 3:
-                    if (string.Equals(key, "Via", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Via, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Via.Count > 0;
                     }
                    break;
                 case 4:
-                    if (string.Equals(key, "Date", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Date, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Date.Count > 0;
                     }
-                    if (string.Equals(key, "From", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.From, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return From.Count > 0;
                     }
-                    if (string.Equals(key, "Host", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Host, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Host.Count > 0;
                     }
                    break;
                 case 5:
-                    if (string.Equals(key, "Allow", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Allow, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Allow.Count > 0;
                     }
-                    if (string.Equals(key, "Range", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Range, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Range.Count > 0;
                     }
                    break;
                 case 6:
-                    if (string.Equals(key, "Accept", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Accept, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Accept.Count > 0;
                     }
-                    if (string.Equals(key, "Cookie", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Cookie, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Cookie.Count > 0;
                     }
-                    if (string.Equals(key, "Expect", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Expect, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Expect.Count > 0;
                     }
-                    if (string.Equals(key, "Pragma", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Pragma, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Pragma.Count > 0;
                     }
                    break;
                 case 7:
-                    if (string.Equals(key, "Expires", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Expires, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Expires.Count > 0;
                     }
-                    if (string.Equals(key, "Referer", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Referer, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Referer.Count > 0;
                     }
-                    if (string.Equals(key, "Trailer", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Trailer, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Trailer.Count > 0;
                     }
-                    if (string.Equals(key, "Upgrade", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Upgrade.Count > 0;
                     }
-                    if (string.Equals(key, "Warning", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Warning, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Warning.Count > 0;
                     }
                    break;
                 case 8:
-                    if (string.Equals(key, "If-Match", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.IfMatch, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return IfMatch.Count > 0;
                     }
-                    if (string.Equals(key, "If-Range", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.IfRange, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return IfRange.Count > 0;
                     }
                    break;
                 case 9:
-                    if (string.Equals(key, "Translate", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Translate, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Translate.Count > 0;
                     }
                    break;
                 case 10:
-                    if (string.Equals(key, "Connection", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Connection, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Connection.Count > 0;
                     }
-                    if (string.Equals(key, "Keep-Alive", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.KeepAlive, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return KeepAlive.Count > 0;
                     }
-                    if (string.Equals(key, "User-Agent", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return UserAgent.Count > 0;
                     }
                    break;
                 case 11:
-                    if (string.Equals(key, "Content-Md5", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentMD5, StringComparison.OrdinalIgnoreCase)) 
                     {
-                        return ContentMd5.Count > 0;
+                        return ContentMD5.Count > 0;
                     }
                    break;
                 case 12:
-                    if (string.Equals(key, "Content-Type", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentType, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return ContentType.Count > 0;
                     }
-                    if (string.Equals(key, "Max-Forwards", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.MaxForwards, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return MaxForwards.Count > 0;
                     }
                    break;
                 case 13:
-                    if (string.Equals(key, "Authorization", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Authorization, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return Authorization.Count > 0;
                     }
-                    if (string.Equals(key, "Cache-Control", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.CacheControl, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return CacheControl.Count > 0;
                     }
-                    if (string.Equals(key, "Content-Range", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentRange, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return ContentRange.Count > 0;
                     }
-                    if (string.Equals(key, "If-None-Match", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.IfNoneMatch, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return IfNoneMatch.Count > 0;
                     }
-                    if (string.Equals(key, "Last-Modified", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.LastModified, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return LastModified.Count > 0;
                     }
                    break;
                 case 14:
-                    if (string.Equals(key, "Accept-Charset", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.AcceptCharset, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return AcceptCharset.Count > 0;
                     }
-                    if (string.Equals(key, "Content-Length", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return ContentLength.Count > 0;
                     }
                    break;
                 case 15:
-                    if (string.Equals(key, "Accept-Encoding", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return AcceptEncoding.Count > 0;
                     }
-                    if (string.Equals(key, "Accept-Language", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.AcceptLanguage, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return AcceptLanguage.Count > 0;
                     }
                    break;
                 case 16:
-                    if (string.Equals(key, "Content-Encoding", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentEncoding, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return ContentEncoding.Count > 0;
                     }
-                    if (string.Equals(key, "Content-Language", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentLanguage, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return ContentLanguage.Count > 0;
                     }
-                    if (string.Equals(key, "Content-Location", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentLocation, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return ContentLocation.Count > 0;
                     }
                    break;
                 case 17:
-                    if (string.Equals(key, "If-Modified-Since", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.IfModifiedSince, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return IfModifiedSince.Count > 0;
                     }
-                    if (string.Equals(key, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.TransferEncoding, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return TransferEncoding.Count > 0;
                     }
                    break;
                 case 19:
-                    if (string.Equals(key, "If-Unmodified-Since", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.IfUnmodifiedSince, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return IfUnmodifiedSince.Count > 0;
                     }
-                    if (string.Equals(key, "Proxy-Authorization", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ProxyAuthorization, StringComparison.OrdinalIgnoreCase)) 
                     {
                         return ProxyAuthorization.Count > 0;
                     }
@@ -1175,239 +1172,239 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             switch (key.Length)
             {
                 case 2:
-                    if (string.Equals(key, "Te", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.TE, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Te;
+					    value = TE;
 						return value.Count > 0;
                     }
                    break;
                 case 3:
-                    if (string.Equals(key, "Via", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Via, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Via;
 						return value.Count > 0;
                     }
                    break;
                 case 4:
-                    if (string.Equals(key, "Date", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Date, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Date;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "From", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.From, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = From;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Host", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Host, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Host;
 						return value.Count > 0;
                     }
                    break;
                 case 5:
-                    if (string.Equals(key, "Allow", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Allow, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Allow;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Range", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Range, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Range;
 						return value.Count > 0;
                     }
                    break;
                 case 6:
-                    if (string.Equals(key, "Accept", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Accept, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Accept;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Cookie", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Cookie, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Cookie;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Expect", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Expect, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Expect;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Pragma", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Pragma, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Pragma;
 						return value.Count > 0;
                     }
                    break;
                 case 7:
-                    if (string.Equals(key, "Expires", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Expires, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Expires;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Referer", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Referer, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Referer;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Trailer", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Trailer, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Trailer;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Upgrade", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Upgrade;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Warning", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Warning, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Warning;
 						return value.Count > 0;
                     }
                    break;
                 case 8:
-                    if (string.Equals(key, "If-Match", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.IfMatch, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = IfMatch;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "If-Range", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.IfRange, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = IfRange;
 						return value.Count > 0;
                     }
                    break;
                 case 9:
-                    if (string.Equals(key, "Translate", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Translate, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Translate;
 						return value.Count > 0;
                     }
                    break;
                 case 10:
-                    if (string.Equals(key, "Connection", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Connection, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Connection;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Keep-Alive", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.KeepAlive, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = KeepAlive;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "User-Agent", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = UserAgent;
 						return value.Count > 0;
                     }
                    break;
                 case 11:
-                    if (string.Equals(key, "Content-Md5", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.ContentMD5, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = ContentMd5;
+					    value = ContentMD5;
 						return value.Count > 0;
                     }
                    break;
                 case 12:
-                    if (string.Equals(key, "Content-Type", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.ContentType, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = ContentType;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Max-Forwards", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.MaxForwards, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = MaxForwards;
 						return value.Count > 0;
                     }
                    break;
                 case 13:
-                    if (string.Equals(key, "Authorization", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.Authorization, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = Authorization;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Cache-Control", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.CacheControl, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = CacheControl;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Content-Range", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.ContentRange, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = ContentRange;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "If-None-Match", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.IfNoneMatch, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = IfNoneMatch;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Last-Modified", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.LastModified, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = LastModified;
 						return value.Count > 0;
                     }
                    break;
                 case 14:
-                    if (string.Equals(key, "Accept-Charset", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.AcceptCharset, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = AcceptCharset;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Content-Length", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = ContentLength;
 						return value.Count > 0;
                     }
                    break;
                 case 15:
-                    if (string.Equals(key, "Accept-Encoding", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = AcceptEncoding;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Accept-Language", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.AcceptLanguage, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = AcceptLanguage;
 						return value.Count > 0;
                     }
                    break;
                 case 16:
-                    if (string.Equals(key, "Content-Encoding", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.ContentEncoding, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = ContentEncoding;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Content-Language", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.ContentLanguage, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = ContentLanguage;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Content-Location", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.ContentLocation, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = ContentLocation;
 						return value.Count > 0;
                     }
                    break;
                 case 17:
-                    if (string.Equals(key, "If-Modified-Since", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.IfModifiedSince, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = IfModifiedSince;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.TransferEncoding, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = TransferEncoding;
 						return value.Count > 0;
                     }
                    break;
                 case 19:
-                    if (string.Equals(key, "If-Unmodified-Since", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.IfUnmodifiedSince, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = IfUnmodifiedSince;
 						return value.Count > 0;
                     }
-                    if (string.Equals(key, "Proxy-Authorization", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(key, HeaderNames.ProxyAuthorization, StringComparison.OrdinalIgnoreCase))
                     {
 					    value = ProxyAuthorization;
 						return value.Count > 0;
@@ -1423,15 +1420,15 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             switch (key.Length)
             {
                 case 2:
-                    if (string.Equals(key, "Te", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.TE, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag1 |= 0x2u;
-                        Te = value;
+                        TE = value;
                         return true;
                     }
                    break;
                 case 3:
-                    if (string.Equals(key, "Via", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Via, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag1 |= 0x80u;
                         Via = value;
@@ -1439,19 +1436,19 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 4:
-                    if (string.Equals(key, "Date", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Date, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x10000u;
                         Date = value;
                         return true;
                     }
-                    if (string.Equals(key, "From", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.From, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x80000u;
                         From = value;
                         return true;
                     }
-                    if (string.Equals(key, "Host", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Host, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x100000u;
                         Host = value;
@@ -1459,13 +1456,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 5:
-                    if (string.Equals(key, "Allow", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Allow, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x10u;
                         Allow = value;
                         return true;
                     }
-                    if (string.Equals(key, "Range", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Range, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x80000000u;
                         Range = value;
@@ -1473,25 +1470,25 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 6:
-                    if (string.Equals(key, "Accept", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Accept, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x1u;
                         Accept = value;
                         return true;
                     }
-                    if (string.Equals(key, "Cookie", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Cookie, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x8000u;
                         Cookie = value;
                         return true;
                     }
-                    if (string.Equals(key, "Expect", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Expect, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x20000u;
                         Expect = value;
                         return true;
                     }
-                    if (string.Equals(key, "Pragma", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Pragma, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x20000000u;
                         Pragma = value;
@@ -1499,31 +1496,31 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 7:
-                    if (string.Equals(key, "Expires", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Expires, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x40000u;
                         Expires = value;
                         return true;
                     }
-                    if (string.Equals(key, "Referer", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Referer, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag1 |= 0x1u;
                         Referer = value;
                         return true;
                     }
-                    if (string.Equals(key, "Trailer", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Trailer, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag1 |= 0x4u;
                         Trailer = value;
                         return true;
                     }
-                    if (string.Equals(key, "Upgrade", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag1 |= 0x20u;
                         Upgrade = value;
                         return true;
                     }
-                    if (string.Equals(key, "Warning", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Warning, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag1 |= 0x100u;
                         Warning = value;
@@ -1531,13 +1528,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 8:
-                    if (string.Equals(key, "If-Match", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.IfMatch, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x200000u;
                         IfMatch = value;
                         return true;
                     }
-                    if (string.Equals(key, "If-Range", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.IfRange, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x1000000u;
                         IfRange = value;
@@ -1545,7 +1542,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 9:
-                    if (string.Equals(key, "Translate", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Translate, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag1 |= 0x10u;
                         Translate = value;
@@ -1553,19 +1550,19 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 10:
-                    if (string.Equals(key, "Connection", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Connection, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x80u;
                         Connection = value;
                         return true;
                     }
-                    if (string.Equals(key, "Keep-Alive", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.KeepAlive, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x4000000u;
                         KeepAlive = value;
                         return true;
                     }
-                    if (string.Equals(key, "User-Agent", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag1 |= 0x40u;
                         UserAgent = value;
@@ -1573,21 +1570,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 11:
-                    if (string.Equals(key, "Content-Md5", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentMD5, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x1000u;
-                        ContentMd5 = value;
+                        ContentMD5 = value;
                         return true;
                     }
                    break;
                 case 12:
-                    if (string.Equals(key, "Content-Type", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentType, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x4000u;
                         ContentType = value;
                         return true;
                     }
-                    if (string.Equals(key, "Max-Forwards", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.MaxForwards, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x10000000u;
                         MaxForwards = value;
@@ -1595,31 +1592,31 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 13:
-                    if (string.Equals(key, "Authorization", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.Authorization, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x20u;
                         Authorization = value;
                         return true;
                     }
-                    if (string.Equals(key, "Cache-Control", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.CacheControl, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x40u;
                         CacheControl = value;
                         return true;
                     }
-                    if (string.Equals(key, "Content-Range", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentRange, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x2000u;
                         ContentRange = value;
                         return true;
                     }
-                    if (string.Equals(key, "If-None-Match", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.IfNoneMatch, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x800000u;
                         IfNoneMatch = value;
                         return true;
                     }
-                    if (string.Equals(key, "Last-Modified", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.LastModified, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x8000000u;
                         LastModified = value;
@@ -1627,13 +1624,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 14:
-                    if (string.Equals(key, "Accept-Charset", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.AcceptCharset, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x2u;
                         AcceptCharset = value;
                         return true;
                     }
-                    if (string.Equals(key, "Content-Length", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x400u;
                         ContentLength = value;
@@ -1641,13 +1638,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 15:
-                    if (string.Equals(key, "Accept-Encoding", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x4u;
                         AcceptEncoding = value;
                         return true;
                     }
-                    if (string.Equals(key, "Accept-Language", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.AcceptLanguage, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x8u;
                         AcceptLanguage = value;
@@ -1655,19 +1652,19 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 16:
-                    if (string.Equals(key, "Content-Encoding", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentEncoding, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x100u;
                         ContentEncoding = value;
                         return true;
                     }
-                    if (string.Equals(key, "Content-Language", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentLanguage, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x200u;
                         ContentLanguage = value;
                         return true;
                     }
-                    if (string.Equals(key, "Content-Location", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ContentLocation, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x800u;
                         ContentLocation = value;
@@ -1675,13 +1672,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 17:
-                    if (string.Equals(key, "If-Modified-Since", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.IfModifiedSince, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x400000u;
                         IfModifiedSince = value;
                         return true;
                     }
-                    if (string.Equals(key, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.TransferEncoding, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag1 |= 0x8u;
                         TransferEncoding = value;
@@ -1689,13 +1686,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 19:
-                    if (string.Equals(key, "If-Unmodified-Since", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.IfUnmodifiedSince, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x2000000u;
                         IfUnmodifiedSince = value;
                         return true;
                     }
-                    if (string.Equals(key, "Proxy-Authorization", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals(key, HeaderNames.ProxyAuthorization, StringComparison.OrdinalIgnoreCase)) 
                     {
                         _flag0 |= 0x40000000u;
                         ProxyAuthorization = value;
@@ -1711,17 +1708,17 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             switch (key.Length)
             {
                 case 2:
-                    if (_Te.Count > 0 
-                        && string.Equals(key, "Te", StringComparison.Ordinal))
+                    if (_TE.Count > 0 
+                        && string.Equals(key, HeaderNames.TE, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag1 & 0x2u) != 0);
-                        Te = StringValues.Empty;
+                        TE = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 3:
                     if (_Via.Count > 0 
-                        && string.Equals(key, "Via", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Via, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag1 & 0x80u) != 0);
                         Via = StringValues.Empty;
@@ -1730,21 +1727,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 4:
                     if (_Date.Count > 0 
-                        && string.Equals(key, "Date", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Date, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x10000u) != 0);
                         Date = StringValues.Empty;
                         return wasSet;
                     }
                     if (_From.Count > 0 
-                        && string.Equals(key, "From", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.From, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x80000u) != 0);
                         From = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Host.Count > 0 
-                        && string.Equals(key, "Host", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Host, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x100000u) != 0);
                         Host = StringValues.Empty;
@@ -1753,14 +1750,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 5:
                     if (_Allow.Count > 0 
-                        && string.Equals(key, "Allow", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Allow, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x10u) != 0);
                         Allow = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Range.Count > 0 
-                        && string.Equals(key, "Range", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Range, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x80000000u) != 0);
                         Range = StringValues.Empty;
@@ -1769,28 +1766,28 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 6:
                     if (_Accept.Count > 0 
-                        && string.Equals(key, "Accept", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Accept, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x1u) != 0);
                         Accept = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Cookie.Count > 0 
-                        && string.Equals(key, "Cookie", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Cookie, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x8000u) != 0);
                         Cookie = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Expect.Count > 0 
-                        && string.Equals(key, "Expect", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Expect, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x20000u) != 0);
                         Expect = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Pragma.Count > 0 
-                        && string.Equals(key, "Pragma", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Pragma, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x20000000u) != 0);
                         Pragma = StringValues.Empty;
@@ -1799,35 +1796,35 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 7:
                     if (_Expires.Count > 0 
-                        && string.Equals(key, "Expires", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Expires, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x40000u) != 0);
                         Expires = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Referer.Count > 0 
-                        && string.Equals(key, "Referer", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Referer, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag1 & 0x1u) != 0);
                         Referer = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Trailer.Count > 0 
-                        && string.Equals(key, "Trailer", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Trailer, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag1 & 0x4u) != 0);
                         Trailer = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Upgrade.Count > 0 
-                        && string.Equals(key, "Upgrade", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Upgrade, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag1 & 0x20u) != 0);
                         Upgrade = StringValues.Empty;
                         return wasSet;
                     }
                     if (_Warning.Count > 0 
-                        && string.Equals(key, "Warning", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Warning, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag1 & 0x100u) != 0);
                         Warning = StringValues.Empty;
@@ -1836,14 +1833,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 8:
                     if (_IfMatch.Count > 0 
-                        && string.Equals(key, "If-Match", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.IfMatch, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x200000u) != 0);
                         IfMatch = StringValues.Empty;
                         return wasSet;
                     }
                     if (_IfRange.Count > 0 
-                        && string.Equals(key, "If-Range", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.IfRange, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x1000000u) != 0);
                         IfRange = StringValues.Empty;
@@ -1852,7 +1849,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 9:
                     if (_Translate.Count > 0 
-                        && string.Equals(key, "Translate", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Translate, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag1 & 0x10u) != 0);
                         Translate = StringValues.Empty;
@@ -1861,21 +1858,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 10:
                     if (_Connection.Count > 0 
-                        && string.Equals(key, "Connection", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Connection, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x80u) != 0);
                         Connection = StringValues.Empty;
                         return wasSet;
                     }
                     if (_KeepAlive.Count > 0 
-                        && string.Equals(key, "Keep-Alive", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.KeepAlive, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x4000000u) != 0);
                         KeepAlive = StringValues.Empty;
                         return wasSet;
                     }
                     if (_UserAgent.Count > 0 
-                        && string.Equals(key, "User-Agent", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.UserAgent, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag1 & 0x40u) != 0);
                         UserAgent = StringValues.Empty;
@@ -1883,24 +1880,24 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                    break;
                 case 11:
-                    if (_ContentMd5.Count > 0 
-                        && string.Equals(key, "Content-Md5", StringComparison.Ordinal))
+                    if (_ContentMD5.Count > 0 
+                        && string.Equals(key, HeaderNames.ContentMD5, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x1000u) != 0);
-                        ContentMd5 = StringValues.Empty;
+                        ContentMD5 = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 12:
                     if (_ContentType.Count > 0 
-                        && string.Equals(key, "Content-Type", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.ContentType, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x4000u) != 0);
                         ContentType = StringValues.Empty;
                         return wasSet;
                     }
                     if (_MaxForwards.Count > 0 
-                        && string.Equals(key, "Max-Forwards", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.MaxForwards, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x10000000u) != 0);
                         MaxForwards = StringValues.Empty;
@@ -1909,35 +1906,35 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 13:
                     if (_Authorization.Count > 0 
-                        && string.Equals(key, "Authorization", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.Authorization, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x20u) != 0);
                         Authorization = StringValues.Empty;
                         return wasSet;
                     }
                     if (_CacheControl.Count > 0 
-                        && string.Equals(key, "Cache-Control", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.CacheControl, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x40u) != 0);
                         CacheControl = StringValues.Empty;
                         return wasSet;
                     }
                     if (_ContentRange.Count > 0 
-                        && string.Equals(key, "Content-Range", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.ContentRange, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x2000u) != 0);
                         ContentRange = StringValues.Empty;
                         return wasSet;
                     }
                     if (_IfNoneMatch.Count > 0 
-                        && string.Equals(key, "If-None-Match", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.IfNoneMatch, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x800000u) != 0);
                         IfNoneMatch = StringValues.Empty;
                         return wasSet;
                     }
                     if (_LastModified.Count > 0 
-                        && string.Equals(key, "Last-Modified", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.LastModified, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x8000000u) != 0);
                         LastModified = StringValues.Empty;
@@ -1946,14 +1943,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 14:
                     if (_AcceptCharset.Count > 0 
-                        && string.Equals(key, "Accept-Charset", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.AcceptCharset, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x2u) != 0);
                         AcceptCharset = StringValues.Empty;
                         return wasSet;
                     }
                     if (_ContentLength.Count > 0 
-                        && string.Equals(key, "Content-Length", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.ContentLength, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x400u) != 0);
                         ContentLength = StringValues.Empty;
@@ -1962,14 +1959,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 15:
                     if (_AcceptEncoding.Count > 0 
-                        && string.Equals(key, "Accept-Encoding", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.AcceptEncoding, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x4u) != 0);
                         AcceptEncoding = StringValues.Empty;
                         return wasSet;
                     }
                     if (_AcceptLanguage.Count > 0 
-                        && string.Equals(key, "Accept-Language", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.AcceptLanguage, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x8u) != 0);
                         AcceptLanguage = StringValues.Empty;
@@ -1978,21 +1975,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 16:
                     if (_ContentEncoding.Count > 0 
-                        && string.Equals(key, "Content-Encoding", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.ContentEncoding, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x100u) != 0);
                         ContentEncoding = StringValues.Empty;
                         return wasSet;
                     }
                     if (_ContentLanguage.Count > 0 
-                        && string.Equals(key, "Content-Language", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.ContentLanguage, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x200u) != 0);
                         ContentLanguage = StringValues.Empty;
                         return wasSet;
                     }
                     if (_ContentLocation.Count > 0 
-                        && string.Equals(key, "Content-Location", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.ContentLocation, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x800u) != 0);
                         ContentLocation = StringValues.Empty;
@@ -2001,14 +1998,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 17:
                     if (_IfModifiedSince.Count > 0 
-                        && string.Equals(key, "If-Modified-Since", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.IfModifiedSince, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x400000u) != 0);
                         IfModifiedSince = StringValues.Empty;
                         return wasSet;
                     }
                     if (_TransferEncoding.Count > 0 
-                        && string.Equals(key, "Transfer-Encoding", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.TransferEncoding, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag1 & 0x8u) != 0);
                         TransferEncoding = StringValues.Empty;
@@ -2017,14 +2014,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                    break;
                 case 19:
                     if (_IfUnmodifiedSince.Count > 0 
-                        && string.Equals(key, "If-Unmodified-Since", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.IfUnmodifiedSince, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x2000000u) != 0);
                         IfUnmodifiedSince = StringValues.Empty;
                         return wasSet;
                     }
                     if (_ProxyAuthorization.Count > 0 
-                        && string.Equals(key, "Proxy-Authorization", StringComparison.Ordinal))
+                        && string.Equals(key, HeaderNames.ProxyAuthorization, StringComparison.Ordinal))
                     {
 					    bool wasSet = ((_flag0 & 0x40000000u) != 0);
                         ProxyAuthorization = StringValues.Empty;
@@ -2039,167 +2036,167 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             if (Accept.Count > 0)
             {
-                yield return "Accept";
+                yield return HeaderNames.Accept;
             }
             if (AcceptCharset.Count > 0)
             {
-                yield return "Accept-Charset";
+                yield return HeaderNames.AcceptCharset;
             }
             if (AcceptEncoding.Count > 0)
             {
-                yield return "Accept-Encoding";
+                yield return HeaderNames.AcceptEncoding;
             }
             if (AcceptLanguage.Count > 0)
             {
-                yield return "Accept-Language";
+                yield return HeaderNames.AcceptLanguage;
             }
             if (Allow.Count > 0)
             {
-                yield return "Allow";
+                yield return HeaderNames.Allow;
             }
             if (Authorization.Count > 0)
             {
-                yield return "Authorization";
+                yield return HeaderNames.Authorization;
             }
             if (CacheControl.Count > 0)
             {
-                yield return "Cache-Control";
+                yield return HeaderNames.CacheControl;
             }
             if (Connection.Count > 0)
             {
-                yield return "Connection";
+                yield return HeaderNames.Connection;
             }
             if (ContentEncoding.Count > 0)
             {
-                yield return "Content-Encoding";
+                yield return HeaderNames.ContentEncoding;
             }
             if (ContentLanguage.Count > 0)
             {
-                yield return "Content-Language";
+                yield return HeaderNames.ContentLanguage;
             }
             if (ContentLength.Count > 0)
             {
-                yield return "Content-Length";
+                yield return HeaderNames.ContentLength;
             }
             if (ContentLocation.Count > 0)
             {
-                yield return "Content-Location";
+                yield return HeaderNames.ContentLocation;
             }
-            if (ContentMd5.Count > 0)
+            if (ContentMD5.Count > 0)
             {
-                yield return "Content-Md5";
+                yield return HeaderNames.ContentMD5;
             }
             if (ContentRange.Count > 0)
             {
-                yield return "Content-Range";
+                yield return HeaderNames.ContentRange;
             }
             if (ContentType.Count > 0)
             {
-                yield return "Content-Type";
+                yield return HeaderNames.ContentType;
             }
             if (Cookie.Count > 0)
             {
-                yield return "Cookie";
+                yield return HeaderNames.Cookie;
             }
             if (Date.Count > 0)
             {
-                yield return "Date";
+                yield return HeaderNames.Date;
             }
             if (Expect.Count > 0)
             {
-                yield return "Expect";
+                yield return HeaderNames.Expect;
             }
             if (Expires.Count > 0)
             {
-                yield return "Expires";
+                yield return HeaderNames.Expires;
             }
             if (From.Count > 0)
             {
-                yield return "From";
+                yield return HeaderNames.From;
             }
             if (Host.Count > 0)
             {
-                yield return "Host";
+                yield return HeaderNames.Host;
             }
             if (IfMatch.Count > 0)
             {
-                yield return "If-Match";
+                yield return HeaderNames.IfMatch;
             }
             if (IfModifiedSince.Count > 0)
             {
-                yield return "If-Modified-Since";
+                yield return HeaderNames.IfModifiedSince;
             }
             if (IfNoneMatch.Count > 0)
             {
-                yield return "If-None-Match";
+                yield return HeaderNames.IfNoneMatch;
             }
             if (IfRange.Count > 0)
             {
-                yield return "If-Range";
+                yield return HeaderNames.IfRange;
             }
             if (IfUnmodifiedSince.Count > 0)
             {
-                yield return "If-Unmodified-Since";
+                yield return HeaderNames.IfUnmodifiedSince;
             }
             if (KeepAlive.Count > 0)
             {
-                yield return "Keep-Alive";
+                yield return HeaderNames.KeepAlive;
             }
             if (LastModified.Count > 0)
             {
-                yield return "Last-Modified";
+                yield return HeaderNames.LastModified;
             }
             if (MaxForwards.Count > 0)
             {
-                yield return "Max-Forwards";
+                yield return HeaderNames.MaxForwards;
             }
             if (Pragma.Count > 0)
             {
-                yield return "Pragma";
+                yield return HeaderNames.Pragma;
             }
             if (ProxyAuthorization.Count > 0)
             {
-                yield return "Proxy-Authorization";
+                yield return HeaderNames.ProxyAuthorization;
             }
             if (Range.Count > 0)
             {
-                yield return "Range";
+                yield return HeaderNames.Range;
             }
             if (Referer.Count > 0)
             {
-                yield return "Referer";
+                yield return HeaderNames.Referer;
             }
-            if (Te.Count > 0)
+            if (TE.Count > 0)
             {
-                yield return "Te";
+                yield return HeaderNames.TE;
             }
             if (Trailer.Count > 0)
             {
-                yield return "Trailer";
+                yield return HeaderNames.Trailer;
             }
             if (TransferEncoding.Count > 0)
             {
-                yield return "Transfer-Encoding";
+                yield return HeaderNames.TransferEncoding;
             }
             if (Translate.Count > 0)
             {
-                yield return "Translate";
+                yield return HeaderNames.Translate;
             }
             if (Upgrade.Count > 0)
             {
-                yield return "Upgrade";
+                yield return HeaderNames.Upgrade;
             }
             if (UserAgent.Count > 0)
             {
-                yield return "User-Agent";
+                yield return HeaderNames.UserAgent;
             }
             if (Via.Count > 0)
             {
-                yield return "Via";
+                yield return HeaderNames.Via;
             }
             if (Warning.Count > 0)
             {
-                yield return "Warning";
+                yield return HeaderNames.Warning;
             }
         }
 
@@ -2253,9 +2250,9 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 yield return ContentLocation;
             }
-            if (ContentMd5.Count > 0)
+            if (ContentMD5.Count > 0)
             {
-                yield return ContentMd5;
+                yield return ContentMD5;
             }
             if (ContentRange.Count > 0)
             {
@@ -2337,9 +2334,9 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 yield return Referer;
             }
-            if (Te.Count > 0)
+            if (TE.Count > 0)
             {
-                yield return Te;
+                yield return TE;
             }
             if (Trailer.Count > 0)
             {
@@ -2375,167 +2372,167 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             if (Accept.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Accept", Accept);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Accept, Accept);
             }
             if (AcceptCharset.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Accept-Charset", AcceptCharset);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.AcceptCharset, AcceptCharset);
             }
             if (AcceptEncoding.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Accept-Encoding", AcceptEncoding);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.AcceptEncoding, AcceptEncoding);
             }
             if (AcceptLanguage.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Accept-Language", AcceptLanguage);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.AcceptLanguage, AcceptLanguage);
             }
             if (Allow.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Allow", Allow);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Allow, Allow);
             }
             if (Authorization.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Authorization", Authorization);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Authorization, Authorization);
             }
             if (CacheControl.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Cache-Control", CacheControl);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.CacheControl, CacheControl);
             }
             if (Connection.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Connection", Connection);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Connection, Connection);
             }
             if (ContentEncoding.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Content-Encoding", ContentEncoding);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.ContentEncoding, ContentEncoding);
             }
             if (ContentLanguage.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Content-Language", ContentLanguage);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.ContentLanguage, ContentLanguage);
             }
             if (ContentLength.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Content-Length", ContentLength);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, ContentLength);
             }
             if (ContentLocation.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Content-Location", ContentLocation);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.ContentLocation, ContentLocation);
             }
-            if (ContentMd5.Count > 0)
+            if (ContentMD5.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Content-Md5", ContentMd5);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.ContentMD5, ContentMD5);
             }
             if (ContentRange.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Content-Range", ContentRange);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.ContentRange, ContentRange);
             }
             if (ContentType.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Content-Type", ContentType);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.ContentType, ContentType);
             }
             if (Cookie.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Cookie", Cookie);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Cookie, Cookie);
             }
             if (Date.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Date", Date);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Date, Date);
             }
             if (Expect.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Expect", Expect);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Expect, Expect);
             }
             if (Expires.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Expires", Expires);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Expires, Expires);
             }
             if (From.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("From", From);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.From, From);
             }
             if (Host.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Host", Host);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Host, Host);
             }
             if (IfMatch.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("If-Match", IfMatch);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.IfMatch, IfMatch);
             }
             if (IfModifiedSince.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("If-Modified-Since", IfModifiedSince);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.IfModifiedSince, IfModifiedSince);
             }
             if (IfNoneMatch.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("If-None-Match", IfNoneMatch);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.IfNoneMatch, IfNoneMatch);
             }
             if (IfRange.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("If-Range", IfRange);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.IfRange, IfRange);
             }
             if (IfUnmodifiedSince.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("If-Unmodified-Since", IfUnmodifiedSince);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.IfUnmodifiedSince, IfUnmodifiedSince);
             }
             if (KeepAlive.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Keep-Alive", KeepAlive);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.KeepAlive, KeepAlive);
             }
             if (LastModified.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Last-Modified", LastModified);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.LastModified, LastModified);
             }
             if (MaxForwards.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Max-Forwards", MaxForwards);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.MaxForwards, MaxForwards);
             }
             if (Pragma.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Pragma", Pragma);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Pragma, Pragma);
             }
             if (ProxyAuthorization.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Proxy-Authorization", ProxyAuthorization);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.ProxyAuthorization, ProxyAuthorization);
             }
             if (Range.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Range", Range);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Range, Range);
             }
             if (Referer.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Referer", Referer);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Referer, Referer);
             }
-            if (Te.Count > 0)
+            if (TE.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Te", Te);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.TE, TE);
             }
             if (Trailer.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Trailer", Trailer);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Trailer, Trailer);
             }
             if (TransferEncoding.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Transfer-Encoding", TransferEncoding);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.TransferEncoding, TransferEncoding);
             }
             if (Translate.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Translate", Translate);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Translate, Translate);
             }
             if (Upgrade.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Upgrade", Upgrade);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Upgrade, Upgrade);
             }
             if (UserAgent.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("User-Agent", UserAgent);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.UserAgent, UserAgent);
             }
             if (Via.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Via", Via);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Via, Via);
             }
             if (Warning.Count > 0)
             {
-                yield return new KeyValuePair<string, StringValues>("Warning", Warning);
+                yield return new KeyValuePair<string, StringValues>(HeaderNames.Warning, Warning);
             }
         }
     }

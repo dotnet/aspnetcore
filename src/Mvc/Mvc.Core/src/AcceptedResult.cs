@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             if (!string.IsNullOrEmpty(Location))
             {
-                context.HttpContext.Response.Headers[HeaderNames.Location] = Location;
+                context.HttpContext.Response.Headers.Location = Location;
             }
         }
     }

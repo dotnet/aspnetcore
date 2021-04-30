@@ -76,6 +76,6 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// </summary>
         public IDictionary<object, object> Properties { get; set; } = default!;
 
-        internal IFilterMetadata[]? CachedResuableFilters { get; set; }
+        internal IFilterMetadata[]? CachedReusableFilters { get; set; }
     }
 }

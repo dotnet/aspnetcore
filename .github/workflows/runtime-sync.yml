@@ -66,7 +66,7 @@ jobs:
         commit-message: 'Sync shared code from runtime'
         title: 'Sync shared code from runtime'
         body: 'This PR was automatically generated to sync shared code changes from runtime. Fixes #18943'
-        labels: area-servers
+        labels: area-runtime
         base: main
         branch: github-action/sync-runtime
         branch-suffix: timestamp

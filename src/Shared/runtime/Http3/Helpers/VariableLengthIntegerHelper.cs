@@ -33,7 +33,7 @@ namespace System.Net.Http
 
         // public for internal use in aspnetcore
         public const uint OneByteLimit = (1U << 6) - 1;
-        public const uint TwoByteLimit = (1U << 16) - 1;
+        public const uint TwoByteLimit = (1U << 14) - 1;
         public const uint FourByteLimit = (1U << 30) - 1;
         public const long EightByteLimit = (1L << 62) - 1;
 

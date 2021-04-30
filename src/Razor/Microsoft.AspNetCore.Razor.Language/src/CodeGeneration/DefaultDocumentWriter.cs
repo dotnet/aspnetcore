@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     node.ClassName,
                     node.BaseType,
                     node.Interfaces,
-                    node.TypeParameters.Select(p => p.ParameterName).ToArray()))
+                    node.TypeParameters.Select(p => (p.ParameterName, p.Constraints)).ToArray()))
                 {
                     VisitDefault(node);
                 }

@@ -10,7 +10,8 @@
 
   <Import Project="..\targets\Helix.Common.props" />
   <Import Project="..\Build.props" />
-
+  <Import Project="..\Versions.props" />
+  
   <!-- Microsoft.DotNet.Helix.Sdk.MultiQueue.targets splits $(HelixTargetQueues) into @(HelixTargetQueue) items. -->
   <ItemGroup Condition=" '$(HelixTargetQueues)' == '' ">
     <HelixTargetQueue Condition="'$(_UseHelixOpenQueues)' == 'true'" Include="@(HelixAvailableTargetQueue)" />
@@ -23,6 +24,10 @@
     <IsExternal>true</IsExternal>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
+    <IncludeDotNetCli>true</IncludeDotNetCli>
+    <DotNetCliPackageType>sdk</DotNetCliPackageType>
+    <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>    
+    <DotNetCliChannel>Current</DotNetCliChannel>
 
     <!-- Copied from Microsoft.NET.DefaultOutputPaths.targets in the .NET SDK. The Helix SDK contains nothing similar. -->
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">bin\</BaseOutputPath>
@@ -30,6 +35,16 @@
     <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' != 'AnyCPU'">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
+  <!-- Specify the runtime we need which will be included as a correlation payload -->
+  <ItemGroup>
+    <!--
+      Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
+    -->
+    <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
+      <PackageType>runtime</PackageType>
+    </AdditionalDotNetPackage>
+  </ItemGroup>
+  
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
     <HelixType>ci</HelixType>
     <!-- Creator is not valid for internal queues -->
@@ -61,6 +76,40 @@
     <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
   </ItemGroup>
 
+  <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather">
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+        Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
+        Targets="_GetPackageVersionInfo"
+        SkipNonexistentProjects="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
+    </PropertyGroup>    
+    
+    <Unzip Condition="Exists('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg')"
+       SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg" 
+       DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw" />
+    <ItemGroup>
+      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.txt" />
+      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.json" />
+      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.dll" />
+      <_appRuntimeFiles Include="$(OutputPath)\AspNetCoreAppRuntimeHelixRaw\**\*.xml" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_appRuntimeFiles)" DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
+    <Unzip Condition="Exists('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg')" 
+      SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg" 
+      DestinationFolder="$(OutputPath)\AspNetCoreAppRuntimeHelix\packs\Microsoft.AspNetCore.App.Ref\$(SharedFxVersion)" />
+    <ZipDirectory Condition="Exists('$(OutputPath)\AspNetCoreAppRuntimeHelix')"
+      SourceDirectory="$(OutputPath)\AspNetCoreAppRuntimeHelix" 
+      DestinationFile="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Overwrite="true" />
+    
+    <ItemGroup>
+      <HelixCorrelationPayload Include="$(OutputPath)\AspNetCoreAppRuntimeHelix.zip" Destination="$(DotNetCliDestination)" />
+    </ItemGroup>
+  </Target>
+  
   <Target Name="Gather" BeforeTargets="Build">
     <MSBuild Projects="@(ProjectToBuild)"
               Targets="CreateHelixPayload"

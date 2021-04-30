@@ -27,7 +27,7 @@ namespace BasicWebSite
                 throw new InvalidOperationException("RequestId should be null here");
             }
 
-            var requestId = context.Request.Headers[HeaderNames.RequestId];
+            var requestId = context.Request.Headers.RequestId;
             requestIdService.RequestId = requestId;
 
             return _next(context);

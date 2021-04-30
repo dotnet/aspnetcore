@@ -77,8 +77,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             get { return _tcs.Task; }
         }
 
-        internal bool EndCalled { get; set; }
-
         internal void IOCompleted(uint errorCode, uint numBytes)
         {
             IOCompleted(this, errorCode, numBytes);

@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Internal
             long length,
             ILogger logger)
         {
-            var rawRangeHeader = context.Request.Headers[HeaderNames.Range];
+            var rawRangeHeader = context.Request.Headers.Range;
             if (StringValues.IsNullOrEmpty(rawRangeHeader))
             {
                 logger.LogTrace("Range header's value is empty.");

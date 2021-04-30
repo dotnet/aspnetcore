@@ -66,10 +66,19 @@ $locJson = @{
                     }
                     if ($continue)
                     {
-                        return @{
-                            SourceFile = $sourceFile
-                            CopyOption = "LangIDOnName"
-                            OutputPath = $outputPath
+                        if ($_.Directory.Name -eq 'en' -and $_.Extension -eq '.json') {
+                            return @{
+                                SourceFile = $sourceFile
+                                CopyOption = "LangIDOnPath"
+                                OutputPath = "$($_.Directory.Parent.FullName | Resolve-Path -Relative)\"
+                            }
+                        }
+                        else {
+                            return @{
+                                SourceFile = $sourceFile
+                                CopyOption = "LangIDOnName"
+                                OutputPath = $outputPath
+                            }
                         }
                     }
                 }
