@@ -85,6 +85,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32297")]
         public async Task SendShortData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
