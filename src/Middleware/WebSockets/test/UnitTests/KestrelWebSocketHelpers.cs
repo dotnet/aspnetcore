@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 {
     public class KestrelWebSocketHelpers
     {
-        public static IDisposable CreateServer(ILoggerFactory loggerFactory, out int port, Func<HttpContext, Task> app, Action<WebSocketOptions> configure = null)
+        public static IAsyncDisposable CreateServer(ILoggerFactory loggerFactory, out int port, Func<HttpContext, Task> app, Action<WebSocketOptions> configure = null)
         {
             Exception exceptionFromApp = null;
             configure = configure ?? (o => { });
@@ -76,8 +76,9 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             host.Start();
             port = host.GetPort();
 
-            return new Disposable(() =>
+            return new Disposable(async () =>
             {
+                await host.StopAsync();
                 host.Dispose();
                 if (exceptionFromApp is not null)
                 {
@@ -86,18 +87,18 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             });
         }
 
-        private class Disposable : IDisposable
+        private class Disposable : IAsyncDisposable
         {
-            private readonly Action _dispose;
+            private readonly Func<ValueTask> _dispose;
 
-            public Disposable(Action dispose)
+            public Disposable(Func<ValueTask> dispose)
             {
                 _dispose = dispose;
             }
 
-            public void Dispose()
+            public ValueTask DisposeAsync()
             {
-                _dispose();
+                return _dispose();
             }
         }
     }
