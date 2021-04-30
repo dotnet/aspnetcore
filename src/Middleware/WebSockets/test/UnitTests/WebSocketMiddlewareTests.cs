@@ -14,6 +14,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.WebSockets.Test
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32297")]
     public class WebSocketMiddlewareTests : LoggedTest
     {
         [Fact]
